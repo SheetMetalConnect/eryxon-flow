@@ -99,10 +99,10 @@ export async function startTimeTracking(
   operatorId: string,
   tenantId: string
 ) {
-  // Start transaction-like operations
+  // Get task details including stage_id
   const { data: task } = await supabase
     .from("tasks")
-    .select("status, part_id")
+    .select("status, part_id, stage_id")
     .eq("id", taskId)
     .single();
 
@@ -124,31 +124,71 @@ export async function startTimeTracking(
       .from("tasks")
       .update({ status: "in_progress" })
       .eq("id", taskId);
+  }
 
-    // Update part status
-    const { data: part } = await supabase
+  // Get part details
+  const { data: part } = await supabase
+    .from("parts")
+    .select("status, job_id, current_stage_id")
+    .eq("id", task.part_id)
+    .single();
+
+  if (!part) return;
+
+  // Update part status and current_stage_id if not started
+  if (part.status === "not_started") {
+    await supabase
       .from("parts")
-      .select("status, job_id")
-      .eq("id", task.part_id)
+      .update({ 
+        status: "in_progress",
+        current_stage_id: task.stage_id 
+      })
+      .eq("id", task.part_id);
+  } else if (part.current_stage_id !== task.stage_id) {
+    // Update current_stage_id if working on a different stage
+    await supabase
+      .from("parts")
+      .update({ current_stage_id: task.stage_id })
+      .eq("id", task.part_id);
+  }
+
+  // Calculate job's current stage from all in_progress tasks
+  const { data: jobTasks } = await supabase
+    .from("tasks")
+    .select("stage_id, stages!inner(sequence)")
+    .eq("part_id", task.part_id)
+    .eq("status", "in_progress");
+
+  if (jobTasks && jobTasks.length > 0) {
+    // Get the earliest stage (lowest sequence) that has in_progress tasks
+    const earliestStage = jobTasks.reduce((earliest, t: any) => {
+      return t.stages.sequence < earliest.sequence 
+        ? { stage_id: t.stage_id, sequence: t.stages.sequence }
+        : earliest;
+    }, { stage_id: jobTasks[0].stage_id, sequence: jobTasks[0].stages.sequence });
+
+    // Update job status and current_stage_id
+    const { data: job } = await supabase
+      .from("jobs")
+      .select("status, current_stage_id")
+      .eq("id", part.job_id)
       .single();
 
-    if (part?.status === "not_started") {
-      await supabase
-        .from("parts")
-        .update({ status: "in_progress" })
-        .eq("id", task.part_id);
+    if (job) {
+      const updates: any = {};
+      
+      if (job.status === "not_started") {
+        updates.status = "in_progress";
+      }
+      
+      if (job.current_stage_id !== earliestStage.stage_id) {
+        updates.current_stage_id = earliestStage.stage_id;
+      }
 
-      // Update job status
-      const { data: job } = await supabase
-        .from("jobs")
-        .select("status")
-        .eq("id", part.job_id)
-        .single();
-
-      if (job?.status === "not_started") {
+      if (Object.keys(updates).length > 0) {
         await supabase
           .from("jobs")
-          .update({ status: "in_progress" })
+          .update(updates)
           .eq("id", part.job_id);
       }
     }
@@ -230,12 +270,14 @@ export async function completeTask(taskId: string, tenantId: string) {
   // Check if all tasks in part are completed
   const { data: partTasks } = await supabase
     .from("tasks")
-    .select("status")
+    .select("status, stage_id, stages!inner(sequence)")
     .eq("part_id", task.part_id);
 
   const allCompleted = partTasks?.every((t) => t.status === "completed");
+  const inProgressTasks = partTasks?.filter((t) => t.status === "in_progress");
 
   if (allCompleted) {
+    // All tasks complete - mark part as completed
     const { data: part } = await supabase
       .from("parts")
       .select("job_id")
@@ -244,7 +286,10 @@ export async function completeTask(taskId: string, tenantId: string) {
 
     await supabase
       .from("parts")
-      .update({ status: "completed" })
+      .update({ 
+        status: "completed",
+        current_stage_id: null  // Clear current stage when complete
+      })
       .eq("id", task.part_id);
 
     // Check if all parts in job are completed
@@ -259,9 +304,76 @@ export async function completeTask(taskId: string, tenantId: string) {
       if (allPartsCompleted) {
         await supabase
           .from("jobs")
-          .update({ status: "completed" })
+          .update({ 
+            status: "completed",
+            current_stage_id: null  // Clear current stage when complete
+          })
           .eq("id", part.job_id);
+      } else {
+        // Recalculate job's current_stage_id from remaining in_progress parts
+        await recalculateJobCurrentStage(part.job_id);
       }
     }
+  } else if (inProgressTasks && inProgressTasks.length > 0) {
+    // Recalculate part's current_stage_id from remaining in_progress tasks
+    const earliestStage = inProgressTasks.reduce((earliest: any, t: any) => {
+      return t.stages.sequence < earliest.sequence 
+        ? { stage_id: t.stage_id, sequence: t.stages.sequence }
+        : earliest;
+    }, { stage_id: inProgressTasks[0].stage_id, sequence: (inProgressTasks[0] as any).stages.sequence });
+
+    await supabase
+      .from("parts")
+      .update({ current_stage_id: earliestStage.stage_id })
+      .eq("id", task.part_id);
+
+    // Also recalculate job's current_stage_id
+    const { data: part } = await supabase
+      .from("parts")
+      .select("job_id")
+      .eq("id", task.part_id)
+      .single();
+
+    if (part) {
+      await recalculateJobCurrentStage(part.job_id);
+    }
+  }
+}
+
+async function recalculateJobCurrentStage(jobId: string) {
+  // Get all in_progress tasks across all parts in this job
+  const { data: jobParts } = await supabase
+    .from("parts")
+    .select("id")
+    .eq("job_id", jobId);
+
+  if (!jobParts || jobParts.length === 0) return;
+
+  const partIds = jobParts.map(p => p.id);
+
+  const { data: inProgressTasks } = await supabase
+    .from("tasks")
+    .select("stage_id, stages!inner(sequence)")
+    .in("part_id", partIds)
+    .eq("status", "in_progress");
+
+  if (inProgressTasks && inProgressTasks.length > 0) {
+    // Get the earliest stage (lowest sequence) with in_progress tasks
+    const earliestStage = inProgressTasks.reduce((earliest: any, t: any) => {
+      return t.stages.sequence < earliest.sequence 
+        ? { stage_id: t.stage_id, sequence: t.stages.sequence }
+        : earliest;
+    }, { stage_id: inProgressTasks[0].stage_id, sequence: (inProgressTasks[0] as any).stages.sequence });
+
+    await supabase
+      .from("jobs")
+      .update({ current_stage_id: earliestStage.stage_id })
+      .eq("id", jobId);
+  } else {
+    // No in_progress tasks, but job isn't complete yet
+    await supabase
+      .from("jobs")
+      .update({ current_stage_id: null })
+      .eq("id", jobId);
   }
 }

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Auth from "./pages/Auth";
 import WorkQueue from "./pages/operator/WorkQueue";
+import MyActivity from "./pages/operator/MyActivity";
 import Dashboard from "./pages/admin/Dashboard";
 import ConfigStages from "./pages/admin/ConfigStages";
 import ConfigUsers from "./pages/admin/ConfigUsers";
@@ -66,6 +67,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <WorkQueue />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/my-activity"
+        element={
+          <ProtectedRoute>
+            <MyActivity />
           </ProtectedRoute>
         }
       />
