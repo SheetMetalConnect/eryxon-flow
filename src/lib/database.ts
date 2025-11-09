@@ -1,0 +1,267 @@
+import { supabase } from "@/integrations/supabase/client";
+
+export interface TaskWithDetails {
+  id: string;
+  task_name: string;
+  sequence: number;
+  estimated_time: number;
+  actual_time: number;
+  status: "not_started" | "in_progress" | "completed" | "on_hold";
+  completion_percentage: number;
+  notes: string | null;
+  assigned_operator_id: string | null;
+  stage_id: string;
+  part: {
+    id: string;
+    part_number: string;
+    material: string;
+    quantity: number;
+    parent_part_id: string | null;
+    job: {
+      id: string;
+      job_number: string;
+      customer: string | null;
+      due_date: string | null;
+      due_date_override: string | null;
+    };
+  };
+  stage: {
+    id: string;
+    name: string;
+    color: string | null;
+    sequence: number;
+  };
+  active_time_entry?: {
+    id: string;
+    operator_id: string;
+    start_time: string;
+    operator: {
+      full_name: string;
+    };
+  };
+}
+
+export async function fetchTasksWithDetails(tenantId: string): Promise<TaskWithDetails[]> {
+  const { data: tasks, error: tasksError } = await supabase
+    .from("tasks")
+    .select(`
+      *,
+      part:parts!inner(
+        id,
+        part_number,
+        material,
+        quantity,
+        parent_part_id,
+        job:jobs!inner(
+          id,
+          job_number,
+          customer,
+          due_date,
+          due_date_override
+        )
+      ),
+      stage:stages!inner(
+        id,
+        name,
+        color,
+        sequence
+      )
+    `)
+    .eq("tenant_id", tenantId)
+    .order("sequence");
+
+  if (tasksError) throw tasksError;
+
+  // Fetch active time entries
+  const { data: activeEntries, error: entriesError } = await supabase
+    .from("time_entries")
+    .select(`
+      id,
+      task_id,
+      operator_id,
+      start_time,
+      operator:profiles!inner(full_name)
+    `)
+    .eq("tenant_id", tenantId)
+    .is("end_time", null);
+
+  if (entriesError) throw entriesError;
+
+  // Map active entries to tasks
+  return tasks.map((task) => ({
+    ...task,
+    active_time_entry: activeEntries?.find((entry) => entry.task_id === task.id),
+  }));
+}
+
+export async function startTimeTracking(
+  taskId: string,
+  operatorId: string,
+  tenantId: string
+) {
+  // Start transaction-like operations
+  const { data: task } = await supabase
+    .from("tasks")
+    .select("status, part_id")
+    .eq("id", taskId)
+    .single();
+
+  if (!task) throw new Error("Task not found");
+
+  // Create time entry
+  const { error: timeError } = await supabase.from("time_entries").insert({
+    task_id: taskId,
+    operator_id: operatorId,
+    tenant_id: tenantId,
+    start_time: new Date().toISOString(),
+  });
+
+  if (timeError) throw timeError;
+
+  // Update task status if not started
+  if (task.status === "not_started") {
+    await supabase
+      .from("tasks")
+      .update({ status: "in_progress" })
+      .eq("id", taskId);
+
+    // Update part status
+    const { data: part } = await supabase
+      .from("parts")
+      .select("status, job_id")
+      .eq("id", task.part_id)
+      .single();
+
+    if (part?.status === "not_started") {
+      await supabase
+        .from("parts")
+        .update({ status: "in_progress" })
+        .eq("id", task.part_id);
+
+      // Update job status
+      const { data: job } = await supabase
+        .from("jobs")
+        .select("status")
+        .eq("id", part.job_id)
+        .single();
+
+      if (job?.status === "not_started") {
+        await supabase
+          .from("jobs")
+          .update({ status: "in_progress" })
+          .eq("id", part.job_id);
+      }
+    }
+  }
+}
+
+export async function stopTimeTracking(taskId: string, operatorId: string) {
+  // Find active time entry
+  const { data: entry } = await supabase
+    .from("time_entries")
+    .select("id, start_time")
+    .eq("task_id", taskId)
+    .eq("operator_id", operatorId)
+    .is("end_time", null)
+    .single();
+
+  if (!entry) throw new Error("No active time entry found");
+
+  const endTime = new Date();
+  const startTime = new Date(entry.start_time);
+  const duration = Math.round((endTime.getTime() - startTime.getTime()) / 60000); // minutes
+
+  // Update time entry
+  await supabase
+    .from("time_entries")
+    .update({
+      end_time: endTime.toISOString(),
+      duration,
+    })
+    .eq("id", entry.id);
+
+  // Update task actual time
+  const { data: task } = await supabase
+    .from("tasks")
+    .select("actual_time")
+    .eq("id", taskId)
+    .single();
+
+  if (task) {
+    await supabase
+      .from("tasks")
+      .update({ actual_time: (task.actual_time || 0) + duration })
+      .eq("id", taskId);
+  }
+}
+
+export async function completeTask(taskId: string, tenantId: string) {
+  // Check for active time entries
+  const { data: activeEntry } = await supabase
+    .from("time_entries")
+    .select("id")
+    .eq("task_id", taskId)
+    .is("end_time", null)
+    .maybeSingle();
+
+  if (activeEntry) {
+    throw new Error("Please stop time tracking before completing the task");
+  }
+
+  // Get task details
+  const { data: task } = await supabase
+    .from("tasks")
+    .select("part_id")
+    .eq("id", taskId)
+    .single();
+
+  if (!task) throw new Error("Task not found");
+
+  // Update task
+  await supabase
+    .from("tasks")
+    .update({
+      status: "completed",
+      completed_at: new Date().toISOString(),
+      completion_percentage: 100,
+    })
+    .eq("id", taskId);
+
+  // Check if all tasks in part are completed
+  const { data: partTasks } = await supabase
+    .from("tasks")
+    .select("status")
+    .eq("part_id", task.part_id);
+
+  const allCompleted = partTasks?.every((t) => t.status === "completed");
+
+  if (allCompleted) {
+    const { data: part } = await supabase
+      .from("parts")
+      .select("job_id")
+      .eq("id", task.part_id)
+      .single();
+
+    await supabase
+      .from("parts")
+      .update({ status: "completed" })
+      .eq("id", task.part_id);
+
+    // Check if all parts in job are completed
+    if (part) {
+      const { data: jobParts } = await supabase
+        .from("parts")
+        .select("status")
+        .eq("job_id", part.job_id);
+
+      const allPartsCompleted = jobParts?.every((p) => p.status === "completed");
+
+      if (allPartsCompleted) {
+        await supabase
+          .from("jobs")
+          .update({ status: "completed" })
+          .eq("id", part.job_id);
+      }
+    }
+  }
+}

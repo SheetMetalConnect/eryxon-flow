@@ -1,0 +1,103 @@
+import { TaskWithDetails } from "@/lib/database";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Clock, User, Package } from "lucide-react";
+import { format } from "date-fns";
+import { useState } from "react";
+import TaskDetailModal from "./TaskDetailModal";
+
+interface TaskCardProps {
+  task: TaskWithDetails;
+  onUpdate: () => void;
+}
+
+export default function TaskCard({ task, onUpdate }: TaskCardProps) {
+  const [showDetail, setShowDetail] = useState(false);
+  
+  const dueDate = task.part.job.due_date_override || task.part.job.due_date;
+  const remainingTime = task.estimated_time - (task.actual_time || 0);
+  const isOvertime = remainingTime < 0;
+
+  const statusColors = {
+    not_started: "bg-muted",
+    in_progress: "bg-accent",
+    completed: "bg-completed",
+    on_hold: "bg-on-hold",
+  };
+
+  return (
+    <>
+      <Card
+        className={`p-4 cursor-pointer transition-all hover:shadow-md ${
+          task.active_time_entry ? "ring-2 ring-active-work" : ""
+        }`}
+        onClick={() => setShowDetail(true)}
+      >
+        {/* Status Bar */}
+        <div className={`h-1 -mx-4 -mt-4 mb-3 rounded-t ${statusColors[task.status]}`} />
+
+        {/* Header */}
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <div className="flex-1 min-w-0">
+            <div className="font-semibold text-sm truncate">
+              Job {task.part.job.job_number}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {task.part.part_number}
+            </div>
+          </div>
+          {task.part.parent_part_id && (
+            <Badge variant="outline" className="text-xs shrink-0">
+              <Package className="h-3 w-3 mr-1" />
+              Assy
+            </Badge>
+          )}
+        </div>
+
+        {/* Task Name */}
+        <h4 className="font-medium mb-2">{task.task_name}</h4>
+
+        {/* Time Info */}
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+          <div className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            <span>
+              {task.actual_time || 0}/{task.estimated_time}m
+            </span>
+          </div>
+          {remainingTime !== 0 && (
+            <span className={isOvertime ? "text-destructive font-medium" : ""}>
+              {isOvertime ? "+" : ""}
+              {Math.abs(remainingTime)}m
+            </span>
+          )}
+        </div>
+
+        {/* Due Date */}
+        {dueDate && (
+          <div className="text-xs text-muted-foreground mb-2">
+            Due: {format(new Date(dueDate), "MMM d, yyyy")}
+          </div>
+        )}
+
+        {/* Active Operator */}
+        {task.active_time_entry && (
+          <div className="flex items-center gap-2 mt-3 pt-3 border-t">
+            <div className="h-2 w-2 rounded-full bg-active-work animate-pulse" />
+            <User className="h-3 w-3 text-muted-foreground" />
+            <span className="text-xs font-medium">
+              {task.active_time_entry.operator.full_name}
+            </span>
+          </div>
+        )}
+      </Card>
+
+      <TaskDetailModal
+        task={task}
+        open={showDetail}
+        onOpenChange={setShowDetail}
+        onUpdate={onUpdate}
+      />
+    </>
+  );
+}
