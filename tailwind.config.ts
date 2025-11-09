@@ -61,6 +61,10 @@ export default {
         completed: "hsl(var(--completed))",
         "on-hold": "hsl(var(--on-hold))",
         "stage-default": "hsl(var(--stage-default))",
+        "issue-critical": "hsl(var(--issue-critical))",
+        "issue-high": "hsl(var(--issue-high))",
+        "issue-medium": "hsl(var(--issue-medium))",
+        "issue-low": "hsl(var(--issue-low))",
       },
       borderRadius: {
         lg: "var(--radius)",

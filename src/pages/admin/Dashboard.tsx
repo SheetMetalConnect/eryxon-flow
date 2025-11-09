@@ -5,7 +5,7 @@ import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Users, Activity, Clock, Loader2 } from "lucide-react";
+import { Users, Activity, Clock, Loader2, AlertTriangle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -40,6 +40,7 @@ export default function Dashboard() {
     activeWorkers: 0,
     inProgressTasks: 0,
     dueThisWeek: 0,
+    pendingIssues: 0,
   });
   const [loading, setLoading] = useState(true);
   const [needsSetup, setNeedsSetup] = useState(false);
@@ -82,7 +83,7 @@ export default function Dashboard() {
       if (activeData) setActiveWork(activeData as any);
 
       // Load stats + check stages
-      const [inProgressResult, dueThisWeekResult, stagesHead] = await Promise.all([
+      const [inProgressResult, dueThisWeekResult, stagesHead, issuesResult] = await Promise.all([
         supabase
           .from("tasks")
           .select("id", { count: "exact", head: true })
@@ -102,12 +103,18 @@ export default function Dashboard() {
           .select("id", { count: "exact", head: true })
           .eq("tenant_id", profile.tenant_id)
           .eq("active", true),
+        supabase
+          .from("issues")
+          .select("id", { count: "exact", head: true })
+          .eq("tenant_id", profile.tenant_id)
+          .eq("status", "pending"),
       ]);
 
       setStats({
         activeWorkers: activeData?.length || 0,
         inProgressTasks: inProgressResult.count || 0,
         dueThisWeek: dueThisWeekResult.count || 0,
+        pendingIssues: issuesResult.count || 0,
       });
 
       setNeedsSetup((stagesHead.count || 0) === 0);
@@ -194,7 +201,7 @@ export default function Dashboard() {
         )}
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Workers</CardTitle>
@@ -203,6 +210,17 @@ export default function Dashboard() {
             <CardContent>
               <div className="text-2xl font-bold">{stats.activeWorkers}</div>
               <p className="text-xs text-muted-foreground">Currently working</p>
+            </CardContent>
+          </Card>
+
+         <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pending Issues</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.pendingIssues}</div>
+              <p className="text-xs text-muted-foreground">Awaiting review</p>
             </CardContent>
           </Card>
 

@@ -49,6 +49,12 @@ All colors MUST be HSL.
     --on-hold: 25 95% 53%; /* Orange for on-hold */
     --stage-default: 210 15% 75%; /* Default stage color */
     
+    /* Issue severity colors */
+    --issue-critical: 0 84% 60%; /* Red */
+    --issue-high: 25 95% 53%; /* Orange */
+    --issue-medium: 45 93% 47%; /* Yellow */
+    --issue-low: 215 15% 55%; /* Gray */
+    
     /* Touch-friendly sizing */
     --touch-target: 44px;
     
@@ -98,6 +104,11 @@ All colors MUST be HSL.
     --completed: 142 71% 45%;
     --on-hold: 25 95% 53%;
     --stage-default: 210 15% 35%;
+    
+    --issue-critical: 0 84% 60%;
+    --issue-high: 25 95% 53%;
+    --issue-medium: 45 93% 47%;
+    --issue-low: 215 15% 65%;
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;

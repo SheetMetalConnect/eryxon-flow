@@ -1,9 +1,11 @@
 import { TaskWithDetails } from "@/lib/database";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, User, Package } from "lucide-react";
+import { Clock, User, Package, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTaskIssues } from "@/hooks/useTaskIssues";
 import TaskDetailModal from "./TaskDetailModal";
 
 interface TaskCardProps {
@@ -13,10 +15,13 @@ interface TaskCardProps {
 
 export default function TaskCard({ task, onUpdate }: TaskCardProps) {
   const [showDetail, setShowDetail] = useState(false);
+  const { profile } = useAuth();
+  const { pendingCount, highestSeverity } = useTaskIssues(task.id, profile?.tenant_id);
   
   const dueDate = task.part.job.due_date_override || task.part.job.due_date;
   const remainingTime = task.estimated_time - (task.actual_time || 0);
   const isOvertime = remainingTime < 0;
+  const isAssignedToMe = task.assigned_operator_id === profile?.id;
 
   const statusColors = {
     not_started: "bg-muted",
@@ -46,16 +51,38 @@ export default function TaskCard({ task, onUpdate }: TaskCardProps) {
               {task.part.part_number}
             </div>
           </div>
-          {task.part.parent_part_id && (
-            <Badge variant="outline" className="text-xs shrink-0">
-              <Package className="h-3 w-3 mr-1" />
-              Assy
-            </Badge>
-          )}
+          <div className="flex gap-1 shrink-0">
+            {task.part.parent_part_id && (
+              <Badge variant="outline" className="text-xs">
+                <Package className="h-3 w-3 mr-1" />
+                Assy
+              </Badge>
+            )}
+            {pendingCount > 0 && highestSeverity && (
+              <Badge 
+                variant="outline" 
+                className="text-xs border-issue-critical"
+                style={{
+                  borderColor: `hsl(var(--issue-${highestSeverity}))`,
+                  color: `hsl(var(--issue-${highestSeverity}))`,
+                }}
+              >
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                {pendingCount}
+              </Badge>
+            )}
+          </div>
         </div>
 
         {/* Task Name */}
         <h4 className="font-medium mb-2">{task.task_name}</h4>
+
+        {/* Assignment Badge */}
+        {isAssignedToMe && (
+          <Badge variant="secondary" className="text-xs mb-2">
+            Assigned to You
+          </Badge>
+        )}
 
         {/* Time Info */}
         <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">

@@ -9,9 +9,10 @@ import WorkQueue from "./pages/operator/WorkQueue";
 import MyActivity from "./pages/operator/MyActivity";
 import MyIssues from "./pages/operator/MyIssues";
 import Dashboard from "./pages/admin/Dashboard";
+import IssueQueue from "./pages/admin/IssueQueue";
 import ConfigStages from "./pages/admin/ConfigStages";
 import ConfigUsers from "./pages/admin/ConfigUsers";
-import IssueQueue from "./pages/admin/IssueQueue";
+import Assignments from "./pages/admin/Assignments";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -123,6 +124,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <IssueQueue />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/assignments"
+        element={
+          <ProtectedRoute adminOnly>
+            <Assignments />
           </ProtectedRoute>
         }
       />

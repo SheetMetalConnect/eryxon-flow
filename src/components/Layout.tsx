@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, LayoutDashboard, ListChecks, Settings, Clock, AlertCircle } from "lucide-react";
+import { LogOut, LayoutDashboard, ListChecks, Settings, Clock, AlertCircle, UserCheck } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 interface LayoutProps {
@@ -56,6 +56,16 @@ export default function Layout({ children }: LayoutProps) {
                       >
                         <AlertCircle className="h-4 w-4" />
                         Issues
+                      </Button>
+                    </Link>
+                    <Link to="/admin/assignments">
+                      <Button
+                        variant={isActive("/admin/assignments") ? "default" : "ghost"}
+                        size="sm"
+                        className="gap-2"
+                      >
+                        <UserCheck className="h-4 w-4" />
+                        Assignments
                       </Button>
                     </Link>
                     <Link to="/admin/stages">

@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TaskWithDetails, startTimeTracking, stopTimeTracking, completeTask } from "@/lib/database";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Clock, Play, Square, CheckCircle, Package, AlertCircle, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import MetadataDisplay from "@/components/ui/MetadataDisplay";
 import IssueForm from "./IssueForm";
 
 interface TaskDetailModalProps {
@@ -26,13 +29,62 @@ export default function TaskDetailModal({
   const { profile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showIssueForm, setShowIssueForm] = useState(false);
+  const [showAssemblyWarning, setShowAssemblyWarning] = useState(false);
+  const [incompleteChildren, setIncompleteChildren] = useState<string[]>([]);
 
   const isCurrentUserTiming = task.active_time_entry?.operator_id === profile?.id;
   const canStartTiming = !task.active_time_entry && task.status !== "completed";
   const canComplete = task.status !== "completed" && !task.active_time_entry;
   const canReportIssue = isCurrentUserTiming;
 
+  const checkAssemblyDependencies = async () => {
+    if (!profile?.tenant_id) return true;
+
+    // Check if this part has children
+    const { data: children } = await supabase
+      .from("parts")
+      .select("id, part_number, status")
+      .eq("parent_part_id", task.part.id)
+      .eq("tenant_id", profile.tenant_id);
+
+    if (!children || children.length === 0) {
+      return true; // No children, proceed
+    }
+
+    const incomplete = children
+      .filter(c => c.status !== "completed")
+      .map(c => c.part_number);
+
+    if (incomplete.length > 0) {
+      setIncompleteChildren(incomplete);
+      setShowAssemblyWarning(true);
+      return false;
+    }
+
+    return true;
+  };
+
   const handleStartTiming = async () => {
+    if (!profile?.id || !profile?.tenant_id) return;
+
+    // Check assembly dependencies first
+    const canProceed = await checkAssemblyDependencies();
+    if (!canProceed) return;
+
+    setLoading(true);
+    try {
+      await startTimeTracking(task.id, profile.id, profile.tenant_id);
+      toast.success("Time tracking started");
+      onUpdate();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to start time tracking");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStartAnyway = async () => {
+    setShowAssemblyWarning(false);
     if (!profile?.id || !profile?.tenant_id) return;
 
     setLoading(true);
@@ -201,6 +253,11 @@ export default function TaskDetailModal({
             </div>
           )}
 
+          {/* Metadata */}
+          {(task as any).metadata && (
+            <MetadataDisplay metadata={(task as any).metadata} />
+          )}
+
           <Separator />
 
           {/* Action Buttons */}
@@ -266,6 +323,34 @@ export default function TaskDetailModal({
         onOpenChange={setShowIssueForm}
         onSuccess={onUpdate}
       />
+
+      <AlertDialog open={showAssemblyWarning} onOpenChange={setShowAssemblyWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-issue-high" />
+              Assembly Warning
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This is an assembly. Not all component parts are complete.
+              <div className="mt-3">
+                <div className="text-sm font-medium text-foreground mb-2">Incomplete components:</div>
+                <ul className="list-disc list-inside text-sm space-y-1">
+                  {incompleteChildren.map(part => (
+                    <li key={part}>{part}</li>
+                  ))}
+                </ul>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleStartAnyway}>
+              Start Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
