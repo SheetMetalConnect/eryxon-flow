@@ -100,13 +100,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     userData: Partial<Profile>
   ) => {
     try {
+      // Generate username from email (part before @)
+      const username = email.split('@')[0];
+      
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
-            username: userData.username,
+            username,
             full_name: userData.full_name,
             role: userData.role || "operator",
             tenant_id: userData.tenant_id,

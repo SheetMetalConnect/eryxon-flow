@@ -77,13 +77,15 @@ export default function ConfigUsers() {
 
         toast.success("User updated successfully");
       } else {
-        // Create new user
+        // Create new user - generate username from email
+        const username = formData.email.split('@')[0];
+        
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
             data: {
-              username: formData.username,
+              username,
               full_name: formData.full_name,
               role: formData.role,
               tenant_id: profile.tenant_id,
@@ -178,19 +180,6 @@ export default function ConfigUsers() {
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="username">Username *</Label>
-                  <Input
-                    id="username"
-                    value={formData.username}
-                    onChange={(e) =>
-                      setFormData({ ...formData, username: e.target.value })
-                    }
-                    required
-                    disabled={!!editingUser}
-                  />
-                </div>
-
-                <div className="space-y-2">
                   <Label htmlFor="full_name">Full Name *</Label>
                   <Input
                     id="full_name"
@@ -199,6 +188,7 @@ export default function ConfigUsers() {
                       setFormData({ ...formData, full_name: e.target.value })
                     }
                     required
+                    placeholder="John Smith"
                   />
                 </div>
 
@@ -214,7 +204,11 @@ export default function ConfigUsers() {
                           setFormData({ ...formData, email: e.target.value })
                         }
                         required
+                        placeholder="user@company.com"
                       />
+                      <p className="text-xs text-muted-foreground">
+                        Username will be auto-generated from email
+                      </p>
                     </div>
 
                     <div className="space-y-2">
@@ -227,6 +221,8 @@ export default function ConfigUsers() {
                           setFormData({ ...formData, password: e.target.value })
                         }
                         required
+                        minLength={6}
+                        placeholder="At least 6 characters"
                       />
                     </div>
                   </>
