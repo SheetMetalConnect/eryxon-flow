@@ -14,16 +14,490 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      assignments: {
+        Row: {
+          assigned_by: string
+          created_at: string | null
+          id: string
+          job_id: string | null
+          operator_id: string
+          part_id: string | null
+          status: Database["public"]["Enums"]["assignment_status"] | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_by: string
+          created_at?: string | null
+          id?: string
+          job_id?: string | null
+          operator_id: string
+          part_id?: string | null
+          status?: Database["public"]["Enums"]["assignment_status"] | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_by?: string
+          created_at?: string | null
+          id?: string
+          job_id?: string | null
+          operator_id?: string
+          part_id?: string | null
+          status?: Database["public"]["Enums"]["assignment_status"] | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_part_id_fkey"
+            columns: ["part_id"]
+            isOneToOne: false
+            referencedRelation: "parts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      issues: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          description: string
+          id: string
+          image_paths: string[] | null
+          resolution_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          severity: Database["public"]["Enums"]["issue_severity"]
+          status: Database["public"]["Enums"]["issue_status"] | null
+          task_id: string
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          description: string
+          id?: string
+          image_paths?: string[] | null
+          resolution_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity: Database["public"]["Enums"]["issue_severity"]
+          status?: Database["public"]["Enums"]["issue_status"] | null
+          task_id: string
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          description?: string
+          id?: string
+          image_paths?: string[] | null
+          resolution_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: Database["public"]["Enums"]["issue_severity"]
+          status?: Database["public"]["Enums"]["issue_status"] | null
+          task_id?: string
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issues_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issues_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issues_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          created_at: string | null
+          current_stage_id: string | null
+          customer: string | null
+          due_date: string | null
+          due_date_override: string | null
+          id: string
+          job_number: string
+          metadata: Json | null
+          notes: string | null
+          status: Database["public"]["Enums"]["job_status"] | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_stage_id?: string | null
+          customer?: string | null
+          due_date?: string | null
+          due_date_override?: string | null
+          id?: string
+          job_number: string
+          metadata?: Json | null
+          notes?: string | null
+          status?: Database["public"]["Enums"]["job_status"] | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_stage_id?: string | null
+          customer?: string | null
+          due_date?: string | null
+          due_date_override?: string | null
+          id?: string
+          job_number?: string
+          metadata?: Json | null
+          notes?: string | null
+          status?: Database["public"]["Enums"]["job_status"] | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_current_stage_id_fkey"
+            columns: ["current_stage_id"]
+            isOneToOne: false
+            referencedRelation: "stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parts: {
+        Row: {
+          created_at: string | null
+          current_stage_id: string | null
+          file_paths: string[] | null
+          id: string
+          job_id: string
+          material: string
+          metadata: Json | null
+          notes: string | null
+          parent_part_id: string | null
+          part_number: string
+          quantity: number | null
+          status: Database["public"]["Enums"]["job_status"] | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_stage_id?: string | null
+          file_paths?: string[] | null
+          id?: string
+          job_id: string
+          material: string
+          metadata?: Json | null
+          notes?: string | null
+          parent_part_id?: string | null
+          part_number: string
+          quantity?: number | null
+          status?: Database["public"]["Enums"]["job_status"] | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_stage_id?: string | null
+          file_paths?: string[] | null
+          id?: string
+          job_id?: string
+          material?: string
+          metadata?: Json | null
+          notes?: string | null
+          parent_part_id?: string | null
+          part_number?: string
+          quantity?: number | null
+          status?: Database["public"]["Enums"]["job_status"] | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parts_current_stage_id_fkey"
+            columns: ["current_stage_id"]
+            isOneToOne: false
+            referencedRelation: "stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parts_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parts_parent_part_id_fkey"
+            columns: ["parent_part_id"]
+            isOneToOne: false
+            referencedRelation: "parts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          email: string
+          full_name: string
+          id: string
+          is_machine: boolean | null
+          role: Database["public"]["Enums"]["app_role"]
+          tenant_id: string
+          updated_at: string | null
+          username: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          email: string
+          full_name: string
+          id: string
+          is_machine?: boolean | null
+          role: Database["public"]["Enums"]["app_role"]
+          tenant_id: string
+          updated_at?: string | null
+          username: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          is_machine?: boolean | null
+          role?: Database["public"]["Enums"]["app_role"]
+          tenant_id?: string
+          updated_at?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
+      stages: {
+        Row: {
+          active: boolean | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          sequence: number
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          sequence: number
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          sequence?: number
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          actual_time: number | null
+          assigned_operator_id: string | null
+          completed_at: string | null
+          completion_percentage: number | null
+          created_at: string | null
+          estimated_time: number
+          id: string
+          notes: string | null
+          part_id: string
+          sequence: number
+          stage_id: string
+          status: Database["public"]["Enums"]["task_status"] | null
+          task_name: string
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          actual_time?: number | null
+          assigned_operator_id?: string | null
+          completed_at?: string | null
+          completion_percentage?: number | null
+          created_at?: string | null
+          estimated_time: number
+          id?: string
+          notes?: string | null
+          part_id: string
+          sequence: number
+          stage_id: string
+          status?: Database["public"]["Enums"]["task_status"] | null
+          task_name: string
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          actual_time?: number | null
+          assigned_operator_id?: string | null
+          completed_at?: string | null
+          completion_percentage?: number | null
+          created_at?: string | null
+          estimated_time?: number
+          id?: string
+          notes?: string | null
+          part_id?: string
+          sequence?: number
+          stage_id?: string
+          status?: Database["public"]["Enums"]["task_status"] | null
+          task_name?: string
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_assigned_operator_id_fkey"
+            columns: ["assigned_operator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_part_id_fkey"
+            columns: ["part_id"]
+            isOneToOne: false
+            referencedRelation: "parts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      time_entries: {
+        Row: {
+          created_at: string | null
+          duration: number | null
+          end_time: string | null
+          id: string
+          notes: string | null
+          operator_id: string
+          start_time: string
+          task_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          duration?: number | null
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          operator_id: string
+          start_time?: string
+          task_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string | null
+          duration?: number | null
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          operator_id?: string
+          start_time?: string
+          task_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_entries_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entries_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: never
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      get_user_tenant_id: { Args: never; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "operator" | "admin"
+      assignment_status: "assigned" | "accepted" | "in_progress" | "completed"
+      issue_severity: "low" | "medium" | "high" | "critical"
+      issue_status: "pending" | "approved" | "rejected" | "closed"
+      job_status: "not_started" | "in_progress" | "completed" | "on_hold"
+      task_status: "not_started" | "in_progress" | "completed" | "on_hold"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +624,13 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["operator", "admin"],
+      assignment_status: ["assigned", "accepted", "in_progress", "completed"],
+      issue_severity: ["low", "medium", "high", "critical"],
+      issue_status: ["pending", "approved", "rejected", "closed"],
+      job_status: ["not_started", "in_progress", "completed", "on_hold"],
+      task_status: ["not_started", "in_progress", "completed", "on_hold"],
+    },
   },
 } as const
