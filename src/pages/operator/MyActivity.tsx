@@ -1,26 +1,25 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { format, formatDuration, intervalToDuration } from "date-fns";
-import { Clock, Loader2, Calendar } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { format, subDays } from "date-fns";
+import { Clock, CheckCircle } from "lucide-react";
 
 interface TimeEntry {
   id: string;
   start_time: string;
   end_time: string | null;
   duration: number | null;
+  notes: string | null;
   task: {
     task_name: string;
+    status: string;
     part: {
       part_number: string;
       job: {
         job_number: string;
-        customer: string | null;
       };
     };
     stage: {
@@ -30,242 +29,204 @@ interface TimeEntry {
   };
 }
 
+interface DayGroup {
+  date: string;
+  entries: TimeEntry[];
+  totalMinutes: number;
+  tasksCount: number;
+  completedCount: number;
+}
+
 export default function MyActivity() {
   const { profile } = useAuth();
-  const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
+  const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<"today" | "week" | "all">("today");
+  const [days] = useState(7);
 
   useEffect(() => {
-    if (!profile?.id) return;
-    loadTimeEntries();
-  }, [profile?.id, view]);
-
-  const loadTimeEntries = async () => {
-    if (!profile?.id) return;
-
-    setLoading(true);
-    try {
-      let query = supabase
-        .from("time_entries")
-        .select(
-          `
-          id,
-          start_time,
-          end_time,
-          duration,
-          task:tasks!inner(
-            task_name,
-            part:parts!inner(
-              part_number,
-              job:jobs!inner(job_number, customer)
-            ),
-            stage:stages!inner(name, color)
-          )
-        `
-        )
-        .eq("operator_id", profile.id)
-        .order("start_time", { ascending: false });
-
-      // Filter by date range
-      const now = new Date();
-      if (view === "today") {
-        const startOfDay = new Date(now.setHours(0, 0, 0, 0)).toISOString();
-        query = query.gte("start_time", startOfDay);
-      } else if (view === "week") {
-        const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - 7);
-        query = query.gte("start_time", startOfWeek.toISOString());
-      }
-
-      const { data, error } = await query.limit(100);
-
-      if (error) throw error;
-      if (data) setTimeEntries(data as any);
-    } catch (error) {
-      console.error("Error loading time entries:", error);
-    } finally {
-      setLoading(false);
+    if (profile?.id) {
+      loadActivity();
     }
+  }, [profile?.id, days]);
+
+  const loadActivity = async () => {
+    if (!profile?.id) return;
+
+    const startDate = subDays(new Date(), days - 1);
+
+    const { data, error } = await supabase
+      .from("time_entries")
+      .select(`
+        *,
+        task:tasks!inner(
+          task_name,
+          status,
+          part:parts!inner(
+            part_number,
+            job:jobs!inner(job_number)
+          ),
+          stage:stages!inner(name, color)
+        )
+      `)
+      .eq("operator_id", profile.id)
+      .gte("start_time", startDate.toISOString())
+      .order("start_time", { ascending: false });
+
+    if (error) {
+      console.error("Error loading activity:", error);
+    } else {
+      setEntries(data || []);
+    }
+    setLoading(false);
   };
 
-  const formatDurationMinutes = (minutes: number | null) => {
-    if (!minutes) return "0m";
-    
+  const groupByDate = (): DayGroup[] => {
+    const groups: { [key: string]: TimeEntry[] } = {};
+
+    entries.forEach((entry) => {
+      const date = format(new Date(entry.start_time), "yyyy-MM-dd");
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(entry);
+    });
+
+    return Object.entries(groups).map(([date, dayEntries]) => {
+      const totalMinutes = dayEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
+      const uniqueTasks = new Set(dayEntries.map((e) => e.task.task_name));
+      const completedTasks = dayEntries.filter((e) => e.task.status === "completed");
+
+      return {
+        date,
+        entries: dayEntries,
+        totalMinutes,
+        tasksCount: uniqueTasks.size,
+        completedCount: completedTasks.length,
+      };
+    });
+  };
+
+  const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    
     if (hours > 0) {
       return `${hours}h ${mins}m`;
     }
     return `${mins}m`;
   };
 
-  const calculateTotalTime = () => {
-    return timeEntries.reduce((total, entry) => {
-      return total + (entry.duration || 0);
-    }, 0);
-  };
+  const dayGroups = groupByDate();
 
-  const getActiveEntries = () => {
-    return timeEntries.filter((entry) => !entry.end_time);
-  };
-
-  const getCompletedEntries = () => {
-    return timeEntries.filter((entry) => entry.end_time);
-  };
+  // Calculate summary stats
+  const todayTotal = dayGroups.find((g) => g.date === format(new Date(), "yyyy-MM-dd"))?.totalMinutes || 0;
+  const weekTotal = dayGroups.reduce((sum, g) => sum + g.totalMinutes, 0);
+  const todayCompleted = dayGroups.find((g) => g.date === format(new Date(), "yyyy-MM-dd"))?.completedCount || 0;
+  const weekCompleted = dayGroups.reduce((sum, g) => sum + g.completedCount, 0);
 
   if (loading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center h-96">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
       </Layout>
     );
   }
 
-  const activeEntries = getActiveEntries();
-  const completedEntries = getCompletedEntries();
-  const totalTime = calculateTotalTime();
-
   return (
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold mb-2">My Activity</h1>
-          <p className="text-muted-foreground">Your time tracking history</p>
+          <h1 className="text-3xl font-bold">My Activity</h1>
+          <p className="text-muted-foreground">Your work history and time tracking</p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Now</CardTitle>
-              <Clock className="h-4 w-4 text-active-work" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{activeEntries.length}</div>
-              <p className="text-xs text-muted-foreground">Currently timing</p>
-            </CardContent>
+        {/* Summary Stats */}
+        <div className="grid grid-cols-4 gap-4">
+          <Card className="p-4">
+            <div className="text-sm text-muted-foreground mb-1">Today's Time</div>
+            <div className="text-2xl font-bold">{formatDuration(todayTotal)}</div>
           </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {view === "today" ? "Today" : view === "week" ? "This Week" : "All Time"}
-              </CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{completedEntries.length}</div>
-              <p className="text-xs text-muted-foreground">Completed sessions</p>
-            </CardContent>
+          <Card className="p-4">
+            <div className="text-sm text-muted-foreground mb-1">Week's Time</div>
+            <div className="text-2xl font-bold">{formatDuration(weekTotal)}</div>
           </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Time</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatDurationMinutes(totalTime)}</div>
-              <p className="text-xs text-muted-foreground">
-                {view === "today" ? "Today" : view === "week" ? "This week" : "All time"}
-              </p>
-            </CardContent>
+          <Card className="p-4">
+            <div className="text-sm text-muted-foreground mb-1">Today Completed</div>
+            <div className="text-2xl font-bold">{todayCompleted}</div>
+          </Card>
+          <Card className="p-4">
+            <div className="text-sm text-muted-foreground mb-1">Week Completed</div>
+            <div className="text-2xl font-bold">{weekCompleted}</div>
           </Card>
         </div>
 
-        {/* Time Period Selector */}
-        <Tabs value={view} onValueChange={(v) => setView(v as any)}>
-          <TabsList>
-            <TabsTrigger value="today">Today</TabsTrigger>
-            <TabsTrigger value="week">Last 7 Days</TabsTrigger>
-            <TabsTrigger value="all">All Time</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        {/* Activity List */}
+        {dayGroups.length === 0 ? (
+          <Card className="p-12 text-center">
+            <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-medium mb-2">No activity yet</h3>
+            <p className="text-sm text-muted-foreground">Start tracking time to see your activity here</p>
+          </Card>
+        ) : (
+          <div className="space-y-6">
+            {dayGroups.map((group) => (
+              <div key={group.date}>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold">{format(new Date(group.date), "EEEE, MMMM d, yyyy")}</h2>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <span>Total: {formatDuration(group.totalMinutes)}</span>
+                    <span>•</span>
+                    <span>{group.tasksCount} tasks</span>
+                    <span>•</span>
+                    <span>{group.completedCount} completed</span>
+                  </div>
+                </div>
 
-        {/* Time Entries Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Time Entries</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {timeEntries.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No time entries found for this period
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Task</TableHead>
-                    <TableHead>Job</TableHead>
-                    <TableHead>Part</TableHead>
-                    <TableHead>Stage</TableHead>
-                    <TableHead>Started</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {timeEntries.map((entry) => (
-                    <TableRow key={entry.id}>
-                      <TableCell className="font-medium">
-                        {entry.task.task_name}
-                      </TableCell>
-                      <TableCell>
-                        <div>{entry.task.part.job.job_number}</div>
-                        {entry.task.part.job.customer && (
-                          <div className="text-xs text-muted-foreground">
-                            {entry.task.part.job.customer}
+                <div className="grid gap-3">
+                  {group.entries.map((entry) => (
+                    <Card key={entry.id} className="p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge
+                              style={{
+                                backgroundColor: entry.task.stage.color || "hsl(var(--stage-default))",
+                                color: "white",
+                              }}
+                            >
+                              {entry.task.stage.name}
+                            </Badge>
+                            {entry.task.status === "completed" && (
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                            )}
                           </div>
-                        )}
-                      </TableCell>
-                      <TableCell>{entry.task.part.part_number}</TableCell>
-                      <TableCell>
-                        <Badge
-                          style={{
-                            backgroundColor:
-                              entry.task.stage.color || "hsl(var(--stage-default))",
-                            color: "white",
-                          }}
-                        >
-                          {entry.task.stage.name}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          {format(new Date(entry.start_time), "MMM d, yyyy")}
+                          <div className="font-medium mb-1">{entry.task.task_name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {entry.task.part.job.job_number} • {entry.task.part.part_number}
+                          </div>
+                          {entry.notes && (
+                            <div className="text-sm text-muted-foreground mt-2 italic">{entry.notes}</div>
+                          )}
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          {format(new Date(entry.start_time), "h:mm a")}
+                        <div className="text-right shrink-0">
+                          <div className="text-sm font-medium flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {entry.duration ? formatDuration(entry.duration) : "In progress"}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {format(new Date(entry.start_time), "h:mm a")}
+                            {entry.end_time && ` - ${format(new Date(entry.end_time), "h:mm a")}`}
+                          </div>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        {entry.duration ? (
-                          formatDurationMinutes(entry.duration)
-                        ) : (
-                          <Badge variant="outline" className="text-active-work border-active-work">
-                            Active
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {entry.end_time ? (
-                          <Badge variant="secondary">Completed</Badge>
-                        ) : (
-                          <Badge className="bg-active-work">In Progress</Badge>
-                        )}
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                    </Card>
                   ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </Layout>
   );

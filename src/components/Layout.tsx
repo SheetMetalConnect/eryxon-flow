@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, LayoutDashboard, ListChecks, Settings, Users, Clock } from "lucide-react";
+import { LogOut, LayoutDashboard, ListChecks, Settings, Clock, AlertCircle } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 interface LayoutProps {
@@ -38,9 +38,9 @@ export default function Layout({ children }: LayoutProps) {
                         Dashboard
                       </Button>
                     </Link>
-                    <Link to="/queue">
+                    <Link to="/work-queue">
                       <Button
-                        variant={isActive("/queue") ? "default" : "ghost"}
+                        variant={isActive("/work-queue") ? "default" : "ghost"}
                         size="sm"
                         className="gap-2"
                       >
@@ -48,10 +48,20 @@ export default function Layout({ children }: LayoutProps) {
                         Work Queue
                       </Button>
                     </Link>
-                    <Link to="/config/stages">
+                    <Link to="/admin/issues">
+                      <Button
+                        variant={isActive("/admin/issues") ? "default" : "ghost"}
+                        size="sm"
+                        className="gap-2"
+                      >
+                        <AlertCircle className="h-4 w-4" />
+                        Issues
+                      </Button>
+                    </Link>
+                    <Link to="/admin/stages">
                       <Button
                         variant={
-                          isActive("/config/stages") || isActive("/config/users")
+                          isActive("/admin/stages") || isActive("/admin/users")
                             ? "default"
                             : "ghost"
                         }
@@ -65,9 +75,9 @@ export default function Layout({ children }: LayoutProps) {
                   </>
                 ) : (
                   <>
-                    <Link to="/queue">
+                    <Link to="/work-queue">
                       <Button
-                        variant={isActive("/queue") ? "default" : "ghost"}
+                        variant={isActive("/work-queue") ? "default" : "ghost"}
                         size="sm"
                         className="gap-2"
                       >
@@ -83,6 +93,16 @@ export default function Layout({ children }: LayoutProps) {
                       >
                         <Clock className="h-4 w-4" />
                         My Activity
+                      </Button>
+                    </Link>
+                    <Link to="/my-issues">
+                      <Button
+                        variant={isActive("/my-issues") ? "default" : "ghost"}
+                        size="sm"
+                        className="gap-2"
+                      >
+                        <AlertCircle className="h-4 w-4" />
+                        My Issues
                       </Button>
                     </Link>
                   </>

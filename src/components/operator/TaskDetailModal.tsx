@@ -5,9 +5,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Clock, Play, Square, CheckCircle, Package, AlertCircle } from "lucide-react";
+import { Clock, Play, Square, CheckCircle, Package, AlertCircle, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import IssueForm from "./IssueForm";
 
 interface TaskDetailModalProps {
   task: TaskWithDetails;
@@ -24,10 +25,12 @@ export default function TaskDetailModal({
 }: TaskDetailModalProps) {
   const { profile } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [showIssueForm, setShowIssueForm] = useState(false);
 
   const isCurrentUserTiming = task.active_time_entry?.operator_id === profile?.id;
   const canStartTiming = !task.active_time_entry && task.status !== "completed";
   const canComplete = task.status !== "completed" && !task.active_time_entry;
+  const canReportIssue = isCurrentUserTiming;
 
   const handleStartTiming = async () => {
     if (!profile?.id || !profile?.tenant_id) return;
@@ -201,7 +204,20 @@ export default function TaskDetailModal({
           <Separator />
 
           {/* Action Buttons */}
-          <div className="flex gap-3">
+          <div className="space-y-3">
+            {canReportIssue && (
+              <Button
+                onClick={() => setShowIssueForm(true)}
+                variant="outline"
+                size="lg"
+                className="w-full h-12 text-base gap-2 border-orange-500 text-orange-600 hover:bg-orange-50"
+              >
+                <AlertTriangle className="h-5 w-5" />
+                Report Issue
+              </Button>
+            )}
+            
+            <div className="flex gap-3">
             {canStartTiming && (
               <Button
                 onClick={handleStartTiming}
@@ -239,9 +255,17 @@ export default function TaskDetailModal({
                 Mark Complete
               </Button>
             )}
+            </div>
           </div>
         </div>
       </DialogContent>
+      
+      <IssueForm
+        taskId={task.id}
+        open={showIssueForm}
+        onOpenChange={setShowIssueForm}
+        onSuccess={onUpdate}
+      />
     </Dialog>
   );
 }

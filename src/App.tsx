@@ -7,9 +7,11 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Auth from "./pages/Auth";
 import WorkQueue from "./pages/operator/WorkQueue";
 import MyActivity from "./pages/operator/MyActivity";
+import MyIssues from "./pages/operator/MyIssues";
 import Dashboard from "./pages/admin/Dashboard";
 import ConfigStages from "./pages/admin/ConfigStages";
 import ConfigUsers from "./pages/admin/ConfigUsers";
+import IssueQueue from "./pages/admin/IssueQueue";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -31,7 +33,7 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
   }
 
   if (adminOnly && profile.role !== "admin") {
-    return <Navigate to="/queue" replace />;
+    return <Navigate to="/work-queue" replace />;
   }
 
   return <>{children}</>;
@@ -56,14 +58,14 @@ function AppRoutes() {
         path="/"
         element={
           <Navigate
-            to={profile?.role === "admin" ? "/dashboard" : "/queue"}
+            to={profile?.role === "admin" ? "/dashboard" : "/work-queue"}
             replace
           />
         }
       />
 
       <Route
-        path="/queue"
+        path="/work-queue"
         element={
           <ProtectedRoute>
             <WorkQueue />
@@ -81,6 +83,15 @@ function AppRoutes() {
       />
 
       <Route
+        path="/my-issues"
+        element={
+          <ProtectedRoute>
+            <MyIssues />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/dashboard"
         element={
           <ProtectedRoute adminOnly>
@@ -90,7 +101,7 @@ function AppRoutes() {
       />
 
       <Route
-        path="/config/stages"
+        path="/admin/stages"
         element={
           <ProtectedRoute adminOnly>
             <ConfigStages />
@@ -99,10 +110,19 @@ function AppRoutes() {
       />
 
       <Route
-        path="/config/users"
+        path="/admin/users"
         element={
           <ProtectedRoute adminOnly>
             <ConfigUsers />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/issues"
+        element={
+          <ProtectedRoute adminOnly>
+            <IssueQueue />
           </ProtectedRoute>
         }
       />
