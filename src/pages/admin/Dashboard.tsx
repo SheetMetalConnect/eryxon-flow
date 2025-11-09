@@ -7,6 +7,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Users, Activity, Clock, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { seedDemoData } from "@/lib/seed";
 
 interface ActiveWork {
   id: string;
@@ -39,6 +42,9 @@ export default function Dashboard() {
     dueThisWeek: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [needsSetup, setNeedsSetup] = useState(false);
+  const [seeding, setSeeding] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!profile?.tenant_id) return;
@@ -75,8 +81,8 @@ export default function Dashboard() {
 
       if (activeData) setActiveWork(activeData as any);
 
-      // Load stats
-      const [inProgressResult, dueThisWeekResult] = await Promise.all([
+      // Load stats + check stages
+      const [inProgressResult, dueThisWeekResult, stagesHead] = await Promise.all([
         supabase
           .from("tasks")
           .select("id", { count: "exact", head: true })
@@ -91,6 +97,11 @@ export default function Dashboard() {
             "due_date",
             new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
           ),
+        supabase
+          .from("stages")
+          .select("id", { count: "exact", head: true })
+          .eq("tenant_id", profile.tenant_id)
+          .eq("active", true),
       ]);
 
       setStats({
@@ -98,6 +109,8 @@ export default function Dashboard() {
         inProgressTasks: inProgressResult.count || 0,
         dueThisWeek: dueThisWeekResult.count || 0,
       });
+
+      setNeedsSetup((stagesHead.count || 0) === 0);
     } catch (error) {
       console.error("Error loading dashboard data:", error);
     } finally {
@@ -139,6 +152,21 @@ export default function Dashboard() {
     );
   }
 
+  const handleSeed = async () => {
+    if (!profile?.tenant_id) return;
+    setSeeding(true);
+    try {
+      await seedDemoData(profile.tenant_id);
+      await loadData();
+      setNeedsSetup(false);
+      toast({ title: "Demo data added", description: "Stages, jobs, parts and tasks were created." });
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Seeding failed", description: e?.message || String(e) });
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -146,6 +174,24 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
           <p className="text-muted-foreground">Real-time activity and statistics</p>
         </div>
+
+        {needsSetup && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Initial setup</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-muted-foreground">
+                  No stages found for this tenant. Seed demo data to start testing the board.
+                </p>
+                <Button onClick={handleSeed} disabled={seeding}>
+                  {seeding ? "Seeding…" : "Seed demo data"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-3">
@@ -225,7 +271,7 @@ export default function Dashboard() {
                         <Badge
                           style={{
                             backgroundColor:
-                              work.task.stage.color || "hsl(var(--stage-default))",
+                              work.task.stage.color || "hsl(var(--accent))",
                             color: "white",
                           }}
                         >
