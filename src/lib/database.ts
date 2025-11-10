@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { triggerTaskStartedWebhook, triggerTaskCompletedWebhook } from "./webhooks";
 
 export interface TaskWithDetails {
   id: string;
@@ -99,31 +100,86 @@ export async function startTimeTracking(
   operatorId: string,
   tenantId: string
 ) {
-  // Get task details including stage_id
+  // Check for existing active time entries for this operator
+  const { data: activeEntries } = await supabase
+    .from("time_entries")
+    .select("id, task_id, tasks(task_name)")
+    .eq("operator_id", operatorId)
+    .eq("tenant_id", tenantId)
+    .is("end_time", null);
+
+  if (activeEntries && activeEntries.length > 0) {
+    const activeTask: any = activeEntries[0];
+    throw new Error(
+      `Please stop timing on "${activeTask.tasks?.task_name || 'current task'}" before starting a new task`
+    );
+  }
+
+  // Get task details including related data for webhook
   const { data: task } = await supabase
     .from("tasks")
-    .select("status, part_id, stage_id")
+    .select(`
+      status,
+      part_id,
+      stage_id,
+      task_name,
+      part:parts!inner(
+        id,
+        part_number,
+        job:jobs!inner(
+          id,
+          job_number
+        )
+      )
+    `)
     .eq("id", taskId)
     .single();
 
   if (!task) throw new Error("Task not found");
+
+  // Get operator details for webhook
+  const { data: operator } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", operatorId)
+    .single();
+
+  const startedAt = new Date().toISOString();
+  const isNewStart = task.status === "not_started";
 
   // Create time entry
   const { error: timeError } = await supabase.from("time_entries").insert({
     task_id: taskId,
     operator_id: operatorId,
     tenant_id: tenantId,
-    start_time: new Date().toISOString(),
+    start_time: startedAt,
   });
 
   if (timeError) throw timeError;
 
   // Update task status if not started
-  if (task.status === "not_started") {
+  if (isNewStart) {
     await supabase
       .from("tasks")
       .update({ status: "in_progress" })
       .eq("id", taskId);
+
+    // Trigger webhook for task started
+    const taskData: any = task;
+    triggerTaskStartedWebhook(tenantId, {
+      task_id: taskId,
+      task_name: taskData.task_name,
+      part_id: taskData.part_id,
+      part_number: taskData.part.part_number,
+      job_id: taskData.part.job.id,
+      job_number: taskData.part.job.job_number,
+      operator_id: operatorId,
+      operator_name: operator?.full_name || 'Unknown',
+      started_at: startedAt,
+    }).catch(error => {
+      console.error('Failed to trigger task.started webhook:', error);
+      // Don't fail the operation if webhook fails
+    });
   }
 
   // Get part details
@@ -235,11 +291,11 @@ export async function stopTimeTracking(taskId: string, operatorId: string) {
   }
 }
 
-export async function completeTask(taskId: string, tenantId: string) {
+export async function completeTask(taskId: string, tenantId: string, operatorId?: string) {
   // Check for active time entries
   const { data: activeEntry } = await supabase
     .from("time_entries")
-    .select("id")
+    .select("id, operator_id")
     .eq("task_id", taskId)
     .is("end_time", null)
     .maybeSingle();
@@ -248,24 +304,71 @@ export async function completeTask(taskId: string, tenantId: string) {
     throw new Error("Please stop time tracking before completing the task");
   }
 
-  // Get task details
+  // Get task details including related data for webhook
   const { data: task } = await supabase
     .from("tasks")
-    .select("part_id")
+    .select(`
+      part_id,
+      task_name,
+      estimated_time,
+      actual_time,
+      assigned_operator_id,
+      part:parts!inner(
+        id,
+        part_number,
+        job:jobs!inner(
+          id,
+          job_number
+        )
+      )
+    `)
     .eq("id", taskId)
     .single();
 
   if (!task) throw new Error("Task not found");
+
+  const completedAt = new Date().toISOString();
+  const effectiveOperatorId = operatorId || task.assigned_operator_id;
+
+  // Get operator details for webhook
+  let operatorName = 'Unknown';
+  if (effectiveOperatorId) {
+    const { data: operator } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", effectiveOperatorId)
+      .single();
+    operatorName = operator?.full_name || 'Unknown';
+  }
 
   // Update task
   await supabase
     .from("tasks")
     .update({
       status: "completed",
-      completed_at: new Date().toISOString(),
+      completed_at: completedAt,
       completion_percentage: 100,
     })
     .eq("id", taskId);
+
+  // Trigger webhook for task completed
+  const taskData: any = task;
+  triggerTaskCompletedWebhook(tenantId, {
+    task_id: taskId,
+    task_name: taskData.task_name,
+    part_id: taskData.part_id,
+    part_number: taskData.part.part_number,
+    job_id: taskData.part.job.id,
+    job_number: taskData.part.job.job_number,
+    operator_id: effectiveOperatorId || '',
+    operator_name: operatorName,
+    completed_at: completedAt,
+    actual_time: taskData.actual_time || 0,
+    estimated_time: taskData.estimated_time || 0,
+  }).catch(error => {
+    console.error('Failed to trigger task.completed webhook:', error);
+    // Don't fail the operation if webhook fails
+  });
 
   // Check if all tasks in part are completed
   const { data: partTasks } = await supabase

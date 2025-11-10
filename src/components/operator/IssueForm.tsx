@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Upload } from "lucide-react";
+import { triggerIssueCreatedWebhook } from "@/lib/webhooks";
 
 interface IssueFormProps {
   taskId: string;
@@ -47,7 +48,25 @@ export default function IssueForm({ taskId, open, onOpenChange, onSuccess }: Iss
         }
       }
 
+      // Get task and part details for webhook
+      const { data: taskData } = await supabase
+        .from("tasks")
+        .select(`
+          task_name,
+          part:parts!inner(
+            id,
+            part_number,
+            job:jobs!inner(
+              id,
+              job_number
+            )
+          )
+        `)
+        .eq("id", taskId)
+        .single();
+
       // Create issue
+      const createdAt = new Date().toISOString();
       const { error } = await supabase.from("issues").insert({
         id: issueId,
         tenant_id: profile.tenant_id,
@@ -59,6 +78,28 @@ export default function IssueForm({ taskId, open, onOpenChange, onSuccess }: Iss
       });
 
       if (error) throw error;
+
+      // Trigger webhook for issue created
+      if (taskData) {
+        const task: any = taskData;
+        triggerIssueCreatedWebhook(profile.tenant_id, {
+          issue_id: issueId,
+          task_id: taskId,
+          task_name: task.task_name,
+          part_id: task.part.id,
+          part_number: task.part.part_number,
+          job_id: task.part.job.id,
+          job_number: task.part.job.job_number,
+          created_by: profile.id,
+          operator_name: profile.full_name || 'Unknown',
+          severity,
+          description: description.trim(),
+          created_at: createdAt,
+        }).catch(error => {
+          console.error('Failed to trigger issue.created webhook:', error);
+          // Don't fail the operation if webhook fails
+        });
+      }
 
       toast.success("Issue reported successfully");
       setDescription("");

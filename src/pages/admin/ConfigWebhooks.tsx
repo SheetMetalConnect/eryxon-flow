@@ -8,10 +8,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, Trash2, Eye } from "lucide-react";
+import { Plus, Trash2, Eye, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 
 const AVAILABLE_EVENTS = [
@@ -24,14 +25,18 @@ export default function ConfigWebhooks() {
   const { profile } = useAuth();
   const { toast } = useToast();
   const [webhooks, setWebhooks] = useState<any[]>([]);
+  const [webhookLogs, setWebhookLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [logsLoading, setLogsLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
+  const [selectedWebhookFilter, setSelectedWebhookFilter] = useState<string>("all");
 
   useEffect(() => {
     if (profile?.tenant_id) {
       fetchWebhooks();
+      fetchWebhookLogs();
     }
   }, [profile?.tenant_id]);
 
@@ -53,6 +58,60 @@ export default function ConfigWebhooks() {
       setWebhooks(data || []);
     }
     setLoading(false);
+  };
+
+  const fetchWebhookLogs = async () => {
+    setLogsLoading(true);
+
+    // First get all webhook IDs for this tenant
+    const { data: tenantWebhooks } = await supabase
+      .from('webhooks')
+      .select('id')
+      .eq('tenant_id', profile?.tenant_id);
+
+    if (!tenantWebhooks || tenantWebhooks.length === 0) {
+      setWebhookLogs([]);
+      setLogsLoading(false);
+      return;
+    }
+
+    const webhookIds = tenantWebhooks.map(w => w.id);
+
+    // Then get logs for those webhooks
+    let query = supabase
+      .from('webhook_logs')
+      .select(`
+        id,
+        webhook_id,
+        event_type,
+        payload,
+        status_code,
+        error_message,
+        created_at,
+        webhook:webhooks(url)
+      `)
+      .in('webhook_id', webhookIds)
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    // Apply filter if not "all"
+    if (selectedWebhookFilter !== "all") {
+      query = query.eq('webhook_id', selectedWebhookFilter);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Error fetching webhook logs:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch webhook logs",
+        variant: "destructive",
+      });
+    } else {
+      setWebhookLogs(data || []);
+    }
+    setLogsLoading(false);
   };
 
   const generateSecretKey = () => {
@@ -156,7 +215,12 @@ export default function ConfigWebhooks() {
             <h1 className="text-3xl font-bold">Webhooks</h1>
             <p className="text-muted-foreground">Configure outbound webhook notifications</p>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={fetchWebhookLogs}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh Logs
+            </Button>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
@@ -209,8 +273,17 @@ export default function ConfigWebhooks() {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
+        <Tabs defaultValue="webhooks" className="w-full">
+          <TabsList>
+            <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
+            <TabsTrigger value="logs">Delivery Logs</TabsTrigger>
+            <TabsTrigger value="docs">Documentation</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="webhooks" className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Configured Webhooks</CardTitle>
@@ -309,6 +382,173 @@ export default function ConfigWebhooks() {
             </p>
           </CardContent>
         </Card>
+          </TabsContent>
+
+          <TabsContent value="logs" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Webhook Delivery Logs</CardTitle>
+                    <CardDescription>Recent webhook delivery attempts (last 100)</CardDescription>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <Label className="text-sm text-muted-foreground">Filter:</Label>
+                    <select
+                      value={selectedWebhookFilter}
+                      onChange={(e) => {
+                        setSelectedWebhookFilter(e.target.value);
+                        fetchWebhookLogs();
+                      }}
+                      className="border rounded px-3 py-1.5 text-sm"
+                    >
+                      <option value="all">All Webhooks</option>
+                      {webhooks.map((wh) => (
+                        <option key={wh.id} value={wh.id}>
+                          {wh.url}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {logsLoading ? (
+                  <div className="text-center py-8">Loading logs...</div>
+                ) : webhookLogs.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No webhook deliveries yet
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {webhookLogs.map((log: any) => (
+                      <div
+                        key={log.id}
+                        className="border rounded-lg p-4 space-y-2"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline">{log.event_type}</Badge>
+                              {log.status_code ? (
+                                <Badge
+                                  variant={
+                                    log.status_code >= 200 && log.status_code < 300
+                                      ? "default"
+                                      : "destructive"
+                                  }
+                                >
+                                  {log.status_code}
+                                </Badge>
+                              ) : (
+                                <Badge variant="destructive">Failed</Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {log.webhook?.url || 'Unknown webhook'}
+                            </p>
+                            {log.error_message && (
+                              <p className="text-sm text-destructive mt-1">
+                                {log.error_message}
+                              </p>
+                            )}
+                          </div>
+                          <div className="text-right text-sm text-muted-foreground">
+                            {format(new Date(log.created_at), 'MMM d, HH:mm:ss')}
+                          </div>
+                        </div>
+                        <details className="text-sm">
+                          <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                            View payload
+                          </summary>
+                          <pre className="mt-2 bg-muted p-3 rounded text-xs overflow-x-auto">
+                            {JSON.stringify(log.payload, null, 2)}
+                          </pre>
+                        </details>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="docs" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Webhook Documentation</CardTitle>
+                <CardDescription>How to set up and verify webhooks</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <h3 className="font-semibold mb-2">Available Events</h3>
+                  <ul className="space-y-2 text-sm">
+                    <li><code className="bg-muted px-2 py-1 rounded">job.created</code> - Triggered when a job is created via API</li>
+                    <li><code className="bg-muted px-2 py-1 rounded">task.started</code> - Triggered when an operator starts a task</li>
+                    <li><code className="bg-muted px-2 py-1 rounded">task.completed</code> - Triggered when a task is marked complete</li>
+                    <li><code className="bg-muted px-2 py-1 rounded">issue.created</code> - Triggered when a quality issue is reported</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-2">Signature Verification</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    All webhook requests include an X-Eryxon-Signature header with HMAC-SHA256 signature.
+                    Verify the signature to ensure the request came from Eryxon Flow:
+                  </p>
+                  <pre className="text-xs bg-muted p-4 rounded overflow-x-auto">
+{`// Node.js example
+const crypto = require('crypto');
+
+function verifyWebhook(payload, signature, secret) {
+  const expectedSignature = 'sha256=' + crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
+  );
+}
+
+// In your webhook handler
+app.post('/webhooks/eryxon', (req, res) => {
+  const signature = req.headers['x-eryxon-signature'];
+  const payload = JSON.stringify(req.body);
+  const secret = 'your_webhook_secret';
+
+  if (!verifyWebhook(payload, signature, secret)) {
+    return res.status(401).send('Invalid signature');
+  }
+
+  // Process webhook...
+  res.status(200).send('OK');
+});`}
+                  </pre>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-2">Best Practices</h3>
+                  <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                    <li>Always verify the signature before processing webhooks</li>
+                    <li>Respond with 200 status code quickly (within 10 seconds)</li>
+                    <li>Use HTTPS endpoints only</li>
+                    <li>Implement retry logic for processing failures</li>
+                    <li>Log webhook payloads for debugging</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-2">Testing Webhooks</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Use tools like <a href="https://webhook.site" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">webhook.site</a> or <a href="https://requestbin.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">requestbin.com</a> to test and inspect webhook payloads during development.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );

@@ -37,13 +37,11 @@ async function authenticateApiKey(authHeader: string | null, supabase: any) {
   }
 
   const apiKey = authHeader.substring(7);
-  
+
   if (!apiKey.startsWith('ery_live_') && !apiKey.startsWith('ery_test_')) {
     return null;
   }
 
-  const keyHash = await bcrypt.hash(apiKey, await bcrypt.genSalt(10));
-  
   const { data: keys } = await supabase
     .from('api_keys')
     .select('id, tenant_id')
@@ -83,7 +81,7 @@ serve(async (req) => {
 
   try {
     const tenantId = await authenticateApiKey(req.headers.get('authorization'), supabase);
-    
+
     if (!tenantId) {
       return new Response(
         JSON.stringify({
@@ -94,6 +92,148 @@ serve(async (req) => {
       );
     }
 
+    // Handle GET requests - list jobs with filtering
+    if (req.method === 'GET') {
+      const url = new URL(req.url);
+      const status = url.searchParams.get('status');
+      const customer = url.searchParams.get('customer');
+      const jobNumber = url.searchParams.get('job_number');
+
+      // Cap pagination limit to prevent abuse
+      let limit = parseInt(url.searchParams.get('limit') || '100');
+      if (limit < 1) limit = 100;
+      if (limit > 1000) limit = 1000;
+
+      const offset = parseInt(url.searchParams.get('offset') || '0');
+
+      let query = supabase
+        .from('jobs')
+        .select(`
+          id,
+          job_number,
+          customer,
+          due_date,
+          due_date_override,
+          status,
+          notes,
+          metadata,
+          created_at,
+          updated_at,
+          parts (
+            id,
+            part_number,
+            material,
+            quantity,
+            status,
+            file_paths,
+            notes,
+            metadata
+          )
+        `)
+        .eq('tenant_id', tenantId)
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (status) {
+        query = query.eq('status', status);
+      }
+      if (customer) {
+        query = query.ilike('customer', `%${customer}%`);
+      }
+      if (jobNumber) {
+        query = query.ilike('job_number', `%${jobNumber}%`);
+      }
+
+      const { data: jobs, error, count } = await query;
+
+      if (error) {
+        throw new Error(`Failed to fetch jobs: ${error.message}`);
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          data: {
+            jobs: jobs || [],
+            pagination: {
+              limit,
+              offset,
+              total: count || jobs?.length || 0
+            }
+          }
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Handle PATCH requests - update job
+    if (req.method === 'PATCH') {
+      const url = new URL(req.url);
+      const jobId = url.searchParams.get('id');
+
+      if (!jobId) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: { code: 'VALIDATION_ERROR', message: 'Job ID is required in query string (?id=xxx)' }
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const body = await req.json();
+      const allowedFields = ['status', 'customer', 'due_date', 'due_date_override', 'notes', 'metadata'];
+      const updates: any = {};
+
+      for (const field of allowedFields) {
+        if (body[field] !== undefined) {
+          updates[field] = body[field];
+        }
+      }
+
+      if (Object.keys(updates).length === 0) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: { code: 'VALIDATION_ERROR', message: 'No valid fields to update' }
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      updates.updated_at = new Date().toISOString();
+
+      const { data: job, error } = await supabase
+        .from('jobs')
+        .update(updates)
+        .eq('id', jobId)
+        .eq('tenant_id', tenantId)
+        .select()
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: { code: 'NOT_FOUND', message: 'Job not found' }
+            }),
+            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        throw new Error(`Failed to update job: ${error.message}`);
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          data: { job }
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Handle POST requests - create job
     const body: JobRequest = await req.json();
 
     // Validate required fields
@@ -241,6 +381,32 @@ serve(async (req) => {
       throw new Error(`Failed to create tasks: ${tasksError?.message}`);
     }
 
+    // Trigger webhook for job created
+    try {
+      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/webhook-dispatch`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+        },
+        body: JSON.stringify({
+          tenant_id: tenantId,
+          event_type: 'job.created',
+          data: {
+            job_id: job.id,
+            job_number: job.job_number,
+            customer: job.customer || '',
+            parts_count: createdParts.length,
+            tasks_count: createdTasks?.length || 0,
+            created_at: job.created_at,
+          },
+        }),
+      });
+    } catch (webhookError) {
+      console.error('Failed to trigger job.created webhook:', webhookError);
+      // Don't fail the job creation if webhook fails
+    }
+
     // Build response
     const response = {
       success: true,
@@ -264,6 +430,18 @@ serve(async (req) => {
     );
 
   } catch (error) {
+    // Check if this is a PATCH request error that needs to be handled
+    if (req.method === 'PATCH') {
+      console.error('Error in PATCH api-jobs:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: { code: 'INTERNAL_ERROR', message }
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     console.error('Error in api-jobs:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
