@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Key, Copy, Trash2, Plus } from "lucide-react";
+import { Key, Copy, Trash2, Plus, BookOpen, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 
 export default function ConfigApiKeys() {
@@ -202,11 +202,38 @@ export default function ConfigApiKeys() {
           </Dialog>
         </div>
 
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5" />
+              Getting Started with the API
+            </CardTitle>
+            <CardDescription>
+              Interactive documentation, code examples, and testing tools
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-sm">
+                Explore our comprehensive API documentation with interactive testing tools,
+                beginner-friendly guides, and ready-to-use code examples in multiple programming languages.
+              </p>
+              <Button asChild className="w-full sm:w-auto">
+                <a href="/api-docs" className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  Open Interactive API Documentation
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Active API Keys</CardTitle>
             <CardDescription>
-              API keys allow external systems to create jobs and upload files
+              API keys allow external systems to create jobs, upload files, and track production progress
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -267,114 +294,76 @@ export default function ConfigApiKeys() {
 
         <Card>
           <CardHeader>
-            <CardTitle>API Endpoints</CardTitle>
+            <CardTitle>Quick Reference</CardTitle>
             <CardDescription>
-              Available endpoints for your API key.
-              <a href="/API_DOCUMENTATION.md" className="text-primary hover:underline ml-2">
-                View full documentation
+              Quick overview of available endpoints.
+              <a href="/api-docs" className="text-primary hover:underline ml-2 inline-flex items-center gap-1">
+                View full interactive documentation
+                <ExternalLink className="h-3 w-3" />
               </a>
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold mb-3">Jobs</h3>
-                <div className="space-y-3">
-                  <div>
-                    <code className="text-sm bg-muted p-2 rounded block">
-                      POST /api-jobs
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-3 border rounded-lg space-y-2">
+                  <h3 className="font-semibold text-sm flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-blue-500"></span>
+                    Jobs Management
+                  </h3>
+                  <p className="text-xs text-muted-foreground">Create, list, and update jobs with parts and tasks</p>
+                </div>
+                <div className="p-3 border rounded-lg space-y-2">
+                  <h3 className="font-semibold text-sm flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                    Parts & Tasks
+                  </h3>
+                  <p className="text-xs text-muted-foreground">Track individual parts and task progress</p>
+                </div>
+                <div className="p-3 border rounded-lg space-y-2">
+                  <h3 className="font-semibold text-sm flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-purple-500"></span>
+                    File Uploads
+                  </h3>
+                  <p className="text-xs text-muted-foreground">Upload CAD files, drawings, and images securely</p>
+                </div>
+                <div className="p-3 border rounded-lg space-y-2">
+                  <h3 className="font-semibold text-sm flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-orange-500"></span>
+                    Reference Data
+                  </h3>
+                  <p className="text-xs text-muted-foreground">Query stages, materials, and system data</p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t space-y-2">
+                <div className="flex items-start gap-2">
+                  <Key className="h-4 w-4 text-muted-foreground mt-0.5" />
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm font-medium">Authentication</p>
+                    <code className="text-xs bg-muted px-2 py-1 rounded block">
+                      Authorization: Bearer ery_live_your_api_key
                     </code>
-                    <p className="text-sm text-muted-foreground mt-1">Create job with parts and tasks</p>
                   </div>
-                  <div>
-                    <code className="text-sm bg-muted p-2 rounded block">
-                      GET /api-jobs?status=in_progress&customer=Acme
+                </div>
+                <div className="flex items-start gap-2">
+                  <ExternalLink className="h-4 w-4 text-muted-foreground mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Base URL</p>
+                    <code className="text-xs bg-muted px-2 py-1 rounded block break-all">
+                      https://vatgianzotsurljznsry.supabase.co/functions/v1
                     </code>
-                    <p className="text-sm text-muted-foreground mt-1">List and filter jobs</p>
-                  </div>
-                  <div>
-                    <code className="text-sm bg-muted p-2 rounded block">
-                      PATCH /api-jobs?id=uuid
-                    </code>
-                    <p className="text-sm text-muted-foreground mt-1">Update job fields</p>
                   </div>
                 </div>
               </div>
 
-              <div>
-                <h3 className="font-semibold mb-3">Parts</h3>
-                <div className="space-y-3">
-                  <div>
-                    <code className="text-sm bg-muted p-2 rounded block">
-                      GET /api-parts?job_id=uuid&material=Steel
-                    </code>
-                    <p className="text-sm text-muted-foreground mt-1">List and filter parts</p>
-                  </div>
-                  <div>
-                    <code className="text-sm bg-muted p-2 rounded block">
-                      PATCH /api-parts?id=uuid
-                    </code>
-                    <p className="text-sm text-muted-foreground mt-1">Update part fields</p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-3">Tasks</h3>
-                <div className="space-y-3">
-                  <div>
-                    <code className="text-sm bg-muted p-2 rounded block">
-                      GET /api-tasks?status=in_progress&stage_name=Cutting
-                    </code>
-                    <p className="text-sm text-muted-foreground mt-1">List and filter tasks</p>
-                  </div>
-                  <div>
-                    <code className="text-sm bg-muted p-2 rounded block">
-                      PATCH /api-tasks?id=uuid
-                    </code>
-                    <p className="text-sm text-muted-foreground mt-1">Update task status and progress</p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-3">Reference Data</h3>
-                <div className="space-y-3">
-                  <div>
-                    <code className="text-sm bg-muted p-2 rounded block">
-                      GET /api-stages?active=true
-                    </code>
-                    <p className="text-sm text-muted-foreground mt-1">List available production stages</p>
-                  </div>
-                  <div>
-                    <code className="text-sm bg-muted p-2 rounded block">
-                      GET /api-materials
-                    </code>
-                    <p className="text-sm text-muted-foreground mt-1">List materials in use</p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-3">File Uploads</h3>
-                <div className="space-y-3">
-                  <div>
-                    <code className="text-sm bg-muted p-2 rounded block">
-                      POST /api-upload-url
-                    </code>
-                    <p className="text-sm text-muted-foreground mt-1">Request signed URL for file uploads</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t">
-                <p className="text-sm">
-                  <strong>Base URL:</strong> https://vatgianzotsurljznsry.supabase.co/functions/v1
-                </p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  All requests require: <code className="bg-muted px-1 rounded">Authorization: Bearer YOUR_API_KEY</code>
-                </p>
-              </div>
+              <Button asChild variant="outline" className="w-full">
+                <a href="/api-docs" className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  Explore Full API Documentation & Try It Out
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </Button>
             </div>
           </CardContent>
         </Card>

@@ -15,6 +15,7 @@ import ConfigUsers from "./pages/admin/ConfigUsers";
 import Assignments from "./pages/admin/Assignments";
 import ConfigApiKeys from "./pages/admin/ConfigApiKeys";
 import ConfigWebhooks from "./pages/admin/ConfigWebhooks";
+import ApiDocs from "./pages/ApiDocs";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -153,6 +154,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <ConfigWebhooks />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/api-docs"
+        element={
+          <ProtectedRoute>
+            <ApiDocs />
           </ProtectedRoute>
         }
       />

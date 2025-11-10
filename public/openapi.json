@@ -1,0 +1,1208 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Eryxon Flow API",
+    "description": "Production workflow management API for sheet metal manufacturing. This API allows you to manage jobs, parts, tasks, and track production progress through various stages.\n\n## Authentication\n\nAll API requests require an API key. Include your API key in the `Authorization` header:\n\n```\nAuthorization: Bearer ery_live_your_api_key_here\n```\n\n## Getting Started\n\n1. **Generate an API Key**: Navigate to Admin > API Keys in the web interface\n2. **Test the Connection**: Use the `/api-stages` endpoint (read-only) to verify your key works\n3. **Create Your First Job**: Use POST `/api-jobs` to create a job with parts and tasks\n4. **Track Progress**: Use GET endpoints to retrieve and monitor job status\n\n## Rate Limiting\n\nAPI requests are rate-limited to prevent abuse. Rate limit information is included in response headers:\n- `X-RateLimit-Limit`: Maximum requests allowed\n- `X-RateLimit-Remaining`: Remaining requests in current window\n- `X-RateLimit-Reset`: Timestamp when the limit resets\n\n## Base URL\n\n```\nhttps://vatgianzotsurljznsry.supabase.co/functions/v1\n```",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support",
+      "url": "https://github.com/yourusername/eryxon-flow"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://vatgianzotsurljznsry.supabase.co/functions/v1",
+      "description": "Production Server"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Jobs",
+      "description": "Manage production jobs. Jobs contain multiple parts and track overall progress."
+    },
+    {
+      "name": "Parts",
+      "description": "Manage individual parts within jobs. Each part has its own material, quantity, and files."
+    },
+    {
+      "name": "Tasks",
+      "description": "Manage production tasks. Tasks represent individual work items within a job stage."
+    },
+    {
+      "name": "Stages",
+      "description": "View available production stages (e.g., Cutting, Bending, Welding)."
+    },
+    {
+      "name": "Materials",
+      "description": "View materials currently in use across jobs."
+    },
+    {
+      "name": "File Upload",
+      "description": "Generate secure upload URLs for CAD files, drawings, and images."
+    }
+  ],
+  "paths": {
+    "/api-jobs": {
+      "get": {
+        "tags": ["Jobs"],
+        "summary": "List and filter jobs",
+        "description": "Retrieve a list of jobs with optional filtering by status, customer, or date range. Supports pagination.",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by job status",
+            "schema": {
+              "type": "string",
+              "enum": ["pending", "in_progress", "completed", "on_hold"]
+            }
+          },
+          {
+            "name": "customer",
+            "in": "query",
+            "description": "Filter by customer name (partial match supported)",
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return (default: 100, max: 1000)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 100
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Number of results to skip (for pagination)",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with jobs list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "jobs": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Job"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Jobs"],
+        "summary": "Create a new job",
+        "description": "Create a new production job with parts and tasks. Parts and tasks can be created in the same request.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateJobRequest"
+              },
+              "examples": {
+                "basic": {
+                  "summary": "Basic job with one part",
+                  "value": {
+                    "job_number": "JOB-2024-001",
+                    "customer": "Acme Corp",
+                    "due_date": "2024-12-31",
+                    "notes": "Standard fabrication project",
+                    "parts": [
+                      {
+                        "part_number": "PART-001",
+                        "material": "Steel 304",
+                        "thickness": "3mm",
+                        "quantity": 10
+                      }
+                    ]
+                  }
+                },
+                "complete": {
+                  "summary": "Complete job with parts and tasks",
+                  "value": {
+                    "job_number": "JOB-2024-002",
+                    "customer": "TechCo Industries",
+                    "due_date": "2024-12-15",
+                    "notes": "Complex multi-part assembly",
+                    "metadata": {
+                      "po_number": "PO-12345",
+                      "priority": "high"
+                    },
+                    "parts": [
+                      {
+                        "part_number": "BRACKET-A",
+                        "material": "Aluminum 6061",
+                        "thickness": "5mm",
+                        "quantity": 25,
+                        "notes": "Needs deburring"
+                      }
+                    ],
+                    "tasks": [
+                      {
+                        "stage_id": "uuid-cutting-stage",
+                        "task_name": "Laser cut brackets",
+                        "sequence": 1,
+                        "estimated_time_minutes": 120
+                      },
+                      {
+                        "stage_id": "uuid-bending-stage",
+                        "task_name": "Bend to 90 degrees",
+                        "sequence": 2,
+                        "estimated_time_minutes": 60
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Job created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "job": {
+                          "$ref": "#/components/schemas/Job"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Jobs"],
+        "summary": "Update a job",
+        "description": "Update job fields such as status, customer, due date, or notes.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "description": "Job UUID to update",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateJobRequest"
+              },
+              "examples": {
+                "status": {
+                  "summary": "Update job status",
+                  "value": {
+                    "status": "completed"
+                  }
+                },
+                "multiple": {
+                  "summary": "Update multiple fields",
+                  "value": {
+                    "status": "in_progress",
+                    "notes": "Customer requested expedited delivery",
+                    "metadata": {
+                      "priority": "high",
+                      "expedited": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Job updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "job": {
+                          "$ref": "#/components/schemas/Job"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        }
+      }
+    },
+    "/api-parts": {
+      "get": {
+        "tags": ["Parts"],
+        "summary": "List and filter parts",
+        "description": "Retrieve parts with filtering by job, material, or status.",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "query",
+            "description": "Filter by job UUID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "material",
+            "in": "query",
+            "description": "Filter by material name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by part status",
+            "schema": {
+              "type": "string",
+              "enum": ["pending", "in_progress", "completed"]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "maximum": 1000
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "parts": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Part"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Parts"],
+        "summary": "Update a part",
+        "description": "Update part fields such as status, quantity, or material.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "description": "Part UUID to update",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePartRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Part updated successfully"
+          }
+        }
+      }
+    },
+    "/api-tasks": {
+      "get": {
+        "tags": ["Tasks"],
+        "summary": "List and filter tasks",
+        "description": "Retrieve tasks with filtering by job, stage, or status.",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "query",
+            "description": "Filter by job UUID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "stage_name",
+            "in": "query",
+            "description": "Filter by stage name (e.g., 'Cutting', 'Welding')",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by task status",
+            "schema": {
+              "type": "string",
+              "enum": ["pending", "in_progress", "completed"]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 100
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "tasks": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Task"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Tasks"],
+        "summary": "Update a task",
+        "description": "Update task status, completion percentage, or other fields.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "description": "Task UUID to update",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTaskRequest"
+              },
+              "examples": {
+                "progress": {
+                  "summary": "Update task progress",
+                  "value": {
+                    "status": "in_progress",
+                    "completion_percentage": 50
+                  }
+                },
+                "complete": {
+                  "summary": "Mark task as completed",
+                  "value": {
+                    "status": "completed",
+                    "completion_percentage": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task updated successfully"
+          }
+        }
+      }
+    },
+    "/api-stages": {
+      "get": {
+        "tags": ["Stages"],
+        "summary": "List production stages",
+        "description": "Get all available production stages. This is a read-only endpoint, perfect for testing your API key.",
+        "parameters": [
+          {
+            "name": "active",
+            "in": "query",
+            "description": "Filter by active status",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "stages": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Stage"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "stages": [
+                      {
+                        "id": "550e8400-e29b-41d4-a716-446655440000",
+                        "name": "Cutting",
+                        "color": "#3b82f6",
+                        "sequence": 1,
+                        "active": true
+                      },
+                      {
+                        "id": "550e8400-e29b-41d4-a716-446655440001",
+                        "name": "Bending",
+                        "color": "#8b5cf6",
+                        "sequence": 2,
+                        "active": true
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/api-materials": {
+      "get": {
+        "tags": ["Materials"],
+        "summary": "List materials in use",
+        "description": "Get a list of all materials currently used in the system.",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "materials": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "example": ["Steel 304", "Aluminum 6061", "Mild Steel"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api-upload-url": {
+      "post": {
+        "tags": ["File Upload"],
+        "summary": "Generate secure upload URL",
+        "description": "Generate a pre-signed URL for uploading files to cloud storage. Use the returned URL to upload your file directly.\n\n## Upload Process\n\n1. Call this endpoint with the filename and content type\n2. Receive a signed URL and file path\n3. Use the signed URL to upload your file (PUT request)\n4. Store the file path in your job/part metadata",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["filename", "content_type"],
+                "properties": {
+                  "filename": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "description": "Name of the file (no path traversal allowed)",
+                    "example": "bracket-drawing.pdf"
+                  },
+                  "content_type": {
+                    "type": "string",
+                    "description": "MIME type of the file",
+                    "enum": [
+                      "image/jpeg",
+                      "image/png",
+                      "image/gif",
+                      "image/webp",
+                      "application/pdf",
+                      "text/plain",
+                      "text/csv",
+                      "application/json",
+                      "application/dxf",
+                      "application/step"
+                    ],
+                    "example": "application/pdf"
+                  }
+                }
+              },
+              "examples": {
+                "pdf": {
+                  "summary": "Upload a PDF drawing",
+                  "value": {
+                    "filename": "part-drawing.pdf",
+                    "content_type": "application/pdf"
+                  }
+                },
+                "image": {
+                  "summary": "Upload an image",
+                  "value": {
+                    "filename": "inspection-photo.jpg",
+                    "content_type": "image/jpeg"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload URL generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "upload_url": {
+                          "type": "string",
+                          "format": "uri",
+                          "description": "Pre-signed URL for uploading (valid for 60 seconds)"
+                        },
+                        "file_path": {
+                          "type": "string",
+                          "description": "Path to store in your records"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API Key",
+        "description": "Enter your API key in the format: ery_live_xxxxx or ery_test_xxxxx"
+      }
+    },
+    "schemas": {
+      "Job": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "job_number": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "JOB-2024-001"
+          },
+          "customer": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "Acme Corporation"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-12-31"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed", "on_hold"],
+            "example": "in_progress"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 5000,
+            "example": "Standard fabrication with powder coating"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Custom key-value pairs for additional data",
+            "example": {
+              "po_number": "PO-12345",
+              "priority": "high"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Part": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "job_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "part_number": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "BRACKET-001"
+          },
+          "material": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "Steel 304"
+          },
+          "thickness": {
+            "type": "string",
+            "maxLength": 50,
+            "example": "3mm"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000,
+            "example": 25
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed"]
+          },
+          "file_paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of file paths from upload endpoint"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "metadata": {
+            "type": "object"
+          }
+        }
+      },
+      "Task": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "job_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "stage_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "task_name": {
+            "type": "string",
+            "maxLength": 200,
+            "example": "Laser cut brackets"
+          },
+          "sequence": {
+            "type": "integer",
+            "description": "Order of task execution",
+            "example": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed"]
+          },
+          "estimated_time_minutes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000,
+            "example": 120
+          },
+          "completion_percentage": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "example": 75
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 5000
+          }
+        }
+      },
+      "Stage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Cutting"
+          },
+          "color": {
+            "type": "string",
+            "example": "#3b82f6"
+          },
+          "sequence": {
+            "type": "integer",
+            "example": 1
+          },
+          "active": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "example": 100
+          },
+          "offset": {
+            "type": "integer",
+            "example": 0
+          },
+          "total": {
+            "type": "integer",
+            "example": 250
+          }
+        }
+      },
+      "CreateJobRequest": {
+        "type": "object",
+        "required": ["job_number", "customer"],
+        "properties": {
+          "job_number": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Unique job identifier"
+          },
+          "customer": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "parts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["part_number"],
+              "properties": {
+                "part_number": {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "material": {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "thickness": {
+                  "type": "string",
+                  "maxLength": 50
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000
+                },
+                "notes": {
+                  "type": "string",
+                  "maxLength": 5000
+                }
+              }
+            }
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["stage_id", "task_name"],
+              "properties": {
+                "stage_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "task_name": {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                "sequence": {
+                  "type": "integer"
+                },
+                "estimated_time_minutes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100000
+                }
+              }
+            }
+          }
+        }
+      },
+      "UpdateJobRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed", "on_hold"]
+          },
+          "customer": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "metadata": {
+            "type": "object"
+          }
+        }
+      },
+      "UpdatePartRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed"]
+          },
+          "material": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "thickness": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "metadata": {
+            "type": "object"
+          }
+        }
+      },
+      "UpdateTaskRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed"]
+          },
+          "completion_percentage": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 5000
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "example": "UNAUTHORIZED"
+              },
+              "message": {
+                "type": "string",
+                "example": "Invalid or missing API key"
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "UnauthorizedError": {
+        "description": "Invalid or missing API key",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "UNAUTHORIZED",
+                "message": "Invalid or missing API key"
+              }
+            }
+          }
+        }
+      },
+      "BadRequestError": {
+        "description": "Invalid request parameters",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "VALIDATION_ERROR",
+                "message": "Invalid input parameters"
+              }
+            }
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "NOT_FOUND",
+                "message": "Resource not found"
+              }
+            }
+          }
+        }
+      },
+      "RateLimitError": {
+        "description": "Rate limit exceeded",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "RATE_LIMIT_EXCEEDED",
+                "message": "Too many requests. Please try again later."
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
