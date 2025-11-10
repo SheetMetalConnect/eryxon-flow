@@ -60,36 +60,33 @@ export default function ConfigApiKeys() {
     }
 
     setIsGenerating(true);
-    
+
     try {
-      // Generate random key
-      const randomPart = Array.from(crypto.getRandomValues(new Uint8Array(24)))
-        .map(b => b.toString(36))
-        .join('')
-        .substring(0, 32);
-      
-      const apiKey = `ery_live_${randomPart}`;
-      const keyPrefix = apiKey.substring(0, 12);
+      // Get current user's session token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
 
-      // Hash the key - we'll use edge function for secure hashing
-      // For now, store the key directly (server-side hashing happens in edge function)
-      const keyHash = apiKey; // Edge functions will verify this
+      // Call secure edge function to generate and hash the key
+      const response = await fetch(
+        `${supabase.supabaseUrl}/functions/v1/api-key-generate`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ name: keyName.trim() }),
+        }
+      );
 
-      // Store in database
-      const { error } = await supabase
-        .from('api_keys')
-        .insert({
-          tenant_id: profile?.tenant_id,
-          name: keyName,
-          key_hash: keyHash,
-          key_prefix: keyPrefix,
-          created_by: profile?.id,
-          active: true
-        });
+      const result = await response.json();
 
-      if (error) throw error;
+      if (!response.ok || !result.success) {
+        throw new Error(result.error?.message || 'Failed to generate API key');
+      }
 
-      setGeneratedKey(apiKey);
+      // Set the generated key (only time it will be shown)
+      setGeneratedKey(result.data.api_key);
       setKeyName("");
       fetchApiKeys();
 
@@ -101,7 +98,7 @@ export default function ConfigApiKeys() {
       console.error('Error generating API key:', error);
       toast({
         title: "Error",
-        description: "Failed to generate API key",
+        description: error instanceof Error ? error.message : "Failed to generate API key",
         variant: "destructive",
       });
     } finally {
@@ -271,33 +268,112 @@ export default function ConfigApiKeys() {
         <Card>
           <CardHeader>
             <CardTitle>API Endpoints</CardTitle>
-            <CardDescription>Available endpoints for your API key</CardDescription>
+            <CardDescription>
+              Available endpoints for your API key.
+              <a href="/API_DOCUMENTATION.md" className="text-primary hover:underline ml-2">
+                View full documentation
+              </a>
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <code className="text-sm bg-muted p-2 rounded block">
-                  POST https://vatgianzotsurljznsry.supabase.co/functions/v1/api-jobs
-                </code>
-                <p className="text-sm text-muted-foreground mt-2">Create a new job with parts and tasks</p>
+                <h3 className="font-semibold mb-3">Jobs</h3>
+                <div className="space-y-3">
+                  <div>
+                    <code className="text-sm bg-muted p-2 rounded block">
+                      POST /api-jobs
+                    </code>
+                    <p className="text-sm text-muted-foreground mt-1">Create job with parts and tasks</p>
+                  </div>
+                  <div>
+                    <code className="text-sm bg-muted p-2 rounded block">
+                      GET /api-jobs?status=in_progress&customer=Acme
+                    </code>
+                    <p className="text-sm text-muted-foreground mt-1">List and filter jobs</p>
+                  </div>
+                  <div>
+                    <code className="text-sm bg-muted p-2 rounded block">
+                      PATCH /api-jobs?id=uuid
+                    </code>
+                    <p className="text-sm text-muted-foreground mt-1">Update job fields</p>
+                  </div>
+                </div>
               </div>
+
               <div>
-                <code className="text-sm bg-muted p-2 rounded block">
-                  GET https://vatgianzotsurljznsry.supabase.co/functions/v1/api-upload-url
-                </code>
-                <p className="text-sm text-muted-foreground mt-2">Request signed URL for file uploads</p>
+                <h3 className="font-semibold mb-3">Parts</h3>
+                <div className="space-y-3">
+                  <div>
+                    <code className="text-sm bg-muted p-2 rounded block">
+                      GET /api-parts?job_id=uuid&material=Steel
+                    </code>
+                    <p className="text-sm text-muted-foreground mt-1">List and filter parts</p>
+                  </div>
+                  <div>
+                    <code className="text-sm bg-muted p-2 rounded block">
+                      PATCH /api-parts?id=uuid
+                    </code>
+                    <p className="text-sm text-muted-foreground mt-1">Update part fields</p>
+                  </div>
+                </div>
               </div>
+
               <div>
-                <code className="text-sm bg-muted p-2 rounded block">
-                  GET https://vatgianzotsurljznsry.supabase.co/functions/v1/api-stages
-                </code>
-                <p className="text-sm text-muted-foreground mt-2">List available stages</p>
+                <h3 className="font-semibold mb-3">Tasks</h3>
+                <div className="space-y-3">
+                  <div>
+                    <code className="text-sm bg-muted p-2 rounded block">
+                      GET /api-tasks?status=in_progress&stage_name=Cutting
+                    </code>
+                    <p className="text-sm text-muted-foreground mt-1">List and filter tasks</p>
+                  </div>
+                  <div>
+                    <code className="text-sm bg-muted p-2 rounded block">
+                      PATCH /api-tasks?id=uuid
+                    </code>
+                    <p className="text-sm text-muted-foreground mt-1">Update task status and progress</p>
+                  </div>
+                </div>
               </div>
+
               <div>
-                <code className="text-sm bg-muted p-2 rounded block">
-                  GET https://vatgianzotsurljznsry.supabase.co/functions/v1/api-materials
-                </code>
-                <p className="text-sm text-muted-foreground mt-2">List materials in use</p>
+                <h3 className="font-semibold mb-3">Reference Data</h3>
+                <div className="space-y-3">
+                  <div>
+                    <code className="text-sm bg-muted p-2 rounded block">
+                      GET /api-stages?active=true
+                    </code>
+                    <p className="text-sm text-muted-foreground mt-1">List available production stages</p>
+                  </div>
+                  <div>
+                    <code className="text-sm bg-muted p-2 rounded block">
+                      GET /api-materials
+                    </code>
+                    <p className="text-sm text-muted-foreground mt-1">List materials in use</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-3">File Uploads</h3>
+                <div className="space-y-3">
+                  <div>
+                    <code className="text-sm bg-muted p-2 rounded block">
+                      POST /api-upload-url
+                    </code>
+                    <p className="text-sm text-muted-foreground mt-1">Request signed URL for file uploads</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t">
+                <p className="text-sm">
+                  <strong>Base URL:</strong> https://vatgianzotsurljznsry.supabase.co/functions/v1
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  All requests require: <code className="bg-muted px-1 rounded">Authorization: Bearer YOUR_API_KEY</code>
+                </p>
               </div>
             </div>
           </CardContent>
