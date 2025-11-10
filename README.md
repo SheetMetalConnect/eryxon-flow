@@ -116,6 +116,23 @@ This project is built with:
 - **Storage:** Supabase Storage for file management
 - **Real-time:** Supabase Realtime for live updates
 
+## Security
+
+**⚠️ IMPORTANT:** Before deploying to production, review and apply the security fixes documented in:
+- [`SECURITY_AUDIT.md`](./SECURITY_AUDIT.md) - Comprehensive security audit report
+- [`SECURITY_IMPLEMENTATION_GUIDE.md`](./SECURITY_IMPLEMENTATION_GUIDE.md) - Step-by-step security implementation
+
+**Key Security Features:**
+- ✅ API key hashing with bcrypt
+- ✅ Row-level security (RLS) policies
+- ✅ Tenant isolation
+- ✅ HTTPS-only webhooks
+- ⚠️ Rate limiting utilities created (needs deployment)
+- ⚠️ Input validation utilities created (needs deployment)
+- ⚠️ CORS restrictions configurable via environment variables
+
+**Security utilities are ready but not yet deployed to edge functions.** Follow the implementation guide before production use.
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/aaa3208a-70fb-4eb6-a5eb-5823f025e734) and click on Share -> Publish.
