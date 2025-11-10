@@ -6,7 +6,9 @@ import Layout from "@/components/Layout";
 import TaskCard from "@/components/operator/TaskCard";
 import CurrentlyTimingWidget from "@/components/operator/CurrentlyTimingWidget";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Loader2, Search } from "lucide-react";
 import { toast } from "sonner";
 
 export default function WorkQueue() {
@@ -14,6 +16,7 @@ export default function WorkQueue() {
   const [tasks, setTasks] = useState<TaskWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMaterial, setSelectedMaterial] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [stages, setStages] = useState<any[]>([]);
 
   useEffect(() => {
@@ -93,17 +96,32 @@ export default function WorkQueue() {
     new Set(tasks.map((task) => task.part.material))
   ).sort();
 
-  // Filter tasks by material
-  const filteredTasks =
-    selectedMaterial === "all"
-      ? tasks
-      : tasks.filter((task) => task.part.material === selectedMaterial);
+  // Filter tasks by material and search query
+  const filteredTasks = tasks.filter((task) => {
+    const matchesMaterial =
+      selectedMaterial === "all" || task.part.material === selectedMaterial;
+
+    const matchesSearch =
+      searchQuery === "" ||
+      task.task_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      task.part.part_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      task.part.job.job_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (task.part.job.customer &&
+        task.part.job.customer.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    return matchesMaterial && matchesSearch;
+  });
 
   // Group tasks by stage
   const tasksByStage = stages.map((stage) => ({
     stage,
     tasks: filteredTasks.filter((task) => task.stage_id === stage.id),
   }));
+
+  // Calculate stats
+  const totalTasks = filteredTasks.length;
+  const inProgressTasks = filteredTasks.filter(t => t.status === "in_progress").length;
+  const completedTasks = filteredTasks.filter(t => t.status === "completed").length;
 
   if (loading) {
     return (
@@ -121,8 +139,42 @@ export default function WorkQueue() {
         {/* Currently Timing Widget */}
         <CurrentlyTimingWidget />
 
-        {/* Material Filter */}
-        <div className="bg-card rounded-lg border p-4">
+        {/* Stats Card */}
+        <Card className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Total Tasks</p>
+              <p className="text-2xl font-bold">{totalTasks}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">In Progress</p>
+              <p className="text-2xl font-bold text-blue-600">{inProgressTasks}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Completed</p>
+              <p className="text-2xl font-bold text-green-600">{completedTasks}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Not Started</p>
+              <p className="text-2xl font-bold text-gray-600">
+                {totalTasks - inProgressTasks - completedTasks}
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Search and Material Filter */}
+        <div className="bg-card rounded-lg border p-4 space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by job, part, task, or customer..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
           <Tabs value={selectedMaterial} onValueChange={setSelectedMaterial}>
             <TabsList className="w-full justify-start overflow-x-auto">
               <TabsTrigger value="all">All Materials</TabsTrigger>

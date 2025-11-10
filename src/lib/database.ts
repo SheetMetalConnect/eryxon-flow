@@ -100,6 +100,21 @@ export async function startTimeTracking(
   operatorId: string,
   tenantId: string
 ) {
+  // Check for existing active time entries for this operator
+  const { data: activeEntries } = await supabase
+    .from("time_entries")
+    .select("id, task_id, tasks(task_name)")
+    .eq("operator_id", operatorId)
+    .eq("tenant_id", tenantId)
+    .is("end_time", null);
+
+  if (activeEntries && activeEntries.length > 0) {
+    const activeTask: any = activeEntries[0];
+    throw new Error(
+      `Please stop timing on "${activeTask.tasks?.task_name || 'current task'}" before starting a new task`
+    );
+  }
+
   // Get task details including related data for webhook
   const { data: task } = await supabase
     .from("tasks")
