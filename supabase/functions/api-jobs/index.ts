@@ -37,13 +37,11 @@ async function authenticateApiKey(authHeader: string | null, supabase: any) {
   }
 
   const apiKey = authHeader.substring(7);
-  
+
   if (!apiKey.startsWith('ery_live_') && !apiKey.startsWith('ery_test_')) {
     return null;
   }
 
-  const keyHash = await bcrypt.hash(apiKey, await bcrypt.genSalt(10));
-  
   const { data: keys } = await supabase
     .from('api_keys')
     .select('id, tenant_id')
@@ -100,7 +98,12 @@ serve(async (req) => {
       const status = url.searchParams.get('status');
       const customer = url.searchParams.get('customer');
       const jobNumber = url.searchParams.get('job_number');
-      const limit = parseInt(url.searchParams.get('limit') || '100');
+
+      // Cap pagination limit to prevent abuse
+      let limit = parseInt(url.searchParams.get('limit') || '100');
+      if (limit < 1) limit = 100;
+      if (limit > 1000) limit = 1000;
+
       const offset = parseInt(url.searchParams.get('offset') || '0');
 
       let query = supabase

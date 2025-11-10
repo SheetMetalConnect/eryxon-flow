@@ -75,7 +75,12 @@ serve(async (req) => {
       const material = url.searchParams.get('material');
       const status = url.searchParams.get('status');
       const partNumber = url.searchParams.get('part_number');
-      const limit = parseInt(url.searchParams.get('limit') || '100');
+
+      // Cap pagination limit to prevent abuse
+      let limit = parseInt(url.searchParams.get('limit') || '100');
+      if (limit < 1) limit = 100;
+      if (limit > 1000) limit = 1000;
+
       const offset = parseInt(url.searchParams.get('offset') || '0');
 
       let query = supabase
