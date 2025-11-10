@@ -15,6 +15,9 @@ import ConfigUsers from "./pages/admin/ConfigUsers";
 import Assignments from "./pages/admin/Assignments";
 import ConfigApiKeys from "./pages/admin/ConfigApiKeys";
 import ConfigWebhooks from "./pages/admin/ConfigWebhooks";
+import Jobs from "./pages/admin/Jobs";
+import JobCreate from "./pages/admin/JobCreate";
+import Parts from "./pages/admin/Parts";
 import ApiDocs from "./pages/ApiDocs";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
@@ -154,6 +157,33 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <ConfigWebhooks />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/jobs"
+        element={
+          <ProtectedRoute adminOnly>
+            <Jobs />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/jobs/new"
+        element={
+          <ProtectedRoute adminOnly>
+            <JobCreate />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/parts"
+        element={
+          <ProtectedRoute adminOnly>
+            <Parts />
           </ProtectedRoute>
         }
       />
