@@ -68,18 +68,14 @@ export default function Layout({ children }: LayoutProps) {
                         Assignments
                       </Button>
                     </Link>
-                    <Link to="/admin/stages">
+                     <Link to="/admin/config/api-keys">
                       <Button
-                        variant={
-                          isActive("/admin/stages") || isActive("/admin/users")
-                            ? "default"
-                            : "ghost"
-                        }
+                        variant={isActive("/admin/config/api-keys") || isActive("/admin/config/webhooks") ? "default" : "ghost"}
                         size="sm"
                         className="gap-2"
                       >
                         <Settings className="h-4 w-4" />
-                        Config
+                        API
                       </Button>
                     </Link>
                   </>

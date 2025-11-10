@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_keys: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          created_by: string
+          id: string
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          tenant_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          created_by: string
+          id?: string
+          key_hash: string
+          key_prefix: string
+          last_used_at?: string | null
+          name: string
+          tenant_id: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          created_by?: string
+          id?: string
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          tenant_id?: string
+        }
+        Relationships: []
+      }
       assignments: {
         Row: {
           assigned_by: string
@@ -479,6 +515,74 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      webhook_logs: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          event_type: string
+          id: string
+          payload: Json
+          status_code: number | null
+          webhook_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          event_type: string
+          id?: string
+          payload: Json
+          status_code?: number | null
+          webhook_id: string
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          payload?: Json
+          status_code?: number | null
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_logs_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhooks: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          events: string[]
+          id: string
+          secret_key: string
+          tenant_id: string
+          url: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          events: string[]
+          id?: string
+          secret_key: string
+          tenant_id: string
+          url: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          events?: string[]
+          id?: string
+          secret_key?: string
+          tenant_id?: string
+          url?: string
+        }
+        Relationships: []
       }
     }
     Views: {

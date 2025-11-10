@@ -13,6 +13,8 @@ import IssueQueue from "./pages/admin/IssueQueue";
 import ConfigStages from "./pages/admin/ConfigStages";
 import ConfigUsers from "./pages/admin/ConfigUsers";
 import Assignments from "./pages/admin/Assignments";
+import ConfigApiKeys from "./pages/admin/ConfigApiKeys";
+import ConfigWebhooks from "./pages/admin/ConfigWebhooks";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -133,6 +135,24 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Assignments />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/config/api-keys"
+        element={
+          <ProtectedRoute adminOnly>
+            <ConfigApiKeys />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/config/webhooks"
+        element={
+          <ProtectedRoute adminOnly>
+            <ConfigWebhooks />
           </ProtectedRoute>
         }
       />
