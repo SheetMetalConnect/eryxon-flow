@@ -1,8 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export type WebhookEvent =
-  | 'task.started'
-  | 'task.completed'
+  | 'operation.started'
+  | 'operation.completed'
   | 'issue.created'
   | 'job.created'
   | 'job.updated'
@@ -30,8 +30,11 @@ export async function triggerWebhook(
       return { success: false, error: 'Not authenticated' };
     }
 
+    // Get Supabase URL from environment or construct from current origin
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://vatgianzotsurljznsry.supabase.co';
+    
     const response = await fetch(
-      `${supabase.supabaseUrl}/functions/v1/webhook-dispatch`,
+      `${supabaseUrl}/functions/v1/webhook-dispatch`,
       {
         method: 'POST',
         headers: {
@@ -65,13 +68,13 @@ export async function triggerWebhook(
 }
 
 /**
- * Triggers a task.started webhook
+ * Triggers an operation.started webhook
  */
-export async function triggerTaskStartedWebhook(
+export async function triggerOperationStartedWebhook(
   tenantId: string,
-  taskData: {
-    task_id: string;
-    task_name: string;
+  operationData: {
+    operation_id: string;
+    operation_name: string;
     part_id: string;
     part_number: string;
     job_id: string;
@@ -81,17 +84,17 @@ export async function triggerTaskStartedWebhook(
     started_at: string;
   }
 ) {
-  return triggerWebhook(tenantId, 'task.started', taskData);
+  return triggerWebhook(tenantId, 'operation.started', operationData);
 }
 
 /**
- * Triggers a task.completed webhook
+ * Triggers an operation.completed webhook
  */
-export async function triggerTaskCompletedWebhook(
+export async function triggerOperationCompletedWebhook(
   tenantId: string,
-  taskData: {
-    task_id: string;
-    task_name: string;
+  operationData: {
+    operation_id: string;
+    operation_name: string;
     part_id: string;
     part_number: string;
     job_id: string;
@@ -103,7 +106,7 @@ export async function triggerTaskCompletedWebhook(
     estimated_time: number;
   }
 ) {
-  return triggerWebhook(tenantId, 'task.completed', taskData);
+  return triggerWebhook(tenantId, 'operation.completed', operationData);
 }
 
 /**
@@ -113,8 +116,8 @@ export async function triggerIssueCreatedWebhook(
   tenantId: string,
   issueData: {
     issue_id: string;
-    task_id: string;
-    task_name: string;
+    operation_id: string;
+    operation_name: string;
     part_id: string;
     part_number: string;
     job_id: string;
@@ -139,7 +142,7 @@ export async function triggerJobCreatedWebhook(
     job_number: string;
     customer: string;
     parts_count: number;
-    tasks_count: number;
+    operations_count: number;
     created_at: string;
   }
 ) {
