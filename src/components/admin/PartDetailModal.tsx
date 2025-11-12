@@ -12,8 +12,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { Plus, Save, X } from "lucide-react";
+import { Plus, Save, X, Upload, Eye, Trash2, Box } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { STEPViewer } from "@/components/STEPViewer";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Select,
   SelectContent,
@@ -30,6 +32,7 @@ interface PartDetailModalProps {
 
 export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetailModalProps) {
   const { toast } = useToast();
+  const { profile } = useAuth();
   const [addingTask, setAddingTask] = useState(false);
   const [newTask, setNewTask] = useState({
     task_name: "",
@@ -38,6 +41,13 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     sequence: 1,
     notes: "",
   });
+
+  // CAD file management state
+  const [uploadingCAD, setUploadingCAD] = useState(false);
+  const [cadFiles, setCadFiles] = useState<FileList | null>(null);
+  const [stepViewerOpen, setStepViewerOpen] = useState(false);
+  const [currentStepUrl, setCurrentStepUrl] = useState<string | null>(null);
+  const [currentStepTitle, setCurrentStepTitle] = useState<string>("");
 
   const { data: part, isLoading } = useQuery({
     queryKey: ["part-detail", partId],
@@ -124,6 +134,157 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       return;
     }
     addTaskMutation.mutate();
+  };
+
+  // Handle CAD file upload
+  const handleCADUpload = async () => {
+    if (!cadFiles || cadFiles.length === 0 || !profile?.tenant_id) return;
+
+    setUploadingCAD(true);
+    try {
+      const uploadedPaths: string[] = [];
+
+      for (let i = 0; i < cadFiles.length; i++) {
+        const file = cadFiles[i];
+        const fileExt = file.name.split(".").pop()?.toLowerCase();
+
+        // Validate file type
+        if (!["step", "stp"].includes(fileExt || "")) {
+          toast({
+            title: "Invalid file type",
+            description: `${file.name} is not a STEP file`,
+            variant: "destructive",
+          });
+          continue;
+        }
+
+        const path = `${profile.tenant_id}/parts/${partId}/${file.name}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("parts-cad")
+          .upload(path, file);
+
+        if (uploadError) {
+          console.error("Upload error:", uploadError);
+          toast({
+            title: "Upload failed",
+            description: `Failed to upload ${file.name}`,
+            variant: "destructive",
+          });
+          continue;
+        }
+
+        uploadedPaths.push(path);
+      }
+
+      if (uploadedPaths.length > 0) {
+        // Update part's file_paths
+        const currentPaths = part?.file_paths || [];
+        const newPaths = [...currentPaths, ...uploadedPaths];
+
+        const { error: updateError } = await supabase
+          .from("parts")
+          .update({ file_paths: newPaths })
+          .eq("id", partId);
+
+        if (updateError) throw updateError;
+
+        toast({
+          title: "Success",
+          description: `${uploadedPaths.length} file(s) uploaded successfully`,
+        });
+
+        setCadFiles(null);
+        onUpdate();
+      }
+    } catch (error: any) {
+      console.error("CAD upload error:", error);
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingCAD(false);
+    }
+  };
+
+  // Handle viewing STEP file
+  const handleViewCADFile = async (filePath: string) => {
+    try {
+      // Create signed URL
+      const { data, error } = await supabase.storage
+        .from("parts-cad")
+        .createSignedUrl(filePath, 3600);
+
+      if (error) throw error;
+      if (!data?.signedUrl) throw new Error("Failed to generate signed URL");
+
+      // Fetch as blob to avoid CORS issues
+      const response = await fetch(data.signedUrl);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      const fileName = filePath.split("/").pop() || "3D Model";
+      setCurrentStepUrl(blobUrl);
+      setCurrentStepTitle(fileName);
+      setStepViewerOpen(true);
+    } catch (error: any) {
+      console.error("Error opening CAD file:", error);
+      toast({
+        title: "Error",
+        description: "Failed to open 3D viewer",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle deleting CAD file
+  const handleDeleteCADFile = async (filePath: string) => {
+    if (!confirm("Are you sure you want to delete this file?")) return;
+
+    try {
+      // Delete from storage
+      const { error: deleteError } = await supabase.storage
+        .from("parts-cad")
+        .remove([filePath]);
+
+      if (deleteError) throw deleteError;
+
+      // Update part's file_paths
+      const currentPaths = part?.file_paths || [];
+      const newPaths = currentPaths.filter((p: string) => p !== filePath);
+
+      const { error: updateError } = await supabase
+        .from("parts")
+        .update({ file_paths: newPaths })
+        .eq("id", partId);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "Success",
+        description: "File deleted successfully",
+      });
+
+      onUpdate();
+    } catch (error: any) {
+      console.error("Delete error:", error);
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle step viewer dialog close
+  const handleStepDialogClose = (open: boolean) => {
+    if (!open && currentStepUrl?.startsWith("blob:")) {
+      URL.revokeObjectURL(currentStepUrl); // Prevent memory leak
+      setCurrentStepUrl(null);
+    }
+    setStepViewerOpen(open);
   };
 
   if (isLoading) {
@@ -219,6 +380,95 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               </div>
             </div>
           )}
+
+          {/* CAD Files Section */}
+          <div>
+            <div className="flex justify-between items-center mb-3">
+              <Label className="text-lg flex items-center gap-2">
+                <Box className="h-5 w-5" />
+                3D CAD Files ({part?.file_paths?.length || 0})
+              </Label>
+            </div>
+
+            {/* File Upload */}
+            <div className="border rounded-lg p-4 mb-3 bg-gray-50">
+              <div className="flex items-center gap-3">
+                <label
+                  htmlFor="cad-upload"
+                  className="flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed rounded-lg cursor-pointer hover:bg-white transition flex-1"
+                >
+                  <Upload className="h-4 w-4" />
+                  <span className="text-sm">
+                    {cadFiles && cadFiles.length > 0
+                      ? `${cadFiles.length} file(s) selected`
+                      : "Choose STEP files (.step, .stp)"}
+                  </span>
+                </label>
+                <input
+                  id="cad-upload"
+                  type="file"
+                  accept=".step,.stp"
+                  multiple
+                  onChange={(e) => setCadFiles(e.target.files)}
+                  className="hidden"
+                />
+                <Button
+                  onClick={handleCADUpload}
+                  disabled={!cadFiles || cadFiles.length === 0 || uploadingCAD}
+                  size="sm"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  {uploadingCAD ? "Uploading..." : "Upload"}
+                </Button>
+              </div>
+            </div>
+
+            {/* Existing CAD Files List */}
+            <div className="space-y-2">
+              {part?.file_paths?.filter((path: string) => {
+                const ext = path.split(".").pop()?.toLowerCase();
+                return ext === "step" || ext === "stp";
+              }).map((filePath: string, index: number) => {
+                const fileName = filePath.split("/").pop() || "Unknown";
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between border rounded-md p-3 bg-white"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Box className="h-5 w-5 text-blue-600" />
+                      <div>
+                        <p className="font-medium text-sm">{fileName}</p>
+                        <p className="text-xs text-gray-500">STEP 3D Model</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleViewCADFile(filePath)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View 3D
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDeleteCADFile(filePath)}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-600" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+              {(!part?.file_paths || part.file_paths.length === 0) && (
+                <p className="text-sm text-gray-500 text-center py-4">
+                  No CAD files uploaded yet
+                </p>
+              )}
+            </div>
+          </div>
 
           {/* Tasks */}
           <div>
@@ -356,6 +606,20 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           </div>
         </div>
       </DialogContent>
+
+      {/* STEP Viewer Dialog */}
+      <Dialog open={stepViewerOpen} onOpenChange={handleStepDialogClose}>
+        <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0">
+          <DialogHeader className="px-6 py-4 border-b">
+            <DialogTitle>{currentStepTitle}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden">
+            {currentStepUrl && (
+              <STEPViewer url={currentStepUrl} title={currentStepTitle} />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
