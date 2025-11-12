@@ -1,9 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
-import { triggerTaskStartedWebhook, triggerTaskCompletedWebhook } from "./webhooks";
+import { triggerOperationStartedWebhook, triggerOperationCompletedWebhook } from "./webhooks";
 
-export interface TaskWithDetails {
+export interface OperationWithDetails {
   id: string;
-  task_name: string;
+  operation_name: string;
   sequence: number;
   estimated_time: number;
   actual_time: number;
@@ -11,7 +11,7 @@ export interface TaskWithDetails {
   completion_percentage: number;
   notes: string | null;
   assigned_operator_id: string | null;
-  stage_id: string;
+  cell_id: string;
   part: {
     id: string;
     part_number: string;
@@ -26,7 +26,7 @@ export interface TaskWithDetails {
       due_date_override: string | null;
     };
   };
-  stage: {
+  cell: {
     id: string;
     name: string;
     color: string | null;
@@ -42,9 +42,9 @@ export interface TaskWithDetails {
   };
 }
 
-export async function fetchTasksWithDetails(tenantId: string): Promise<TaskWithDetails[]> {
-  const { data: tasks, error: tasksError } = await supabase
-    .from("tasks")
+export async function fetchOperationsWithDetails(tenantId: string): Promise<OperationWithDetails[]> {
+  const { data: operations, error: operationsError } = await supabase
+    .from("operations")
     .select(`
       *,
       part:parts!inner(
@@ -61,7 +61,7 @@ export async function fetchTasksWithDetails(tenantId: string): Promise<TaskWithD
           due_date_override
         )
       ),
-      stage:stages!inner(
+      cell:cells!inner(
         id,
         name,
         color,
@@ -71,14 +71,14 @@ export async function fetchTasksWithDetails(tenantId: string): Promise<TaskWithD
     .eq("tenant_id", tenantId)
     .order("sequence");
 
-  if (tasksError) throw tasksError;
+  if (operationsError) throw operationsError;
 
   // Fetch active time entries
   const { data: activeEntries, error: entriesError } = await supabase
     .from("time_entries")
     .select(`
       id,
-      task_id,
+      operation_id,
       operator_id,
       start_time,
       operator:profiles!inner(full_name)
@@ -88,41 +88,41 @@ export async function fetchTasksWithDetails(tenantId: string): Promise<TaskWithD
 
   if (entriesError) throw entriesError;
 
-  // Map active entries to tasks
-  return tasks.map((task) => ({
-    ...task,
-    active_time_entry: activeEntries?.find((entry) => entry.task_id === task.id),
+  // Map active entries to operations
+  return operations.map((operation) => ({
+    ...operation,
+    active_time_entry: activeEntries?.find((entry) => entry.operation_id === operation.id),
   }));
 }
 
 export async function startTimeTracking(
-  taskId: string,
+  operationId: string,
   operatorId: string,
   tenantId: string
 ) {
   // Check for existing active time entries for this operator
   const { data: activeEntries } = await supabase
     .from("time_entries")
-    .select("id, task_id, tasks(task_name)")
+    .select("id, operation_id, operations(operation_name)")
     .eq("operator_id", operatorId)
     .eq("tenant_id", tenantId)
     .is("end_time", null);
 
   if (activeEntries && activeEntries.length > 0) {
-    const activeTask: any = activeEntries[0];
+    const activeOperation: any = activeEntries[0];
     throw new Error(
-      `Please stop timing on "${activeTask.tasks?.task_name || 'current task'}" before starting a new task`
+      `Please stop timing on "${activeOperation.operations?.operation_name || 'current operation'}" before starting a new operation`
     );
   }
 
-  // Get task details including related data for webhook
-  const { data: task } = await supabase
-    .from("tasks")
+  // Get operation details including related data for webhook
+  const { data: operation } = await supabase
+    .from("operations")
     .select(`
       status,
       part_id,
-      stage_id,
-      task_name,
+      cell_id,
+      operation_name,
       part:parts!inner(
         id,
         part_number,
@@ -132,10 +132,10 @@ export async function startTimeTracking(
         )
       )
     `)
-    .eq("id", taskId)
+    .eq("id", operationId)
     .single();
 
-  if (!task) throw new Error("Task not found");
+  if (!operation) throw new Error("Operation not found");
 
   // Get operator details for webhook
   const { data: operator } = await supabase
@@ -145,11 +145,11 @@ export async function startTimeTracking(
     .single();
 
   const startedAt = new Date().toISOString();
-  const isNewStart = task.status === "not_started";
+  const isNewStart = operation.status === "not_started";
 
   // Create time entry
   const { error: timeError } = await supabase.from("time_entries").insert({
-    task_id: taskId,
+    operation_id: operationId,
     operator_id: operatorId,
     tenant_id: tenantId,
     start_time: startedAt,
@@ -157,27 +157,27 @@ export async function startTimeTracking(
 
   if (timeError) throw timeError;
 
-  // Update task status if not started
+  // Update operation status if not started
   if (isNewStart) {
     await supabase
-      .from("tasks")
+      .from("operations")
       .update({ status: "in_progress" })
-      .eq("id", taskId);
+      .eq("id", operationId);
 
-    // Trigger webhook for task started
-    const taskData: any = task;
-    triggerTaskStartedWebhook(tenantId, {
-      task_id: taskId,
-      task_name: taskData.task_name,
-      part_id: taskData.part_id,
-      part_number: taskData.part.part_number,
-      job_id: taskData.part.job.id,
-      job_number: taskData.part.job.job_number,
+    // Trigger webhook for operation started
+    const operationData: any = operation;
+    triggerOperationStartedWebhook(tenantId, {
+      operation_id: operationId,
+      operation_name: operationData.operation_name,
+      part_id: operationData.part_id,
+      part_number: operationData.part.part_number,
+      job_id: operationData.part.job.id,
+      job_number: operationData.part.job.job_number,
       operator_id: operatorId,
       operator_name: operator?.full_name || 'Unknown',
       started_at: startedAt,
     }).catch(error => {
-      console.error('Failed to trigger task.started webhook:', error);
+      console.error('Failed to trigger operation.started webhook:', error);
       // Don't fail the operation if webhook fails
     });
   }
@@ -185,48 +185,48 @@ export async function startTimeTracking(
   // Get part details
   const { data: part } = await supabase
     .from("parts")
-    .select("status, job_id, current_stage_id")
-    .eq("id", task.part_id)
+    .select("status, job_id, current_cell_id")
+    .eq("id", operation.part_id)
     .single();
 
   if (!part) return;
 
-  // Update part status and current_stage_id if not started
+  // Update part status and current_cell_id if not started
   if (part.status === "not_started") {
     await supabase
       .from("parts")
       .update({ 
         status: "in_progress",
-        current_stage_id: task.stage_id 
+        current_cell_id: operation.cell_id 
       })
-      .eq("id", task.part_id);
-  } else if (part.current_stage_id !== task.stage_id) {
-    // Update current_stage_id if working on a different stage
+      .eq("id", operation.part_id);
+  } else if (part.current_cell_id !== operation.cell_id) {
+    // Update current_cell_id if working on a different cell
     await supabase
       .from("parts")
-      .update({ current_stage_id: task.stage_id })
-      .eq("id", task.part_id);
+      .update({ current_cell_id: operation.cell_id })
+      .eq("id", operation.part_id);
   }
 
-  // Calculate job's current stage from all in_progress tasks
-  const { data: jobTasks } = await supabase
-    .from("tasks")
-    .select("stage_id, stages!inner(sequence)")
-    .eq("part_id", task.part_id)
+  // Calculate job's current cell from all in_progress operations
+  const { data: jobOperations } = await supabase
+    .from("operations")
+    .select("cell_id, cells!inner(sequence)")
+    .eq("part_id", operation.part_id)
     .eq("status", "in_progress");
 
-  if (jobTasks && jobTasks.length > 0) {
-    // Get the earliest stage (lowest sequence) that has in_progress tasks
-    const earliestStage = jobTasks.reduce((earliest, t: any) => {
-      return t.stages.sequence < earliest.sequence 
-        ? { stage_id: t.stage_id, sequence: t.stages.sequence }
+  if (jobOperations && jobOperations.length > 0) {
+    // Get the earliest cell (lowest sequence) that has in_progress operations
+    const earliestCell = jobOperations.reduce((earliest, o: any) => {
+      return o.cells.sequence < earliest.sequence 
+        ? { cell_id: o.cell_id, sequence: o.cells.sequence }
         : earliest;
-    }, { stage_id: jobTasks[0].stage_id, sequence: jobTasks[0].stages.sequence });
+    }, { cell_id: jobOperations[0].cell_id, sequence: jobOperations[0].cells.sequence });
 
-    // Update job status and current_stage_id
+    // Update job status and current_cell_id
     const { data: job } = await supabase
       .from("jobs")
-      .select("status, current_stage_id")
+      .select("status, current_cell_id")
       .eq("id", part.job_id)
       .single();
 
@@ -237,8 +237,8 @@ export async function startTimeTracking(
         updates.status = "in_progress";
       }
       
-      if (job.current_stage_id !== earliestStage.stage_id) {
-        updates.current_stage_id = earliestStage.stage_id;
+      if (job.current_cell_id !== earliestCell.cell_id) {
+        updates.current_cell_id = earliestCell.cell_id;
       }
 
       if (Object.keys(updates).length > 0) {
@@ -251,12 +251,12 @@ export async function startTimeTracking(
   }
 }
 
-export async function stopTimeTracking(taskId: string, operatorId: string) {
+export async function stopTimeTracking(operationId: string, operatorId: string) {
   // Find active time entry
   const { data: entry } = await supabase
     .from("time_entries")
     .select("id, start_time")
-    .eq("task_id", taskId)
+    .eq("operation_id", operationId)
     .eq("operator_id", operatorId)
     .is("end_time", null)
     .single();
@@ -276,40 +276,40 @@ export async function stopTimeTracking(taskId: string, operatorId: string) {
     })
     .eq("id", entry.id);
 
-  // Update task actual time
-  const { data: task } = await supabase
-    .from("tasks")
+  // Update operation actual time
+  const { data: operation } = await supabase
+    .from("operations")
     .select("actual_time")
-    .eq("id", taskId)
+    .eq("id", operationId)
     .single();
 
-  if (task) {
+  if (operation) {
     await supabase
-      .from("tasks")
-      .update({ actual_time: (task.actual_time || 0) + duration })
-      .eq("id", taskId);
+      .from("operations")
+      .update({ actual_time: (operation.actual_time || 0) + duration })
+      .eq("id", operationId);
   }
 }
 
-export async function completeTask(taskId: string, tenantId: string, operatorId?: string) {
+export async function completeOperation(operationId: string, tenantId: string, operatorId?: string) {
   // Check for active time entries
   const { data: activeEntry } = await supabase
     .from("time_entries")
     .select("id, operator_id")
-    .eq("task_id", taskId)
+    .eq("operation_id", operationId)
     .is("end_time", null)
     .maybeSingle();
 
   if (activeEntry) {
-    throw new Error("Please stop time tracking before completing the task");
+    throw new Error("Please stop time tracking before completing the operation");
   }
 
-  // Get task details including related data for webhook
-  const { data: task } = await supabase
-    .from("tasks")
+  // Get operation details including related data for webhook
+  const { data: operation } = await supabase
+    .from("operations")
     .select(`
       part_id,
-      task_name,
+      operation_name,
       estimated_time,
       actual_time,
       assigned_operator_id,
@@ -322,13 +322,13 @@ export async function completeTask(taskId: string, tenantId: string, operatorId?
         )
       )
     `)
-    .eq("id", taskId)
+    .eq("id", operationId)
     .single();
 
-  if (!task) throw new Error("Task not found");
+  if (!operation) throw new Error("Operation not found");
 
   const completedAt = new Date().toISOString();
-  const effectiveOperatorId = operatorId || task.assigned_operator_id;
+  const effectiveOperatorId = operatorId || operation.assigned_operator_id;
 
   // Get operator details for webhook
   let operatorName = 'Unknown';
@@ -341,59 +341,59 @@ export async function completeTask(taskId: string, tenantId: string, operatorId?
     operatorName = operator?.full_name || 'Unknown';
   }
 
-  // Update task
+  // Update operation
   await supabase
-    .from("tasks")
+    .from("operations")
     .update({
       status: "completed",
       completed_at: completedAt,
       completion_percentage: 100,
     })
-    .eq("id", taskId);
+    .eq("id", operationId);
 
-  // Trigger webhook for task completed
-  const taskData: any = task;
-  triggerTaskCompletedWebhook(tenantId, {
-    task_id: taskId,
-    task_name: taskData.task_name,
-    part_id: taskData.part_id,
-    part_number: taskData.part.part_number,
-    job_id: taskData.part.job.id,
-    job_number: taskData.part.job.job_number,
+  // Trigger webhook for operation completed
+  const operationData: any = operation;
+  triggerOperationCompletedWebhook(tenantId, {
+    operation_id: operationId,
+    operation_name: operationData.operation_name,
+    part_id: operationData.part_id,
+    part_number: operationData.part.part_number,
+    job_id: operationData.part.job.id,
+    job_number: operationData.part.job.job_number,
     operator_id: effectiveOperatorId || '',
     operator_name: operatorName,
     completed_at: completedAt,
-    actual_time: taskData.actual_time || 0,
-    estimated_time: taskData.estimated_time || 0,
+    actual_time: operationData.actual_time || 0,
+    estimated_time: operationData.estimated_time || 0,
   }).catch(error => {
-    console.error('Failed to trigger task.completed webhook:', error);
+    console.error('Failed to trigger operation.completed webhook:', error);
     // Don't fail the operation if webhook fails
   });
 
-  // Check if all tasks in part are completed
-  const { data: partTasks } = await supabase
-    .from("tasks")
-    .select("status, stage_id, stages!inner(sequence)")
-    .eq("part_id", task.part_id);
+  // Check if all operations in part are completed
+  const { data: partOperations } = await supabase
+    .from("operations")
+    .select("status, cell_id, cells!inner(sequence)")
+    .eq("part_id", operation.part_id);
 
-  const allCompleted = partTasks?.every((t) => t.status === "completed");
-  const inProgressTasks = partTasks?.filter((t) => t.status === "in_progress");
+  const allCompleted = partOperations?.every((o) => o.status === "completed");
+  const inProgressOperations = partOperations?.filter((o) => o.status === "in_progress");
 
   if (allCompleted) {
-    // All tasks complete - mark part as completed
+    // All operations complete - mark part as completed
     const { data: part } = await supabase
       .from("parts")
       .select("job_id")
-      .eq("id", task.part_id)
+      .eq("id", operation.part_id)
       .single();
 
     await supabase
       .from("parts")
       .update({ 
         status: "completed",
-        current_stage_id: null  // Clear current stage when complete
+        current_cell_id: null  // Clear current cell when complete
       })
-      .eq("id", task.part_id);
+      .eq("id", operation.part_id);
 
     // Check if all parts in job are completed
     if (part) {
@@ -409,42 +409,42 @@ export async function completeTask(taskId: string, tenantId: string, operatorId?
           .from("jobs")
           .update({ 
             status: "completed",
-            current_stage_id: null  // Clear current stage when complete
+            current_cell_id: null  // Clear current cell when complete
           })
           .eq("id", part.job_id);
       } else {
-        // Recalculate job's current_stage_id from remaining in_progress parts
-        await recalculateJobCurrentStage(part.job_id);
+        // Recalculate job's current_cell_id from remaining in_progress parts
+        await recalculateJobCurrentCell(part.job_id);
       }
     }
-  } else if (inProgressTasks && inProgressTasks.length > 0) {
-    // Recalculate part's current_stage_id from remaining in_progress tasks
-    const earliestStage = inProgressTasks.reduce((earliest: any, t: any) => {
-      return t.stages.sequence < earliest.sequence 
-        ? { stage_id: t.stage_id, sequence: t.stages.sequence }
+  } else if (inProgressOperations && inProgressOperations.length > 0) {
+    // Recalculate part's current_cell_id from remaining in_progress operations
+    const earliestCell = inProgressOperations.reduce((earliest: any, o: any) => {
+      return o.cells.sequence < earliest.sequence 
+        ? { cell_id: o.cell_id, sequence: o.cells.sequence }
         : earliest;
-    }, { stage_id: inProgressTasks[0].stage_id, sequence: (inProgressTasks[0] as any).stages.sequence });
+    }, { cell_id: inProgressOperations[0].cell_id, sequence: (inProgressOperations[0] as any).cells.sequence });
 
     await supabase
       .from("parts")
-      .update({ current_stage_id: earliestStage.stage_id })
-      .eq("id", task.part_id);
+      .update({ current_cell_id: earliestCell.cell_id })
+      .eq("id", operation.part_id);
 
-    // Also recalculate job's current_stage_id
+    // Also recalculate job's current_cell_id
     const { data: part } = await supabase
       .from("parts")
       .select("job_id")
-      .eq("id", task.part_id)
+      .eq("id", operation.part_id)
       .single();
 
     if (part) {
-      await recalculateJobCurrentStage(part.job_id);
+      await recalculateJobCurrentCell(part.job_id);
     }
   }
 }
 
-async function recalculateJobCurrentStage(jobId: string) {
-  // Get all in_progress tasks across all parts in this job
+async function recalculateJobCurrentCell(jobId: string) {
+  // Get all in_progress operations across all parts in this job
   const { data: jobParts } = await supabase
     .from("parts")
     .select("id")
@@ -454,29 +454,29 @@ async function recalculateJobCurrentStage(jobId: string) {
 
   const partIds = jobParts.map(p => p.id);
 
-  const { data: inProgressTasks } = await supabase
-    .from("tasks")
-    .select("stage_id, stages!inner(sequence)")
+  const { data: inProgressOperations } = await supabase
+    .from("operations")
+    .select("cell_id, cells!inner(sequence)")
     .in("part_id", partIds)
     .eq("status", "in_progress");
 
-  if (inProgressTasks && inProgressTasks.length > 0) {
-    // Get the earliest stage (lowest sequence) with in_progress tasks
-    const earliestStage = inProgressTasks.reduce((earliest: any, t: any) => {
-      return t.stages.sequence < earliest.sequence 
-        ? { stage_id: t.stage_id, sequence: t.stages.sequence }
+  if (inProgressOperations && inProgressOperations.length > 0) {
+    // Get the earliest cell (lowest sequence) with in_progress operations
+    const earliestCell = inProgressOperations.reduce((earliest: any, o: any) => {
+      return o.cells.sequence < earliest.sequence 
+        ? { cell_id: o.cell_id, sequence: o.cells.sequence }
         : earliest;
-    }, { stage_id: inProgressTasks[0].stage_id, sequence: (inProgressTasks[0] as any).stages.sequence });
+    }, { cell_id: inProgressOperations[0].cell_id, sequence: (inProgressOperations[0] as any).cells.sequence });
 
     await supabase
       .from("jobs")
-      .update({ current_stage_id: earliestStage.stage_id })
+      .update({ current_cell_id: earliestCell.cell_id })
       .eq("id", jobId);
   } else {
-    // No in_progress tasks, but job isn't complete yet
+    // No in_progress operations, but job isn't complete yet
     await supabase
       .from("jobs")
-      .update({ current_stage_id: null })
+      .update({ current_cell_id: null })
       .eq("id", jobId);
   }
 }
