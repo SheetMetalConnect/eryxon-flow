@@ -43,7 +43,7 @@ export default function Jobs() {
         .select(`
           *,
           parts:parts(count),
-          tasks:parts(tasks(count))
+          operations:parts(operations(count))
         `);
 
       if (statusFilter !== "all") {
@@ -61,7 +61,7 @@ export default function Jobs() {
       const processedJobs = data.map((job: any) => ({
         ...job,
         parts_count: job.parts?.[0]?.count || 0,
-        tasks_count: job.tasks?.reduce((sum: number, part: any) => sum + (part.tasks?.[0]?.count || 0), 0) || 0,
+        operations_count: job.operations?.reduce((sum: number, part: any) => sum + (part.operations?.[0]?.count || 0), 0) || 0,
       }));
 
       // Sort
@@ -190,7 +190,7 @@ export default function Jobs() {
               <TableHead>Due Date</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Parts</TableHead>
-              <TableHead className="text-right">Tasks</TableHead>
+              <TableHead className="text-right">Operations</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -212,7 +212,7 @@ export default function Jobs() {
                 </TableCell>
                 <TableCell>{getStatusBadge(job.status)}</TableCell>
                 <TableCell className="text-right">{job.parts_count}</TableCell>
-                <TableCell className="text-right">{job.tasks_count}</TableCell>
+                <TableCell className="text-right">{job.operations_count}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button
