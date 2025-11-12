@@ -30,10 +30,10 @@ interface PartDetailModalProps {
 
 export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetailModalProps) {
   const { toast } = useToast();
-  const [addingTask, setAddingTask] = useState(false);
-  const [newTask, setNewTask] = useState({
-    task_name: "",
-    stage_id: "",
+  const [addingOperation, setAddingOperation] = useState(false);
+  const [newOperation, setNewOperation] = useState({
+    operation_name: "",
+    cell_id: "",
     estimated_time: 0,
     sequence: 1,
     notes: "",
@@ -46,13 +46,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         .from("parts")
         .select(`
           *,
-          job:jobs(job_number, customer),
-          stage:stages(name, color),
-          tasks (
-            *,
-            stage:stages(name, color),
-            assigned_operator:profiles(full_name)
-          )
+          job:jobs(job_number, customer)
         `)
         .eq("id", partId)
         .single();
@@ -62,11 +56,11 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     },
   });
 
-  const { data: stages } = useQuery({
-    queryKey: ["stages"],
+  const { data: cells } = useQuery({
+    queryKey: ["cells"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("stages")
+        .from("cells")
         .select("*")
         .eq("active", true)
         .order("sequence");
@@ -76,33 +70,52 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     },
   });
 
-  const addTaskMutation = useMutation({
+  const { data: operations, refetch: refetchOperations } = useQuery({
+    queryKey: ["operations", partId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("operations")
+        .select(`
+          *,
+          cell:cells(name, color),
+          assigned_operator:profiles(full_name)
+        `)
+        .eq("part_id", partId)
+        .order("sequence");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const addOperationMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("tasks").insert({
+      const { error } = await supabase.from("operations").insert({
         part_id: partId,
-        task_name: newTask.task_name,
-        stage_id: newTask.stage_id,
-        estimated_time: newTask.estimated_time || null,
-        sequence: newTask.sequence,
-        notes: newTask.notes || null,
+        operation_name: newOperation.operation_name,
+        cell_id: newOperation.cell_id,
+        estimated_time: newOperation.estimated_time || null,
+        sequence: newOperation.sequence,
+        notes: newOperation.notes || null,
         status: "not_started",
+        tenant_id: (part as any)?.tenant_id,
       });
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
-        title: "Task added",
-        description: "New task has been added to the part.",
+        title: "Operation added",
+        description: "New operation has been added to the part.",
       });
-      setAddingTask(false);
-      setNewTask({
-        task_name: "",
-        stage_id: "",
+      setAddingOperation(false);
+      setNewOperation({
+        operation_name: "",
+        cell_id: "",
         estimated_time: 0,
         sequence: 1,
         notes: "",
       });
+      await refetchOperations();
       onUpdate();
     },
     onError: (error: any) => {
@@ -114,16 +127,16 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     },
   });
 
-  const handleAddTask = () => {
-    if (!newTask.task_name || !newTask.stage_id) {
+  const handleAddOperation = () => {
+    if (!newOperation.operation_name || !newOperation.cell_id) {
       toast({
         title: "Validation error",
-        description: "Task name and stage are required",
+        description: "Operation name and cell are required",
         variant: "destructive",
       });
       return;
     }
-    addTaskMutation.mutate();
+    addOperationMutation.mutate();
   };
 
   if (isLoading) {
@@ -174,21 +187,24 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
             </div>
 
             <div>
-              <Label>Current Stage</Label>
+              <Label>Current Cell</Label>
               <div className="mt-1">
-                {part?.stage ? (
-                  <Badge
-                    variant="outline"
-                    style={{
-                      borderColor: part.stage.color,
-                      backgroundColor: `${part.stage.color}20`,
-                    }}
-                  >
-                    {part.stage.name}
-                  </Badge>
-                ) : (
-                  <span className="text-gray-400 text-sm">Not started</span>
-                )}
+                {(() => {
+                  const cell = (cells || []).find((c: any) => c.id === (part as any)?.current_cell_id);
+                  return cell ? (
+                    <Badge
+                      variant="outline"
+                      style={{
+                        borderColor: cell.color || undefined,
+                        backgroundColor: `${cell.color || "#999"}20`,
+                      }}
+                    >
+                      {cell.name}
+                    </Badge>
+                  ) : (
+                    <span className="text-gray-400 text-sm">Not started</span>
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -220,44 +236,44 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
             </div>
           )}
 
-          {/* Tasks */}
+          {/* Operations */}
           <div>
             <div className="flex justify-between items-center mb-3">
-              <Label className="text-lg">Tasks ({part?.tasks?.length || 0})</Label>
-              <Button size="sm" onClick={() => setAddingTask(true)}>
-                <Plus className="h-4 w-4 mr-2" /> Add Task
+              <Label className="text-lg">Operations ({operations?.length || 0})</Label>
+              <Button size="sm" onClick={() => setAddingOperation(true)}>
+                <Plus className="h-4 w-4 mr-2" /> Add Operation
               </Button>
             </div>
 
-            {/* Add Task Form */}
-            {addingTask && (
+            {/* Add Operation Form */}
+            {addingOperation && (
               <div className="border rounded-lg p-4 mb-4 bg-blue-50">
-                <h4 className="font-semibold mb-3">New Task</h4>
+                <h4 className="font-semibold mb-3">New Operation</h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label>Task Name *</Label>
+                    <Label>Operation Name *</Label>
                     <Input
-                      value={newTask.task_name}
+                      value={newOperation.operation_name}
                       onChange={(e) =>
-                        setNewTask({ ...newTask, task_name: e.target.value })
+                        setNewOperation({ ...newOperation, operation_name: e.target.value })
                       }
                     />
                   </div>
                   <div>
-                    <Label>Stage *</Label>
+                    <Label>Cell *</Label>
                     <Select
-                      value={newTask.stage_id}
+                      value={newOperation.cell_id}
                       onValueChange={(value) =>
-                        setNewTask({ ...newTask, stage_id: value })
+                        setNewOperation({ ...newOperation, cell_id: value })
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select stage" />
+                        <SelectValue placeholder="Select cell" />
                       </SelectTrigger>
                       <SelectContent>
-                        {stages?.map((stage) => (
-                          <SelectItem key={stage.id} value={stage.id}>
-                            {stage.name}
+                        {cells?.map((cell: any) => (
+                          <SelectItem key={cell.id} value={cell.id}>
+                            {cell.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -267,10 +283,10 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                     <Label>Estimated Time (minutes)</Label>
                     <Input
                       type="number"
-                      value={newTask.estimated_time || ""}
+                      value={newOperation.estimated_time || ""}
                       onChange={(e) =>
-                        setNewTask({
-                          ...newTask,
+                        setNewOperation({
+                          ...newOperation,
                           estimated_time: parseInt(e.target.value) || 0,
                         })
                       }
@@ -280,10 +296,10 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                     <Label>Sequence</Label>
                     <Input
                       type="number"
-                      value={newTask.sequence}
+                      value={newOperation.sequence}
                       onChange={(e) =>
-                        setNewTask({
-                          ...newTask,
+                        setNewOperation({
+                          ...newOperation,
                           sequence: parseInt(e.target.value) || 1,
                         })
                       }
@@ -292,64 +308,64 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   <div className="col-span-2">
                     <Label>Notes</Label>
                     <Textarea
-                      value={newTask.notes}
+                      value={newOperation.notes}
                       onChange={(e) =>
-                        setNewTask({ ...newTask, notes: e.target.value })
+                        setNewOperation({ ...newOperation, notes: e.target.value })
                       }
                       rows={2}
                     />
                   </div>
                 </div>
                 <div className="flex gap-2 mt-3">
-                  <Button onClick={handleAddTask} disabled={addTaskMutation.isPending}>
+                  <Button onClick={handleAddOperation} disabled={addOperationMutation.isPending}>
                     <Save className="h-4 w-4 mr-2" />
-                    {addTaskMutation.isPending ? "Saving..." : "Save Task"}
+                    {addOperationMutation.isPending ? "Saving..." : "Save Operation"}
                   </Button>
-                  <Button variant="outline" onClick={() => setAddingTask(false)}>
+                  <Button variant="outline" onClick={() => setAddingOperation(false)}>
                     <X className="h-4 w-4 mr-2" /> Cancel
                   </Button>
                 </div>
               </div>
             )}
 
-            {/* Tasks List */}
+            {/* Operations List */}
             <div className="space-y-2">
-              {part?.tasks?.map((task: any) => (
+              {operations?.map((op: any) => (
                 <div
-                  key={task.id}
+                  key={op.id}
                   className="flex items-center justify-between border rounded-md p-3"
                 >
                   <div className="flex items-center gap-3">
                     <Badge
                       variant="outline"
                       style={{
-                        borderColor: task.stage?.color,
-                        backgroundColor: `${task.stage?.color}20`,
+                        borderColor: op.cell?.color,
+                        backgroundColor: `${op.cell?.color || "#999"}20`,
                       }}
                     >
-                      {task.stage?.name}
+                      {op.cell?.name}
                     </Badge>
                     <div>
-                      <p className="font-medium">{task.task_name}</p>
+                      <p className="font-medium">{op.operation_name}</p>
                       <p className="text-xs text-gray-500">
-                        Seq: {task.sequence}
-                        {task.estimated_time && ` | Est: ${task.estimated_time}min`}
-                        {task.assigned_operator && (
+                        Seq: {op.sequence}
+                        {op.estimated_time && ` | Est: ${op.estimated_time}min`}
+                        {op.assigned_operator && (
                           <span className="ml-2">
-                            | Assigned: {task.assigned_operator.full_name}
+                            | Assigned: {op.assigned_operator.full_name}
                           </span>
                         )}
                       </p>
                     </div>
                   </div>
-                  <Badge variant={task.status === "completed" ? "default" : "secondary"}>
-                    {task.status?.replace("_", " ")}
+                  <Badge variant={op.status === "completed" ? "default" : "secondary"}>
+                    {op.status?.replace("_", " ")}
                   </Badge>
                 </div>
               ))}
-              {part?.tasks?.length === 0 && (
+              {(operations?.length || 0) === 0 && (
                 <p className="text-sm text-gray-500 text-center py-4">
-                  No tasks added yet
+                  No operations added yet
                 </p>
               )}
             </div>
