@@ -10,10 +10,10 @@ import { formatDistanceToNow } from "date-fns";
 
 interface ActiveEntry {
   id: string;
-  task_id: string;
+  operation_id: string;
   start_time: string;
-  task: {
-    task_name: string;
+  operation: {
+    operation_name: string;
     part: {
       part_number: string;
       job: {
@@ -69,10 +69,10 @@ export default function CurrentlyTimingWidget() {
       .select(
         `
         id,
-        task_id,
+        operation_id,
         start_time,
-        task:tasks(
-          task_name,
+        operation:operations(
+          operation_name,
           part:parts(
             part_number,
             job:jobs(job_number)
@@ -88,11 +88,11 @@ export default function CurrentlyTimingWidget() {
     }
   };
 
-  const handleStop = async (taskId: string) => {
+  const handleStop = async (operationId: string) => {
     if (!profile?.id) return;
 
     try {
-      await stopTimeTracking(taskId, profile.id);
+      await stopTimeTracking(operationId, profile.id);
       toast.success("Time tracking stopped");
       loadActiveEntries();
     } catch (error: any) {
@@ -115,9 +115,9 @@ export default function CurrentlyTimingWidget() {
             className="flex items-center justify-between p-3 bg-background rounded-lg border"
           >
             <div className="flex-1 min-w-0">
-              <div className="font-medium truncate">{entry.task.task_name}</div>
+              <div className="font-medium truncate">{entry.operation.operation_name}</div>
               <div className="text-sm text-muted-foreground">
-                Job {entry.task.part.job.job_number} • {entry.task.part.part_number}
+                Job {entry.operation.part.job.job_number} • {entry.operation.part.part_number}
               </div>
               <div className="text-xs text-muted-foreground mt-1">
                 Started {formatDistanceToNow(new Date(entry.start_time), { addSuffix: true })}
@@ -126,7 +126,7 @@ export default function CurrentlyTimingWidget() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleStop(entry.task_id)}
+              onClick={() => handleStop(entry.operation_id)}
               className="gap-2 ml-4"
             >
               <Square className="h-4 w-4" />

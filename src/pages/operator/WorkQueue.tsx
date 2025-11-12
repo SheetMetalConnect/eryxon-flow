@@ -47,8 +47,8 @@ export default function WorkQueue() {
   const [loading, setLoading] = useState(true);
   const [selectedMaterial, setSelectedMaterial] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [stages, setStages] = useState<any[]>([]);
-  const [hiddenStages, setHiddenStages] = useState<Set<string>>(new Set());
+  const [cells, setCells] = useState<any[]>([]);
+  const [hiddenCells, setHiddenCells] = useState<Set<string>>(new Set());
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [assignedToMe, setAssignedToMe] = useState<boolean>(false);
   const [dueDateFilter, setDueDateFilter] = useState<string>("all");
@@ -90,8 +90,8 @@ export default function WorkQueue() {
           .order("sequence"),
       ]);
 
-      setTasks(tasksData);
-      if (stagesData.data) setStages(stagesData.data);
+      if (operationsData.data) setOperations(operationsData.data);
+      if (cellsData.data) setCells(cellsData.data);
     } catch (error) {
       console.error("Error loading data:", error);
       toast.error("Failed to load work queue");
@@ -103,14 +103,14 @@ export default function WorkQueue() {
   const setupRealtimeSubscriptions = () => {
     if (!profile?.tenant_id) return;
 
-    const tasksChannel = supabase
-      .channel("tasks-changes")
+    const operationsChannel = supabase
+      .channel("operations-changes")
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
-          table: "tasks",
+          table: "operations",
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
         () => {
@@ -136,18 +136,18 @@ export default function WorkQueue() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(tasksChannel);
+      supabase.removeChannel(operationsChannel);
       supabase.removeChannel(timeEntriesChannel);
     };
   };
 
-  const toggleStageVisibility = (stageId: string) => {
-    setHiddenStages((prev) => {
+  const toggleCellVisibility = (cellId: string) => {
+    setHiddenCells((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(stageId)) {
-        newSet.delete(stageId);
+      if (newSet.has(cellId)) {
+        newSet.delete(cellId);
       } else {
-        newSet.add(stageId);
+        newSet.add(cellId);
       }
       return newSet;
     });
@@ -155,39 +155,39 @@ export default function WorkQueue() {
 
   // Get unique materials
   const materials = Array.from(
-    new Set(tasks.map((task) => task.part.material))
+    new Set(operations.map((operation) => operation.part.material))
   ).sort();
 
-  // Filter tasks
-  const filteredTasks = tasks.filter((task) => {
+  // Filter operations
+  const filteredOperations = operations.filter((operation) => {
     // Material filter
     const matchesMaterial =
-      selectedMaterial === "all" || task.part.material === selectedMaterial;
+      selectedMaterial === "all" || operation.part.material === selectedMaterial;
 
     // Search filter
     const matchesSearch =
       searchQuery === "" ||
-      task.task_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.part.part_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.part.job.job_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (task.part.job.customer &&
-        task.part.job.customer.toLowerCase().includes(searchQuery.toLowerCase()));
+      operation.operation_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      operation.part.part_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      operation.part.job.job_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (operation.part.job.customer &&
+        operation.part.job.customer.toLowerCase().includes(searchQuery.toLowerCase()));
 
     // Status filter
     const matchesStatus =
-      statusFilter === "all" || task.status === statusFilter;
+      statusFilter === "all" || operation.status === statusFilter;
 
     // Show completed filter
-    const matchesCompleted = showCompleted || task.status !== "completed";
+    const matchesCompleted = showCompleted || operation.status !== "completed";
 
     // Assigned to me filter
     const matchesAssigned =
-      !assignedToMe || task.assigned_operator_id === profile?.id;
+      !assignedToMe || operation.assigned_operator_id === profile?.id;
 
     // Due date filter
     let matchesDueDate = true;
     if (dueDateFilter !== "all") {
-      const dueDate = new Date(task.part.job.due_date_override || task.part.job.due_date);
+      const dueDate = new Date(operation.part.job.due_date);
       const today = startOfToday();
       const endToday = endOfToday();
       const weekFromNow = addDays(today, 7);
@@ -211,13 +211,13 @@ export default function WorkQueue() {
     );
   });
 
-  // Sort tasks
-  const sortedTasks = [...filteredTasks].sort((a, b) => {
+  // Sort operations
+  const sortedOperations = [...filteredOperations].sort((a, b) => {
     if (sortBy === "sequence") {
-      return a.sequence - b.sequence;
+      return (a.sequence || 0) - (b.sequence || 0);
     } else if (sortBy === "due_date") {
-      const dateA = new Date(a.part.job.due_date_override || a.part.job.due_date);
-      const dateB = new Date(b.part.job.due_date_override || b.part.job.due_date);
+      const dateA = new Date(a.part.job.due_date);
+      const dateB = new Date(b.part.job.due_date);
       return dateA.getTime() - dateB.getTime();
     } else if (sortBy === "estimated_time") {
       return (a.estimated_time || 0) - (b.estimated_time || 0);
@@ -225,18 +225,18 @@ export default function WorkQueue() {
     return 0;
   });
 
-  // Group tasks by stage
-  const tasksByStage = stages
-    .filter((stage) => !hiddenStages.has(stage.id))
-    .map((stage) => ({
-      stage,
-      tasks: sortedTasks.filter((task) => task.stage_id === stage.id),
+  // Group operations by cell
+  const operationsByCell = cells
+    .filter((cell) => !hiddenCells.has(cell.id))
+    .map((cell) => ({
+      cell,
+      operations: sortedOperations.filter((operation) => operation.cell_id === cell.id),
     }));
 
   // Calculate stats
-  const totalTasks = filteredTasks.length;
-  const inProgressTasks = filteredTasks.filter((t) => t.status === "in_progress").length;
-  const completedTasks = filteredTasks.filter((t) => t.status === "completed").length;
+  const totalOperations = filteredOperations.length;
+  const inProgressOperations = filteredOperations.filter((op) => op.status === "in_progress").length;
+  const completedOperations = filteredOperations.filter((op) => op.status === "completed").length;
 
   if (loading) {
     return (
@@ -258,21 +258,21 @@ export default function WorkQueue() {
         <Card className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Total Tasks</p>
-              <p className="text-2xl font-bold">{totalTasks}</p>
+              <p className="text-sm text-muted-foreground">Total Operations</p>
+              <p className="text-2xl font-bold">{totalOperations}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">In Progress</p>
-              <p className="text-2xl font-bold text-blue-600">{inProgressTasks}</p>
+              <p className="text-2xl font-bold text-blue-600">{inProgressOperations}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Completed</p>
-              <p className="text-2xl font-bold text-green-600">{completedTasks}</p>
+              <p className="text-2xl font-bold text-green-600">{completedOperations}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Not Started</p>
               <p className="text-2xl font-bold text-gray-600">
-                {totalTasks - inProgressTasks - completedTasks}
+                {totalOperations - inProgressOperations - completedOperations}
               </p>
             </div>
           </div>
@@ -284,7 +284,7 @@ export default function WorkQueue() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by job, part, task, or customer..."
+                placeholder="Search by job, part, operation, or customer..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -389,28 +389,28 @@ export default function WorkQueue() {
             </div>
           )}
 
-          {/* Stage Visibility Toggles */}
+          {/* Cell Visibility Toggles */}
           <div className="flex flex-wrap gap-2">
-            <span className="text-sm font-medium text-muted-foreground">Stages:</span>
-            {stages.map((stage) => (
+            <span className="text-sm font-medium text-muted-foreground">Cells:</span>
+            {cells.map((cell) => (
               <Button
-                key={stage.id}
-                variant={hiddenStages.has(stage.id) ? "outline" : "default"}
+                key={cell.id}
+                variant={hiddenCells.has(cell.id) ? "outline" : "default"}
                 size="sm"
-                onClick={() => toggleStageVisibility(stage.id)}
+                onClick={() => toggleCellVisibility(cell.id)}
                 style={{
-                  backgroundColor: hiddenStages.has(stage.id)
+                  backgroundColor: hiddenCells.has(cell.id)
                     ? "transparent"
-                    : stage.color,
-                  borderColor: stage.color,
+                    : cell.color,
+                  borderColor: cell.color,
                 }}
               >
-                {hiddenStages.has(stage.id) ? (
+                {hiddenCells.has(cell.id) ? (
                   <EyeOff className="h-3 w-3 mr-1" />
                 ) : (
                   <Eye className="h-3 w-3 mr-1" />
                 )}
-                {stage.name}
+                {cell.name}
               </Button>
             ))}
           </div>
@@ -419,9 +419,9 @@ export default function WorkQueue() {
         {/* Kanban Board */}
         <div className="overflow-x-auto">
           <div className="flex gap-4 pb-4" style={{ minWidth: "max-content" }}>
-            {tasksByStage.map(({ stage, tasks }) => (
+            {operationsByCell.map(({ cell, operations }) => (
               <div
-                key={stage.id}
+                key={cell.id}
                 className={`flex-shrink-0 ${
                   viewMode === "detailed" ? "w-80" : "w-64"
                 } bg-card rounded-lg border`}
@@ -429,25 +429,25 @@ export default function WorkQueue() {
                 <div
                   className="p-4 border-b"
                   style={{
-                    borderTopColor: stage.color || "hsl(var(--stage-default))",
+                    borderTopColor: cell.color || "hsl(var(--primary))",
                     borderTopWidth: "4px",
                   }}
                 >
-                  <h3 className="font-semibold text-lg">{stage.name}</h3>
+                  <h3 className="font-semibold text-lg">{cell.name}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {tasks.length} task{tasks.length !== 1 ? "s" : ""}
+                    {operations.length} operation{operations.length !== 1 ? "s" : ""}
                   </p>
                 </div>
                 <div className="p-4 space-y-3 max-h-[calc(100vh-16rem)] overflow-y-auto">
-                  {tasks.length === 0 ? (
+                  {operations.length === 0 ? (
                     <div className="text-center text-muted-foreground py-8">
-                      No tasks
+                      No operations
                     </div>
                   ) : (
-                    tasks.map((task) => (
-                      <TaskCard
-                        key={task.id}
-                        task={task}
+                    operations.map((operation) => (
+                      <OperationCard
+                        key={operation.id}
+                        operation={operation}
                         onUpdate={loadData}
                         compact={viewMode === "compact"}
                       />

@@ -16,8 +16,8 @@ import { Plus, Trash2, Eye, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 
 const AVAILABLE_EVENTS = [
-  { id: 'task.started', label: 'Task Started' },
-  { id: 'task.completed', label: 'Task Completed' },
+  { id: 'operation.started', label: 'Operation Started' },
+  { id: 'operation.completed', label: 'Operation Completed' },
   { id: 'issue.created', label: 'Issue Created' },
 ];
 
@@ -364,12 +364,12 @@ export default function ConfigWebhooks() {
           <CardContent>
             <pre className="text-sm bg-muted p-4 rounded overflow-x-auto">
 {`{
-  "event": "task.completed",
+  "event": "operation.completed",
   "timestamp": "2024-01-15T10:30:00Z",
   "tenant_id": "uuid",
   "data": {
-    "task_id": "uuid",
-    "task_name": "Laser cutting",
+    "operation_id": "uuid",
+    "operation_name": "Laser cutting",
     "part_number": "P-001",
     "job_number": "J-2024-001",
     "completed_at": "2024-01-15T10:30:00Z",
@@ -484,8 +484,8 @@ export default function ConfigWebhooks() {
                   <h3 className="font-semibold mb-2">Available Events</h3>
                   <ul className="space-y-2 text-sm">
                     <li><code className="bg-muted px-2 py-1 rounded">job.created</code> - Triggered when a job is created via API</li>
-                    <li><code className="bg-muted px-2 py-1 rounded">task.started</code> - Triggered when an operator starts a task</li>
-                    <li><code className="bg-muted px-2 py-1 rounded">task.completed</code> - Triggered when a task is marked complete</li>
+                    <li><code className="bg-muted px-2 py-1 rounded">operation.started</code> - Triggered when an operator starts an operation</li>
+                    <li><code className="bg-muted px-2 py-1 rounded">operation.completed</code> - Triggered when an operation is marked complete</li>
                     <li><code className="bg-muted px-2 py-1 rounded">issue.created</code> - Triggered when a quality issue is reported</li>
                   </ul>
                 </div>
