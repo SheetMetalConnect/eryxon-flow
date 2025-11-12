@@ -3,12 +3,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import OperationCard from "@/components/operator/OperationCard";
+import CurrentlyTimingWidget from "@/components/operator/CurrentlyTimingWidget";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Search, Filter, Eye, EyeOff, LayoutGrid, List } from "lucide-react";
+import { Loader2, Search, Filter, Eye, EyeOff, LayoutGrid, List, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -55,6 +56,7 @@ export default function WorkQueue() {
   const [showCompleted, setShowCompleted] = useState<boolean>(true);
   const [viewMode, setViewMode] = useState<"detailed" | "compact">("detailed");
   const [showFilters, setShowFilters] = useState<boolean>(false);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
 
   useEffect(() => {
     if (!profile?.tenant_id) return;
@@ -249,85 +251,82 @@ export default function WorkQueue() {
 
   return (
     <Layout>
-      <div className="space-y-4">
-        {/* Currently Timing Widget */}
-        <CurrentlyTimingWidget />
+      <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+        {/* Collapsible Side Panel */}
+        <div
+          className={`transition-all duration-300 ease-in-out border-r bg-card ${
+            sidebarOpen ? "w-80" : "w-0"
+          } overflow-hidden`}
+        >
+          <div className="w-80 h-full flex flex-col">
+            {/* Side Panel Header */}
+            <div className="p-4 border-b flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Filters & Controls</h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSidebarOpen(false)}
+                className="h-8 w-8"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            </div>
 
-        {/* Stats Card */}
-        <Card className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Total Operations</p>
-              <p className="text-2xl font-bold">{totalOperations}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">In Progress</p>
-              <p className="text-2xl font-bold text-blue-600">{inProgressOperations}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Completed</p>
-              <p className="text-2xl font-bold text-green-600">{completedOperations}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Not Started</p>
-              <p className="text-2xl font-bold text-gray-600">
-                {totalOperations - inProgressOperations - completedOperations}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Search and Material Filter */}
-        <div className="bg-card rounded-lg border p-4 space-y-4">
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by job, part, operation, or customer..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button
-              variant={showFilters ? "default" : "outline"}
-              size="icon"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <Filter className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setViewMode(viewMode === "detailed" ? "compact" : "detailed")}
-            >
-              {viewMode === "detailed" ? (
-                <LayoutGrid className="h-4 w-4" />
-              ) : (
-                <List className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-
-          {/* Material Tabs */}
-          <Tabs value={selectedMaterial} onValueChange={setSelectedMaterial}>
-            <TabsList className="w-full justify-start overflow-x-auto">
-              <TabsTrigger value="all">All Materials</TabsTrigger>
-              {materials.map((material) => (
-                <TabsTrigger key={material} value={material}>
-                  {material}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-
-          {/* Advanced Filters */}
-          {showFilters && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+            {/* Side Panel Content */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+              {/* Stats Section */}
               <div>
-                <Label htmlFor="status-filter">Status</Label>
+                <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
+                  Statistics
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center p-3 bg-background rounded-lg border">
+                    <span className="text-sm text-muted-foreground">Total</span>
+                    <span className="text-lg font-bold">{totalOperations}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-background rounded-lg border">
+                    <span className="text-sm text-muted-foreground">In Progress</span>
+                    <span className="text-lg font-bold text-blue-600">{inProgressOperations}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-background rounded-lg border">
+                    <span className="text-sm text-muted-foreground">Completed</span>
+                    <span className="text-lg font-bold text-green-600">{completedOperations}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-background rounded-lg border">
+                    <span className="text-sm text-muted-foreground">Not Started</span>
+                    <span className="text-lg font-bold text-gray-600">
+                      {totalOperations - inProgressOperations - completedOperations}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Material Filter */}
+              <div>
+                <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
+                  Materials
+                </h3>
+                <Tabs value={selectedMaterial} onValueChange={setSelectedMaterial}>
+                  <TabsList className="w-full flex-col h-auto">
+                    <TabsTrigger value="all" className="w-full justify-start">
+                      All Materials
+                    </TabsTrigger>
+                    {materials.map((material) => (
+                      <TabsTrigger key={material} value={material} className="w-full justify-start">
+                        {material}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
+              </div>
+
+              {/* Status Filter */}
+              <div>
+                <Label htmlFor="status-filter" className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
+                  Status
+                </Label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger id="status-filter">
+                  <SelectTrigger id="status-filter" className="mt-2">
                     <SelectValue placeholder="All Statuses" />
                   </SelectTrigger>
                   <SelectContent>
@@ -339,10 +338,13 @@ export default function WorkQueue() {
                 </Select>
               </div>
 
+              {/* Due Date Filter */}
               <div>
-                <Label htmlFor="due-date-filter">Due Date</Label>
+                <Label htmlFor="due-date-filter" className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
+                  Due Date
+                </Label>
                 <Select value={dueDateFilter} onValueChange={setDueDateFilter}>
-                  <SelectTrigger id="due-date-filter">
+                  <SelectTrigger id="due-date-filter" className="mt-2">
                     <SelectValue placeholder="All Dates" />
                   </SelectTrigger>
                   <SelectContent>
@@ -354,10 +356,13 @@ export default function WorkQueue() {
                 </Select>
               </div>
 
+              {/* Sort By */}
               <div>
-                <Label htmlFor="sort-by">Sort By</Label>
+                <Label htmlFor="sort-by" className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
+                  Sort By
+                </Label>
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger id="sort-by">
+                  <SelectTrigger id="sort-by" className="mt-2">
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
                   <SelectContent>
@@ -368,93 +373,147 @@ export default function WorkQueue() {
                 </Select>
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="assigned-to-me"
-                  checked={assignedToMe}
-                  onCheckedChange={setAssignedToMe}
-                />
-                <Label htmlFor="assigned-to-me">Assigned to Me</Label>
+              {/* Toggle Switches */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="assigned-to-me" className="text-sm font-medium cursor-pointer">
+                    Assigned to Me
+                  </Label>
+                  <Switch
+                    id="assigned-to-me"
+                    checked={assignedToMe}
+                    onCheckedChange={setAssignedToMe}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="show-completed" className="text-sm font-medium cursor-pointer">
+                    Show Completed
+                  </Label>
+                  <Switch
+                    id="show-completed"
+                    checked={showCompleted}
+                    onCheckedChange={setShowCompleted}
+                  />
+                </div>
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="show-completed"
-                  checked={showCompleted}
-                  onCheckedChange={setShowCompleted}
-                />
-                <Label htmlFor="show-completed">Show Completed</Label>
+              {/* Cell Visibility */}
+              <div>
+                <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
+                  Cell Visibility
+                </h3>
+                <div className="space-y-2">
+                  {cells.map((cell) => (
+                    <Button
+                      key={cell.id}
+                      variant={hiddenCells.has(cell.id) ? "outline" : "default"}
+                      size="sm"
+                      onClick={() => toggleCellVisibility(cell.id)}
+                      className="w-full justify-start"
+                      style={{
+                        backgroundColor: hiddenCells.has(cell.id)
+                          ? "transparent"
+                          : cell.color,
+                        borderColor: cell.color,
+                      }}
+                    >
+                      {hiddenCells.has(cell.id) ? (
+                        <EyeOff className="h-4 w-4 mr-2" />
+                      ) : (
+                        <Eye className="h-4 w-4 mr-2" />
+                      )}
+                      {cell.name}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </div>
-          )}
-
-          {/* Cell Visibility Toggles */}
-          <div className="flex flex-wrap gap-2">
-            <span className="text-sm font-medium text-muted-foreground">Cells:</span>
-            {cells.map((cell) => (
-              <Button
-                key={cell.id}
-                variant={hiddenCells.has(cell.id) ? "outline" : "default"}
-                size="sm"
-                onClick={() => toggleCellVisibility(cell.id)}
-                style={{
-                  backgroundColor: hiddenCells.has(cell.id)
-                    ? "transparent"
-                    : cell.color,
-                  borderColor: cell.color,
-                }}
-              >
-                {hiddenCells.has(cell.id) ? (
-                  <EyeOff className="h-3 w-3 mr-1" />
-                ) : (
-                  <Eye className="h-3 w-3 mr-1" />
-                )}
-                {cell.name}
-              </Button>
-            ))}
           </div>
         </div>
 
-        {/* Kanban Board */}
-        <div className="overflow-x-auto">
-          <div className="flex gap-4 pb-4" style={{ minWidth: "max-content" }}>
-            {operationsByCell.map(({ cell, operations }) => (
-              <div
-                key={cell.id}
-                className={`flex-shrink-0 ${
-                  viewMode === "detailed" ? "w-80" : "w-64"
-                } bg-card rounded-lg border`}
-              >
-                <div
-                  className="p-4 border-b"
-                  style={{
-                    borderTopColor: cell.color || "hsl(var(--primary))",
-                    borderTopWidth: "4px",
-                  }}
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Top Bar */}
+          <div className="p-4 border-b bg-background space-y-4">
+            {/* Currently Timing Widget */}
+            <CurrentlyTimingWidget />
+
+            {/* Search and Controls */}
+            <div className="flex gap-2">
+              {!sidebarOpen && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setSidebarOpen(true)}
                 >
-                  <h3 className="font-semibold text-lg">{cell.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {operations.length} operation{operations.length !== 1 ? "s" : ""}
-                  </p>
-                </div>
-                <div className="p-4 space-y-3 max-h-[calc(100vh-16rem)] overflow-y-auto">
-                  {operations.length === 0 ? (
-                    <div className="text-center text-muted-foreground py-8">
-                      No operations
-                    </div>
-                  ) : (
-                    operations.map((operation) => (
-                      <OperationCard
-                        key={operation.id}
-                        operation={operation}
-                        onUpdate={loadData}
-                        compact={viewMode === "compact"}
-                      />
-                    ))
-                  )}
-                </div>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              )}
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by job, part, operation, or customer..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
               </div>
-            ))}
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setViewMode(viewMode === "detailed" ? "compact" : "detailed")}
+                title={viewMode === "detailed" ? "Switch to compact view" : "Switch to detailed view"}
+              >
+                {viewMode === "detailed" ? (
+                  <LayoutGrid className="h-4 w-4" />
+                ) : (
+                  <List className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Kanban Board */}
+          <div className="flex-1 overflow-x-auto overflow-y-hidden p-4">
+            <div className="flex gap-4 h-full" style={{ minWidth: "max-content" }}>
+              {operationsByCell.map(({ cell, operations }) => (
+                <div
+                  key={cell.id}
+                  className={`flex-shrink-0 ${
+                    viewMode === "detailed" ? "w-80" : "w-64"
+                  } bg-card rounded-lg border flex flex-col`}
+                >
+                  <div
+                    className="p-4 border-b"
+                    style={{
+                      borderTopColor: cell.color || "hsl(var(--primary))",
+                      borderTopWidth: "4px",
+                    }}
+                  >
+                    <h3 className="font-semibold text-lg">{cell.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {operations.length} operation{operations.length !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                  <div className="flex-1 p-4 space-y-3 overflow-y-auto">
+                    {operations.length === 0 ? (
+                      <div className="text-center text-muted-foreground py-8">
+                        No operations
+                      </div>
+                    ) : (
+                      operations.map((operation) => (
+                        <OperationCard
+                          key={operation.id}
+                          operation={operation}
+                          onUpdate={loadData}
+                          compact={viewMode === "compact"}
+                        />
+                      ))
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
