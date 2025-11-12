@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -36,13 +37,13 @@ type Part = {
   parent_part_id?: string;
   notes?: string;
   metadata?: Record<string, any>;
-  tasks: Task[];
+  operations: Operation[];
 };
 
-type Task = {
+type Operation = {
   id: string;
-  task_name: string;
-  stage_id: string;
+  operation_name: string;
+  cell_id: string;
   estimated_time?: number;
   sequence: number;
   notes?: string;
@@ -51,6 +52,7 @@ type Task = {
 export default function JobCreate() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { profile } = useAuth();
   const [step, setStep] = useState(1);
 
   // Step 1: Job details
@@ -64,18 +66,18 @@ export default function JobCreate() {
   const [parts, setParts] = useState<Part[]>([]);
   const [editingPart, setEditingPart] = useState<Partial<Part> | null>(null);
 
-  // Step 3: Tasks
-  const [editingTask, setEditingTask] = useState<{
+  // Step 3: Operations
+  const [editingOperation, setEditingOperation] = useState<{
     partId: string;
-    task: Partial<Task>;
+    operation: Partial<Operation>;
   } | null>(null);
 
-  // Fetch stages for task creation
-  const { data: stages } = useQuery({
-    queryKey: ["stages"],
+  // Fetch cells for operation creation
+  const { data: cells } = useQuery({
+    queryKey: ["cells"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("stages")
+        .from("cells")
         .select("*")
         .eq("active", true)
         .order("sequence");
@@ -87,10 +89,13 @@ export default function JobCreate() {
 
   const createJobMutation = useMutation({
     mutationFn: async () => {
+      if (!profile?.tenant_id) throw new Error("No tenant ID");
+
       // Start transaction
-      const { data: job, error: jobError } = await supabase
+      const { data: job, error: jobError} = await supabase
         .from("jobs")
         .insert({
+          tenant_id: profile.tenant_id,
           job_number: jobNumber,
           customer,
           due_date: dueDate,
@@ -105,14 +110,15 @@ export default function JobCreate() {
 
       // Insert parts
       const partsToInsert = parts.map((part) => ({
+        tenant_id: profile.tenant_id,
         job_id: job.id,
         part_number: part.part_number,
         material: part.material,
         quantity: part.quantity,
-        parent_part_id: part.parent_part_id,
+        parent_part_id: part.parent_part_id || undefined,
         notes: part.notes,
         metadata: part.metadata && Object.keys(part.metadata).length > 0 ? part.metadata : null,
-        status: "not_started",
+        status: "not_started" as const,
       }));
 
       const { data: insertedParts, error: partsError } = await supabase
@@ -122,27 +128,28 @@ export default function JobCreate() {
 
       if (partsError) throw partsError;
 
-      // Insert tasks for each part
+      // Insert operations for each part
       for (let i = 0; i < parts.length; i++) {
         const part = parts[i];
         const insertedPart = insertedParts[i];
 
-        if (part.tasks.length > 0) {
-          const tasksToInsert = part.tasks.map((task) => ({
+        if (part.operations.length > 0) {
+          const operationsToInsert = part.operations.map((operation) => ({
+            tenant_id: profile.tenant_id,
             part_id: insertedPart.id,
-            task_name: task.task_name,
-            stage_id: task.stage_id,
-            estimated_time: task.estimated_time,
-            sequence: task.sequence,
-            notes: task.notes,
-            status: "not_started",
+            operation_name: operation.operation_name,
+            cell_id: operation.cell_id,
+            estimated_time: operation.estimated_time || 0,
+            sequence: operation.sequence,
+            notes: operation.notes,
+            status: "not_started" as const,
           }));
 
-          const { error: tasksError } = await supabase
-            .from("tasks")
-            .insert(tasksToInsert);
+          const { error: operationsError } = await supabase
+            .from("operations")
+            .insert(operationsToInsert);
 
-          if (tasksError) throw tasksError;
+          if (operationsError) throw operationsError;
         }
       }
 
@@ -182,11 +189,11 @@ export default function JobCreate() {
       return;
     }
     if (step === 3) {
-      const partsWithoutTasks = parts.filter((p) => p.tasks.length === 0);
-      if (partsWithoutTasks.length > 0) {
+      const partsWithoutOperations = parts.filter((p) => p.operations.length === 0);
+      if (partsWithoutOperations.length > 0) {
         toast({
           title: "Validation error",
-          description: "Each part must have at least one task",
+          description: "Each part must have at least one operation",
           variant: "destructive",
         });
         return;
@@ -213,40 +220,40 @@ export default function JobCreate() {
       parent_part_id: editingPart.parent_part_id,
       notes: editingPart.notes,
       metadata: editingPart.metadata,
-      tasks: [],
+      operations: [],
     };
 
     setParts([...parts, newPart]);
     setEditingPart(null);
   };
 
-  const handleAddTask = (partId: string) => {
-    if (!editingTask?.task.task_name || !editingTask?.task.stage_id) {
+  const handleAddOperation = (partId: string) => {
+    if (!editingOperation?.operation.operation_name || !editingOperation?.operation.cell_id) {
       toast({
         title: "Validation error",
-        description: "Task name and stage are required",
+        description: "Operation name and cell are required",
         variant: "destructive",
       });
       return;
     }
 
-    const newTask: Task = {
+    const newOperation: Operation = {
       id: crypto.randomUUID(),
-      task_name: editingTask.task.task_name,
-      stage_id: editingTask.task.stage_id,
-      estimated_time: editingTask.task.estimated_time,
-      sequence: editingTask.task.sequence || 1,
-      notes: editingTask.task.notes,
+      operation_name: editingOperation.operation.operation_name,
+      cell_id: editingOperation.operation.cell_id,
+      estimated_time: editingOperation.operation.estimated_time,
+      sequence: editingOperation.operation.sequence || 1,
+      notes: editingOperation.operation.notes,
     };
 
     setParts(
       parts.map((part) =>
         part.id === partId
-          ? { ...part, tasks: [...part.tasks, newTask] }
+          ? { ...part, operations: [...part.operations, newOperation] }
           : part
       )
     );
-    setEditingTask(null);
+    setEditingOperation(null);
   };
 
   const addMetadataField = () => {
@@ -487,11 +494,11 @@ export default function JobCreate() {
         </Card>
       )}
 
-      {/* Step 3: Tasks */}
+      {/* Step 3: Operations */}
       {step === 3 && (
         <Card>
           <CardHeader>
-            <CardTitle>Step 3: Add Tasks to Parts</CardTitle>
+            <CardTitle>Step 3: Add Operations to Parts</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {parts.map((part) => (
@@ -501,47 +508,47 @@ export default function JobCreate() {
                   <Button
                     size="sm"
                     onClick={() =>
-                      setEditingTask({ partId: part.id, task: { sequence: part.tasks.length + 1 } })
+                      setEditingOperation({ partId: part.id, operation: { sequence: part.operations.length + 1 } })
                     }
                   >
-                    <Plus className="h-4 w-4 mr-2" /> Add Task
+                    <Plus className="h-4 w-4 mr-2" /> Add Operation
                   </Button>
                 </div>
 
-                {/* Task Form */}
-                {editingTask?.partId === part.id && (
+                {/* Operation Form */}
+                {editingOperation?.partId === part.id && (
                   <div className="border rounded-lg p-3 bg-blue-50 mb-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <Label>Task Name *</Label>
+                        <Label>Operation Name *</Label>
                         <Input
-                          value={editingTask.task.task_name || ""}
+                          value={editingOperation.operation.operation_name || ""}
                           onChange={(e) =>
-                            setEditingTask({
-                              ...editingTask,
-                              task: { ...editingTask.task, task_name: e.target.value },
+                            setEditingOperation({
+                              ...editingOperation,
+                              operation: { ...editingOperation.operation, operation_name: e.target.value },
                             })
                           }
                         />
                       </div>
                       <div>
-                        <Label>Stage *</Label>
+                        <Label>Cell *</Label>
                         <Select
-                          value={editingTask.task.stage_id}
+                          value={editingOperation.operation.cell_id}
                           onValueChange={(value) =>
-                            setEditingTask({
-                              ...editingTask,
-                              task: { ...editingTask.task, stage_id: value },
+                            setEditingOperation({
+                              ...editingOperation,
+                              operation: { ...editingOperation.operation, cell_id: value },
                             })
                           }
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select stage" />
+                            <SelectValue placeholder="Select cell" />
                           </SelectTrigger>
                           <SelectContent>
-                            {stages?.map((stage) => (
-                              <SelectItem key={stage.id} value={stage.id}>
-                                {stage.name}
+                            {cells?.map((cell) => (
+                              <SelectItem key={cell.id} value={cell.id}>
+                                {cell.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -551,12 +558,12 @@ export default function JobCreate() {
                         <Label>Estimated Time (minutes)</Label>
                         <Input
                           type="number"
-                          value={editingTask.task.estimated_time || ""}
+                          value={editingOperation.operation.estimated_time || ""}
                           onChange={(e) =>
-                            setEditingTask({
-                              ...editingTask,
-                              task: {
-                                ...editingTask.task,
+                            setEditingOperation({
+                              ...editingOperation,
+                              operation: {
+                                ...editingOperation.operation,
                                 estimated_time: parseInt(e.target.value),
                               },
                             })
@@ -567,12 +574,12 @@ export default function JobCreate() {
                         <Label>Sequence</Label>
                         <Input
                           type="number"
-                          value={editingTask.task.sequence || 1}
+                          value={editingOperation.operation.sequence || 1}
                           onChange={(e) =>
-                            setEditingTask({
-                              ...editingTask,
-                              task: {
-                                ...editingTask.task,
+                            setEditingOperation({
+                              ...editingOperation,
+                              operation: {
+                                ...editingOperation.operation,
                                 sequence: parseInt(e.target.value),
                               },
                             })
@@ -581,28 +588,28 @@ export default function JobCreate() {
                       </div>
                     </div>
                     <div className="flex gap-2 mt-3">
-                      <Button onClick={() => handleAddTask(part.id)}>
-                        <Save className="h-4 w-4 mr-2" /> Save Task
+                      <Button onClick={() => handleAddOperation(part.id)}>
+                        <Save className="h-4 w-4 mr-2" /> Save Operation
                       </Button>
-                      <Button variant="outline" onClick={() => setEditingTask(null)}>
+                      <Button variant="outline" onClick={() => setEditingOperation(null)}>
                         Cancel
                       </Button>
                     </div>
                   </div>
                 )}
 
-                {/* Tasks List */}
+                {/* Operations List */}
                 <div className="space-y-2">
-                  {part.tasks.map((task) => (
+                  {part.operations.map((operation) => (
                     <div
-                      key={task.id}
+                      key={operation.id}
                       className="flex justify-between items-center bg-gray-50 p-2 rounded"
                     >
                       <div>
-                        <span className="font-medium">{task.task_name}</span>
+                        <span className="font-medium">{operation.operation_name}</span>
                         <span className="text-sm text-gray-600 ml-3">
-                          Seq: {task.sequence}
-                          {task.estimated_time && ` | Est: ${task.estimated_time}min`}
+                          Seq: {operation.sequence}
+                          {operation.estimated_time && ` | Est: ${operation.estimated_time}min`}
                         </span>
                       </div>
                       <Button
@@ -614,7 +621,7 @@ export default function JobCreate() {
                               p.id === part.id
                                 ? {
                                     ...p,
-                                    tasks: p.tasks.filter((t) => t.id !== task.id),
+                                    operations: p.operations.filter((o) => o.id !== operation.id),
                                   }
                                 : p
                             )
@@ -625,8 +632,8 @@ export default function JobCreate() {
                       </Button>
                     </div>
                   ))}
-                  {part.tasks.length === 0 && (
-                    <p className="text-sm text-gray-500 italic">No tasks added yet</p>
+                  {part.operations.length === 0 && (
+                    <p className="text-sm text-gray-500 italic">No operations added yet</p>
                   )}
                 </div>
               </div>
@@ -658,19 +665,19 @@ export default function JobCreate() {
                   <span className="font-medium">Parts:</span> {parts.length}
                 </div>
                 <div>
-                  <span className="font-medium">Total Tasks:</span>{" "}
-                  {parts.reduce((sum, part) => sum + part.tasks.length, 0)}
+                  <span className="font-medium">Total Operations:</span>{" "}
+                  {parts.reduce((sum, part) => sum + part.operations.length, 0)}
                 </div>
               </div>
             </div>
 
             <div>
-              <h3 className="font-semibold text-lg mb-2">Parts & Tasks Summary</h3>
+              <h3 className="font-semibold text-lg mb-2">Parts & Operations Summary</h3>
               {parts.map((part) => (
                 <div key={part.id} className="border rounded-lg p-3 mb-2">
                   <h4 className="font-semibold">{part.part_number}</h4>
                   <p className="text-sm text-gray-600">
-                    {part.material} | {part.tasks.length} tasks
+                    {part.material} | {part.operations.length} operations
                   </p>
                 </div>
               ))}

@@ -11,7 +11,6 @@ import {
   Avatar,
   Chip,
   useScrollTrigger,
-  styled,
   alpha,
 } from '@mui/material';
 import {
@@ -25,63 +24,12 @@ import {
   Work as WorkIcon,
   Inventory as InventoryIcon,
   Logout as LogoutIcon,
-  AccountCircle as AccountCircleIcon,
   Brightness4 as Brightness4Icon,
   Brightness7 as Brightness7Icon,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useThemeMode } from '@/theme/ThemeProvider';
-
-// Gradient AppBar with purple to blue fade
-const GradientAppBar = styled(AppBar)(({ theme }) => ({
-  background: 'linear-gradient(90deg, #6658A3 0%, #47B5E2 100%)',
-  boxShadow: 'none',
-  transition: 'box-shadow 0.3s ease',
-}));
-
-// Elevated AppBar with shadow on scroll
-const ElevatedAppBar = styled(GradientAppBar)<{ elevation: boolean }>(({ theme, elevation }) => ({
-  boxShadow: elevation ? (theme.shadows as any)[4] : 'none',
-}));
-
-// Logo container
-const LogoBox = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1.5),
-  marginRight: theme.spacing(4),
-}));
-
-// Logo placeholder
-const LogoPlaceholder = styled(Box)(({ theme }) => ({
-  width: 40,
-  height: 40,
-  borderRadius: theme.shape.borderRadius,
-  background: alpha('#ffffff', 0.2),
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontWeight: 700,
-  fontSize: '1.25rem',
-  color: '#ffffff',
-}));
-
-// Navigation button
-const NavButton = styled(Button)<{ active?: boolean }>(({ theme, active }) => ({
-  color: '#ffffff',
-  textTransform: 'none',
-  fontWeight: 500,
-  padding: theme.spacing(1, 2),
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: active ? alpha('#ffffff', 0.15) : 'transparent',
-  '&:hover': {
-    backgroundColor: alpha('#ffffff', 0.25),
-  },
-  '& .MuiButton-startIcon': {
-    marginRight: theme.spacing(0.75),
-  },
-}));
 
 interface AppHeaderProps {
   // Optional props can be added here
@@ -141,11 +89,41 @@ export const AppHeader: React.FC<AppHeaderProps> = () => {
   }
 
   return (
-    <ElevatedAppBar position="sticky" elevation={trigger} enableColorOnDark>
+    <AppBar
+      position="sticky"
+      sx={{
+        background: 'linear-gradient(90deg, #6658A3 0%, #47B5E2 100%)',
+        boxShadow: trigger ? 4 : 0,
+        transition: 'box-shadow 0.3s ease',
+      }}
+      enableColorOnDark
+    >
       <Toolbar sx={{ py: 1 }}>
         {/* Logo and Brand */}
-        <LogoBox>
-          <LogoPlaceholder>SM</LogoPlaceholder>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            mr: 4,
+          }}
+        >
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: 1,
+              background: alpha('#ffffff', 0.2),
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 700,
+              fontSize: '1.25rem',
+              color: '#ffffff',
+            }}
+          >
+            SM
+          </Box>
           <Typography
             variant="h6"
             component="div"
@@ -157,20 +135,36 @@ export const AppHeader: React.FC<AppHeaderProps> = () => {
           >
             Sheet Metal Connect
           </Typography>
-        </LogoBox>
+        </Box>
 
         {/* Navigation Links */}
         <Box sx={{ flexGrow: 1, display: 'flex', gap: 0.5 }}>
           {navItems.map((item) => (
-            <NavButton
+            <Button
               key={item.path}
               component={Link as any}
               to={item.path}
               startIcon={item.icon}
-              active={isActive(item.path)}
+              sx={{
+                color: '#ffffff',
+                textTransform: 'none',
+                fontWeight: 500,
+                px: 2,
+                py: 1,
+                borderRadius: 1,
+                backgroundColor: isActive(item.path)
+                  ? alpha('#ffffff', 0.15)
+                  : 'transparent',
+                '&:hover': {
+                  backgroundColor: alpha('#ffffff', 0.25),
+                },
+                '& .MuiButton-startIcon': {
+                  mr: 0.75,
+                },
+              }}
             >
               {item.label}
-            </NavButton>
+            </Button>
           ))}
         </Box>
 
@@ -266,6 +260,6 @@ export const AppHeader: React.FC<AppHeaderProps> = () => {
           </Box>
         </Box>
       </Toolbar>
-    </ElevatedAppBar>
+    </AppBar>
   );
 };

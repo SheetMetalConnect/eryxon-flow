@@ -70,7 +70,7 @@ export default function Parts() {
         `);
 
       if (statusFilter !== "all") {
-        query = query.eq("status", statusFilter);
+        query = query.eq("status", statusFilter as any);
       }
 
       if (materialFilter !== "all") {

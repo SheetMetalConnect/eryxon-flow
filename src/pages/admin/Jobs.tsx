@@ -47,7 +47,7 @@ export default function Jobs() {
         `);
 
       if (statusFilter !== "all") {
-        query = query.eq("status", statusFilter);
+        query = query.eq("status", statusFilter as any);
       }
 
       if (searchQuery) {

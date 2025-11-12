@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchTasksWithDetails, TaskWithDetails } from "@/lib/database";
 import Layout from "@/components/Layout";
-import TaskCard from "@/components/operator/TaskCard";
+import OperationCard from "@/components/operator/OperationCard";
 import CurrentlyTimingWidget from "@/components/operator/CurrentlyTimingWidget";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -23,9 +22,28 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { isAfter, isBefore, addDays, startOfToday, endOfToday } from "date-fns";
 
+interface OperationWithDetails {
+  id: string;
+  operation_name: string;
+  status: string;
+  part: {
+    part_number: string;
+    material: string;
+    job: {
+      job_number: string;
+      due_date: string;
+      customer: string;
+    };
+  };
+  cell: {
+    name: string;
+    color: string;
+  };
+}
+
 export default function WorkQueue() {
   const { profile } = useAuth();
-  const [tasks, setTasks] = useState<TaskWithDetails[]>([]);
+  const [operations, setOperations] = useState<OperationWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMaterial, setSelectedMaterial] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -50,10 +68,22 @@ export default function WorkQueue() {
     if (!profile?.tenant_id) return;
 
     try {
-      const [tasksData, stagesData] = await Promise.all([
-        fetchTasksWithDetails(profile.tenant_id),
+      const [operationsData, cellsData] = await Promise.all([
         supabase
-          .from("stages")
+          .from("operations")
+          .select(`
+            *,
+            part:parts!inner(
+              part_number,
+              material,
+              job:jobs!inner(job_number, due_date, customer)
+            ),
+            cell:cells!inner(name, color)
+          `)
+          .eq("tenant_id", profile.tenant_id)
+          .order("part(job(due_date))"),
+        supabase
+          .from("cells")
           .select("*")
           .eq("tenant_id", profile.tenant_id)
           .eq("active", true)

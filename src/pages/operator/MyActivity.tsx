@@ -13,8 +13,8 @@ interface TimeEntry {
   end_time: string | null;
   duration: number | null;
   notes: string | null;
-  task: {
-    task_name: string;
+  operation: {
+    operation_name: string;
     status: string;
     part: {
       part_number: string;
@@ -22,7 +22,7 @@ interface TimeEntry {
         job_number: string;
       };
     };
-    stage: {
+    cell: {
       name: string;
       color: string | null;
     };
@@ -58,19 +58,19 @@ export default function MyActivity() {
       .from("time_entries")
       .select(`
         *,
-        task:tasks!inner(
-          task_name,
+        operation:operations!inner(
+          operation_name,
           status,
           part:parts!inner(
             part_number,
             job:jobs!inner(job_number)
           ),
-          stage:stages!inner(name, color)
+          cell:cells!inner(name, color)
         )
       `)
       .eq("operator_id", profile.id)
       .gte("start_time", startDate.toISOString())
-      .order("start_time", { ascending: false });
+      .order("start_time", { ascending: false});
 
     if (error) {
       console.error("Error loading activity:", error);
@@ -93,15 +93,15 @@ export default function MyActivity() {
 
     return Object.entries(groups).map(([date, dayEntries]) => {
       const totalMinutes = dayEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
-      const uniqueTasks = new Set(dayEntries.map((e) => e.task.task_name));
-      const completedTasks = dayEntries.filter((e) => e.task.status === "completed");
+      const uniqueOperations = new Set(dayEntries.map((e) => e.operation.operation_name));
+      const completedOperations = dayEntries.filter((e) => e.operation.status === "completed");
 
       return {
         date,
         entries: dayEntries,
         totalMinutes,
-        tasksCount: uniqueTasks.size,
-        completedCount: completedTasks.length,
+        tasksCount: uniqueOperations.size,
+        completedCount: completedOperations.length,
       };
     });
   };
@@ -177,7 +177,7 @@ export default function MyActivity() {
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span>Total: {formatDuration(group.totalMinutes)}</span>
                     <span>•</span>
-                    <span>{group.tasksCount} tasks</span>
+                    <span>{group.tasksCount} operations</span>
                     <span>•</span>
                     <span>{group.completedCount} completed</span>
                   </div>
@@ -187,28 +187,28 @@ export default function MyActivity() {
                   {group.entries.map((entry) => (
                     <Card key={entry.id} className="p-4">
                       <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge
-                              style={{
-                                backgroundColor: entry.task.stage.color || "hsl(var(--stage-default))",
-                                color: "white",
-                              }}
-                            >
-                              {entry.task.stage.name}
-                            </Badge>
-                            {entry.task.status === "completed" && (
-                              <CheckCircle className="h-4 w-4 text-green-600" />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge
+                                style={{
+                                  backgroundColor: entry.operation.cell.color || "hsl(var(--primary))",
+                                  color: "white",
+                                }}
+                              >
+                                {entry.operation.cell.name}
+                              </Badge>
+                              {entry.operation.status === "completed" && (
+                                <CheckCircle className="h-4 w-4 text-green-600" />
+                              )}
+                            </div>
+                            <div className="font-medium mb-1">{entry.operation.operation_name}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {entry.operation.part.job.job_number} • {entry.operation.part.part_number}
+                            </div>
+                            {entry.notes && (
+                              <div className="text-sm text-muted-foreground mt-2 italic">{entry.notes}</div>
                             )}
                           </div>
-                          <div className="font-medium mb-1">{entry.task.task_name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {entry.task.part.job.job_number} • {entry.task.part.part_number}
-                          </div>
-                          {entry.notes && (
-                            <div className="text-sm text-muted-foreground mt-2 italic">{entry.notes}</div>
-                          )}
-                        </div>
                         <div className="text-right shrink-0">
                           <div className="text-sm font-medium flex items-center gap-1">
                             <Clock className="h-3 w-3" />
