@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { TaskWithDetails, startTimeTracking, stopTimeTracking, completeTask } from "@/lib/database";
+import { useState } from "react";
+import { OperationWithDetails, startTimeTracking, stopTimeTracking, completeOperation } from "@/lib/database";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -13,28 +13,28 @@ import { supabase } from "@/integrations/supabase/client";
 import MetadataDisplay from "@/components/ui/MetadataDisplay";
 import IssueForm from "./IssueForm";
 
-interface TaskDetailModalProps {
-  task: TaskWithDetails;
+interface OperationDetailModalProps {
+  operation: OperationWithDetails;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdate: () => void;
 }
 
-export default function TaskDetailModal({
-  task,
+export default function OperationDetailModal({
+  operation,
   open,
   onOpenChange,
   onUpdate,
-}: TaskDetailModalProps) {
+}: OperationDetailModalProps) {
   const { profile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showIssueForm, setShowIssueForm] = useState(false);
   const [showAssemblyWarning, setShowAssemblyWarning] = useState(false);
   const [incompleteChildren, setIncompleteChildren] = useState<string[]>([]);
 
-  const isCurrentUserTiming = task.active_time_entry?.operator_id === profile?.id;
-  const canStartTiming = !task.active_time_entry && task.status !== "completed";
-  const canComplete = task.status !== "completed" && !task.active_time_entry;
+  const isCurrentUserTiming = operation.active_time_entry?.operator_id === profile?.id;
+  const canStartTiming = !operation.active_time_entry && operation.status !== "completed";
+  const canComplete = operation.status !== "completed" && !operation.active_time_entry;
   const canReportIssue = isCurrentUserTiming;
 
   const checkAssemblyDependencies = async () => {
@@ -44,7 +44,7 @@ export default function TaskDetailModal({
     const { data: children } = await supabase
       .from("parts")
       .select("id, part_number, status")
-      .eq("parent_part_id", task.part.id)
+      .eq("parent_part_id", operation.part.id)
       .eq("tenant_id", profile.tenant_id);
 
     if (!children || children.length === 0) {
@@ -73,7 +73,7 @@ export default function TaskDetailModal({
 
     setLoading(true);
     try {
-      await startTimeTracking(task.id, profile.id, profile.tenant_id);
+      await startTimeTracking(operation.id, profile.id, profile.tenant_id);
       toast.success("Time tracking started");
       onUpdate();
     } catch (error: any) {
@@ -89,7 +89,7 @@ export default function TaskDetailModal({
 
     setLoading(true);
     try {
-      await startTimeTracking(task.id, profile.id, profile.tenant_id);
+      await startTimeTracking(operation.id, profile.id, profile.tenant_id);
       toast.success("Time tracking started");
       onUpdate();
     } catch (error: any) {
@@ -104,7 +104,7 @@ export default function TaskDetailModal({
 
     setLoading(true);
     try {
-      await stopTimeTracking(task.id, profile.id);
+      await stopTimeTracking(operation.id, profile.id);
       toast.success("Time tracking stopped");
       onUpdate();
     } catch (error: any) {
@@ -119,26 +119,26 @@ export default function TaskDetailModal({
 
     setLoading(true);
     try {
-      await completeTask(task.id, profile.tenant_id);
-      toast.success("Task marked as complete");
+      await completeOperation(operation.id, profile.tenant_id);
+      toast.success("Operation marked as complete");
       onUpdate();
       onOpenChange(false);
     } catch (error: any) {
-      toast.error(error.message || "Failed to complete task");
+      toast.error(error.message || "Failed to complete operation");
     } finally {
       setLoading(false);
     }
   };
 
-  const dueDate = task.part.job.due_date_override || task.part.job.due_date;
-  const remainingTime = task.estimated_time - (task.actual_time || 0);
+  const dueDate = operation.part.job.due_date_override || operation.part.job.due_date;
+  const remainingTime = operation.estimated_time - (operation.actual_time || 0);
   const isOvertime = remainingTime < 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{task.task_name}</DialogTitle>
+          <DialogTitle className="text-2xl">{operation.operation_name}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -146,41 +146,41 @@ export default function TaskDetailModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <div className="text-sm text-muted-foreground mb-1">Job</div>
-              <div className="font-semibold">{task.part.job.job_number}</div>
-              {task.part.job.customer && (
+              <div className="font-semibold">{operation.part.job.job_number}</div>
+              {operation.part.job.customer && (
                 <div className="text-sm text-muted-foreground">
-                  {task.part.job.customer}
+                  {operation.part.job.customer}
                 </div>
               )}
             </div>
             <div>
               <div className="text-sm text-muted-foreground mb-1">Part</div>
-              <div className="font-semibold">{task.part.part_number}</div>
+              <div className="font-semibold">{operation.part.part_number}</div>
               <div className="text-sm text-muted-foreground">
-                {task.part.material} • Qty: {task.part.quantity}
+                {operation.part.material} • Qty: {operation.part.quantity}
               </div>
             </div>
           </div>
 
           <Separator />
 
-          {/* Stage & Status */}
+          {/* Cell & Status */}
           <div className="flex items-center gap-4">
             <div>
-              <div className="text-sm text-muted-foreground mb-1">Stage</div>
+              <div className="text-sm text-muted-foreground mb-1">Cell</div>
               <Badge
                 style={{
-                  backgroundColor: task.stage.color || "hsl(var(--stage-default))",
+                  backgroundColor: operation.cell.color || "hsl(var(--cell-default))",
                   color: "white",
                 }}
               >
-                {task.stage.name}
+                {operation.cell.name}
               </Badge>
             </div>
             <div>
               <div className="text-sm text-muted-foreground mb-1">Status</div>
               <Badge variant="outline" className="capitalize">
-                {task.status.replace("_", " ")}
+                {operation.status.replace("_", " ")}
               </Badge>
             </div>
           </div>
@@ -191,12 +191,12 @@ export default function TaskDetailModal({
               <div className="text-xs text-muted-foreground mb-1">Estimated</div>
               <div className="text-lg font-semibold flex items-center gap-1">
                 <Clock className="h-4 w-4" />
-                {task.estimated_time}m
+                {operation.estimated_time}m
               </div>
             </div>
             <div>
               <div className="text-xs text-muted-foreground mb-1">Actual</div>
-              <div className="text-lg font-semibold">{task.actual_time || 0}m</div>
+              <div className="text-lg font-semibold">{operation.actual_time || 0}m</div>
             </div>
             <div>
               <div className="text-xs text-muted-foreground mb-1">Remaining</div>
@@ -220,7 +220,7 @@ export default function TaskDetailModal({
           )}
 
           {/* Assembly Warning */}
-          {task.part.parent_part_id && (
+          {operation.part.parent_part_id && (
             <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-lg">
               <Package className="h-5 w-5 text-amber-600 mt-0.5" />
               <div className="text-sm">
@@ -235,27 +235,27 @@ export default function TaskDetailModal({
           )}
 
           {/* Active Operator */}
-          {task.active_time_entry && !isCurrentUserTiming && (
+          {operation.active_time_entry && !isCurrentUserTiming && (
             <div className="flex items-center gap-2 p-3 bg-active-work/10 border border-active-work/30 rounded-lg">
               <AlertCircle className="h-5 w-5 text-active-work" />
               <div className="text-sm">
-                <span className="font-medium">{task.active_time_entry.operator.full_name}</span>
-                {" "}is currently working on this task
+                <span className="font-medium">{operation.active_time_entry.operator.full_name}</span>
+                {" "}is currently working on this operation
               </div>
             </div>
           )}
 
           {/* Notes */}
-          {task.notes && (
+          {operation.notes && (
             <div>
               <div className="text-sm text-muted-foreground mb-1">Notes</div>
-              <div className="text-sm p-3 bg-muted rounded">{task.notes}</div>
+              <div className="text-sm p-3 bg-muted rounded">{operation.notes}</div>
             </div>
           )}
 
           {/* Metadata */}
-          {(task as any).metadata && (
-            <MetadataDisplay metadata={(task as any).metadata} />
+          {(operation as any).metadata && (
+            <MetadataDisplay metadata={(operation as any).metadata} />
           )}
 
           <Separator />
@@ -318,7 +318,7 @@ export default function TaskDetailModal({
       </DialogContent>
       
       <IssueForm
-        taskId={task.id}
+        operationId={operation.id}
         open={showIssueForm}
         onOpenChange={setShowIssueForm}
         onSuccess={onUpdate}

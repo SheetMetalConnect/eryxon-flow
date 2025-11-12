@@ -44,13 +44,13 @@ export default function ConfigStages() {
     if (!profile?.tenant_id) return;
 
     const { data, error } = await supabase
-      .from("stages")
+      .from("cells")
       .select("*")
       .eq("tenant_id", profile.tenant_id)
       .order("sequence");
 
     if (!error && data) {
-      setStages(data);
+      setStages(data as any);
     }
     setLoading(false);
   };
@@ -63,7 +63,7 @@ export default function ConfigStages() {
       if (editingStage) {
         // Update existing stage
         await supabase
-          .from("stages")
+          .from("cells")
           .update({
             name: formData.name,
             description: formData.description || null,

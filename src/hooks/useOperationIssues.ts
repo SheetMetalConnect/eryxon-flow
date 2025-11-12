@@ -9,12 +9,12 @@ interface Issue {
   created_at: string;
 }
 
-export function useTaskIssues(taskId: string, tenantId: string | undefined) {
+export function useOperationIssues(operationId: string, tenantId: string | undefined) {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!tenantId || !taskId) {
+    if (!tenantId || !operationId) {
       setLoading(false);
       return;
     }
@@ -22,14 +22,14 @@ export function useTaskIssues(taskId: string, tenantId: string | undefined) {
     loadIssues();
     
     const channel = supabase
-      .channel(`task-issues-${taskId}`)
+      .channel(`operation-issues-${operationId}`)
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
           table: "issues",
-          filter: `task_id=eq.${taskId}`,
+          filter: `operation_id=eq.${operationId}`,
         },
         () => {
           loadIssues();
@@ -40,15 +40,15 @@ export function useTaskIssues(taskId: string, tenantId: string | undefined) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [taskId, tenantId]);
+  }, [operationId, tenantId]);
 
   const loadIssues = async () => {
-    if (!tenantId || !taskId) return;
+    if (!tenantId || !operationId) return;
 
     const { data } = await supabase
       .from("issues")
       .select("id, severity, status, description, created_at")
-      .eq("task_id", taskId)
+      .eq("operation_id", operationId)
       .eq("tenant_id", tenantId);
 
     setIssues(data || []);
