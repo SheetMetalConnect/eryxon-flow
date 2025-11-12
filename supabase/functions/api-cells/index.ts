@@ -72,7 +72,7 @@ serve(async (req) => {
     const activeFilter = url.searchParams.get('active');
     
     let query = supabase
-      .from('stages')
+      .from('cells')
       .select('id, name, color, sequence')
       .eq('tenant_id', tenantId)
       .order('sequence');
@@ -81,16 +81,16 @@ serve(async (req) => {
       query = query.eq('active', true);
     }
 
-    const { data: stages, error } = await query;
+    const { data: cells, error } = await query;
 
     if (error) {
-      throw new Error(`Failed to fetch stages: ${error.message}`);
+      throw new Error(`Failed to fetch cells: ${error.message}`);
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        data: { stages }
+        data: { cells }
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

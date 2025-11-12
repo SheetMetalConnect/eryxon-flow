@@ -21,9 +21,9 @@ interface JobRequest {
     file_paths?: string[];
     notes?: string;
     metadata?: Record<string, any>;
-    tasks: Array<{
-      task_name: string;
-      stage_name: string;
+    operations: Array<{
+      operation_name: string;
+      cell_name: string;
       estimated_time: number;
       sequence: number;
       notes?: string;
@@ -265,31 +265,31 @@ serve(async (req) => {
       );
     }
 
-    // Validate stages exist
-    const stageNames = [...new Set(body.parts.flatMap(p => p.tasks.map(t => t.stage_name)))];
-    const { data: stages } = await supabase
-      .from('stages')
+    // Validate cells exist
+    const cellNames = [...new Set(body.parts.flatMap(p => p.operations.map(o => o.cell_name)))];
+    const { data: cells } = await supabase
+      .from('cells')
       .select('id, name')
       .eq('tenant_id', tenantId)
-      .in('name', stageNames);
+      .in('name', cellNames);
 
-    if (!stages || stages.length !== stageNames.length) {
-      const foundStages = stages?.map(s => s.name) || [];
-      const missingStages = stageNames.filter(s => !foundStages.includes(s));
+    if (!cells || cells.length !== cellNames.length) {
+      const foundCells = cells?.map(c => c.name) || [];
+      const missingCells = cellNames.filter(c => !foundCells.includes(c));
       return new Response(
         JSON.stringify({
           success: false,
           error: {
-            code: 'INVALID_STAGE',
-            message: `Stage(s) not found: ${missingStages.join(', ')}`,
-            details: { missing_stages: missingStages }
+            code: 'INVALID_CELL',
+            message: `Cell(s) not found: ${missingCells.join(', ')}`,
+            details: { missing_cells: missingCells }
           }
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const stageMap = new Map(stages.map(s => [s.name, s.id]));
+    const cellMap = new Map(cells.map(c => [c.name, c.id]));
 
     // Create job
     const { data: job, error: jobError } = await supabase
@@ -349,36 +349,36 @@ serve(async (req) => {
       }
     }
 
-    // Create tasks
-    const tasksToCreate = [];
+    // Create operations
+    const operationsToCreate = [];
     for (const part of body.parts) {
       const partId = partMap.get(part.part_number);
       if (!partId) continue;
 
-      for (const task of part.tasks) {
-        const stageId = stageMap.get(task.stage_name);
-        if (!stageId) continue;
+      for (const operation of part.operations) {
+        const cellId = cellMap.get(operation.cell_name);
+        if (!cellId) continue;
 
-        tasksToCreate.push({
+        operationsToCreate.push({
           tenant_id: tenantId,
           part_id: partId,
-          stage_id: stageId,
-          task_name: task.task_name,
-          sequence: task.sequence,
-          estimated_time: task.estimated_time,
-          notes: task.notes,
+          cell_id: cellId,
+          operation_name: operation.operation_name,
+          sequence: operation.sequence,
+          estimated_time: operation.estimated_time,
+          notes: operation.notes,
           status: 'not_started'
         });
       }
     }
 
-    const { data: createdTasks, error: tasksError } = await supabase
-      .from('tasks')
-      .insert(tasksToCreate)
+    const { data: createdOperations, error: operationsError } = await supabase
+      .from('operations')
+      .insert(operationsToCreate)
       .select();
 
-    if (tasksError) {
-      throw new Error(`Failed to create tasks: ${tasksError?.message}`);
+    if (operationsError) {
+      throw new Error(`Failed to create operations: ${operationsError?.message}`);
     }
 
     // Trigger webhook for job created
@@ -397,7 +397,7 @@ serve(async (req) => {
             job_number: job.job_number,
             customer: job.customer || '',
             parts_count: createdParts.length,
-            tasks_count: createdTasks?.length || 0,
+            operations_count: createdOperations?.length || 0,
             created_at: job.created_at,
           },
         }),
@@ -416,9 +416,9 @@ serve(async (req) => {
         parts: createdParts.map(p => ({
           part_id: p.id,
           part_number: p.part_number,
-          tasks: createdTasks?.filter(t => t.part_id === p.id).map(t => ({
-            task_id: t.id,
-            task_name: t.task_name
+          operations: createdOperations?.filter(o => o.part_id === p.id).map(o => ({
+            operation_id: o.id,
+            operation_name: o.operation_name
           })) || []
         }))
       }

@@ -115,6 +115,45 @@ export type Database = {
           },
         ]
       }
+      cells: {
+        Row: {
+          active: boolean | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          sequence: number
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          sequence: number
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          sequence?: number
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       issues: {
         Row: {
           created_at: string | null
@@ -122,12 +161,12 @@ export type Database = {
           description: string
           id: string
           image_paths: string[] | null
+          operation_id: string
           resolution_notes: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           severity: Database["public"]["Enums"]["issue_severity"]
           status: Database["public"]["Enums"]["issue_status"] | null
-          task_id: string
           tenant_id: string
           updated_at: string | null
         }
@@ -137,12 +176,12 @@ export type Database = {
           description: string
           id?: string
           image_paths?: string[] | null
+          operation_id: string
           resolution_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           severity: Database["public"]["Enums"]["issue_severity"]
           status?: Database["public"]["Enums"]["issue_status"] | null
-          task_id: string
           tenant_id: string
           updated_at?: string | null
         }
@@ -152,12 +191,12 @@ export type Database = {
           description?: string
           id?: string
           image_paths?: string[] | null
+          operation_id?: string
           resolution_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           severity?: Database["public"]["Enums"]["issue_severity"]
           status?: Database["public"]["Enums"]["issue_status"] | null
-          task_id?: string
           tenant_id?: string
           updated_at?: string | null
         }
@@ -178,9 +217,9 @@ export type Database = {
           },
           {
             foreignKeyName: "issues_task_id_fkey"
-            columns: ["task_id"]
+            columns: ["operation_id"]
             isOneToOne: false
-            referencedRelation: "tasks"
+            referencedRelation: "operations"
             referencedColumns: ["id"]
           },
         ]
@@ -188,7 +227,7 @@ export type Database = {
       jobs: {
         Row: {
           created_at: string | null
-          current_stage_id: string | null
+          current_cell_id: string | null
           customer: string | null
           due_date: string | null
           due_date_override: string | null
@@ -202,7 +241,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
-          current_stage_id?: string | null
+          current_cell_id?: string | null
           customer?: string | null
           due_date?: string | null
           due_date_override?: string | null
@@ -216,7 +255,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
-          current_stage_id?: string | null
+          current_cell_id?: string | null
           customer?: string | null
           due_date?: string | null
           due_date_override?: string | null
@@ -231,9 +270,85 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "jobs_current_stage_id_fkey"
-            columns: ["current_stage_id"]
+            columns: ["current_cell_id"]
             isOneToOne: false
-            referencedRelation: "stages"
+            referencedRelation: "cells"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operations: {
+        Row: {
+          actual_time: number | null
+          assigned_operator_id: string | null
+          cell_id: string
+          completed_at: string | null
+          completion_percentage: number | null
+          created_at: string | null
+          estimated_time: number
+          id: string
+          notes: string | null
+          operation_name: string
+          part_id: string
+          sequence: number
+          status: Database["public"]["Enums"]["task_status"] | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          actual_time?: number | null
+          assigned_operator_id?: string | null
+          cell_id: string
+          completed_at?: string | null
+          completion_percentage?: number | null
+          created_at?: string | null
+          estimated_time: number
+          id?: string
+          notes?: string | null
+          operation_name: string
+          part_id: string
+          sequence: number
+          status?: Database["public"]["Enums"]["task_status"] | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          actual_time?: number | null
+          assigned_operator_id?: string | null
+          cell_id?: string
+          completed_at?: string | null
+          completion_percentage?: number | null
+          created_at?: string | null
+          estimated_time?: number
+          id?: string
+          notes?: string | null
+          operation_name?: string
+          part_id?: string
+          sequence?: number
+          status?: Database["public"]["Enums"]["task_status"] | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_assigned_operator_id_fkey"
+            columns: ["assigned_operator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_part_id_fkey"
+            columns: ["part_id"]
+            isOneToOne: false
+            referencedRelation: "parts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_stage_id_fkey"
+            columns: ["cell_id"]
+            isOneToOne: false
+            referencedRelation: "cells"
             referencedColumns: ["id"]
           },
         ]
@@ -241,7 +356,7 @@ export type Database = {
       parts: {
         Row: {
           created_at: string | null
-          current_stage_id: string | null
+          current_cell_id: string | null
           file_paths: string[] | null
           id: string
           job_id: string
@@ -257,7 +372,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
-          current_stage_id?: string | null
+          current_cell_id?: string | null
           file_paths?: string[] | null
           id?: string
           job_id: string
@@ -273,7 +388,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
-          current_stage_id?: string | null
+          current_cell_id?: string | null
           file_paths?: string[] | null
           id?: string
           job_id?: string
@@ -290,9 +405,9 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "parts_current_stage_id_fkey"
-            columns: ["current_stage_id"]
+            columns: ["current_cell_id"]
             isOneToOne: false
-            referencedRelation: "stages"
+            referencedRelation: "cells"
             referencedColumns: ["id"]
           },
           {
@@ -350,120 +465,47 @@ export type Database = {
         }
         Relationships: []
       }
-      stages: {
+      substeps: {
         Row: {
-          active: boolean | null
-          color: string | null
+          completed_at: string | null
+          completed_by: string | null
           created_at: string | null
-          description: string | null
           id: string
-          image_url: string | null
           name: string
+          notes: string | null
+          operation_id: string
           sequence: number
+          status: string | null
           tenant_id: string
           updated_at: string | null
         }
         Insert: {
-          active?: boolean | null
-          color?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
           created_at?: string | null
-          description?: string | null
           id?: string
-          image_url?: string | null
           name: string
+          notes?: string | null
+          operation_id: string
           sequence: number
+          status?: string | null
           tenant_id: string
           updated_at?: string | null
         }
         Update: {
-          active?: boolean | null
-          color?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
           created_at?: string | null
-          description?: string | null
           id?: string
-          image_url?: string | null
           name?: string
+          notes?: string | null
+          operation_id?: string
           sequence?: number
+          status?: string | null
           tenant_id?: string
           updated_at?: string | null
         }
         Relationships: []
-      }
-      tasks: {
-        Row: {
-          actual_time: number | null
-          assigned_operator_id: string | null
-          completed_at: string | null
-          completion_percentage: number | null
-          created_at: string | null
-          estimated_time: number
-          id: string
-          notes: string | null
-          part_id: string
-          sequence: number
-          stage_id: string
-          status: Database["public"]["Enums"]["task_status"] | null
-          task_name: string
-          tenant_id: string
-          updated_at: string | null
-        }
-        Insert: {
-          actual_time?: number | null
-          assigned_operator_id?: string | null
-          completed_at?: string | null
-          completion_percentage?: number | null
-          created_at?: string | null
-          estimated_time: number
-          id?: string
-          notes?: string | null
-          part_id: string
-          sequence: number
-          stage_id: string
-          status?: Database["public"]["Enums"]["task_status"] | null
-          task_name: string
-          tenant_id: string
-          updated_at?: string | null
-        }
-        Update: {
-          actual_time?: number | null
-          assigned_operator_id?: string | null
-          completed_at?: string | null
-          completion_percentage?: number | null
-          created_at?: string | null
-          estimated_time?: number
-          id?: string
-          notes?: string | null
-          part_id?: string
-          sequence?: number
-          stage_id?: string
-          status?: Database["public"]["Enums"]["task_status"] | null
-          task_name?: string
-          tenant_id?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tasks_assigned_operator_id_fkey"
-            columns: ["assigned_operator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tasks_part_id_fkey"
-            columns: ["part_id"]
-            isOneToOne: false
-            referencedRelation: "parts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tasks_stage_id_fkey"
-            columns: ["stage_id"]
-            isOneToOne: false
-            referencedRelation: "stages"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       time_entries: {
         Row: {
@@ -472,9 +514,9 @@ export type Database = {
           end_time: string | null
           id: string
           notes: string | null
+          operation_id: string
           operator_id: string
           start_time: string
-          task_id: string
           tenant_id: string
         }
         Insert: {
@@ -483,9 +525,9 @@ export type Database = {
           end_time?: string | null
           id?: string
           notes?: string | null
+          operation_id: string
           operator_id: string
           start_time?: string
-          task_id: string
           tenant_id: string
         }
         Update: {
@@ -494,9 +536,9 @@ export type Database = {
           end_time?: string | null
           id?: string
           notes?: string | null
+          operation_id?: string
           operator_id?: string
           start_time?: string
-          task_id?: string
           tenant_id?: string
         }
         Relationships: [
@@ -509,9 +551,9 @@ export type Database = {
           },
           {
             foreignKeyName: "time_entries_task_id_fkey"
-            columns: ["task_id"]
+            columns: ["operation_id"]
             isOneToOne: false
-            referencedRelation: "tasks"
+            referencedRelation: "operations"
             referencedColumns: ["id"]
           },
         ]

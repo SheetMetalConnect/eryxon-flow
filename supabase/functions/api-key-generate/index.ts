@@ -83,7 +83,7 @@ serve(async (req) => {
     const keyPrefix = apiKey.substring(0, 12);
 
     // Hash the API key with bcrypt
-    const keyHash = await bcrypt.hash(apiKey, 10);
+    const keyHash = await bcrypt.hash(apiKey, bcrypt.genSaltSync(10));
 
     // Store in database
     const { data: createdKey, error } = await supabase

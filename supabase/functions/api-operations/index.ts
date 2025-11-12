@@ -72,8 +72,8 @@ serve(async (req) => {
       const url = new URL(req.url);
       const partId = url.searchParams.get('part_id');
       const jobId = url.searchParams.get('job_id');
-      const stageId = url.searchParams.get('stage_id');
-      const stageName = url.searchParams.get('stage_name');
+      const cellId = url.searchParams.get('cell_id');
+      const cellName = url.searchParams.get('cell_name');
       const status = url.searchParams.get('status');
       const assignedOperatorId = url.searchParams.get('assigned_operator_id');
 
@@ -85,10 +85,10 @@ serve(async (req) => {
       const offset = parseInt(url.searchParams.get('offset') || '0');
 
       let query = supabase
-        .from('tasks')
+        .from('operations')
         .select(`
           id,
-          task_name,
+          operation_name,
           sequence,
           estimated_time,
           actual_time,
@@ -108,7 +108,7 @@ serve(async (req) => {
               customer
             )
           ),
-          stage:stages (
+          cell:cells (
             id,
             name,
             color,
@@ -133,8 +133,8 @@ serve(async (req) => {
       if (partId) {
         query = query.eq('part_id', partId);
       }
-      if (stageId) {
-        query = query.eq('stage_id', stageId);
+      if (cellId) {
+        query = query.eq('cell_id', cellId);
       }
       if (status) {
         query = query.eq('status', status);
@@ -158,7 +158,7 @@ serve(async (req) => {
             JSON.stringify({
               success: true,
               data: {
-                tasks: [],
+                operations: [],
                 pagination: { limit, offset, total: 0 }
               }
             }),
@@ -167,22 +167,22 @@ serve(async (req) => {
         }
       }
 
-      // Filter by stage_name (requires finding stage first)
-      if (stageName) {
-        const { data: stages } = await supabase
-          .from('stages')
+      // Filter by cell_name (requires finding cell first)
+      if (cellName) {
+        const { data: cells } = await supabase
+          .from('cells')
           .select('id')
           .eq('tenant_id', tenantId)
-          .ilike('name', `%${stageName}%`);
+          .ilike('name', `%${cellName}%`);
 
-        if (stages && stages.length > 0) {
-          query = query.in('stage_id', stages.map(s => s.id));
+        if (cells && cells.length > 0) {
+          query = query.in('cell_id', cells.map(c => c.id));
         } else {
           return new Response(
             JSON.stringify({
               success: true,
               data: {
-                tasks: [],
+                operations: [],
                 pagination: { limit, offset, total: 0 }
               }
             }),
@@ -191,21 +191,21 @@ serve(async (req) => {
         }
       }
 
-      const { data: tasks, error, count } = await query;
+      const { data: operations, error, count } = await query;
 
       if (error) {
-        throw new Error(`Failed to fetch tasks: ${error.message}`);
+        throw new Error(`Failed to fetch operations: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
           data: {
-            tasks: tasks || [],
+            operations: operations || [],
             pagination: {
               limit,
               offset,
-              total: count || tasks?.length || 0
+              total: count || operations?.length || 0
             }
           }
         }),
@@ -213,16 +213,16 @@ serve(async (req) => {
       );
     }
 
-    // PATCH method for updating tasks
+    // PATCH method for updating operations
     if (req.method === 'PATCH') {
       const url = new URL(req.url);
-      const taskId = url.searchParams.get('id');
+      const operationId = url.searchParams.get('id');
 
-      if (!taskId) {
+      if (!operationId) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'Task ID is required in query string (?id=xxx)' }
+            error: { code: 'VALIDATION_ERROR', message: 'Operation ID is required in query string (?id=xxx)' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
@@ -255,10 +255,10 @@ serve(async (req) => {
 
       updates.updated_at = new Date().toISOString();
 
-      const { data: task, error } = await supabase
-        .from('tasks')
+      const { data: operation, error } = await supabase
+        .from('operations')
         .update(updates)
-        .eq('id', taskId)
+        .eq('id', operationId)
         .eq('tenant_id', tenantId)
         .select()
         .single();
@@ -268,18 +268,18 @@ serve(async (req) => {
           return new Response(
             JSON.stringify({
               success: false,
-              error: { code: 'NOT_FOUND', message: 'Task not found' }
+              error: { code: 'NOT_FOUND', message: 'Operation not found' }
             }),
             { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        throw new Error(`Failed to update task: ${error.message}`);
+        throw new Error(`Failed to update operation: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { task }
+          data: { operation }
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -294,7 +294,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in api-tasks:', error);
+    console.error('Error in api-operations:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({
