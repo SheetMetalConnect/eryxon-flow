@@ -5,34 +5,34 @@ interface IdMap {
 }
 
 export async function seedDemoData(tenantId: string) {
-  // Avoid duplicating seed: if tenant already has stages or tasks, do nothing
-  const stagesHead = await supabase
-    .from("stages")
+  // Avoid duplicating seed: if tenant already has cells or operations, do nothing
+  const cellsHead = await supabase
+    .from("cells")
     .select("id", { count: "exact", head: true })
     .eq("tenant_id", tenantId);
 
-  if ((stagesHead.count || 0) > 0) {
+  if ((cellsHead.count || 0) > 0) {
     // Already seeded
   } else {
-    // Create default stages
-    const stagesToInsert = [
+    // Create default cells
+    const cellsToInsert = [
       { tenant_id: tenantId, name: "Cutting", color: "#ef4444", sequence: 1, active: true },
       { tenant_id: tenantId, name: "Bending", color: "#3b82f6", sequence: 2, active: true },
       { tenant_id: tenantId, name: "Welding", color: "#f59e0b", sequence: 3, active: true },
     ];
-    const { error: stageErr } = await supabase.from("stages").insert(stagesToInsert);
-    if (stageErr) throw stageErr;
+    const { error: cellErr } = await supabase.from("cells").insert(cellsToInsert);
+    if (cellErr) throw cellErr;
   }
 
-  // Fetch stage ids
-  const { data: stageRows, error: stageFetchErr } = await supabase
-    .from("stages")
+  // Fetch cell ids
+  const { data: cellRows, error: cellFetchErr } = await supabase
+    .from("cells")
     .select("id,name")
     .eq("tenant_id", tenantId)
     .order("sequence");
-  if (stageFetchErr) throw stageFetchErr;
-  const stageIdByName: IdMap = {};
-  stageRows?.forEach((s) => (stageIdByName[s.name] = s.id));
+  if (cellFetchErr) throw cellFetchErr;
+  const cellIdByName: IdMap = {};
+  cellRows?.forEach((c) => (cellIdByName[c.name] = c.id));
 
   // If there are already jobs, skip the rest to avoid duplicates
   const jobsHead = await supabase
@@ -78,26 +78,26 @@ export async function seedDemoData(tenantId: string) {
   if (partsErr) throw partsErr;
   const partId = (pn: string) => parts?.find((p) => p.part_number === pn)?.id as string;
 
-  // Insert tasks (3 per part)
-  const taskRows: any[] = [];
-  const addTasks = (pn: string, names: [string, string, string]) => {
-    taskRows.push(
-      { tenant_id: tenantId, part_id: partId(pn), stage_id: stageIdByName["Cutting"], task_name: names[0], sequence: 1, estimated_time: 30 },
-      { tenant_id: tenantId, part_id: partId(pn), stage_id: stageIdByName["Bending"], task_name: names[1], sequence: 2, estimated_time: 30 },
-      { tenant_id: tenantId, part_id: partId(pn), stage_id: stageIdByName["Welding"], task_name: names[2], sequence: 3, estimated_time: 45 },
+  // Insert operations (3 per part)
+  const operationRows: any[] = [];
+  const addOperations = (pn: string, names: [string, string, string]) => {
+    operationRows.push(
+      { tenant_id: tenantId, part_id: partId(pn), cell_id: cellIdByName["Cutting"], operation_name: names[0], sequence: 1, estimated_time: 30 },
+      { tenant_id: tenantId, part_id: partId(pn), cell_id: cellIdByName["Bending"], operation_name: names[1], sequence: 2, estimated_time: 30 },
+      { tenant_id: tenantId, part_id: partId(pn), cell_id: cellIdByName["Welding"], operation_name: names[2], sequence: 3, estimated_time: 45 },
     );
   };
-  addTasks("P-001-A", ["Cut sheets", "Bend edges", "Weld joints"]);
-  addTasks("P-001-B", ["Cut brackets", "Form brackets", "Weld assembly"]);
-  addTasks("P-002-A", ["Cut aluminum sheets", "Bend panels", "Weld frame"]);
-  addTasks("P-002-B", ["Cut support bars", "Form supports", "Tack weld"]);
-  addTasks("P-003-A", ["Cut stainless plates", "Bend corners", "TIG weld seams"]);
-  addTasks("P-003-B", ["Cut small parts", "Form details", "Spot weld"]);
-  addTasks("P-004-A", ["Cut main panels", "Brake press", "MIG weld structure"]);
-  addTasks("P-004-B", ["Cut angle pieces", "Fold tabs", "Weld connections"]);
-  addTasks("P-005-A", ["Laser cut precision parts", "CNC bend", "Precision weld"]);
-  addTasks("P-005-B", ["Cut end caps", "Roll form", "Final weld"]);
+  addOperations("P-001-A", ["Cut sheets", "Bend edges", "Weld joints"]);
+  addOperations("P-001-B", ["Cut brackets", "Form brackets", "Weld assembly"]);
+  addOperations("P-002-A", ["Cut aluminum sheets", "Bend panels", "Weld frame"]);
+  addOperations("P-002-B", ["Cut support bars", "Form supports", "Tack weld"]);
+  addOperations("P-003-A", ["Cut stainless plates", "Bend corners", "TIG weld seams"]);
+  addOperations("P-003-B", ["Cut small parts", "Form details", "Spot weld"]);
+  addOperations("P-004-A", ["Cut main panels", "Brake press", "MIG weld structure"]);
+  addOperations("P-004-B", ["Cut angle pieces", "Fold tabs", "Weld connections"]);
+  addOperations("P-005-A", ["Laser cut precision parts", "CNC bend", "Precision weld"]);
+  addOperations("P-005-B", ["Cut end caps", "Roll form", "Final weld"]);
 
-  const { error: tasksErr } = await supabase.from("tasks").insert(taskRows);
-  if (tasksErr) throw tasksErr;
+  const { error: operationsErr } = await supabase.from("operations").insert(operationRows);
+  if (operationsErr) throw operationsErr;
 }

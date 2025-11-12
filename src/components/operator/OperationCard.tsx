@@ -1,28 +1,28 @@
-import { TaskWithDetails } from "@/lib/database";
+import { OperationWithDetails } from "@/lib/database";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, User, Package, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTaskIssues } from "@/hooks/useTaskIssues";
-import TaskDetailModal from "./TaskDetailModal";
+import { useOperationIssues } from "@/hooks/useOperationIssues";
+import OperationDetailModal from "./OperationDetailModal";
 
-interface TaskCardProps {
-  task: TaskWithDetails;
+interface OperationCardProps {
+  operation: OperationWithDetails;
   onUpdate: () => void;
   compact?: boolean;
 }
 
-export default function TaskCard({ task, onUpdate, compact = false }: TaskCardProps) {
+export default function OperationCard({ operation, onUpdate, compact = false }: OperationCardProps) {
   const [showDetail, setShowDetail] = useState(false);
   const { profile } = useAuth();
-  const { pendingCount, highestSeverity } = useTaskIssues(task.id, profile?.tenant_id);
+  const { pendingCount, highestSeverity } = useOperationIssues(operation.id, profile?.tenant_id);
   
-  const dueDate = task.part.job.due_date_override || task.part.job.due_date;
-  const remainingTime = task.estimated_time - (task.actual_time || 0);
+  const dueDate = operation.part.job.due_date_override || operation.part.job.due_date;
+  const remainingTime = operation.estimated_time - (operation.actual_time || 0);
   const isOvertime = remainingTime < 0;
-  const isAssignedToMe = task.assigned_operator_id === profile?.id;
+  const isAssignedToMe = operation.assigned_operator_id === profile?.id;
 
   const statusColors = {
     not_started: "bg-muted",
@@ -36,23 +36,23 @@ export default function TaskCard({ task, onUpdate, compact = false }: TaskCardPr
       <>
         <Card
           className={`p-3 cursor-pointer transition-all hover:shadow-md ${
-            task.active_time_entry ? "ring-2 ring-active-work" : ""
+            operation.active_time_entry ? "ring-2 ring-active-work" : ""
           }`}
           onClick={() => setShowDetail(true)}
         >
           {/* Status Bar */}
-          <div className={`h-1 -mx-3 -mt-3 mb-2 rounded-t ${statusColors[task.status]}`} />
+          <div className={`h-1 -mx-3 -mt-3 mb-2 rounded-t ${statusColors[operation.status]}`} />
 
           {/* Compact Header */}
           <div className="flex items-center justify-between gap-2 mb-2">
             <div className="flex-1 min-w-0">
-              <div className="font-medium text-sm truncate">{task.task_name}</div>
+              <div className="font-medium text-sm truncate">{operation.operation_name}</div>
               <div className="text-xs text-muted-foreground truncate">
-                {task.part.job.job_number} / {task.part.part_number}
+                {operation.part.job.job_number} / {operation.part.part_number}
               </div>
             </div>
             <div className="flex gap-1 shrink-0">
-              {task.part.parent_part_id && (
+              {operation.part.parent_part_id && (
                 <Badge variant="outline" className="text-xs p-1">
                   <Package className="h-3 w-3" />
                 </Badge>
@@ -69,21 +69,21 @@ export default function TaskCard({ task, onUpdate, compact = false }: TaskCardPr
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-1 text-muted-foreground">
               <Clock className="h-3 w-3" />
-              <span>{task.actual_time || 0}/{task.estimated_time}m</span>
+              <span>{operation.actual_time || 0}/{operation.estimated_time}m</span>
             </div>
-            {task.active_time_entry && (
+            {operation.active_time_entry && (
               <div className="flex items-center gap-1">
                 <div className="h-2 w-2 rounded-full bg-active-work animate-pulse" />
                 <span className="text-xs font-medium truncate max-w-20">
-                  {task.active_time_entry.operator.full_name.split(' ')[0]}
+                  {operation.active_time_entry.operator.full_name.split(' ')[0]}
                 </span>
               </div>
             )}
           </div>
         </Card>
 
-        <TaskDetailModal
-          task={task}
+        <OperationDetailModal
+          operation={operation}
           open={showDetail}
           onOpenChange={setShowDetail}
           onUpdate={onUpdate}
@@ -96,25 +96,25 @@ export default function TaskCard({ task, onUpdate, compact = false }: TaskCardPr
     <>
       <Card
         className={`p-4 cursor-pointer transition-all hover:shadow-md ${
-          task.active_time_entry ? "ring-2 ring-active-work" : ""
+          operation.active_time_entry ? "ring-2 ring-active-work" : ""
         }`}
         onClick={() => setShowDetail(true)}
       >
         {/* Status Bar */}
-        <div className={`h-1 -mx-4 -mt-4 mb-3 rounded-t ${statusColors[task.status]}`} />
+        <div className={`h-1 -mx-4 -mt-4 mb-3 rounded-t ${statusColors[operation.status]}`} />
 
         {/* Header */}
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex-1 min-w-0">
             <div className="font-semibold text-sm truncate">
-              Job {task.part.job.job_number}
+              Job {operation.part.job.job_number}
             </div>
             <div className="text-xs text-muted-foreground">
-              {task.part.part_number}
+              {operation.part.part_number}
             </div>
           </div>
           <div className="flex gap-1 shrink-0">
-            {task.part.parent_part_id && (
+            {operation.part.parent_part_id && (
               <Badge variant="outline" className="text-xs">
                 <Package className="h-3 w-3 mr-1" />
                 Assy
@@ -136,8 +136,8 @@ export default function TaskCard({ task, onUpdate, compact = false }: TaskCardPr
           </div>
         </div>
 
-        {/* Task Name */}
-        <h4 className="font-medium mb-2">{task.task_name}</h4>
+        {/* Operation Name */}
+        <h4 className="font-medium mb-2">{operation.operation_name}</h4>
 
         {/* Assignment Badge */}
         {isAssignedToMe && (
@@ -151,7 +151,7 @@ export default function TaskCard({ task, onUpdate, compact = false }: TaskCardPr
           <div className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
             <span>
-              {task.actual_time || 0}/{task.estimated_time}m
+              {operation.actual_time || 0}/{operation.estimated_time}m
             </span>
           </div>
           {remainingTime !== 0 && (
@@ -170,19 +170,19 @@ export default function TaskCard({ task, onUpdate, compact = false }: TaskCardPr
         )}
 
         {/* Active Operator */}
-        {task.active_time_entry && (
+        {operation.active_time_entry && (
           <div className="flex items-center gap-2 mt-3 pt-3 border-t">
             <div className="h-2 w-2 rounded-full bg-active-work animate-pulse" />
             <User className="h-3 w-3 text-muted-foreground" />
             <span className="text-xs font-medium">
-              {task.active_time_entry.operator.full_name}
+              {operation.active_time_entry.operator.full_name}
             </span>
           </div>
         )}
       </Card>
 
-      <TaskDetailModal
-        task={task}
+      <OperationDetailModal
+        operation={operation}
         open={showDetail}
         onOpenChange={setShowDetail}
         onUpdate={onUpdate}

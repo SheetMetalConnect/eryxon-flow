@@ -11,13 +11,13 @@ import { Upload } from "lucide-react";
 import { triggerIssueCreatedWebhook } from "@/lib/webhooks";
 
 interface IssueFormProps {
-  taskId: string;
+  operationId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
 }
 
-export default function IssueForm({ taskId, open, onOpenChange, onSuccess }: IssueFormProps) {
+export default function IssueForm({ operationId, open, onOpenChange, onSuccess }: IssueFormProps) {
   const { profile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [description, setDescription] = useState("");
@@ -48,11 +48,11 @@ export default function IssueForm({ taskId, open, onOpenChange, onSuccess }: Iss
         }
       }
 
-      // Get task and part details for webhook
-      const { data: taskData } = await supabase
-        .from("tasks")
+      // Get operation and part details for webhook
+      const { data: operationData } = await supabase
+        .from("operations")
         .select(`
-          task_name,
+          operation_name,
           part:parts!inner(
             id,
             part_number,
@@ -62,7 +62,7 @@ export default function IssueForm({ taskId, open, onOpenChange, onSuccess }: Iss
             )
           )
         `)
-        .eq("id", taskId)
+        .eq("id", operationId)
         .single();
 
       // Create issue
@@ -70,7 +70,7 @@ export default function IssueForm({ taskId, open, onOpenChange, onSuccess }: Iss
       const { error } = await supabase.from("issues").insert({
         id: issueId,
         tenant_id: profile.tenant_id,
-        task_id: taskId,
+        operation_id: operationId,
         created_by: profile.id,
         description: description.trim(),
         severity,
@@ -80,16 +80,16 @@ export default function IssueForm({ taskId, open, onOpenChange, onSuccess }: Iss
       if (error) throw error;
 
       // Trigger webhook for issue created
-      if (taskData) {
-        const task: any = taskData;
+      if (operationData) {
+        const operation: any = operationData;
         triggerIssueCreatedWebhook(profile.tenant_id, {
           issue_id: issueId,
-          task_id: taskId,
-          task_name: task.task_name,
-          part_id: task.part.id,
-          part_number: task.part.part_number,
-          job_id: task.part.job.id,
-          job_number: task.part.job.job_number,
+          operation_id: operationId,
+          operation_name: operation.operation_name,
+          part_id: operation.part.id,
+          part_number: operation.part.part_number,
+          job_id: operation.part.job.id,
+          job_number: operation.part.job.job_number,
           created_by: profile.id,
           operator_name: profile.full_name || 'Unknown',
           severity,
