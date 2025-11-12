@@ -65,8 +65,8 @@ export default function Parts() {
         .select(`
           *,
           job:jobs(job_number),
-          stage:stages(name, color),
-          tasks(count)
+          cell:cells(name, color),
+          operations(count)
         `);
 
       if (statusFilter !== "all") {
@@ -90,7 +90,7 @@ export default function Parts() {
 
       return data.map((part: any) => ({
         ...part,
-        tasks_count: part.tasks?.[0]?.count || 0,
+        operations_count: part.operations?.[0]?.count || 0,
       }));
     },
   });
@@ -174,8 +174,8 @@ export default function Parts() {
               <TableHead>Job #</TableHead>
               <TableHead>Material</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Current Stage</TableHead>
-              <TableHead className="text-right">Tasks</TableHead>
+              <TableHead>Current Cell</TableHead>
+              <TableHead className="text-right">Operations</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -187,21 +187,21 @@ export default function Parts() {
                 <TableCell>{part.material}</TableCell>
                 <TableCell>{getStatusBadge(part.status)}</TableCell>
                 <TableCell>
-                  {part.stage ? (
+                  {part.cell ? (
                     <Badge
                       variant="outline"
                       style={{
-                        borderColor: part.stage.color,
-                        backgroundColor: `${part.stage.color}20`,
+                        borderColor: part.cell.color,
+                        backgroundColor: `${part.cell.color}20`,
                       }}
                     >
-                      {part.stage.name}
+                      {part.cell.name}
                     </Badge>
                   ) : (
                     <span className="text-gray-400 text-sm">Not started</span>
                   )}
                 </TableCell>
-                <TableCell className="text-right">{part.tasks_count}</TableCell>
+                <TableCell className="text-right">{part.operations_count}</TableCell>
                 <TableCell className="text-right">
                   <Button
                     variant="outline"
