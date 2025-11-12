@@ -42,7 +42,7 @@ const GradientAppBar = styled(AppBar)(({ theme }) => ({
 
 // Elevated AppBar with shadow on scroll
 const ElevatedAppBar = styled(GradientAppBar)<{ elevation: boolean }>(({ theme, elevation }) => ({
-  boxShadow: elevation ? theme.shadows[4] : 'none',
+  boxShadow: elevation ? (theme.shadows as any)[4] : 'none',
 }));
 
 // Logo container
@@ -141,7 +141,7 @@ export const AppHeader: React.FC<AppHeaderProps> = () => {
   }
 
   return (
-    <ElevatedAppBar position="sticky" elevation={trigger}>
+    <ElevatedAppBar position="sticky" elevation={trigger} enableColorOnDark>
       <Toolbar sx={{ py: 1 }}>
         {/* Logo and Brand */}
         <LogoBox>
@@ -164,7 +164,7 @@ export const AppHeader: React.FC<AppHeaderProps> = () => {
           {navItems.map((item) => (
             <NavButton
               key={item.path}
-              component={Link}
+              component={Link as any}
               to={item.path}
               startIcon={item.icon}
               active={isActive(item.path)}

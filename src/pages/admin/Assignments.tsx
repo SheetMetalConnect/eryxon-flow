@@ -16,12 +16,12 @@ interface Part {
   part_number: string;
   material: string;
   status: string;
-  current_stage_id: string | null;
+  current_cell_id: string | null;
   job: {
     job_number: string;
     customer: string | null;
   };
-  _taskCount?: number;
+  _operationCount?: number;
 }
 
 interface Operator {
@@ -80,22 +80,22 @@ export default function Assignments() {
           part_number,
           material,
           status,
-          current_stage_id,
+          current_cell_id,
           job:jobs!inner(job_number, customer)
         `)
         .eq("tenant_id", profile.tenant_id)
         .neq("status", "completed")
         .order("part_number");
 
-      // Count tasks per part
+      // Count operations per part
       if (partsData) {
         const partsWithCounts = await Promise.all(
           partsData.map(async (part) => {
             const { count } = await supabase
-              .from("tasks")
+              .from("operations")
               .select("*", { count: "exact", head: true })
               .eq("part_id", part.id);
-            return { ...part, _taskCount: count || 0 };
+            return { ...part, _operationCount: count || 0 };
           })
         );
         setParts(partsWithCounts);
@@ -212,14 +212,14 @@ export default function Assignments() {
 
       if (assignError) throw assignError;
 
-      // Update all tasks in this part
-      const { error: taskError } = await supabase
-        .from("tasks")
+      // Update all operations in this part
+      const { error: operationError } = await supabase
+        .from("operations")
         .update({ assigned_operator_id: selectedOperator })
         .eq("part_id", selectedPart)
         .eq("tenant_id", profile.tenant_id);
 
-      if (taskError) throw taskError;
+      if (operationError) throw operationError;
 
       toast.success("Work assigned successfully");
       setSelectedPart("");
@@ -244,14 +244,14 @@ export default function Assignments() {
 
       if (deleteError) throw deleteError;
 
-      // Clear assigned_operator_id from tasks
-      const { error: taskError } = await supabase
-        .from("tasks")
+      // Clear assigned_operator_id from operations
+      const { error: operationError } = await supabase
+        .from("operations")
         .update({ assigned_operator_id: null })
         .eq("part_id", partId)
         .eq("tenant_id", profile.tenant_id);
 
-      if (taskError) throw taskError;
+      if (operationError) throw operationError;
 
       toast.success("Assignment removed");
       loadData();
@@ -293,7 +293,7 @@ export default function Assignments() {
                 <SelectContent>
                   {parts.map((part) => (
                     <SelectItem key={part.id} value={part.id}>
-                      {part.part_number} • {part.job.job_number} • {part._taskCount} tasks
+                      {part.part_number} • {part.job.job_number} • {part._operationCount} operations
                     </SelectItem>
                   ))}
                 </SelectContent>

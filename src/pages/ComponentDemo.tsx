@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Grid,
+  Grid2,
   Paper,
   Typography,
   Card,
@@ -121,9 +121,9 @@ export default function ComponentDemo() {
         </Typography>
       </Box>
 
-      <Grid container spacing={3}>
+      <Grid2 container spacing={3}>
         {/* Buttons Section */}
-        <Grid item xs={12}>
+        <Grid2 size={{ xs: 12 }}>
           <Card>
             <CardHeader title="Action Buttons" />
             <Divider />
@@ -173,10 +173,10 @@ export default function ComponentDemo() {
               </Stack>
             </CardContent>
           </Card>
-        </Grid>
+        </Grid2>
 
         {/* Status Badges Section */}
-        <Grid item xs={12} md={6}>
+        <Grid2 size={{ xs: 12, md: 6 }}>
           <Card>
             <CardHeader title="Status Badges" />
             <Divider />
@@ -225,10 +225,10 @@ export default function ComponentDemo() {
               </Stack>
             </CardContent>
           </Card>
-        </Grid>
+        </Grid2>
 
         {/* Form Components Section */}
-        <Grid item xs={12} md={6}>
+        <Grid2 size={{ xs: 12, md: 6 }}>
           <Card>
             <CardHeader title="Form Components" />
             <Divider />
@@ -284,10 +284,10 @@ export default function ComponentDemo() {
               </Stack>
             </CardContent>
           </Card>
-        </Grid>
+        </Grid2>
 
         {/* Dialog Section */}
-        <Grid item xs={12}>
+        <Grid2 size={{ xs: 12 }}>
           <Card>
             <CardHeader title="Dialog Components" />
             <Divider />
@@ -305,10 +305,10 @@ export default function ComponentDemo() {
               </Stack>
             </CardContent>
           </Card>
-        </Grid>
+        </Grid2>
 
         {/* Data Table Section */}
-        <Grid item xs={12}>
+        <Grid2 size={{ xs: 12 }}>
           <Card>
             <CardHeader title="Data Table with Sorting & Filtering" />
             <Divider />
@@ -325,10 +325,10 @@ export default function ComponentDemo() {
               />
             </CardContent>
           </Card>
-        </Grid>
+        </Grid2>
 
         {/* Typography Section */}
-        <Grid item xs={12}>
+        <Grid2 size={{ xs: 12 }}>
           <Card>
             <CardHeader title="Typography System (Montserrat)" />
             <Divider />
@@ -352,8 +352,8 @@ export default function ComponentDemo() {
               </Stack>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
 
       {/* Modals */}
       <ModalDialog

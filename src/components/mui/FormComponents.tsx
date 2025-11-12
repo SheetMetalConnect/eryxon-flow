@@ -55,7 +55,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
   ...props
 }) => {
   return (
-    <FormControl fullWidth error={!!error}>
+    <FormControl fullWidth error={!!error} variant={props.variant || "outlined"}>
       <InputLabel>{label}</InputLabel>
       <Select label={label} {...props}>
         {options.map((option) => (

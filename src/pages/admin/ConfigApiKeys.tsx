@@ -68,7 +68,7 @@ export default function ConfigApiKeys() {
 
       // Call secure edge function to generate and hash the key
       const response = await fetch(
-        `${supabase.supabaseUrl}/functions/v1/api-key-generate`,
+        `https://vatgianzotsurljznsry.supabase.co/functions/v1/api-key-generate`,
         {
           method: 'POST',
           headers: {

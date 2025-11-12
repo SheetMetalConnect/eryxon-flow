@@ -17,8 +17,8 @@ interface ActiveWork {
   operator: {
     full_name: string;
   };
-  task: {
-    task_name: string;
+  operation: {
+    operation_name: string;
     part: {
       part_number: string;
       job: {
@@ -26,7 +26,7 @@ interface ActiveWork {
         customer: string | null;
       };
     };
-    stage: {
+    cell: {
       name: string;
       color: string | null;
     };
@@ -66,13 +66,13 @@ export default function Dashboard() {
           id,
           start_time,
           operator:profiles!inner(full_name),
-          task:tasks!inner(
-            task_name,
+          operation:operations!inner(
+            operation_name,
             part:parts!inner(
               part_number,
               job:jobs!inner(job_number, customer)
             ),
-            stage:stages!inner(name, color)
+            cell:cells!inner(name, color)
           )
         `
         )
@@ -82,10 +82,10 @@ export default function Dashboard() {
 
       if (activeData) setActiveWork(activeData as any);
 
-      // Load stats + check stages
-      const [inProgressResult, dueThisWeekResult, stagesHead, issuesResult] = await Promise.all([
+      // Load stats + check cells
+      const [inProgressResult, dueThisWeekResult, cellsHead, issuesResult] = await Promise.all([
         supabase
-          .from("tasks")
+          .from("operations")
           .select("id", { count: "exact", head: true })
           .eq("tenant_id", profile.tenant_id)
           .eq("status", "in_progress"),
@@ -99,7 +99,7 @@ export default function Dashboard() {
             new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
           ),
         supabase
-          .from("stages")
+          .from("cells")
           .select("id", { count: "exact", head: true })
           .eq("tenant_id", profile.tenant_id)
           .eq("active", true),
@@ -117,7 +117,7 @@ export default function Dashboard() {
         pendingIssues: issuesResult.count || 0,
       });
 
-      setNeedsSetup((stagesHead.count || 0) === 0);
+      setNeedsSetup((cellsHead.count || 0) === 0);
     } catch (error) {
       console.error("Error loading dashboard data:", error);
     } finally {
@@ -262,10 +262,10 @@ export default function Dashboard() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Operator</TableHead>
-                    <TableHead>Task</TableHead>
+                    <TableHead>Operation</TableHead>
                     <TableHead>Job</TableHead>
                     <TableHead>Part</TableHead>
-                    <TableHead>Stage</TableHead>
+                    <TableHead>Cell</TableHead>
                     <TableHead>Elapsed Time</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -275,25 +275,25 @@ export default function Dashboard() {
                       <TableCell className="font-medium">
                         {work.operator.full_name}
                       </TableCell>
-                      <TableCell>{work.task.task_name}</TableCell>
+                      <TableCell>{work.operation.operation_name}</TableCell>
                       <TableCell>
-                        <div>{work.task.part.job.job_number}</div>
-                        {work.task.part.job.customer && (
+                        <div>{work.operation.part.job.job_number}</div>
+                        {work.operation.part.job.customer && (
                           <div className="text-xs text-muted-foreground">
-                            {work.task.part.job.customer}
+                            {work.operation.part.job.customer}
                           </div>
                         )}
                       </TableCell>
-                      <TableCell>{work.task.part.part_number}</TableCell>
+                      <TableCell>{work.operation.part.part_number}</TableCell>
                       <TableCell>
                         <Badge
                           style={{
                             backgroundColor:
-                              work.task.stage.color || "hsl(var(--accent))",
+                              work.operation.cell.color || "hsl(var(--accent))",
                             color: "white",
                           }}
                         >
-                          {work.task.stage.name}
+                          {work.operation.cell.name}
                         </Badge>
                       </TableCell>
                       <TableCell>

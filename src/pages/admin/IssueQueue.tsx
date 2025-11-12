@@ -19,8 +19,8 @@ interface Issue {
   status: string;
   created_at: string;
   image_paths: string[] | null;
-  task: {
-    task_name: string;
+  operation: {
+    operation_name: string;
     part: {
       part_number: string;
       job: {
@@ -55,8 +55,8 @@ export default function IssueQueue() {
       .from("issues")
       .select(`
         *,
-        task:tasks!inner(
-          task_name,
+        operation:operations!inner(
+          operation_name,
           part:parts!inner(
             part_number,
             job:jobs!inner(job_number)
@@ -182,7 +182,7 @@ export default function IssueQueue() {
                       </Badge>
                     </div>
                     <div className="font-medium mb-1">
-                      {issue.task.part.job.job_number} • {issue.task.part.part_number} • {issue.task.task_name}
+                      {issue.operation.part.job.job_number} • {issue.operation.part.part_number} • {issue.operation.operation_name}
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
                       {issue.description}
@@ -215,10 +215,10 @@ export default function IssueQueue() {
               </div>
 
               <div>
-                <div className="text-sm text-muted-foreground mb-1">Task</div>
+                <div className="text-sm text-muted-foreground mb-1">Operation</div>
                 <div className="font-medium">
-                  {selectedIssue.task.part.job.job_number} • {selectedIssue.task.part.part_number} •{" "}
-                  {selectedIssue.task.task_name}
+                  {selectedIssue.operation.part.job.job_number} • {selectedIssue.operation.part.part_number} •{" "}
+                  {selectedIssue.operation.operation_name}
                 </div>
               </div>
 

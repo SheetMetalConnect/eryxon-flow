@@ -74,9 +74,9 @@ export default function ConfigStages() {
 
         toast.success("Stage updated successfully");
       } else {
-        // Create new stage
+        // Create new cell
         const maxSequence = Math.max(...stages.map((s) => s.sequence), 0);
-        await supabase.from("stages").insert({
+        await supabase.from("cells").insert({
           tenant_id: profile.tenant_id,
           name: formData.name,
           description: formData.description || null,

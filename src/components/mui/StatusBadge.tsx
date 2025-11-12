@@ -115,7 +115,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     <Chip
       label={label || status.replace('-', ' ').toUpperCase()}
       size={size}
-      icon={showIcon ? config.icon : undefined}
+      icon={showIcon ? (config.icon as any) : undefined}
       sx={{
         color: config.color,
         backgroundColor: config.bgColor,

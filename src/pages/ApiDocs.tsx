@@ -184,7 +184,7 @@ apiClient.post('/api-jobs', jobData)
   };
 
   return (
-    <Layout title="API Documentation">
+    <Layout>
       <div className="space-y-6">
         {/* Hero Section */}
         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
