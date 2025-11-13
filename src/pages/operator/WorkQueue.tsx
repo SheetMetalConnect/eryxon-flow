@@ -24,20 +24,35 @@ import { isAfter, isBefore, addDays, startOfToday, endOfToday } from "date-fns";
 
 interface OperationWithDetails {
   id: string;
+  part_id: string;
+  cell_id: string;
   operation_name: string;
-  status: string;
+  status: "not_started" | "in_progress" | "completed" | "on_hold";
+  sequence: number;
+  estimated_time: number;
+  actual_time: number;
+  completion_percentage: number;
+  assigned_operator_id: string | null;
+  notes: string | null;
   part: {
+    id: string;
     part_number: string;
     material: string;
+    quantity: number;
+    parent_part_id: string | null;
     job: {
+      id: string;
       job_number: string;
       due_date: string;
       customer: string;
+      due_date_override: string | null;
     };
   };
   cell: {
+    id: string;
     name: string;
     color: string;
+    sequence: number;
   };
 }
 
@@ -75,11 +90,14 @@ export default function WorkQueue() {
           .select(`
             *,
             part:parts!inner(
+              id,
               part_number,
               material,
-              job:jobs!inner(job_number, due_date, customer)
+              quantity,
+              parent_part_id,
+              job:jobs!inner(id, job_number, due_date, due_date_override, customer)
             ),
-            cell:cells!inner(name, color)
+            cell:cells!inner(id, name, color, sequence)
           `)
           .eq("tenant_id", profile.tenant_id)
           .order("part(job(due_date))"),
