@@ -483,6 +483,7 @@ export type Database = {
           created_at: string | null
           estimated_time: number
           id: string
+          metadata: Json | null
           notes: string | null
           operation_name: string
           part_id: string
@@ -500,6 +501,7 @@ export type Database = {
           created_at?: string | null
           estimated_time: number
           id?: string
+          metadata?: Json | null
           notes?: string | null
           operation_name: string
           part_id: string
@@ -517,6 +519,7 @@ export type Database = {
           created_at?: string | null
           estimated_time?: number
           id?: string
+          metadata?: Json | null
           notes?: string | null
           operation_name?: string
           part_id?: string
