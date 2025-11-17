@@ -23,6 +23,9 @@ import DataExport from "./pages/admin/DataExport";
 import Jobs from "./pages/admin/Jobs";
 import JobCreate from "./pages/admin/JobCreate";
 import Parts from "./pages/admin/Parts";
+import { ActivityMonitor } from "./pages/admin/ActivityMonitor";
+import { Operations } from "./pages/admin/Operations";
+import { Settings } from "./pages/admin/Settings";
 import ApiDocs from "./pages/ApiDocs";
 import Pricing from "./pages/Pricing";
 import { MyPlan } from "./pages/MyPlan";
@@ -252,6 +255,33 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Parts />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/activity"
+        element={
+          <ProtectedRoute adminOnly>
+            <ActivityMonitor />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/operations"
+        element={
+          <ProtectedRoute adminOnly>
+            <Operations />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/settings"
+        element={
+          <ProtectedRoute adminOnly>
+            <Settings />
           </ProtectedRoute>
         }
       />

@@ -108,7 +108,7 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ color 
 
       const { data: jobs } = await supabase
         .from('jobs')
-        .select('id, job_number, customer, due_date')
+        .select('id, job_number, customer_name, due_date')
         .eq('tenant_id', profile.tenant_id)
         .lte('due_date', sevenDaysFromNow.toISOString())
         .order('due_date', { ascending: true })
@@ -120,7 +120,7 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ color 
           type: 'job_due',
           severity: 'medium',
           title: 'Job Due Soon',
-          message: `JOB-${job.job_number} - ${job.customer || 'No customer'}`,
+          message: `JOB-${job.job_number} - ${job.customer_name}`,
           link: '/admin/jobs',
           read: false,
           created_at: job.due_date,

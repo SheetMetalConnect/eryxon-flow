@@ -95,9 +95,9 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
       // Search Jobs
       const { data: jobs } = await supabase
         .from('jobs')
-        .select('id, job_number, customer, due_date, status')
+        .select('id, job_number, customer_name, due_date, status')
         .eq('tenant_id', profile?.tenant_id)
-        .or(`job_number.ilike.%${searchQuery}%,customer.ilike.%${searchQuery}%`)
+        .or(`job_number.ilike.%${searchQuery}%,customer_name.ilike.%${searchQuery}%`)
         .limit(10);
 
       jobs?.forEach((job) => {
@@ -105,7 +105,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
           id: job.id,
           type: 'job',
           title: `JOB-${job.job_number}`,
-          subtitle: job.customer || 'No customer',
+          subtitle: job.customer_name || 'No customer',
           path: `/admin/jobs`,
           status: job.status,
           icon: <WorkIcon />,
@@ -115,7 +115,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
       // Search Parts
       const { data: parts } = await supabase
         .from('parts')
-        .select('id, part_number, job_id, material, current_cell_id')
+        .select('id, part_number, job_id, material_id, current_stage_id')
         .eq('tenant_id', profile?.tenant_id)
         .ilike('part_number', `%${searchQuery}%`)
         .limit(10);
@@ -154,7 +154,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
       // Search Issues
       const { data: issues } = await supabase
         .from('issues')
-        .select('id, description, severity, status, operation_id')
+        .select('id, description, severity, status, part_id')
         .eq('tenant_id', profile?.tenant_id)
         .ilike('description', `%${searchQuery}%`)
         .limit(10);
