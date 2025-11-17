@@ -82,7 +82,8 @@ export default function OperationDetailModal({
     !operation.active_time_entry && operation.status !== "completed";
   const canComplete =
     operation.status !== "completed" && !operation.active_time_entry;
-  const canReportIssue = isCurrentUserTiming;
+  // Allow reporting issues anytime, not just when timing
+  const canReportIssue = operation.status !== "completed";
 
   // Fetch required resources for this operation
   useEffect(() => {

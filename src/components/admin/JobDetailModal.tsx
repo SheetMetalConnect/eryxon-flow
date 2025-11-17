@@ -16,6 +16,8 @@ import { Plus, Edit2, Save, X } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { PartIssueBadge } from "@/components/issues/PartIssueBadge";
+import { IssuesSummarySection } from "@/components/issues/IssuesSummarySection";
 import { RoutingVisualization } from "@/components/qrm/RoutingVisualization";
 import { useJobRouting } from "@/hooks/useQRMMetrics";
 
@@ -210,6 +212,9 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
             </div>
           )}
 
+          {/* NCRs / Issues Summary */}
+          <IssuesSummarySection jobId={jobId} />
+
           {/* Parts and Tasks */}
           <div>
             <Label className="text-lg">{t("jobs.parts")} ({job?.parts?.length || 0})</Label>
@@ -222,11 +227,14 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                       <p className="text-sm text-gray-600">
                         {t("parts.material")}: {part.material} | {t("parts.quantity")}: {part.quantity}
                       </p>
-                      {part.parent_part_id && (
-                        <Badge variant="outline" className="mt-1 text-xs">
-                          {t("parts.assembly")}
-                        </Badge>
-                      )}
+                      <div className="flex gap-2 mt-1">
+                        {part.parent_part_id && (
+                          <Badge variant="outline" className="text-xs">
+                            {t("parts.assembly")}
+                          </Badge>
+                        )}
+                        <PartIssueBadge partId={part.id} size="sm" />
+                      </div>
                     </div>
                     <Badge>{part.status?.replace("_", " ")}</Badge>
                   </div>
