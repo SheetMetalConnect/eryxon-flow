@@ -418,16 +418,16 @@ export default function ConfigStages() {
                   />
                 </div>
 
-                {/* WIP Limit Configuration */}
-                <div className="space-y-4 border-t pt-4">
-                  <h3 className="font-semibold">{t("qrm.wipConfiguration", "WIP Limit Configuration")}</h3>
+                {/* QRM Settings */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="font-semibold text-sm">{t("qrm.settings", "QRM Settings")}</h3>
 
                   <div className="space-y-2">
                     <Label htmlFor="wip_limit">{t("qrm.wipLimit", "WIP Limit")}</Label>
                     <Input
                       id="wip_limit"
                       type="number"
-                      min="1"
+                      min="0"
                       value={formData.wip_limit ?? ""}
                       onChange={(e) =>
                         setFormData({
@@ -435,69 +435,72 @@ export default function ConfigStages() {
                           wip_limit: e.target.value ? parseInt(e.target.value) : null
                         })
                       }
-                      placeholder={t("qrm.noLimit", "No limit")}
+                      placeholder={t("qrm.unlimited", "Unlimited")}
                     />
-                    <p className="text-xs text-muted-foreground">
-                      {t("qrm.wipLimitHelp", "Maximum number of jobs allowed in this stage. Leave empty for no limit.")}
+                    <p className="text-xs text-gray-500">
+                      {t("qrm.wipLimitHelp", "Maximum work-in-progress items allowed (leave empty for unlimited)")}
                     </p>
                   </div>
 
-                  {formData.wip_limit !== null && (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="wip_warning_threshold">{t("qrm.wipWarningThreshold", "Warning Threshold")}</Label>
-                        <Input
-                          id="wip_warning_threshold"
-                          type="number"
-                          min="1"
-                          max={formData.wip_limit || undefined}
-                          value={formData.wip_warning_threshold ?? ""}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              wip_warning_threshold: e.target.value ? parseInt(e.target.value) : null
-                            })
-                          }
-                          placeholder="80% of limit"
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          {t("qrm.wipWarningHelp", "Show warning when WIP reaches this threshold.")}
-                        </p>
-                      </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="wip_warning_threshold">
+                      {t("qrm.wipWarningThreshold", "Warning Threshold")}
+                    </Label>
+                    <Input
+                      id="wip_warning_threshold"
+                      type="number"
+                      min="0"
+                      value={formData.wip_warning_threshold ?? ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          wip_warning_threshold: e.target.value ? parseInt(e.target.value) : null
+                        })
+                      }
+                      placeholder={t("qrm.autoCalculate", "Auto (80% of limit)")}
+                      disabled={!formData.wip_limit}
+                    />
+                    <p className="text-xs text-gray-500">
+                      {t("qrm.wipWarningHelp", "Show warning when WIP reaches this count")}
+                    </p>
+                  </div>
 
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label htmlFor="enforce_wip_limit">{t("qrm.enforceLimit", "Enforce Limit")}</Label>
-                          <p className="text-xs text-muted-foreground">
-                            {t("qrm.enforceLimitHelp", "Prevent new jobs from entering when limit is reached")}
-                          </p>
-                        </div>
-                        <Switch
-                          id="enforce_wip_limit"
-                          checked={formData.enforce_wip_limit}
-                          onCheckedChange={(checked) =>
-                            setFormData({ ...formData, enforce_wip_limit: checked })
-                          }
-                        />
-                      </div>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label htmlFor="enforce_wip_limit">
+                        {t("qrm.enforceLimit", "Enforce WIP Limit")}
+                      </Label>
+                      <p className="text-xs text-gray-500">
+                        {t("qrm.enforceLimitHelp", "Prevent starting new work when at capacity")}
+                      </p>
+                    </div>
+                    <Switch
+                      id="enforce_wip_limit"
+                      checked={formData.enforce_wip_limit}
+                      onCheckedChange={(checked) =>
+                        setFormData({ ...formData, enforce_wip_limit: checked })
+                      }
+                      disabled={!formData.wip_limit}
+                    />
+                  </div>
 
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                          <Label htmlFor="show_capacity_warning">{t("qrm.showCapacityWarning", "Show Capacity Warning")}</Label>
-                          <p className="text-xs text-muted-foreground">
-                            {t("qrm.showCapacityWarningHelp", "Display visual warnings when approaching limit")}
-                          </p>
-                        </div>
-                        <Switch
-                          id="show_capacity_warning"
-                          checked={formData.show_capacity_warning}
-                          onCheckedChange={(checked) =>
-                            setFormData({ ...formData, show_capacity_warning: checked })
-                          }
-                        />
-                      </div>
-                    </>
-                  )}
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label htmlFor="show_capacity_warning">
+                        {t("qrm.showWarnings", "Show Capacity Warnings")}
+                      </Label>
+                      <p className="text-xs text-gray-500">
+                        {t("qrm.showWarningsHelp", "Display visual warnings for capacity")}
+                      </p>
+                    </div>
+                    <Switch
+                      id="show_capacity_warning"
+                      checked={formData.show_capacity_warning}
+                      onCheckedChange={(checked) =>
+                        setFormData({ ...formData, show_capacity_warning: checked })
+                      }
+                    />
+                  </div>
                 </div>
 
                 <Button type="submit" className="w-full">
