@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { OperationWithDetails } from "@/lib/database";
 import Layout from "@/components/Layout";
 import OperationCard from "@/components/operator/OperationCard";
 import CurrentlyTimingWidget from "@/components/operator/CurrentlyTimingWidget";
@@ -22,40 +23,6 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { isAfter, isBefore, addDays, startOfToday, endOfToday } from "date-fns";
-
-interface OperationWithDetails {
-  id: string;
-  part_id: string;
-  cell_id: string;
-  operation_name: string;
-  status: "not_started" | "in_progress" | "completed" | "on_hold";
-  sequence: number;
-  estimated_time: number;
-  actual_time: number;
-  completion_percentage: number;
-  assigned_operator_id: string | null;
-  notes: string | null;
-  part: {
-    id: string;
-    part_number: string;
-    material: string;
-    quantity: number;
-    parent_part_id: string | null;
-    job: {
-      id: string;
-      job_number: string;
-      due_date: string;
-      customer: string;
-      due_date_override: string | null;
-    };
-  };
-  cell: {
-    id: string;
-    name: string;
-    color: string;
-    sequence: number;
-  };
-}
 
 export default function WorkQueue() {
   const { t } = useTranslation();
@@ -97,6 +64,8 @@ export default function WorkQueue() {
               material,
               quantity,
               parent_part_id,
+              file_paths,
+              image_paths,
               job:jobs!inner(id, job_number, due_date, due_date_override, customer)
             ),
             cell:cells!inner(id, name, color, sequence)
