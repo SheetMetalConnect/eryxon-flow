@@ -281,6 +281,7 @@ export default function OperationDetailModal({
                 disabled={loading}
                 size="lg"
                 className="flex-1 h-14 text-lg gap-2"
+                data-tour="start-timer"
               >
                 <Play className="h-5 w-5" />
                 Start Time

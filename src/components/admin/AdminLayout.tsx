@@ -45,6 +45,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useThemeMode } from '@/theme/ThemeProvider';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { AppTour } from '@/components/onboarding';
 
 const DRAWER_WIDTH = 260;
 
@@ -103,7 +104,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   ];
 
   const drawer = (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }} data-tour="sidebar">
       {/* Logo Section */}
       <Box
         sx={{
@@ -145,7 +146,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       {/* Navigation Items */}
       <List sx={{ flexGrow: 1, px: 1.5, py: 2 }}>
         {mainNavItems.map((item) => (
-          <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
+          <ListItem
+            key={item.path}
+            disablePadding
+            sx={{ mb: 0.5 }}
+            data-tour={item.path === '/admin/jobs' ? 'jobs-nav' : undefined}
+          >
             <ListItemButton
               component={Link}
               to={item.path}
@@ -183,7 +189,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         <Divider sx={{ my: 2 }} />
 
         {/* Configuration Section */}
-        <ListItem disablePadding sx={{ mb: 0.5 }}>
+        <ListItem disablePadding sx={{ mb: 0.5 }} data-tour="config-nav">
           <ListItemButton
             onClick={handleConfigClick}
             sx={{
@@ -421,6 +427,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           {children}
         </Container>
       </Box>
+
+      {/* Onboarding Tour - only show if not completed */}
+      {profile && !profile.tour_completed && <AppTour userRole="admin" />}
     </Box>
   );
 };

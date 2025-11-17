@@ -494,7 +494,7 @@ export default function WorkQueue() {
           </div>
 
           {/* Kanban Board */}
-          <div className="flex-1 overflow-x-auto overflow-y-hidden p-4">
+          <div className="flex-1 overflow-x-auto overflow-y-hidden p-4" data-tour="work-queue">
             <div className="flex gap-4 h-full" style={{ minWidth: "max-content" }}>
               {operationsByCell.map(({ cell, operations }) => (
                 <div
@@ -521,12 +521,13 @@ export default function WorkQueue() {
                         {t("workQueue.noOperations")}
                       </div>
                     ) : (
-                      operations.map((operation) => (
+                      operations.map((operation, index) => (
                         <OperationCard
                           key={operation.id}
                           operation={operation}
                           onUpdate={loadData}
                           compact={viewMode === "compact"}
+                          data-tour={index === 0 ? "operation-card" : undefined}
                         />
                       ))
                     )}

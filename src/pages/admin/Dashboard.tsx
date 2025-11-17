@@ -264,7 +264,7 @@ export default function Dashboard() {
         )}
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-4" data-tour="dashboard-stats">
           <StatCard
             title={t("dashboard.activeWorkers")}
             value={stats.activeWorkers}
@@ -326,7 +326,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Active Work Table */}
-        <Card>
+        <Card data-tour="active-operations">
           <CardHeader>
             <CardTitle>{t("dashboard.activeWork")}</CardTitle>
           </CardHeader>

@@ -29,6 +29,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useThemeMode } from '@/theme/ThemeProvider';
 import CurrentlyTimingWidget from './CurrentlyTimingWidget';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { AppTour } from '@/components/onboarding';
 
 interface OperatorLayoutProps {
   children: React.ReactNode;
@@ -231,6 +232,7 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
           borderTop: `1px solid ${theme.palette.divider}`,
         }}
         elevation={3}
+        data-tour="bottom-nav"
       >
         <BottomNavigation
           value={getCurrentNavValue()}
@@ -314,6 +316,9 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
           ))}
         </Box>
       </Box>
+
+      {/* Onboarding Tour - only show if not completed */}
+      {profile && !profile.tour_completed && <AppTour userRole="operator" />}
     </Box>
   );
 };
