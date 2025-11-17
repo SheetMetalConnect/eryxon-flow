@@ -233,6 +233,59 @@ serve(async (req) => {
       );
     }
 
+    // Handle DELETE requests - delete job
+    if (req.method === 'DELETE') {
+      const url = new URL(req.url);
+      const jobId = url.searchParams.get('id');
+
+      if (!jobId) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: { code: 'VALIDATION_ERROR', message: 'Job ID is required in query string (?id=xxx)' }
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Verify job exists and belongs to tenant
+      const { data: job } = await supabase
+        .from('jobs')
+        .select('id')
+        .eq('id', jobId)
+        .eq('tenant_id', tenantId)
+        .single();
+
+      if (!job) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: { code: 'NOT_FOUND', message: 'Job not found' }
+          }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Delete job (cascade will delete parts and operations)
+      const { error } = await supabase
+        .from('jobs')
+        .delete()
+        .eq('id', jobId)
+        .eq('tenant_id', tenantId);
+
+      if (error) {
+        throw new Error(`Failed to delete job: ${error.message}`);
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          data: { message: 'Job deleted successfully' }
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Handle POST requests - create job
     const body: JobRequest = await req.json();
 

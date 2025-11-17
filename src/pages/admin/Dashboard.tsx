@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Users, Activity, Clock, Loader2, AlertTriangle } from "lucide-react";
+import { Users, Activity, Clock, Loader2, AlertTriangle, LucideIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -33,14 +34,45 @@ interface ActiveWork {
   };
 }
 
+interface StatCardProps {
+  title: string;
+  value: number;
+  description: string;
+  icon: LucideIcon;
+  onClick: () => void;
+}
+
+function StatCard({ title, value, description, icon: Icon, onClick }: StatCardProps) {
+  return (
+    <Card
+      className="cursor-pointer transition-all hover:shadow-lg hover:scale-105 active:scale-100"
+      onClick={onClick}
+    >
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <Icon className="h-4 w-4 text-muted-foreground" />
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function Dashboard() {
   const { profile } = useAuth();
+  const navigate = useNavigate();
   const [activeWork, setActiveWork] = useState<ActiveWork[]>([]);
   const [stats, setStats] = useState({
     activeWorkers: 0,
     inProgressTasks: 0,
     dueThisWeek: 0,
     pendingIssues: 0,
+    totalJobs: 0,
+    totalParts: 0,
+    activeCells: 0,
+    completedToday: 0,
   });
   const [loading, setLoading] = useState(true);
   const [needsSetup, setNeedsSetup] = useState(false);
@@ -83,7 +115,18 @@ export default function Dashboard() {
       if (activeData) setActiveWork(activeData as any);
 
       // Load stats + check cells
-      const [inProgressResult, dueThisWeekResult, cellsHead, issuesResult] = await Promise.all([
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const [
+        inProgressResult,
+        dueThisWeekResult,
+        cellsHead,
+        issuesResult,
+        totalJobsResult,
+        totalPartsResult,
+        completedTodayResult,
+      ] = await Promise.all([
         supabase
           .from("operations")
           .select("id", { count: "exact", head: true })
@@ -108,6 +151,20 @@ export default function Dashboard() {
           .select("id", { count: "exact", head: true })
           .eq("tenant_id", profile.tenant_id)
           .eq("status", "pending"),
+        supabase
+          .from("jobs")
+          .select("id", { count: "exact", head: true })
+          .eq("tenant_id", profile.tenant_id),
+        supabase
+          .from("parts")
+          .select("id", { count: "exact", head: true })
+          .eq("tenant_id", profile.tenant_id),
+        supabase
+          .from("operations")
+          .select("id", { count: "exact", head: true })
+          .eq("tenant_id", profile.tenant_id)
+          .eq("status", "completed")
+          .gte("updated_at", startOfDay.toISOString()),
       ]);
 
       setStats({
@@ -115,6 +172,10 @@ export default function Dashboard() {
         inProgressTasks: inProgressResult.count || 0,
         dueThisWeek: dueThisWeekResult.count || 0,
         pendingIssues: issuesResult.count || 0,
+        totalJobs: totalJobsResult.count || 0,
+        totalParts: totalPartsResult.count || 0,
+        activeCells: cellsHead.count || 0,
+        completedToday: completedTodayResult.count || 0,
       });
 
       setNeedsSetup((cellsHead.count || 0) === 0);
@@ -202,50 +263,65 @@ export default function Dashboard() {
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Workers</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.activeWorkers}</div>
-              <p className="text-xs text-muted-foreground">Currently working</p>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Active Workers"
+            value={stats.activeWorkers}
+            description="Currently working"
+            icon={Users}
+            onClick={() => navigate("/admin/users")}
+          />
 
-         <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Issues</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.pendingIssues}</div>
-              <p className="text-xs text-muted-foreground">Awaiting review</p>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Pending Issues"
+            value={stats.pendingIssues}
+            description="Awaiting review"
+            icon={AlertTriangle}
+            onClick={() => navigate("/admin/issues")}
+          />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.inProgressTasks}</div>
-              <p className="text-xs text-muted-foreground">Active tasks</p>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="In Progress"
+            value={stats.inProgressTasks}
+            description="Active tasks"
+            icon={Activity}
+            onClick={() => navigate("/admin/assignments")}
+          />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Due This Week</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.dueThisWeek}</div>
-              <p className="text-xs text-muted-foreground">Jobs due</p>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Due This Week"
+            value={stats.dueThisWeek}
+            description="Jobs due"
+            icon={Clock}
+            onClick={() => navigate("/admin/jobs")}
+          />
         </div>
+
+        {/* Quick Stats Panel */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Stats</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Total Jobs</p>
+                <p className="text-2xl font-bold">{stats.totalJobs}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Total Parts</p>
+                <p className="text-2xl font-bold">{stats.totalParts}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Active Cells</p>
+                <p className="text-2xl font-bold">{stats.activeCells}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Completed Today</p>
+                <p className="text-2xl font-bold">{stats.completedToday}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Active Work Table */}
         <Card>

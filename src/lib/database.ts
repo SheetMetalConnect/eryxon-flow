@@ -71,7 +71,15 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
     .eq("tenant_id", tenantId)
     .order("sequence");
 
-  if (operationsError) throw operationsError;
+  if (operationsError) {
+    console.error("Error fetching operations with details:", operationsError);
+    throw operationsError;
+  }
+
+  if (!operations) {
+    console.warn("No operations found for tenant:", tenantId);
+    return [];
+  }
 
   // Fetch active time entries
   const { data: activeEntries, error: entriesError } = await supabase
@@ -86,7 +94,12 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
     .eq("tenant_id", tenantId)
     .is("end_time", null);
 
-  if (entriesError) throw entriesError;
+  if (entriesError) {
+    console.error("Error fetching active time entries:", entriesError);
+    throw entriesError;
+  }
+
+  console.log(`Fetched ${operations.length} operations with details`);
 
   // Map active entries to operations
   return operations.map((operation) => ({
@@ -255,7 +268,7 @@ export async function stopTimeTracking(operationId: string, operatorId: string) 
   // Find active time entry
   const { data: entry } = await supabase
     .from("time_entries")
-    .select("id, start_time")
+    .select("id, start_time, is_paused")
     .eq("operation_id", operationId)
     .eq("operator_id", operatorId)
     .is("end_time", null)
@@ -263,9 +276,46 @@ export async function stopTimeTracking(operationId: string, operatorId: string) 
 
   if (!entry) throw new Error("No active time entry found");
 
+  // If paused, close the current pause
+  if (entry.is_paused) {
+    const { data: activePause } = await supabase
+      .from("time_entry_pauses")
+      .select("id, paused_at")
+      .eq("time_entry_id", entry.id)
+      .is("resumed_at", null)
+      .maybeSingle();
+
+    if (activePause) {
+      const now = new Date();
+      const pausedAt = new Date(activePause.paused_at);
+      const pauseDuration = Math.round((now.getTime() - pausedAt.getTime()) / 1000); // seconds
+
+      await supabase
+        .from("time_entry_pauses")
+        .update({
+          resumed_at: now.toISOString(),
+          duration: pauseDuration,
+        })
+        .eq("id", activePause.id);
+    }
+  }
+
   const endTime = new Date();
   const startTime = new Date(entry.start_time);
-  const duration = Math.round((endTime.getTime() - startTime.getTime()) / 60000); // minutes
+
+  // Calculate total pause time
+  const { data: pauses } = await supabase
+    .from("time_entry_pauses")
+    .select("duration")
+    .eq("time_entry_id", entry.id)
+    .not("duration", "is", null);
+
+  const totalPauseSeconds = pauses?.reduce((sum, p) => sum + (p.duration || 0), 0) || 0;
+
+  // Calculate effective duration (total time - pause time)
+  const totalSeconds = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
+  const effectiveSeconds = totalSeconds - totalPauseSeconds;
+  const duration = Math.round(effectiveSeconds / 60); // minutes
 
   // Update time entry
   await supabase
@@ -273,6 +323,7 @@ export async function stopTimeTracking(operationId: string, operatorId: string) 
     .update({
       end_time: endTime.toISOString(),
       duration,
+      is_paused: false,
     })
     .eq("id", entry.id);
 
@@ -289,6 +340,77 @@ export async function stopTimeTracking(operationId: string, operatorId: string) 
       .update({ actual_time: (operation.actual_time || 0) + duration })
       .eq("id", operationId);
   }
+}
+
+export async function pauseTimeTracking(timeEntryId: string) {
+  // Check if already paused
+  const { data: entry } = await supabase
+    .from("time_entries")
+    .select("id, is_paused")
+    .eq("id", timeEntryId)
+    .is("end_time", null)
+    .single();
+
+  if (!entry) throw new Error("No active time entry found");
+  if (entry.is_paused) throw new Error("Time tracking is already paused");
+
+  // Create pause record
+  const { error: pauseError } = await supabase
+    .from("time_entry_pauses")
+    .insert({
+      time_entry_id: timeEntryId,
+      paused_at: new Date().toISOString(),
+    });
+
+  if (pauseError) throw pauseError;
+
+  // Update time entry to mark as paused
+  await supabase
+    .from("time_entries")
+    .update({ is_paused: true })
+    .eq("id", timeEntryId);
+}
+
+export async function resumeTimeTracking(timeEntryId: string) {
+  // Check if paused
+  const { data: entry } = await supabase
+    .from("time_entries")
+    .select("id, is_paused")
+    .eq("id", timeEntryId)
+    .is("end_time", null)
+    .single();
+
+  if (!entry) throw new Error("No active time entry found");
+  if (!entry.is_paused) throw new Error("Time tracking is not paused");
+
+  // Find the active pause
+  const { data: pauseRecord } = await supabase
+    .from("time_entry_pauses")
+    .select("id, paused_at")
+    .eq("time_entry_id", timeEntryId)
+    .is("resumed_at", null)
+    .single();
+
+  if (!pauseRecord) throw new Error("No active pause found");
+
+  const resumedAt = new Date();
+  const pausedAt = new Date(pauseRecord.paused_at);
+  const pauseDuration = Math.round((resumedAt.getTime() - pausedAt.getTime()) / 1000); // seconds
+
+  // Update pause record
+  await supabase
+    .from("time_entry_pauses")
+    .update({
+      resumed_at: resumedAt.toISOString(),
+      duration: pauseDuration,
+    })
+    .eq("id", pauseRecord.id);
+
+  // Update time entry to mark as not paused
+  await supabase
+    .from("time_entries")
+    .update({ is_paused: false })
+    .eq("id", timeEntryId);
 }
 
 export async function completeOperation(operationId: string, tenantId: string, operatorId?: string) {
@@ -463,7 +585,7 @@ async function recalculateJobCurrentCell(jobId: string) {
   if (inProgressOperations && inProgressOperations.length > 0) {
     // Get the earliest cell (lowest sequence) with in_progress operations
     const earliestCell = inProgressOperations.reduce((earliest: any, o: any) => {
-      return o.cells.sequence < earliest.sequence 
+      return o.cells.sequence < earliest.sequence
         ? { cell_id: o.cell_id, sequence: o.cells.sequence }
         : earliest;
     }, { cell_id: inProgressOperations[0].cell_id, sequence: (inProgressOperations[0] as any).cells.sequence });
@@ -479,4 +601,182 @@ async function recalculateJobCurrentCell(jobId: string) {
       .update({ current_cell_id: null })
       .eq("id", jobId);
   }
+}
+
+// Assembly Tracking Functions
+
+/**
+ * Fetch all child parts for a given parent part
+ */
+export async function fetchChildParts(parentPartId: string, tenantId: string) {
+  const { data, error } = await supabase
+    .from("parts")
+    .select(`
+      *,
+      job:jobs(job_number, customer),
+      operations:operations(id, status, operation_name)
+    `)
+    .eq("parent_part_id", parentPartId)
+    .eq("tenant_id", tenantId)
+    .order("part_number");
+
+  if (error) throw error;
+  return data || [];
+}
+
+/**
+ * Fetch parent part for a given part
+ */
+export async function fetchParentPart(partId: string, tenantId: string) {
+  const { data: part, error: partError } = await supabase
+    .from("parts")
+    .select("parent_part_id")
+    .eq("id", partId)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (partError) throw partError;
+  if (!part?.parent_part_id) return null;
+
+  const { data: parentPart, error: parentError } = await supabase
+    .from("parts")
+    .select(`
+      *,
+      job:jobs(job_number, customer),
+      operations:operations(id, status, operation_name)
+    `)
+    .eq("id", part.parent_part_id)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (parentError) throw parentError;
+  return parentPart;
+}
+
+/**
+ * Check if all child parts are completed
+ */
+export async function checkChildPartsCompletion(parentPartId: string, tenantId: string) {
+  const { data: childParts, error } = await supabase
+    .from("parts")
+    .select("id, part_number, status")
+    .eq("parent_part_id", parentPartId)
+    .eq("tenant_id", tenantId);
+
+  if (error) throw error;
+  if (!childParts || childParts.length === 0) {
+    return { hasChildren: false, allCompleted: true, incompleteChildren: [] };
+  }
+
+  const incompleteChildren = childParts.filter(p => p.status !== "completed");
+  const allCompleted = incompleteChildren.length === 0;
+
+  return {
+    hasChildren: true,
+    allCompleted,
+    incompleteChildren,
+    totalChildren: childParts.length,
+    completedChildren: childParts.length - incompleteChildren.length,
+  };
+}
+
+/**
+ * Check for circular references in assembly hierarchy
+ * Returns true if creating this relationship would create a cycle
+ */
+export async function checkCircularReference(
+  childPartId: string,
+  potentialParentId: string,
+  tenantId: string
+): Promise<boolean> {
+  // Can't be its own parent
+  if (childPartId === potentialParentId) return true;
+
+  // Check if the potential parent is actually a descendant of the child
+  let currentParentId: string | null = potentialParentId;
+  const visited = new Set<string>();
+
+  while (currentParentId) {
+    if (visited.has(currentParentId)) {
+      // Detected a cycle in the existing data
+      return true;
+    }
+    visited.add(currentParentId);
+
+    if (currentParentId === childPartId) {
+      // The potential parent is a descendant of the child
+      return true;
+    }
+
+    // Get the parent of the current parent
+    const { data, error } = await supabase
+      .from("parts")
+      .select("parent_part_id")
+      .eq("id", currentParentId)
+      .eq("tenant_id", tenantId)
+      .single();
+
+    if (error || !data) break;
+    currentParentId = data.parent_part_id;
+  }
+
+  return false;
+}
+
+/**
+ * Get assembly tree (all descendants) for a given part
+ */
+export async function fetchAssemblyTree(partId: string, tenantId: string): Promise<any[]> {
+  const tree: any[] = [];
+  const queue = [{ id: partId, depth: 0 }];
+  const visited = new Set<string>();
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+
+    if (visited.has(current.id)) continue;
+    visited.add(current.id);
+
+    const { data: children, error } = await supabase
+      .from("parts")
+      .select(`
+        *,
+        job:jobs(job_number, customer),
+        operations:operations(id, status, operation_name)
+      `)
+      .eq("parent_part_id", current.id)
+      .eq("tenant_id", tenantId);
+
+    if (error) {
+      console.error("Error fetching assembly tree:", error);
+      continue;
+    }
+
+    if (children && children.length > 0) {
+      for (const child of children) {
+        tree.push({ ...child, depth: current.depth + 1 });
+        queue.push({ id: child.id, depth: current.depth + 1 });
+      }
+    }
+  }
+
+  return tree;
+}
+
+/**
+ * Check if a part has dependency warnings (incomplete children)
+ */
+export async function checkAssemblyDependencies(partId: string, tenantId: string) {
+  const childrenStatus = await checkChildPartsCompletion(partId, tenantId);
+
+  return {
+    hasDependencies: childrenStatus.hasChildren,
+    dependenciesMet: childrenStatus.allCompleted,
+    warnings: childrenStatus.incompleteChildren.map(child => ({
+      partId: child.id,
+      partNumber: child.part_number,
+      status: child.status,
+      message: `Child part ${child.part_number} is not yet completed (${child.status})`
+    }))
+  };
 }

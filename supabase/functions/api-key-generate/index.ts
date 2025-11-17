@@ -7,6 +7,31 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+async function authenticateAdmin(authHeader: string | null, supabase: any) {
+  if (!authHeader) {
+    return null;
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+  const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+
+  if (userError || !user) {
+    return null;
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id, tenant_id, role')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile || profile.role !== 'admin') {
+    return null;
+  }
+
+  return profile;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -18,48 +43,96 @@ serve(async (req) => {
   );
 
   try {
-    // Get authenticated user
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader) {
+    const profile = await authenticateAdmin(req.headers.get('authorization'), supabase);
+
+    if (!profile) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: { code: 'UNAUTHORIZED', message: 'Missing authorization header' }
+          error: { code: 'UNAUTHORIZED', message: 'Admin authentication required' }
         }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    // Handle GET requests - list API keys
+    if (req.method === 'GET') {
+      const { data: apiKeys, error } = await supabase
+        .from('api_keys')
+        .select(`
+          id,
+          name,
+          key_prefix,
+          active,
+          last_used_at,
+          created_at,
+          created_by:profiles (
+            id,
+            username,
+            full_name
+          )
+        `)
+        .eq('tenant_id', profile.tenant_id)
+        .order('created_at', { ascending: false });
 
-    if (userError || !user) {
+      if (error) {
+        throw new Error(`Failed to fetch API keys: ${error.message}`);
+      }
+
       return new Response(
         JSON.stringify({
-          success: false,
-          error: { code: 'UNAUTHORIZED', message: 'Invalid authorization token' }
+          success: true,
+          data: { api_keys: apiKeys || [] }
         }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Get user's profile and tenant
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id, tenant_id, role')
-      .eq('id', user.id)
-      .single();
+    // Handle DELETE requests - revoke/delete API key
+    if (req.method === 'DELETE') {
+      const url = new URL(req.url);
+      const keyId = url.searchParams.get('id');
 
-    if (!profile || profile.role !== 'admin') {
+      if (!keyId) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: { code: 'VALIDATION_ERROR', message: 'API key ID is required in query string (?id=xxx)' }
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Soft delete by marking as inactive
+      const { error } = await supabase
+        .from('api_keys')
+        .update({ active: false })
+        .eq('id', keyId)
+        .eq('tenant_id', profile.tenant_id);
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: { code: 'NOT_FOUND', message: 'API key not found' }
+            }),
+            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        throw new Error(`Failed to revoke API key: ${error.message}`);
+      }
+
       return new Response(
         JSON.stringify({
-          success: false,
-          error: { code: 'FORBIDDEN', message: 'Admin role required' }
+          success: true,
+          data: { message: 'API key revoked successfully' }
         }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    // Handle POST requests - generate new API key
     const body = await req.json();
     const { name } = body;
 

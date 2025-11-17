@@ -202,6 +202,25 @@ export default function JobCreate() {
     setStep(step + 1);
   };
 
+  // Helper function to check for circular references in local parts array
+  const wouldCreateCircularReference = (childId: string, parentId: string): boolean => {
+    if (childId === parentId) return true;
+
+    let currentParentId: string | undefined = parentId;
+    const visited = new Set<string>();
+
+    while (currentParentId) {
+      if (visited.has(currentParentId)) return true; // Cycle detected
+      visited.add(currentParentId);
+      if (currentParentId === childId) return true; // Parent is a descendant
+
+      const parentPart = parts.find(p => p.id === currentParentId);
+      currentParentId = parentPart?.parent_part_id;
+    }
+
+    return false;
+  };
+
   const handleAddPart = () => {
     if (!editingPart?.part_number || !editingPart?.material) {
       toast({
@@ -212,8 +231,21 @@ export default function JobCreate() {
       return;
     }
 
+    // Check for circular reference
+    if (editingPart.parent_part_id) {
+      const newPartId = editingPart.id || crypto.randomUUID();
+      if (wouldCreateCircularReference(newPartId, editingPart.parent_part_id)) {
+        toast({
+          title: "Circular reference detected",
+          description: "This parent selection would create a circular dependency",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     const newPart: Part = {
-      id: crypto.randomUUID(),
+      id: editingPart.id || crypto.randomUUID(),
       part_number: editingPart.part_number,
       material: editingPart.material,
       quantity: editingPart.quantity || 1,

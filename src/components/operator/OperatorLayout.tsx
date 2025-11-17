@@ -22,11 +22,12 @@ import {
   Logout as LogoutIcon,
   Brightness4 as Brightness4Icon,
   Brightness7 as Brightness7Icon,
+  AttachMoney as AttachMoneyIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useThemeMode } from '@/theme/ThemeProvider';
-import CurrentlyTimingWidget from './CurrentlyTimingWidget';
+import OperatorFooterBar from './OperatorFooterBar';
 
 interface OperatorLayoutProps {
   children: React.ReactNode;
@@ -58,6 +59,7 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
     { path: '/work-queue', label: 'Work Queue', icon: <ListAltIcon /> },
     { path: '/my-activity', label: 'My Activity', icon: <ScheduleIcon /> },
     { path: '/my-issues', label: 'My Issues', icon: <ReportProblemIcon /> },
+    { path: '/pricing', label: 'Pricing', icon: <AttachMoneyIcon /> },
   ];
 
   const getCurrentNavValue = () => {
@@ -185,21 +187,6 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
         </Toolbar>
       </AppBar>
 
-      {/* Currently Timing Widget - Sticky below header */}
-      <Box
-        sx={{
-          position: 'sticky',
-          top: { xs: 56, sm: 64 },
-          zIndex: theme.zIndex.appBar - 1,
-          backgroundColor: theme.palette.background.default,
-          borderBottom: `1px solid ${theme.palette.divider}`,
-        }}
-      >
-        <Box sx={{ px: { xs: 2, sm: 3 }, py: 1.5 }}>
-          <CurrentlyTimingWidget />
-        </Box>
-      </Box>
-
       {/* Main Content */}
       <Box
         component="main"
@@ -207,11 +194,14 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
           flexGrow: 1,
           px: { xs: 2, sm: 3 },
           py: { xs: 2, sm: 3 },
-          pb: { xs: 10, sm: 3 }, // Extra padding for mobile bottom nav
+          pb: { xs: 12, sm: 10 }, // Extra padding for mobile bottom nav and footer bar
         }}
       >
         {children}
       </Box>
+
+      {/* Operator Footer Bar - Only shows when actively timing */}
+      <OperatorFooterBar />
 
       {/* Bottom Navigation - Mobile Only */}
       <Paper

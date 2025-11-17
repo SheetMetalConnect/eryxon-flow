@@ -68,15 +68,13 @@ serve(async (req) => {
       );
     }
 
+    // Handle GET requests - list assignments
     if (req.method === 'GET') {
       const url = new URL(req.url);
-      const jobId = url.searchParams.get('job_id');
-      const jobNumber = url.searchParams.get('job_number');
-      const material = url.searchParams.get('material');
+      const operationId = url.searchParams.get('operation_id');
+      const operatorId = url.searchParams.get('operator_id');
       const status = url.searchParams.get('status');
-      const partNumber = url.searchParams.get('part_number');
 
-      // Cap pagination limit to prevent abuse
       let limit = parseInt(url.searchParams.get('limit') || '100');
       if (limit < 1) limit = 100;
       if (limit > 1000) limit = 1000;
@@ -84,93 +82,67 @@ serve(async (req) => {
       const offset = parseInt(url.searchParams.get('offset') || '0');
 
       let query = supabase
-        .from('parts')
+        .from('assignments')
         .select(`
           id,
-          part_number,
-          material,
-          quantity,
+          assigned_at,
           status,
-          file_paths,
           notes,
-          metadata,
           created_at,
           updated_at,
-          parent_part_id,
-          job:jobs (
-            id,
-            job_number,
-            customer
-          ),
-          operations (
+          operation:operations (
             id,
             operation_name,
             status,
-            completion_percentage,
-            cell:cells (
+            part:parts (
               id,
-              name,
-              color
+              part_number,
+              job:jobs (
+                id,
+                job_number
+              )
             )
+          ),
+          operator:profiles (
+            id,
+            username,
+            full_name
+          ),
+          assigned_by:profiles!assignments_assigned_by_id_fkey (
+            id,
+            username,
+            full_name
           )
         `)
         .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false })
+        .order('assigned_at', { ascending: false })
         .range(offset, offset + limit - 1);
 
-      if (jobId) {
-        query = query.eq('job_id', jobId);
+      if (operationId) {
+        query = query.eq('operation_id', operationId);
       }
-      if (material) {
-        query = query.ilike('material', `%${material}%`);
+      if (operatorId) {
+        query = query.eq('operator_id', operatorId);
       }
       if (status) {
         query = query.eq('status', status);
       }
-      if (partNumber) {
-        query = query.ilike('part_number', `%${partNumber}%`);
-      }
 
-      // Filter by job_number if provided (requires join)
-      if (jobNumber) {
-        const { data: jobs } = await supabase
-          .from('jobs')
-          .select('id')
-          .eq('tenant_id', tenantId)
-          .ilike('job_number', `%${jobNumber}%`);
-
-        if (jobs && jobs.length > 0) {
-          query = query.in('job_id', jobs.map(j => j.id));
-        } else {
-          // No matching jobs, return empty result
-          return new Response(
-            JSON.stringify({
-              success: true,
-              data: {
-                parts: [],
-                pagination: { limit, offset, total: 0 }
-              }
-            }),
-            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-      }
-
-      const { data: parts, error, count } = await query;
+      const { data: assignments, error, count } = await query;
 
       if (error) {
-        throw new Error(`Failed to fetch parts: ${error.message}`);
+        throw new Error(`Failed to fetch assignments: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
           data: {
-            parts: parts || [],
+            assignments: assignments || [],
             pagination: {
               limit,
               offset,
-              total: count || parts?.length || 0
+              total: count || assignments?.length || 0
             }
           }
         }),
@@ -178,124 +150,120 @@ serve(async (req) => {
       );
     }
 
-    // POST method for creating parts
+    // Handle POST requests - create assignment
     if (req.method === 'POST') {
       const body = await req.json();
 
       // Validate required fields
-      if (!body.job_id || !body.part_number || !body.material) {
+      if (!body.operation_id || !body.operator_id) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'job_id, part_number, and material are required' }
+            error: { code: 'VALIDATION_ERROR', message: 'operation_id and operator_id are required' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Verify job exists and belongs to tenant
-      const { data: job } = await supabase
-        .from('jobs')
+      // Verify operation exists and belongs to tenant
+      const { data: operation } = await supabase
+        .from('operations')
         .select('id')
-        .eq('id', body.job_id)
+        .eq('id', body.operation_id)
         .eq('tenant_id', tenantId)
         .single();
 
-      if (!job) {
+      if (!operation) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'NOT_FOUND', message: 'Job not found' }
+            error: { code: 'NOT_FOUND', message: 'Operation not found' }
           }),
           { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Check for duplicate part number in same job
-      const { data: existingPart } = await supabase
-        .from('parts')
+      // Verify operator exists and belongs to tenant
+      const { data: operator } = await supabase
+        .from('profiles')
         .select('id')
-        .eq('job_id', body.job_id)
-        .eq('part_number', body.part_number)
+        .eq('id', body.operator_id)
+        .eq('tenant_id', tenantId)
         .single();
 
-      if (existingPart) {
+      if (!operator) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'DUPLICATE_PART', message: `Part number ${body.part_number} already exists in this job` }
+            error: { code: 'NOT_FOUND', message: 'Operator not found' }
+          }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Check for existing active assignment
+      const { data: existingAssignment } = await supabase
+        .from('assignments')
+        .select('id')
+        .eq('operation_id', body.operation_id)
+        .eq('operator_id', body.operator_id)
+        .eq('status', 'active')
+        .single();
+
+      if (existingAssignment) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: { code: 'DUPLICATE_ASSIGNMENT', message: 'Active assignment already exists for this operation and operator' }
           }),
           { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Verify parent_part_id if provided
-      if (body.parent_part_id) {
-        const { data: parentPart } = await supabase
-          .from('parts')
-          .select('id, job_id')
-          .eq('id', body.parent_part_id)
-          .eq('tenant_id', tenantId)
-          .single();
-
-        if (!parentPart || parentPart.job_id !== body.job_id) {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: { code: 'INVALID_PARENT', message: 'Parent part not found or belongs to different job' }
-            }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-      }
-
-      const { data: part, error: partError } = await supabase
-        .from('parts')
+      const { data: assignment, error: assignmentError } = await supabase
+        .from('assignments')
         .insert({
           tenant_id: tenantId,
-          job_id: body.job_id,
-          part_number: body.part_number,
-          material: body.material,
-          quantity: body.quantity || 1,
-          parent_part_id: body.parent_part_id,
-          file_paths: body.file_paths,
+          operation_id: body.operation_id,
+          operator_id: body.operator_id,
+          assigned_by_id: body.assigned_by_id,
+          assigned_at: body.assigned_at || new Date().toISOString(),
           notes: body.notes,
-          metadata: body.metadata,
-          status: 'not_started'
+          status: 'active'
         })
         .select()
         .single();
 
-      if (partError || !part) {
-        throw new Error(`Failed to create part: ${partError?.message}`);
+      if (assignmentError || !assignment) {
+        throw new Error(`Failed to create assignment: ${assignmentError?.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { part }
+          data: { assignment }
         }),
         { status: 201, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // PATCH method for updating parts
+    // Handle PATCH requests - update assignment
     if (req.method === 'PATCH') {
       const url = new URL(req.url);
-      const partId = url.searchParams.get('id');
+      const assignmentId = url.searchParams.get('id');
 
-      if (!partId) {
+      if (!assignmentId) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'Part ID is required in query string (?id=xxx)' }
+            error: { code: 'VALIDATION_ERROR', message: 'Assignment ID is required in query string (?id=xxx)' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       const body = await req.json();
-      const allowedFields = ['status', 'quantity', 'notes', 'metadata', 'file_paths'];
+      const allowedFields = ['status', 'notes'];
       const updates: any = {};
 
       for (const field of allowedFields) {
@@ -316,10 +284,10 @@ serve(async (req) => {
 
       updates.updated_at = new Date().toISOString();
 
-      const { data: part, error } = await supabase
-        .from('parts')
+      const { data: assignment, error } = await supabase
+        .from('assignments')
         .update(updates)
-        .eq('id', partId)
+        .eq('id', assignmentId)
         .eq('tenant_id', tenantId)
         .select()
         .single();
@@ -329,60 +297,42 @@ serve(async (req) => {
           return new Response(
             JSON.stringify({
               success: false,
-              error: { code: 'NOT_FOUND', message: 'Part not found' }
+              error: { code: 'NOT_FOUND', message: 'Assignment not found' }
             }),
             { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        throw new Error(`Failed to update part: ${error.message}`);
+        throw new Error(`Failed to update assignment: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { part }
+          data: { assignment }
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // DELETE method for deleting parts
+    // Handle DELETE requests - delete assignment
     if (req.method === 'DELETE') {
       const url = new URL(req.url);
-      const partId = url.searchParams.get('id');
+      const assignmentId = url.searchParams.get('id');
 
-      if (!partId) {
+      if (!assignmentId) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'Part ID is required in query string (?id=xxx)' }
+            error: { code: 'VALIDATION_ERROR', message: 'Assignment ID is required in query string (?id=xxx)' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Check if part has child parts
-      const { data: childParts } = await supabase
-        .from('parts')
-        .select('id')
-        .eq('parent_part_id', partId)
-        .limit(1);
-
-      if (childParts && childParts.length > 0) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: { code: 'CONFLICT', message: 'Cannot delete part with child parts. Delete child parts first.' }
-          }),
-          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Delete part (cascade will delete operations)
       const { error } = await supabase
-        .from('parts')
+        .from('assignments')
         .delete()
-        .eq('id', partId)
+        .eq('id', assignmentId)
         .eq('tenant_id', tenantId);
 
       if (error) {
@@ -390,18 +340,18 @@ serve(async (req) => {
           return new Response(
             JSON.stringify({
               success: false,
-              error: { code: 'NOT_FOUND', message: 'Part not found' }
+              error: { code: 'NOT_FOUND', message: 'Assignment not found' }
             }),
             { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        throw new Error(`Failed to delete part: ${error.message}`);
+        throw new Error(`Failed to delete assignment: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { message: 'Part deleted successfully' }
+          data: { message: 'Assignment deleted successfully' }
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -416,7 +366,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in api-parts:', error);
+    console.error('Error in api-assignments:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({

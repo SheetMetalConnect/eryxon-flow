@@ -13,7 +13,7 @@ async function authenticateApiKey(authHeader: string | null, supabase: any) {
   }
 
   const apiKey = authHeader.substring(7);
-  
+
   if (!apiKey.startsWith('ery_live_') && !apiKey.startsWith('ery_test_')) {
     return null;
   }
@@ -37,7 +37,7 @@ async function authenticateApiKey(authHeader: string | null, supabase: any) {
         .from('api_keys')
         .update({ last_used_at: new Date().toISOString() })
         .eq('id', key.id);
-      
+
       return fullKey.tenant_id;
     }
   }
@@ -68,122 +68,147 @@ serve(async (req) => {
       );
     }
 
-    // Handle GET requests - list cells
+    // Handle GET requests - list substeps
     if (req.method === 'GET') {
       const url = new URL(req.url);
-      const activeFilter = url.searchParams.get('active');
+      const operationId = url.searchParams.get('operation_id');
+      const completed = url.searchParams.get('completed');
 
       let query = supabase
-        .from('cells')
-        .select('id, name, color, sequence, active, created_at, updated_at')
+        .from('substeps')
+        .select(`
+          id,
+          operation_id,
+          description,
+          sequence,
+          completed,
+          created_at,
+          updated_at,
+          operation:operations (
+            id,
+            operation_name,
+            part:parts (
+              id,
+              part_number
+            )
+          )
+        `)
         .eq('tenant_id', tenantId)
-        .order('sequence');
+        .order('sequence', { ascending: true });
 
-      if (activeFilter === 'true') {
-        query = query.eq('active', true);
+      if (operationId) {
+        query = query.eq('operation_id', operationId);
+      }
+      if (completed === 'true') {
+        query = query.eq('completed', true);
+      } else if (completed === 'false') {
+        query = query.eq('completed', false);
       }
 
-      const { data: cells, error } = await query;
+      const { data: substeps, error } = await query;
 
       if (error) {
-        throw new Error(`Failed to fetch cells: ${error.message}`);
+        throw new Error(`Failed to fetch substeps: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { cells }
+          data: { substeps: substeps || [] }
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Handle POST requests - create cell
+    // Handle POST requests - create substep
     if (req.method === 'POST') {
       const body = await req.json();
 
       // Validate required fields
-      if (!body.name) {
+      if (!body.operation_id || !body.description) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'name is required' }
+            error: { code: 'VALIDATION_ERROR', message: 'operation_id and description are required' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Check for duplicate cell name
-      const { data: existingCell } = await supabase
-        .from('cells')
+      // Verify operation exists and belongs to tenant
+      const { data: operation } = await supabase
+        .from('operations')
         .select('id')
+        .eq('id', body.operation_id)
         .eq('tenant_id', tenantId)
-        .eq('name', body.name)
         .single();
 
-      if (existingCell) {
+      if (!operation) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'DUPLICATE_CELL', message: `Cell name ${body.name} already exists` }
+            error: { code: 'NOT_FOUND', message: 'Operation not found' }
           }),
-          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Get the next sequence number
-      const { data: maxSeq } = await supabase
-        .from('cells')
-        .select('sequence')
-        .eq('tenant_id', tenantId)
-        .order('sequence', { ascending: false })
-        .limit(1)
-        .single();
+      // Get the next sequence number if not provided
+      let sequence = body.sequence;
+      if (sequence === undefined) {
+        const { data: maxSeq } = await supabase
+          .from('substeps')
+          .select('sequence')
+          .eq('operation_id', body.operation_id)
+          .order('sequence', { ascending: false })
+          .limit(1)
+          .single();
 
-      const sequence = body.sequence ?? ((maxSeq?.sequence ?? 0) + 1);
+        sequence = (maxSeq?.sequence ?? 0) + 1;
+      }
 
-      const { data: cell, error: cellError } = await supabase
-        .from('cells')
+      const { data: substep, error: substepError } = await supabase
+        .from('substeps')
         .insert({
           tenant_id: tenantId,
-          name: body.name,
-          color: body.color || '#3B82F6',
+          operation_id: body.operation_id,
+          description: body.description,
           sequence: sequence,
-          active: body.active ?? true
+          completed: body.completed ?? false
         })
         .select()
         .single();
 
-      if (cellError || !cell) {
-        throw new Error(`Failed to create cell: ${cellError?.message}`);
+      if (substepError || !substep) {
+        throw new Error(`Failed to create substep: ${substepError?.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { cell }
+          data: { substep }
         }),
         { status: 201, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Handle PATCH requests - update cell
+    // Handle PATCH requests - update substep
     if (req.method === 'PATCH') {
       const url = new URL(req.url);
-      const cellId = url.searchParams.get('id');
+      const substepId = url.searchParams.get('id');
 
-      if (!cellId) {
+      if (!substepId) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'Cell ID is required in query string (?id=xxx)' }
+            error: { code: 'VALIDATION_ERROR', message: 'Substep ID is required in query string (?id=xxx)' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       const body = await req.json();
-      const allowedFields = ['name', 'color', 'sequence', 'active'];
+      const allowedFields = ['description', 'sequence', 'completed'];
       const updates: any = {};
 
       for (const field of allowedFields) {
@@ -202,33 +227,12 @@ serve(async (req) => {
         );
       }
 
-      // Check for duplicate name if name is being updated
-      if (updates.name) {
-        const { data: existingCell } = await supabase
-          .from('cells')
-          .select('id')
-          .eq('tenant_id', tenantId)
-          .eq('name', updates.name)
-          .neq('id', cellId)
-          .single();
-
-        if (existingCell) {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: { code: 'DUPLICATE_CELL', message: `Cell name ${updates.name} already exists` }
-            }),
-            { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-      }
-
       updates.updated_at = new Date().toISOString();
 
-      const { data: cell, error } = await supabase
-        .from('cells')
+      const { data: substep, error } = await supabase
+        .from('substeps')
         .update(updates)
-        .eq('id', cellId)
+        .eq('id', substepId)
         .eq('tenant_id', tenantId)
         .select()
         .single();
@@ -238,59 +242,42 @@ serve(async (req) => {
           return new Response(
             JSON.stringify({
               success: false,
-              error: { code: 'NOT_FOUND', message: 'Cell not found' }
+              error: { code: 'NOT_FOUND', message: 'Substep not found' }
             }),
             { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        throw new Error(`Failed to update cell: ${error.message}`);
+        throw new Error(`Failed to update substep: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { cell }
+          data: { substep }
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Handle DELETE requests - delete cell
+    // Handle DELETE requests - delete substep
     if (req.method === 'DELETE') {
       const url = new URL(req.url);
-      const cellId = url.searchParams.get('id');
+      const substepId = url.searchParams.get('id');
 
-      if (!cellId) {
+      if (!substepId) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'Cell ID is required in query string (?id=xxx)' }
+            error: { code: 'VALIDATION_ERROR', message: 'Substep ID is required in query string (?id=xxx)' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Check if cell has any operations
-      const { data: operations } = await supabase
-        .from('operations')
-        .select('id')
-        .eq('cell_id', cellId)
-        .limit(1);
-
-      if (operations && operations.length > 0) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: { code: 'CONFLICT', message: 'Cannot delete cell with existing operations. Consider deactivating instead.' }
-          }),
-          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
       const { error } = await supabase
-        .from('cells')
+        .from('substeps')
         .delete()
-        .eq('id', cellId)
+        .eq('id', substepId)
         .eq('tenant_id', tenantId);
 
       if (error) {
@@ -298,24 +285,23 @@ serve(async (req) => {
           return new Response(
             JSON.stringify({
               success: false,
-              error: { code: 'NOT_FOUND', message: 'Cell not found' }
+              error: { code: 'NOT_FOUND', message: 'Substep not found' }
             }),
             { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        throw new Error(`Failed to delete cell: ${error.message}`);
+        throw new Error(`Failed to delete substep: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { message: 'Cell deleted successfully' }
+          data: { message: 'Substep deleted successfully' }
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Method not allowed
     return new Response(
       JSON.stringify({
         success: false,
@@ -325,7 +311,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in api-cells:', error);
+    console.error('Error in api-substeps:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({

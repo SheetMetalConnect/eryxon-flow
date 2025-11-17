@@ -21,11 +21,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import PartDetailModal from "@/components/admin/PartDetailModal";
 import Layout from "@/components/Layout";
+import { Package, ChevronRight } from "lucide-react";
 
 export default function Parts() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [materialFilter, setMaterialFilter] = useState<string>("all");
   const [jobFilter, setJobFilter] = useState<string>("all");
+  const [assemblyFilter, setAssemblyFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
 
@@ -58,7 +60,7 @@ export default function Parts() {
   });
 
   const { data: parts, isLoading, refetch } = useQuery({
-    queryKey: ["admin-parts", statusFilter, materialFilter, jobFilter, searchQuery],
+    queryKey: ["admin-parts", statusFilter, materialFilter, jobFilter, assemblyFilter, searchQuery],
     queryFn: async () => {
       let query = supabase
         .from("parts")
@@ -81,6 +83,26 @@ export default function Parts() {
         query = query.eq("job_id", jobFilter);
       }
 
+      if (assemblyFilter === "assemblies") {
+        // Get parts that have children (are assemblies)
+        const { data: childParts } = await supabase
+          .from("parts")
+          .select("parent_part_id")
+          .not("parent_part_id", "is", null);
+
+        const assemblyIds = [...new Set(childParts?.map(p => p.parent_part_id))];
+        if (assemblyIds.length > 0) {
+          query = query.in("id", assemblyIds);
+        } else {
+          // No assemblies exist, return empty
+          return [];
+        }
+      } else if (assemblyFilter === "components") {
+        query = query.not("parent_part_id", "is", null);
+      } else if (assemblyFilter === "standalone") {
+        query = query.is("parent_part_id", null);
+      }
+
       if (searchQuery) {
         query = query.ilike("part_number", `%${searchQuery}%`);
       }
@@ -88,9 +110,18 @@ export default function Parts() {
       const { data, error } = await query;
       if (error) throw error;
 
+      // Check which parts have children
+      const { data: allChildRelations } = await supabase
+        .from("parts")
+        .select("parent_part_id")
+        .not("parent_part_id", "is", null);
+
+      const partsWithChildren = new Set(allChildRelations?.map(p => p.parent_part_id) || []);
+
       return data.map((part: any) => ({
         ...part,
         operations_count: part.operations?.[0]?.count || 0,
+        has_children: partsWithChildren.has(part.id),
       }));
     },
   });
@@ -115,7 +146,7 @@ export default function Parts() {
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
         <Input
           placeholder="Search by part number..."
           value={searchQuery}
@@ -161,6 +192,18 @@ export default function Parts() {
             ))}
           </SelectContent>
         </Select>
+
+        <Select value={assemblyFilter} onValueChange={setAssemblyFilter}>
+          <SelectTrigger>
+            <SelectValue placeholder="Assembly type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="assemblies">Assemblies (has children)</SelectItem>
+            <SelectItem value="components">Components (has parent)</SelectItem>
+            <SelectItem value="standalone">Standalone Parts</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Parts Table */}
@@ -171,6 +214,7 @@ export default function Parts() {
           <TableHeader>
             <TableRow>
               <TableHead>Part #</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead>Job #</TableHead>
               <TableHead>Material</TableHead>
               <TableHead>Status</TableHead>
@@ -183,6 +227,25 @@ export default function Parts() {
             {parts?.map((part: any) => (
               <TableRow key={part.id}>
                 <TableCell className="font-medium">{part.part_number}</TableCell>
+                <TableCell>
+                  <div className="flex gap-1">
+                    {part.has_children && (
+                      <Badge variant="outline" className="text-xs" title="This part is an assembly with child components">
+                        <Package className="h-3 w-3 mr-1" />
+                        Assembly
+                      </Badge>
+                    )}
+                    {part.parent_part_id && (
+                      <Badge variant="secondary" className="text-xs" title="This part is a component of an assembly">
+                        <ChevronRight className="h-3 w-3 mr-1" />
+                        Component
+                      </Badge>
+                    )}
+                    {!part.has_children && !part.parent_part_id && (
+                      <span className="text-xs text-gray-500">Standalone</span>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell>{part.job?.job_number}</TableCell>
                 <TableCell>{part.material}</TableCell>
                 <TableCell>{getStatusBadge(part.status)}</TableCell>
@@ -215,7 +278,7 @@ export default function Parts() {
             ))}
             {parts?.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-gray-500 py-8">
+                <TableCell colSpan={8} className="text-center text-gray-500 py-8">
                   No parts found
                 </TableCell>
               </TableRow>
