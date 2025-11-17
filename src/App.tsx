@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import WorkQueue from "./pages/operator/WorkQueue";
 import MyActivity from "./pages/operator/MyActivity";
 import MyIssues from "./pages/operator/MyIssues";
+import OperatorView from "./pages/operator/OperatorView";
 import Dashboard from "./pages/admin/Dashboard";
 import IssueQueue from "./pages/admin/IssueQueue";
 import ConfigStages from "./pages/admin/ConfigStages";
@@ -122,6 +123,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <MyIssues />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/operator-view"
+        element={
+          <ProtectedRoute>
+            <OperatorView />
           </ProtectedRoute>
         }
       />
