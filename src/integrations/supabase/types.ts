@@ -512,8 +512,12 @@ export type Database = {
           full_name: string
           id: string
           is_machine: boolean | null
+          mock_data_imported: boolean | null
+          onboarding_completed: boolean | null
+          onboarding_step: number | null
           role: Database["public"]["Enums"]["app_role"]
           tenant_id: string
+          tour_completed: boolean | null
           updated_at: string | null
           username: string
         }
@@ -524,8 +528,12 @@ export type Database = {
           full_name: string
           id: string
           is_machine?: boolean | null
+          mock_data_imported?: boolean | null
+          onboarding_completed?: boolean | null
+          onboarding_step?: number | null
           role: Database["public"]["Enums"]["app_role"]
           tenant_id: string
+          tour_completed?: boolean | null
           updated_at?: string | null
           username: string
         }
@@ -536,8 +544,12 @@ export type Database = {
           full_name?: string
           id?: string
           is_machine?: boolean | null
+          mock_data_imported?: boolean | null
+          onboarding_completed?: boolean | null
+          onboarding_step?: number | null
           role?: Database["public"]["Enums"]["app_role"]
           tenant_id?: string
+          tour_completed?: boolean | null
           updated_at?: string | null
           username?: string
         }
@@ -626,6 +638,63 @@ export type Database = {
           sequence?: number
           status?: string | null
           tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      tenants: {
+        Row: {
+          billing_email: string | null
+          created_at: string | null
+          current_jobs: number | null
+          current_parts_this_month: number | null
+          current_storage_gb: number | null
+          id: string
+          max_jobs: number | null
+          max_parts_per_month: number | null
+          max_storage_gb: number | null
+          name: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          status: Database["public"]["Enums"]["subscription_status"]
+          subscription_started_at: string | null
+          subscription_updated_at: string | null
+          trial_ends_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          billing_email?: string | null
+          created_at?: string | null
+          current_jobs?: number | null
+          current_parts_this_month?: number | null
+          current_storage_gb?: number | null
+          id?: string
+          max_jobs?: number | null
+          max_parts_per_month?: number | null
+          max_storage_gb?: number | null
+          name: string
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          status?: Database["public"]["Enums"]["subscription_status"]
+          subscription_started_at?: string | null
+          subscription_updated_at?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          billing_email?: string | null
+          created_at?: string | null
+          current_jobs?: number | null
+          current_parts_this_month?: number | null
+          current_storage_gb?: number | null
+          id?: string
+          max_jobs?: number | null
+          max_parts_per_month?: number | null
+          max_storage_gb?: number | null
+          name?: string
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          status?: Database["public"]["Enums"]["subscription_status"]
+          subscription_started_at?: string | null
+          subscription_updated_at?: string | null
+          trial_ends_at?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -792,6 +861,32 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_my_tenant_subscription: {
+        Args: never
+        Returns: {
+          current_jobs: number
+          current_parts_this_month: number
+          current_storage_gb: number
+          max_jobs: number
+          max_parts_per_month: number
+          max_storage_gb: number
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          status: Database["public"]["Enums"]["subscription_status"]
+          tenant_id: string
+        }[]
+      }
+      get_tenant_usage_stats: {
+        Args: never
+        Returns: {
+          active_jobs: number
+          completed_jobs: number
+          parts_this_month: number
+          total_admins: number
+          total_jobs: number
+          total_operators: number
+          total_parts: number
+        }[]
+      }
       get_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
@@ -804,6 +899,8 @@ export type Database = {
       issue_severity: "low" | "medium" | "high" | "critical"
       issue_status: "pending" | "approved" | "rejected" | "closed"
       job_status: "not_started" | "in_progress" | "completed" | "on_hold"
+      subscription_plan: "free" | "pro" | "premium"
+      subscription_status: "active" | "cancelled" | "suspended" | "trial"
       task_status: "not_started" | "in_progress" | "completed" | "on_hold"
     }
     CompositeTypes: {
@@ -937,6 +1034,8 @@ export const Constants = {
       issue_severity: ["low", "medium", "high", "critical"],
       issue_status: ["pending", "approved", "rejected", "closed"],
       job_status: ["not_started", "in_progress", "completed", "on_hold"],
+      subscription_plan: ["free", "pro", "premium"],
+      subscription_status: ["active", "cancelled", "suspended", "trial"],
       task_status: ["not_started", "in_progress", "completed", "on_hold"],
     },
   },

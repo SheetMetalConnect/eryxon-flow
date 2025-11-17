@@ -19,6 +19,8 @@ import {
   alpha,
   useTheme,
   Container,
+  Chip,
+  Button,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -38,6 +40,7 @@ import {
   Webhook as WebhookIcon,
   Description as DescriptionIcon,
   Logout as LogoutIcon,
+  Upgrade as UpgradeIcon,
   Brightness4 as Brightness4Icon,
   Brightness7 as Brightness7Icon,
   AttachMoney as AttachMoneyIcon,

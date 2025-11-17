@@ -7,16 +7,14 @@ export type SubscriptionStatus = 'active' | 'cancelled' | 'suspended' | 'trial';
 
 export interface TenantSubscription {
   tenant_id: string;
-  tenant_name: string;
   plan: SubscriptionPlan;
   status: SubscriptionStatus;
   max_jobs: number | null;
   max_parts_per_month: number | null;
   max_storage_gb: number | null;
-  current_month_parts: number;
-  current_storage_mb: number;
-  plan_started_at: string;
-  trial_ends_at: string | null;
+  current_jobs: number;
+  current_parts_this_month: number;
+  current_storage_gb: number;
 }
 
 export interface TenantUsageStats {
@@ -24,7 +22,7 @@ export interface TenantUsageStats {
   total_parts: number;
   active_jobs: number;
   completed_jobs: number;
-  current_month_parts: number;
+  parts_this_month: number;
   total_operators: number;
   total_admins: number;
 }
@@ -49,22 +47,22 @@ export const useSubscription = () => {
 
         // Fetch subscription data using the RPC function
         const { data: subData, error: subError } = await supabase
-          .rpc('get_my_tenant_subscription');
+          .rpc('get_my_tenant_subscription' as any);
 
         if (subError) throw subError;
 
         if (subData && subData.length > 0) {
-          setSubscription(subData[0]);
+          setSubscription(subData[0] as any);
         }
 
         // Fetch usage statistics (no parameter needed - function uses caller's tenant)
         const { data: statsData, error: statsError } = await supabase
-          .rpc('get_tenant_usage_stats');
+          .rpc('get_tenant_usage_stats' as any);
 
         if (statsError) throw statsError;
 
         if (statsData && statsData.length > 0) {
-          setUsageStats(statsData[0]);
+          setUsageStats(statsData[0] as any);
         }
       } catch (err) {
         console.error('Error fetching subscription:', err);
