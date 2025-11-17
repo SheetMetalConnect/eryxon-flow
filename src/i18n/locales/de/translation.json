@@ -43,7 +43,16 @@
     "partsManagement": "Teileverwaltung",
     "issueQueue": "Problem-Warteschlange",
     "operatorAssignments": "Bedienerzuweisungen",
-    "apiDocumentation": "API-Dokumentation"
+    "apiDocumentation": "API-Dokumentation",
+    "pricing": "Preise",
+    "myPlan": "Mein Plan"
+  },
+  "subscription": {
+    "currentPlan": "Aktueller Plan",
+    "upgradePlan": "Plan upgraden",
+    "freePlan": "Kostenloser Plan",
+    "proPlan": "Pro-Plan",
+    "premiumPlan": "Premium-Plan"
   },
   "dashboard": {
     "title": "Dashboard",

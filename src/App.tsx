@@ -24,6 +24,7 @@ import JobCreate from "./pages/admin/JobCreate";
 import Parts from "./pages/admin/Parts";
 import ApiDocs from "./pages/ApiDocs";
 import Pricing from "./pages/Pricing";
+import { MyPlan } from "./pages/MyPlan";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -243,6 +244,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Pricing />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/my-plan"
+        element={
+          <ProtectedRoute adminOnly>
+            <MyPlan />
           </ProtectedRoute>
         }
       />
