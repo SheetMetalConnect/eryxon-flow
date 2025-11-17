@@ -39,6 +39,7 @@ import {
   Logout as LogoutIcon,
   Brightness4 as Brightness4Icon,
   Brightness7 as Brightness7Icon,
+  AttachMoney as AttachMoneyIcon,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -89,6 +90,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { path: '/admin/parts', label: 'Parts', icon: <InventoryIcon /> },
     { path: '/admin/issues', label: 'Issues', icon: <ReportProblemIcon /> },
     { path: '/admin/assignments', label: 'Assignments', icon: <AssignmentIcon /> },
+    { path: '/pricing', label: 'Pricing', icon: <AttachMoneyIcon /> },
   ];
 
   const configNavItems = [
@@ -281,6 +283,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             {location.pathname.startsWith('/admin/assignments') && 'Operator Assignments'}
             {location.pathname.startsWith('/admin/config') && 'Configuration'}
             {location.pathname === '/api-docs' && 'API Documentation'}
+            {location.pathname === '/pricing' && 'Pricing'}
           </Typography>
 
           {/* Right Side Actions */}
