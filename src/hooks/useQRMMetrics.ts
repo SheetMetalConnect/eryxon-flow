@@ -27,7 +27,7 @@ export function useCellQRMMetrics(cellId: string | null, tenantId: string | null
         });
 
         if (rpcError) throw rpcError;
-        setMetrics(data as unknown as CellQRMMetrics);
+        setMetrics(data as any);
       } catch (err) {
         setError(err as Error);
         console.error('Error fetching cell QRM metrics:', err);
@@ -100,7 +100,7 @@ export function useNextCellCapacity(currentCellId: string | null, tenantId: stri
         });
 
         if (rpcError) throw rpcError;
-        setCapacity(data as unknown as NextCellCapacity);
+        setCapacity(data as any);
       } catch (err) {
         setError(err as Error);
         console.error('Error checking next cell capacity:', err);
@@ -136,120 +136,35 @@ export function useNextCellCapacity(currentCellId: string | null, tenantId: stri
 }
 
 /**
- * Hook to fetch part routing
+ * Hook to fetch part routing (commented out until SQL function is implemented)
  */
 export function usePartRouting(partId: string | null) {
-  const [routing, setRouting] = useState<PartRouting>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [routing] = useState<PartRouting>([]);
+  const [loading] = useState(false);
+  const [error] = useState<Error | null>(null);
 
-  useEffect(() => {
-    if (!partId) {
-      setRouting([]);
-      return;
-    }
-
-    const fetchRouting = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const { data, error: rpcError } = await supabase.rpc('get_part_routing', {
-          part_id_param: partId,
-        });
-
-        if (rpcError) throw rpcError;
-        setRouting((data as PartRouting) || []);
-      } catch (err) {
-        setError(err as Error);
-        console.error('Error fetching part routing:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRouting();
-
-    // Subscribe to real-time updates on operations that could affect routing
-    const channel = supabase
-      .channel(`part-routing-${partId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'operations',
-          filter: `part_id=eq.${partId}`,
-        },
-        () => {
-          fetchRouting();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      channel.unsubscribe();
-    };
-  }, [partId]);
+  // TODO: Implement when get_part_routing SQL function is created
+  // useEffect(() => {
+  //   if (!partId) return;
+  //   // Implementation here
+  // }, [partId]);
 
   return { routing, loading, error };
 }
 
 /**
- * Hook to fetch job routing
+ * Hook to fetch job routing (commented out until SQL function is implemented)
  */
 export function useJobRouting(jobId: string | null) {
-  const [routing, setRouting] = useState<JobRouting>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [routing] = useState<JobRouting>([]);
+  const [loading] = useState(false);
+  const [error] = useState<Error | null>(null);
 
-  useEffect(() => {
-    if (!jobId) {
-      setRouting([]);
-      return;
-    }
-
-    const fetchRouting = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const { data, error: rpcError } = await supabase.rpc('get_job_routing', {
-          job_id_param: jobId,
-        });
-
-        if (rpcError) throw rpcError;
-        setRouting((data as JobRouting) || []);
-      } catch (err) {
-        setError(err as Error);
-        console.error('Error fetching job routing:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRouting();
-
-    // Subscribe to real-time updates on operations that could affect routing
-    const channel = supabase
-      .channel(`job-routing-${jobId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'operations',
-        },
-        () => {
-          fetchRouting();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      channel.unsubscribe();
-    };
-  }, [jobId]);
+  // TODO: Implement when get_job_routing SQL function is created
+  // useEffect(() => {
+  //   if (!jobId) return;
+  //   // Implementation here
+  // }, [jobId]);
 
   return { routing, loading, error };
 }
