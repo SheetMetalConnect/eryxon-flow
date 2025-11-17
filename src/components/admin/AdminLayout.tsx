@@ -37,6 +37,7 @@ import {
   Timeline as TimelineIcon,
   MenuBook as MenuBookIcon,
   Search as SearchIcon,
+  AttachMoney as AttachMoneyIcon,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
