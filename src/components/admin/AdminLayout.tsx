@@ -44,6 +44,7 @@ import {
   Brightness4 as Brightness4Icon,
   Brightness7 as Brightness7Icon,
   AttachMoney as AttachMoneyIcon,
+  Archive as ArchiveIcon,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -108,6 +109,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { path: '/admin/resources', label: 'Resources', icon: <BuildIcon /> },
     { path: '/admin/config/api-keys', label: 'API Keys', icon: <VpnKeyIcon /> },
     { path: '/admin/config/webhooks', label: 'Webhooks', icon: <WebhookIcon /> },
+    { path: '/admin/data-export', label: 'Data Export', icon: <ArchiveIcon /> },
     { path: '/api-docs', label: 'API Docs', icon: <DescriptionIcon /> },
   ];
 
@@ -300,6 +302,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             {location.pathname === '/admin/stages' && 'Stages'}
             {location.pathname === '/admin/materials' && 'Materials'}
             {location.pathname === '/admin/resources' && 'Resources'}
+            {location.pathname === '/admin/data-export' && 'Data Export'}
             {location.pathname.startsWith('/admin/config') && 'Configuration'}
             {location.pathname === '/api-docs' && 'API Documentation'}
             {location.pathname === '/pricing' && 'Pricing'}
