@@ -110,7 +110,7 @@ function AppRoutes() {
       />
 
       <Route
-        path="/admin/stages"
+        path="/admin/config/stages"
         element={
           <ProtectedRoute adminOnly>
             <ConfigStages />
@@ -119,7 +119,7 @@ function AppRoutes() {
       />
 
       <Route
-        path="/admin/users"
+        path="/admin/config/users"
         element={
           <ProtectedRoute adminOnly>
             <ConfigUsers />
