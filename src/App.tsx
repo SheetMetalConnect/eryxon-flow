@@ -14,6 +14,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import IssueQueue from "./pages/admin/IssueQueue";
 import ConfigStages from "./pages/admin/ConfigStages";
 import ConfigMaterials from "./pages/admin/ConfigMaterials";
+import ConfigResources from "./pages/admin/ConfigResources";
 import ConfigUsers from "./pages/admin/ConfigUsers";
 import Assignments from "./pages/admin/Assignments";
 import ConfigApiKeys from "./pages/admin/ConfigApiKeys";
@@ -124,6 +125,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <ConfigMaterials />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/resources"
+        element={
+          <ProtectedRoute adminOnly>
+            <ConfigResources />
           </ProtectedRoute>
         }
       />
