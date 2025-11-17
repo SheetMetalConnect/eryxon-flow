@@ -1,155 +1,139 @@
-# Eryxon Flow
+# Eryxon Flow - Manufacturing Execution System
 
-A comprehensive manufacturing workflow management system for sheet metal fabrication, built with React, TypeScript, and Supabase.
+A modern, production-ready MES (Manufacturing Execution System) built with React, TypeScript, and Supabase for managing sheet metal production workflows.
 
-## Overview
+## Features
 
-Eryxon Flow is a modern web application designed to streamline manufacturing operations, from job creation to production tracking. It provides real-time visibility into production status, resource allocation, and performance metrics.
+- **Job Management** - Create and track manufacturing jobs
+- **Parts Tracking** - Monitor parts through production stages
+- **Task Management** - Assign and track operator tasks
+- **Issue Tracking** - Log and resolve production defects
+- **Real-time Dashboard** - Live stats and metrics
+- **MCP Server Integration** - AI-powered automation via Model Context Protocol
+- **API & Webhooks** - External integrations support
+- **Role-based Access** - Admin and operator views
 
-## Key Features
+## Project info
 
-- **Job Management**: Create, track, and manage manufacturing jobs with parts and operations
-- **Manufacturing Cells**: Configure production cells with visual workflow representation
-- **Parts Tracking**: Monitor parts through the production process with status updates
-- **3D CAD Viewer**: View STEP/STP files directly in the browser with interactive 3D controls
-- **Time Tracking**: Track operation time and operator assignments
-- **Issue Management**: Report and resolve production issues in real-time
-- **Material UI Design System**: Modern, responsive interface with dark mode support
-- **Multi-tenant**: Secure tenant isolation for multiple organizations
-- **RESTful API**: Complete CRUD operations with authentication and webhooks
+**URL**: https://lovable.dev/projects/aaa3208a-70fb-4eb6-a5eb-5823f025e734
 
-## Tech Stack
+## How can I edit this code?
 
-- **Frontend**: React 18, TypeScript, Vite
-- **UI Framework**: Material UI v6 + shadcn/ui
-- **3D Graphics**: Three.js with occt-import-js for STEP file parsing
-- **Backend**: Supabase (PostgreSQL, Authentication, Storage, Edge Functions)
-- **Styling**: Tailwind CSS
-- **State Management**: React Query (TanStack Query)
+There are several ways of editing your application.
 
-## Getting Started
+**Use Lovable**
 
-### Prerequisites
+Simply visit the [Lovable Project](https://lovable.dev/projects/aaa3208a-70fb-4eb6-a5eb-5823f025e734) and start prompting.
 
-- Node.js 18+ (recommended: use [nvm](https://github.com/nvm-sh/nvm))
-- npm or bun package manager
+Changes made via Lovable will be committed automatically to this repo.
 
-### Installation
+**Use your preferred IDE**
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd eryxon-flow
-```
+If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
-2. Install dependencies:
-```bash
-npm install
-# or
-bun install
-```
+The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-3. Set up environment variables:
-```bash
-cp .env.example .env
-```
-Edit `.env` with your Supabase credentials.
+Follow these steps:
 
-4. Start the development server:
-```bash
+```sh
+# Step 1: Clone the repository using the project's Git URL.
+git clone <YOUR_GIT_URL>
+
+# Step 2: Navigate to the project directory.
+cd <YOUR_PROJECT_NAME>
+
+# Step 3: Install the necessary dependencies.
+npm i
+
+# Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
-# or
-bun run dev
 ```
 
-The application will be available at `http://localhost:5173`
+**Edit a file directly in GitHub**
 
-## Documentation
+- Navigate to the desired file(s).
+- Click the "Edit" button (pencil icon) at the top right of the file view.
+- Make your changes and commit the changes.
 
-Comprehensive documentation is available in the [`/docs`](/docs) folder:
+**Use GitHub Codespaces**
 
-- **[API Documentation](/docs/api-documentation.md)** - Complete API reference with all endpoints
-- **[3D Viewer](/docs/3d-viewer.md)** - 3D STEP file viewer setup and usage
-- **[Material UI Design System](/docs/material-ui-design-system.md)** - UI components and theming guide
-- **[Documentation Index](/docs/index.md)** - Complete documentation overview
+- Navigate to the main page of your repository.
+- Click on the "Code" button (green button) near the top right.
+- Select the "Codespaces" tab.
+- Click on "New codespace" to launch a new Codespace environment.
+- Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## Project Structure
+## What technologies are used for this project?
 
+This project is built with:
+
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
+
+## How can I deploy this project?
+
+Simply open [Lovable](https://lovable.dev/projects/aaa3208a-70fb-4eb6-a5eb-5823f025e734) and click on Share -> Publish.
+
+## MCP Server Integration
+
+Eryxon Flow includes a Model Context Protocol (MCP) server that enables AI assistants like Claude to directly interact with your manufacturing data.
+
+### Available MCP Tools
+
+- `fetch_jobs` - Retrieve jobs with filtering
+- `fetch_parts` - Get parts data
+- `fetch_tasks` - Query tasks and assignments
+- `fetch_issues` - View production issues
+- `update_job` - Modify job status/priority
+- `update_part` - Update part progress
+- `update_task` - Change task assignments
+- `create_job` - Create new manufacturing jobs
+- `get_dashboard_stats` - Retrieve metrics
+
+### Setup MCP Server
+
+1. Navigate to the MCP server directory:
+```bash
+cd mcp-server
+npm install
+npm run build
 ```
-eryxon-flow/
-├── src/
-│   ├── components/        # React components
-│   │   ├── mui/          # Material UI components
-│   │   ├── admin/        # Admin dashboard components
-│   │   └── operator/     # Operator dashboard components
-│   ├── pages/            # Page components
-│   ├── hooks/            # Custom React hooks
-│   ├── integrations/     # Third-party integrations
-│   │   └── supabase/     # Supabase client and types
-│   ├── theme/            # Material UI theme configuration
-│   └── lib/              # Utility functions
-├── supabase/             # Supabase migrations and functions
-├── docs/                 # Documentation
-└── public/               # Static assets
+
+2. Configure your MCP client (e.g., Claude Desktop) by adding to config:
+```json
+{
+  "mcpServers": {
+    "eryxon-flow": {
+      "command": "node",
+      "args": ["/path/to/eryxon-flow/mcp-server/dist/index.js"],
+      "env": {
+        "SUPABASE_URL": "https://vatgianzotsurljznsry.supabase.co",
+        "SUPABASE_SERVICE_KEY": "your-service-role-key-here"
+      }
+    }
+  }
+}
 ```
 
-## User Roles
+3. Restart your MCP client and start using the tools!
 
-- **Admin**: Full access to job management, parts, operations, and system configuration
-- **Operator**: Access to assigned operations, time tracking, and issue reporting
+See [mcp-server/README.md](mcp-server/README.md) for detailed documentation.
 
-## Database
+## Architecture
 
-The application uses Supabase (PostgreSQL) with Row Level Security (RLS) for multi-tenant data isolation. Database migrations are located in `/supabase/migrations/`.
+- **Frontend**: Vite + React 18 + TypeScript
+- **UI Framework**: Tailwind CSS + shadcn/ui
+- **Backend**: Supabase (PostgreSQL + Edge Functions)
+- **Routing**: React Router v6
+- **State**: React Query for server state
 
-## Deployment
+## Can I connect a custom domain to my Lovable project?
 
-This project is deployed using [Lovable](https://lovable.dev):
+Yes, you can!
 
-1. Push changes to the repository
-2. Visit your [Lovable project](https://lovable.dev/projects/aaa3208a-70fb-4eb6-a5eb-5823f025e734)
-3. Click Share → Publish
+To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
-You can also connect a custom domain via Project > Settings > Domains.
-
-## Development
-
-### Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-
-### Code Style
-
-- TypeScript for type safety
-- ESLint for code quality
-- Prettier for code formatting (via ESLint)
-- Component-based architecture
-- Material UI design system
-
-## Contributing
-
-1. Create a feature branch from `main`
-2. Make your changes
-3. Test thoroughly
-4. Submit a pull request
-
-## Support
-
-For issues or questions:
-- Check the [documentation](/docs)
-- Review existing GitHub issues
-- Create a new issue with detailed information
-
-## License
-
-[Add your license here]
-
-## Acknowledgments
-
-- Built with [Lovable](https://lovable.dev)
-- Powered by [Supabase](https://supabase.com)
-- 3D rendering with [Three.js](https://threejs.org)
-- UI components from [Material UI](https://mui.com) and [shadcn/ui](https://ui.shadcn.com)
+Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)

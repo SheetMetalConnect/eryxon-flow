@@ -7,6 +7,7 @@ import { Clock, Square } from "lucide-react";
 import { stopTimeTracking } from "@/lib/database";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 interface ActiveEntry {
   id: string;
@@ -24,6 +25,7 @@ interface ActiveEntry {
 }
 
 export default function CurrentlyTimingWidget() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const [activeEntries, setActiveEntries] = useState<ActiveEntry[]>([]);
   const [, setTick] = useState(0);
@@ -93,10 +95,10 @@ export default function CurrentlyTimingWidget() {
 
     try {
       await stopTimeTracking(operationId, profile.id);
-      toast.success("Time tracking stopped");
+      toast.success(t("operations.timeTrackingStopped"));
       loadActiveEntries();
     } catch (error: any) {
-      toast.error(error.message || "Failed to stop time tracking");
+      toast.error(error.message || t("operations.failedToStopTimeTracking"));
     }
   };
 
@@ -106,7 +108,7 @@ export default function CurrentlyTimingWidget() {
     <Card className="p-4 bg-active-work/5 border-active-work/30">
       <div className="flex items-center gap-2 mb-3">
         <Clock className="h-5 w-5 text-active-work" />
-        <h3 className="font-semibold">Currently Timing</h3>
+        <h3 className="font-semibold">{t("operations.currentlyTiming")}</h3>
       </div>
       <div className="space-y-2">
         {activeEntries.map((entry) => (
@@ -117,10 +119,10 @@ export default function CurrentlyTimingWidget() {
             <div className="flex-1 min-w-0">
               <div className="font-medium truncate">{entry.operation.operation_name}</div>
               <div className="text-sm text-muted-foreground">
-                Job {entry.operation.part.job.job_number} • {entry.operation.part.part_number}
+                {t("operations.job")} {entry.operation.part.job.job_number} • {entry.operation.part.part_number}
               </div>
               <div className="text-xs text-muted-foreground mt-1">
-                Started {formatDistanceToNow(new Date(entry.start_time), { addSuffix: true })}
+                {t("operations.started")} {formatDistanceToNow(new Date(entry.start_time), { addSuffix: true })}
               </div>
             </div>
             <Button
@@ -130,7 +132,7 @@ export default function CurrentlyTimingWidget() {
               className="gap-2 ml-4"
             >
               <Square className="h-4 w-4" />
-              Stop
+              {t("operations.stop")}
             </Button>
           </div>
         ))}

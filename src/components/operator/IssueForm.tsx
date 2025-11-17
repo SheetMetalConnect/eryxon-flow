@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Upload } from "lucide-react";
 import { triggerIssueCreatedWebhook } from "@/lib/webhooks";
+import { useTranslation } from "react-i18next";
 
 interface IssueFormProps {
   operationId: string;
@@ -18,6 +19,7 @@ interface IssueFormProps {
 }
 
 export default function IssueForm({ operationId, open, onOpenChange, onSuccess }: IssueFormProps) {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [description, setDescription] = useState("");
@@ -101,14 +103,14 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess }
         });
       }
 
-      toast.success("Issue reported successfully");
+      toast.success(t("issues.issueReported"));
       setDescription("");
       setSeverity("medium");
       setFiles(null);
       onOpenChange(false);
       onSuccess();
     } catch (error: any) {
-      toast.error(error.message || "Failed to report issue");
+      toast.error(error.message || t("issues.failedToReportIssue"));
     } finally {
       setLoading(false);
     }
@@ -118,39 +120,39 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess }
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Report Issue</DialogTitle>
+          <DialogTitle>{t("issues.reportIssue")}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="severity">Severity</Label>
+            <Label htmlFor="severity">{t("issues.severity")}</Label>
             <Select value={severity} onValueChange={(v: any) => setSeverity(v)}>
               <SelectTrigger id="severity">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="critical">Critical</SelectItem>
+                <SelectItem value="low">{t("issues.low")}</SelectItem>
+                <SelectItem value="medium">{t("issues.medium")}</SelectItem>
+                <SelectItem value="high">{t("issues.high")}</SelectItem>
+                <SelectItem value="critical">{t("issues.critical")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t("issues.description")}</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe the issue..."
+              placeholder={t("issues.describeIssue")}
               rows={5}
               required
             />
           </div>
 
           <div>
-            <Label htmlFor="photos">Photos (optional)</Label>
+            <Label htmlFor="photos">{t("issues.photosOptional")}</Label>
             <div className="mt-2">
               <label
                 htmlFor="photos"
@@ -159,8 +161,8 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess }
                 <Upload className="h-4 w-4" />
                 <span className="text-sm">
                   {files && files.length > 0
-                    ? `${files.length} file(s) selected`
-                    : "Choose photos"}
+                    ? t("issues.filesSelected", { count: files.length })
+                    : t("issues.choosePhotos")}
                 </span>
               </label>
               <input
@@ -181,10 +183,10 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess }
               onClick={() => onOpenChange(false)}
               className="flex-1"
             >
-              Cancel
+              {t("forms.cancel")}
             </Button>
             <Button type="submit" disabled={loading || !description.trim()} className="flex-1">
-              Report Issue
+              {t("issues.reportIssue")}
             </Button>
           </div>
         </form>

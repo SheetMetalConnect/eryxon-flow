@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { AlertCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface Issue {
   id: string;
@@ -29,6 +30,7 @@ interface Issue {
 }
 
 export default function MyIssues() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
@@ -115,16 +117,16 @@ export default function MyIssues() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">My Issues</h1>
-          <p className="text-muted-foreground">Issues you've reported</p>
+          <h1 className="text-3xl font-bold">{t("myIssues.title")}</h1>
+          <p className="text-muted-foreground">{t("myIssues.description")}</p>
         </div>
 
         {issues.length === 0 ? (
           <Card className="p-12 text-center">
             <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-medium mb-2">No issues reported</h3>
+            <h3 className="text-lg font-medium mb-2">{t("myIssues.noIssues")}</h3>
             <p className="text-sm text-muted-foreground">
-              You haven't reported any issues yet
+              {t("myIssues.noIssuesDescription")}
             </p>
           </Card>
         ) : (
@@ -166,7 +168,7 @@ export default function MyIssues() {
       <Dialog open={!!selectedIssue} onOpenChange={() => setSelectedIssue(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Issue Details</DialogTitle>
+            <DialogTitle>{t("myIssues.issueDetails")}</DialogTitle>
           </DialogHeader>
 
           {selectedIssue && (
@@ -181,7 +183,7 @@ export default function MyIssues() {
               </div>
 
               <div>
-                <div className="text-sm text-muted-foreground mb-1">Operation</div>
+                <div className="text-sm text-muted-foreground mb-1">{t("myIssues.operation")}</div>
                 <div className="font-medium">
                   {selectedIssue.operation.part.job.job_number} • {selectedIssue.operation.part.part_number} •{" "}
                   {selectedIssue.operation.operation_name}
@@ -189,18 +191,18 @@ export default function MyIssues() {
               </div>
 
               <div>
-                <div className="text-sm text-muted-foreground mb-1">Description</div>
+                <div className="text-sm text-muted-foreground mb-1">{t("myIssues.description")}</div>
                 <div className="text-sm p-3 bg-muted rounded">{selectedIssue.description}</div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-sm text-muted-foreground mb-1">Created</div>
+                  <div className="text-sm text-muted-foreground mb-1">{t("myIssues.created")}</div>
                   <div className="text-sm">{format(new Date(selectedIssue.created_at), "PPp")}</div>
                 </div>
                 {selectedIssue.reviewed_at && (
                   <div>
-                    <div className="text-sm text-muted-foreground mb-1">Reviewed</div>
+                    <div className="text-sm text-muted-foreground mb-1">{t("myIssues.reviewed")}</div>
                     <div className="text-sm">{format(new Date(selectedIssue.reviewed_at), "PPp")}</div>
                   </div>
                 )}
@@ -208,20 +210,20 @@ export default function MyIssues() {
 
               {selectedIssue.resolution_notes && (
                 <div>
-                  <div className="text-sm text-muted-foreground mb-1">Resolution Notes</div>
+                  <div className="text-sm text-muted-foreground mb-1">{t("myIssues.resolutionNotes")}</div>
                   <div className="text-sm p-3 bg-muted rounded">{selectedIssue.resolution_notes}</div>
                 </div>
               )}
 
               {selectedIssue.image_paths && selectedIssue.image_paths.length > 0 && (
                 <div>
-                  <div className="text-sm text-muted-foreground mb-2">Attached Photos</div>
+                  <div className="text-sm text-muted-foreground mb-2">{t("myIssues.attachedPhotos")}</div>
                   <div className="grid grid-cols-2 gap-2">
                     {selectedIssue.image_paths.map((path, index) => (
                       <img
                         key={index}
                         src={supabase.storage.from("issues").getPublicUrl(path).data.publicUrl}
-                        alt={`Issue photo ${index + 1}`}
+                        alt={`${t("myIssues.issuePhoto")} ${index + 1}`}
                         className="rounded border"
                       />
                     ))}

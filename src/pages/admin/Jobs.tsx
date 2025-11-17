@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,9 +25,9 @@ import { Calendar, Plus, Clock, AlertCircle } from "lucide-react";
 import { format, isAfter, isBefore, addDays } from "date-fns";
 import JobDetailModal from "@/components/admin/JobDetailModal";
 import DueDateOverrideModal from "@/components/admin/DueDateOverrideModal";
-import Layout from "@/components/Layout";
 
 export default function Jobs() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,11 +43,12 @@ export default function Jobs() {
         .from("jobs")
         .select(`
           *,
-          parts(id, operations(id))
+          parts:parts(count),
+          operations:parts(operations(count))
         `);
 
       if (statusFilter !== "all") {
-        query = query.eq("status", statusFilter as any);
+        query = query.eq("status", statusFilter);
       }
 
       if (searchQuery) {
@@ -59,8 +61,8 @@ export default function Jobs() {
       // Calculate counts and sort
       const processedJobs = data.map((job: any) => ({
         ...job,
-        parts_count: job.parts?.length || 0,
-        operations_count: job.parts?.reduce((sum: number, part: any) => sum + (part.operations?.length || 0), 0) || 0,
+        parts_count: job.parts?.[0]?.count || 0,
+        operations_count: job.operations?.reduce((sum: number, part: any) => sum + (part.operations?.[0]?.count || 0), 0) || 0,
       }));
 
       // Sort
@@ -106,9 +108,15 @@ export default function Jobs() {
       completed: "outline",
       on_hold: "destructive",
     };
+    const statusLabels: Record<string, string> = {
+      not_started: t("operations.status.notStarted"),
+      in_progress: t("operations.status.inProgress"),
+      completed: t("operations.status.completed"),
+      on_hold: t("operations.status.onHold"),
+    };
     return (
       <Badge variant={variants[status] || "default"}>
-        {status.replace("_", " ").toUpperCase()}
+        {statusLabels[status] || status}
       </Badge>
     );
   };
@@ -127,70 +135,70 @@ export default function Jobs() {
   };
 
   return (
-    <Layout>
+    <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Job Management</h1>
+        <h1 className="text-3xl font-bold">{t("jobs.title")}</h1>
         <Button onClick={() => navigate("/admin/jobs/new")}>
-          <Plus className="mr-2 h-4 w-4" /> Create Job
+          <Plus className="mr-2 h-4 w-4" /> {t("jobs.createJob")}
         </Button>
       </div>
 
       {/* Filters */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <Input
-          placeholder="Search by job# or customer..."
+          placeholder={t("jobs.searchJobs")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
 
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger>
-            <SelectValue placeholder="Filter by status" />
+            <SelectValue placeholder={t("jobs.filterByStatus")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="not_started">Not Started</SelectItem>
-            <SelectItem value="in_progress">In Progress</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-            <SelectItem value="on_hold">On Hold</SelectItem>
+            <SelectItem value="all">{t("workQueue.allStatuses")}</SelectItem>
+            <SelectItem value="not_started">{t("operations.status.notStarted")}</SelectItem>
+            <SelectItem value="in_progress">{t("operations.status.inProgress")}</SelectItem>
+            <SelectItem value="completed">{t("operations.status.completed")}</SelectItem>
+            <SelectItem value="on_hold">{t("operations.status.onHold")}</SelectItem>
           </SelectContent>
         </Select>
 
         <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
           <SelectTrigger>
-            <SelectValue placeholder="Sort by" />
+            <SelectValue placeholder={t("workQueue.sortBy")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="due_date">Due Date</SelectItem>
-            <SelectItem value="status">Status</SelectItem>
+            <SelectItem value="due_date">{t("jobs.dueDate")}</SelectItem>
+            <SelectItem value="status">{t("jobs.status")}</SelectItem>
           </SelectContent>
         </Select>
 
         <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as any)}>
           <SelectTrigger>
-            <SelectValue placeholder="Order" />
+            <SelectValue placeholder={t("workQueue.sortBy")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="asc">Ascending</SelectItem>
-            <SelectItem value="desc">Descending</SelectItem>
+            <SelectItem value="asc">{t("workQueue.sortBy")} ↑</SelectItem>
+            <SelectItem value="desc">{t("workQueue.sortBy")} ↓</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Jobs Table */}
       {isLoading ? (
-        <div className="text-center py-8">Loading jobs...</div>
+        <div className="text-center py-8">{t("common.loading")}</div>
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Job #</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Due Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Parts</TableHead>
-              <TableHead className="text-right">Operations</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>{t("jobs.jobNumber")}</TableHead>
+              <TableHead>{t("jobs.customer")}</TableHead>
+              <TableHead>{t("jobs.dueDate")}</TableHead>
+              <TableHead>{t("jobs.status")}</TableHead>
+              <TableHead className="text-right">{t("jobs.parts")}</TableHead>
+              <TableHead className="text-right">{t("jobs.operations")}</TableHead>
+              <TableHead className="text-right">{t("common.edit")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -204,7 +212,7 @@ export default function Jobs() {
                     {format(new Date(job.due_date_override || job.due_date), "MMM dd, yyyy")}
                     {job.due_date_override && (
                       <Badge variant="outline" className="text-xs">
-                        Overridden
+                        {t("jobs.dueDate")}
                       </Badge>
                     )}
                   </div>
@@ -219,7 +227,7 @@ export default function Jobs() {
                       size="sm"
                       onClick={() => setSelectedJobId(job.id)}
                     >
-                      View Details
+                      {t("jobs.viewDetails")}
                     </Button>
                     <Button
                       variant="outline"
@@ -234,7 +242,7 @@ export default function Jobs() {
                         size="sm"
                         onClick={() => handleResume(job.id)}
                       >
-                        Resume
+                        {t("operations.startOperation")}
                       </Button>
                     ) : (
                       <Button
@@ -268,6 +276,6 @@ export default function Jobs() {
           onUpdate={() => refetch()}
         />
       )}
-    </Layout>
+    </div>
   );
 }

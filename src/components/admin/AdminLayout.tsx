@@ -15,6 +15,7 @@ import {
   Avatar,
   Menu,
   MenuItem,
+  Collapse,
   alpha,
   useTheme,
   Container,
@@ -24,20 +25,26 @@ import {
 import {
   Menu as MenuIcon,
   Dashboard as DashboardIcon,
+  ListAlt as ListAltIcon,
   Work as WorkIcon,
   Inventory as InventoryIcon,
   ReportProblem as ReportProblemIcon,
   AssignmentTurnedIn as AssignmentIcon,
   Settings as SettingsIcon,
+  ExpandLess,
+  ExpandMore,
+  People as PeopleIcon,
+  ViewInAr as ViewInArIcon,
+  Build as BuildIcon,
+  VpnKey as VpnKeyIcon,
+  Webhook as WebhookIcon,
+  Description as DescriptionIcon,
   Logout as LogoutIcon,
   Upgrade as UpgradeIcon,
   Brightness4 as Brightness4Icon,
   Brightness7 as Brightness7Icon,
-  CheckCircle as CheckCircleIcon,
-  Timeline as TimelineIcon,
-  MenuBook as MenuBookIcon,
-  Search as SearchIcon,
   AttachMoney as AttachMoneyIcon,
+  Archive as ArchiveIcon,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -45,9 +52,7 @@ import { useThemeMode } from '@/theme/ThemeProvider';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { AppTour } from '@/components/onboarding';
 import { useSubscription } from '@/hooks/useSubscription';
-import { GlobalSearch } from '@/components/GlobalSearch';
-import { QuickCreateMenu } from '@/components/QuickCreateMenu';
-import { NotificationsCenter } from '@/components/NotificationsCenter';
+import { useTranslation } from 'react-i18next';
 
 const DRAWER_WIDTH = 260;
 
@@ -56,17 +61,22 @@ interface AdminLayoutProps {
 }
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
+  const { t } = useTranslation();
   const { profile, signOut } = useAuth();
   const { mode, toggleTheme } = useThemeMode();
   const { subscription, getPlanDisplayName, canUpgrade } = useSubscription();
   const theme = useTheme();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [configOpen, setConfigOpen] = useState(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [searchOpen, setSearchOpen] = useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleConfigClick = () => {
+    setConfigOpen(!configOpen);
   };
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -84,46 +94,25 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   const isActive = (path: string) => location.pathname === path;
 
-  // Keyboard shortcut for global search
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setSearchOpen(true);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const navSections = [
-    {
-      title: 'OVERVIEW',
-      items: [
-        { path: '/dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
-      ],
-    },
-    {
-      title: 'OPERATIONS',
-      items: [
-        { path: '/admin/assignments', label: 'Assignments', icon: <AssignmentIcon /> },
-        { path: '/admin/issues', label: 'Issues', icon: <ReportProblemIcon />, badge: true },
-        { path: '/admin/activity', label: 'Activity Monitor', icon: <TimelineIcon /> },
-      ],
-    },
-    {
-      title: 'DATA',
-      items: [
-        { path: '/admin/jobs', label: 'Jobs', icon: <WorkIcon /> },
-        { path: '/admin/parts', label: 'Parts', icon: <InventoryIcon /> },
-        { path: '/admin/operations', label: 'Operations', icon: <CheckCircleIcon /> },
-      ],
-    },
+  const mainNavItems = [
+    { path: '/dashboard', labelKey: 'navigation.dashboard', icon: <DashboardIcon /> },
+    { path: '/work-queue', labelKey: 'navigation.workQueue', icon: <ListAltIcon /> },
+    { path: '/admin/jobs', labelKey: 'navigation.jobs', icon: <WorkIcon /> },
+    { path: '/admin/parts', labelKey: 'navigation.parts', icon: <InventoryIcon /> },
+    { path: '/admin/issues', labelKey: 'navigation.issues', icon: <ReportProblemIcon /> },
+    { path: '/admin/assignments', labelKey: 'navigation.assignments', icon: <AssignmentIcon /> },
+    { path: '/pricing', labelKey: 'navigation.pricing', icon: <AttachMoneyIcon /> },
   ];
 
-  const bottomNavItems = [
-    { path: '/admin/settings', label: 'Settings', icon: <SettingsIcon /> },
-    { path: '/api-docs', label: 'Docs & Help', icon: <MenuBookIcon /> },
+  const configNavItems = [
+    { path: '/admin/users', labelKey: 'navigation.users', icon: <PeopleIcon /> },
+    { path: '/admin/stages', labelKey: 'navigation.stages', icon: <ViewInArIcon /> },
+    { path: '/admin/materials', labelKey: 'materials.title', icon: <InventoryIcon /> },
+    { path: '/admin/resources', labelKey: 'resources.title', icon: <BuildIcon /> },
+    { path: '/admin/config/api-keys', labelKey: 'navigation.apiKeys', icon: <VpnKeyIcon /> },
+    { path: '/admin/config/webhooks', labelKey: 'navigation.webhooks', icon: <WebhookIcon /> },
+    { path: '/admin/data-export', labelKey: 'dataExport.title', icon: <ArchiveIcon /> },
+    { path: '/api-docs', labelKey: 'navigation.apiDocs', icon: <DescriptionIcon /> },
   ];
 
   const drawer = (
@@ -152,14 +141,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             fontSize: '1.25rem',
           }}
         >
-          E
+          SM
         </Box>
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2, fontSize: '1rem' }}>
-            Eryxon
+            {t("app.name")}
           </Typography>
           <Typography variant="caption" sx={{ opacity: 0.9 }}>
-            Admin Portal
+            {t("app.adminPortal")}
           </Typography>
         </Box>
       </Box>
@@ -168,75 +157,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
       {/* Navigation Items */}
       <List sx={{ flexGrow: 1, px: 1.5, py: 2 }}>
-        {navSections.map((section, sectionIndex) => (
-          <Box key={section.title}>
-            {sectionIndex > 0 && <Divider sx={{ my: 2 }} />}
-
-            <Typography
-              variant="caption"
-              sx={{
-                px: 2,
-                py: 1,
-                display: 'block',
-                fontWeight: 600,
-                color: 'text.secondary',
-                fontSize: '0.7rem',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-              }}
-            >
-              {section.title}
-            </Typography>
-
-            {section.items.map((item) => (
-              <ListItem
-                key={item.path}
-                disablePadding
-                sx={{ mb: 0.5 }}
-                data-tour={item.path === '/admin/jobs' ? 'jobs-nav' : undefined}
-              >
-                <ListItemButton
-                  component={Link}
-                  to={item.path}
-                  selected={isActive(item.path)}
-                  sx={{
-                    borderRadius: 1.5,
-                    py: 1.25,
-                    '&.Mui-selected': {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.12),
-                      color: theme.palette.primary.main,
-                      '& .MuiListItemIcon-root': {
-                        color: theme.palette.primary.main,
-                      },
-                      '&:hover': {
-                        backgroundColor: alpha(theme.palette.primary.main, 0.18),
-                      },
-                    },
-                    '&:hover': {
-                      backgroundColor: alpha(theme.palette.action.hover, 0.08),
-                    },
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
-                  <ListItemText
-                    primary={item.label}
-                    primaryTypographyProps={{
-                      fontWeight: isActive(item.path) ? 600 : 500,
-                      fontSize: '0.95rem',
-                    }}
-                  />
-                  {/* TODO: Add badge count for issues */}
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </Box>
-        ))}
-
-        <Divider sx={{ my: 2 }} />
-
-        {/* Bottom Navigation Items */}
-        {bottomNavItems.map((item) => (
-          <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
+        {mainNavItems.map((item) => (
+          <ListItem
+            key={item.path}
+            disablePadding
+            sx={{ mb: 0.5 }}
+            data-tour={item.path === '/admin/jobs' ? 'jobs-nav' : undefined}
+          >
             <ListItemButton
               component={Link}
               to={item.path}
@@ -261,7 +188,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             >
               <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
               <ListItemText
-                primary={item.label}
+                primary={t(item.labelKey)}
                 primaryTypographyProps={{
                   fontWeight: isActive(item.path) ? 600 : 500,
                   fontSize: '0.95rem',
@@ -270,6 +197,72 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             </ListItemButton>
           </ListItem>
         ))}
+
+        <Divider sx={{ my: 2 }} />
+
+        {/* Configuration Section */}
+        <ListItem disablePadding sx={{ mb: 0.5 }} data-tour="config-nav">
+          <ListItemButton
+            onClick={handleConfigClick}
+            sx={{
+              borderRadius: 1.5,
+              py: 1.25,
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 40 }}>
+              <SettingsIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary={t("navigation.configuration")}
+              primaryTypographyProps={{
+                fontWeight: 600,
+                fontSize: '0.95rem',
+              }}
+            />
+            {configOpen ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+        </ListItem>
+
+        <Collapse in={configOpen} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {configNavItems.map((item) => (
+              <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
+                <ListItemButton
+                  component={Link}
+                  to={item.path}
+                  selected={isActive(item.path)}
+                  sx={{
+                    borderRadius: 1.5,
+                    pl: 4,
+                    py: 1,
+                    '&.Mui-selected': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.12),
+                      color: theme.palette.primary.main,
+                      '& .MuiListItemIcon-root': {
+                        color: theme.palette.primary.main,
+                      },
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.primary.main, 0.18),
+                      },
+                    },
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.action.hover, 0.08),
+                    },
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: 36 }}>{item.icon}</ListItemIcon>
+                  <ListItemText
+                    primary={t(item.labelKey)}
+                    primaryTypographyProps={{
+                      fontWeight: isActive(item.path) ? 600 : 500,
+                      fontSize: '0.9rem',
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Collapse>
       </List>
     </Box>
   );
@@ -299,49 +292,27 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             <MenuIcon />
           </IconButton>
 
-          {/* Search Button - Mobile */}
-          <IconButton
-            color="inherit"
-            onClick={() => setSearchOpen(true)}
-            sx={{ display: { md: 'none' }, mr: 1 }}
-          >
-            <SearchIcon />
-          </IconButton>
-
           {/* Page Title - Dynamic based on location */}
-          <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 600, flexGrow: 1 }}>
-            {location.pathname === '/dashboard' && 'Dashboard'}
-            {location.pathname === '/work-queue' && 'Work Queue'}
-            {location.pathname.startsWith('/admin/jobs') && 'Jobs'}
-            {location.pathname.startsWith('/admin/parts') && 'Parts'}
-            {location.pathname.startsWith('/admin/operations') && 'Operations'}
-            {location.pathname.startsWith('/admin/issues') && 'Issues'}
-            {location.pathname.startsWith('/admin/assignments') && 'Assignments'}
-            {location.pathname.startsWith('/admin/activity') && 'Activity Monitor'}
-            {location.pathname.startsWith('/admin/settings') && 'Settings'}
-            {location.pathname === '/api-docs' && 'API Documentation'}
-            {location.pathname === '/pricing' && 'Pricing'}
-            {location.pathname === '/my-plan' && 'My Plan'}
+          <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 600 }}>
+            {location.pathname === '/dashboard' && t("navigation.dashboard")}
+            {location.pathname === '/work-queue' && t("navigation.workQueue")}
+            {location.pathname.startsWith('/admin/jobs') && t("navigation.jobsManagement")}
+            {location.pathname.startsWith('/admin/parts') && t("navigation.partsManagement")}
+            {location.pathname.startsWith('/admin/issues') && t("navigation.issueQueue")}
+            {location.pathname.startsWith('/admin/assignments') && t("navigation.operatorAssignments")}
+            {location.pathname === '/admin/users' && t("navigation.users")}
+            {location.pathname === '/admin/stages' && t("navigation.stages")}
+            {location.pathname === '/admin/materials' && t("materials.title")}
+            {location.pathname === '/admin/resources' && t("resources.title")}
+            {location.pathname === '/admin/data-export' && t("dataExport.title")}
+            {location.pathname.startsWith('/admin/config') && t("navigation.configuration")}
+            {location.pathname === '/api-docs' && t("navigation.apiDocumentation")}
+            {location.pathname === '/pricing' && t("navigation.pricing")}
+            {location.pathname === '/my-plan' && t("navigation.myPlan")}
           </Typography>
 
           {/* Right Side Actions */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {/* Global Search - Desktop */}
-            <IconButton
-              color="inherit"
-              onClick={() => setSearchOpen(true)}
-              sx={{ display: { xs: 'none', md: 'inline-flex' } }}
-              title="Search (Cmd+K)"
-            >
-              <SearchIcon />
-            </IconButton>
-
-            {/* Quick Create Menu */}
-            <QuickCreateMenu color="inherit" />
-
-            {/* Notifications Center */}
-            <NotificationsCenter color="inherit" />
-
             {/* Language Switcher */}
             <LanguageSwitcher />
 
@@ -403,7 +374,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                       width: 'fit-content',
                     }}
                   >
-                    Admin
+                    {t("app.admin")}
                   </Typography>
                 </Box>
               </Box>
@@ -412,7 +383,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               {subscription && (
                 <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                    Current Plan
+                    {t("subscription.currentPlan")}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Chip
@@ -449,7 +420,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                         },
                       }}
                     >
-                      Upgrade Plan
+                      {t("subscription.upgradePlan")}
                     </Button>
                   )}
                 </Box>
@@ -463,12 +434,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 sx={{ gap: 1.5, py: 1.5 }}
               >
                 <AttachMoneyIcon fontSize="small" />
-                My Plan
+                {t("navigation.myPlan")}
               </MenuItem>
               <Divider />
               <MenuItem onClick={handleSignOut} sx={{ gap: 1.5, py: 1.5 }}>
                 <LogoutIcon fontSize="small" />
-                Sign Out
+                {t("auth.signOut")}
               </MenuItem>
             </Menu>
           </Box>
@@ -538,9 +509,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
       {/* Onboarding Tour - only show if not completed */}
       {profile && !(profile as any).tour_completed && <AppTour userRole="admin" />}
-
-      {/* Global Search Dialog */}
-      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </Box>
   );
 };

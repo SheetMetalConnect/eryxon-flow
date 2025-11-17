@@ -12,8 +12,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Key, Copy, Trash2, Plus, BookOpen, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 export default function ConfigApiKeys() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const { toast } = useToast();
   const [apiKeys, setApiKeys] = useState<any[]>([]);
@@ -39,8 +41,8 @@ export default function ConfigApiKeys() {
 
     if (error) {
       toast({
-        title: "Error",
-        description: "Failed to fetch API keys",
+        title: t('apiKeys.error'),
+        description: t('apiKeys.failedToFetch'),
         variant: "destructive",
       });
     } else {
@@ -52,8 +54,8 @@ export default function ConfigApiKeys() {
   const generateApiKey = async () => {
     if (!keyName.trim()) {
       toast({
-        title: "Error",
-        description: "Please enter a name for the API key",
+        title: t('apiKeys.error'),
+        description: t('apiKeys.enterKeyName'),
         variant: "destructive",
       });
       return;
@@ -91,14 +93,14 @@ export default function ConfigApiKeys() {
       fetchApiKeys();
 
       toast({
-        title: "Success",
-        description: "API key generated successfully",
+        title: t('apiKeys.success'),
+        description: t('apiKeys.generated'),
       });
     } catch (error) {
       console.error('Error generating API key:', error);
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to generate API key",
+        title: t('apiKeys.error'),
+        description: error instanceof Error ? error.message : t('apiKeys.failedToGenerate'),
         variant: "destructive",
       });
     } finally {
@@ -109,8 +111,8 @@ export default function ConfigApiKeys() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({
-      title: "Copied",
-      description: "API key copied to clipboard",
+      title: t('apiKeys.copied'),
+      description: t('apiKeys.copiedToClipboard'),
     });
   };
 
@@ -122,14 +124,14 @@ export default function ConfigApiKeys() {
 
     if (error) {
       toast({
-        title: "Error",
-        description: "Failed to revoke API key",
+        title: t('apiKeys.error'),
+        description: t('apiKeys.failedToRevoke'),
         variant: "destructive",
       });
     } else {
       toast({
-        title: "Success",
-        description: "API key revoked",
+        title: t('apiKeys.success'),
+        description: t('apiKeys.revoked'),
       });
       fetchApiKeys();
     }
@@ -145,23 +147,23 @@ export default function ConfigApiKeys() {
       <div className="p-6 space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">API Keys</h1>
-            <p className="text-muted-foreground">Manage API keys for external integrations</p>
+            <h1 className="text-3xl font-bold">{t('apiKeys.title')}</h1>
+            <p className="text-muted-foreground">{t('apiKeys.description')}</p>
           </div>
           <Dialog open={newKeyDialog} onOpenChange={setNewKeyDialog}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
-                Generate New Key
+                {t('apiKeys.generateNewKey')}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Generate API Key</DialogTitle>
+                <DialogTitle>{t('apiKeys.generateApiKey')}</DialogTitle>
                 <DialogDescription>
-                  {generatedKey 
-                    ? "Save this key now. It won't be shown again."
-                    : "Create a new API key for external system access"}
+                  {generatedKey
+                    ? t('apiKeys.saveKeyNow')
+                    : t('apiKeys.createNewKey')}
                 </DialogDescription>
               </DialogHeader>
               
@@ -172,29 +174,29 @@ export default function ConfigApiKeys() {
                   </div>
                   <Button onClick={() => copyToClipboard(generatedKey)} className="w-full">
                     <Copy className="mr-2 h-4 w-4" />
-                    Copy Key
+                    {t('apiKeys.copyKey')}
                   </Button>
                   <Button onClick={closeKeyDialog} variant="outline" className="w-full">
-                    Done
+                    {t('apiKeys.done')}
                   </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="key-name">Key Name</Label>
+                    <Label htmlFor="key-name">{t('apiKeys.keyName')}</Label>
                     <Input
                       id="key-name"
-                      placeholder="Production API Key"
+                      placeholder={t('apiKeys.keyNamePlaceholder')}
                       value={keyName}
                       onChange={(e) => setKeyName(e.target.value)}
                     />
                   </div>
-                  <Button 
-                    onClick={generateApiKey} 
+                  <Button
+                    onClick={generateApiKey}
                     disabled={isGenerating}
                     className="w-full"
                   >
-                    {isGenerating ? "Generating..." : "Generate Key"}
+                    {isGenerating ? t('apiKeys.generating') : t('apiKeys.generateKey')}
                   </Button>
                 </div>
               )}
@@ -206,22 +208,21 @@ export default function ConfigApiKeys() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BookOpen className="h-5 w-5" />
-              Getting Started with the API
+              {t('apiKeys.gettingStarted')}
             </CardTitle>
             <CardDescription>
-              Interactive documentation, code examples, and testing tools
+              {t('apiKeys.gettingStartedDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <p className="text-sm">
-                Explore our comprehensive API documentation with interactive testing tools,
-                beginner-friendly guides, and ready-to-use code examples in multiple programming languages.
+                {t('apiKeys.exploreDocumentation')}
               </p>
               <Button asChild className="w-full sm:w-auto">
                 <a href="/api-docs" className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
-                  Open Interactive API Documentation
+                  {t('apiKeys.openDocumentation')}
                   <ExternalLink className="h-4 w-4" />
                 </a>
               </Button>
@@ -231,28 +232,28 @@ export default function ConfigApiKeys() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Active API Keys</CardTitle>
+            <CardTitle>{t('apiKeys.activeKeys')}</CardTitle>
             <CardDescription>
-              API keys allow external systems to create jobs, upload files, and track production progress
+              {t('apiKeys.activeKeysDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-8">Loading...</div>
+              <div className="text-center py-8">{t('apiKeys.loading')}</div>
             ) : apiKeys.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                No API keys yet. Generate one to get started.
+                {t('apiKeys.noKeys')}
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Key Prefix</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Last Used</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t('apiKeys.name')}</TableHead>
+                    <TableHead>{t('apiKeys.keyPrefix')}</TableHead>
+                    <TableHead>{t('apiKeys.created')}</TableHead>
+                    <TableHead>{t('apiKeys.lastUsed')}</TableHead>
+                    <TableHead>{t('apiKeys.status')}</TableHead>
+                    <TableHead className="text-right">{t('apiKeys.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -264,13 +265,13 @@ export default function ConfigApiKeys() {
                       </TableCell>
                       <TableCell>{format(new Date(key.created_at), 'MMM d, yyyy')}</TableCell>
                       <TableCell>
-                        {key.last_used_at 
+                        {key.last_used_at
                           ? format(new Date(key.last_used_at), 'MMM d, yyyy HH:mm')
-                          : 'Never'}
+                          : t('apiKeys.never')}
                       </TableCell>
                       <TableCell>
                         <Badge variant={key.active ? "default" : "secondary"}>
-                          {key.active ? "Active" : "Revoked"}
+                          {key.active ? t('apiKeys.active') : t('apiKeys.revoked')}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">

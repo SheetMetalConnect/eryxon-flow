@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ThemeProvider } from "./theme/ThemeProvider";
 import { ToastProvider } from "./components/mui/ToastNotification";
+import { NotificationToastProvider } from "./components/NotificationToastProvider";
 import Auth from "./pages/Auth";
 import WorkQueue from "./pages/operator/WorkQueue";
 import MyActivity from "./pages/operator/MyActivity";
@@ -23,9 +24,13 @@ import DataExport from "./pages/admin/DataExport";
 import Jobs from "./pages/admin/Jobs";
 import JobCreate from "./pages/admin/JobCreate";
 import Parts from "./pages/admin/Parts";
+import { ActivityMonitor } from "./pages/admin/ActivityMonitor";
+import { Operations } from "./pages/admin/Operations";
+import { Settings } from "./pages/admin/Settings";
 import ApiDocs from "./pages/ApiDocs";
 import Pricing from "./pages/Pricing";
 import { MyPlan } from "./pages/MyPlan";
+import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 import { OnboardingWizard } from "./components/onboarding";
 import { Loader2 } from "lucide-react";
@@ -257,6 +262,33 @@ function AppRoutes() {
       />
 
       <Route
+        path="/admin/activity"
+        element={
+          <ProtectedRoute adminOnly>
+            <ActivityMonitor />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/operations"
+        element={
+          <ProtectedRoute adminOnly>
+            <Operations />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/settings"
+        element={
+          <ProtectedRoute adminOnly>
+            <Settings />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/api-docs"
         element={
           <ProtectedRoute>
@@ -283,6 +315,15 @@ function AppRoutes() {
         }
       />
 
+      <Route
+        path="/help"
+        element={
+          <ProtectedRoute>
+            <Help />
+          </ProtectedRoute>
+        }
+      />
+
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -297,7 +338,9 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <AuthProvider>
-              <AppRoutes />
+              <NotificationToastProvider>
+                <AppRoutes />
+              </NotificationToastProvider>
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>

@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { fetchChildParts, fetchParentPart, checkAssemblyDependencies } from "@/lib/database";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useTranslation } from "react-i18next";
 
 interface PartDetailModalProps {
   partId: string;
@@ -36,6 +37,7 @@ interface PartDetailModalProps {
 export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetailModalProps) {
   const { toast } = useToast();
   const { profile } = useAuth();
+  const { t } = useTranslation();
   const [addingOperation, setAddingOperation] = useState(false);
   const [newOperation, setNewOperation] = useState({
     operation_name: "",
@@ -148,8 +150,8 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     },
     onSuccess: async () => {
       toast({
-        title: "Operation added",
-        description: "New operation has been added to the part.",
+        title: t("operations.operationAdded"),
+        description: t("operations.operationAddedDesc"),
       });
       setAddingOperation(false);
       setNewOperation({
@@ -164,7 +166,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
+        title: t("common.error"),
         description: error.message,
         variant: "destructive",
       });
@@ -174,8 +176,8 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
   const handleAddOperation = () => {
     if (!newOperation.operation_name || !newOperation.cell_id) {
       toast({
-        title: "Validation error",
-        description: "Operation name and cell are required",
+        title: t("common.validationError"),
+        description: t("operations.nameAndCellRequired"),
         variant: "destructive",
       });
       return;
@@ -198,8 +200,8 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         // Validate file type
         if (!["step", "stp", "pdf"].includes(fileExt || "")) {
           toast({
-            title: "Invalid file type",
-            description: `${file.name} must be a STEP or PDF file`,
+            title: t("parts.invalidFileType"),
+            description: t("parts.invalidFileTypeDesc", { fileName: file.name }),
             variant: "destructive",
           });
           continue;
@@ -214,8 +216,8 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         if (uploadError) {
           console.error("Upload error:", uploadError);
           toast({
-            title: "Upload failed",
-            description: `Failed to upload ${file.name}`,
+            title: t("parts.uploadFailed"),
+            description: t("parts.uploadFailedDesc", { fileName: file.name }),
             variant: "destructive",
           });
           continue;
@@ -237,8 +239,8 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         if (updateError) throw updateError;
 
         toast({
-          title: "Success",
-          description: `${uploadedPaths.length} file(s) uploaded successfully`,
+          title: t("common.success"),
+          description: t("parts.filesUploadedSuccess", { count: uploadedPaths.length }),
         });
 
         setCadFiles(null);
@@ -247,7 +249,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     } catch (error: any) {
       console.error("CAD upload error:", error);
       toast({
-        title: "Error",
+        title: t("common.error"),
         description: error.message,
         variant: "destructive",
       });
@@ -264,8 +266,8 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
       if (!fileType) {
         toast({
-          title: "Error",
-          description: "Unsupported file type",
+          title: t("common.error"),
+          description: t("parts.unsupportedFileType"),
           variant: "destructive",
         });
         return;
@@ -295,8 +297,8 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     } catch (error: any) {
       console.error("Error opening file:", error);
       toast({
-        title: "Error",
-        description: "Failed to open file viewer",
+        title: t("common.error"),
+        description: t("parts.failedToOpenFileViewer"),
         variant: "destructive",
       });
     }
@@ -304,7 +306,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
   // Handle deleting CAD file
   const handleDeleteCADFile = async (filePath: string) => {
-    if (!confirm("Are you sure you want to delete this file?")) return;
+    if (!confirm(t("parts.confirmDeleteFile"))) return;
 
     try {
       // Delete from storage
@@ -326,15 +328,15 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       if (updateError) throw updateError;
 
       toast({
-        title: "Success",
-        description: "File deleted successfully",
+        title: t("common.success"),
+        description: t("parts.fileDeletedSuccess"),
       });
 
       onUpdate();
     } catch (error: any) {
       console.error("Delete error:", error);
       toast({
-        title: "Error",
+        title: t("common.error"),
         description: error.message,
         variant: "destructive",
       });
@@ -354,7 +356,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     return (
       <Dialog open onOpenChange={onClose}>
         <DialogContent>
-          <div className="text-center py-8">Loading part details...</div>
+          <div className="text-center py-8">{t("parts.loadingPartDetails")}</div>
         </DialogContent>
       </Dialog>
     );
@@ -364,41 +366,41 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Part Details: {part?.part_number}</DialogTitle>
+          <DialogTitle>{t("parts.partDetails")}: {part?.part_number}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Part Info */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Job Number</Label>
+              <Label>{t("jobs.jobNumber")}</Label>
               <p className="mt-1 font-medium">{part?.job?.job_number}</p>
             </div>
 
             <div>
-              <Label>Customer</Label>
+              <Label>{t("jobs.customer")}</Label>
               <p className="mt-1 font-medium">{part?.job?.customer}</p>
             </div>
 
             <div>
-              <Label>Material</Label>
+              <Label>{t("parts.material")}</Label>
               <p className="mt-1 font-medium">{part?.material}</p>
             </div>
 
             <div>
-              <Label>Quantity</Label>
+              <Label>{t("parts.quantity")}</Label>
               <p className="mt-1 font-medium">{part?.quantity}</p>
             </div>
 
             <div>
-              <Label>Status</Label>
+              <Label>{t("parts.status")}</Label>
               <div className="mt-1">
                 <Badge>{part?.status?.replace("_", " ").toUpperCase()}</Badge>
               </div>
             </div>
 
             <div>
-              <Label>Current Cell</Label>
+              <Label>{t("parts.currentCell")}</Label>
               <div className="mt-1">
                 {(() => {
                   const cell = (cells || []).find((c: any) => c.id === (part as any)?.current_cell_id);
@@ -413,7 +415,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                       {cell.name}
                     </Badge>
                   ) : (
-                    <span className="text-gray-400 text-sm">Not started</span>
+                    <span className="text-gray-400 text-sm">{t("parts.notStarted")}</span>
                   );
                 })()}
               </div>
@@ -423,7 +425,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           {/* Notes */}
           {part?.notes && (
             <div>
-              <Label>Notes</Label>
+              <Label>{t("parts.notes")}</Label>
               <p className="mt-1 text-sm text-gray-600">{part.notes}</p>
             </div>
           )}
@@ -431,7 +433,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           {/* Metadata */}
           {part?.metadata && Object.keys(part.metadata).length > 0 && (
             <div>
-              <Label>Custom Metadata</Label>
+              <Label>{t("parts.customMetadata")}</Label>
               <div className="mt-2 border rounded-md p-3">
                 <table className="w-full text-sm">
                   <tbody>
@@ -452,13 +454,13 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
             <div className="border-t pt-6">
               <Label className="text-lg flex items-center gap-2 mb-4">
                 <Package className="h-5 w-5" />
-                Assembly Relationships
+                {t("parts.assemblyRelationships")}
               </Label>
 
               {/* Parent Part */}
               {parentPart && (
                 <div className="mb-4">
-                  <Label className="text-sm text-gray-600">Parent Assembly</Label>
+                  <Label className="text-sm text-gray-600">{t("parts.parentAssembly")}</Label>
                   <div className="mt-2 border rounded-lg p-3 bg-blue-50">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -466,7 +468,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                         <div>
                           <p className="font-medium">{parentPart.part_number}</p>
                           <p className="text-xs text-gray-500">
-                            {parentPart.material} | Job: {parentPart.job?.job_number}
+                            {parentPart.material} | {t("jobs.job")}: {parentPart.job?.job_number}
                           </p>
                         </div>
                       </div>
@@ -480,18 +482,16 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               {childParts && childParts.length > 0 && (
                 <div>
                   <Label className="text-sm text-gray-600">
-                    Child Components ({childParts.length})
+                    {t("parts.childComponents")} ({childParts.length})
                   </Label>
 
                   {/* Dependency Warning */}
                   {dependencies && !dependencies.dependenciesMet && (
                     <Alert variant="destructive" className="my-3">
                       <AlertTriangle className="h-4 w-4" />
-                      <AlertTitle>Dependency Warning</AlertTitle>
+                      <AlertTitle>{t("parts.dependencyWarning")}</AlertTitle>
                       <AlertDescription>
-                        {dependencies.warnings.length} child part(s) are not yet completed.
-                        It's recommended to complete child parts before starting assembly operations,
-                        but you can override if needed.
+                        {t("parts.dependencyWarningDesc", { count: dependencies.warnings.length })}
                       </AlertDescription>
                     </Alert>
                   )}
@@ -515,8 +515,8 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                               <div>
                                 <p className="font-medium">{child.part_number}</p>
                                 <p className="text-xs text-gray-500">
-                                  {child.material} | {totalOps} operation(s)
-                                  {totalOps > 0 && ` (${completedOps}/${totalOps} done)`}
+                                  {child.material} | {totalOps} {t("operations.operation", { count: totalOps })}
+                                  {totalOps > 0 && ` (${completedOps}/${totalOps} ${t("parts.done")})`}
                                 </p>
                               </div>
                             </div>
@@ -538,7 +538,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                     <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
                       <p className="text-sm text-green-800 flex items-center gap-2">
                         <Package className="h-4 w-4" />
-                        All child parts are complete. Ready for assembly!
+                        {t("parts.readyForAssembly")}
                       </p>
                     </div>
                   )}
@@ -552,7 +552,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
             <div className="flex justify-between items-center mb-3">
               <Label className="text-lg flex items-center gap-2">
                 <Box className="h-5 w-5" />
-                Files ({part?.file_paths?.length || 0})
+                {t("parts.files")} ({part?.file_paths?.length || 0})
               </Label>
             </div>
 
@@ -566,8 +566,8 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   <Upload className="h-4 w-4" />
                   <span className="text-sm">
                     {cadFiles && cadFiles.length > 0
-                      ? `${cadFiles.length} file(s) selected`
-                      : "Choose STEP or PDF files"}
+                      ? t("parts.filesSelected", { count: cadFiles.length })
+                      : t("parts.chooseStepOrPdf")}
                   </span>
                 </label>
                 <input
@@ -584,7 +584,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   size="sm"
                 >
                   <Upload className="h-4 w-4 mr-2" />
-                  {uploadingCAD ? "Uploading..." : "Upload"}
+                  {uploadingCAD ? t("parts.uploading") : t("parts.upload")}
                 </Button>
               </div>
             </div>
@@ -613,7 +613,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                       <div>
                         <p className="font-medium text-sm">{fileName}</p>
                         <p className="text-xs text-gray-500">
-                          {isSTEP ? "3D Model" : "Drawing"}
+                          {isSTEP ? t("parts.3dModel") : t("parts.drawing")}
                         </p>
                       </div>
                     </div>
@@ -624,7 +624,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                         onClick={() => handleViewCADFile(filePath)}
                       >
                         <Eye className="h-4 w-4 mr-1" />
-                        View
+                        {t("parts.view")}
                       </Button>
                       <Button
                         size="sm"
@@ -639,7 +639,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               })}
               {(!part?.file_paths || part.file_paths.length === 0) && (
                 <p className="text-sm text-gray-500 text-center py-4">
-                  No files uploaded yet
+                  {t("parts.noFilesYet")}
                 </p>
               )}
             </div>
@@ -648,19 +648,19 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           {/* Operations */}
           <div>
             <div className="flex justify-between items-center mb-3">
-              <Label className="text-lg">Operations ({operations?.length || 0})</Label>
+              <Label className="text-lg">{t("operations.title")} ({operations?.length || 0})</Label>
               <Button size="sm" onClick={() => setAddingOperation(true)}>
-                <Plus className="h-4 w-4 mr-2" /> Add Operation
+                <Plus className="h-4 w-4 mr-2" /> {t("operations.addOperation")}
               </Button>
             </div>
 
             {/* Add Operation Form */}
             {addingOperation && (
               <div className="border rounded-lg p-4 mb-4 bg-blue-50">
-                <h4 className="font-semibold mb-3">New Operation</h4>
+                <h4 className="font-semibold mb-3">{t("operations.newOperation")}</h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label>Operation Name *</Label>
+                    <Label>{t("operations.operationName")} *</Label>
                     <Input
                       value={newOperation.operation_name}
                       onChange={(e) =>
@@ -669,7 +669,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                     />
                   </div>
                   <div>
-                    <Label>Cell *</Label>
+                    <Label>{t("operations.cell")} *</Label>
                     <Select
                       value={newOperation.cell_id}
                       onValueChange={(value) =>
@@ -677,7 +677,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select cell" />
+                        <SelectValue placeholder={t("operations.selectCell")} />
                       </SelectTrigger>
                       <SelectContent>
                         {cells?.map((cell: any) => (
@@ -689,7 +689,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                     </Select>
                   </div>
                   <div>
-                    <Label>Estimated Time (minutes)</Label>
+                    <Label>{t("operations.estimatedTimeMinutes")}</Label>
                     <Input
                       type="number"
                       value={newOperation.estimated_time || ""}
@@ -702,7 +702,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                     />
                   </div>
                   <div>
-                    <Label>Sequence</Label>
+                    <Label>{t("operations.sequence")}</Label>
                     <Input
                       type="number"
                       value={newOperation.sequence}
@@ -715,7 +715,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                     />
                   </div>
                   <div className="col-span-2">
-                    <Label>Notes</Label>
+                    <Label>{t("operations.notes")}</Label>
                     <Textarea
                       value={newOperation.notes}
                       onChange={(e) =>
@@ -728,10 +728,10 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                 <div className="flex gap-2 mt-3">
                   <Button onClick={handleAddOperation} disabled={addOperationMutation.isPending}>
                     <Save className="h-4 w-4 mr-2" />
-                    {addOperationMutation.isPending ? "Saving..." : "Save Operation"}
+                    {addOperationMutation.isPending ? t("operations.saving") : t("operations.saveOperation")}
                   </Button>
                   <Button variant="outline" onClick={() => setAddingOperation(false)}>
-                    <X className="h-4 w-4 mr-2" /> Cancel
+                    <X className="h-4 w-4 mr-2" /> {t("common.cancel")}
                   </Button>
                 </div>
               </div>
@@ -757,11 +757,11 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                     <div>
                       <p className="font-medium">{op.operation_name}</p>
                       <p className="text-xs text-gray-500">
-                        Seq: {op.sequence}
-                        {op.estimated_time && ` | Est: ${op.estimated_time}min`}
+                        {t("operations.seq")}: {op.sequence}
+                        {op.estimated_time && ` | ${t("operations.est")}: ${op.estimated_time}${t("operations.min")}`}
                         {op.assigned_operator && (
                           <span className="ml-2">
-                            | Assigned: {op.assigned_operator.full_name}
+                            | {t("operations.assigned")}: {op.assigned_operator.full_name}
                           </span>
                         )}
                       </p>
@@ -774,7 +774,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               ))}
               {(operations?.length || 0) === 0 && (
                 <p className="text-sm text-gray-500 text-center py-4">
-                  No operations added yet
+                  {t("operations.noOperationsYet")}
                 </p>
               )}
             </div>

@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOperationIssues } from "@/hooks/useOperationIssues";
 import OperationDetailModal from "./OperationDetailModal";
+import { useTranslation } from "react-i18next";
 
 interface OperationCardProps {
   operation: OperationWithDetails;
@@ -15,6 +16,7 @@ interface OperationCardProps {
 }
 
 export default function OperationCard({ operation, onUpdate, compact = false }: OperationCardProps) {
+  const { t } = useTranslation();
   const [showDetail, setShowDetail] = useState(false);
   const { profile } = useAuth();
   const { pendingCount, highestSeverity } = useOperationIssues(operation.id, profile?.tenant_id);
@@ -107,7 +109,7 @@ export default function OperationCard({ operation, onUpdate, compact = false }: 
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex-1 min-w-0">
             <div className="font-semibold text-sm truncate">
-              Job {operation.part.job.job_number}
+              {t("operations.job")} {operation.part.job.job_number}
             </div>
             <div className="text-xs text-muted-foreground">
               {operation.part.part_number}
@@ -117,7 +119,7 @@ export default function OperationCard({ operation, onUpdate, compact = false }: 
             {operation.part.parent_part_id && (
               <Badge variant="outline" className="text-xs">
                 <Package className="h-3 w-3 mr-1" />
-                Assy
+                {t("parts.assy")}
               </Badge>
             )}
             {pendingCount > 0 && highestSeverity && (
@@ -142,7 +144,7 @@ export default function OperationCard({ operation, onUpdate, compact = false }: 
         {/* Assignment Badge */}
         {isAssignedToMe && (
           <Badge variant="secondary" className="text-xs mb-2">
-            Assigned to You
+            {t("operations.assignedToYou")}
           </Badge>
         )}
 
@@ -165,7 +167,7 @@ export default function OperationCard({ operation, onUpdate, compact = false }: 
         {/* Due Date */}
         {dueDate && (
           <div className="text-xs text-muted-foreground mb-2">
-            Due: {format(new Date(dueDate), "MMM d, yyyy")}
+            {t("operations.due")}: {format(new Date(dueDate), "MMM d, yyyy")}
           </div>
         )}
 
