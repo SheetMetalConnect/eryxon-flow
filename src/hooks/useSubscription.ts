@@ -57,9 +57,9 @@ export const useSubscription = () => {
           setSubscription(subData[0]);
         }
 
-        // Fetch usage statistics
+        // Fetch usage statistics (no parameter needed - function uses caller's tenant)
         const { data: statsData, error: statsError } = await supabase
-          .rpc('get_tenant_usage_stats', { tenant_uuid: profile.tenant_id });
+          .rpc('get_tenant_usage_stats');
 
         if (statsError) throw statsError;
 

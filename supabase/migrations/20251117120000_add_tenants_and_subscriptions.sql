@@ -114,7 +114,8 @@ AS $$
 $$;
 
 -- Function to get tenant usage statistics
-CREATE OR REPLACE FUNCTION public.get_tenant_usage_stats(tenant_uuid UUID)
+-- Security: Only returns stats for the calling user's tenant (no parameter to prevent cross-tenant access)
+CREATE OR REPLACE FUNCTION public.get_tenant_usage_stats()
 RETURNS TABLE (
   total_jobs BIGINT,
   total_parts BIGINT,
@@ -139,8 +140,8 @@ AS $$
     COUNT(DISTINCT pr.id) FILTER (WHERE pr.role = 'admin') as total_admins
   FROM public.jobs j
   LEFT JOIN public.parts p ON p.job_id = j.id
-  LEFT JOIN public.profiles pr ON pr.tenant_id = tenant_uuid
-  WHERE j.tenant_id = tenant_uuid OR p.tenant_id = tenant_uuid;
+  LEFT JOIN public.profiles pr ON pr.tenant_id = public.get_user_tenant_id()
+  WHERE j.tenant_id = public.get_user_tenant_id() OR p.tenant_id = public.get_user_tenant_id();
 $$;
 
 -- RLS Policies for tenants
