@@ -31,7 +31,6 @@ import {
   Inventory as InventoryIcon,
   People as PeopleIcon,
 } from '@mui/icons-material';
-import Layout from '../components/Layout';
 import { useSubscription } from '../hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
 
@@ -109,21 +108,17 @@ export const MyPlan: React.FC = () => {
 
   if (loading) {
     return (
-      <Layout>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
-          <CircularProgress />
-        </Box>
-      </Layout>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress />
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <Layout>
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      </Layout>
+      <Alert severity="error" sx={{ mb: 3 }}>
+        {error}
+      </Alert>
     );
   }
 
@@ -131,7 +126,7 @@ export const MyPlan: React.FC = () => {
   const currentTier = pricingTiers.find(tier => tier.id === currentPlan);
 
   return (
-    <Layout>
+    <Box>
       <Box sx={{ pb: 8 }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
@@ -456,6 +451,6 @@ export const MyPlan: React.FC = () => {
           </Typography>
         </Alert>
       </Box>
-    </Layout>
+    </Box>
   );
 };
