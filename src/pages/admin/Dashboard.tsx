@@ -12,6 +12,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { seedDemoData } from "@/lib/seed";
+import { QRMDashboard } from "@/components/qrm/QRMDashboard";
 
 interface ActiveWork {
   id: string;
@@ -324,6 +325,9 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* QRM Dashboard */}
+        <QRMDashboard />
 
         {/* Active Work Table */}
         <Card data-tour="active-operations">

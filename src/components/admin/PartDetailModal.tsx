@@ -27,6 +27,8 @@ import {
 import { fetchChildParts, fetchParentPart, checkAssemblyDependencies } from "@/lib/database";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useTranslation } from "react-i18next";
+import { RoutingVisualization } from "@/components/qrm/RoutingVisualization";
+import { usePartRouting } from "@/hooks/useQRMMetrics";
 
 interface PartDetailModalProps {
   partId: string;
@@ -38,6 +40,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
   const { toast } = useToast();
   const { profile } = useAuth();
   const { t } = useTranslation();
+  const { routing, loading: routingLoading } = usePartRouting(partId);
   const [addingOperation, setAddingOperation] = useState(false);
   const [newOperation, setNewOperation] = useState({
     operation_name: "",
@@ -419,6 +422,14 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   );
                 })()}
               </div>
+            </div>
+          </div>
+
+          {/* Routing Visualization */}
+          <div>
+            <Label className="text-lg">{t("qrm.routing", "Routing")}</Label>
+            <div className="mt-3 border rounded-lg p-4 bg-gray-50">
+              <RoutingVisualization routing={routing} loading={routingLoading} compact />
             </div>
           </div>
 

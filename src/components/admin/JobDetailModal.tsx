@@ -16,6 +16,8 @@ import { Plus, Edit2, Save, X } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { RoutingVisualization } from "@/components/qrm/RoutingVisualization";
+import { useJobRouting } from "@/hooks/useQRMMetrics";
 
 interface JobDetailModalProps {
   jobId: string;
@@ -28,6 +30,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
   const [editedJob, setEditedJob] = useState<any>(null);
   const { toast } = useToast();
   const { t } = useTranslation();
+  const { routing, loading: routingLoading } = useJobRouting(jobId);
 
   const { data: job, isLoading } = useQuery({
     queryKey: ["job-detail", jobId],
@@ -163,6 +166,14 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
             <div>
               <Label>{t("jobs.created")}</Label>
               <p className="mt-1">{format(new Date(job?.created_at), "MMM dd, yyyy HH:mm")}</p>
+            </div>
+          </div>
+
+          {/* Routing Visualization */}
+          <div>
+            <Label className="text-lg">{t("qrm.routing", "Routing")}</Label>
+            <div className="mt-3 border rounded-lg p-4 bg-gray-50">
+              <RoutingVisualization routing={routing} loading={routingLoading} />
             </div>
           </div>
 
