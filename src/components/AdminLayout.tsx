@@ -17,6 +17,7 @@ import {
   ChevronRight,
   Menu,
   Store,
+  Clock,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -50,7 +51,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     },
     {
       path: "/admin/jobs",
-      label: "Jobs",
+      label: "Job Management",
       icon: Briefcase,
       exact: false,
       activePaths: ["/admin/jobs"],
@@ -62,15 +63,21 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       exact: true,
     },
     {
+      path: "/admin/assignments",
+      label: "Assignments",
+      icon: UserCheck,
+      exact: true,
+    },
+    {
       path: "/admin/issues",
       label: "Issues",
       icon: AlertCircle,
       exact: true,
     },
     {
-      path: "/admin/assignments",
-      label: "Assignments",
-      icon: UserCheck,
+      path: "/admin/activity-monitor",
+      label: "Activity Monitor",
+      icon: Clock,
       exact: true,
     },
   ];

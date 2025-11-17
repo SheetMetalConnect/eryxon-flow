@@ -29,7 +29,7 @@ interface Tenant {
   name: string;
   company_name: string | null;
   plan: "free" | "pro" | "premium";
-  status: "active" | "inactive" | "suspended";
+  status: "active" | "cancelled" | "suspended" | "trial";
   user_count: number;
   created_at: string;
 }

@@ -27,7 +27,7 @@ export function useCellQRMMetrics(cellId: string | null, tenantId: string | null
         });
 
         if (rpcError) throw rpcError;
-        setMetrics(data as CellQRMMetrics);
+        setMetrics(data as unknown as CellQRMMetrics);
       } catch (err) {
         setError(err as Error);
         console.error('Error fetching cell QRM metrics:', err);
@@ -100,7 +100,7 @@ export function useNextCellCapacity(currentCellId: string | null, tenantId: stri
         });
 
         if (rpcError) throw rpcError;
-        setCapacity(data as NextCellCapacity);
+        setCapacity(data as unknown as NextCellCapacity);
       } catch (err) {
         setError(err as Error);
         console.error('Error checking next cell capacity:', err);

@@ -65,10 +65,10 @@ export function useFileUpload() {
 
       const quota = data[0];
       const quotaInfo: StorageQuota = {
-        currentMB: parseFloat(quota.current_mb) || 0,
-        maxMB: quota.max_mb ? parseFloat(quota.max_mb) : null,
-        remainingMB: parseFloat(quota.remaining_mb) || 0,
-        usedPercentage: parseFloat(quota.used_percentage) || 0,
+        currentMB: parseFloat(String(quota.current_mb)) || 0,
+        maxMB: quota.max_mb ? parseFloat(String(quota.max_mb)) : null,
+        remainingMB: parseFloat(String(quota.remaining_mb)) || 0,
+        usedPercentage: parseFloat(String(quota.used_percentage)) || 0,
         isUnlimited: quota.is_unlimited || false,
       };
 
