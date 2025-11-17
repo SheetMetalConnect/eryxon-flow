@@ -37,6 +37,7 @@ import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 import { OnboardingWizard } from "./components/onboarding";
 import { Loader2 } from "lucide-react";
+import { AdminLayoutWithSidebar } from "./components/admin/AdminLayoutWithSidebar";
 
 const queryClient = new QueryClient();
 
@@ -142,7 +143,9 @@ function AppRoutes() {
         path="/dashboard"
         element={
           <ProtectedRoute adminOnly>
-            <Dashboard />
+            <AdminLayoutWithSidebar>
+              <Dashboard />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -151,7 +154,9 @@ function AppRoutes() {
         path="/admin/stages"
         element={
           <ProtectedRoute adminOnly>
-            <ConfigStages />
+            <AdminLayoutWithSidebar>
+              <ConfigStages />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -160,7 +165,9 @@ function AppRoutes() {
         path="/admin/config/stages"
         element={
           <ProtectedRoute adminOnly>
-            <ConfigStages />
+            <AdminLayoutWithSidebar>
+              <ConfigStages />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -169,7 +176,9 @@ function AppRoutes() {
         path="/admin/materials"
         element={
           <ProtectedRoute adminOnly>
-            <ConfigMaterials />
+            <AdminLayoutWithSidebar>
+              <ConfigMaterials />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -178,7 +187,9 @@ function AppRoutes() {
         path="/admin/resources"
         element={
           <ProtectedRoute adminOnly>
-            <ConfigResources />
+            <AdminLayoutWithSidebar>
+              <ConfigResources />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -187,7 +198,9 @@ function AppRoutes() {
         path="/admin/users"
         element={
           <ProtectedRoute adminOnly>
-            <ConfigUsers />
+            <AdminLayoutWithSidebar>
+              <ConfigUsers />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -196,7 +209,9 @@ function AppRoutes() {
         path="/admin/config/users"
         element={
           <ProtectedRoute adminOnly>
-            <ConfigUsers />
+            <AdminLayoutWithSidebar>
+              <ConfigUsers />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -205,7 +220,9 @@ function AppRoutes() {
         path="/admin/issues"
         element={
           <ProtectedRoute adminOnly>
-            <IssueQueue />
+            <AdminLayoutWithSidebar>
+              <IssueQueue />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -214,7 +231,9 @@ function AppRoutes() {
         path="/admin/assignments"
         element={
           <ProtectedRoute adminOnly>
-            <Assignments />
+            <AdminLayoutWithSidebar>
+              <Assignments />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -223,7 +242,9 @@ function AppRoutes() {
         path="/admin/config/api-keys"
         element={
           <ProtectedRoute adminOnly>
-            <ConfigApiKeys />
+            <AdminLayoutWithSidebar>
+              <ConfigApiKeys />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -232,7 +253,9 @@ function AppRoutes() {
         path="/admin/config/webhooks"
         element={
           <ProtectedRoute adminOnly>
-            <ConfigWebhooks />
+            <AdminLayoutWithSidebar>
+              <ConfigWebhooks />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -241,7 +264,9 @@ function AppRoutes() {
         path="/admin/data-export"
         element={
           <ProtectedRoute adminOnly>
-            <DataExport />
+            <AdminLayoutWithSidebar>
+              <DataExport />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -250,7 +275,9 @@ function AppRoutes() {
         path="/admin/jobs"
         element={
           <ProtectedRoute adminOnly>
-            <Jobs />
+            <AdminLayoutWithSidebar>
+              <Jobs />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -259,7 +286,9 @@ function AppRoutes() {
         path="/admin/jobs/new"
         element={
           <ProtectedRoute adminOnly>
-            <JobCreate />
+            <AdminLayoutWithSidebar>
+              <JobCreate />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -268,7 +297,9 @@ function AppRoutes() {
         path="/admin/parts"
         element={
           <ProtectedRoute adminOnly>
-            <Parts />
+            <AdminLayoutWithSidebar>
+              <Parts />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -277,7 +308,9 @@ function AppRoutes() {
         path="/admin/activity"
         element={
           <ProtectedRoute adminOnly>
-            <ActivityMonitor />
+            <AdminLayoutWithSidebar>
+              <ActivityMonitor />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -286,7 +319,9 @@ function AppRoutes() {
         path="/admin/operations"
         element={
           <ProtectedRoute adminOnly>
-            <Operations />
+            <AdminLayoutWithSidebar>
+              <Operations />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -295,7 +330,9 @@ function AppRoutes() {
         path="/admin/settings"
         element={
           <ProtectedRoute adminOnly>
-            <Settings />
+            <AdminLayoutWithSidebar>
+              <Settings />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -304,7 +341,9 @@ function AppRoutes() {
         path="/admin/integrations"
         element={
           <ProtectedRoute adminOnly>
-            <IntegrationsMarketplace />
+            <AdminLayoutWithSidebar>
+              <IntegrationsMarketplace />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -313,7 +352,9 @@ function AppRoutes() {
         path="/admin/config/steps-templates"
         element={
           <ProtectedRoute adminOnly>
-            <StepsTemplatesView />
+            <AdminLayoutWithSidebar>
+              <StepsTemplatesView />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
@@ -340,7 +381,9 @@ function AppRoutes() {
         path="/my-plan"
         element={
           <ProtectedRoute adminOnly>
-            <MyPlan />
+            <AdminLayoutWithSidebar>
+              <MyPlan />
+            </AdminLayoutWithSidebar>
           </ProtectedRoute>
         }
       />
