@@ -99,7 +99,7 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
                 width: 36,
                 height: 36,
                 borderRadius: 1,
-                background: 'linear-gradient(135deg, #6658A3 0%, #47B5E2 100%)',
+                background: 'linear-gradient(135deg, #3a4656 0%, #0080ff 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -133,7 +133,7 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
                 sx={{
                   width: 36,
                   height: 36,
-                  background: 'linear-gradient(135deg, #6658A3 0%, #47B5E2 100%)',
+                  background: 'linear-gradient(135deg, #3a4656 0%, #0080ff 100%)',
                   fontWeight: 600,
                   fontSize: '0.95rem',
                 }}
@@ -172,7 +172,7 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
                     px: 1,
                     py: 0.25,
                     borderRadius: 0.5,
-                    background: 'linear-gradient(135deg, #6658A3 0%, #47B5E2 100%)',
+                    background: 'linear-gradient(135deg, #3a4656 0%, #0080ff 100%)',
                     color: '#ffffff',
                     fontWeight: 600,
                     textTransform: 'uppercase',
