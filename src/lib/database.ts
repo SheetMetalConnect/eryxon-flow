@@ -18,6 +18,8 @@ export interface OperationWithDetails {
     material: string;
     quantity: number;
     parent_part_id: string | null;
+    file_paths: string[] | null;
+    image_paths: string[] | null;
     job: {
       id: string;
       job_number: string;
@@ -53,6 +55,8 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
         material,
         quantity,
         parent_part_id,
+        file_paths,
+        image_paths,
         job:jobs!inner(
           id,
           job_number,

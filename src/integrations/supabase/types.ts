@@ -277,6 +277,81 @@ export type Database = {
           },
         ]
       }
+      materials: {
+        Row: {
+          active: boolean | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      operation_resources: {
+        Row: {
+          created_at: string | null
+          id: string
+          notes: string | null
+          operation_id: string
+          quantity: number | null
+          resource_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          operation_id: string
+          quantity?: number | null
+          resource_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          operation_id?: string
+          quantity?: number | null
+          resource_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operation_resources_operation_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: false
+            referencedRelation: "operations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_resources_resource_id_fkey"
+            columns: ["resource_id"]
+            isOneToOne: false
+            referencedRelation: "resources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operations: {
         Row: {
           actual_time: number | null
@@ -359,6 +434,7 @@ export type Database = {
           current_cell_id: string | null
           file_paths: string[] | null
           id: string
+          image_paths: string[] | null
           job_id: string
           material: string
           metadata: Json | null
@@ -375,6 +451,7 @@ export type Database = {
           current_cell_id?: string | null
           file_paths?: string[] | null
           id?: string
+          image_paths?: string[] | null
           job_id: string
           material: string
           metadata?: Json | null
@@ -391,6 +468,7 @@ export type Database = {
           current_cell_id?: string | null
           file_paths?: string[] | null
           id?: string
+          image_paths?: string[] | null
           job_id?: string
           material?: string
           metadata?: Json | null
@@ -465,6 +543,51 @@ export type Database = {
         }
         Relationships: []
       }
+      resources: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          description: string | null
+          id: string
+          identifier: string | null
+          location: string | null
+          metadata: Json | null
+          name: string
+          status: string | null
+          tenant_id: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          identifier?: string | null
+          location?: string | null
+          metadata?: Json | null
+          name: string
+          status?: string | null
+          tenant_id: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          identifier?: string | null
+          location?: string | null
+          metadata?: Json | null
+          name?: string
+          status?: string | null
+          tenant_id?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       substeps: {
         Row: {
           completed_at: string | null
@@ -513,6 +636,7 @@ export type Database = {
           duration: number | null
           end_time: string | null
           id: string
+          is_paused: boolean | null
           notes: string | null
           operation_id: string
           operator_id: string
@@ -524,6 +648,7 @@ export type Database = {
           duration?: number | null
           end_time?: string | null
           id?: string
+          is_paused?: boolean | null
           notes?: string | null
           operation_id: string
           operator_id: string
@@ -535,6 +660,7 @@ export type Database = {
           duration?: number | null
           end_time?: string | null
           id?: string
+          is_paused?: boolean | null
           notes?: string | null
           operation_id?: string
           operator_id?: string
@@ -554,6 +680,41 @@ export type Database = {
             columns: ["operation_id"]
             isOneToOne: false
             referencedRelation: "operations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      time_entry_pauses: {
+        Row: {
+          created_at: string | null
+          duration: number | null
+          id: string
+          paused_at: string
+          resumed_at: string | null
+          time_entry_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          duration?: number | null
+          id?: string
+          paused_at?: string
+          resumed_at?: string | null
+          time_entry_id: string
+        }
+        Update: {
+          created_at?: string | null
+          duration?: number | null
+          id?: string
+          paused_at?: string
+          resumed_at?: string | null
+          time_entry_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_entry_pauses_time_entry_id_fkey"
+            columns: ["time_entry_id"]
+            isOneToOne: false
+            referencedRelation: "time_entries"
             referencedColumns: ["id"]
           },
         ]
