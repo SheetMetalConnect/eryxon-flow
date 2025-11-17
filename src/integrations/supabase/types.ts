@@ -310,6 +310,44 @@ export type Database = {
         }
         Relationships: []
       }
+      monthly_reset_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          previous_count: number
+          reset_date: string
+          reset_successful: boolean
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          previous_count: number
+          reset_date?: string
+          reset_successful?: boolean
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          previous_count?: number
+          reset_date?: string
+          reset_successful?: boolean
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_reset_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operation_resources: {
         Row: {
           created_at: string | null
@@ -650,6 +688,7 @@ export type Database = {
           current_parts_this_month: number | null
           current_storage_gb: number | null
           id: string
+          last_parts_reset_date: string | null
           max_jobs: number | null
           max_parts_per_month: number | null
           max_storage_gb: number | null
@@ -668,6 +707,7 @@ export type Database = {
           current_parts_this_month?: number | null
           current_storage_gb?: number | null
           id?: string
+          last_parts_reset_date?: string | null
           max_jobs?: number | null
           max_parts_per_month?: number | null
           max_storage_gb?: number | null
@@ -686,6 +726,7 @@ export type Database = {
           current_parts_this_month?: number | null
           current_storage_gb?: number | null
           id?: string
+          last_parts_reset_date?: string | null
           max_jobs?: number | null
           max_parts_per_month?: number | null
           max_storage_gb?: number | null
@@ -861,6 +902,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_create_job: { Args: { p_tenant_id: string }; Returns: boolean }
+      can_create_parts: {
+        Args: { p_quantity?: number; p_tenant_id: string }
+        Returns: boolean
+      }
       get_my_tenant_subscription: {
         Args: never
         Returns: {
@@ -873,6 +919,17 @@ export type Database = {
           plan: Database["public"]["Enums"]["subscription_plan"]
           status: Database["public"]["Enums"]["subscription_status"]
           tenant_id: string
+        }[]
+      }
+      get_tenant_quota: {
+        Args: { p_tenant_id: string }
+        Returns: {
+          current_jobs: number
+          current_parts: number
+          current_storage: number
+          max_jobs: number
+          max_parts: number
+          max_storage: number
         }[]
       }
       get_tenant_usage_stats: {
@@ -892,6 +949,15 @@ export type Database = {
         Returns: Database["public"]["Enums"]["app_role"]
       }
       get_user_tenant_id: { Args: never; Returns: string }
+      reset_monthly_parts_counters: {
+        Args: never
+        Returns: {
+          message: string
+          previous_count: number
+          success: boolean
+          tenant_id: string
+        }[]
+      }
     }
     Enums: {
       app_role: "operator" | "admin"
