@@ -131,7 +131,16 @@
   },
   "common": {
     "admin": "Beheerder",
-    "operator": "Operator"
+    "operator": "Operator",
+    "back": "Terug",
+    "cancel": "Annuleren",
+    "edit": "Bewerken",
+    "error": "Fout",
+    "loading": "Laden...",
+    "next": "Volgende",
+    "save": "Opslaan",
+    "success": "Succes",
+    "validationError": "Validatiefout"
   },
   "onboarding": {
     "welcome": "Welkom bij Eryxon MES",

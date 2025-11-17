@@ -131,7 +131,16 @@
   },
   "common": {
     "admin": "Admin",
-    "operator": "Operator"
+    "operator": "Operator",
+    "back": "Back",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "error": "Error",
+    "loading": "Loading...",
+    "next": "Next",
+    "save": "Save",
+    "success": "Success",
+    "validationError": "Validation Error"
   },
   "onboarding": {
     "welcome": "Welcome to Eryxon MES",
