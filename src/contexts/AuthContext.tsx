@@ -12,16 +12,28 @@ interface Profile {
   role: "operator" | "admin";
   active: boolean;
   is_machine: boolean;
+  is_root_admin: boolean;
+}
+
+interface TenantInfo {
+  id: string;
+  name: string;
+  company_name: string | null;
+  plan: "free" | "pro" | "premium";
+  status: "active" | "inactive" | "suspended";
 }
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
+  tenant: TenantInfo | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, userData: Partial<Profile>) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  switchTenant: (tenantId: string) => Promise<void>;
+  refreshTenant: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,6 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [tenant, setTenant] = useState<TenantInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -75,11 +88,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
       setProfile(data);
+
+      // Fetch tenant info after profile is loaded
+      if (data) {
+        await fetchTenant();
+      }
     } catch (error) {
       console.error("Error fetching profile:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchTenant = async () => {
+    try {
+      const { data, error } = await supabase.rpc("get_tenant_info");
+
+      if (error) throw error;
+
+      // The RPC returns an array, get the first element
+      if (data && data.length > 0) {
+        setTenant(data[0]);
+      }
+    } catch (error) {
+      console.error("Error fetching tenant:", error);
+    }
+  };
+
+  const switchTenant = async (tenantId: string) => {
+    try {
+      // Only root admins can switch tenants
+      if (!profile?.is_root_admin) {
+        throw new Error("Only root administrators can switch tenants");
+      }
+
+      // Call the set_active_tenant RPC
+      const { error } = await supabase.rpc("set_active_tenant", {
+        p_tenant_id: tenantId,
+      });
+
+      if (error) throw error;
+
+      // Refresh tenant info to reflect the change
+      await fetchTenant();
+
+      // Optionally reload the page to refresh all data
+      window.location.reload();
+    } catch (error) {
+      console.error("Error switching tenant:", error);
+      throw error;
+    }
+  };
+
+  const refreshTenant = async () => {
+    await fetchTenant();
   };
 
   const signIn = async (email: string, password: string) => {
@@ -125,11 +187,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
+    setTenant(null);
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, session, profile, loading, signIn, signUp, signOut }}
+      value={{
+        user,
+        session,
+        profile,
+        tenant,
+        loading,
+        signIn,
+        signUp,
+        signOut,
+        switchTenant,
+        refreshTenant
+      }}
     >
       {children}
     </AuthContext.Provider>

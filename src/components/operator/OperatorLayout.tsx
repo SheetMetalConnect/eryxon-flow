@@ -24,6 +24,7 @@ import {
   Brightness4 as Brightness4Icon,
   Brightness7 as Brightness7Icon,
   Help as HelpIcon,
+  Business as BusinessIcon,
   Speed as SpeedIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -39,7 +40,7 @@ interface OperatorLayoutProps {
 
 export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
   const { t } = useTranslation();
-  const { profile, signOut } = useAuth();
+  const { profile, tenant, signOut } = useAuth();
   const { mode, toggleTheme } = useThemeMode();
   const theme = useTheme();
   const location = useLocation();
@@ -160,6 +161,42 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
                 },
               }}
             >
+              {/* Company/Tenant Section */}
+              {tenant && (
+                <Box
+                  sx={{
+                    px: 2,
+                    py: 1.5,
+                    borderBottom: 1,
+                    borderColor: 'divider',
+                    backgroundColor: alpha(theme.palette.primary.main, 0.03),
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <BusinessIcon
+                      sx={{
+                        fontSize: '1rem',
+                        color: theme.palette.primary.main,
+                      }}
+                    />
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography
+                        variant="body2"
+                        fontWeight={700}
+                        sx={{
+                          color: theme.palette.primary.main,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {tenant.company_name || tenant.name}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              )}
+
               <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
                 <Typography variant="body2" fontWeight={600}>
                   {profile?.full_name}

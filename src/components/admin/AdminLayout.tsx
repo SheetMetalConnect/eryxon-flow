@@ -45,6 +45,9 @@ import {
   Webhook as WebhookIcon,
   Archive as ArchiveIcon,
   AttachMoney as AttachMoneyIcon,
+  Business as BusinessIcon,
+  AdminPanelSettings as AdminPanelSettingsIcon,
+  SwapHoriz as SwapHorizIcon,
   Speed as SpeedIcon,
 } from "@mui/icons-material";
 import { Link, useLocation } from "react-router-dom";
@@ -56,6 +59,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { QuickCreateMenu } from "@/components/QuickCreateMenu";
 import { NotificationsCenter } from "@/components/NotificationsCenter";
+import { TenantSwitcher } from "@/components/admin/TenantSwitcher";
 import { useTranslation } from "react-i18next";
 import { usePendingIssuesCount } from "@/hooks/usePendingIssuesCount";
 
@@ -67,7 +71,7 @@ interface AdminLayoutProps {
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const { t } = useTranslation();
-  const { profile, signOut } = useAuth();
+  const { profile, tenant, signOut } = useAuth();
   const { mode, toggleTheme } = useThemeMode();
   const { subscription, getPlanDisplayName, canUpgrade } = useSubscription();
   const theme = useTheme();
@@ -75,6 +79,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [tenantSwitcherOpen, setTenantSwitcherOpen] = useState(false);
   const { count: pendingIssuesCount } = usePendingIssuesCount();
 
   const handleDrawerToggle = () => {
@@ -528,6 +533,56 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 },
               }}
             >
+              {/* Company/Tenant Section */}
+              {tenant && (
+                <Box
+                  sx={{
+                    px: 2,
+                    py: 1.5,
+                    borderBottom: 1,
+                    borderColor: "divider",
+                    backgroundColor: alpha(theme.palette.primary.main, 0.03),
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <BusinessIcon
+                      sx={{
+                        fontSize: "1rem",
+                        color: theme.palette.primary.main,
+                      }}
+                    />
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography
+                        variant="body2"
+                        fontWeight={700}
+                        sx={{
+                          color: theme.palette.primary.main,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {tenant.company_name || tenant.name}
+                      </Typography>
+                      {tenant.company_name && tenant.name !== tenant.company_name && (
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            display: "block",
+                          }}
+                        >
+                          {tenant.name}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
+                </Box>
+              )}
+
               {/* User Info Section */}
               <Box
                 sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: "divider" }}
@@ -562,6 +617,24 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   >
                     Admin
                   </Typography>
+                  {profile?.is_root_admin && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        px: 1,
+                        py: 0.25,
+                        borderRadius: 0.5,
+                        backgroundColor: alpha(theme.palette.error.main, 0.1),
+                        color: theme.palette.error.main,
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        fontSize: "0.65rem",
+                        width: "fit-content",
+                      }}
+                    >
+                      Root Admin
+                    </Typography>
+                  )}
                 </Box>
               </Box>
 
@@ -643,6 +716,21 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 <AttachMoneyIcon fontSize="small" />
                 My Plan
               </MenuItem>
+
+              {/* Root Admin: Tenant Switcher */}
+              {profile?.is_root_admin && (
+                <MenuItem
+                  onClick={() => {
+                    handleMenuClose();
+                    setTenantSwitcherOpen(true);
+                  }}
+                  sx={{ gap: 1.5, py: 1.5 }}
+                >
+                  <SwapHorizIcon fontSize="small" />
+                  Switch Tenant
+                </MenuItem>
+              )}
+
               <Divider />
               <MenuItem onClick={handleSignOut} sx={{ gap: 1.5, py: 1.5 }}>
                 <LogoutIcon fontSize="small" />
@@ -721,6 +809,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
       {/* Global Search Dialog */}
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+
+      {/* Tenant Switcher Dialog (Root Admin Only) */}
+      <TenantSwitcher
+        open={tenantSwitcherOpen}
+        onClose={() => setTenantSwitcherOpen(false)}
+      />
     </Box>
   );
 };
