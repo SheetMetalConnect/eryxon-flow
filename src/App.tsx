@@ -19,6 +19,7 @@ import ConfigUsers from "./pages/admin/ConfigUsers";
 import Assignments from "./pages/admin/Assignments";
 import ConfigApiKeys from "./pages/admin/ConfigApiKeys";
 import ConfigWebhooks from "./pages/admin/ConfigWebhooks";
+import DataExport from "./pages/admin/DataExport";
 import Jobs from "./pages/admin/Jobs";
 import JobCreate from "./pages/admin/JobCreate";
 import Parts from "./pages/admin/Parts";
@@ -215,6 +216,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <ConfigWebhooks />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/data-export"
+        element={
+          <ProtectedRoute adminOnly>
+            <DataExport />
           </ProtectedRoute>
         }
       />
