@@ -35,11 +35,15 @@ import {
   ReportProblem,
 } from "@mui/icons-material";
 import { useAuth } from "../../contexts/AuthContext";
-import { supabase } from "../../lib/supabase";
-import { startTimeTracking, stopTimeTracking, completeOperation } from "../../lib/database";
+import { supabase } from "../../integrations/supabase/client";
+import {
+  startTimeTracking,
+  stopTimeTracking,
+  completeOperation,
+} from "../../lib/database";
 import { formatDistanceToNow, format } from "date-fns";
-import PDFViewer from "../../components/PDFViewer";
-import STEPViewer from "../../components/STEPViewer";
+import { PDFViewer } from "../../components/PDFViewer";
+import { STEPViewer } from "../../components/STEPViewer";
 import SubstepsManager from "../../components/operator/SubstepsManager";
 import { useTranslation } from "react-i18next";
 
@@ -95,13 +99,18 @@ export default function OperatorView() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string>("");
   const [operations, setOperations] = useState<Operation[]>([]);
-  const [selectedOperation, setSelectedOperation] = useState<Operation | null>(null);
+  const [selectedOperation, setSelectedOperation] = useState<Operation | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [activeTimeEntry, setActiveTimeEntry] = useState<any>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [stepUrl, setStepUrl] = useState<string | null>(null);
-  const [viewerDialog, setViewerDialog] = useState<{ type: "pdf" | "step"; url: string } | null>(null);
+  const [viewerDialog, setViewerDialog] = useState<{
+    type: "pdf" | "step";
+    url: string;
+  } | null>(null);
 
   // Load jobs
   useEffect(() => {
@@ -124,7 +133,9 @@ export default function OperatorView() {
       const interval = setInterval(() => {
         const start = new Date(activeTimeEntry.start_time);
         const now = new Date();
-        const diffInSeconds = Math.floor((now.getTime() - start.getTime()) / 1000);
+        const diffInSeconds = Math.floor(
+          (now.getTime() - start.getTime()) / 1000,
+        );
         setElapsedSeconds(diffInSeconds);
       }, 1000);
       return () => clearInterval(interval);
@@ -157,7 +168,7 @@ export default function OperatorView() {
         },
         () => {
           loadOperations(selectedJobId);
-        }
+        },
       )
       .subscribe();
 
@@ -211,7 +222,7 @@ export default function OperatorView() {
           *,
           part:parts(*),
           cell:cells(*)
-        `
+        `,
         )
         .in("part_id", partIds)
         .eq("tenant_id", profile.tenant_id)
@@ -236,13 +247,19 @@ export default function OperatorView() {
       setOperations(operationsWithTimeEntries || []);
 
       // Auto-select first operation if none selected
-      if (!selectedOperation && operationsWithTimeEntries && operationsWithTimeEntries.length > 0) {
+      if (
+        !selectedOperation &&
+        operationsWithTimeEntries &&
+        operationsWithTimeEntries.length > 0
+      ) {
         const firstOp = operationsWithTimeEntries[0];
         setSelectedOperation(firstOp);
         setActiveTimeEntry(firstOp.active_time_entry || null);
       } else if (selectedOperation) {
         // Update selected operation
-        const updated = operationsWithTimeEntries?.find((op) => op.id === selectedOperation.id);
+        const updated = operationsWithTimeEntries?.find(
+          (op) => op.id === selectedOperation.id,
+        );
         if (updated) {
           setSelectedOperation(updated);
           setActiveTimeEntry(updated.active_time_entry || null);
@@ -261,10 +278,14 @@ export default function OperatorView() {
       for (const path of filePaths) {
         const ext = path.toLowerCase();
         if (ext.endsWith(".pdf") && !pdf) {
-          const { data } = await supabase.storage.from("files").createSignedUrl(path, 3600);
+          const { data } = await supabase.storage
+            .from("files")
+            .createSignedUrl(path, 3600);
           if (data?.signedUrl) pdf = data.signedUrl;
         } else if ((ext.endsWith(".step") || ext.endsWith(".stp")) && !step) {
-          const { data } = await supabase.storage.from("files").createSignedUrl(path, 3600);
+          const { data } = await supabase.storage
+            .from("files")
+            .createSignedUrl(path, 3600);
           if (data?.signedUrl) {
             // Convert to blob for STEP viewer
             const response = await fetch(data.signedUrl);
@@ -285,7 +306,11 @@ export default function OperatorView() {
     if (!selectedOperation || !profile) return;
 
     try {
-      await startTimeTracking(selectedOperation.id, profile.id, profile.tenant_id);
+      await startTimeTracking(
+        selectedOperation.id,
+        profile.id,
+        profile.tenant_id,
+      );
       await loadOperations(selectedJobId);
     } catch (error: any) {
       console.error("Error starting time tracking:", error);
@@ -313,7 +338,11 @@ export default function OperatorView() {
     }
 
     try {
-      await completeOperation(selectedOperation.id, profile.tenant_id, profile.id);
+      await completeOperation(
+        selectedOperation.id,
+        profile.tenant_id,
+        profile.id,
+      );
       await loadOperations(selectedJobId);
     } catch (error) {
       console.error("Error completing operation:", error);
@@ -351,7 +380,12 @@ export default function OperatorView() {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="80vh"
+      >
         <CircularProgress />
       </Box>
     );
@@ -368,13 +402,19 @@ export default function OperatorView() {
                 <InputLabel>{t("Select Job")}</InputLabel>
                 <Select
                   value={selectedJobId}
-                  onChange={(e: SelectChangeEvent) => setSelectedJobId(e.target.value)}
+                  onChange={(e: SelectChangeEvent) =>
+                    setSelectedJobId(e.target.value)
+                  }
                   label={t("Select Job")}
                 >
                   {jobs.map((job) => (
                     <MenuItem key={job.id} value={job.id}>
                       {job.job_number} - {job.customer || "No Customer"} (
-                      {format(new Date(job.due_date_override || job.due_date), "MMM dd, yyyy")})
+                      {format(
+                        new Date(job.due_date_override || job.due_date),
+                        "MMM dd, yyyy",
+                      )}
+                      )
                     </MenuItem>
                   ))}
                 </Select>
@@ -389,7 +429,10 @@ export default function OperatorView() {
                     label={format(dueDate!, "MMM dd, yyyy")}
                     color={isOverdue ? "error" : "default"}
                   />
-                  <Chip label={selectedJob.status} color={getStatusColor(selectedJob.status) as any} />
+                  <Chip
+                    label={selectedJob.status}
+                    color={getStatusColor(selectedJob.status) as any}
+                  />
                   {selectedJob.customer && (
                     <Typography variant="body2" color="text.secondary">
                       Customer: {selectedJob.customer}
@@ -411,10 +454,15 @@ export default function OperatorView() {
               {operations.map((op) => (
                 <Grid item xs={12} sm={6} md={4} lg={3} key={op.id}>
                   <Card
-                    variant={selectedOperation?.id === op.id ? "outlined" : "elevation"}
+                    variant={
+                      selectedOperation?.id === op.id ? "outlined" : "elevation"
+                    }
                     sx={{
                       cursor: "pointer",
-                      borderColor: selectedOperation?.id === op.id ? "primary.main" : undefined,
+                      borderColor:
+                        selectedOperation?.id === op.id
+                          ? "primary.main"
+                          : undefined,
                       borderWidth: selectedOperation?.id === op.id ? 2 : 1,
                       "&:hover": {
                         boxShadow: 3,
@@ -476,18 +524,25 @@ export default function OperatorView() {
                       {selectedOperation.operation_name}
                     </Typography>
                     <Typography variant="h6">
-                      {selectedOperation.part.part_number} - {selectedOperation.cell.name}
+                      {selectedOperation.part.part_number} -{" "}
+                      {selectedOperation.cell.name}
                     </Typography>
                     <Stack direction="row" spacing={2}>
                       <Chip
                         icon={<Timer />}
                         label={`Est: ${selectedOperation.estimated_time} min`}
-                        sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "white" }}
+                        sx={{
+                          bgcolor: "rgba(255,255,255,0.2)",
+                          color: "white",
+                        }}
                       />
                       <Chip
                         icon={<Timer />}
                         label={`Actual: ${selectedOperation.actual_time || 0} min`}
-                        sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "white" }}
+                        sx={{
+                          bgcolor: "rgba(255,255,255,0.2)",
+                          color: "white",
+                        }}
                       />
                     </Stack>
                   </Stack>
@@ -497,7 +552,11 @@ export default function OperatorView() {
                   <Stack spacing={3} alignItems="center">
                     {activeTimeEntry ? (
                       <>
-                        <Typography variant="h2" fontWeight="bold" sx={{ fontFamily: "monospace" }}>
+                        <Typography
+                          variant="h2"
+                          fontWeight="bold"
+                          sx={{ fontFamily: "monospace" }}
+                        >
                           {formatElapsedTime(elapsedSeconds)}
                         </Typography>
                         <Stack direction="row" spacing={2}>
@@ -524,7 +583,10 @@ export default function OperatorView() {
                               sx={{
                                 color: "white",
                                 borderColor: "white",
-                                "&:hover": { borderColor: "white", bgcolor: "rgba(255,255,255,0.1)" },
+                                "&:hover": {
+                                  borderColor: "white",
+                                  bgcolor: "rgba(255,255,255,0.1)",
+                                },
                               }}
                             >
                               {t("Complete")}
@@ -568,20 +630,35 @@ export default function OperatorView() {
                   {/* PDF Viewer */}
                   {pdfUrl && (
                     <Paper sx={{ p: 2 }}>
-                      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                      <Stack
+                        direction="row"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        mb={2}
+                      >
                         <Stack direction="row" spacing={1} alignItems="center">
                           <Description color="error" />
-                          <Typography variant="h6">{t("PDF Drawing")}</Typography>
+                          <Typography variant="h6">
+                            {t("PDF Drawing")}
+                          </Typography>
                         </Stack>
                         <Button
                           variant="outlined"
                           size="small"
-                          onClick={() => setViewerDialog({ type: "pdf", url: pdfUrl })}
+                          onClick={() =>
+                            setViewerDialog({ type: "pdf", url: pdfUrl })
+                          }
                         >
                           {t("Fullscreen")}
                         </Button>
                       </Stack>
-                      <Box sx={{ height: 400, bgcolor: "grey.100", borderRadius: 1 }}>
+                      <Box
+                        sx={{
+                          height: 400,
+                          bgcolor: "grey.100",
+                          borderRadius: 1,
+                        }}
+                      >
                         <PDFViewer url={pdfUrl} title="Drawing" />
                       </Box>
                     </Paper>
@@ -590,7 +667,12 @@ export default function OperatorView() {
                   {/* STEP Viewer */}
                   {stepUrl && (
                     <Paper sx={{ p: 2 }}>
-                      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                      <Stack
+                        direction="row"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        mb={2}
+                      >
                         <Stack direction="row" spacing={1} alignItems="center">
                           <ViewInAr color="primary" />
                           <Typography variant="h6">{t("3D Model")}</Typography>
@@ -598,12 +680,20 @@ export default function OperatorView() {
                         <Button
                           variant="outlined"
                           size="small"
-                          onClick={() => setViewerDialog({ type: "step", url: stepUrl })}
+                          onClick={() =>
+                            setViewerDialog({ type: "step", url: stepUrl })
+                          }
                         >
                           {t("Fullscreen")}
                         </Button>
                       </Stack>
-                      <Box sx={{ height: 500, bgcolor: "grey.100", borderRadius: 1 }}>
+                      <Box
+                        sx={{
+                          height: 500,
+                          bgcolor: "grey.100",
+                          borderRadius: 1,
+                        }}
+                      >
                         <STEPViewer url={stepUrl} title="3D Model" />
                       </Box>
                     </Paper>
@@ -651,14 +741,18 @@ export default function OperatorView() {
                         <Typography variant="caption" color="text.secondary">
                           {t("Material")}
                         </Typography>
-                        <Typography variant="body1">{selectedOperation.part.material}</Typography>
+                        <Typography variant="body1">
+                          {selectedOperation.part.material}
+                        </Typography>
                       </Box>
 
                       <Box>
                         <Typography variant="caption" color="text.secondary">
                           {t("Quantity")}
                         </Typography>
-                        <Typography variant="body1">{selectedOperation.part.quantity}</Typography>
+                        <Typography variant="body1">
+                          {selectedOperation.part.quantity}
+                        </Typography>
                       </Box>
 
                       <Box>
@@ -682,7 +776,10 @@ export default function OperatorView() {
                           {t("Due Date")}
                         </Typography>
                         <Stack direction="row" spacing={1} alignItems="center">
-                          <CalendarToday fontSize="small" color={isOverdue ? "error" : "action"} />
+                          <CalendarToday
+                            fontSize="small"
+                            color={isOverdue ? "error" : "action"}
+                          />
                           <Typography
                             variant="body1"
                             color={isOverdue ? "error" : "text.primary"}
@@ -703,7 +800,9 @@ export default function OperatorView() {
                           <Typography variant="caption" color="text.secondary">
                             {t("Notes")}
                           </Typography>
-                          <Typography variant="body2">{selectedOperation.notes}</Typography>
+                          <Typography variant="body2">
+                            {selectedOperation.notes}
+                          </Typography>
                         </Box>
                       )}
                     </Stack>
@@ -748,8 +847,12 @@ export default function OperatorView() {
         }}
       >
         <Box sx={{ height: "100%", p: 2 }}>
-          {viewerDialog?.type === "pdf" && <PDFViewer url={viewerDialog.url} title="Drawing" />}
-          {viewerDialog?.type === "step" && <STEPViewer url={viewerDialog.url} title="3D Model" />}
+          {viewerDialog?.type === "pdf" && (
+            <PDFViewer url={viewerDialog.url} title="Drawing" />
+          )}
+          {viewerDialog?.type === "step" && (
+            <STEPViewer url={viewerDialog.url} title="3D Model" />
+          )}
         </Box>
       </Dialog>
     </Box>
