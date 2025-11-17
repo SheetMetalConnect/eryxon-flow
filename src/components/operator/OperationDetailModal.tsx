@@ -313,7 +313,7 @@ export default function OperationDetailModal({
             </div>
             <div>
               <div className="text-sm text-muted-foreground mb-1">
-                {t("operations.status")}
+                {t("operations.statusLabel")}
               </div>
               <Badge variant="outline" className="capitalize">
                 {operation.status.replace("_", " ")}
