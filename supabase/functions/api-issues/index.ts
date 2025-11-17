@@ -94,6 +94,16 @@ serve(async (req) => {
           created_at,
           updated_at,
           resolved_at,
+          issue_type,
+          ncr_number,
+          ncr_category,
+          root_cause,
+          corrective_action,
+          preventive_action,
+          affected_quantity,
+          disposition,
+          verification_required,
+          verified_at,
           operation:operations (
             id,
             operation_name,
@@ -112,6 +122,11 @@ serve(async (req) => {
             full_name
           ),
           resolved_by:profiles!issues_resolved_by_id_fkey (
+            id,
+            username,
+            full_name
+          ),
+          verified_by:profiles!issues_verified_by_id_fkey (
             id,
             username,
             full_name
@@ -156,7 +171,7 @@ serve(async (req) => {
       );
     }
 
-    // Handle POST requests - create issue
+    // Handle POST requests - create issue/NCR
     if (req.method === 'POST') {
       const body = await req.json();
 
@@ -209,22 +224,78 @@ serve(async (req) => {
         }
       }
 
+      // Generate NCR number if this is an NCR
+      let ncrNumber = body.ncr_number;
+      if (body.issue_type === 'ncr' && !ncrNumber) {
+        // Call the generate_ncr_number function
+        const { data: ncrData, error: ncrError } = await supabase
+          .rpc('generate_ncr_number', { p_tenant_id: tenantId });
+
+        if (!ncrError && ncrData) {
+          ncrNumber = ncrData;
+        }
+      }
+
+      const issueData: any = {
+        tenant_id: tenantId,
+        operation_id: body.operation_id,
+        title: body.title,
+        description: body.description,
+        severity: body.severity,
+        reported_by_id: body.reported_by_id,
+        status: 'open',
+        issue_type: body.issue_type || 'general',
+      };
+
+      // Add NCR-specific fields if provided
+      if (body.issue_type === 'ncr') {
+        issueData.ncr_number = ncrNumber;
+        issueData.ncr_category = body.ncr_category;
+        issueData.root_cause = body.root_cause;
+        issueData.corrective_action = body.corrective_action;
+        issueData.preventive_action = body.preventive_action;
+        issueData.affected_quantity = body.affected_quantity;
+        issueData.disposition = body.disposition;
+        issueData.verification_required = body.verification_required || false;
+      }
+
       const { data: issue, error: issueError } = await supabase
         .from('issues')
-        .insert({
-          tenant_id: tenantId,
-          operation_id: body.operation_id,
-          title: body.title,
-          description: body.description,
-          severity: body.severity,
-          reported_by_id: body.reported_by_id,
-          status: 'open'
-        })
+        .insert(issueData)
         .select()
         .single();
 
       if (issueError || !issue) {
         throw new Error(`Failed to create issue: ${issueError?.message}`);
+      }
+
+      // Trigger webhook for NCR created if this is an NCR
+      if (issue.issue_type === 'ncr') {
+        try {
+          await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/webhook-dispatch`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+            },
+            body: JSON.stringify({
+              tenant_id: tenantId,
+              event_type: 'ncr.created',
+              data: {
+                issue_id: issue.id,
+                ncr_number: issue.ncr_number,
+                title: issue.title,
+                severity: issue.severity,
+                ncr_category: issue.ncr_category,
+                disposition: issue.disposition,
+                operation_id: issue.operation_id,
+                created_at: issue.created_at,
+              },
+            }),
+          });
+        } catch (webhookError) {
+          console.error('Failed to trigger ncr.created webhook:', webhookError);
+        }
       }
 
       return new Response(
@@ -252,7 +323,11 @@ serve(async (req) => {
       }
 
       const body = await req.json();
-      const allowedFields = ['title', 'description', 'severity', 'status', 'resolution_notes', 'resolved_by_id'];
+      const allowedFields = [
+        'title', 'description', 'severity', 'status', 'resolution_notes', 'resolved_by_id',
+        'root_cause', 'corrective_action', 'preventive_action', 'ncr_category',
+        'affected_quantity', 'disposition', 'verification_required', 'verified_by_id'
+      ];
       const updates: any = {};
 
       for (const field of allowedFields) {
@@ -274,6 +349,11 @@ serve(async (req) => {
       // Auto-set resolved_at if status changes to resolved
       if (updates.status === 'resolved' && !updates.resolved_at) {
         updates.resolved_at = new Date().toISOString();
+      }
+
+      // Auto-set verified_at if verified_by_id is set
+      if (updates.verified_by_id && !body.verified_at) {
+        updates.verified_at = new Date().toISOString();
       }
 
       updates.updated_at = new Date().toISOString();
