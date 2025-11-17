@@ -1,0 +1,121 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '../integrations/supabase/client';
+import { useAuth } from '../contexts/AuthContext';
+
+export type SubscriptionPlan = 'free' | 'pro' | 'premium';
+export type SubscriptionStatus = 'active' | 'cancelled' | 'suspended' | 'trial';
+
+export interface TenantSubscription {
+  tenant_id: string;
+  tenant_name: string;
+  plan: SubscriptionPlan;
+  status: SubscriptionStatus;
+  max_jobs: number | null;
+  max_parts_per_month: number | null;
+  max_storage_gb: number | null;
+  current_month_parts: number;
+  current_storage_mb: number;
+  plan_started_at: string;
+  trial_ends_at: string | null;
+}
+
+export interface TenantUsageStats {
+  total_jobs: number;
+  total_parts: number;
+  active_jobs: number;
+  completed_jobs: number;
+  current_month_parts: number;
+  total_operators: number;
+  total_admins: number;
+}
+
+export const useSubscription = () => {
+  const { profile } = useAuth();
+  const [subscription, setSubscription] = useState<TenantSubscription | null>(null);
+  const [usageStats, setUsageStats] = useState<TenantUsageStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      if (!profile?.tenant_id) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch subscription data using the RPC function
+        const { data: subData, error: subError } = await supabase
+          .rpc('get_my_tenant_subscription');
+
+        if (subError) throw subError;
+
+        if (subData && subData.length > 0) {
+          setSubscription(subData[0]);
+        }
+
+        // Fetch usage statistics (no parameter needed - function uses caller's tenant)
+        const { data: statsData, error: statsError } = await supabase
+          .rpc('get_tenant_usage_stats');
+
+        if (statsError) throw statsError;
+
+        if (statsData && statsData.length > 0) {
+          setUsageStats(statsData[0]);
+        }
+      } catch (err) {
+        console.error('Error fetching subscription:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch subscription data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSubscription();
+  }, [profile?.tenant_id]);
+
+  const getPlanDisplayName = (plan: SubscriptionPlan): string => {
+    const planNames = {
+      free: 'Free Plan',
+      pro: 'Pro Plan',
+      premium: 'Premium Plan',
+    };
+    return planNames[plan] || 'Unknown Plan';
+  };
+
+  const getPlanColor = (plan: SubscriptionPlan): string => {
+    const planColors = {
+      free: '#64748b', // slate
+      pro: '#8b5cf6', // purple
+      premium: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', // gradient
+    };
+    return planColors[plan] || '#64748b';
+  };
+
+  const isAtLimit = (current: number, max: number | null): boolean => {
+    if (max === null) return false; // null means unlimited
+    return current >= max;
+  };
+
+  const getUsagePercentage = (current: number, max: number | null): number => {
+    if (max === null) return 0; // unlimited
+    return Math.min((current / max) * 100, 100);
+  };
+
+  const canUpgrade = subscription?.plan !== 'premium';
+
+  return {
+    subscription,
+    usageStats,
+    loading,
+    error,
+    getPlanDisplayName,
+    getPlanColor,
+    isAtLimit,
+    getUsagePercentage,
+    canUpgrade,
+  };
+};

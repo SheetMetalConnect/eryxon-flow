@@ -43,7 +43,16 @@
     "partsManagement": "Parts Management",
     "issueQueue": "Issue Queue",
     "operatorAssignments": "Operator Assignments",
-    "apiDocumentation": "API Documentation"
+    "apiDocumentation": "API Documentation",
+    "pricing": "Pricing",
+    "myPlan": "My Plan"
+  },
+  "subscription": {
+    "currentPlan": "Current Plan",
+    "upgradePlan": "Upgrade Plan",
+    "freePlan": "Free Plan",
+    "proPlan": "Pro Plan",
+    "premiumPlan": "Premium Plan"
   },
   "dashboard": {
     "title": "Dashboard",
