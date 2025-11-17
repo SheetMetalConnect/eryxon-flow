@@ -9,10 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Loader2, Infinity, CheckCircle, AlertTriangle } from "lucide-react";
+import { Plus, Edit, Loader2, Trash2, GripVertical, Infinity, CheckCircle, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useCellQRMMetrics } from "@/hooks/useQRMMetrics";
 import { WIPIndicator } from "@/components/qrm/WIPIndicator";
 
@@ -29,12 +33,100 @@ interface Stage {
   show_capacity_warning: boolean | null;
 }
 
+interface SortableStageCardProps {
+  stage: Stage;
+  onEdit: (stage: Stage) => void;
+  onDelete: (stage: Stage) => void;
+  tenantId: string;
+  t: any;
+}
+
+function SortableStageCard({ stage, onEdit, onDelete, tenantId, t }: SortableStageCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: stage.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 flex-1">
+              <div
+                {...attributes}
+                {...listeners}
+                className="cursor-grab active:cursor-grabbing"
+              >
+                <GripVertical className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div
+                className="h-8 w-8 rounded flex-shrink-0"
+                style={{ backgroundColor: stage.color || "#94a3b8" }}
+              />
+              <div className="flex-1">
+                <CardTitle>{stage.name}</CardTitle>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                  <Badge variant="outline">{t("stages.sequence")}: {stage.sequence}</Badge>
+                  <Badge variant={stage.active ? "default" : "secondary"}>
+                    {stage.active ? t("stages.active") : t("stages.inactive")}
+                  </Badge>
+                  {stage.wip_limit !== null ? (
+                    <Badge variant="outline" className="gap-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      {t("qrm.wipLimit", "WIP Limit")}: {stage.wip_limit}
+                      {stage.enforce_wip_limit && " (enforced)"}
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="gap-1 text-gray-500">
+                      <Infinity className="h-3 w-3" />
+                      {t("qrm.noLimit", "No WIP Limit")}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => onEdit(stage)}>
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => onDelete(stage)}>
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {stage.description && (
+            <p className="text-sm text-muted-foreground">{stage.description}</p>
+          )}
+          {stage.wip_limit !== null && (
+            <StageWIPDisplay stageId={stage.id} tenantId={tenantId} />
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export default function ConfigStages() {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const [stages, setStages] = useState<Stage[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [stageToDelete, setStageToDelete] = useState<Stage | null>(null);
   const [editingStage, setEditingStage] = useState<Stage | null>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -46,6 +138,13 @@ export default function ConfigStages() {
     enforce_wip_limit: false,
     show_capacity_warning: true,
   });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     if (!profile?.tenant_id) return;
@@ -144,6 +243,85 @@ export default function ConfigStages() {
       show_capacity_warning: stage.show_capacity_warning ?? true,
     });
     setDialogOpen(true);
+  };
+
+  const handleDeleteClick = (stage: Stage) => {
+    setStageToDelete(stage);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!stageToDelete || !profile?.tenant_id) return;
+
+    try {
+      // Check if there are operations using this cell
+      const { count } = await supabase
+        .from("operations")
+        .select("*", { count: "exact", head: true })
+        .eq("cell_id", stageToDelete.id);
+
+      if (count && count > 0) {
+        toast.error(t("stages.cannotDeleteStageWithOperations"));
+        setDeleteDialogOpen(false);
+        return;
+      }
+
+      // Delete the cell
+      const { error } = await supabase
+        .from("cells")
+        .delete()
+        .eq("id", stageToDelete.id);
+
+      if (error) throw error;
+
+      toast.success(t("stages.stageDeleted"));
+      setDeleteDialogOpen(false);
+      setStageToDelete(null);
+      loadStages();
+    } catch (error) {
+      toast.error(t("stages.failedToDeleteStage"));
+      console.error(error);
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = stages.findIndex((s) => s.id === active.id);
+    const newIndex = stages.findIndex((s) => s.id === over.id);
+
+    const reorderedStages = arrayMove(stages, oldIndex, newIndex);
+
+    // Update local state immediately for better UX
+    setStages(reorderedStages);
+
+    // Update sequences in the database
+    try {
+      const updates = reorderedStages.map((stage, index) => ({
+        id: stage.id,
+        sequence: index + 1,
+      }));
+
+      for (const update of updates) {
+        const { error } = await supabase
+          .from("cells")
+          .update({ sequence: update.sequence })
+          .eq("id", update.id);
+
+        if (error) {
+          throw error;
+        }
+      }
+
+      toast.success(t("stages.stagesReordered"));
+    } catch (error) {
+      toast.error(t("stages.failedToReorderStages"));
+      console.error(error);
+      // Reload stages to revert to correct order
+      loadStages();
+    }
   };
 
   if (loading) {
@@ -334,54 +512,47 @@ export default function ConfigStages() {
         </div>
 
         {/* Stages List */}
-        <div className="grid gap-4">
-          {stages.map((stage) => (
-            <Card key={stage.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div
-                      className="h-8 w-8 rounded"
-                      style={{ backgroundColor: stage.color || "#94a3b8" }}
-                    />
-                    <div className="flex-1">
-                      <CardTitle>{stage.name}</CardTitle>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <Badge variant="outline">{t("stages.sequence")}: {stage.sequence}</Badge>
-                        <Badge variant={stage.active ? "default" : "secondary"}>
-                          {stage.active ? t("stages.active") : t("stages.inactive")}
-                        </Badge>
-                        {stage.wip_limit !== null ? (
-                          <Badge variant="outline" className="gap-1">
-                            <AlertTriangle className="h-3 w-3" />
-                            {t("qrm.wipLimit", "WIP Limit")}: {stage.wip_limit}
-                            {stage.enforce_wip_limit && " (enforced)"}
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="gap-1 text-gray-500">
-                            <Infinity className="h-3 w-3" />
-                            {t("qrm.noLimit", "No WIP Limit")}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={() => handleEdit(stage)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {stage.description && (
-                  <p className="text-sm text-muted-foreground">{stage.description}</p>
-                )}
-                {stage.wip_limit !== null && profile?.tenant_id && (
-                  <StageWIPDisplay stageId={stage.id} tenantId={profile.tenant_id} />
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={stages.map((s) => s.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="grid gap-4">
+              {stages.map((stage) => (
+                <SortableStageCard
+                  key={stage.id}
+                  stage={stage}
+                  onEdit={handleEdit}
+                  onDelete={handleDeleteClick}
+                  tenantId={profile?.tenant_id || ""}
+                  t={t}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("stages.deleteStage")}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("stages.deleteStageConfirmation", { name: stageToDelete?.name })}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                {t("common.delete")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </Layout>
   );
