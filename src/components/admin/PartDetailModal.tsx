@@ -12,9 +12,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { Plus, Save, X, Upload, Eye, Trash2, Box, AlertTriangle, Package, ChevronRight } from "lucide-react";
+import { Plus, Save, X, Upload, Eye, Trash2, Box, FileText, AlertTriangle, Package, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { STEPViewer } from "@/components/STEPViewer";
+import { PDFViewer } from "@/components/PDFViewer";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Select,
@@ -47,9 +48,10 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
   // CAD file management state
   const [uploadingCAD, setUploadingCAD] = useState(false);
   const [cadFiles, setCadFiles] = useState<FileList | null>(null);
-  const [stepViewerOpen, setStepViewerOpen] = useState(false);
-  const [currentStepUrl, setCurrentStepUrl] = useState<string | null>(null);
-  const [currentStepTitle, setCurrentStepTitle] = useState<string>("");
+  const [fileViewerOpen, setFileViewerOpen] = useState(false);
+  const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(null);
+  const [currentFileType, setCurrentFileType] = useState<'step' | 'pdf' | null>(null);
+  const [currentFileTitle, setCurrentFileTitle] = useState<string>("");
 
   const { data: part, isLoading } = useQuery({
     queryKey: ["part-detail", partId],
@@ -194,10 +196,10 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         const fileExt = file.name.split(".").pop()?.toLowerCase();
 
         // Validate file type
-        if (!["step", "stp"].includes(fileExt || "")) {
+        if (!["step", "stp", "pdf"].includes(fileExt || "")) {
           toast({
             title: "Invalid file type",
-            description: `${file.name} is not a STEP file`,
+            description: `${file.name} must be a STEP or PDF file`,
             variant: "destructive",
           });
           continue;
@@ -254,9 +256,21 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     }
   };
 
-  // Handle viewing STEP file
+  // Handle viewing file (STEP or PDF)
   const handleViewCADFile = async (filePath: string) => {
     try {
+      const fileExt = filePath.split(".").pop()?.toLowerCase();
+      const fileType = fileExt === "pdf" ? "pdf" : (fileExt === "step" || fileExt === "stp") ? "step" : null;
+
+      if (!fileType) {
+        toast({
+          title: "Error",
+          description: "Unsupported file type",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Create signed URL
       const { data, error } = await supabase.storage
         .from("parts-cad")
@@ -265,20 +279,24 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       if (error) throw error;
       if (!data?.signedUrl) throw new Error("Failed to generate signed URL");
 
-      // Fetch as blob to avoid CORS issues
-      const response = await fetch(data.signedUrl);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
+      // For STEP files, fetch as blob to avoid CORS issues
+      let viewUrl = data.signedUrl;
+      if (fileType === "step") {
+        const response = await fetch(data.signedUrl);
+        const blob = await response.blob();
+        viewUrl = URL.createObjectURL(blob);
+      }
 
-      const fileName = filePath.split("/").pop() || "3D Model";
-      setCurrentStepUrl(blobUrl);
-      setCurrentStepTitle(fileName);
-      setStepViewerOpen(true);
+      const fileName = filePath.split("/").pop() || "File";
+      setCurrentFileUrl(viewUrl);
+      setCurrentFileType(fileType);
+      setCurrentFileTitle(fileName);
+      setFileViewerOpen(true);
     } catch (error: any) {
-      console.error("Error opening CAD file:", error);
+      console.error("Error opening file:", error);
       toast({
         title: "Error",
-        description: "Failed to open 3D viewer",
+        description: "Failed to open file viewer",
         variant: "destructive",
       });
     }
@@ -323,13 +341,13 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     }
   };
 
-  // Handle step viewer dialog close
-  const handleStepDialogClose = (open: boolean) => {
-    if (!open && currentStepUrl?.startsWith("blob:")) {
-      URL.revokeObjectURL(currentStepUrl); // Prevent memory leak
-      setCurrentStepUrl(null);
+  // Handle file viewer dialog close
+  const handleFileDialogClose = (open: boolean) => {
+    if (!open && currentFileUrl?.startsWith("blob:")) {
+      URL.revokeObjectURL(currentFileUrl); // Prevent memory leak
+      setCurrentFileUrl(null);
     }
-    setStepViewerOpen(open);
+    setFileViewerOpen(open);
   };
 
   if (isLoading) {
@@ -529,12 +547,12 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
             </div>
           )}
 
-          {/* CAD Files Section */}
+          {/* Files Section */}
           <div>
             <div className="flex justify-between items-center mb-3">
               <Label className="text-lg flex items-center gap-2">
                 <Box className="h-5 w-5" />
-                3D CAD Files ({part?.file_paths?.length || 0})
+                Files ({part?.file_paths?.length || 0})
               </Label>
             </div>
 
@@ -549,13 +567,13 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   <span className="text-sm">
                     {cadFiles && cadFiles.length > 0
                       ? `${cadFiles.length} file(s) selected`
-                      : "Choose STEP files (.step, .stp)"}
+                      : "Choose STEP or PDF files"}
                   </span>
                 </label>
                 <input
                   id="cad-upload"
                   type="file"
-                  accept=".step,.stp"
+                  accept=".step,.stp,.pdf"
                   multiple
                   onChange={(e) => setCadFiles(e.target.files)}
                   className="hidden"
@@ -571,23 +589,32 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               </div>
             </div>
 
-            {/* Existing CAD Files List */}
+            {/* Existing Files List */}
             <div className="space-y-2">
-              {part?.file_paths?.filter((path: string) => {
-                const ext = path.split(".").pop()?.toLowerCase();
-                return ext === "step" || ext === "stp";
-              }).map((filePath: string, index: number) => {
+              {part?.file_paths?.map((filePath: string, index: number) => {
                 const fileName = filePath.split("/").pop() || "Unknown";
+                const fileExt = filePath.split(".").pop()?.toLowerCase();
+                const isSTEP = fileExt === "step" || fileExt === "stp";
+                const isPDF = fileExt === "pdf";
+
+                if (!isSTEP && !isPDF) return null;
+
                 return (
                   <div
                     key={index}
                     className="flex items-center justify-between border rounded-md p-3 bg-white"
                   >
                     <div className="flex items-center gap-3">
-                      <Box className="h-5 w-5 text-blue-600" />
+                      {isSTEP ? (
+                        <Box className="h-5 w-5 text-blue-600" />
+                      ) : (
+                        <FileText className="h-5 w-5 text-red-600" />
+                      )}
                       <div>
                         <p className="font-medium text-sm">{fileName}</p>
-                        <p className="text-xs text-gray-500">STEP 3D Model</p>
+                        <p className="text-xs text-gray-500">
+                          {isSTEP ? "3D Model" : "Drawing"}
+                        </p>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -597,7 +624,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                         onClick={() => handleViewCADFile(filePath)}
                       >
                         <Eye className="h-4 w-4 mr-1" />
-                        View 3D
+                        View
                       </Button>
                       <Button
                         size="sm"
@@ -612,7 +639,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               })}
               {(!part?.file_paths || part.file_paths.length === 0) && (
                 <p className="text-sm text-gray-500 text-center py-4">
-                  No CAD files uploaded yet
+                  No files uploaded yet
                 </p>
               )}
             </div>
@@ -755,15 +782,18 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         </div>
       </DialogContent>
 
-      {/* STEP Viewer Dialog */}
-      <Dialog open={stepViewerOpen} onOpenChange={handleStepDialogClose}>
+      {/* File Viewer Dialog */}
+      <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
         <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0">
           <DialogHeader className="px-6 py-4 border-b">
-            <DialogTitle>{currentStepTitle}</DialogTitle>
+            <DialogTitle>{currentFileTitle}</DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-hidden">
-            {currentStepUrl && (
-              <STEPViewer url={currentStepUrl} title={currentStepTitle} />
+            {currentFileUrl && currentFileType === "step" && (
+              <STEPViewer url={currentFileUrl} title={currentFileTitle} />
+            )}
+            {currentFileUrl && currentFileType === "pdf" && (
+              <PDFViewer url={currentFileUrl} title={currentFileTitle} />
             )}
           </div>
         </DialogContent>
