@@ -1,0 +1,568 @@
+/**
+ * ERYXON MES DESIGN SYSTEM
+ * Modern, clean design system for manufacturing execution
+ *
+ * Stack:
+ * - Inter font family
+ * - Industrial modern color palette
+ * - Touch-optimized spacing
+ * - Manufacturing-specific tokens
+ */
+
+@import '@fontsource/inter/300.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+@import '@fontsource/inter/variable.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================================
+   DESIGN TOKENS
+   ============================================================================ */
+
+@layer base {
+  :root {
+    /* ========================================================================
+       TYPOGRAPHY
+       ======================================================================== */
+    --font-family-base: 'InterVariable', 'Inter', -apple-system, BlinkMacSystemFont,
+                        'Segoe UI', system-ui, sans-serif;
+    --font-family-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+
+    /* Font weights */
+    --font-light: 300;
+    --font-normal: 400;
+    --font-medium: 500;
+    --font-semibold: 600;
+    --font-bold: 700;
+
+    /* Font sizes - Type scale */
+    --text-xs: 0.75rem;      /* 12px */
+    --text-sm: 0.875rem;     /* 14px */
+    --text-base: 1rem;       /* 16px */
+    --text-lg: 1.125rem;     /* 18px */
+    --text-xl: 1.25rem;      /* 20px */
+    --text-2xl: 1.5rem;      /* 24px */
+    --text-3xl: 1.875rem;    /* 30px */
+    --text-4xl: 2.25rem;     /* 36px */
+    --text-5xl: 3rem;        /* 48px */
+
+    /* Line heights */
+    --leading-tight: 1.25;
+    --leading-snug: 1.375;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.625;
+    --leading-loose: 2;
+
+    /* ========================================================================
+       COLORS - Industrial Modern Palette
+       ======================================================================== */
+
+    /* Brand Colors */
+    --brand-primary: 215 25% 27%;          /* Deep Slate Blue */
+    --brand-accent: 211 100% 50%;          /* Electric Blue */
+
+    /* Semantic Colors */
+    --color-success: 152 69% 42%;          /* Emerald */
+    --color-warning: 38 100% 50%;          /* Amber */
+    --color-error: 4 90% 58%;              /* Crimson */
+    --color-info: 199 89% 48%;             /* Cyan */
+
+    /* Neutral Scale - Cool Grays */
+    --neutral-50: 220 20% 98%;
+    --neutral-100: 220 18% 96%;
+    --neutral-200: 220 16% 92%;
+    --neutral-300: 220 14% 86%;
+    --neutral-400: 220 12% 72%;
+    --neutral-500: 220 10% 54%;
+    --neutral-600: 220 14% 40%;
+    --neutral-700: 220 18% 30%;
+    --neutral-800: 220 24% 20%;
+    --neutral-900: 220 30% 12%;
+
+    /* ========================================================================
+       LIGHT MODE
+       ======================================================================== */
+
+    /* Base colors */
+    --background: var(--neutral-50);
+    --foreground: var(--neutral-900);
+
+    /* Surface colors */
+    --surface: 0 0% 100%;                  /* Pure white */
+    --surface-elevated: 0 0% 100%;
+    --surface-hover: var(--neutral-100);
+
+    /* Card */
+    --card: 0 0% 100%;
+    --card-foreground: var(--neutral-900);
+
+    /* Popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: var(--neutral-900);
+
+    /* Primary */
+    --primary: var(--brand-primary);
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 215 25% 22%;
+
+    /* Secondary */
+    --secondary: var(--neutral-200);
+    --secondary-foreground: var(--neutral-900);
+    --secondary-hover: var(--neutral-300);
+
+    /* Accent */
+    --accent: var(--brand-accent);
+    --accent-foreground: 0 0% 100%;
+    --accent-hover: 211 100% 45%;
+
+    /* Muted */
+    --muted: var(--neutral-100);
+    --muted-foreground: var(--neutral-600);
+
+    /* Destructive */
+    --destructive: var(--color-error);
+    --destructive-foreground: 0 0% 100%;
+    --destructive-hover: 4 90% 52%;
+
+    /* Success */
+    --success: var(--color-success);
+    --success-foreground: 0 0% 100%;
+    --success-hover: 152 69% 37%;
+
+    /* Warning */
+    --warning: var(--color-warning);
+    --warning-foreground: var(--neutral-900);
+    --warning-hover: 38 100% 45%;
+
+    /* Info */
+    --info: var(--color-info);
+    --info-foreground: 0 0% 100%;
+    --info-hover: 199 89% 43%;
+
+    /* Borders */
+    --border: var(--neutral-200);
+    --border-strong: var(--neutral-300);
+
+    /* Input */
+    --input: var(--neutral-200);
+    --input-background: 0 0% 100%;
+    --input-focus: var(--brand-accent);
+
+    /* Ring (focus) */
+    --ring: var(--brand-accent);
+    --ring-offset: 0 0% 100%;
+
+    /* ========================================================================
+       MES-SPECIFIC STATUS COLORS
+       ======================================================================== */
+
+    /* Work Status */
+    --status-active: var(--color-warning);       /* Amber - timing active */
+    --status-completed: var(--color-success);    /* Emerald - done */
+    --status-on-hold: 25 95% 53%;                /* Orange - paused */
+    --status-blocked: var(--color-error);        /* Crimson - blocked */
+    --status-pending: var(--neutral-400);        /* Gray - not started */
+
+    /* Issue Severity */
+    --severity-critical: var(--color-error);     /* Crimson */
+    --severity-high: 25 95% 53%;                 /* Orange */
+    --severity-medium: var(--color-warning);     /* Amber */
+    --severity-low: var(--neutral-500);          /* Gray */
+
+    /* Stage Colors */
+    --stage-default: var(--neutral-300);
+    --stage-cutting: 199 89% 48%;                /* Cyan */
+    --stage-bending: 271 91% 65%;                /* Purple */
+    --stage-welding: 25 95% 53%;                 /* Orange */
+    --stage-assembly: 152 69% 42%;               /* Emerald */
+    --stage-finishing: 38 100% 50%;              /* Amber */
+
+    /* ========================================================================
+       SIDEBAR
+       ======================================================================== */
+    --sidebar-background: var(--neutral-50);
+    --sidebar-foreground: var(--neutral-900);
+    --sidebar-primary: var(--brand-primary);
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: var(--neutral-100);
+    --sidebar-accent-foreground: var(--neutral-900);
+    --sidebar-border: var(--neutral-200);
+    --sidebar-ring: var(--brand-accent);
+
+    /* ========================================================================
+       SPACING & SIZING
+       ======================================================================== */
+
+    /* Touch targets */
+    --touch-target-min: 44px;                    /* Minimum touch target */
+    --touch-target-comfortable: 48px;            /* Comfortable touch target */
+
+    /* Border radius */
+    --radius-sm: 0.375rem;                       /* 6px */
+    --radius-base: 0.5rem;                       /* 8px */
+    --radius-md: 0.75rem;                        /* 12px */
+    --radius-lg: 1rem;                           /* 16px */
+    --radius-xl: 1.5rem;                         /* 24px */
+    --radius-full: 9999px;                       /* Fully rounded */
+
+    /* Default radius (for compatibility) */
+    --radius: var(--radius-base);
+
+    /* Spacing scale */
+    --space-xs: 0.25rem;                         /* 4px */
+    --space-sm: 0.5rem;                          /* 8px */
+    --space-base: 1rem;                          /* 16px */
+    --space-md: 1.5rem;                          /* 24px */
+    --space-lg: 2rem;                            /* 32px */
+    --space-xl: 3rem;                            /* 48px */
+    --space-2xl: 4rem;                           /* 64px */
+
+    /* ========================================================================
+       SHADOWS
+       ======================================================================== */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+    /* ========================================================================
+       TRANSITIONS
+       ======================================================================== */
+    --transition-base: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Easing functions */
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+    /* ========================================================================
+       Z-INDEX SCALE
+       ======================================================================== */
+    --z-base: 0;
+    --z-dropdown: 1000;
+    --z-sticky: 1100;
+    --z-fixed: 1200;
+    --z-modal-backdrop: 1300;
+    --z-modal: 1400;
+    --z-popover: 1500;
+    --z-tooltip: 1600;
+    --z-toast: 1700;
+  }
+
+  /* ========================================================================
+     DARK MODE
+     ======================================================================== */
+
+  .dark {
+    /* Base colors */
+    --background: var(--neutral-950);
+    --foreground: var(--neutral-50);
+
+    /* Surface colors */
+    --surface: var(--neutral-900);
+    --surface-elevated: var(--neutral-800);
+    --surface-hover: var(--neutral-800);
+
+    /* Card */
+    --card: var(--neutral-900);
+    --card-foreground: var(--neutral-50);
+
+    /* Popover */
+    --popover: var(--neutral-900);
+    --popover-foreground: var(--neutral-50);
+
+    /* Primary */
+    --primary: var(--brand-accent);
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 211 100% 45%;
+
+    /* Secondary */
+    --secondary: var(--neutral-800);
+    --secondary-foreground: var(--neutral-50);
+    --secondary-hover: var(--neutral-700);
+
+    /* Accent */
+    --accent: var(--brand-accent);
+    --accent-foreground: 0 0% 100%;
+    --accent-hover: 211 100% 55%;
+
+    /* Muted */
+    --muted: var(--neutral-800);
+    --muted-foreground: var(--neutral-400);
+
+    /* Destructive */
+    --destructive: 4 90% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-hover: 4 90% 63%;
+
+    /* Success */
+    --success: 152 69% 47%;
+    --success-foreground: 0 0% 100%;
+    --success-hover: 152 69% 52%;
+
+    /* Warning */
+    --warning: 38 100% 55%;
+    --warning-foreground: var(--neutral-900);
+    --warning-hover: 38 100% 60%;
+
+    /* Info */
+    --info: 199 89% 53%;
+    --info-foreground: 0 0% 100%;
+    --info-hover: 199 89% 58%;
+
+    /* Borders */
+    --border: var(--neutral-800);
+    --border-strong: var(--neutral-700);
+
+    /* Input */
+    --input: var(--neutral-800);
+    --input-background: var(--neutral-900);
+    --input-focus: var(--brand-accent);
+
+    /* Ring (focus) */
+    --ring: var(--brand-accent);
+    --ring-offset: var(--neutral-900);
+
+    /* Sidebar */
+    --sidebar-background: var(--neutral-900);
+    --sidebar-foreground: var(--neutral-50);
+    --sidebar-primary: var(--brand-accent);
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: var(--neutral-800);
+    --sidebar-accent-foreground: var(--neutral-50);
+    --sidebar-border: var(--neutral-800);
+    --sidebar-ring: var(--brand-accent);
+
+    /* Shadows (darker for dark mode) */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Additional dark mode variable for complete coverage */
+  .dark {
+    --neutral-950: 220 35% 8%;
+  }
+
+  /* Ensure we have neutral-950 in light mode too */
+  :root {
+    --neutral-950: 220 35% 8%;
+  }
+}
+
+/* ============================================================================
+   BASE STYLES
+   ============================================================================ */
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-family-base);
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    font-variation-settings: normal;
+  }
+
+  /* Typography scale */
+  h1 {
+    @apply text-4xl font-bold tracking-tight;
+  }
+
+  h2 {
+    @apply text-3xl font-bold tracking-tight;
+  }
+
+  h3 {
+    @apply text-2xl font-semibold tracking-tight;
+  }
+
+  h4 {
+    @apply text-xl font-semibold tracking-tight;
+  }
+
+  h5 {
+    @apply text-lg font-semibold;
+  }
+
+  h6 {
+    @apply text-base font-semibold;
+  }
+
+  /* Code */
+  code, kbd, samp, pre {
+    font-family: var(--font-family-mono);
+  }
+
+  /* Focus styles */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: hsl(var(--accent) / 0.3);
+  }
+}
+
+/* ============================================================================
+   UTILITY CLASSES
+   ============================================================================ */
+
+@layer utilities {
+  /* Text utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Touch target utilities */
+  .touch-target {
+    min-height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+  }
+
+  .touch-target-comfortable {
+    min-height: var(--touch-target-comfortable);
+    min-width: var(--touch-target-comfortable);
+  }
+
+  /* Transition utilities */
+  .transition-base {
+    transition: var(--transition-base);
+  }
+
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+
+  .transition-slow {
+    transition: var(--transition-slow);
+  }
+
+  /* Shadow utilities */
+  .shadow-sm {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .shadow {
+    box-shadow: var(--shadow-base);
+  }
+
+  .shadow-md {
+    box-shadow: var(--shadow-md);
+  }
+
+  .shadow-lg {
+    box-shadow: var(--shadow-lg);
+  }
+
+  .shadow-xl {
+    box-shadow: var(--shadow-xl);
+  }
+
+  .shadow-2xl {
+    box-shadow: var(--shadow-2xl);
+  }
+
+  /* Status indicator utilities */
+  .status-active {
+    color: hsl(var(--status-active));
+  }
+
+  .status-completed {
+    color: hsl(var(--status-completed));
+  }
+
+  .status-on-hold {
+    color: hsl(var(--status-on-hold));
+  }
+
+  .status-blocked {
+    color: hsl(var(--status-blocked));
+  }
+
+  .status-pending {
+    color: hsl(var(--status-pending));
+  }
+
+  /* Background status utilities */
+  .bg-status-active {
+    background-color: hsl(var(--status-active));
+  }
+
+  .bg-status-completed {
+    background-color: hsl(var(--status-completed));
+  }
+
+  .bg-status-on-hold {
+    background-color: hsl(var(--status-on-hold));
+  }
+
+  .bg-status-blocked {
+    background-color: hsl(var(--status-blocked));
+  }
+
+  .bg-status-pending {
+    background-color: hsl(var(--status-pending));
+  }
+
+  /* Manufacturing-specific utilities */
+  .manufacturing-card {
+    @apply bg-card border border-border rounded-lg shadow-md p-4 transition-smooth hover:shadow-lg;
+  }
+
+  .operator-button {
+    @apply touch-target-comfortable rounded-lg font-medium transition-base;
+  }
+}
+
+/* ============================================================================
+   COMPONENT PATTERNS
+   ============================================================================ */
+
+@layer components {
+  /* Card pattern */
+  .card {
+    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
+  }
+
+  /* Surface pattern */
+  .surface {
+    @apply bg-surface rounded-lg;
+  }
+
+  .surface-elevated {
+    @apply bg-surface-elevated rounded-lg shadow-md;
+  }
+
+  /* Focus ring pattern */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  /* Interactive element pattern */
+  .interactive {
+    @apply transition-base hover:opacity-80 active:opacity-60 focus-ring;
+  }
+}
