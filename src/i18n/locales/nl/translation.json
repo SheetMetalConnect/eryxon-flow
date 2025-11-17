@@ -45,7 +45,16 @@
     "operatorAssignments": "Operatortoewijzingen",
     "apiDocumentation": "API-documentatie",
     "pricing": "Prijzen",
-    "myPlan": "Mijn abonnement"
+    "myPlan": "Mijn abonnement",
+    "operations": "Operaties",
+    "activityMonitor": "Activiteitenmonitor",
+    "settings": "Instellingen",
+    "docsAndHelp": "Documentatie & Hulp",
+    "sections": {
+      "overview": "OVERZICHT",
+      "operations": "OPERATIES",
+      "data": "GEGEVENS"
+    }
   },
   "subscription": {
     "currentPlan": "Huidig abonnement",
@@ -121,20 +130,8 @@
     "failedToLoad": "Werkwachtrij laden mislukt"
   },
   "common": {
-    "loading": "Laden...",
-    "cancel": "Annuleren",
-    "save": "Opslaan",
-    "delete": "Verwijderen",
-    "edit": "Bewerken",
-    "add": "Toevoegen",
-    "search": "Zoeken",
-    "filter": "Filteren",
-    "close": "Sluiten",
-    "confirm": "Bevestigen",
-    "success": "Succes",
-    "error": "Fout",
-    "warning": "Waarschuwing",
-    "info": "Info"
+    "admin": "Beheerder",
+    "operator": "Operator"
   },
   "onboarding": {
     "welcome": "Welkom bij Eryxon MES",
@@ -291,8 +288,18 @@
     "issueDetails": "Probleemdetails",
     "issueSummary": "Probleemsamenvatting",
     "description": "Beschrijving",
-    "severity": "Ernst",
-    "status": "Status",
+    "severity": {
+      "low": "Laag",
+      "medium": "Gemiddeld",
+      "high": "Hoog",
+      "critical": "Kritiek"
+    },
+    "status": {
+      "pending": "In behandeling",
+      "approved": "Goedgekeurd",
+      "rejected": "Afgewezen",
+      "closed": "Gesloten"
+    },
     "reportedBy": "Gemeld door",
     "reportedAt": "Gemeld op",
     "resolvedBy": "Opgelost door",
@@ -322,19 +329,7 @@
     "filterBySeverity": "Filteren op ernst",
     "filterByStatus": "Filteren op status",
     "searchIssues": "Problemen zoeken...",
-    "noIssues": "Geen problemen gevonden",
-    "severity": {
-      "low": "Laag",
-      "medium": "Gemiddeld",
-      "high": "Hoog",
-      "critical": "Kritiek"
-    },
-    "status": {
-      "pending": "In behandeling",
-      "approved": "Goedgekeurd",
-      "rejected": "Afgewezen",
-      "closed": "Gesloten"
-    }
+    "noIssues": "Geen problemen gevonden"
   },
   "stages": {
     "title": "Productiefase-configuratie",
@@ -420,32 +415,39 @@
       "copper": "Koper",
       "brass": "Messing",
       "other": "Overige"
-    }
+    },
+    "manageMaterials": "Materiaałconfiguraties beheren",
+    "materialNamePlaceholder": "Materiaałnaam invoeren",
+    "descriptionPlaceholder": "Beschrijving invoeren",
+    "color": "Kleur",
+    "active": "Actief",
+    "inactive": "Inactief",
+    "cancel": "Annuleren",
+    "update": "Bijwerken",
+    "create": "Aanmaken",
+    "createNewMaterial": "Nieuw materiaal aanmaken",
+    "noMaterialsConfigured": "Nog geen materialen geconfigureerd",
+    "addFirstMaterial": "Voeg uw eerste materiaal toe",
+    "failedToSaveMaterial": "Materiaal opslaan mislukt"
   },
   "resources": {
     "title": "Resourcebeheer",
     "createResource": "Resource aanmaken",
     "editResource": "Resource bewerken",
-    "deleteResource": "Resource verwijderen",
-    "resourceDetails": "Resourcedetails",
     "resourceName": "Resourcenaam",
     "resourceType": "Resourcetype",
     "description": "Beschrijving",
-    "stage": "Productiefase",
-    "isActive": "Actief",
-    "isAvailable": "Beschikbaar",
+    "identifier": "Identificatie",
+    "location": "Locatie",
+    "status": "Status",
+    "available": "Beschikbaar",
+    "inUse": "In gebruik",
+    "maintenance": "Onderhoud",
     "resourceCreated": "Resource succesvol aangemaakt",
     "resourceUpdated": "Resource succesvol bijgewerkt",
-    "resourceDeleted": "Resource succesvol verwijderd",
-    "deleteConfirm": "Weet u zeker dat u deze resource wilt verwijderen?",
-    "noResources": "Geen resources geconfigureerd",
-    "searchResources": "Resources zoeken...",
-    "types": {
-      "machine": "Machine",
-      "tool": "Gereedschap",
-      "equipment": "Apparatuur",
-      "workstation": "Werkstation"
-    }
+    "failedToSaveResource": "Resource opslaan mislukt",
+    "noResourcesConfigured": "Nog geen resources geconfigureerd",
+    "addFirstResource": "Voeg uw eerste resource toe"
   },
   "assignments": {
     "title": "Operatortoewijzingen",

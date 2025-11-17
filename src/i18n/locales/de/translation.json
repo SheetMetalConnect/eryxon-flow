@@ -45,7 +45,16 @@
     "operatorAssignments": "Bedienerzuweisungen",
     "apiDocumentation": "API-Dokumentation",
     "pricing": "Preise",
-    "myPlan": "Mein Plan"
+    "myPlan": "Mein Plan",
+    "operations": "Operationen",
+    "activityMonitor": "Aktivitätsmonitor",
+    "settings": "Einstellungen",
+    "docsAndHelp": "Dokumentation & Hilfe",
+    "sections": {
+      "overview": "ÜBERSICHT",
+      "operations": "OPERATIONEN",
+      "data": "DATEN"
+    }
   },
   "subscription": {
     "currentPlan": "Aktueller Plan",
@@ -121,20 +130,8 @@
     "failedToLoad": "Arbeitswarteschlange konnte nicht geladen werden"
   },
   "common": {
-    "loading": "Wird geladen...",
-    "cancel": "Abbrechen",
-    "save": "Speichern",
-    "delete": "Löschen",
-    "edit": "Bearbeiten",
-    "add": "Hinzufügen",
-    "search": "Suchen",
-    "filter": "Filtern",
-    "close": "Schließen",
-    "confirm": "Bestätigen",
-    "success": "Erfolg",
-    "error": "Fehler",
-    "warning": "Warnung",
-    "info": "Info"
+    "admin": "Administrator",
+    "operator": "Bediener"
   },
   "onboarding": {
     "welcome": "Willkommen bei Eryxon MES",
@@ -291,8 +288,18 @@
     "issueDetails": "Problemdetails",
     "issueSummary": "Problemzusammenfassung",
     "description": "Beschreibung",
-    "severity": "Schweregrad",
-    "status": "Status",
+    "severity": {
+      "low": "Niedrig",
+      "medium": "Mittel",
+      "high": "Hoch",
+      "critical": "Kritisch"
+    },
+    "status": {
+      "pending": "Ausstehend",
+      "approved": "Genehmigt",
+      "rejected": "Abgelehnt",
+      "closed": "Geschlossen"
+    },
     "reportedBy": "Gemeldet von",
     "reportedAt": "Gemeldet am",
     "resolvedBy": "Gelöst von",
@@ -322,19 +329,7 @@
     "filterBySeverity": "Nach Schweregrad filtern",
     "filterByStatus": "Nach Status filtern",
     "searchIssues": "Probleme suchen...",
-    "noIssues": "Keine Probleme gefunden",
-    "severity": {
-      "low": "Niedrig",
-      "medium": "Mittel",
-      "high": "Hoch",
-      "critical": "Kritisch"
-    },
-    "status": {
-      "pending": "Ausstehend",
-      "approved": "Genehmigt",
-      "rejected": "Abgelehnt",
-      "closed": "Geschlossen"
-    }
+    "noIssues": "Keine Probleme gefunden"
   },
   "stages": {
     "title": "Fertigungsstufen-Konfiguration",
@@ -420,32 +415,39 @@
       "copper": "Kupfer",
       "brass": "Messing",
       "other": "Sonstiges"
-    }
+    },
+    "manageMaterials": "Materialkonfigurationen verwalten",
+    "materialNamePlaceholder": "Materialname eingeben",
+    "descriptionPlaceholder": "Beschreibung eingeben",
+    "color": "Farbe",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "cancel": "Abbrechen",
+    "update": "Aktualisieren",
+    "create": "Erstellen",
+    "createNewMaterial": "Neues Material erstellen",
+    "noMaterialsConfigured": "Noch keine Materialien konfiguriert",
+    "addFirstMaterial": "Fügen Sie Ihr erstes Material hinzu",
+    "failedToSaveMaterial": "Material konnte nicht gespeichert werden"
   },
   "resources": {
     "title": "Ressourcenverwaltung",
     "createResource": "Ressource erstellen",
     "editResource": "Ressource bearbeiten",
-    "deleteResource": "Ressource löschen",
-    "resourceDetails": "Ressourcendetails",
-    "resourceName": "Ressourcenbezeichnung",
+    "resourceName": "Ressourcenname",
     "resourceType": "Ressourcentyp",
     "description": "Beschreibung",
-    "stage": "Fertigungsstufe",
-    "isActive": "Aktiv",
-    "isAvailable": "Verfügbar",
+    "identifier": "Kennung",
+    "location": "Standort",
+    "status": "Status",
+    "available": "Verfügbar",
+    "inUse": "In Verwendung",
+    "maintenance": "Wartung",
     "resourceCreated": "Ressource erfolgreich erstellt",
     "resourceUpdated": "Ressource erfolgreich aktualisiert",
-    "resourceDeleted": "Ressource erfolgreich gelöscht",
-    "deleteConfirm": "Möchten Sie diese Ressource wirklich löschen?",
-    "noResources": "Keine Ressourcen konfiguriert",
-    "searchResources": "Ressourcen suchen...",
-    "types": {
-      "machine": "Maschine",
-      "tool": "Werkzeug",
-      "equipment": "Ausrüstung",
-      "workstation": "Arbeitsplatz"
-    }
+    "failedToSaveResource": "Ressource konnte nicht gespeichert werden",
+    "noResourcesConfigured": "Noch keine Ressourcen konfiguriert",
+    "addFirstResource": "Fügen Sie Ihre erste Ressource hinzu"
   },
   "assignments": {
     "title": "Bedienerzuweisungen",
