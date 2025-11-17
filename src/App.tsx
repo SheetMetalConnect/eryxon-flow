@@ -27,6 +27,7 @@ import Parts from "./pages/admin/Parts";
 import { ActivityMonitor } from "./pages/admin/ActivityMonitor";
 import { Operations } from "./pages/admin/Operations";
 import { Settings } from "./pages/admin/Settings";
+import StepsTemplatesView from "./pages/admin/StepsTemplatesView";
 import ApiDocs from "./pages/ApiDocs";
 import Pricing from "./pages/Pricing";
 import { MyPlan } from "./pages/MyPlan";
@@ -284,6 +285,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Settings />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/config/steps-templates"
+        element={
+          <ProtectedRoute adminOnly>
+            <StepsTemplatesView />
           </ProtectedRoute>
         }
       />

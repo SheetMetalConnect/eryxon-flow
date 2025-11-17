@@ -51,7 +51,6 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { getSubstepTemplate, getTemplateCategories, SUBSTEP_TEMPLATES } from "@/lib/substepTemplates";
 
 interface Substep {
   id: string;
@@ -62,6 +61,22 @@ interface Substep {
   notes?: string;
   completed_at?: string;
   completed_by?: string;
+}
+
+interface TemplateItem {
+  id: string;
+  name: string;
+  notes?: string;
+  sequence: number;
+}
+
+interface Template {
+  id: string;
+  name: string;
+  description: string | null;
+  operation_type: string | null;
+  is_global: boolean;
+  items?: TemplateItem[];
 }
 
 interface SubstepsManagerProps {
@@ -204,6 +219,7 @@ function SortableSubstepItem({ substep, onStatusChange, onDelete, onNotesChange 
 export default function SubstepsManager({ operationId, operationName, onUpdate }: SubstepsManagerProps) {
   const { profile } = useAuth();
   const [substeps, setSubsteps] = useState<Substep[]>([]);
+  const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(false);
   const [newSubstepName, setNewSubstepName] = useState("");
   const [newSubstepNotes, setNewSubstepNotes] = useState("");
@@ -219,7 +235,8 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
 
   useEffect(() => {
     loadSubsteps();
-  }, [operationId]);
+    loadTemplates();
+  }, [operationId, profile?.tenant_id]);
 
   const loadSubsteps = async () => {
     if (!profile?.tenant_id) return;
@@ -240,6 +257,33 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
       toast.error("Failed to load substeps");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadTemplates = async () => {
+    if (!profile?.tenant_id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("substep_templates")
+        .select(`
+          *,
+          items:substep_template_items (
+            id,
+            name,
+            notes,
+            sequence
+          )
+        `)
+        .or(`tenant_id.eq.${profile.tenant_id},is_global.eq.true`)
+        .order('name', { ascending: true })
+        .order('sequence', { foreignTable: 'substep_template_items', ascending: true });
+
+      if (error) throw error;
+      setTemplates(data || []);
+    } catch (error: any) {
+      console.error("Error loading templates:", error);
+      // Don't show error toast, templates are optional
     }
   };
 
@@ -402,14 +446,19 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
 
     setLoading(true);
     try {
-      const template = SUBSTEP_TEMPLATES[selectedTemplate];
+      const template = templates.find(t => t.id === selectedTemplate);
+      if (!template || !template.items || template.items.length === 0) {
+        toast.error("Template not found or has no items");
+        return;
+      }
+
       const maxSequence = substeps.length > 0 ? Math.max(...substeps.map((s) => s.sequence)) : 0;
 
-      const newSubsteps = template.map((t, index) => ({
+      const newSubsteps = template.items.map((item, index) => ({
         operation_id: operationId,
         tenant_id: profile.tenant_id!,
-        name: t.name,
-        notes: t.notes || null,
+        name: item.name,
+        notes: item.notes || null,
         sequence: maxSequence + index + 1,
         status: "not_started" as const,
       }));
@@ -424,7 +473,7 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
       setSubsteps([...substeps, ...(data || [])]);
       setShowTemplateDialog(false);
       setSelectedTemplate("");
-      toast.success(`Added ${template.length} substeps from template`);
+      toast.success(`Added ${template.items.length} substeps from template`);
       onUpdate?.();
     } catch (error: any) {
       console.error("Error applying template:", error);
@@ -470,25 +519,36 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
                   <SelectValue placeholder="Select a template..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {getTemplateCategories().map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category.charAt(0).toUpperCase() + category.slice(1)} ({SUBSTEP_TEMPLATES[category].length} steps)
+                  {templates.map((template) => (
+                    <SelectItem key={template.id} value={template.id}>
+                      {template.name} ({template.items?.length || 0} steps)
+                      {template.is_global && " ⭐"}
                     </SelectItem>
                   ))}
+                  {templates.length === 0 && (
+                    <SelectItem value="none" disabled>
+                      No templates available
+                    </SelectItem>
+                  )}
                 </SelectContent>
               </Select>
-              {selectedTemplate && (
+              {selectedTemplate && templates.find(t => t.id === selectedTemplate) && (
                 <div className="text-sm">
                   <div className="font-medium mb-2">Preview:</div>
+                  {templates.find(t => t.id === selectedTemplate)?.description && (
+                    <p className="text-muted-foreground mb-2 text-xs">
+                      {templates.find(t => t.id === selectedTemplate)?.description}
+                    </p>
+                  )}
                   <ul className="space-y-1 text-muted-foreground">
-                    {SUBSTEP_TEMPLATES[selectedTemplate].slice(0, 3).map((step, index) => (
-                      <li key={index} className="flex items-center gap-2">
+                    {templates.find(t => t.id === selectedTemplate)?.items?.slice(0, 3).map((item, index) => (
+                      <li key={item.id || index} className="flex items-center gap-2">
                         <Circle className="h-3 w-3" />
-                        {step.name}
+                        {item.name}
                       </li>
                     ))}
-                    {SUBSTEP_TEMPLATES[selectedTemplate].length > 3 && (
-                      <li className="text-xs">... and {SUBSTEP_TEMPLATES[selectedTemplate].length - 3} more</li>
+                    {(templates.find(t => t.id === selectedTemplate)?.items?.length || 0) > 3 && (
+                      <li className="text-xs">... and {(templates.find(t => t.id === selectedTemplate)?.items?.length || 0) - 3} more</li>
                     )}
                   </ul>
                 </div>
