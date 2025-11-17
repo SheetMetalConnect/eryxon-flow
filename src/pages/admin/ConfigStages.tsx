@@ -263,10 +263,14 @@ export default function ConfigStages() {
       }));
 
       for (const update of updates) {
-        await supabase
+        const { error } = await supabase
           .from("cells")
           .update({ sequence: update.sequence })
           .eq("id", update.id);
+
+        if (error) {
+          throw error;
+        }
       }
 
       toast.success(t("stages.stagesReordered"));
