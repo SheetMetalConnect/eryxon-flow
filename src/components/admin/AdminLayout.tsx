@@ -24,6 +24,7 @@ import {
 import {
   Menu as MenuIcon,
   Dashboard as DashboardIcon,
+  ListAlt as ListAltIcon,
   Work as WorkIcon,
   Inventory as InventoryIcon,
   ReportProblem as ReportProblemIcon,
@@ -37,6 +38,13 @@ import {
   Timeline as TimelineIcon,
   MenuBook as MenuBookIcon,
   Search as SearchIcon,
+  People as PeopleIcon,
+  ViewInAr as ViewInArIcon,
+  Build as BuildIcon,
+  VpnKey as VpnKeyIcon,
+  Webhook as WebhookIcon,
+  Archive as ArchiveIcon,
+  AttachMoney as AttachMoneyIcon,
 } from "@mui/icons-material";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -106,6 +114,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           label: t("navigation.dashboard"),
           icon: <DashboardIcon />,
         },
+        {
+          path: "/work-queue",
+          label: t("navigation.workQueue"),
+          icon: <ListAltIcon />,
+        },
       ],
     },
     {
@@ -149,18 +162,63 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         },
       ],
     },
+    {
+      title: t("navigation.configuration"),
+      items: [
+        {
+          path: "/admin/users",
+          label: t("navigation.users"),
+          icon: <PeopleIcon />,
+        },
+        {
+          path: "/admin/stages",
+          label: t("navigation.stages"),
+          icon: <ViewInArIcon />,
+        },
+        {
+          path: "/admin/materials",
+          label: t("materials.title"),
+          icon: <InventoryIcon />,
+        },
+        {
+          path: "/admin/resources",
+          label: t("resources.title"),
+          icon: <BuildIcon />,
+        },
+        {
+          path: "/admin/config/api-keys",
+          label: t("navigation.apiKeys"),
+          icon: <VpnKeyIcon />,
+        },
+        {
+          path: "/admin/config/webhooks",
+          label: t("navigation.webhooks"),
+          icon: <WebhookIcon />,
+        },
+        {
+          path: "/admin/data-export",
+          label: t("dataExport.title"),
+          icon: <ArchiveIcon />,
+        },
+      ],
+    },
   ];
 
   const bottomNavItems = [
     {
-      path: "/admin/settings",
-      label: t("navigation.settings"),
-      icon: <SettingsIcon />,
+      path: "/pricing",
+      label: t("navigation.pricing"),
+      icon: <AttachMoneyIcon />,
     },
     {
       path: "/api-docs",
       label: t("navigation.docsAndHelp"),
       icon: <MenuBookIcon />,
+    },
+    {
+      path: "/admin/settings",
+      label: t("navigation.settings"),
+      icon: <SettingsIcon />,
     },
   ];
 
@@ -362,20 +420,35 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             component="div"
             sx={{ fontWeight: 600, flexGrow: 1 }}
           >
-            {location.pathname === "/dashboard" && "Dashboard"}
-            {location.pathname === "/work-queue" && "Work Queue"}
-            {location.pathname.startsWith("/admin/jobs") && "Jobs"}
-            {location.pathname.startsWith("/admin/parts") && "Parts"}
-            {location.pathname.startsWith("/admin/operations") && "Operations"}
-            {location.pathname.startsWith("/admin/issues") && "Issues"}
+            {location.pathname === "/dashboard" && t("navigation.dashboard")}
+            {location.pathname === "/work-queue" && t("navigation.workQueue")}
+            {location.pathname.startsWith("/admin/jobs") &&
+              t("navigation.jobsManagement")}
+            {location.pathname.startsWith("/admin/parts") &&
+              t("navigation.partsManagement")}
+            {location.pathname.startsWith("/admin/operations") &&
+              t("navigation.operations")}
+            {location.pathname.startsWith("/admin/issues") &&
+              t("navigation.issueQueue")}
             {location.pathname.startsWith("/admin/assignments") &&
-              "Assignments"}
+              t("navigation.operatorAssignments")}
             {location.pathname.startsWith("/admin/activity") &&
-              "Activity Monitor"}
-            {location.pathname.startsWith("/admin/settings") && "Settings"}
-            {location.pathname === "/api-docs" && "API Documentation"}
-            {location.pathname === "/pricing" && "Pricing"}
-            {location.pathname === "/my-plan" && "My Plan"}
+              t("navigation.activityMonitor")}
+            {location.pathname === "/admin/users" && t("navigation.users")}
+            {location.pathname === "/admin/stages" && t("navigation.stages")}
+            {location.pathname === "/admin/materials" && t("materials.title")}
+            {location.pathname === "/admin/resources" && t("resources.title")}
+            {location.pathname === "/admin/data-export" &&
+              t("dataExport.title")}
+            {location.pathname.startsWith("/admin/config") &&
+              t("navigation.configuration")}
+            {location.pathname.startsWith("/admin/settings") &&
+              t("navigation.settings")}
+            {location.pathname === "/api-docs" &&
+              t("navigation.apiDocumentation")}
+            {location.pathname === "/pricing" && t("navigation.pricing")}
+            {location.pathname === "/my-plan" && t("navigation.myPlan")}
+            {location.pathname === "/help" && t("navigation.help")}
           </Typography>
 
           {/* Right Side Actions */}
