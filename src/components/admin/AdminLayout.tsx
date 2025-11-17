@@ -92,8 +92,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   ];
 
   const configNavItems = [
-    { path: '/admin/config/users', label: 'Users', icon: <PeopleIcon /> },
-    { path: '/admin/config/stages', label: 'Stages', icon: <ViewInArIcon /> },
+    { path: '/admin/users', label: 'Users', icon: <PeopleIcon /> },
+    { path: '/admin/stages', label: 'Stages', icon: <ViewInArIcon /> },
+    { path: '/admin/materials', label: 'Materials', icon: <InventoryIcon /> },
     { path: '/admin/config/api-keys', label: 'API Keys', icon: <VpnKeyIcon /> },
     { path: '/admin/config/webhooks', label: 'Webhooks', icon: <WebhookIcon /> },
     { path: '/api-docs', label: 'API Docs', icon: <DescriptionIcon /> },
