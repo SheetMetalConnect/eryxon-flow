@@ -117,7 +117,7 @@ Thank you!`;
 
             return (
               <Card
-                key={tier.name}
+                key={tier.id}
                 className={`relative flex flex-col ${
                   isCurrent ? 'border-green-500 shadow-xl ring-2 ring-green-500/20' : ''
                 } ${tier.popular && !isCurrent ? 'border-primary shadow-lg' : ''} ${

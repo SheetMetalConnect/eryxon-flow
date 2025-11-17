@@ -41,6 +41,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { JobIssueBadge } from "@/components/issues/JobIssueBadge";
 
 export default function Jobs() {
   const { t } = useTranslation();
@@ -322,6 +323,7 @@ export default function Jobs() {
               <TableHead className="text-right">
                 {t("jobs.operations")}
               </TableHead>
+              <TableHead>NCRs</TableHead>
               <TableHead>Files</TableHead>
               <TableHead className="text-right">{t("common.edit")}</TableHead>
             </TableRow>
@@ -349,6 +351,9 @@ export default function Jobs() {
                 <TableCell className="text-right">{job.parts_count}</TableCell>
                 <TableCell className="text-right">
                   {job.operations_count}
+                </TableCell>
+                <TableCell>
+                  <JobIssueBadge jobId={job.id} size="sm" />
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">

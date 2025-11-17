@@ -1,13 +1,30 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export type WebhookEvent =
-  | 'operation.started'
-  | 'operation.completed'
-  | 'issue.created'
+  // Job lifecycle events
   | 'job.created'
   | 'job.updated'
+  | 'job.started'
+  | 'job.stopped'
+  | 'job.resumed'
+  | 'job.completed'
+  // Part lifecycle events
   | 'part.created'
-  | 'part.updated';
+  | 'part.updated'
+  | 'part.started'
+  | 'part.completed'
+  // Operation lifecycle events
+  | 'operation.started'
+  | 'operation.paused'
+  | 'operation.resumed'
+  | 'operation.completed'
+  // Issue and NCR events
+  | 'issue.created'
+  | 'ncr.created'
+  | 'ncr.verified'
+  // Step events
+  | 'step.added'
+  | 'step.completed';
 
 export interface WebhookData {
   [key: string]: any;

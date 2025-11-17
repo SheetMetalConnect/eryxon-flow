@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Button } from '@/components/ui/button';
@@ -89,6 +89,9 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
   useEffect(() => {
     if (!librariesLoaded || !containerRef.current) return;
 
+    // Capture container ref for cleanup
+    const container = containerRef.current;
+
     // Scene
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf5f5f5);
@@ -97,7 +100,7 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
     // Camera
     const camera = new THREE.PerspectiveCamera(
       45,
-      containerRef.current.clientWidth / containerRef.current.clientHeight,
+      container.clientWidth / container.clientHeight,
       0.1,
       10000
     );
@@ -107,11 +110,11 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(
-      containerRef.current.clientWidth,
-      containerRef.current.clientHeight
+      container.clientWidth,
+      container.clientHeight
     );
     renderer.setPixelRatio(window.devicePixelRatio);
-    containerRef.current.appendChild(renderer.domElement);
+    container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
     // Lights - Multiple directional lights for better edge visibility
@@ -171,8 +174,8 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
         cancelAnimationFrame(animationFrameRef.current);
       }
       renderer.dispose();
-      if (containerRef.current && renderer.domElement.parentNode === containerRef.current) {
-        containerRef.current.removeChild(renderer.domElement);
+      if (container && renderer.domElement.parentNode === container) {
+        container.removeChild(renderer.domElement);
       }
     };
   }, [librariesLoaded]);
@@ -331,10 +334,10 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
     };
 
     loadSTEP();
-  }, [url, librariesLoaded]);
+  }, [url, librariesLoaded, edgesVisible, gridVisible, fitCameraToMeshes, updateGridSize]);
 
   // Fit camera to meshes
-  const fitCameraToMeshes = () => {
+  const fitCameraToMeshes = useCallback(() => {
     if (
       !cameraRef.current ||
       !controlsRef.current ||
@@ -358,10 +361,10 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
 
     controlsRef.current.target.copy(center);
     controlsRef.current.update();
-  };
+  }, []);
 
   // Update grid size based on model
-  const updateGridSize = () => {
+  const updateGridSize = useCallback(() => {
     if (!gridRef.current || !sceneRef.current || meshesRef.current.length === 0)
       return;
 
@@ -394,7 +397,7 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
 
     sceneRef.current.add(newGrid);
     gridRef.current = newGrid;
-  };
+  }, [gridVisible]);
 
   // Initialize explosion data
   const initializeExplosionData = () => {

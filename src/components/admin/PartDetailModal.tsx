@@ -11,12 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Save, X, Upload, Eye, Trash2, Box, FileText, AlertTriangle, Package, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
 import { useAuth } from "@/contexts/AuthContext";
+import { useFileUpload } from "@/hooks/useFileUpload";
+import { UploadProgress, StorageQuotaDisplay } from "@/components/UploadProgress";
 import {
   Select,
   SelectContent,
@@ -27,6 +29,9 @@ import {
 import { fetchChildParts, fetchParentPart, checkAssemblyDependencies } from "@/lib/database";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useTranslation } from "react-i18next";
+import { IssuesSummarySection } from "@/components/issues/IssuesSummarySection";
+import { RoutingVisualization } from "@/components/qrm/RoutingVisualization";
+import { usePartRouting } from "@/hooks/useQRMMetrics";
 
 interface PartDetailModalProps {
   partId: string;
@@ -38,6 +43,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
   const { toast } = useToast();
   const { profile } = useAuth();
   const { t } = useTranslation();
+  const { routing, loading: routingLoading } = usePartRouting(partId);
   const [addingOperation, setAddingOperation] = useState(false);
   const [newOperation, setNewOperation] = useState({
     operation_name: "",
@@ -48,12 +54,27 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
   });
 
   // CAD file management state
-  const [uploadingCAD, setUploadingCAD] = useState(false);
   const [cadFiles, setCadFiles] = useState<FileList | null>(null);
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
   const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(null);
   const [currentFileType, setCurrentFileType] = useState<'step' | 'pdf' | null>(null);
   const [currentFileTitle, setCurrentFileTitle] = useState<string>("");
+
+  // Upload hook with progress tracking and quota validation
+  const {
+    progress: uploadProgress,
+    isUploading,
+    storageQuota,
+    uploadFiles,
+    deleteFile,
+    fetchStorageQuota,
+    resetProgress,
+  } = useFileUpload();
+
+  // Fetch storage quota on mount
+  useEffect(() => {
+    fetchStorageQuota();
+  }, [fetchStorageQuota]);
 
   const { data: part, isLoading } = useQuery({
     queryKey: ["part-detail", partId],
@@ -185,51 +206,29 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     addOperationMutation.mutate();
   };
 
-  // Handle CAD file upload
+  // Handle CAD file upload with progress tracking
   const handleCADUpload = async () => {
     if (!cadFiles || cadFiles.length === 0 || !profile?.tenant_id) return;
 
-    setUploadingCAD(true);
+    // Reset progress from previous uploads
+    resetProgress();
+
     try {
-      const uploadedPaths: string[] = [];
-
-      for (let i = 0; i < cadFiles.length; i++) {
-        const file = cadFiles[i];
-        const fileExt = file.name.split(".").pop()?.toLowerCase();
-
-        // Validate file type
-        if (!["step", "stp", "pdf"].includes(fileExt || "")) {
-          toast({
-            title: t("parts.invalidFileType"),
-            description: t("parts.invalidFileTypeDesc", { fileName: file.name }),
-            variant: "destructive",
-          });
-          continue;
+      const result = await uploadFiles(
+        cadFiles,
+        "parts-cad",
+        (file, index) => `${profile.tenant_id}/parts/${partId}/${file.name}`,
+        {
+          allowedExtensions: ["step", "stp", "pdf"],
+          maxFileSizeMB: 100, // 100MB max per file
+          validateQuota: true, // Check storage quota before upload
         }
+      );
 
-        const path = `${profile.tenant_id}/parts/${partId}/${file.name}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("parts-cad")
-          .upload(path, file);
-
-        if (uploadError) {
-          console.error("Upload error:", uploadError);
-          toast({
-            title: t("parts.uploadFailed"),
-            description: t("parts.uploadFailedDesc", { fileName: file.name }),
-            variant: "destructive",
-          });
-          continue;
-        }
-
-        uploadedPaths.push(path);
-      }
-
-      if (uploadedPaths.length > 0) {
-        // Update part's file_paths
+      // Update part's file_paths with successfully uploaded files
+      if (result.uploadedPaths.length > 0) {
         const currentPaths = part?.file_paths || [];
-        const newPaths = [...currentPaths, ...uploadedPaths];
+        const newPaths = [...currentPaths, ...result.uploadedPaths];
 
         const { error: updateError } = await supabase
           .from("parts")
@@ -240,11 +239,22 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
         toast({
           title: t("common.success"),
-          description: t("parts.filesUploadedSuccess", { count: uploadedPaths.length }),
+          description: t("parts.filesUploadedSuccess", { count: result.uploadedPaths.length }),
         });
 
         setCadFiles(null);
         onUpdate();
+      }
+
+      // Show errors for failed files
+      if (result.failedFiles.length > 0) {
+        result.failedFiles.forEach(({ fileName, error }) => {
+          toast({
+            title: t("parts.uploadFailed"),
+            description: `${fileName}: ${error}`,
+            variant: "destructive",
+          });
+        });
       }
     } catch (error: any) {
       console.error("CAD upload error:", error);
@@ -253,8 +263,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         description: error.message,
         variant: "destructive",
       });
-    } finally {
-      setUploadingCAD(false);
     }
   };
 
@@ -422,6 +430,14 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
             </div>
           </div>
 
+          {/* Routing Visualization */}
+          <div>
+            <Label className="text-lg">{t("qrm.routing", "Routing")}</Label>
+            <div className="mt-3 border rounded-lg p-4 bg-gray-50">
+              <RoutingVisualization routing={routing} loading={routingLoading} compact />
+            </div>
+          </div>
+
           {/* Notes */}
           {part?.notes && (
             <div>
@@ -556,6 +572,9 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               </Label>
             </div>
 
+            {/* Storage Quota Display */}
+            <StorageQuotaDisplay quota={storageQuota} className="mb-4" />
+
             {/* File Upload */}
             <div className="border rounded-lg p-4 mb-3 bg-gray-50">
               <div className="flex items-center gap-3">
@@ -580,14 +599,19 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                 />
                 <Button
                   onClick={handleCADUpload}
-                  disabled={!cadFiles || cadFiles.length === 0 || uploadingCAD}
+                  disabled={!cadFiles || cadFiles.length === 0 || isUploading}
                   size="sm"
                 >
                   <Upload className="h-4 w-4 mr-2" />
-                  {uploadingCAD ? t("parts.uploading") : t("parts.upload")}
+                  {isUploading ? t("parts.uploading") : t("parts.upload")}
                 </Button>
               </div>
             </div>
+
+            {/* Upload Progress */}
+            {uploadProgress.length > 0 && (
+              <UploadProgress progress={uploadProgress} className="mb-4" />
+            )}
 
             {/* Existing Files List */}
             <div className="space-y-2">
@@ -644,6 +668,9 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               )}
             </div>
           </div>
+
+          {/* NCRs / Issues Summary */}
+          <IssuesSummarySection partId={partId} />
 
           {/* Operations */}
           <div>

@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Edit, Loader2, Wrench, Package2, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { MetadataInput } from "@/components/ui/MetadataInput";
+import { BaseMetadata } from "@/types/metadata";
 
 interface Resource {
   id: string;
@@ -58,6 +60,7 @@ export default function ConfigResources() {
     location: "",
     status: "available",
     active: true,
+    metadata: {} as BaseMetadata,
   });
 
   useEffect(() => {
@@ -98,6 +101,7 @@ export default function ConfigResources() {
             location: formData.location || null,
             status: formData.status,
             active: formData.active,
+            metadata: Object.keys(formData.metadata).length > 0 ? formData.metadata : null,
           })
           .eq("id", editingResource.id);
 
@@ -113,6 +117,7 @@ export default function ConfigResources() {
           location: formData.location || null,
           status: formData.status,
           active: formData.active,
+          metadata: Object.keys(formData.metadata).length > 0 ? formData.metadata : null,
         });
 
         toast.success(t('resources.created'));
@@ -136,6 +141,7 @@ export default function ConfigResources() {
       location: "",
       status: "available",
       active: true,
+      metadata: {},
     });
     setEditingResource(null);
   };
@@ -150,6 +156,7 @@ export default function ConfigResources() {
       location: resource.location || "",
       status: resource.status,
       active: resource.active,
+      metadata: resource.metadata || {},
     });
     setDialogOpen(true);
   };
@@ -311,6 +318,20 @@ export default function ConfigResources() {
                     }
                     placeholder={t('resources.descriptionPlaceholder')}
                     rows={3}
+                  />
+                </div>
+
+                {/* Metadata Input */}
+                <div className="pt-2">
+                  <MetadataInput
+                    value={formData.metadata}
+                    onChange={(metadata) =>
+                      setFormData({ ...formData, metadata })
+                    }
+                    category="resource"
+                    resourceType={formData.type}
+                    label="Resource Details"
+                    description="Add specific details like tool specifications, mold settings, or material properties"
                   />
                 </div>
 
