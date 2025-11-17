@@ -66,20 +66,20 @@ export function getQRMStatusColor(status: QRMStatus): string {
 }
 
 /**
- * Get icon for QRM status
+ * Get lucide-react icon name for QRM status
  */
 export function getQRMStatusIcon(status: QRMStatus): string {
   switch (status) {
     case 'normal':
-      return '✓';
+      return 'CheckCircle2';
     case 'warning':
-      return '⚠';
+      return 'AlertTriangle';
     case 'at_capacity':
-      return '⛔';
+      return 'XCircle';
     case 'no_limit':
-      return '∞';
+      return 'Infinity';
     default:
-      return '?';
+      return 'HelpCircle';
   }
 }
 
