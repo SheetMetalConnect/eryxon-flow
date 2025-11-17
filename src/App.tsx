@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import WorkQueue from "./pages/operator/WorkQueue";
 import MyActivity from "./pages/operator/MyActivity";
 import MyIssues from "./pages/operator/MyIssues";
+import OperatorView from "./pages/operator/OperatorView";
 import Dashboard from "./pages/admin/Dashboard";
 import IssueQueue from "./pages/admin/IssueQueue";
 import ConfigStages from "./pages/admin/ConfigStages";
@@ -27,6 +28,7 @@ import Parts from "./pages/admin/Parts";
 import { ActivityMonitor } from "./pages/admin/ActivityMonitor";
 import { Operations } from "./pages/admin/Operations";
 import { Settings } from "./pages/admin/Settings";
+import StepsTemplatesView from "./pages/admin/StepsTemplatesView";
 import ApiDocs from "./pages/ApiDocs";
 import Pricing from "./pages/Pricing";
 import { MyPlan } from "./pages/MyPlan";
@@ -122,6 +124,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <MyIssues />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/operator-view"
+        element={
+          <ProtectedRoute>
+            <OperatorView />
           </ProtectedRoute>
         }
       />
@@ -284,6 +295,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Settings />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/config/steps-templates"
+        element={
+          <ProtectedRoute adminOnly>
+            <StepsTemplatesView />
           </ProtectedRoute>
         }
       />

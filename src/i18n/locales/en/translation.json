@@ -559,11 +559,12 @@
       "price": "$0",
       "description": "Perfect for getting started",
       "features": [
-        "Up to 3 users",
-        "5 manufacturing cells",
-        "Basic job tracking",
-        "Time tracking",
-        "Issue reporting",
+        "All features included",
+        "Up to 100 jobs per month",
+        "Up to 1,000 parts per month",
+        "5GB storage",
+        "10GB data usage per month",
+        "Self-service signup",
         "Community support"
       ]
     },
@@ -572,26 +573,27 @@
       "price": "$49",
       "description": "Best for small to medium shops",
       "features": [
-        "Up to 15 users",
-        "Unlimited manufacturing cells",
-        "Advanced job management",
-        "Real-time analytics",
-        "Custom workflows",
+        "All features included",
+        "Full usage with higher limits",
+        "Tiered storage limits",
+        "Upgrades available for heavy storage use",
+        "Self-service management",
         "API access",
         "Priority support"
       ]
     },
     "premium": {
       "name": "Premium",
-      "price": "$149",
+      "price": "Contact Sales",
       "description": "For large fabrication operations",
       "features": [
-        "Unlimited users",
-        "Unlimited manufacturing cells",
-        "Advanced analytics & reporting",
-        "Custom integrations",
+        "All features included",
+        "Enterprise-grade features",
+        "SSO authentication",
+        "Self-hosted deployment option",
+        "Single-tenant architecture",
+        "Unlimited storage",
         "Dedicated account manager",
-        "SLA guarantee",
         "24/7 premium support"
       ]
     },

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -36,40 +36,20 @@ export default function OperatorFooterBar() {
   const [, setTick] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!profile?.id) return;
+  const loadCurrentPause = async (timeEntryId: string) => {
+    const { data } = await supabase
+      .from("time_entry_pauses")
+      .select("paused_at")
+      .eq("time_entry_id", timeEntryId)
+      .is("resumed_at", null)
+      .maybeSingle();
 
-    loadActiveEntry();
+    if (data) {
+      setCurrentPause(data);
+    }
+  };
 
-    // Update every second for elapsed time
-    const interval = setInterval(() => {
-      setTick((prev) => prev + 1);
-    }, 1000);
-
-    // Subscribe to time entries changes
-    const channel = supabase
-      .channel("operator-footer-time-entries")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "time_entries",
-          filter: `operator_id=eq.${profile.id}`,
-        },
-        () => {
-          loadActiveEntry();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      clearInterval(interval);
-      supabase.removeChannel(channel);
-    };
-  }, [profile?.id]);
-
-  const loadActiveEntry = async () => {
+  const loadActiveEntry = useCallback(async () => {
     if (!profile?.id) return;
 
     const { data, error } = await supabase
@@ -106,20 +86,40 @@ export default function OperatorFooterBar() {
       setActiveEntry(null);
       setCurrentPause(null);
     }
-  };
+  }, [profile?.id]);
 
-  const loadCurrentPause = async (timeEntryId: string) => {
-    const { data } = await supabase
-      .from("time_entry_pauses")
-      .select("paused_at")
-      .eq("time_entry_id", timeEntryId)
-      .is("resumed_at", null)
-      .maybeSingle();
+  useEffect(() => {
+    if (!profile?.id) return;
 
-    if (data) {
-      setCurrentPause(data);
-    }
-  };
+    loadActiveEntry();
+
+    // Update every second for elapsed time
+    const interval = setInterval(() => {
+      setTick((prev) => prev + 1);
+    }, 1000);
+
+    // Subscribe to time entries changes
+    const channel = supabase
+      .channel("operator-footer-time-entries")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "time_entries",
+          filter: `operator_id=eq.${profile.id}`,
+        },
+        () => {
+          loadActiveEntry();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      clearInterval(interval);
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.id, loadActiveEntry]);
 
   const handleStop = async () => {
     if (!profile?.id || !activeEntry) return;

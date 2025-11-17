@@ -121,36 +121,48 @@ export type Database = {
           color: string | null
           created_at: string | null
           description: string | null
+          enforce_wip_limit: boolean | null
           id: string
           image_url: string | null
           name: string
           sequence: number
+          show_capacity_warning: boolean | null
           tenant_id: string
           updated_at: string | null
+          wip_limit: number | null
+          wip_warning_threshold: number | null
         }
         Insert: {
           active?: boolean | null
           color?: string | null
           created_at?: string | null
           description?: string | null
+          enforce_wip_limit?: boolean | null
           id?: string
           image_url?: string | null
           name: string
           sequence: number
+          show_capacity_warning?: boolean | null
           tenant_id: string
           updated_at?: string | null
+          wip_limit?: number | null
+          wip_warning_threshold?: number | null
         }
         Update: {
           active?: boolean | null
           color?: string | null
           created_at?: string | null
           description?: string | null
+          enforce_wip_limit?: boolean | null
           id?: string
           image_url?: string | null
           name?: string
           sequence?: number
+          show_capacity_warning?: boolean | null
           tenant_id?: string
           updated_at?: string | null
+          wip_limit?: number | null
+          wip_warning_threshold?: number | null
         }
         Relationships: []
       }
@@ -471,6 +483,7 @@ export type Database = {
           created_at: string | null
           estimated_time: number
           id: string
+          metadata: Json | null
           notes: string | null
           operation_name: string
           part_id: string
@@ -488,6 +501,7 @@ export type Database = {
           created_at?: string | null
           estimated_time: number
           id?: string
+          metadata?: Json | null
           notes?: string | null
           operation_name: string
           part_id: string
@@ -505,6 +519,7 @@ export type Database = {
           created_at?: string | null
           estimated_time?: number
           id?: string
+          metadata?: Json | null
           notes?: string | null
           operation_name?: string
           part_id?: string

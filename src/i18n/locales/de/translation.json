@@ -559,11 +559,12 @@
       "price": "0 €",
       "description": "Perfekt für den Einstieg",
       "features": [
-        "Bis zu 3 Benutzer",
-        "5 Fertigungszellen",
-        "Einfache Auftragsverfolgung",
-        "Zeiterfassung",
-        "Problemmeldung",
+        "Alle Funktionen enthalten",
+        "Bis zu 100 Aufträge pro Monat",
+        "Bis zu 1.000 Teile pro Monat",
+        "5 GB Speicher",
+        "10 GB Datennutzung pro Monat",
+        "Self-Service-Anmeldung",
         "Community-Support"
       ]
     },
@@ -572,26 +573,27 @@
       "price": "49 €",
       "description": "Optimal für kleine bis mittlere Betriebe",
       "features": [
-        "Bis zu 15 Benutzer",
-        "Unbegrenzte Fertigungszellen",
-        "Erweiterte Auftragsverwaltung",
-        "Echtzeit-Analytik",
-        "Individuelle Workflows",
+        "Alle Funktionen enthalten",
+        "Vollständige Nutzung mit höheren Limits",
+        "Gestaffelte Speicherlimits",
+        "Upgrades für hohe Speichernutzung verfügbar",
+        "Self-Service-Verwaltung",
         "API-Zugriff",
         "Prioritäts-Support"
       ]
     },
     "premium": {
       "name": "Premium",
-      "price": "149 €",
+      "price": "Vertrieb kontaktieren",
       "description": "Für große Fertigungsbetriebe",
       "features": [
-        "Unbegrenzte Benutzer",
-        "Unbegrenzte Fertigungszellen",
-        "Erweiterte Analytik & Berichterstattung",
-        "Individuelle Integrationen",
+        "Alle Funktionen enthalten",
+        "Enterprise-Funktionen",
+        "SSO-Authentifizierung",
+        "Self-Hosted-Deployment-Option",
+        "Single-Tenant-Architektur",
+        "Unbegrenzter Speicher",
         "Dedizierter Account Manager",
-        "SLA-Garantie",
         "24/7 Premium-Support"
       ]
     },

@@ -45,6 +45,7 @@ import {
   Webhook as WebhookIcon,
   Archive as ArchiveIcon,
   AttachMoney as AttachMoneyIcon,
+  Speed as SpeedIcon,
 } from "@mui/icons-material";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -121,6 +122,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           label: t("navigation.workQueue"),
           icon: <ListAltIcon />,
         },
+        {
+          path: "/operator-view",
+          label: "Operator View",
+          icon: <SpeedIcon />,
+        },
       ],
     },
     {
@@ -186,6 +192,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           path: "/admin/resources",
           label: t("resources.title"),
           icon: <BuildIcon />,
+        },
+        {
+          path: "/admin/config/steps-templates",
+          label: t("Steps & Templates"),
+          icon: <CheckCircleIcon />,
         },
         {
           path: "/admin/config/api-keys",
@@ -431,6 +442,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           >
             {location.pathname === "/dashboard" && t("navigation.dashboard")}
             {location.pathname === "/work-queue" && t("navigation.workQueue")}
+            {location.pathname === "/operator-view" && "Operator View"}
             {location.pathname.startsWith("/admin/jobs") &&
               t("navigation.jobsManagement")}
             {location.pathname.startsWith("/admin/parts") &&
