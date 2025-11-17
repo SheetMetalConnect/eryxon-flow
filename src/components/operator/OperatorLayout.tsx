@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   AppBar,
@@ -27,12 +28,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useThemeMode } from '@/theme/ThemeProvider';
 import CurrentlyTimingWidget from './CurrentlyTimingWidget';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 interface OperatorLayoutProps {
   children: React.ReactNode;
 }
 
 export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
+  const { t } = useTranslation();
   const { profile, signOut } = useAuth();
   const { mode, toggleTheme } = useThemeMode();
   const theme = useTheme();
@@ -55,9 +58,9 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
   };
 
   const navItems = [
-    { path: '/work-queue', label: 'Work Queue', icon: <ListAltIcon /> },
-    { path: '/my-activity', label: 'My Activity', icon: <ScheduleIcon /> },
-    { path: '/my-issues', label: 'My Issues', icon: <ReportProblemIcon /> },
+    { path: '/work-queue', label: t('navigation.workQueue'), icon: <ListAltIcon /> },
+    { path: '/my-activity', label: t('navigation.myActivity'), icon: <ScheduleIcon /> },
+    { path: '/my-issues', label: t('navigation.myIssues'), icon: <ReportProblemIcon /> },
   ];
 
   const getCurrentNavValue = () => {
@@ -108,13 +111,16 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
             </Box>
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
               <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem' }}>
-                Sheet Metal Connect
+                {t('app.name')}
               </Typography>
             </Box>
           </Box>
 
           {/* Right Side Actions */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+
             {/* Theme Toggle */}
             <IconButton onClick={toggleTheme} color="inherit">
               {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
@@ -173,12 +179,12 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
                     width: 'fit-content',
                   }}
                 >
-                  Operator
+                  {t('app.operator')}
                 </Typography>
               </Box>
               <MenuItem onClick={handleSignOut} sx={{ gap: 1.5, py: 1.5 }}>
                 <LogoutIcon fontSize="small" />
-                Sign Out
+                {t('auth.signOut')}
               </MenuItem>
             </Menu>
           </Box>

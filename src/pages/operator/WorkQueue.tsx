@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
@@ -57,6 +58,7 @@ interface OperationWithDetails {
 }
 
 export default function WorkQueue() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const [operations, setOperations] = useState<OperationWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,7 +115,7 @@ export default function WorkQueue() {
       if (cellsData.data) setCells(cellsData.data);
     } catch (error) {
       console.error("Error loading data:", error);
-      toast.error("Failed to load work queue");
+      toast.error(t("workQueue.failedToLoad"));
     } finally {
       setLoading(false);
     }
@@ -279,7 +281,7 @@ export default function WorkQueue() {
           <div className="w-80 h-full flex flex-col">
             {/* Side Panel Header */}
             <div className="p-4 border-b flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Filters & Controls</h2>
+              <h2 className="text-lg font-semibold">{t("workQueue.filtersAndControls")}</h2>
               <Button
                 variant="ghost"
                 size="icon"
@@ -295,23 +297,23 @@ export default function WorkQueue() {
               {/* Stats Section */}
               <div>
                 <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
-                  Statistics
+                  {t("workQueue.statistics")}
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center p-3 bg-background rounded-lg border">
-                    <span className="text-sm text-muted-foreground">Total</span>
+                    <span className="text-sm text-muted-foreground">{t("workQueue.total")}</span>
                     <span className="text-lg font-bold">{totalOperations}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-background rounded-lg border">
-                    <span className="text-sm text-muted-foreground">In Progress</span>
+                    <span className="text-sm text-muted-foreground">{t("workQueue.inProgress")}</span>
                     <span className="text-lg font-bold text-blue-600">{inProgressOperations}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-background rounded-lg border">
-                    <span className="text-sm text-muted-foreground">Completed</span>
+                    <span className="text-sm text-muted-foreground">{t("workQueue.completed")}</span>
                     <span className="text-lg font-bold text-green-600">{completedOperations}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-background rounded-lg border">
-                    <span className="text-sm text-muted-foreground">Not Started</span>
+                    <span className="text-sm text-muted-foreground">{t("workQueue.notStarted")}</span>
                     <span className="text-lg font-bold text-gray-600">
                       {totalOperations - inProgressOperations - completedOperations}
                     </span>
@@ -322,12 +324,12 @@ export default function WorkQueue() {
               {/* Material Filter */}
               <div>
                 <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
-                  Materials
+                  {t("workQueue.materials")}
                 </h3>
                 <Tabs value={selectedMaterial} onValueChange={setSelectedMaterial}>
                   <TabsList className="w-full flex-col h-auto">
                     <TabsTrigger value="all" className="w-full justify-start">
-                      All Materials
+                      {t("workQueue.allMaterials")}
                     </TabsTrigger>
                     {materials.map((material) => (
                       <TabsTrigger key={material} value={material} className="w-full justify-start">
@@ -341,17 +343,17 @@ export default function WorkQueue() {
               {/* Status Filter */}
               <div>
                 <Label htmlFor="status-filter" className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
-                  Status
+                  {t("workQueue.status")}
                 </Label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger id="status-filter" className="mt-2">
-                    <SelectValue placeholder="All Statuses" />
+                    <SelectValue placeholder={t("workQueue.allStatuses")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="not_started">Not Started</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="all">{t("workQueue.allStatuses")}</SelectItem>
+                    <SelectItem value="not_started">{t("workQueue.notStartedStatus")}</SelectItem>
+                    <SelectItem value="in_progress">{t("workQueue.inProgressStatus")}</SelectItem>
+                    <SelectItem value="completed">{t("workQueue.completedStatus")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -359,17 +361,17 @@ export default function WorkQueue() {
               {/* Due Date Filter */}
               <div>
                 <Label htmlFor="due-date-filter" className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
-                  Due Date
+                  {t("workQueue.dueDate")}
                 </Label>
                 <Select value={dueDateFilter} onValueChange={setDueDateFilter}>
                   <SelectTrigger id="due-date-filter" className="mt-2">
-                    <SelectValue placeholder="All Dates" />
+                    <SelectValue placeholder={t("workQueue.allDates")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Dates</SelectItem>
-                    <SelectItem value="overdue">Overdue</SelectItem>
-                    <SelectItem value="today">Due Today</SelectItem>
-                    <SelectItem value="this_week">Due This Week</SelectItem>
+                    <SelectItem value="all">{t("workQueue.allDates")}</SelectItem>
+                    <SelectItem value="overdue">{t("workQueue.overdue")}</SelectItem>
+                    <SelectItem value="today">{t("workQueue.dueToday")}</SelectItem>
+                    <SelectItem value="this_week">{t("workQueue.dueThisWeek")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -377,16 +379,16 @@ export default function WorkQueue() {
               {/* Sort By */}
               <div>
                 <Label htmlFor="sort-by" className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
-                  Sort By
+                  {t("workQueue.sortBy")}
                 </Label>
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger id="sort-by" className="mt-2">
-                    <SelectValue placeholder="Sort by" />
+                    <SelectValue placeholder={t("workQueue.sortBy")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="sequence">Sequence</SelectItem>
-                    <SelectItem value="due_date">Due Date</SelectItem>
-                    <SelectItem value="estimated_time">Estimated Time</SelectItem>
+                    <SelectItem value="sequence">{t("workQueue.sequence")}</SelectItem>
+                    <SelectItem value="due_date">{t("workQueue.dueDateSort")}</SelectItem>
+                    <SelectItem value="estimated_time">{t("workQueue.estimatedTime")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -395,7 +397,7 @@ export default function WorkQueue() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="assigned-to-me" className="text-sm font-medium cursor-pointer">
-                    Assigned to Me
+                    {t("workQueue.assignedToMe")}
                   </Label>
                   <Switch
                     id="assigned-to-me"
@@ -405,7 +407,7 @@ export default function WorkQueue() {
                 </div>
                 <div className="flex items-center justify-between">
                   <Label htmlFor="show-completed" className="text-sm font-medium cursor-pointer">
-                    Show Completed
+                    {t("workQueue.showCompleted")}
                   </Label>
                   <Switch
                     id="show-completed"
@@ -418,7 +420,7 @@ export default function WorkQueue() {
               {/* Cell Visibility */}
               <div>
                 <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
-                  Cell Visibility
+                  {t("workQueue.cellVisibility")}
                 </h3>
                 <div className="space-y-2">
                   {cells.map((cell) => (
@@ -470,7 +472,7 @@ export default function WorkQueue() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by job, part, operation, or customer..."
+                  placeholder={t("workQueue.searchPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -480,7 +482,7 @@ export default function WorkQueue() {
                 variant="outline"
                 size="icon"
                 onClick={() => setViewMode(viewMode === "detailed" ? "compact" : "detailed")}
-                title={viewMode === "detailed" ? "Switch to compact view" : "Switch to detailed view"}
+                title={viewMode === "detailed" ? t("workQueue.switchToCompact") : t("workQueue.switchToDetailed")}
               >
                 {viewMode === "detailed" ? (
                   <LayoutGrid className="h-4 w-4" />
@@ -510,13 +512,13 @@ export default function WorkQueue() {
                   >
                     <h3 className="font-semibold text-lg">{cell.name}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {operations.length} operation{operations.length !== 1 ? "s" : ""}
+                      {operations.length} {operations.length !== 1 ? t("workQueue.operations") : t("workQueue.operation")}
                     </p>
                   </div>
                   <div className="flex-1 p-4 space-y-3 overflow-y-auto">
                     {operations.length === 0 ? (
                       <div className="text-center text-muted-foreground py-8">
-                        No operations
+                        {t("workQueue.noOperations")}
                       </div>
                     ) : (
                       operations.map((operation) => (
