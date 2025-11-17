@@ -14,7 +14,6 @@
 @import '@fontsource/inter/500.css';
 @import '@fontsource/inter/600.css';
 @import '@fontsource/inter/700.css';
-@import '@fontsource/inter/variable.css';
 
 @tailwind base;
 @tailwind components;
@@ -29,7 +28,7 @@
     /* ========================================================================
        TYPOGRAPHY
        ======================================================================== */
-    --font-family-base: 'InterVariable', 'Inter', -apple-system, BlinkMacSystemFont,
+    --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont,
                         'Segoe UI', system-ui, sans-serif;
     --font-family-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
 
@@ -181,6 +180,17 @@
     --stage-welding: 25 95% 53%;                 /* Orange */
     --stage-assembly: 152 69% 42%;               /* Emerald */
     --stage-finishing: 38 100% 50%;              /* Amber */
+
+    /* ========================================================================
+       LEGACY COMPATIBILITY (Backward compatibility with old variable names)
+       ======================================================================== */
+    --active-work: var(--status-active);
+    --completed: var(--status-completed);
+    --on-hold: var(--status-on-hold);
+    --issue-critical: var(--severity-critical);
+    --issue-high: var(--severity-high);
+    --issue-medium: var(--severity-medium);
+    --issue-low: var(--severity-low);
 
     /* ========================================================================
        SIDEBAR

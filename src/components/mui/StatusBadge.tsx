@@ -77,13 +77,13 @@ const getStatusConfig = (status: StatusType, theme: any) => {
       icon: <HourglassIcon />,
     },
     active: {
-      color: '#FF9800',
-      bgColor: alpha('#FF9800', 0.12),
+      color: theme.palette.warning.main,
+      bgColor: alpha(theme.palette.warning.main, 0.12),
       icon: <HourglassIcon />,
     },
     'on-hold': {
-      color: '#FF5722',
-      bgColor: alpha('#FF5722', 0.12),
+      color: '#ff7c3e', // Orange - manufacturing on-hold state
+      bgColor: alpha('#ff7c3e', 0.12),
       icon: <BlockIcon />,
     },
     cancelled: {
