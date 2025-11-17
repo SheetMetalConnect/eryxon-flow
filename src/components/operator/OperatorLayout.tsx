@@ -24,6 +24,7 @@ import {
   Brightness4 as Brightness4Icon,
   Brightness7 as Brightness7Icon,
   Help as HelpIcon,
+  Speed as SpeedIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -61,6 +62,7 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
 
   const navItems = [
     { path: '/work-queue', label: t('navigation.workQueue'), icon: <ListAltIcon /> },
+    { path: '/operator-view', label: 'Operator View', icon: <SpeedIcon /> },
     { path: '/my-activity', label: t('navigation.myActivity'), icon: <ScheduleIcon /> },
     { path: '/my-issues', label: t('navigation.myIssues'), icon: <ReportProblemIcon /> },
   ];
