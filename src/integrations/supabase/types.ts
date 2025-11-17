@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_log: {
+        Row: {
+          action: string
+          changes: Json | null
+          created_at: string
+          description: string | null
+          entity_id: string | null
+          entity_name: string | null
+          entity_type: string | null
+          id: string
+          ip_address: unknown
+          metadata: Json | null
+          search_vector: unknown
+          session_id: string | null
+          tenant_id: string
+          user_agent: string | null
+          user_email: string | null
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          action: string
+          changes?: Json | null
+          created_at?: string
+          description?: string | null
+          entity_id?: string | null
+          entity_name?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          search_vector?: unknown
+          session_id?: string | null
+          tenant_id: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          action?: string
+          changes?: Json | null
+          created_at?: string
+          description?: string | null
+          entity_id?: string | null
+          entity_name?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          search_vector?: unknown
+          session_id?: string | null
+          tenant_id?: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       api_keys: {
         Row: {
           active: boolean | null
@@ -166,6 +241,192 @@ export type Database = {
         }
         Relationships: []
       }
+      installed_integrations: {
+        Row: {
+          api_key_id: string | null
+          config: Json | null
+          id: string
+          installed_at: string | null
+          installed_by: string | null
+          integration_id: string
+          is_active: boolean | null
+          last_sync_at: string | null
+          tenant_id: string
+          updated_at: string | null
+          webhook_id: string | null
+        }
+        Insert: {
+          api_key_id?: string | null
+          config?: Json | null
+          id?: string
+          installed_at?: string | null
+          installed_by?: string | null
+          integration_id: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          tenant_id: string
+          updated_at?: string | null
+          webhook_id?: string | null
+        }
+        Update: {
+          api_key_id?: string | null
+          config?: Json | null
+          id?: string
+          installed_at?: string | null
+          installed_by?: string | null
+          integration_id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+          webhook_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installed_integrations_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installed_integrations_installed_by_fkey"
+            columns: ["installed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installed_integrations_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installed_integrations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installed_integrations_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integrations: {
+        Row: {
+          banner_url: string | null
+          category: Database["public"]["Enums"]["integration_category"]
+          created_at: string | null
+          demo_video_url: string | null
+          description: string
+          documentation_url: string | null
+          features: Json | null
+          github_repo_url: string | null
+          id: string
+          install_count: number | null
+          install_url: string | null
+          is_free: boolean | null
+          logo_url: string | null
+          long_description: string | null
+          min_plan_tier: string | null
+          name: string
+          pricing_description: string | null
+          pricing_url: string | null
+          provider_email: string | null
+          provider_name: string
+          provider_url: string | null
+          published_at: string | null
+          rating_average: number | null
+          rating_count: number | null
+          requirements: Json | null
+          requires_api_key: boolean | null
+          screenshots: Json | null
+          slug: string
+          status: Database["public"]["Enums"]["integration_status"]
+          supported_systems: Json | null
+          updated_at: string | null
+          version: string | null
+          webhook_template: Json | null
+        }
+        Insert: {
+          banner_url?: string | null
+          category?: Database["public"]["Enums"]["integration_category"]
+          created_at?: string | null
+          demo_video_url?: string | null
+          description: string
+          documentation_url?: string | null
+          features?: Json | null
+          github_repo_url?: string | null
+          id?: string
+          install_count?: number | null
+          install_url?: string | null
+          is_free?: boolean | null
+          logo_url?: string | null
+          long_description?: string | null
+          min_plan_tier?: string | null
+          name: string
+          pricing_description?: string | null
+          pricing_url?: string | null
+          provider_email?: string | null
+          provider_name: string
+          provider_url?: string | null
+          published_at?: string | null
+          rating_average?: number | null
+          rating_count?: number | null
+          requirements?: Json | null
+          requires_api_key?: boolean | null
+          screenshots?: Json | null
+          slug: string
+          status?: Database["public"]["Enums"]["integration_status"]
+          supported_systems?: Json | null
+          updated_at?: string | null
+          version?: string | null
+          webhook_template?: Json | null
+        }
+        Update: {
+          banner_url?: string | null
+          category?: Database["public"]["Enums"]["integration_category"]
+          created_at?: string | null
+          demo_video_url?: string | null
+          description?: string
+          documentation_url?: string | null
+          features?: Json | null
+          github_repo_url?: string | null
+          id?: string
+          install_count?: number | null
+          install_url?: string | null
+          is_free?: boolean | null
+          logo_url?: string | null
+          long_description?: string | null
+          min_plan_tier?: string | null
+          name?: string
+          pricing_description?: string | null
+          pricing_url?: string | null
+          provider_email?: string | null
+          provider_name?: string
+          provider_url?: string | null
+          published_at?: string | null
+          rating_average?: number | null
+          rating_count?: number | null
+          requirements?: Json | null
+          requires_api_key?: boolean | null
+          screenshots?: Json | null
+          slug?: string
+          status?: Database["public"]["Enums"]["integration_status"]
+          supported_systems?: Json | null
+          updated_at?: string | null
+          version?: string | null
+          webhook_template?: Json | null
+        }
+        Relationships: []
+      }
       issues: {
         Row: {
           created_at: string | null
@@ -177,6 +438,7 @@ export type Database = {
           resolution_notes: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          search_vector: unknown
           severity: Database["public"]["Enums"]["issue_severity"]
           status: Database["public"]["Enums"]["issue_status"] | null
           tenant_id: string
@@ -192,6 +454,7 @@ export type Database = {
           resolution_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          search_vector?: unknown
           severity: Database["public"]["Enums"]["issue_severity"]
           status?: Database["public"]["Enums"]["issue_status"] | null
           tenant_id: string
@@ -207,6 +470,7 @@ export type Database = {
           resolution_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          search_vector?: unknown
           severity?: Database["public"]["Enums"]["issue_severity"]
           status?: Database["public"]["Enums"]["issue_status"] | null
           tenant_id?: string
@@ -247,6 +511,7 @@ export type Database = {
           job_number: string
           metadata: Json | null
           notes: string | null
+          search_vector: unknown
           status: Database["public"]["Enums"]["job_status"] | null
           tenant_id: string
           updated_at: string | null
@@ -261,6 +526,7 @@ export type Database = {
           job_number: string
           metadata?: Json | null
           notes?: string | null
+          search_vector?: unknown
           status?: Database["public"]["Enums"]["job_status"] | null
           tenant_id: string
           updated_at?: string | null
@@ -275,6 +541,7 @@ export type Database = {
           job_number?: string
           metadata?: Json | null
           notes?: string | null
+          search_vector?: unknown
           status?: Database["public"]["Enums"]["job_status"] | null
           tenant_id?: string
           updated_at?: string | null
@@ -321,6 +588,44 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      monthly_reset_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          previous_count: number
+          reset_date: string
+          reset_successful: boolean
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          previous_count: number
+          reset_date?: string
+          reset_successful?: boolean
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          previous_count?: number
+          reset_date?: string
+          reset_successful?: boolean
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_reset_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -393,44 +698,6 @@ export type Database = {
           },
         ]
       }
-      monthly_reset_logs: {
-        Row: {
-          created_at: string
-          error_message: string | null
-          id: string
-          previous_count: number
-          reset_date: string
-          reset_successful: boolean
-          tenant_id: string
-        }
-        Insert: {
-          created_at?: string
-          error_message?: string | null
-          id?: string
-          previous_count: number
-          reset_date?: string
-          reset_successful?: boolean
-          tenant_id: string
-        }
-        Update: {
-          created_at?: string
-          error_message?: string | null
-          id?: string
-          previous_count?: number
-          reset_date?: string
-          reset_successful?: boolean
-          tenant_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "monthly_reset_logs_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       operation_resources: {
         Row: {
           created_at: string | null
@@ -487,6 +754,7 @@ export type Database = {
           notes: string | null
           operation_name: string
           part_id: string
+          search_vector: unknown
           sequence: number
           status: Database["public"]["Enums"]["task_status"] | null
           tenant_id: string
@@ -505,6 +773,7 @@ export type Database = {
           notes?: string | null
           operation_name: string
           part_id: string
+          search_vector?: unknown
           sequence: number
           status?: Database["public"]["Enums"]["task_status"] | null
           tenant_id: string
@@ -523,6 +792,7 @@ export type Database = {
           notes?: string | null
           operation_name?: string
           part_id?: string
+          search_vector?: unknown
           sequence?: number
           status?: Database["public"]["Enums"]["task_status"] | null
           tenant_id?: string
@@ -566,6 +836,7 @@ export type Database = {
           parent_part_id: string | null
           part_number: string
           quantity: number | null
+          search_vector: unknown
           status: Database["public"]["Enums"]["job_status"] | null
           tenant_id: string
           updated_at: string | null
@@ -583,6 +854,7 @@ export type Database = {
           parent_part_id?: string | null
           part_number: string
           quantity?: number | null
+          search_vector?: unknown
           status?: Database["public"]["Enums"]["job_status"] | null
           tenant_id: string
           updated_at?: string | null
@@ -600,6 +872,7 @@ export type Database = {
           parent_part_id?: string | null
           part_number?: string
           quantity?: number | null
+          search_vector?: unknown
           status?: Database["public"]["Enums"]["job_status"] | null
           tenant_id?: string
           updated_at?: string | null
@@ -636,10 +909,12 @@ export type Database = {
           full_name: string
           id: string
           is_machine: boolean | null
+          is_root_admin: boolean | null
           mock_data_imported: boolean | null
           onboarding_completed: boolean | null
           onboarding_step: number | null
           role: Database["public"]["Enums"]["app_role"]
+          search_vector: unknown
           tenant_id: string
           tour_completed: boolean | null
           updated_at: string | null
@@ -652,10 +927,12 @@ export type Database = {
           full_name: string
           id: string
           is_machine?: boolean | null
+          is_root_admin?: boolean | null
           mock_data_imported?: boolean | null
           onboarding_completed?: boolean | null
           onboarding_step?: number | null
           role: Database["public"]["Enums"]["app_role"]
+          search_vector?: unknown
           tenant_id: string
           tour_completed?: boolean | null
           updated_at?: string | null
@@ -668,10 +945,12 @@ export type Database = {
           full_name?: string
           id?: string
           is_machine?: boolean | null
+          is_root_admin?: boolean | null
           mock_data_imported?: boolean | null
           onboarding_completed?: boolean | null
           onboarding_step?: number | null
           role?: Database["public"]["Enums"]["app_role"]
+          search_vector?: unknown
           tenant_id?: string
           tour_completed?: boolean | null
           updated_at?: string | null
@@ -724,6 +1003,95 @@ export type Database = {
         }
         Relationships: []
       }
+      substep_template_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          notes: string | null
+          sequence: number
+          template_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          sequence: number
+          template_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          sequence?: number
+          template_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "substep_template_items_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "substep_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      substep_templates: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_global: boolean | null
+          name: string
+          operation_type: string | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_global?: boolean | null
+          name: string
+          operation_type?: string | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_global?: boolean | null
+          name?: string
+          operation_type?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "substep_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "substep_templates_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       substeps: {
         Row: {
           completed_at: string | null
@@ -769,6 +1137,7 @@ export type Database = {
       tenants: {
         Row: {
           billing_email: string | null
+          company_name: string | null
           created_at: string | null
           current_jobs: number | null
           current_parts_this_month: number | null
@@ -788,6 +1157,7 @@ export type Database = {
         }
         Insert: {
           billing_email?: string | null
+          company_name?: string | null
           created_at?: string | null
           current_jobs?: number | null
           current_parts_this_month?: number | null
@@ -807,6 +1177,7 @@ export type Database = {
         }
         Update: {
           billing_email?: string | null
+          company_name?: string | null
           created_at?: string | null
           current_jobs?: number | null
           current_parts_this_month?: number | null
@@ -985,13 +1356,107 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      issues_with_context: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          creator_name: string | null
+          customer: string | null
+          description: string | null
+          id: string | null
+          image_paths: string[] | null
+          job_id: string | null
+          job_number: string | null
+          operation_id: string | null
+          operation_name: string | null
+          part_id: string | null
+          part_number: string | null
+          resolution_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_name: string | null
+          search_vector: unknown
+          severity: Database["public"]["Enums"]["issue_severity"] | null
+          status: Database["public"]["Enums"]["issue_status"] | null
+          tenant_id: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issues_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issues_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issues_task_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: false
+            referencedRelation: "operations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parts_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_part_id_fkey"
+            columns: ["part_id"]
+            isOneToOne: false
+            referencedRelation: "parts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       can_create_job: { Args: { p_tenant_id: string }; Returns: boolean }
       can_create_parts: {
         Args: { p_quantity?: number; p_tenant_id: string }
         Returns: boolean
+      }
+      check_jobs_due_soon: { Args: never; Returns: number }
+      create_notification: {
+        Args: {
+          p_link?: string
+          p_message: string
+          p_metadata?: Json
+          p_reference_id?: string
+          p_reference_type?: string
+          p_severity: string
+          p_tenant_id: string
+          p_title: string
+          p_type: string
+          p_user_id: string
+        }
+        Returns: string
+      }
+      dismiss_notification: {
+        Args: { p_notification_id: string }
+        Returns: undefined
+      }
+      get_cell_wip_count: {
+        Args: { cell_id_param: string; tenant_id_param: string }
+        Returns: number
+      }
+      get_job_issue_summary: {
+        Args: { job_id_param: string }
+        Returns: {
+          highest_severity: Database["public"]["Enums"]["issue_severity"]
+          pending_count: number
+          total_count: number
+        }[]
       }
       get_my_tenant_subscription: {
         Args: never
@@ -1005,6 +1470,24 @@ export type Database = {
           plan: Database["public"]["Enums"]["subscription_plan"]
           status: Database["public"]["Enums"]["subscription_status"]
           tenant_id: string
+        }[]
+      }
+      get_part_issue_summary: {
+        Args: { part_id_param: string }
+        Returns: {
+          highest_severity: Database["public"]["Enums"]["issue_severity"]
+          pending_count: number
+          total_count: number
+        }[]
+      }
+      get_tenant_info: {
+        Args: never
+        Returns: {
+          company_name: string
+          id: string
+          name: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          status: Database["public"]["Enums"]["subscription_status"]
         }[]
       }
       get_tenant_quota: {
@@ -1035,6 +1518,24 @@ export type Database = {
         Returns: Database["public"]["Enums"]["app_role"]
       }
       get_user_tenant_id: { Args: never; Returns: string }
+      is_root_admin: { Args: never; Returns: boolean }
+      list_all_tenants: {
+        Args: never
+        Returns: {
+          company_name: string
+          created_at: string
+          id: string
+          name: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          status: Database["public"]["Enums"]["subscription_status"]
+          user_count: number
+        }[]
+      }
+      mark_all_notifications_read: { Args: never; Returns: number }
+      mark_notification_read: {
+        Args: { p_notification_id: string }
+        Returns: undefined
+      }
       reset_monthly_parts_counters: {
         Args: never
         Returns: {
@@ -1044,45 +1545,32 @@ export type Database = {
           tenant_id: string
         }[]
       }
-      check_jobs_due_soon: {
-        Args: never
-        Returns: number
-      }
-      create_notification: {
-        Args: {
-          p_tenant_id: string
-          p_user_id: string | null
-          p_type: string
-          p_severity: string
-          p_title: string
-          p_message: string
-          p_link?: string | null
-          p_reference_type?: string | null
-          p_reference_id?: string | null
-          p_metadata?: Json
-        }
-        Returns: string
-      }
-      dismiss_notification: {
-        Args: { p_notification_id: string }
-        Returns: undefined
-      }
-      mark_all_notifications_read: {
-        Args: never
-        Returns: number
-      }
-      mark_notification_read: {
-        Args: { p_notification_id: string }
-        Returns: undefined
-      }
+      set_active_tenant: { Args: { p_tenant_id: string }; Returns: undefined }
       toggle_notification_pin: {
         Args: { p_notification_id: string }
         Returns: boolean
+      }
+      update_tenant_storage_usage: {
+        Args: {
+          p_operation?: string
+          p_size_bytes: number
+          p_tenant_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
       app_role: "operator" | "admin"
       assignment_status: "assigned" | "accepted" | "in_progress" | "completed"
+      integration_category:
+        | "erp"
+        | "accounting"
+        | "crm"
+        | "inventory"
+        | "shipping"
+        | "analytics"
+        | "other"
+      integration_status: "draft" | "published" | "deprecated" | "archived"
       issue_severity: "low" | "medium" | "high" | "critical"
       issue_status: "pending" | "approved" | "rejected" | "closed"
       job_status: "not_started" | "in_progress" | "completed" | "on_hold"
@@ -1218,6 +1706,16 @@ export const Constants = {
     Enums: {
       app_role: ["operator", "admin"],
       assignment_status: ["assigned", "accepted", "in_progress", "completed"],
+      integration_category: [
+        "erp",
+        "accounting",
+        "crm",
+        "inventory",
+        "shipping",
+        "analytics",
+        "other",
+      ],
+      integration_status: ["draft", "published", "deprecated", "archived"],
       issue_severity: ["low", "medium", "high", "critical"],
       issue_status: ["pending", "approved", "rejected", "closed"],
       job_status: ["not_started", "in_progress", "completed", "on_hold"],
