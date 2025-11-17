@@ -4,10 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-export type PlanType = 'free' | 'pro';
+export type PlanType = 'free' | 'pro' | 'premium';
 
 interface PlanSelectionProps {
   onPlanSelect: (plan: PlanType) => void;
+  onSkip?: () => void;
   defaultPlan?: PlanType;
 }
 
@@ -15,52 +16,72 @@ interface Plan {
   type: PlanType;
   name: string;
   price: string;
+  period?: string;
   description: string;
   features: string[];
   recommended?: boolean;
   badge?: string;
+  requiresContact?: boolean;
 }
 
 const plans: Plan[] = [
   {
     type: 'free',
-    name: 'Free Plan',
+    name: 'Free',
     price: '$0',
-    description: 'Perfect for getting started with Eryxon MES',
-    badge: 'Best for Small Teams',
+    period: 'forever',
+    description: 'Perfect for getting started',
+    badge: 'Current Plan',
     features: [
-      'Up to 5 operators',
-      'Unlimited jobs and parts tracking',
-      'Real-time work queue',
-      'Basic time tracking',
-      'Mobile-friendly interface',
-      'STEP and PDF file viewers',
-      'Issue reporting',
+      'All features included',
+      'Up to 100 jobs per month',
+      'Up to 1,000 parts per month',
+      'Limited storage',
+      'Multi-tenant architecture',
+      'HTTPS traffic only',
       'Email support',
+      'Documentation access',
     ],
     recommended: true,
   },
   {
     type: 'pro',
-    name: 'Pro Plan',
-    price: '$49',
-    description: 'Advanced features for growing metal fabrication shops',
+    name: 'Pro',
+    price: 'Contact Us',
+    description: 'For growing manufacturing teams',
     badge: 'Most Popular',
     features: [
-      'Everything in Free, plus:',
-      'Unlimited operators',
-      'Advanced analytics and reporting',
-      'Custom fields and metadata',
-      'API access and webhooks',
-      'Multi-tenant management',
-      'Priority support',
-      'Custom integrations',
-      'Advanced QRM metrics',
+      'Everything in Free',
+      'Unlimited jobs & parts',
+      'Tiered storage limits',
+      'Storage upgrade options',
+      'Multi-tenant architecture',
+      'Row-level security',
+      'Priority email support',
+      'API access',
     ],
+    requiresContact: true,
+  },
+  {
+    type: 'premium',
+    name: 'Premium',
+    price: 'Custom',
+    description: 'Enterprise-grade solution',
+    features: [
+      'Everything in Pro',
+      'Single-tenant deployment',
+      'Self-hosted option',
+      'Completely air-gapped',
+      'SSO integration',
+      'Unlimited storage',
+      'Dedicated infrastructure',
+      'Premium support',
+    ],
+    requiresContact: true,
   },
 ];
 
-export function PlanSelection({ onPlanSelect, defaultPlan = 'free' }: PlanSelectionProps) {
+export function PlanSelection({ onPlanSelect, onSkip, defaultPlan = 'free' }: PlanSelectionProps) {
   const [selectedPlan, setSelectedPlan] = useState<PlanType>(defaultPlan);
 
   const handleSelectPlan = (plan: PlanType) => {
@@ -68,7 +89,26 @@ export function PlanSelection({ onPlanSelect, defaultPlan = 'free' }: PlanSelect
   };
 
   const handleContinue = () => {
-    onPlanSelect(selectedPlan);
+    const selectedPlanData = plans.find(p => p.type === selectedPlan);
+
+    if (selectedPlanData?.requiresContact) {
+      // For Pro/Premium, open email to request upgrade
+      const subject = `Upgrade Request: ${selectedPlanData.name} Plan`;
+      const body = `Hello,
+
+I would like to request an upgrade to the ${selectedPlanData.name} plan during onboarding.
+
+Please provide me with more information about the upgrade process.
+
+Thank you!`;
+
+      window.location.href = `mailto:office@sheetmetalconnect.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+      // Continue with free plan but note the request
+      onPlanSelect('free');
+    } else {
+      onPlanSelect(selectedPlan);
+    }
   };
 
   return (
@@ -80,7 +120,7 @@ export function PlanSelection({ onPlanSelect, defaultPlan = 'free' }: PlanSelect
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-3 gap-6">
         {plans.map((plan) => (
           <Card
             key={plan.type}
@@ -103,8 +143,8 @@ export function PlanSelection({ onPlanSelect, defaultPlan = 'free' }: PlanSelect
               <CardTitle className="text-2xl">{plan.name}</CardTitle>
               <div className="pt-2">
                 <span className="text-4xl font-bold">{plan.price}</span>
-                {plan.type === 'pro' && (
-                  <span className="text-muted-foreground">/month</span>
+                {plan.period && (
+                  <span className="text-muted-foreground"> {plan.period}</span>
                 )}
               </div>
               <CardDescription className="pt-2">{plan.description}</CardDescription>
@@ -132,14 +172,21 @@ export function PlanSelection({ onPlanSelect, defaultPlan = 'free' }: PlanSelect
         ))}
       </div>
 
-      <div className="flex justify-center pt-4">
+      <div className="flex justify-center gap-3 pt-4">
         <Button size="lg" onClick={handleContinue} className="min-w-[200px]">
-          Continue with {selectedPlan === 'free' ? 'Free' : 'Pro'} Plan
+          {selectedPlan === 'free' ? 'Continue with Free Plan' : `Request ${plans.find(p => p.type === selectedPlan)?.name} Plan`}
         </Button>
+        {onSkip && (
+          <Button size="lg" variant="outline" onClick={onSkip}>
+            Skip for Now
+          </Button>
+        )}
       </div>
 
       <div className="text-center text-sm text-muted-foreground">
-        <p>No credit card required for Free plan • Cancel anytime • 30-day money-back guarantee</p>
+        <p>
+          No credit card required • Upgrade anytime
+        </p>
       </div>
     </div>
   );

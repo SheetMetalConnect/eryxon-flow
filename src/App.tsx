@@ -13,6 +13,8 @@ import MyIssues from "./pages/operator/MyIssues";
 import Dashboard from "./pages/admin/Dashboard";
 import IssueQueue from "./pages/admin/IssueQueue";
 import ConfigStages from "./pages/admin/ConfigStages";
+import ConfigMaterials from "./pages/admin/ConfigMaterials";
+import ConfigResources from "./pages/admin/ConfigResources";
 import ConfigUsers from "./pages/admin/ConfigUsers";
 import Assignments from "./pages/admin/Assignments";
 import ConfigApiKeys from "./pages/admin/ConfigApiKeys";
@@ -22,6 +24,7 @@ import JobCreate from "./pages/admin/JobCreate";
 import Parts from "./pages/admin/Parts";
 import ApiDocs from "./pages/ApiDocs";
 import Pricing from "./pages/Pricing";
+import { MyPlan } from "./pages/MyPlan";
 import NotFound from "./pages/NotFound";
 import { OnboardingWizard } from "./components/onboarding";
 import { Loader2 } from "lucide-react";
@@ -127,10 +130,46 @@ function AppRoutes() {
       />
 
       <Route
+        path="/admin/stages"
+        element={
+          <ProtectedRoute adminOnly>
+            <ConfigStages />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/admin/config/stages"
         element={
           <ProtectedRoute adminOnly>
             <ConfigStages />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/materials"
+        element={
+          <ProtectedRoute adminOnly>
+            <ConfigMaterials />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/resources"
+        element={
+          <ProtectedRoute adminOnly>
+            <ConfigResources />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute adminOnly>
+            <ConfigUsers />
           </ProtectedRoute>
         }
       />
@@ -221,6 +260,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Pricing />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/my-plan"
+        element={
+          <ProtectedRoute adminOnly>
+            <MyPlan />
           </ProtectedRoute>
         }
       />

@@ -43,7 +43,16 @@
     "partsManagement": "Onderdelenbeheer",
     "issueQueue": "Probleemwachtrij",
     "operatorAssignments": "Operatortoewijzingen",
-    "apiDocumentation": "API-documentatie"
+    "apiDocumentation": "API-documentatie",
+    "pricing": "Prijzen",
+    "myPlan": "Mijn abonnement"
+  },
+  "subscription": {
+    "currentPlan": "Huidig ​​abonnement",
+    "upgradePlan": "Abonnement upgraden",
+    "freePlan": "Gratis abonnement",
+    "proPlan": "Pro-abonnement",
+    "premiumPlan": "Premium-abonnement"
   },
   "dashboard": {
     "title": "Dashboard",

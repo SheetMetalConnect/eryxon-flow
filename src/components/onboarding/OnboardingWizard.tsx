@@ -7,6 +7,7 @@ import { MockDataImport } from './MockDataImport';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useSubscription } from '@/hooks/useSubscription';
 
 const steps = [
   { id: 1, name: 'Choose Plan', description: 'Select your subscription' },
@@ -17,6 +18,7 @@ const steps = [
 export function OnboardingWizard() {
   const navigate = useNavigate();
   const { profile } = useAuth();
+  const { subscription } = useSubscription();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedPlan, setSelectedPlan] = useState<PlanType>('free');
   const [isUpdating, setIsUpdating] = useState(false);
@@ -26,10 +28,10 @@ export function OnboardingWizard() {
     if (profile?.onboarding_step) {
       setCurrentStep(profile.onboarding_step);
     }
-    if (profile?.plan_type) {
-      setSelectedPlan(profile.plan_type as PlanType);
+    if (subscription?.plan) {
+      setSelectedPlan(subscription.plan);
     }
-  }, [profile]);
+  }, [profile, subscription]);
 
   const updateOnboardingProgress = async (step: number, additionalData?: Record<string, any>) => {
     if (!profile?.id) return;
@@ -57,7 +59,28 @@ export function OnboardingWizard() {
 
   const handlePlanSelect = async (plan: PlanType) => {
     setSelectedPlan(plan);
-    await updateOnboardingProgress(2, { plan_type: plan });
+
+    // Update tenant plan (not profile)
+    if (profile?.tenant_id) {
+      try {
+        const { error: tenantError } = await supabase
+          .from('tenants')
+          .update({ plan })
+          .eq('id', profile.tenant_id);
+
+        if (tenantError) {
+          console.error('Error updating tenant plan:', tenantError);
+          toast.error('Failed to update plan');
+          return;
+        }
+      } catch (error) {
+        console.error('Error updating tenant plan:', error);
+        toast.error('Failed to update plan');
+        return;
+      }
+    }
+
+    await updateOnboardingProgress(2);
     setCurrentStep(2);
   };
 

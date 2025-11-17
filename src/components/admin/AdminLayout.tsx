@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   Box,
   Drawer,
@@ -34,18 +33,21 @@ import {
   ExpandMore,
   People as PeopleIcon,
   ViewInAr as ViewInArIcon,
+  Build as BuildIcon,
   VpnKey as VpnKeyIcon,
   Webhook as WebhookIcon,
   Description as DescriptionIcon,
   Logout as LogoutIcon,
   Brightness4 as Brightness4Icon,
   Brightness7 as Brightness7Icon,
+  AttachMoney as AttachMoneyIcon,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useThemeMode } from '@/theme/ThemeProvider';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { AppTour } from '@/components/onboarding';
+import { useSubscription } from '@/hooks/useSubscription';
 
 const DRAWER_WIDTH = 260;
 
@@ -54,9 +56,9 @@ interface AdminLayoutProps {
 }
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
-  const { t } = useTranslation();
   const { profile, signOut } = useAuth();
   const { mode, toggleTheme } = useThemeMode();
+  const { subscription, getPlanDisplayName, canUpgrade } = useSubscription();
   const theme = useTheme();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -87,20 +89,23 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const isActive = (path: string) => location.pathname === path;
 
   const mainNavItems = [
-    { path: '/dashboard', label: t('navigation.dashboard'), icon: <DashboardIcon /> },
-    { path: '/work-queue', label: t('navigation.workQueue'), icon: <ListAltIcon /> },
-    { path: '/admin/jobs', label: t('navigation.jobs'), icon: <WorkIcon /> },
-    { path: '/admin/parts', label: t('navigation.parts'), icon: <InventoryIcon /> },
-    { path: '/admin/issues', label: t('navigation.issues'), icon: <ReportProblemIcon /> },
-    { path: '/admin/assignments', label: t('navigation.assignments'), icon: <AssignmentIcon /> },
+    { path: '/dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
+    { path: '/work-queue', label: 'Work Queue', icon: <ListAltIcon /> },
+    { path: '/admin/jobs', label: 'Jobs', icon: <WorkIcon /> },
+    { path: '/admin/parts', label: 'Parts', icon: <InventoryIcon /> },
+    { path: '/admin/issues', label: 'Issues', icon: <ReportProblemIcon /> },
+    { path: '/admin/assignments', label: 'Assignments', icon: <AssignmentIcon /> },
+    { path: '/pricing', label: 'Pricing', icon: <AttachMoneyIcon /> },
   ];
 
   const configNavItems = [
-    { path: '/admin/config/users', label: t('navigation.users'), icon: <PeopleIcon /> },
-    { path: '/admin/config/stages', label: t('navigation.stages'), icon: <ViewInArIcon /> },
-    { path: '/admin/config/api-keys', label: t('navigation.apiKeys'), icon: <VpnKeyIcon /> },
-    { path: '/admin/config/webhooks', label: t('navigation.webhooks'), icon: <WebhookIcon /> },
-    { path: '/api-docs', label: t('navigation.apiDocs'), icon: <DescriptionIcon /> },
+    { path: '/admin/users', label: 'Users', icon: <PeopleIcon /> },
+    { path: '/admin/stages', label: 'Stages', icon: <ViewInArIcon /> },
+    { path: '/admin/materials', label: 'Materials', icon: <InventoryIcon /> },
+    { path: '/admin/resources', label: 'Resources', icon: <BuildIcon /> },
+    { path: '/admin/config/api-keys', label: 'API Keys', icon: <VpnKeyIcon /> },
+    { path: '/admin/config/webhooks', label: 'Webhooks', icon: <WebhookIcon /> },
+    { path: '/api-docs', label: 'API Docs', icon: <DescriptionIcon /> },
   ];
 
   const drawer = (
@@ -133,10 +138,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         </Box>
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2, fontSize: '1rem' }}>
-            {t('app.name')}
+            Sheet Metal Connect
           </Typography>
           <Typography variant="caption" sx={{ opacity: 0.9 }}>
-            {t('app.adminPortal')}
+            Admin Portal
           </Typography>
         </Box>
       </Box>
@@ -201,7 +206,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               <SettingsIcon />
             </ListItemIcon>
             <ListItemText
-              primary={t('navigation.configuration')}
+              primary="Configuration"
               primaryTypographyProps={{
                 fontWeight: 600,
                 fontSize: '0.95rem',
@@ -282,21 +287,24 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
           {/* Page Title - Dynamic based on location */}
           <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 600 }}>
-            {location.pathname === '/dashboard' && t('navigation.dashboard')}
-            {location.pathname === '/work-queue' && t('navigation.workQueue')}
-            {location.pathname.startsWith('/admin/jobs') && t('navigation.jobsManagement')}
-            {location.pathname.startsWith('/admin/parts') && t('navigation.partsManagement')}
-            {location.pathname.startsWith('/admin/issues') && t('navigation.issueQueue')}
-            {location.pathname.startsWith('/admin/assignments') && t('navigation.operatorAssignments')}
-            {location.pathname.startsWith('/admin/config') && t('navigation.configuration')}
-            {location.pathname === '/api-docs' && t('navigation.apiDocumentation')}
+            {location.pathname === '/dashboard' && 'Dashboard'}
+            {location.pathname === '/work-queue' && 'Work Queue'}
+            {location.pathname.startsWith('/admin/jobs') && 'Jobs Management'}
+            {location.pathname.startsWith('/admin/parts') && 'Parts Management'}
+            {location.pathname.startsWith('/admin/issues') && 'Issue Queue'}
+            {location.pathname.startsWith('/admin/assignments') && 'Operator Assignments'}
+            {location.pathname === '/admin/users' && 'Users'}
+            {location.pathname === '/admin/stages' && 'Stages'}
+            {location.pathname === '/admin/materials' && 'Materials'}
+            {location.pathname === '/admin/resources' && 'Resources'}
+            {location.pathname.startsWith('/admin/config') && 'Configuration'}
+            {location.pathname === '/api-docs' && 'API Documentation'}
+            {location.pathname === '/pricing' && 'Pricing'}
+            {location.pathname === '/my-plan' && 'My Plan'}
           </Typography>
 
           {/* Right Side Actions */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {/* Language Switcher */}
-            <LanguageSwitcher />
-
             {/* Theme Toggle */}
             <IconButton onClick={toggleTheme} color="inherit">
               {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
@@ -327,11 +335,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 elevation: 3,
                 sx: {
                   mt: 1.5,
-                  minWidth: 220,
+                  minWidth: 260,
                   borderRadius: 2,
                 },
               }}
             >
+              {/* User Info Section */}
               <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
                 <Typography variant="body2" fontWeight={600}>
                   {profile?.full_name}
@@ -339,28 +348,87 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 <Typography variant="caption" color="text.secondary">
                   {profile?.email}
                 </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    display: 'block',
-                    mt: 0.5,
-                    px: 1,
-                    py: 0.25,
-                    borderRadius: 0.5,
-                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                    color: theme.palette.primary.main,
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    fontSize: '0.65rem',
-                    width: 'fit-content',
-                  }}
-                >
-                  {t('app.admin')}
-                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, mt: 0.5, alignItems: 'center' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      px: 1,
+                      py: 0.25,
+                      borderRadius: 0.5,
+                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      color: theme.palette.primary.main,
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      fontSize: '0.65rem',
+                      width: 'fit-content',
+                    }}
+                  >
+                    Admin
+                  </Typography>
+                </Box>
               </Box>
+
+              {/* Current Plan Section */}
+              {subscription && (
+                <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                    Current Plan
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Chip
+                      label={getPlanDisplayName(subscription.plan)}
+                      size="small"
+                      sx={{
+                        fontWeight: 600,
+                        background: subscription.plan === 'premium'
+                          ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                          : subscription.plan === 'pro'
+                          ? '#8b5cf6'
+                          : '#64748b',
+                        color: '#fff',
+                      }}
+                    />
+                  </Box>
+                  {canUpgrade && (
+                    <Button
+                      component={Link}
+                      to="/my-plan"
+                      onClick={handleMenuClose}
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      startIcon={<UpgradeIcon />}
+                      sx={{
+                        mt: 1,
+                        textTransform: 'none',
+                        borderColor: theme.palette.primary.main,
+                        color: theme.palette.primary.main,
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                          borderColor: theme.palette.primary.dark,
+                        },
+                      }}
+                    >
+                      Upgrade Plan
+                    </Button>
+                  )}
+                </Box>
+              )}
+
+              {/* Menu Actions */}
+              <MenuItem
+                component={Link}
+                to="/my-plan"
+                onClick={handleMenuClose}
+                sx={{ gap: 1.5, py: 1.5 }}
+              >
+                <AttachMoneyIcon fontSize="small" />
+                My Plan
+              </MenuItem>
+              <Divider />
               <MenuItem onClick={handleSignOut} sx={{ gap: 1.5, py: 1.5 }}>
                 <LogoutIcon fontSize="small" />
-                {t('auth.signOut')}
+                Sign Out
               </MenuItem>
             </Menu>
           </Box>
