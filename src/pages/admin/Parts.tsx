@@ -21,15 +21,31 @@ import {
 import { Badge } from "@/components/ui/badge";
 import PartDetailModal from "@/components/admin/PartDetailModal";
 import Layout from "@/components/Layout";
-import { Package, ChevronRight } from "lucide-react";
+import { Package, ChevronRight, Box, FileText } from "lucide-react";
+import { STEPViewer } from "@/components/STEPViewer";
+import { PDFViewer } from "@/components/PDFViewer";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Parts() {
+  const { toast } = useToast();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [materialFilter, setMaterialFilter] = useState<string>("all");
   const [jobFilter, setJobFilter] = useState<string>("all");
   const [assemblyFilter, setAssemblyFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
+
+  // File viewer state
+  const [fileViewerOpen, setFileViewerOpen] = useState(false);
+  const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(null);
+  const [currentFileType, setCurrentFileType] = useState<'step' | 'pdf' | null>(null);
+  const [currentFileTitle, setCurrentFileTitle] = useState<string>("");
 
   const { data: materials } = useQuery({
     queryKey: ["materials"],
@@ -118,13 +134,82 @@ export default function Parts() {
 
       const partsWithChildren = new Set(allChildRelations?.map(p => p.parent_part_id) || []);
 
-      return data.map((part: any) => ({
-        ...part,
-        operations_count: part.operations?.[0]?.count || 0,
-        has_children: partsWithChildren.has(part.id),
-      }));
+      return data.map((part: any) => {
+        const files = part.file_paths || [];
+        const stepFiles = files.filter((f: string) => {
+          const ext = f.split('.').pop()?.toLowerCase();
+          return ext === 'step' || ext === 'stp';
+        });
+        const pdfFiles = files.filter((f: string) => f.split('.').pop()?.toLowerCase() === 'pdf');
+
+        return {
+          ...part,
+          operations_count: part.operations?.[0]?.count || 0,
+          has_children: partsWithChildren.has(part.id),
+          stepFiles,
+          pdfFiles,
+          hasSTEP: stepFiles.length > 0,
+          hasPDF: pdfFiles.length > 0,
+        };
+      });
     },
   });
+
+  // Handle viewing file (STEP or PDF)
+  const handleViewFile = async (filePath: string) => {
+    try {
+      const fileExt = filePath.split(".").pop()?.toLowerCase();
+      const fileType = fileExt === "pdf" ? "pdf" : (fileExt === "step" || fileExt === "stp") ? "step" : null;
+
+      if (!fileType) {
+        toast({
+          title: "Error",
+          description: "Unsupported file type",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create signed URL
+      const { data, error } = await supabase.storage
+        .from("parts-cad")
+        .createSignedUrl(filePath, 3600);
+
+      if (error) throw error;
+      if (!data?.signedUrl) throw new Error("Failed to generate signed URL");
+
+      // For STEP files, fetch as blob to avoid CORS issues
+      let viewUrl = data.signedUrl;
+      if (fileType === "step") {
+        const response = await fetch(data.signedUrl);
+        const blob = await response.blob();
+        viewUrl = URL.createObjectURL(blob);
+      }
+
+      const fileName = filePath.split("/").pop() || "File";
+      setCurrentFileUrl(viewUrl);
+      setCurrentFileType(fileType);
+      setCurrentFileTitle(fileName);
+      setFileViewerOpen(true);
+    } catch (error: any) {
+      console.error("Error opening file:", error);
+      toast({
+        title: "Error",
+        description: "Failed to open file viewer",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleFileDialogClose = () => {
+    setFileViewerOpen(false);
+    if (currentFileUrl && currentFileType === "step") {
+      URL.revokeObjectURL(currentFileUrl);
+    }
+    setCurrentFileUrl(null);
+    setCurrentFileType(null);
+    setCurrentFileTitle("");
+  };
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -220,6 +305,7 @@ export default function Parts() {
               <TableHead>Status</TableHead>
               <TableHead>Current Cell</TableHead>
               <TableHead className="text-right">Operations</TableHead>
+              <TableHead>Files</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -265,6 +351,35 @@ export default function Parts() {
                   )}
                 </TableCell>
                 <TableCell className="text-right">{part.operations_count}</TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    {part.hasSTEP && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => handleViewFile(part.stepFiles[0])}
+                        title={`${part.stepFiles.length} STEP file(s)`}
+                      >
+                        <Box className="h-5 w-5 text-blue-600" />
+                      </Button>
+                    )}
+                    {part.hasPDF && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => handleViewFile(part.pdfFiles[0])}
+                        title={`${part.pdfFiles.length} PDF file(s)`}
+                      >
+                        <FileText className="h-5 w-5 text-red-600" />
+                      </Button>
+                    )}
+                    {!part.hasSTEP && !part.hasPDF && (
+                      <span className="text-xs text-gray-400">-</span>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell className="text-right">
                   <Button
                     variant="outline"
@@ -278,7 +393,7 @@ export default function Parts() {
             ))}
             {parts?.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-gray-500 py-8">
+                <TableCell colSpan={9} className="text-center text-gray-500 py-8">
                   No parts found
                 </TableCell>
               </TableRow>
@@ -294,6 +409,23 @@ export default function Parts() {
           onUpdate={() => refetch()}
         />
       )}
+
+      {/* File Viewer Dialog */}
+      <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
+        <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0">
+          <DialogHeader className="px-6 py-4 border-b">
+            <DialogTitle>{currentFileTitle}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden">
+            {currentFileUrl && currentFileType === "step" && (
+              <STEPViewer url={currentFileUrl} title={currentFileTitle} />
+            )}
+            {currentFileUrl && currentFileType === "pdf" && (
+              <PDFViewer url={currentFileUrl} title={currentFileTitle} />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }
