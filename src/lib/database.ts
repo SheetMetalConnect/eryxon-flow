@@ -255,7 +255,7 @@ export async function stopTimeTracking(operationId: string, operatorId: string) 
   // Find active time entry
   const { data: entry } = await supabase
     .from("time_entries")
-    .select("id, start_time")
+    .select("id, start_time, is_paused")
     .eq("operation_id", operationId)
     .eq("operator_id", operatorId)
     .is("end_time", null)
@@ -263,9 +263,46 @@ export async function stopTimeTracking(operationId: string, operatorId: string) 
 
   if (!entry) throw new Error("No active time entry found");
 
+  // If paused, close the current pause
+  if (entry.is_paused) {
+    const { data: activePause } = await supabase
+      .from("time_entry_pauses")
+      .select("id, paused_at")
+      .eq("time_entry_id", entry.id)
+      .is("resumed_at", null)
+      .maybeSingle();
+
+    if (activePause) {
+      const now = new Date();
+      const pausedAt = new Date(activePause.paused_at);
+      const pauseDuration = Math.round((now.getTime() - pausedAt.getTime()) / 1000); // seconds
+
+      await supabase
+        .from("time_entry_pauses")
+        .update({
+          resumed_at: now.toISOString(),
+          duration: pauseDuration,
+        })
+        .eq("id", activePause.id);
+    }
+  }
+
   const endTime = new Date();
   const startTime = new Date(entry.start_time);
-  const duration = Math.round((endTime.getTime() - startTime.getTime()) / 60000); // minutes
+
+  // Calculate total pause time
+  const { data: pauses } = await supabase
+    .from("time_entry_pauses")
+    .select("duration")
+    .eq("time_entry_id", entry.id)
+    .not("duration", "is", null);
+
+  const totalPauseSeconds = pauses?.reduce((sum, p) => sum + (p.duration || 0), 0) || 0;
+
+  // Calculate effective duration (total time - pause time)
+  const totalSeconds = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
+  const effectiveSeconds = totalSeconds - totalPauseSeconds;
+  const duration = Math.round(effectiveSeconds / 60); // minutes
 
   // Update time entry
   await supabase
@@ -273,6 +310,7 @@ export async function stopTimeTracking(operationId: string, operatorId: string) 
     .update({
       end_time: endTime.toISOString(),
       duration,
+      is_paused: false,
     })
     .eq("id", entry.id);
 
@@ -289,6 +327,77 @@ export async function stopTimeTracking(operationId: string, operatorId: string) 
       .update({ actual_time: (operation.actual_time || 0) + duration })
       .eq("id", operationId);
   }
+}
+
+export async function pauseTimeTracking(timeEntryId: string) {
+  // Check if already paused
+  const { data: entry } = await supabase
+    .from("time_entries")
+    .select("id, is_paused")
+    .eq("id", timeEntryId)
+    .is("end_time", null)
+    .single();
+
+  if (!entry) throw new Error("No active time entry found");
+  if (entry.is_paused) throw new Error("Time tracking is already paused");
+
+  // Create pause record
+  const { error: pauseError } = await supabase
+    .from("time_entry_pauses")
+    .insert({
+      time_entry_id: timeEntryId,
+      paused_at: new Date().toISOString(),
+    });
+
+  if (pauseError) throw pauseError;
+
+  // Update time entry to mark as paused
+  await supabase
+    .from("time_entries")
+    .update({ is_paused: true })
+    .eq("id", timeEntryId);
+}
+
+export async function resumeTimeTracking(timeEntryId: string) {
+  // Check if paused
+  const { data: entry } = await supabase
+    .from("time_entries")
+    .select("id, is_paused")
+    .eq("id", timeEntryId)
+    .is("end_time", null)
+    .single();
+
+  if (!entry) throw new Error("No active time entry found");
+  if (!entry.is_paused) throw new Error("Time tracking is not paused");
+
+  // Find the active pause
+  const { data: pauseRecord } = await supabase
+    .from("time_entry_pauses")
+    .select("id, paused_at")
+    .eq("time_entry_id", timeEntryId)
+    .is("resumed_at", null)
+    .single();
+
+  if (!pauseRecord) throw new Error("No active pause found");
+
+  const resumedAt = new Date();
+  const pausedAt = new Date(pauseRecord.paused_at);
+  const pauseDuration = Math.round((resumedAt.getTime() - pausedAt.getTime()) / 1000); // seconds
+
+  // Update pause record
+  await supabase
+    .from("time_entry_pauses")
+    .update({
+      resumed_at: resumedAt.toISOString(),
+      duration: pauseDuration,
+    })
+    .eq("id", pauseRecord.id);
+
+  // Update time entry to mark as not paused
+  await supabase
+    .from("time_entries")
+    .update({ is_paused: false })
+    .eq("id", timeEntryId);
 }
 
 export async function completeOperation(operationId: string, tenantId: string, operatorId?: string) {
