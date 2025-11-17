@@ -95,10 +95,10 @@ export default function Help() {
                 </Typography>
               </CardContent>
             </CardActionArea>
-          </Card>
-        </Grid>
+              </Card>
+            </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card elevation={2}>
             <CardActionArea href="/pricing">
               <CardContent sx={{ textAlign: 'center', py: 3 }}>
@@ -111,10 +111,10 @@ export default function Help() {
                 </Typography>
               </CardContent>
             </CardActionArea>
-          </Card>
-        </Grid>
+              </Card>
+            </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card elevation={2}>
             <CardActionArea
               onClick={() =>
@@ -134,10 +134,10 @@ export default function Help() {
                 </Typography>
               </CardContent>
             </CardActionArea>
-          </Card>
-        </Grid>
+              </Card>
+            </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card elevation={2}>
             <CardActionArea
               onClick={() =>
@@ -254,7 +254,7 @@ export default function Help() {
             </Typography>
 
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="subtitle1" gutterBottom fontWeight="600">
@@ -268,7 +268,7 @@ export default function Help() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="subtitle1" gutterBottom fontWeight="600">
@@ -282,7 +282,7 @@ export default function Help() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="subtitle1" gutterBottom fontWeight="600">
@@ -296,7 +296,7 @@ export default function Help() {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="subtitle1" gutterBottom fontWeight="600">

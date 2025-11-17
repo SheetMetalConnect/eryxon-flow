@@ -316,7 +316,7 @@ export const ActivityMonitor: React.FC = () => {
       {/* Statistics Cards */}
       {stats && (
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -336,7 +336,7 @@ export const ActivityMonitor: React.FC = () => {
             </Card>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -356,7 +356,7 @@ export const ActivityMonitor: React.FC = () => {
             </Card>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -376,7 +376,7 @@ export const ActivityMonitor: React.FC = () => {
             </Card>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -401,7 +401,7 @@ export const ActivityMonitor: React.FC = () => {
       {/* Filters and Controls */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField
               fullWidth
               size="small"
@@ -418,7 +418,7 @@ export const ActivityMonitor: React.FC = () => {
             />
           </Grid>
 
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <FormControl fullWidth size="small">
               <Select value={filterAction} onChange={(e) => setFilterAction(e.target.value)}>
                 <MenuItem value="all">All Actions</MenuItem>
@@ -431,7 +431,7 @@ export const ActivityMonitor: React.FC = () => {
             </FormControl>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <FormControl fullWidth size="small">
               <Select value={filterEntityType} onChange={(e) => setFilterEntityType(e.target.value)}>
                 <MenuItem value="all">All Entities</MenuItem>
@@ -444,7 +444,7 @@ export const ActivityMonitor: React.FC = () => {
             </FormControl>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <FormControl fullWidth size="small">
               <Select value={limit} onChange={(e) => setLimit(Number(e.target.value))}>
                 <MenuItem value={25}>Last 25</MenuItem>
