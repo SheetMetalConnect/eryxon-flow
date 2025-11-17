@@ -103,8 +103,6 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
     throw entriesError;
   }
 
-  console.log(`Fetched ${operations.length} operations with details`);
-
   // Map active entries to operations
   return operations.map((operation) => ({
     ...operation,

@@ -56,7 +56,6 @@ export async function triggerWebhook(
       return { success: false, error: result.error || 'Webhook dispatch failed' };
     }
 
-    console.log(`Webhook dispatched: ${eventType}`, result);
     return { success: true };
   } catch (error) {
     console.error('Error triggering webhook:', error);
