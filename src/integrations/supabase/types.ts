@@ -1426,7 +1426,20 @@ export type Database = {
         Args: { p_quantity?: number; p_tenant_id: string }
         Returns: boolean
       }
+      can_upload_file: {
+        Args: { p_file_size_bytes: number; p_tenant_id: string }
+        Returns: {
+          allowed: boolean
+          current_gb: number
+          max_gb: number
+          reason: string
+        }[]
+      }
       check_jobs_due_soon: { Args: never; Returns: number }
+      check_next_cell_capacity: {
+        Args: { current_cell_id: string; tenant_id_param: string }
+        Returns: Json
+      }
       create_notification: {
         Args: {
           p_link?: string
@@ -1445,6 +1458,41 @@ export type Database = {
       dismiss_notification: {
         Args: { p_notification_id: string }
         Returns: undefined
+      }
+      get_activity_logs: {
+        Args: {
+          p_action?: string
+          p_entity_type?: string
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+        }
+        Returns: {
+          action: string
+          changes: Json
+          created_at: string
+          description: string
+          entity_id: string
+          entity_name: string
+          entity_type: string
+          id: string
+          metadata: Json
+          user_email: string
+          user_name: string
+        }[]
+      }
+      get_activity_stats: {
+        Args: { p_end_date: string; p_start_date: string }
+        Returns: {
+          activities_by_action: Json
+          activities_by_entity: Json
+          total_activities: number
+          unique_users: number
+        }[]
+      }
+      get_cell_qrm_metrics: {
+        Args: { cell_id_param: string; tenant_id_param: string }
+        Returns: Json
       }
       get_cell_wip_count: {
         Args: { cell_id_param: string; tenant_id_param: string }
@@ -1478,6 +1526,16 @@ export type Database = {
           highest_severity: Database["public"]["Enums"]["issue_severity"]
           pending_count: number
           total_count: number
+        }[]
+      }
+      get_storage_quota: {
+        Args: never
+        Returns: {
+          current_mb: number
+          is_unlimited: boolean
+          max_mb: number
+          remaining_mb: number
+          used_percentage: number
         }[]
       }
       get_tenant_info: {

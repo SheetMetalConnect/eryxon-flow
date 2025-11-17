@@ -74,8 +74,8 @@ interface ActivityLog {
 interface ActivityStats {
   total_activities: number;
   unique_users: number;
-  activities_by_action: Record<string, number>;
-  activities_by_entity: Record<string, number>;
+  activities_by_action: any;
+  activities_by_entity: any;
 }
 
 export const ActivityMonitor: React.FC = () => {

@@ -20,7 +20,7 @@ interface TenantInfo {
   name: string;
   company_name: string | null;
   plan: "free" | "pro" | "premium";
-  status: "active" | "inactive" | "suspended";
+  status: "active" | "cancelled" | "suspended" | "trial";
 }
 
 interface AuthContextType {
@@ -82,12 +82,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, tenant_id, username, full_name, email, role, active, is_machine, is_root_admin")
         .eq("id", userId)
         .single();
 
       if (error) throw error;
-      setProfile(data);
+      setProfile(data as Profile);
 
       // Fetch tenant info after profile is loaded
       if (data) {

@@ -57,7 +57,7 @@ interface Substep {
   operation_id: string;
   name: string;
   sequence: number;
-  status: "not_started" | "in_progress" | "completed" | "blocked";
+  status: string;
   notes?: string;
   completed_at?: string;
   completed_by?: string;
@@ -111,14 +111,14 @@ function SortableSubstepItem({ substep, onStatusChange, onDelete, onNotesChange 
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notesValue, setNotesValue] = useState(substep.notes || "");
 
-  const statusConfig = {
+  const statusConfig: Record<string, { icon: any; color: string; bg: string; label: string }> = {
     not_started: { icon: Circle, color: "text-muted-foreground", bg: "bg-muted", label: "Not Started" },
     in_progress: { icon: PlayCircle, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950", label: "In Progress" },
     completed: { icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50 dark:bg-green-950", label: "Completed" },
     blocked: { icon: Ban, color: "text-red-600", bg: "bg-red-50 dark:bg-red-950", label: "Blocked" },
   };
 
-  const config = statusConfig[substep.status];
+  const config = statusConfig[substep.status] || statusConfig.not_started;
   const StatusIcon = config.icon;
 
   const handleSaveNotes = () => {

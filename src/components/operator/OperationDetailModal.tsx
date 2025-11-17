@@ -417,9 +417,9 @@ export default function OperationDetailModal({
           )}
 
           {/* Part Metadata */}
-          {operation.part.metadata && (
+          {(operation.part as any).metadata && (
             <EnhancedMetadataDisplay
-              metadata={operation.part.metadata}
+              metadata={(operation.part as any).metadata}
               title="Part Specifications"
               showTypeIndicator={true}
             />

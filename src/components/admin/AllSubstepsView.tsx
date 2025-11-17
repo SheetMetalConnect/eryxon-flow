@@ -85,13 +85,13 @@ export function AllSubstepsView() {
       .from("substeps")
       .select(`
         *,
-        operation:operations (
+        operations!inner (
           id,
           operation_name,
-          part:parts (
+          parts!inner (
             id,
             part_number,
-            job:jobs (
+            jobs!inner (
               id,
               job_number
             )
@@ -105,7 +105,22 @@ export function AllSubstepsView() {
       console.error("Error loading substeps:", error);
       toast.error(t("Failed to load substeps"));
     } else {
-      setSubsteps(data || []);
+      const transformedData = (data || []).map((item: any) => ({
+        ...item,
+        operation: {
+          id: item.operations.id,
+          operation_name: item.operations.operation_name,
+          part: {
+            id: item.operations.parts.id,
+            part_number: item.operations.parts.part_number,
+            job: {
+              id: item.operations.parts.jobs.id,
+              job_number: item.operations.parts.jobs.job_number,
+            },
+          },
+        },
+      }));
+      setSubsteps(transformedData);
     }
 
     setLoading(false);
