@@ -2,10 +2,13 @@ import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Mail, Shield, Server, Users, Zap } from "lucide-react";
+import { Check, Mail, Shield, Server, Users, Zap, ArrowRight } from "lucide-react";
+import { useSubscription } from "@/hooks/useSubscription";
+import { Link } from "react-router-dom";
 
 const pricingTiers = [
   {
+    id: "free",
     name: "Free",
     description: "Perfect for getting started",
     price: "$0",
@@ -14,7 +17,7 @@ const pricingTiers = [
       "All features included",
       "Up to 100 jobs per month",
       "Up to 1,000 parts per month",
-      "Limited storage",
+      "5 GB storage",
       "Multi-tenant architecture",
       "HTTPS traffic only",
       "Email support",
@@ -26,19 +29,21 @@ const pricingTiers = [
     gradient: false,
   },
   {
+    id: "pro",
     name: "Pro",
     description: "For growing manufacturing teams",
-    price: "Contact Us",
-    period: "",
+    price: "$499",
+    period: "month",
     features: [
       "Everything in Free",
       "Unlimited jobs & parts",
-      "Tiered storage limits",
+      "50 GB storage",
       "Storage upgrade options",
       "Multi-tenant architecture",
       "Row-level security",
       "Priority email support",
       "API access",
+      "Webhook integrations",
     ],
     cta: "Request Upgrade",
     icon: Zap,
@@ -46,19 +51,22 @@ const pricingTiers = [
     gradient: false,
   },
   {
+    id: "premium",
     name: "Premium",
     description: "Enterprise-grade solution",
-    price: "Custom",
-    period: "",
+    price: "$1,999",
+    period: "month",
     features: [
       "Everything in Pro",
+      "Unlimited storage",
       "Single-tenant deployment",
       "Self-hosted option",
       "Completely air-gapped",
       "SSO integration",
-      "Unlimited storage",
       "Dedicated infrastructure",
       "Premium support",
+      "Custom SLA",
+      "White-label options",
     ],
     cta: "Contact Sales",
     icon: Server,
@@ -68,11 +76,17 @@ const pricingTiers = [
 ];
 
 export default function Pricing() {
+  const { subscription, getPlanDisplayName } = useSubscription();
+  const currentPlan = subscription?.plan || 'free';
+
   const handleUpgradeRequest = (tierName: string) => {
     const subject = `Upgrade Request: ${tierName} Tier`;
     const body = `Hello,
 
 I would like to request an upgrade to the ${tierName} tier.
+
+Current Plan: ${getPlanDisplayName(currentPlan)}
+Tenant ID: ${subscription?.tenant_id || 'N/A'}
 
 Please provide me with more information about the upgrade process.
 
@@ -80,6 +94,8 @@ Thank you!`;
 
     window.location.href = `mailto:office@sheetmetalconnect.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
+
+  const isCurrentPlan = (tierId: string) => tierId === currentPlan;
 
   return (
     <Layout>
@@ -91,6 +107,18 @@ Thank you!`;
             Self-service pricing designed for manufacturers. No sales calls, no consultants.
             Sign up and go.
           </p>
+          {subscription && (
+            <div className="flex items-center justify-center gap-2">
+              <Badge variant="outline" className="text-sm py-1 px-3">
+                Current Plan: {getPlanDisplayName(currentPlan)}
+              </Badge>
+              <Link to="/my-plan">
+                <Button variant="link" size="sm" className="gap-1">
+                  View My Plan <ArrowRight className="h-3 w-3" />
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Security Banner */}
@@ -117,15 +145,23 @@ Thank you!`;
         <div className="grid md:grid-cols-3 gap-6">
           {pricingTiers.map((tier) => {
             const Icon = tier.icon;
+            const isCurrent = isCurrentPlan(tier.id);
 
             return (
               <Card
                 key={tier.name}
                 className={`relative flex flex-col ${
-                  tier.popular ? 'border-primary shadow-lg' : ''
-                } ${tier.gradient ? 'border-purple-500' : ''}`}
+                  isCurrent ? 'border-green-500 shadow-xl ring-2 ring-green-500/20' : ''
+                } ${tier.popular && !isCurrent ? 'border-primary shadow-lg' : ''} ${
+                  tier.gradient ? 'border-purple-500' : ''
+                }`}
               >
-                {tier.popular && (
+                {isCurrent && (
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-600">
+                    Current Plan
+                  </Badge>
+                )}
+                {tier.popular && !isCurrent && (
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
                     Most Popular
                   </Badge>
@@ -136,10 +172,12 @@ Thank you!`;
                     <div className={`p-2 rounded-lg ${
                       tier.gradient
                         ? 'bg-gradient-to-br from-purple-500 to-blue-500'
+                        : isCurrent
+                        ? 'bg-green-500/10'
                         : 'bg-primary/10'
                     }`}>
                       <Icon className={`h-6 w-6 ${
-                        tier.gradient ? 'text-white' : 'text-primary'
+                        tier.gradient ? 'text-white' : isCurrent ? 'text-green-600' : 'text-primary'
                       }`} />
                     </div>
                     <div>
@@ -162,7 +200,9 @@ Thank you!`;
                   <ul className="space-y-3">
                     {tier.features.map((feature) => (
                       <li key={feature} className="flex items-start gap-2">
-                        <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                        <Check className={`h-5 w-5 flex-shrink-0 mt-0.5 ${
+                          isCurrent ? 'text-green-600' : 'text-primary'
+                        }`} />
                         <span className="text-sm">{feature}</span>
                       </li>
                     ))}
@@ -170,15 +210,26 @@ Thank you!`;
                 </CardContent>
 
                 <CardFooter>
-                  <Button
-                    className="w-full"
-                    variant={tier.popular ? 'default' : 'outline'}
-                    onClick={() => handleUpgradeRequest(tier.name)}
-                    disabled={tier.name === 'Free'}
-                  >
-                    <Mail className="h-4 w-4 mr-2" />
-                    {tier.cta}
-                  </Button>
+                  {isCurrent ? (
+                    <Link to="/my-plan" className="w-full">
+                      <Button
+                        className="w-full"
+                        variant="outline"
+                      >
+                        <ArrowRight className="h-4 w-4 mr-2" />
+                        Manage Plan
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button
+                      className="w-full"
+                      variant={tier.popular ? 'default' : 'outline'}
+                      onClick={() => handleUpgradeRequest(tier.name)}
+                    >
+                      <Mail className="h-4 w-4 mr-2" />
+                      {tier.cta}
+                    </Button>
+                  )}
                 </CardFooter>
               </Card>
             );
@@ -210,10 +261,11 @@ Thank you!`;
             </div>
 
             <div>
-              <h4 className="font-semibold mb-2">Usage Tracking (Coming Soon)</h4>
+              <h4 className="font-semibold mb-2">Usage Tracking & Plan Management</h4>
               <p className="text-sm text-muted-foreground">
-                We're building usage tracking to help you monitor your active jobs and parts count.
-                You'll be notified when approaching your tier limits.
+                Monitor your usage, track jobs and parts count, and manage your subscription from your{' '}
+                <Link to="/my-plan" className="text-primary hover:underline">My Plan</Link> page.
+                You'll see real-time usage statistics and receive alerts when approaching tier limits.
               </p>
             </div>
           </CardContent>

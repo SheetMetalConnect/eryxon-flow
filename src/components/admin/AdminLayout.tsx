@@ -44,6 +44,9 @@ import {
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useThemeMode } from '@/theme/ThemeProvider';
+import { useSubscription } from '@/hooks/useSubscription';
+import { Chip, Button } from '@mui/material';
+import { Upgrade as UpgradeIcon } from '@mui/icons-material';
 
 const DRAWER_WIDTH = 260;
 
@@ -54,6 +57,7 @@ interface AdminLayoutProps {
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const { profile, signOut } = useAuth();
   const { mode, toggleTheme } = useThemeMode();
+  const { subscription, getPlanDisplayName, canUpgrade } = useSubscription();
   const theme = useTheme();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -90,7 +94,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { path: '/admin/parts', label: 'Parts', icon: <InventoryIcon /> },
     { path: '/admin/issues', label: 'Issues', icon: <ReportProblemIcon /> },
     { path: '/admin/assignments', label: 'Assignments', icon: <AssignmentIcon /> },
-    { path: '/pricing', label: 'Pricing', icon: <AttachMoneyIcon /> },
   ];
 
   const configNavItems = [
@@ -284,6 +287,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             {location.pathname.startsWith('/admin/config') && 'Configuration'}
             {location.pathname === '/api-docs' && 'API Documentation'}
             {location.pathname === '/pricing' && 'Pricing'}
+            {location.pathname === '/my-plan' && 'My Plan'}
           </Typography>
 
           {/* Right Side Actions */}
@@ -318,11 +322,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 elevation: 3,
                 sx: {
                   mt: 1.5,
-                  minWidth: 220,
+                  minWidth: 260,
                   borderRadius: 2,
                 },
               }}
             >
+              {/* User Info Section */}
               <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
                 <Typography variant="body2" fontWeight={600}>
                   {profile?.full_name}
@@ -330,25 +335,84 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 <Typography variant="caption" color="text.secondary">
                   {profile?.email}
                 </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    display: 'block',
-                    mt: 0.5,
-                    px: 1,
-                    py: 0.25,
-                    borderRadius: 0.5,
-                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                    color: theme.palette.primary.main,
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    fontSize: '0.65rem',
-                    width: 'fit-content',
-                  }}
-                >
-                  Admin
-                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, mt: 0.5, alignItems: 'center' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      px: 1,
+                      py: 0.25,
+                      borderRadius: 0.5,
+                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      color: theme.palette.primary.main,
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      fontSize: '0.65rem',
+                      width: 'fit-content',
+                    }}
+                  >
+                    Admin
+                  </Typography>
+                </Box>
               </Box>
+
+              {/* Current Plan Section */}
+              {subscription && (
+                <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                    Current Plan
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Chip
+                      label={getPlanDisplayName(subscription.plan)}
+                      size="small"
+                      sx={{
+                        fontWeight: 600,
+                        background: subscription.plan === 'premium'
+                          ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                          : subscription.plan === 'pro'
+                          ? '#8b5cf6'
+                          : '#64748b',
+                        color: '#fff',
+                      }}
+                    />
+                  </Box>
+                  {canUpgrade && (
+                    <Button
+                      component={Link}
+                      to="/my-plan"
+                      onClick={handleMenuClose}
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      startIcon={<UpgradeIcon />}
+                      sx={{
+                        mt: 1,
+                        textTransform: 'none',
+                        borderColor: theme.palette.primary.main,
+                        color: theme.palette.primary.main,
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                          borderColor: theme.palette.primary.dark,
+                        },
+                      }}
+                    >
+                      Upgrade Plan
+                    </Button>
+                  )}
+                </Box>
+              )}
+
+              {/* Menu Actions */}
+              <MenuItem
+                component={Link}
+                to="/my-plan"
+                onClick={handleMenuClose}
+                sx={{ gap: 1.5, py: 1.5 }}
+              >
+                <AttachMoneyIcon fontSize="small" />
+                My Plan
+              </MenuItem>
+              <Divider />
               <MenuItem onClick={handleSignOut} sx={{ gap: 1.5, py: 1.5 }}>
                 <LogoutIcon fontSize="small" />
                 Sign Out
