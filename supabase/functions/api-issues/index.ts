@@ -68,15 +68,14 @@ serve(async (req) => {
       );
     }
 
+    // Handle GET requests - list issues
     if (req.method === 'GET') {
       const url = new URL(req.url);
-      const jobId = url.searchParams.get('job_id');
-      const jobNumber = url.searchParams.get('job_number');
-      const material = url.searchParams.get('material');
+      const operationId = url.searchParams.get('operation_id');
+      const severity = url.searchParams.get('severity');
       const status = url.searchParams.get('status');
-      const partNumber = url.searchParams.get('part_number');
+      const reportedById = url.searchParams.get('reported_by_id');
 
-      // Cap pagination limit to prevent abuse
       let limit = parseInt(url.searchParams.get('limit') || '100');
       if (limit < 1) limit = 100;
       if (limit > 1000) limit = 1000;
@@ -84,93 +83,72 @@ serve(async (req) => {
       const offset = parseInt(url.searchParams.get('offset') || '0');
 
       let query = supabase
-        .from('parts')
+        .from('issues')
         .select(`
           id,
-          part_number,
-          material,
-          quantity,
+          title,
+          description,
+          severity,
           status,
-          file_paths,
-          notes,
-          metadata,
+          resolution_notes,
           created_at,
           updated_at,
-          parent_part_id,
-          job:jobs (
-            id,
-            job_number,
-            customer
-          ),
-          operations (
+          resolved_at,
+          operation:operations (
             id,
             operation_name,
-            status,
-            completion_percentage,
-            cell:cells (
+            part:parts (
               id,
-              name,
-              color
+              part_number,
+              job:jobs (
+                id,
+                job_number
+              )
             )
+          ),
+          reported_by:profiles!issues_reported_by_id_fkey (
+            id,
+            username,
+            full_name
+          ),
+          resolved_by:profiles!issues_resolved_by_id_fkey (
+            id,
+            username,
+            full_name
           )
         `)
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1);
 
-      if (jobId) {
-        query = query.eq('job_id', jobId);
+      if (operationId) {
+        query = query.eq('operation_id', operationId);
       }
-      if (material) {
-        query = query.ilike('material', `%${material}%`);
+      if (severity) {
+        query = query.eq('severity', severity);
       }
       if (status) {
         query = query.eq('status', status);
       }
-      if (partNumber) {
-        query = query.ilike('part_number', `%${partNumber}%`);
+      if (reportedById) {
+        query = query.eq('reported_by_id', reportedById);
       }
 
-      // Filter by job_number if provided (requires join)
-      if (jobNumber) {
-        const { data: jobs } = await supabase
-          .from('jobs')
-          .select('id')
-          .eq('tenant_id', tenantId)
-          .ilike('job_number', `%${jobNumber}%`);
-
-        if (jobs && jobs.length > 0) {
-          query = query.in('job_id', jobs.map(j => j.id));
-        } else {
-          // No matching jobs, return empty result
-          return new Response(
-            JSON.stringify({
-              success: true,
-              data: {
-                parts: [],
-                pagination: { limit, offset, total: 0 }
-              }
-            }),
-            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-      }
-
-      const { data: parts, error, count } = await query;
+      const { data: issues, error, count } = await query;
 
       if (error) {
-        throw new Error(`Failed to fetch parts: ${error.message}`);
+        throw new Error(`Failed to fetch issues: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
           data: {
-            parts: parts || [],
+            issues: issues || [],
             pagination: {
               limit,
               offset,
-              total: count || parts?.length || 0
+              total: count || issues?.length || 0
             }
           }
         }),
@@ -178,124 +156,103 @@ serve(async (req) => {
       );
     }
 
-    // POST method for creating parts
+    // Handle POST requests - create issue
     if (req.method === 'POST') {
       const body = await req.json();
 
       // Validate required fields
-      if (!body.job_id || !body.part_number || !body.material) {
+      if (!body.operation_id || !body.title || !body.severity) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'job_id, part_number, and material are required' }
+            error: { code: 'VALIDATION_ERROR', message: 'operation_id, title, and severity are required' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Verify job exists and belongs to tenant
-      const { data: job } = await supabase
-        .from('jobs')
+      // Verify operation exists and belongs to tenant
+      const { data: operation } = await supabase
+        .from('operations')
         .select('id')
-        .eq('id', body.job_id)
+        .eq('id', body.operation_id)
         .eq('tenant_id', tenantId)
         .single();
 
-      if (!job) {
+      if (!operation) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'NOT_FOUND', message: 'Job not found' }
+            error: { code: 'NOT_FOUND', message: 'Operation not found' }
           }),
           { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Check for duplicate part number in same job
-      const { data: existingPart } = await supabase
-        .from('parts')
-        .select('id')
-        .eq('job_id', body.job_id)
-        .eq('part_number', body.part_number)
-        .single();
-
-      if (existingPart) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: { code: 'DUPLICATE_PART', message: `Part number ${body.part_number} already exists in this job` }
-          }),
-          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Verify parent_part_id if provided
-      if (body.parent_part_id) {
-        const { data: parentPart } = await supabase
-          .from('parts')
-          .select('id, job_id')
-          .eq('id', body.parent_part_id)
+      // Verify reported_by user if provided
+      if (body.reported_by_id) {
+        const { data: user } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', body.reported_by_id)
           .eq('tenant_id', tenantId)
           .single();
 
-        if (!parentPart || parentPart.job_id !== body.job_id) {
+        if (!user) {
           return new Response(
             JSON.stringify({
               success: false,
-              error: { code: 'INVALID_PARENT', message: 'Parent part not found or belongs to different job' }
+              error: { code: 'NOT_FOUND', message: 'Reported by user not found' }
             }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
       }
 
-      const { data: part, error: partError } = await supabase
-        .from('parts')
+      const { data: issue, error: issueError } = await supabase
+        .from('issues')
         .insert({
           tenant_id: tenantId,
-          job_id: body.job_id,
-          part_number: body.part_number,
-          material: body.material,
-          quantity: body.quantity || 1,
-          parent_part_id: body.parent_part_id,
-          file_paths: body.file_paths,
-          notes: body.notes,
-          metadata: body.metadata,
-          status: 'not_started'
+          operation_id: body.operation_id,
+          title: body.title,
+          description: body.description,
+          severity: body.severity,
+          reported_by_id: body.reported_by_id,
+          status: 'open'
         })
         .select()
         .single();
 
-      if (partError || !part) {
-        throw new Error(`Failed to create part: ${partError?.message}`);
+      if (issueError || !issue) {
+        throw new Error(`Failed to create issue: ${issueError?.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { part }
+          data: { issue }
         }),
         { status: 201, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // PATCH method for updating parts
+    // Handle PATCH requests - update issue
     if (req.method === 'PATCH') {
       const url = new URL(req.url);
-      const partId = url.searchParams.get('id');
+      const issueId = url.searchParams.get('id');
 
-      if (!partId) {
+      if (!issueId) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'Part ID is required in query string (?id=xxx)' }
+            error: { code: 'VALIDATION_ERROR', message: 'Issue ID is required in query string (?id=xxx)' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       const body = await req.json();
-      const allowedFields = ['status', 'quantity', 'notes', 'metadata', 'file_paths'];
+      const allowedFields = ['title', 'description', 'severity', 'status', 'resolution_notes', 'resolved_by_id'];
       const updates: any = {};
 
       for (const field of allowedFields) {
@@ -314,12 +271,17 @@ serve(async (req) => {
         );
       }
 
+      // Auto-set resolved_at if status changes to resolved
+      if (updates.status === 'resolved' && !updates.resolved_at) {
+        updates.resolved_at = new Date().toISOString();
+      }
+
       updates.updated_at = new Date().toISOString();
 
-      const { data: part, error } = await supabase
-        .from('parts')
+      const { data: issue, error } = await supabase
+        .from('issues')
         .update(updates)
-        .eq('id', partId)
+        .eq('id', issueId)
         .eq('tenant_id', tenantId)
         .select()
         .single();
@@ -329,60 +291,42 @@ serve(async (req) => {
           return new Response(
             JSON.stringify({
               success: false,
-              error: { code: 'NOT_FOUND', message: 'Part not found' }
+              error: { code: 'NOT_FOUND', message: 'Issue not found' }
             }),
             { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        throw new Error(`Failed to update part: ${error.message}`);
+        throw new Error(`Failed to update issue: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { part }
+          data: { issue }
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // DELETE method for deleting parts
+    // Handle DELETE requests - delete issue
     if (req.method === 'DELETE') {
       const url = new URL(req.url);
-      const partId = url.searchParams.get('id');
+      const issueId = url.searchParams.get('id');
 
-      if (!partId) {
+      if (!issueId) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'Part ID is required in query string (?id=xxx)' }
+            error: { code: 'VALIDATION_ERROR', message: 'Issue ID is required in query string (?id=xxx)' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Check if part has child parts
-      const { data: childParts } = await supabase
-        .from('parts')
-        .select('id')
-        .eq('parent_part_id', partId)
-        .limit(1);
-
-      if (childParts && childParts.length > 0) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: { code: 'CONFLICT', message: 'Cannot delete part with child parts. Delete child parts first.' }
-          }),
-          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Delete part (cascade will delete operations)
       const { error } = await supabase
-        .from('parts')
+        .from('issues')
         .delete()
-        .eq('id', partId)
+        .eq('id', issueId)
         .eq('tenant_id', tenantId);
 
       if (error) {
@@ -390,18 +334,18 @@ serve(async (req) => {
           return new Response(
             JSON.stringify({
               success: false,
-              error: { code: 'NOT_FOUND', message: 'Part not found' }
+              error: { code: 'NOT_FOUND', message: 'Issue not found' }
             }),
             { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        throw new Error(`Failed to delete part: ${error.message}`);
+        throw new Error(`Failed to delete issue: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { message: 'Part deleted successfully' }
+          data: { message: 'Issue deleted successfully' }
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -416,7 +360,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in api-parts:', error);
+    console.error('Error in api-issues:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({
