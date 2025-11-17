@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { Plus, Save, X, Upload, Eye, Trash2, Box } from "lucide-react";
+import { Plus, Save, X, Upload, Eye, Trash2, Box, AlertTriangle, Package, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { STEPViewer } from "@/components/STEPViewer";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { fetchChildParts, fetchParentPart, checkAssemblyDependencies } from "@/lib/database";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface PartDetailModalProps {
   partId: string;
@@ -95,6 +97,36 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       if (error) throw error;
       return data;
     },
+  });
+
+  // Fetch parent part
+  const { data: parentPart } = useQuery({
+    queryKey: ["parent-part", partId],
+    queryFn: async () => {
+      if (!profile?.tenant_id) return null;
+      return await fetchParentPart(partId, profile.tenant_id);
+    },
+    enabled: !!profile?.tenant_id,
+  });
+
+  // Fetch child parts
+  const { data: childParts, refetch: refetchChildParts } = useQuery({
+    queryKey: ["child-parts", partId],
+    queryFn: async () => {
+      if (!profile?.tenant_id) return [];
+      return await fetchChildParts(partId, profile.tenant_id);
+    },
+    enabled: !!profile?.tenant_id,
+  });
+
+  // Check assembly dependencies
+  const { data: dependencies } = useQuery({
+    queryKey: ["assembly-dependencies", partId],
+    queryFn: async () => {
+      if (!profile?.tenant_id) return null;
+      return await checkAssemblyDependencies(partId, profile.tenant_id);
+    },
+    enabled: !!profile?.tenant_id,
   });
 
   const addOperationMutation = useMutation({
@@ -394,6 +426,106 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   </tbody>
                 </table>
               </div>
+            </div>
+          )}
+
+          {/* Assembly Tracking Section */}
+          {(parentPart || (childParts && childParts.length > 0)) && (
+            <div className="border-t pt-6">
+              <Label className="text-lg flex items-center gap-2 mb-4">
+                <Package className="h-5 w-5" />
+                Assembly Relationships
+              </Label>
+
+              {/* Parent Part */}
+              {parentPart && (
+                <div className="mb-4">
+                  <Label className="text-sm text-gray-600">Parent Assembly</Label>
+                  <div className="mt-2 border rounded-lg p-3 bg-blue-50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <ChevronRight className="h-4 w-4 text-gray-400 rotate-180" />
+                        <div>
+                          <p className="font-medium">{parentPart.part_number}</p>
+                          <p className="text-xs text-gray-500">
+                            {parentPart.material} | Job: {parentPart.job?.job_number}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="outline">{parentPart.status?.replace("_", " ")}</Badge>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Child Parts */}
+              {childParts && childParts.length > 0 && (
+                <div>
+                  <Label className="text-sm text-gray-600">
+                    Child Components ({childParts.length})
+                  </Label>
+
+                  {/* Dependency Warning */}
+                  {dependencies && !dependencies.dependenciesMet && (
+                    <Alert variant="destructive" className="my-3">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTitle>Dependency Warning</AlertTitle>
+                      <AlertDescription>
+                        {dependencies.warnings.length} child part(s) are not yet completed.
+                        It's recommended to complete child parts before starting assembly operations,
+                        but you can override if needed.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  <div className="mt-2 space-y-2">
+                    {childParts.map((child: any) => {
+                      const completedOps = child.operations?.filter((op: any) => op.status === "completed").length || 0;
+                      const totalOps = child.operations?.length || 0;
+                      const isComplete = child.status === "completed";
+
+                      return (
+                        <div
+                          key={child.id}
+                          className={`border rounded-lg p-3 ${
+                            isComplete ? "bg-green-50" : "bg-white"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <ChevronRight className="h-4 w-4 text-gray-400" />
+                              <div>
+                                <p className="font-medium">{child.part_number}</p>
+                                <p className="text-xs text-gray-500">
+                                  {child.material} | {totalOps} operation(s)
+                                  {totalOps > 0 && ` (${completedOps}/${totalOps} done)`}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant={isComplete ? "default" : "secondary"}
+                                className={isComplete ? "bg-green-600" : ""}
+                              >
+                                {child.status?.replace("_", " ")}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {dependencies && dependencies.dependenciesMet && (
+                    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm text-green-800 flex items-center gap-2">
+                        <Package className="h-4 w-4" />
+                        All child parts are complete. Ready for assembly!
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
