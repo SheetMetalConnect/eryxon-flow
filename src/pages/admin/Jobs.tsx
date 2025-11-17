@@ -268,7 +268,7 @@ export default function Jobs() {
           onChange={(e) => setSearchQuery(e.target.value)}
         />
 
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
           <SelectTrigger>
             <SelectValue placeholder={t("jobs.filterByStatus")} />
           </SelectTrigger>
