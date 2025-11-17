@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Clock, Play, Square, CheckCircle, Package, AlertCircle, AlertTriangle } from "lucide-react";
+import { Clock, Play, Square, CheckCircle, Package, AlertCircle, AlertTriangle, Box, FileText, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import MetadataDisplay from "@/components/ui/MetadataDisplay";
 import IssueForm from "./IssueForm";
+import { STEPViewer } from "@/components/STEPViewer";
+import { PDFViewer } from "@/components/PDFViewer";
 
 interface OperationDetailModalProps {
   operation: OperationWithDetails;
@@ -31,6 +33,10 @@ export default function OperationDetailModal({
   const [showIssueForm, setShowIssueForm] = useState(false);
   const [showAssemblyWarning, setShowAssemblyWarning] = useState(false);
   const [incompleteChildren, setIncompleteChildren] = useState<string[]>([]);
+  const [fileViewerOpen, setFileViewerOpen] = useState(false);
+  const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(null);
+  const [currentFileType, setCurrentFileType] = useState<'step' | 'pdf' | null>(null);
+  const [currentFileTitle, setCurrentFileTitle] = useState<string>("");
 
   const isCurrentUserTiming = operation.active_time_entry?.operator_id === profile?.id;
   const canStartTiming = !operation.active_time_entry && operation.status !== "completed";
@@ -128,6 +134,51 @@ export default function OperationDetailModal({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewFile = async (filePath: string) => {
+    try {
+      const fileExt = filePath.split(".").pop()?.toLowerCase();
+      const fileType = fileExt === "pdf" ? "pdf" : (fileExt === "step" || fileExt === "stp") ? "step" : null;
+
+      if (!fileType) {
+        toast.error("Unsupported file type");
+        return;
+      }
+
+      // Create signed URL
+      const { data, error } = await supabase.storage
+        .from("parts-cad")
+        .createSignedUrl(filePath, 3600);
+
+      if (error) throw error;
+      if (!data?.signedUrl) throw new Error("Failed to generate signed URL");
+
+      // For STEP files, fetch as blob to avoid CORS issues
+      let viewUrl = data.signedUrl;
+      if (fileType === "step") {
+        const response = await fetch(data.signedUrl);
+        const blob = await response.blob();
+        viewUrl = URL.createObjectURL(blob);
+      }
+
+      const fileName = filePath.split("/").pop() || "File";
+      setCurrentFileUrl(viewUrl);
+      setCurrentFileType(fileType);
+      setCurrentFileTitle(fileName);
+      setFileViewerOpen(true);
+    } catch (error: any) {
+      console.error("Error opening file:", error);
+      toast.error("Failed to open file viewer");
+    }
+  };
+
+  const handleFileDialogClose = (open: boolean) => {
+    if (!open && currentFileUrl?.startsWith("blob:")) {
+      URL.revokeObjectURL(currentFileUrl); // Prevent memory leak
+      setCurrentFileUrl(null);
+    }
+    setFileViewerOpen(open);
   };
 
   const dueDate = operation.part.job.due_date_override || operation.part.job.due_date;
@@ -258,6 +309,52 @@ export default function OperationDetailModal({
             <MetadataDisplay metadata={(operation as any).metadata} />
           )}
 
+          {/* Files Section */}
+          {operation.part.file_paths && operation.part.file_paths.length > 0 && (
+            <div>
+              <div className="text-sm text-muted-foreground mb-2">Files</div>
+              <div className="space-y-2">
+                {operation.part.file_paths.map((filePath: string, index: number) => {
+                  const fileName = filePath.split("/").pop() || "Unknown";
+                  const fileExt = filePath.split(".").pop()?.toLowerCase();
+                  const isSTEP = fileExt === "step" || fileExt === "stp";
+                  const isPDF = fileExt === "pdf";
+
+                  if (!isSTEP && !isPDF) return null;
+
+                  return (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between border rounded-md p-3 bg-muted/50"
+                    >
+                      <div className="flex items-center gap-3">
+                        {isSTEP ? (
+                          <Box className="h-5 w-5 text-blue-600" />
+                        ) : (
+                          <FileText className="h-5 w-5 text-red-600" />
+                        )}
+                        <div>
+                          <p className="font-medium text-sm">{fileName}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {isSTEP ? "3D Model" : "Drawing"}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleViewFile(filePath)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <Separator />
 
           {/* Action Buttons */}
@@ -351,6 +448,23 @@ export default function OperationDetailModal({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* File Viewer Dialog */}
+      <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
+        <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0">
+          <DialogHeader className="px-6 py-4 border-b">
+            <DialogTitle>{currentFileTitle}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden">
+            {currentFileUrl && currentFileType === "step" && (
+              <STEPViewer url={currentFileUrl} title={currentFileTitle} />
+            )}
+            {currentFileUrl && currentFileType === "pdf" && (
+              <PDFViewer url={currentFileUrl} title={currentFileTitle} />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
