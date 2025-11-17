@@ -1,73 +1,155 @@
-# Welcome to your Lovable project
+# Eryxon Flow
 
-## Project info
+A comprehensive manufacturing workflow management system for sheet metal fabrication, built with React, TypeScript, and Supabase.
 
-**URL**: https://lovable.dev/projects/aaa3208a-70fb-4eb6-a5eb-5823f025e734
+## Overview
 
-## How can I edit this code?
+Eryxon Flow is a modern web application designed to streamline manufacturing operations, from job creation to production tracking. It provides real-time visibility into production status, resource allocation, and performance metrics.
 
-There are several ways of editing your application.
+## Key Features
 
-**Use Lovable**
+- **Job Management**: Create, track, and manage manufacturing jobs with parts and operations
+- **Manufacturing Cells**: Configure production cells with visual workflow representation
+- **Parts Tracking**: Monitor parts through the production process with status updates
+- **3D CAD Viewer**: View STEP/STP files directly in the browser with interactive 3D controls
+- **Time Tracking**: Track operation time and operator assignments
+- **Issue Management**: Report and resolve production issues in real-time
+- **Material UI Design System**: Modern, responsive interface with dark mode support
+- **Multi-tenant**: Secure tenant isolation for multiple organizations
+- **RESTful API**: Complete CRUD operations with authentication and webhooks
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/aaa3208a-70fb-4eb6-a5eb-5823f025e734) and start prompting.
+## Tech Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Frontend**: React 18, TypeScript, Vite
+- **UI Framework**: Material UI v6 + shadcn/ui
+- **3D Graphics**: Three.js with occt-import-js for STEP file parsing
+- **Backend**: Supabase (PostgreSQL, Authentication, Storage, Edge Functions)
+- **Styling**: Tailwind CSS
+- **State Management**: React Query (TanStack Query)
 
-**Use your preferred IDE**
+## Getting Started
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Prerequisites
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Node.js 18+ (recommended: use [nvm](https://github.com/nvm-sh/nvm))
+- npm or bun package manager
 
-Follow these steps:
+### Installation
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd eryxon-flow
 ```
 
-**Edit a file directly in GitHub**
+2. Install dependencies:
+```bash
+npm install
+# or
+bun install
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+3. Set up environment variables:
+```bash
+cp .env.example .env
+```
+Edit `.env` with your Supabase credentials.
 
-**Use GitHub Codespaces**
+4. Start the development server:
+```bash
+npm run dev
+# or
+bun run dev
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+The application will be available at `http://localhost:5173`
 
-## What technologies are used for this project?
+## Documentation
 
-This project is built with:
+Comprehensive documentation is available in the [`/docs`](/docs) folder:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **[API Documentation](/docs/api-documentation.md)** - Complete API reference with all endpoints
+- **[3D Viewer](/docs/3d-viewer.md)** - 3D STEP file viewer setup and usage
+- **[Material UI Design System](/docs/material-ui-design-system.md)** - UI components and theming guide
+- **[Documentation Index](/docs/index.md)** - Complete documentation overview
 
-## How can I deploy this project?
+## Project Structure
 
-Simply open [Lovable](https://lovable.dev/projects/aaa3208a-70fb-4eb6-a5eb-5823f025e734) and click on Share -> Publish.
+```
+eryxon-flow/
+├── src/
+│   ├── components/        # React components
+│   │   ├── mui/          # Material UI components
+│   │   ├── admin/        # Admin dashboard components
+│   │   └── operator/     # Operator dashboard components
+│   ├── pages/            # Page components
+│   ├── hooks/            # Custom React hooks
+│   ├── integrations/     # Third-party integrations
+│   │   └── supabase/     # Supabase client and types
+│   ├── theme/            # Material UI theme configuration
+│   └── lib/              # Utility functions
+├── supabase/             # Supabase migrations and functions
+├── docs/                 # Documentation
+└── public/               # Static assets
+```
 
-## Can I connect a custom domain to my Lovable project?
+## User Roles
 
-Yes, you can!
+- **Admin**: Full access to job management, parts, operations, and system configuration
+- **Operator**: Access to assigned operations, time tracking, and issue reporting
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Database
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+The application uses Supabase (PostgreSQL) with Row Level Security (RLS) for multi-tenant data isolation. Database migrations are located in `/supabase/migrations/`.
+
+## Deployment
+
+This project is deployed using [Lovable](https://lovable.dev):
+
+1. Push changes to the repository
+2. Visit your [Lovable project](https://lovable.dev/projects/aaa3208a-70fb-4eb6-a5eb-5823f025e734)
+3. Click Share → Publish
+
+You can also connect a custom domain via Project > Settings > Domains.
+
+## Development
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+### Code Style
+
+- TypeScript for type safety
+- ESLint for code quality
+- Prettier for code formatting (via ESLint)
+- Component-based architecture
+- Material UI design system
+
+## Contributing
+
+1. Create a feature branch from `main`
+2. Make your changes
+3. Test thoroughly
+4. Submit a pull request
+
+## Support
+
+For issues or questions:
+- Check the [documentation](/docs)
+- Review existing GitHub issues
+- Create a new issue with detailed information
+
+## License
+
+[Add your license here]
+
+## Acknowledgments
+
+- Built with [Lovable](https://lovable.dev)
+- Powered by [Supabase](https://supabase.com)
+- 3D rendering with [Three.js](https://threejs.org)
+- UI components from [Material UI](https://mui.com) and [shadcn/ui](https://ui.shadcn.com)
