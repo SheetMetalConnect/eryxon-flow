@@ -182,6 +182,17 @@
     --stage-finishing: 38 100% 50%;              /* Amber */
 
     /* ========================================================================
+       LEGACY COMPATIBILITY (Backward compatibility with old variable names)
+       ======================================================================== */
+    --active-work: var(--status-active);
+    --completed: var(--status-completed);
+    --on-hold: var(--status-on-hold);
+    --issue-critical: var(--severity-critical);
+    --issue-high: var(--severity-high);
+    --issue-medium: var(--severity-medium);
+    --issue-low: var(--severity-low);
+
+    /* ========================================================================
        SIDEBAR
        ======================================================================== */
     --sidebar-background: var(--neutral-50);

@@ -92,7 +92,7 @@ export const AppHeader: React.FC<AppHeaderProps> = () => {
     <AppBar
       position="sticky"
       sx={{
-        background: 'linear-gradient(90deg, #6658A3 0%, #47B5E2 100%)',
+        background: 'linear-gradient(90deg, #3a4656 0%, #0080ff 100%)',
         boxShadow: trigger ? 4 : 0,
         transition: 'box-shadow 0.3s ease',
       }}
