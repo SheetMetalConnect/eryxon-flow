@@ -733,7 +733,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         // We need to call the edge function - but MCP server doesn't have API key
         // So we use direct database update
-        let updates: any = { updated_at: new Date().toISOString() };
+        const updates: any = { updated_at: new Date().toISOString() };
         const now = new Date().toISOString();
 
         switch (operation) {
@@ -783,7 +783,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const { id, user_id } = args as any;
         const operation = name.replace('_operation', '').replace('pause', 'pause'); // start, pause, complete
 
-        let updates: any = { updated_at: new Date().toISOString() };
+        const updates: any = { updated_at: new Date().toISOString() };
         const now = new Date().toISOString();
 
         switch (operation) {

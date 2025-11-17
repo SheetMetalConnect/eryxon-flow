@@ -164,7 +164,7 @@ serve(async (req) => {
     }
 
     const now = new Date().toISOString();
-    let updates: any = { updated_at: now };
+    const updates: any = { updated_at: now };
     let newStatus: string = operationData.status;
     let webhookEvent: string | null = null;
     let timeEntryAction: 'create' | 'end' | null = null;

@@ -154,7 +154,7 @@ serve(async (req) => {
     }
 
     const now = new Date().toISOString();
-    let updates: any = { updated_at: now };
+    const updates: any = { updated_at: now };
     let newStatus: string = job.status;
     let webhookEvent: string | null = null;
 
