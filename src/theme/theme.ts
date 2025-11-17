@@ -1,15 +1,19 @@
 import { createTheme, alpha } from '@mui/material/styles';
 
-// Sheet Metal Connect Brand Colors
+// Eryxon MES Brand Colors - Industrial Modern Palette
 const brandColors = {
-  primaryBlue: '#47B5E2',
-  primaryPurple: '#6658A3',
-  dark: '#231F20',
-  // Derived colors for success/warning/error
-  success: '#4CAF50',
-  warning: '#FF9800',
-  error: '#F44336',
-  info: '#47B5E2',
+  // Primary colors
+  primarySlate: '#3a4656', // Deep Slate Blue - industrial strength
+  primaryBlue: '#0080ff',  // Electric Blue - modern tech accent
+  // Legacy colors for backward compatibility
+  legacyBlue: '#47B5E2',
+  legacyPurple: '#6658A3',
+  dark: '#1a1f29',         // Near black
+  // Semantic colors
+  success: '#148853',      // Emerald
+  warning: '#ff9900',      // Amber
+  error: '#eb4034',        // Crimson
+  info: '#0d9fc9',         // Cyan
 };
 
 // Create light theme
@@ -17,106 +21,119 @@ const lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: brandColors.primaryBlue,
-      dark: '#3A92B8',
-      light: '#6FC4E8',
+      main: brandColors.primarySlate,
+      dark: '#2a3442',
+      light: '#4a5866',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: brandColors.primaryPurple,
-      dark: '#524682',
-      light: '#8179B5',
+      main: brandColors.primaryBlue,
+      dark: '#0066cc',
+      light: '#3399ff',
       contrastText: '#ffffff',
     },
     error: {
       main: brandColors.error,
+      light: '#f15c52',
+      dark: '#d32f22',
     },
     warning: {
       main: brandColors.warning,
+      light: '#ffad33',
+      dark: '#cc7a00',
     },
     info: {
       main: brandColors.info,
+      light: '#3db3d6',
+      dark: '#0a7fa1',
     },
     success: {
       main: brandColors.success,
+      light: '#3aa370',
+      dark: '#0f6d42',
     },
     text: {
-      primary: brandColors.dark,
-      secondary: alpha(brandColors.dark, 0.7),
+      primary: '#1a1f29',
+      secondary: alpha('#1a1f29', 0.7),
+      disabled: alpha('#1a1f29', 0.38),
     },
     background: {
-      default: '#F5F7FA',
-      paper: '#FFFFFF',
+      default: '#f5f7fa',
+      paper: '#ffffff',
     },
-    divider: alpha(brandColors.dark, 0.12),
+    divider: alpha('#1a1f29', 0.12),
   },
   typography: {
-    fontFamily: '"Montserrat", "Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
     h1: {
-      fontFamily: '"Montserrat", sans-serif',
+      fontFamily: '"Inter", sans-serif',
       fontWeight: 700,
-      fontSize: '2.5rem',
-      lineHeight: 1.2,
+      fontSize: '2.25rem', // Slightly smaller due to Inter's better legibility
+      lineHeight: 1.25,
+      letterSpacing: '-0.02em',
     },
     h2: {
-      fontFamily: '"Montserrat", sans-serif',
+      fontFamily: '"Inter", sans-serif',
       fontWeight: 700,
-      fontSize: '2rem',
+      fontSize: '1.875rem',
       lineHeight: 1.3,
+      letterSpacing: '-0.01em',
     },
     h3: {
-      fontFamily: '"Montserrat", sans-serif',
-      fontWeight: 600,
-      fontSize: '1.75rem',
-      lineHeight: 1.4,
-    },
-    h4: {
-      fontFamily: '"Montserrat", sans-serif',
+      fontFamily: '"Inter", sans-serif',
       fontWeight: 600,
       fontSize: '1.5rem',
+      lineHeight: 1.375,
+    },
+    h4: {
+      fontFamily: '"Inter", sans-serif',
+      fontWeight: 600,
+      fontSize: '1.25rem',
       lineHeight: 1.4,
     },
     h5: {
-      fontFamily: '"Montserrat", sans-serif',
+      fontFamily: '"Inter", sans-serif',
       fontWeight: 600,
-      fontSize: '1.25rem',
+      fontSize: '1.125rem',
       lineHeight: 1.5,
     },
     h6: {
-      fontFamily: '"Montserrat", sans-serif',
+      fontFamily: '"Inter", sans-serif',
       fontWeight: 600,
       fontSize: '1rem',
-      lineHeight: 1.6,
+      lineHeight: 1.5,
     },
     body1: {
-      fontFamily: '"Montserrat", sans-serif',
+      fontFamily: '"Inter", sans-serif',
       fontWeight: 400,
       fontSize: '1rem',
       lineHeight: 1.5,
     },
     body2: {
-      fontFamily: '"Montserrat", sans-serif',
+      fontFamily: '"Inter", sans-serif',
       fontWeight: 400,
       fontSize: '0.875rem',
       lineHeight: 1.5,
     },
     button: {
-      fontFamily: '"Montserrat", sans-serif',
+      fontFamily: '"Inter", sans-serif',
       fontWeight: 500,
       textTransform: 'none',
       fontSize: '0.875rem',
+      letterSpacing: '0.01em',
     },
     caption: {
-      fontFamily: '"Montserrat", sans-serif',
+      fontFamily: '"Inter", sans-serif',
       fontWeight: 400,
       fontSize: '0.75rem',
+      lineHeight: 1.5,
     },
     overline: {
-      fontFamily: '"Montserrat", sans-serif',
+      fontFamily: '"Inter", sans-serif',
       fontWeight: 500,
       fontSize: '0.75rem',
       textTransform: 'uppercase',
-      letterSpacing: '0.5px',
+      letterSpacing: '0.08em',
     },
   },
   shape: {
@@ -233,7 +250,7 @@ const lightTheme = createTheme({
       styleOverrides: {
         head: {
           fontWeight: 600,
-          backgroundColor: alpha(brandColors.primaryBlue, 0.08),
+          backgroundColor: alpha(brandColors.primarySlate, 0.06),
         },
       },
     },
@@ -246,37 +263,46 @@ const darkTheme = createTheme({
     mode: 'dark',
     primary: {
       main: brandColors.primaryBlue,
-      dark: '#3A92B8',
-      light: '#6FC4E8',
-      contrastText: brandColors.dark,
+      dark: '#0066cc',
+      light: '#3399ff',
+      contrastText: '#ffffff',
     },
     secondary: {
-      main: brandColors.primaryPurple,
-      dark: '#524682',
-      light: '#8179B5',
+      main: brandColors.primarySlate,
+      dark: '#2a3442',
+      light: '#4a5866',
       contrastText: '#ffffff',
     },
     error: {
-      main: brandColors.error,
+      main: '#f15c52',
+      light: '#f47970',
+      dark: '#d32f22',
     },
     warning: {
-      main: brandColors.warning,
+      main: '#ffad33',
+      light: '#ffbd5c',
+      dark: '#cc7a00',
     },
     info: {
-      main: brandColors.info,
+      main: '#3db3d6',
+      light: '#60c1dd',
+      dark: '#0a7fa1',
     },
     success: {
-      main: brandColors.success,
+      main: '#3aa370',
+      light: '#5cb589',
+      dark: '#0f6d42',
     },
     text: {
-      primary: '#FFFFFF',
-      secondary: alpha('#FFFFFF', 0.7),
+      primary: '#f5f7fa',
+      secondary: alpha('#f5f7fa', 0.7),
+      disabled: alpha('#f5f7fa', 0.38),
     },
     background: {
-      default: brandColors.dark,
-      paper: '#2C2829',
+      default: '#0f1419',
+      paper: '#1a1f29',
     },
-    divider: alpha('#FFFFFF', 0.12),
+    divider: alpha('#ffffff', 0.12),
   },
   typography: lightTheme.typography,
   shape: lightTheme.shape,
@@ -287,7 +313,7 @@ const darkTheme = createTheme({
       styleOverrides: {
         head: {
           fontWeight: 600,
-          backgroundColor: alpha(brandColors.primaryPurple, 0.15),
+          backgroundColor: alpha(brandColors.primaryBlue, 0.12),
         },
       },
     },

@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['"Inter"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'system-ui', 'sans-serif'],
+        mono: ['"SF Mono"', '"Monaco"', '"Inconsolata"', '"Roboto Mono"', 'monospace'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -57,14 +61,45 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        "active-work": "hsl(var(--active-work))",
-        completed: "hsl(var(--completed))",
-        "on-hold": "hsl(var(--on-hold))",
+        // MES Status Colors
+        "status-active": "hsl(var(--status-active))",
+        "status-completed": "hsl(var(--status-completed))",
+        "status-on-hold": "hsl(var(--status-on-hold))",
+        "status-blocked": "hsl(var(--status-blocked))",
+        "status-pending": "hsl(var(--status-pending))",
+        // Issue Severity Colors
+        "severity-critical": "hsl(var(--severity-critical))",
+        "severity-high": "hsl(var(--severity-high))",
+        "severity-medium": "hsl(var(--severity-medium))",
+        "severity-low": "hsl(var(--severity-low))",
+        // Stage Colors
         "stage-default": "hsl(var(--stage-default))",
-        "issue-critical": "hsl(var(--issue-critical))",
-        "issue-high": "hsl(var(--issue-high))",
-        "issue-medium": "hsl(var(--issue-medium))",
-        "issue-low": "hsl(var(--issue-low))",
+        "stage-cutting": "hsl(var(--stage-cutting))",
+        "stage-bending": "hsl(var(--stage-bending))",
+        "stage-welding": "hsl(var(--stage-welding))",
+        "stage-assembly": "hsl(var(--stage-assembly))",
+        "stage-finishing": "hsl(var(--stage-finishing))",
+        // Additional Semantic Colors
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
+        // Legacy support (backward compatibility)
+        "active-work": "hsl(var(--status-active))",
+        completed: "hsl(var(--status-completed))",
+        "on-hold": "hsl(var(--status-on-hold))",
+        "issue-critical": "hsl(var(--severity-critical))",
+        "issue-high": "hsl(var(--severity-high))",
+        "issue-medium": "hsl(var(--severity-medium))",
+        "issue-low": "hsl(var(--severity-low))",
       },
       borderRadius: {
         lg: "var(--radius)",

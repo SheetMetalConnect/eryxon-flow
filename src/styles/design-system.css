@@ -14,7 +14,6 @@
 @import '@fontsource/inter/500.css';
 @import '@fontsource/inter/600.css';
 @import '@fontsource/inter/700.css';
-@import '@fontsource/inter/variable.css';
 
 @tailwind base;
 @tailwind components;
@@ -29,7 +28,7 @@
     /* ========================================================================
        TYPOGRAPHY
        ======================================================================== */
-    --font-family-base: 'InterVariable', 'Inter', -apple-system, BlinkMacSystemFont,
+    --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont,
                         'Segoe UI', system-ui, sans-serif;
     --font-family-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
 
