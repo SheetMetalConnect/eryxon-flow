@@ -42,8 +42,7 @@ export default function Jobs() {
         .from("jobs")
         .select(`
           *,
-          parts:parts(count),
-          operations:parts(operations(count))
+          parts(id, operations(id))
         `);
 
       if (statusFilter !== "all") {
@@ -60,8 +59,8 @@ export default function Jobs() {
       // Calculate counts and sort
       const processedJobs = data.map((job: any) => ({
         ...job,
-        parts_count: job.parts?.[0]?.count || 0,
-        operations_count: job.operations?.reduce((sum: number, part: any) => sum + (part.operations?.[0]?.count || 0), 0) || 0,
+        parts_count: job.parts?.length || 0,
+        operations_count: job.parts?.reduce((sum: number, part: any) => sum + (part.operations?.length || 0), 0) || 0,
       }));
 
       // Sort
