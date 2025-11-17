@@ -153,7 +153,7 @@ export const MyPlan: React.FC = () => {
         >
           <CardContent sx={{ p: 4 }}>
             <Grid container spacing={3} alignItems="center">
-              <Grid item xs={12} md={8}>
+              <Grid size={{ xs: 12, md: 8 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                   <Typography variant="h5" fontWeight={700}>
                     {currentTier?.name || 'Unknown'} Plan
@@ -180,7 +180,7 @@ export const MyPlan: React.FC = () => {
                   </Typography>
                 </Typography>
               </Grid>
-              <Grid item xs={12} md={4} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+              <Grid size={{ xs: 12, md: 4 }} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
                 {currentPlan !== 'premium' && (
                   <Button
                     variant="contained"
@@ -208,7 +208,7 @@ export const MyPlan: React.FC = () => {
 
         <Grid container spacing={3}>
           {/* Usage Statistics */}
-          <Grid item xs={12} lg={8}>
+          <Grid size={{ xs: 12, lg: 8 }}>
             <Card sx={{ mb: 3 }}>
               <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
@@ -314,7 +314,7 @@ export const MyPlan: React.FC = () => {
 
             {/* Quick Stats */}
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <Paper sx={{ p: 2, textAlign: 'center' }}>
                   <Typography variant="h4" fontWeight={700} color="primary">
                     {usageStats?.active_jobs || 0}
@@ -324,7 +324,7 @@ export const MyPlan: React.FC = () => {
                   </Typography>
                 </Paper>
               </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <Paper sx={{ p: 2, textAlign: 'center' }}>
                   <Typography variant="h4" fontWeight={700} color="success.main">
                     {usageStats?.completed_jobs || 0}
@@ -334,7 +334,7 @@ export const MyPlan: React.FC = () => {
                   </Typography>
                 </Paper>
               </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <Paper sx={{ p: 2, textAlign: 'center' }}>
                   <Typography variant="h4" fontWeight={700} color="info.main">
                     {usageStats?.total_operators || 0}
@@ -344,7 +344,7 @@ export const MyPlan: React.FC = () => {
                   </Typography>
                 </Paper>
               </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <Paper sx={{ p: 2, textAlign: 'center' }}>
                   <Typography variant="h4" fontWeight={700} color="secondary.main">
                     {usageStats?.total_admins || 0}
@@ -358,7 +358,7 @@ export const MyPlan: React.FC = () => {
           </Grid>
 
           {/* Plan Features & Upgrade Options */}
-          <Grid item xs={12} lg={4}>
+          <Grid size={{ xs: 12, lg: 4 }}>
             {/* Current Plan Features */}
             <Card sx={{ mb: 3 }}>
               <CardContent sx={{ p: 3 }}>
