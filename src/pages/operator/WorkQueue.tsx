@@ -70,8 +70,7 @@ export default function WorkQueue() {
             ),
             cell:cells!inner(id, name, color, sequence)
           `)
-          .eq("tenant_id", profile.tenant_id)
-          .order("part(job(due_date))"),
+          .eq("tenant_id", profile.tenant_id),
         supabase
           .from("cells")
           .select("*")
@@ -80,7 +79,15 @@ export default function WorkQueue() {
           .order("sequence"),
       ]);
 
-      if (operationsData.data) setOperations(operationsData.data);
+      if (operationsData.data) {
+        // Sort operations by job due date client-side
+        const sortedOperations = [...operationsData.data].sort((a, b) => {
+          const dateA = new Date(a.part.job.due_date || 0);
+          const dateB = new Date(b.part.job.due_date || 0);
+          return dateA.getTime() - dateB.getTime();
+        });
+        setOperations(sortedOperations);
+      }
       if (cellsData.data) setCells(cellsData.data);
     } catch (error) {
       console.error("Error loading data:", error);
