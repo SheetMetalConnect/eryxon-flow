@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default function Auth() {
+  const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,24 +44,24 @@ export default function Auth() {
         }
       } else {
         if (!fullName) {
-          setError("Please fill in all fields");
+          setError(t("auth.fillAllFields"));
           setLoading(false);
           return;
         }
-        
+
         const { error } = await signUp(email, password, {
           full_name: fullName,
           role: "operator",
         });
-        
+
         if (error) {
           setError(error.message);
         } else {
-          setError("Check your email to confirm your account");
+          setError(t("auth.checkEmail"));
         }
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      setError(t("auth.unexpectedError"));
     } finally {
       setLoading(false);
     }
@@ -66,48 +69,51 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center gap-2 mb-2">
             <div className="h-8 w-8 rounded bg-primary" />
-            <CardTitle className="text-2xl font-bold">Eryxon MES</CardTitle>
+            <CardTitle className="text-2xl font-bold">{t("auth.title")}</CardTitle>
           </div>
           <CardDescription>
             {isLogin
-              ? "Sign in to access your work queue"
-              : "Create an account to get started"}
+              ? t("auth.signInDescription")
+              : t("auth.signUpDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
+                <Label htmlFor="fullName">{t("auth.fullName")}</Label>
                 <Input
                   id="fullName"
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required={!isLogin}
-                  placeholder="John Smith"
+                  placeholder={t("auth.fullNamePlaceholder")}
                 />
               </div>
             )}
-            
+
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("auth.email")}</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="you@company.com"
+                placeholder={t("auth.emailPlaceholder")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("auth.password")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -115,19 +121,19 @@ export default function Auth() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                placeholder="At least 6 characters"
+                placeholder={t("auth.passwordPlaceholder")}
               />
             </div>
 
             {error && (
-              <Alert variant={error.includes("Check your email") ? "default" : "destructive"}>
+              <Alert variant={error.includes(t("auth.checkEmail")) ? "default" : "destructive"}>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
             <Button type="submit" className="w-full" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isLogin ? "Sign In" : "Sign Up"}
+              {isLogin ? t("auth.signIn") : t("auth.signUp")}
             </Button>
 
             <Button
@@ -140,8 +146,8 @@ export default function Auth() {
               }}
             >
               {isLogin
-                ? "Don't have an account? Sign up"
-                : "Already have an account? Sign in"}
+                ? t("auth.noAccount")
+                : t("auth.haveAccount")}
             </Button>
           </form>
         </CardContent>
