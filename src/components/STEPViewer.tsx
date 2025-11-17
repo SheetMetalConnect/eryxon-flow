@@ -334,7 +334,7 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
     };
 
     loadSTEP();
-  }, [url, librariesLoaded, edgesVisible, gridVisible, fitCameraToMeshes, updateGridSize]);
+  }, [url, librariesLoaded, edgesVisible, gridVisible]);
 
   // Fit camera to meshes
   const fitCameraToMeshes = useCallback(() => {

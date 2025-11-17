@@ -116,7 +116,6 @@ export function UploadProgress({ progress, className = '' }: UploadProgressProps
 
 import { StorageQuota } from '@/hooks/useFileUpload';
 import { HardDrive, AlertTriangle } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 
 interface StorageQuotaDisplayProps {
