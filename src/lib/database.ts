@@ -585,7 +585,7 @@ async function recalculateJobCurrentCell(jobId: string) {
   if (inProgressOperations && inProgressOperations.length > 0) {
     // Get the earliest cell (lowest sequence) with in_progress operations
     const earliestCell = inProgressOperations.reduce((earliest: any, o: any) => {
-      return o.cells.sequence < earliest.sequence 
+      return o.cells.sequence < earliest.sequence
         ? { cell_id: o.cell_id, sequence: o.cells.sequence }
         : earliest;
     }, { cell_id: inProgressOperations[0].cell_id, sequence: (inProgressOperations[0] as any).cells.sequence });
@@ -601,4 +601,182 @@ async function recalculateJobCurrentCell(jobId: string) {
       .update({ current_cell_id: null })
       .eq("id", jobId);
   }
+}
+
+// Assembly Tracking Functions
+
+/**
+ * Fetch all child parts for a given parent part
+ */
+export async function fetchChildParts(parentPartId: string, tenantId: string) {
+  const { data, error } = await supabase
+    .from("parts")
+    .select(`
+      *,
+      job:jobs(job_number, customer),
+      operations:operations(id, status, operation_name)
+    `)
+    .eq("parent_part_id", parentPartId)
+    .eq("tenant_id", tenantId)
+    .order("part_number");
+
+  if (error) throw error;
+  return data || [];
+}
+
+/**
+ * Fetch parent part for a given part
+ */
+export async function fetchParentPart(partId: string, tenantId: string) {
+  const { data: part, error: partError } = await supabase
+    .from("parts")
+    .select("parent_part_id")
+    .eq("id", partId)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (partError) throw partError;
+  if (!part?.parent_part_id) return null;
+
+  const { data: parentPart, error: parentError } = await supabase
+    .from("parts")
+    .select(`
+      *,
+      job:jobs(job_number, customer),
+      operations:operations(id, status, operation_name)
+    `)
+    .eq("id", part.parent_part_id)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (parentError) throw parentError;
+  return parentPart;
+}
+
+/**
+ * Check if all child parts are completed
+ */
+export async function checkChildPartsCompletion(parentPartId: string, tenantId: string) {
+  const { data: childParts, error } = await supabase
+    .from("parts")
+    .select("id, part_number, status")
+    .eq("parent_part_id", parentPartId)
+    .eq("tenant_id", tenantId);
+
+  if (error) throw error;
+  if (!childParts || childParts.length === 0) {
+    return { hasChildren: false, allCompleted: true, incompleteChildren: [] };
+  }
+
+  const incompleteChildren = childParts.filter(p => p.status !== "completed");
+  const allCompleted = incompleteChildren.length === 0;
+
+  return {
+    hasChildren: true,
+    allCompleted,
+    incompleteChildren,
+    totalChildren: childParts.length,
+    completedChildren: childParts.length - incompleteChildren.length,
+  };
+}
+
+/**
+ * Check for circular references in assembly hierarchy
+ * Returns true if creating this relationship would create a cycle
+ */
+export async function checkCircularReference(
+  childPartId: string,
+  potentialParentId: string,
+  tenantId: string
+): Promise<boolean> {
+  // Can't be its own parent
+  if (childPartId === potentialParentId) return true;
+
+  // Check if the potential parent is actually a descendant of the child
+  let currentParentId: string | null = potentialParentId;
+  const visited = new Set<string>();
+
+  while (currentParentId) {
+    if (visited.has(currentParentId)) {
+      // Detected a cycle in the existing data
+      return true;
+    }
+    visited.add(currentParentId);
+
+    if (currentParentId === childPartId) {
+      // The potential parent is a descendant of the child
+      return true;
+    }
+
+    // Get the parent of the current parent
+    const { data, error } = await supabase
+      .from("parts")
+      .select("parent_part_id")
+      .eq("id", currentParentId)
+      .eq("tenant_id", tenantId)
+      .single();
+
+    if (error || !data) break;
+    currentParentId = data.parent_part_id;
+  }
+
+  return false;
+}
+
+/**
+ * Get assembly tree (all descendants) for a given part
+ */
+export async function fetchAssemblyTree(partId: string, tenantId: string): Promise<any[]> {
+  const tree: any[] = [];
+  const queue = [{ id: partId, depth: 0 }];
+  const visited = new Set<string>();
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+
+    if (visited.has(current.id)) continue;
+    visited.add(current.id);
+
+    const { data: children, error } = await supabase
+      .from("parts")
+      .select(`
+        *,
+        job:jobs(job_number, customer),
+        operations:operations(id, status, operation_name)
+      `)
+      .eq("parent_part_id", current.id)
+      .eq("tenant_id", tenantId);
+
+    if (error) {
+      console.error("Error fetching assembly tree:", error);
+      continue;
+    }
+
+    if (children && children.length > 0) {
+      for (const child of children) {
+        tree.push({ ...child, depth: current.depth + 1 });
+        queue.push({ id: child.id, depth: current.depth + 1 });
+      }
+    }
+  }
+
+  return tree;
+}
+
+/**
+ * Check if a part has dependency warnings (incomplete children)
+ */
+export async function checkAssemblyDependencies(partId: string, tenantId: string) {
+  const childrenStatus = await checkChildPartsCompletion(partId, tenantId);
+
+  return {
+    hasDependencies: childrenStatus.hasChildren,
+    dependenciesMet: childrenStatus.allCompleted,
+    warnings: childrenStatus.incompleteChildren.map(child => ({
+      partId: child.id,
+      partNumber: child.part_number,
+      status: child.status,
+      message: `Child part ${child.part_number} is not yet completed (${child.status})`
+    }))
+  };
 }
