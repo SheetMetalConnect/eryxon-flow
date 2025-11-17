@@ -47,7 +47,9 @@ export default function Jobs() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<
+    "completed" | "in_progress" | "not_started" | "on_hold" | "all"
+  >("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"due_date" | "status">("due_date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -449,10 +451,10 @@ export default function Jobs() {
           </DialogHeader>
           <div className="w-full h-[75vh]">
             {currentFileType === "step" && currentFileUrl && (
-              <STEPViewer fileUrl={currentFileUrl} />
+              <STEPViewer url={currentFileUrl} />
             )}
             {currentFileType === "pdf" && currentFileUrl && (
-              <PDFViewer fileUrl={currentFileUrl} />
+              <PDFViewer url={currentFileUrl} />
             )}
           </div>
         </DialogContent>

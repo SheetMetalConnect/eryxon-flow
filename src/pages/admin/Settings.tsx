@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Box, Typography, Tabs, Tab, Paper } from '@mui/material';
+import React, { useState } from "react";
+import { Box, Typography, Tabs, Tab, Paper } from "@mui/material";
 import {
   People as PeopleIcon,
   AccountTree as AccountTreeIcon,
@@ -8,45 +8,53 @@ import {
   CardMembership as CardMembershipIcon,
   Security as SecurityIcon,
   Storage as StorageIcon,
-} from '@mui/icons-material';
-import { useSearchParams } from 'react-router-dom';
+} from "@mui/icons-material";
+import { useSearchParams } from "react-router-dom";
 
 // Import existing config components
-import ConfigUsers from './ConfigUsers';
-import ConfigStages from './ConfigStages';
-import ConfigMaterials from './ConfigMaterials';
-import ConfigResources from './ConfigResources';
-import ConfigApiKeys from './ConfigApiKeys';
-import ConfigWebhooks from './ConfigWebhooks';
-import DataExport from './DataExport';
-import { MyPlan } from '@/pages/MyPlan';
+import ConfigUsers from "./ConfigUsers";
+import ConfigStages from "./ConfigStages";
+import ConfigMaterials from "./ConfigMaterials";
+import ConfigResources from "./ConfigResources";
+import ConfigApiKeys from "./ConfigApiKeys";
+import ConfigWebhooks from "./ConfigWebhooks";
+import DataExport from "./DataExport";
+import { MyPlan } from "@/pages/MyPlan";
 
 interface TabPanelProps {
-  children?: React.Node;
+  children?: React.ReactNode;
   index: number;
   value: number;
 }
 
 const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => {
   return (
-    <div role="tabpanel" hidden={value !== index} id={`settings-tabpanel-${index}`}>
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`settings-tabpanel-${index}`}
+    >
       {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
     </div>
   );
 };
 
 const tabs = [
-  { label: 'Team', icon: <PeopleIcon />, value: 'team' },
-  { label: 'Workflow', icon: <AccountTreeIcon />, value: 'workflow' },
-  { label: 'Resources', icon: <BuildIcon />, value: 'resources' },
-  { label: 'Integration', icon: <IntegrationIcon />, value: 'integration' },
-  { label: 'Subscription', icon: <CardMembershipIcon />, value: 'subscription' },
-  { label: 'Data', icon: <StorageIcon />, value: 'data' },
+  { label: "Team", icon: <PeopleIcon />, value: "team" },
+  { label: "Workflow", icon: <AccountTreeIcon />, value: "workflow" },
+  { label: "Resources", icon: <BuildIcon />, value: "resources" },
+  { label: "Integration", icon: <IntegrationIcon />, value: "integration" },
+  {
+    label: "Subscription",
+    icon: <CardMembershipIcon />,
+    value: "subscription",
+  },
+  { label: "Data", icon: <StorageIcon />, value: "data" },
 ];
 
 export const Settings: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const currentTab = searchParams.get('tab') || 'team';
+  const currentTab = searchParams.get("tab") || "team";
   const currentIndex = tabs.findIndex((t) => t.value === currentTab);
   const [value, setValue] = useState(currentIndex >= 0 ? currentIndex : 0);
 
@@ -69,7 +77,7 @@ export const Settings: React.FC = () => {
           scrollButtons="auto"
           sx={{
             borderBottom: 1,
-            borderColor: 'divider',
+            borderColor: "divider",
             px: 2,
           }}
         >
@@ -81,8 +89,8 @@ export const Settings: React.FC = () => {
               iconPosition="start"
               sx={{
                 minHeight: 64,
-                textTransform: 'none',
-                fontSize: '0.95rem',
+                textTransform: "none",
+                fontSize: "0.95rem",
                 fontWeight: 500,
               }}
             />
@@ -96,7 +104,8 @@ export const Settings: React.FC = () => {
               Team Management
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Manage users, operators, admins, and machine accounts for your organization.
+              Manage users, operators, admins, and machine accounts for your
+              organization.
             </Typography>
             <ConfigUsers />
           </TabPanel>
@@ -107,7 +116,8 @@ export const Settings: React.FC = () => {
               Workflow Configuration
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Configure production stages and materials for your manufacturing workflow.
+              Configure production stages and materials for your manufacturing
+              workflow.
             </Typography>
 
             <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>

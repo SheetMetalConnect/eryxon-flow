@@ -388,7 +388,7 @@ export const Operations: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="body2" fontWeight={500}>
-                    {op.operation_type}
+                    {op.operation_name}
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -418,7 +418,7 @@ export const Operations: React.FC = () => {
                   </Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="body2">{op.stage}</Typography>
+                  <Typography variant="body2">{op.cell}</Typography>
                 </TableCell>
                 <TableCell>
                   {op.assigned_name ? (

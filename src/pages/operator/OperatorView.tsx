@@ -397,7 +397,7 @@ export default function OperatorView() {
         {/* Header: Job Selection */}
         <Paper sx={{ p: 3, mb: 3 }}>
           <Grid container spacing={3} alignItems="center">
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>{t("Select Job")}</InputLabel>
                 <Select
@@ -422,7 +422,7 @@ export default function OperatorView() {
             </Grid>
 
             {selectedJob && (
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Stack direction="row" spacing={2} alignItems="center">
                   <Chip
                     icon={<CalendarToday />}
@@ -452,7 +452,7 @@ export default function OperatorView() {
             </Typography>
             <Grid container spacing={2}>
               {operations.map((op) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={op.id}>
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={op.id}>
                   <Card
                     variant={
                       selectedOperation?.id === op.id ? "outlined" : "elevation"
@@ -518,7 +518,7 @@ export default function OperatorView() {
               }}
             >
               <Grid container spacing={4} alignItems="center">
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Stack spacing={2}>
                     <Typography variant="h4" fontWeight="bold">
                       {selectedOperation.operation_name}
@@ -548,7 +548,7 @@ export default function OperatorView() {
                   </Stack>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Stack spacing={3} alignItems="center">
                     {activeTimeEntry ? (
                       <>
@@ -625,7 +625,7 @@ export default function OperatorView() {
             {/* Main Content Grid */}
             <Grid container spacing={3}>
               {/* Left Column: File Viewers */}
-              <Grid item xs={12} lg={8}>
+              <Grid size={{ xs: 12, lg: 8 }}>
                 <Stack spacing={3}>
                   {/* PDF Viewer */}
                   {pdfUrl && (
@@ -710,7 +710,7 @@ export default function OperatorView() {
               </Grid>
 
               {/* Right Column: Info & Substeps */}
-              <Grid item xs={12} lg={4}>
+              <Grid size={{ xs: 12, lg: 4 }}>
                 <Stack spacing={3}>
                   {/* Job & Part Info */}
                   <Paper sx={{ p: 3 }}>
@@ -814,7 +814,10 @@ export default function OperatorView() {
                       {t("Steps")}
                     </Typography>
                     <Divider sx={{ my: 2 }} />
-                    <SubstepsManager operationId={selectedOperation.id} />
+                    <SubstepsManager
+                      operationId={selectedOperation.id}
+                      operationName={selectedOperation.operation_name}
+                    />
                   </Paper>
                 </Stack>
               </Grid>

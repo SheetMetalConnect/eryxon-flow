@@ -478,10 +478,10 @@ export default function Parts() {
           </DialogHeader>
           <div className="w-full h-[75vh]">
             {currentFileType === "step" && currentFileUrl && (
-              <STEPViewer fileUrl={currentFileUrl} />
+              <STEPViewer url={currentFileUrl} />
             )}
             {currentFileType === "pdf" && currentFileUrl && (
-              <PDFViewer fileUrl={currentFileUrl} />
+              <PDFViewer url={currentFileUrl} />
             )}
           </div>
         </DialogContent>

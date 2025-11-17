@@ -56,8 +56,12 @@ export default function IssueQueue() {
   const [actionLoading, setActionLoading] = useState(false);
 
   // Filters
-  const [statusFilter, setStatusFilter] = useState<string>("pending");
-  const [severityFilter, setSeverityFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<
+    "approved" | "closed" | "pending" | "rejected" | "all"
+  >("pending");
+  const [severityFilter, setSeverityFilter] = useState<
+    "critical" | "high" | "low" | "medium" | "all"
+  >("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -100,11 +104,13 @@ export default function IssueQueue() {
     // Apply search query (job number, part number, or operation name)
     if (searchQuery) {
       query = query.or(
-        `operation.part.job.job_number.ilike.%${searchQuery}%,operation.part.part_number.ilike.%${searchQuery}%,operation.operation_name.ilike.%${searchQuery}%`
+        `operation.part.job.job_number.ilike.%${searchQuery}%,operation.part.part_number.ilike.%${searchQuery}%,operation.operation_name.ilike.%${searchQuery}%`,
       );
     }
 
-    query = query.order("severity", { ascending: false }).order("created_at", { ascending: true });
+    query = query
+      .order("severity", { ascending: false })
+      .order("created_at", { ascending: true });
 
     const { data, error } = await query;
 
@@ -198,7 +204,9 @@ export default function IssueQueue() {
       {/* Filters */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <Label htmlFor="search" className="mb-2 block">Search (Job/Part/Operation)</Label>
+          <Label htmlFor="search" className="mb-2 block">
+            Search (Job/Part/Operation)
+          </Label>
           <Input
             id="search"
             placeholder="Search by job, part, or operation..."
@@ -208,7 +216,9 @@ export default function IssueQueue() {
         </div>
 
         <div>
-          <Label htmlFor="status-filter" className="mb-2 block">Status</Label>
+          <Label htmlFor="status-filter" className="mb-2 block">
+            Status
+          </Label>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger id="status-filter">
               <SelectValue placeholder="Filter by status" />
@@ -224,7 +234,9 @@ export default function IssueQueue() {
         </div>
 
         <div>
-          <Label htmlFor="severity-filter" className="mb-2 block">Severity</Label>
+          <Label htmlFor="severity-filter" className="mb-2 block">
+            Severity
+          </Label>
           <Select value={severityFilter} onValueChange={setSeverityFilter}>
             <SelectTrigger id="severity-filter">
               <SelectValue placeholder="Filter by severity" />

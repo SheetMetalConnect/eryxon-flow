@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -28,7 +28,7 @@ import {
   Badge,
   Switch,
   FormControlLabel,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Timeline as TimelineIcon,
   Person as PersonIcon,
@@ -52,10 +52,10 @@ import {
   ViewInAr as ViewInArIcon,
   Build as BuildIcon,
   Filter1 as FilterIcon,
-} from '@mui/icons-material';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { formatDistanceToNow } from 'date-fns';
+} from "@mui/icons-material";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { formatDistanceToNow } from "date-fns";
 
 interface ActivityLog {
   id: string;
@@ -82,9 +82,9 @@ export const ActivityMonitor: React.FC = () => {
   const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [stats, setStats] = useState<ActivityStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [filterAction, setFilterAction] = useState<string>('all');
-  const [filterEntityType, setFilterEntityType] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [filterAction, setFilterAction] = useState<string>("all");
+  const [filterEntityType, setFilterEntityType] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [limit, setLimit] = useState(50);
@@ -97,28 +97,36 @@ export const ActivityMonitor: React.FC = () => {
 
     try {
       // Get activity logs with filters
-      const { data: activityData, error: activityError } = await supabase.rpc('get_activity_logs', {
-        p_limit: limit,
-        p_offset: 0,
-        p_action: filterAction === 'all' ? null : filterAction,
-        p_entity_type: filterEntityType === 'all' ? null : filterEntityType,
-        p_search: searchQuery || null,
-      });
+      const { data: activityData, error: activityError } = await supabase.rpc(
+        "get_activity_logs",
+        {
+          p_limit: limit,
+          p_offset: 0,
+          p_action: filterAction === "all" ? null : filterAction,
+          p_entity_type: filterEntityType === "all" ? null : filterEntityType,
+          p_search: searchQuery || null,
+        },
+      );
 
       if (activityError) {
-        console.error('Error loading activities:', activityError);
+        console.error("Error loading activities:", activityError);
       } else {
         setActivities(activityData || []);
       }
 
       // Get activity statistics
-      const { data: statsData, error: statsError } = await supabase.rpc('get_activity_stats', {
-        p_start_date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        p_end_date: new Date().toISOString(),
-      });
+      const { data: statsData, error: statsError } = await supabase.rpc(
+        "get_activity_stats",
+        {
+          p_start_date: new Date(
+            Date.now() - 24 * 60 * 60 * 1000,
+          ).toISOString(),
+          p_end_date: new Date().toISOString(),
+        },
+      );
 
       if (statsError) {
-        console.error('Error loading stats:', statsError);
+        console.error("Error loading stats:", statsError);
       } else if (statsData && statsData.length > 0) {
         setStats(statsData[0]);
       }
@@ -126,7 +134,7 @@ export const ActivityMonitor: React.FC = () => {
       setLastUpdate(new Date());
       setLoading(false);
     } catch (error) {
-      console.error('Error loading activity data:', error);
+      console.error("Error loading activity data:", error);
       setLoading(false);
     }
   }, [profile, filterAction, filterEntityType, searchQuery, limit]);
@@ -153,20 +161,20 @@ export const ActivityMonitor: React.FC = () => {
 
     // Subscribe to activity log changes
     const channel = supabase
-      .channel('activity_log_changes')
+      .channel("activity_log_changes")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'activity_log',
+          event: "*",
+          schema: "public",
+          table: "activity_log",
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
         (payload) => {
-          console.log('Real-time activity update:', payload);
+          console.log("Real-time activity update:", payload);
           // Reload data when changes occur
           loadData();
-        }
+        },
       )
       .subscribe();
 
@@ -178,23 +186,23 @@ export const ActivityMonitor: React.FC = () => {
   // Get action icon
   const getActionIcon = (action: string) => {
     switch (action) {
-      case 'create':
+      case "create":
         return <AddIcon fontSize="small" />;
-      case 'update':
+      case "update":
         return <EditIcon fontSize="small" />;
-      case 'delete':
+      case "delete":
         return <DeleteIcon fontSize="small" />;
-      case 'login':
+      case "login":
         return <LoginIcon fontSize="small" />;
-      case 'logout':
+      case "logout":
         return <LogoutIcon fontSize="small" />;
-      case 'view':
+      case "view":
         return <VisibilityIcon fontSize="small" />;
-      case 'configure':
+      case "configure":
         return <SettingsIcon fontSize="small" />;
-      case 'export':
+      case "export":
         return <CloudDownloadIcon fontSize="small" />;
-      case 'import':
+      case "import":
         return <CloudUploadIcon fontSize="small" />;
       default:
         return <FiberManualRecordIcon fontSize="small" />;
@@ -204,43 +212,43 @@ export const ActivityMonitor: React.FC = () => {
   // Get action color
   const getActionColor = (action: string) => {
     switch (action) {
-      case 'create':
-        return '#10B981'; // Green
-      case 'update':
-        return '#3B82F6'; // Blue
-      case 'delete':
-        return '#EF4444'; // Red
-      case 'login':
-        return '#8B5CF6'; // Purple
-      case 'logout':
-        return '#6B7280'; // Gray
-      case 'view':
-        return '#06B6D4'; // Cyan
-      case 'configure':
-        return '#F59E0B'; // Orange
-      case 'export':
-      case 'import':
-        return '#EC4899'; // Pink
+      case "create":
+        return "#10B981"; // Green
+      case "update":
+        return "#3B82F6"; // Blue
+      case "delete":
+        return "#EF4444"; // Red
+      case "login":
+        return "#8B5CF6"; // Purple
+      case "logout":
+        return "#6B7280"; // Gray
+      case "view":
+        return "#06B6D4"; // Cyan
+      case "configure":
+        return "#F59E0B"; // Orange
+      case "export":
+      case "import":
+        return "#EC4899"; // Pink
       default:
-        return '#9CA3AF'; // Light Gray
+        return "#9CA3AF"; // Light Gray
     }
   };
 
   // Get entity icon
   const getEntityIcon = (entityType: string | null) => {
     switch (entityType) {
-      case 'job':
+      case "job":
         return <WorkIcon fontSize="small" />;
-      case 'part':
+      case "part":
         return <InventoryIcon fontSize="small" />;
-      case 'operation':
+      case "operation":
         return <CheckCircleIcon fontSize="small" />;
-      case 'user':
+      case "user":
         return <PeopleIcon fontSize="small" />;
-      case 'stage':
+      case "stage":
         return <ViewInArIcon fontSize="small" />;
-      case 'material':
-      case 'resource':
+      case "material":
+      case "resource":
         return <BuildIcon fontSize="small" />;
       default:
         return <TimelineIcon fontSize="small" />;
@@ -250,7 +258,7 @@ export const ActivityMonitor: React.FC = () => {
   // Get user initials
   const getUserInitials = (name: string | null, email: string) => {
     if (name) {
-      const parts = name.split(' ');
+      const parts = name.split(" ");
       if (parts.length >= 2) {
         return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
       }
@@ -262,22 +270,29 @@ export const ActivityMonitor: React.FC = () => {
   // Export activity log
   const handleExport = () => {
     const csv = [
-      ['Timestamp', 'User', 'Action', 'Entity Type', 'Entity', 'Description'].join(','),
+      [
+        "Timestamp",
+        "User",
+        "Action",
+        "Entity Type",
+        "Entity",
+        "Description",
+      ].join(","),
       ...activities.map((a) =>
         [
           new Date(a.created_at).toISOString(),
           a.user_name || a.user_email,
           a.action,
-          a.entity_type || '-',
-          a.entity_name || '-',
-          `"${a.description || '-'}"`,
-        ].join(',')
+          a.entity_type || "-",
+          a.entity_name || "-",
+          `"${a.description || "-"}"`,
+        ].join(","),
       ),
-    ].join('\n');
+    ].join("\n");
 
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `activity-log-${new Date().toISOString()}.csv`;
     a.click();
@@ -285,12 +300,23 @@ export const ActivityMonitor: React.FC = () => {
   };
 
   // Get unique actions and entity types for filters
-  const uniqueActions = Array.from(new Set(activities.map((a) => a.action).filter(Boolean)));
-  const uniqueEntityTypes = Array.from(new Set(activities.map((a) => a.entity_type).filter(Boolean)));
+  const uniqueActions = Array.from(
+    new Set(activities.map((a) => a.action).filter(Boolean)),
+  );
+  const uniqueEntityTypes = Array.from(
+    new Set(activities.map((a) => a.entity_type).filter(Boolean)),
+  );
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: 400,
+        }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -300,8 +326,10 @@ export const ActivityMonitor: React.FC = () => {
     <Box>
       {/* Header Section */}
       <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          <TimelineIcon sx={{ fontSize: 40, color: theme.palette.primary.main }} />
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+          <TimelineIcon
+            sx={{ fontSize: 40, color: theme.palette.primary.main }}
+          />
           <Box>
             <Typography variant="h4" fontWeight={700}>
               Activity Monitor
@@ -319,8 +347,13 @@ export const ActivityMonitor: React.FC = () => {
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1), color: theme.palette.primary.main }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Avatar
+                    sx={{
+                      bgcolor: alpha(theme.palette.primary.main, 0.1),
+                      color: theme.palette.primary.main,
+                    }}
+                  >
                     <TimelineIcon />
                   </Avatar>
                   <Box>
@@ -339,8 +372,10 @@ export const ActivityMonitor: React.FC = () => {
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Avatar sx={{ bgcolor: alpha('#10B981', 0.1), color: '#10B981' }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Avatar
+                    sx={{ bgcolor: alpha("#10B981", 0.1), color: "#10B981" }}
+                  >
                     <PeopleIcon />
                   </Avatar>
                   <Box>
@@ -359,8 +394,10 @@ export const ActivityMonitor: React.FC = () => {
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Avatar sx={{ bgcolor: alpha('#3B82F6', 0.1), color: '#3B82F6' }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Avatar
+                    sx={{ bgcolor: alpha("#3B82F6", 0.1), color: "#3B82F6" }}
+                  >
                     <AddIcon />
                   </Avatar>
                   <Box>
@@ -379,8 +416,10 @@ export const ActivityMonitor: React.FC = () => {
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Avatar sx={{ bgcolor: alpha('#F59E0B', 0.1), color: '#F59E0B' }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Avatar
+                    sx={{ bgcolor: alpha("#F59E0B", 0.1), color: "#F59E0B" }}
+                  >
                     <EditIcon />
                   </Avatar>
                   <Box>
@@ -420,7 +459,10 @@ export const ActivityMonitor: React.FC = () => {
 
           <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <FormControl fullWidth size="small">
-              <Select value={filterAction} onChange={(e) => setFilterAction(e.target.value)}>
+              <Select
+                value={filterAction}
+                onChange={(e) => setFilterAction(e.target.value)}
+              >
                 <MenuItem value="all">All Actions</MenuItem>
                 {uniqueActions.map((action) => (
                   <MenuItem key={action} value={action}>
@@ -433,7 +475,10 @@ export const ActivityMonitor: React.FC = () => {
 
           <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <FormControl fullWidth size="small">
-              <Select value={filterEntityType} onChange={(e) => setFilterEntityType(e.target.value)}>
+              <Select
+                value={filterEntityType}
+                onChange={(e) => setFilterEntityType(e.target.value)}
+              >
                 <MenuItem value="all">All Entities</MenuItem>
                 {uniqueEntityTypes.map((type) => (
                   <MenuItem key={type} value={type}>
@@ -446,7 +491,10 @@ export const ActivityMonitor: React.FC = () => {
 
           <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <FormControl fullWidth size="small">
-              <Select value={limit} onChange={(e) => setLimit(Number(e.target.value))}>
+              <Select
+                value={limit}
+                onChange={(e) => setLimit(Number(e.target.value))}
+              >
                 <MenuItem value={25}>Last 25</MenuItem>
                 <MenuItem value={50}>Last 50</MenuItem>
                 <MenuItem value={100}>Last 100</MenuItem>
@@ -455,10 +503,15 @@ export const ActivityMonitor: React.FC = () => {
             </FormControl>
           </Grid>
 
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <Stack direction="row" spacing={1} justifyContent="flex-end">
               <FormControlLabel
-                control={<Switch checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} />}
+                control={
+                  <Switch
+                    checked={autoRefresh}
+                    onChange={(e) => setAutoRefresh(e.target.checked)}
+                  />
+                }
                 label="Auto-refresh"
               />
               <IconButton onClick={loadData} color="primary" size="small">
@@ -474,7 +527,7 @@ export const ActivityMonitor: React.FC = () => {
 
       {/* Activity Feed */}
       <Paper sx={{ p: 0 }}>
-        <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+        <Box sx={{ p: 2, borderBottom: 1, borderColor: "divider" }}>
           <Typography variant="h6" fontWeight={600}>
             Recent Activity
             <Chip
@@ -485,9 +538,14 @@ export const ActivityMonitor: React.FC = () => {
               variant="outlined"
             />
           </Typography>
-          <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            display="block"
+            sx={{ mt: 0.5 }}
+          >
             Last updated: {lastUpdate.toLocaleTimeString()}
-            {autoRefresh && ' (auto-refreshing every 10s)'}
+            {autoRefresh && " (auto-refreshing every 10s)"}
           </Typography>
         </Box>
 
@@ -496,12 +554,21 @@ export const ActivityMonitor: React.FC = () => {
             <ListItem sx={{ py: 8 }}>
               <ListItemText
                 primary={
-                  <Typography variant="body1" color="text.secondary" align="center">
+                  <Typography
+                    variant="body1"
+                    color="text.secondary"
+                    align="center"
+                  >
                     No activities found
                   </Typography>
                 }
                 secondary={
-                  <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    align="center"
+                    sx={{ mt: 1 }}
+                  >
                     Try adjusting your filters or search query
                   </Typography>
                 }
@@ -514,7 +581,7 @@ export const ActivityMonitor: React.FC = () => {
                   sx={{
                     py: 2,
                     px: 3,
-                    '&:hover': {
+                    "&:hover": {
                       backgroundColor: alpha(theme.palette.action.hover, 0.04),
                     },
                   }}
@@ -522,7 +589,7 @@ export const ActivityMonitor: React.FC = () => {
                   <ListItemAvatar>
                     <Badge
                       overlap="circular"
-                      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                       badgeContent={
                         <Avatar
                           sx={{
@@ -537,14 +604,24 @@ export const ActivityMonitor: React.FC = () => {
                       }
                     >
                       <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
-                        {getUserInitials(activity.user_name, activity.user_email)}
+                        {getUserInitials(
+                          activity.user_name,
+                          activity.user_email,
+                        )}
                       </Avatar>
                     </Badge>
                   </ListItemAvatar>
 
                   <ListItemText
                     primary={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          mb: 0.5,
+                        }}
+                      >
                         <Typography variant="body2" fontWeight={600}>
                           {activity.user_name || activity.user_email}
                         </Typography>
@@ -553,10 +630,13 @@ export const ActivityMonitor: React.FC = () => {
                           size="small"
                           sx={{
                             height: 20,
-                            fontSize: '0.7rem',
+                            fontSize: "0.7rem",
                             fontWeight: 600,
-                            textTransform: 'uppercase',
-                            bgcolor: alpha(getActionColor(activity.action), 0.1),
+                            textTransform: "uppercase",
+                            bgcolor: alpha(
+                              getActionColor(activity.action),
+                              0.1,
+                            ),
                             color: getActionColor(activity.action),
                           }}
                         />
@@ -567,7 +647,7 @@ export const ActivityMonitor: React.FC = () => {
                             size="small"
                             sx={{
                               height: 20,
-                              fontSize: '0.7rem',
+                              fontSize: "0.7rem",
                             }}
                             variant="outlined"
                           />
@@ -576,22 +656,35 @@ export const ActivityMonitor: React.FC = () => {
                     }
                     secondary={
                       <Box>
-                        <Typography variant="body2" color="text.primary" sx={{ mb: 0.5 }}>
+                        <Typography
+                          variant="body2"
+                          color="text.primary"
+                          sx={{ mb: 0.5 }}
+                        >
                           {activity.description}
                         </Typography>
                         {activity.entity_name && (
-                          <Typography variant="caption" color="text.secondary" display="block">
-                            {activity.entity_type}: <strong>{activity.entity_name}</strong>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                          >
+                            {activity.entity_type}:{" "}
+                            <strong>{activity.entity_name}</strong>
                           </Typography>
                         )}
                         <Typography variant="caption" color="text.secondary">
-                          {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}
+                          {formatDistanceToNow(new Date(activity.created_at), {
+                            addSuffix: true,
+                          })}
                         </Typography>
                       </Box>
                     }
                   />
                 </ListItem>
-                {index < activities.length - 1 && <Divider variant="inset" component="li" />}
+                {index < activities.length - 1 && (
+                  <Divider variant="inset" component="li" />
+                )}
               </React.Fragment>
             ))
           )}
@@ -599,7 +692,14 @@ export const ActivityMonitor: React.FC = () => {
 
         {/* Load More */}
         {activities.length >= limit && (
-          <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider', textAlign: 'center' }}>
+          <Box
+            sx={{
+              p: 2,
+              borderTop: 1,
+              borderColor: "divider",
+              textAlign: "center",
+            }}
+          >
             <Button onClick={() => setLimit(limit + 50)} variant="outlined">
               Load More
             </Button>
