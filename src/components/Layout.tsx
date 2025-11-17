@@ -1,6 +1,6 @@
 // Role-based layout routing
 import { useAuth } from "@/contexts/AuthContext";
-import { AdminLayout } from "@/components/admin/AdminLayout";
+import AdminLayout from "@/components/AdminLayout";
 import { OperatorLayout } from "@/components/operator/OperatorLayout";
 
 interface LayoutProps {

@@ -36,6 +36,7 @@ import { MyPlan } from "./pages/MyPlan";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 import { OnboardingWizard } from "./components/onboarding";
+import Layout from "./components/Layout";
 import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
@@ -94,100 +95,109 @@ function AppRoutes() {
               (profile as any)?.onboarding_completed === false
                 ? "/onboarding"
                 : profile?.role === "admin"
-                ? "/dashboard"
-                : "/work-queue"
+                ? "/admin/dashboard"
+                : "/operator/work-queue"
             }
             replace
           />
         }
       />
 
+      {/* Operator Routes */}
       <Route
-        path="/work-queue"
+        path="/operator/work-queue"
         element={
           <ProtectedRoute>
-            <WorkQueue />
+            <Layout>
+              <WorkQueue />
+            </Layout>
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/my-activity"
+        path="/operator/my-activity"
         element={
           <ProtectedRoute>
-            <MyActivity />
+            <Layout>
+              <MyActivity />
+            </Layout>
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/my-issues"
+        path="/operator/my-issues"
         element={
           <ProtectedRoute>
-            <MyIssues />
+            <Layout>
+              <MyIssues />
+            </Layout>
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/operator-view"
+        path="/operator/view"
         element={
           <ProtectedRoute>
-            <OperatorView />
+            <Layout>
+              <OperatorView />
+            </Layout>
           </ProtectedRoute>
         }
       />
 
+      {/* Legacy operator route redirects */}
+      <Route path="/work-queue" element={<Navigate to="/operator/work-queue" replace />} />
+      <Route path="/my-activity" element={<Navigate to="/operator/my-activity" replace />} />
+      <Route path="/my-issues" element={<Navigate to="/operator/my-issues" replace />} />
+      <Route path="/operator-view" element={<Navigate to="/operator/view" replace />} />
+
+      {/* Admin Routes */}
       <Route
-        path="/dashboard"
+        path="/admin/dashboard"
         element={
           <ProtectedRoute adminOnly>
-            <Dashboard />
+            <Layout>
+              <Dashboard />
+            </Layout>
           </ProtectedRoute>
         }
       />
 
-      <Route
-        path="/admin/stages"
-        element={
-          <ProtectedRoute adminOnly>
-            <ConfigStages />
-          </ProtectedRoute>
-        }
-      />
+      {/* Legacy dashboard redirect */}
+      <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
 
       <Route
         path="/admin/config/stages"
         element={
           <ProtectedRoute adminOnly>
-            <ConfigStages />
+            <Layout>
+              <ConfigStages />
+            </Layout>
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/admin/materials"
+        path="/admin/config/materials"
         element={
           <ProtectedRoute adminOnly>
-            <ConfigMaterials />
+            <Layout>
+              <ConfigMaterials />
+            </Layout>
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/admin/resources"
+        path="/admin/config/resources"
         element={
           <ProtectedRoute adminOnly>
-            <ConfigResources />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/admin/users"
-        element={
-          <ProtectedRoute adminOnly>
-            <ConfigUsers />
+            <Layout>
+              <ConfigResources />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -196,7 +206,9 @@ function AppRoutes() {
         path="/admin/config/users"
         element={
           <ProtectedRoute adminOnly>
-            <ConfigUsers />
+            <Layout>
+              <ConfigUsers />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -205,7 +217,9 @@ function AppRoutes() {
         path="/admin/issues"
         element={
           <ProtectedRoute adminOnly>
-            <IssueQueue />
+            <Layout>
+              <IssueQueue />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -214,7 +228,9 @@ function AppRoutes() {
         path="/admin/assignments"
         element={
           <ProtectedRoute adminOnly>
-            <Assignments />
+            <Layout>
+              <Assignments />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -223,7 +239,9 @@ function AppRoutes() {
         path="/admin/config/api-keys"
         element={
           <ProtectedRoute adminOnly>
-            <ConfigApiKeys />
+            <Layout>
+              <ConfigApiKeys />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -232,7 +250,9 @@ function AppRoutes() {
         path="/admin/config/webhooks"
         element={
           <ProtectedRoute adminOnly>
-            <ConfigWebhooks />
+            <Layout>
+              <ConfigWebhooks />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -241,7 +261,9 @@ function AppRoutes() {
         path="/admin/data-export"
         element={
           <ProtectedRoute adminOnly>
-            <DataExport />
+            <Layout>
+              <DataExport />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -250,7 +272,9 @@ function AppRoutes() {
         path="/admin/jobs"
         element={
           <ProtectedRoute adminOnly>
-            <Jobs />
+            <Layout>
+              <Jobs />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -259,7 +283,9 @@ function AppRoutes() {
         path="/admin/jobs/new"
         element={
           <ProtectedRoute adminOnly>
-            <JobCreate />
+            <Layout>
+              <JobCreate />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -268,7 +294,9 @@ function AppRoutes() {
         path="/admin/parts"
         element={
           <ProtectedRoute adminOnly>
-            <Parts />
+            <Layout>
+              <Parts />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -277,7 +305,9 @@ function AppRoutes() {
         path="/admin/activity"
         element={
           <ProtectedRoute adminOnly>
-            <ActivityMonitor />
+            <Layout>
+              <ActivityMonitor />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -286,7 +316,9 @@ function AppRoutes() {
         path="/admin/operations"
         element={
           <ProtectedRoute adminOnly>
-            <Operations />
+            <Layout>
+              <Operations />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -295,7 +327,9 @@ function AppRoutes() {
         path="/admin/settings"
         element={
           <ProtectedRoute adminOnly>
-            <Settings />
+            <Layout>
+              <Settings />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -304,7 +338,9 @@ function AppRoutes() {
         path="/admin/integrations"
         element={
           <ProtectedRoute adminOnly>
-            <IntegrationsMarketplace />
+            <Layout>
+              <IntegrationsMarketplace />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -313,46 +349,66 @@ function AppRoutes() {
         path="/admin/config/steps-templates"
         element={
           <ProtectedRoute adminOnly>
-            <StepsTemplatesView />
+            <Layout>
+              <StepsTemplatesView />
+            </Layout>
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/api-docs"
+        path="/admin/api-docs"
         element={
           <ProtectedRoute>
-            <ApiDocs />
+            <Layout>
+              <ApiDocs />
+            </Layout>
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/pricing"
+        path="/admin/pricing"
         element={
           <ProtectedRoute>
-            <Pricing />
+            <Layout>
+              <Pricing />
+            </Layout>
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/my-plan"
+        path="/admin/my-plan"
         element={
           <ProtectedRoute adminOnly>
-            <MyPlan />
+            <Layout>
+              <MyPlan />
+            </Layout>
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/help"
+        path="/admin/help"
         element={
           <ProtectedRoute>
-            <Help />
+            <Layout>
+              <Help />
+            </Layout>
           </ProtectedRoute>
         }
       />
+
+      {/* Legacy redirects */}
+      <Route path="/admin/stages" element={<Navigate to="/admin/config/stages" replace />} />
+      <Route path="/admin/materials" element={<Navigate to="/admin/config/materials" replace />} />
+      <Route path="/admin/resources" element={<Navigate to="/admin/config/resources" replace />} />
+      <Route path="/admin/users" element={<Navigate to="/admin/config/users" replace />} />
+      <Route path="/api-docs" element={<Navigate to="/admin/api-docs" replace />} />
+      <Route path="/pricing" element={<Navigate to="/admin/pricing" replace />} />
+      <Route path="/my-plan" element={<Navigate to="/admin/my-plan" replace />} />
+      <Route path="/help" element={<Navigate to="/admin/help" replace />} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>
