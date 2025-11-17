@@ -18,6 +18,9 @@ import {
   Trash2,
   Edit2,
   Save,
+  Upload,
+  Image as ImageIcon,
+  X,
 } from "lucide-react";
 import {
   Select,
@@ -38,6 +41,8 @@ type Part = {
   notes?: string;
   metadata?: Record<string, any>;
   operations: Operation[];
+  image_paths?: string[];
+  imageFiles?: File[];
 };
 
 type Operation = {
@@ -108,8 +113,39 @@ export default function JobCreate() {
 
       if (jobError) throw jobError;
 
+      // Upload images for parts that have them
+      const partsWithImagePaths = await Promise.all(
+        parts.map(async (part) => {
+          if (!part.imageFiles || part.imageFiles.length === 0) {
+            return { ...part, image_paths: [] };
+          }
+
+          const uploadedPaths: string[] = [];
+
+          for (const file of part.imageFiles) {
+            const fileExt = file.name.split(".").pop()?.toLowerCase();
+            const fileName = `${crypto.randomUUID()}.${fileExt}`;
+            const path = `${profile.tenant_id}/parts/${part.id}/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+              .from("parts-images")
+              .upload(path, file);
+
+            if (uploadError) {
+              console.error("Image upload error:", uploadError);
+              // Continue with other images even if one fails
+              continue;
+            }
+
+            uploadedPaths.push(path);
+          }
+
+          return { ...part, image_paths: uploadedPaths };
+        })
+      );
+
       // Insert parts
-      const partsToInsert = parts.map((part) => ({
+      const partsToInsert = partsWithImagePaths.map((part) => ({
         tenant_id: profile.tenant_id,
         job_id: job.id,
         part_number: part.part_number,
@@ -119,6 +155,7 @@ export default function JobCreate() {
         notes: part.notes,
         metadata: part.metadata && Object.keys(part.metadata).length > 0 ? part.metadata : null,
         status: "not_started" as const,
+        image_paths: part.image_paths && part.image_paths.length > 0 ? part.image_paths : null,
       }));
 
       const { data: insertedParts, error: partsError } = await supabase
@@ -128,10 +165,22 @@ export default function JobCreate() {
 
       if (partsError) throw partsError;
 
+      // Validate insertedParts array
+      if (!insertedParts || insertedParts.length !== parts.length) {
+        throw new Error(
+          `Failed to insert all parts. Expected ${parts.length} parts, got ${insertedParts?.length || 0}`
+        );
+      }
+
       // Insert operations for each part
       for (let i = 0; i < parts.length; i++) {
         const part = parts[i];
         const insertedPart = insertedParts[i];
+
+        // Additional null check for safety
+        if (!insertedPart || !insertedPart.id) {
+          throw new Error(`Failed to insert part ${part.part_number}. No ID returned.`);
+        }
 
         if (part.operations.length > 0) {
           const operationsToInsert = part.operations.map((operation) => ({
@@ -253,10 +302,47 @@ export default function JobCreate() {
       notes: editingPart.notes,
       metadata: editingPart.metadata,
       operations: [],
+      imageFiles: editingPart.imageFiles || [],
+      image_paths: [],
     };
 
     setParts([...parts, newPart]);
     setEditingPart(null);
+  };
+
+  const handleImageUpload = (files: FileList | null) => {
+    if (!files || !editingPart) return;
+
+    const imageFiles = Array.from(files).filter((file) => {
+      const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+      return validTypes.includes(file.type);
+    });
+
+    if (imageFiles.length === 0) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload only image files (JPEG, PNG, GIF, WEBP)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setEditingPart({
+      ...editingPart,
+      imageFiles: [...(editingPart.imageFiles || []), ...imageFiles],
+    });
+  };
+
+  const handleRemoveImage = (index: number) => {
+    if (!editingPart || !editingPart.imageFiles) return;
+
+    const newImageFiles = [...editingPart.imageFiles];
+    newImageFiles.splice(index, 1);
+
+    setEditingPart({
+      ...editingPart,
+      imageFiles: newImageFiles,
+    });
   };
 
   const handleAddOperation = (partId: string) => {
@@ -455,9 +541,9 @@ export default function JobCreate() {
                   <div>
                     <Label>Parent Part (Optional)</Label>
                     <Select
-                      value={editingPart.parent_part_id}
+                      value={editingPart.parent_part_id || ""}
                       onValueChange={(value) =>
-                        setEditingPart({ ...editingPart, parent_part_id: value })
+                        setEditingPart({ ...editingPart, parent_part_id: value || undefined })
                       }
                     >
                       <SelectTrigger>
@@ -483,6 +569,58 @@ export default function JobCreate() {
                       rows={2}
                     />
                   </div>
+                  <div className="col-span-2">
+                    <Label className="flex items-center gap-2">
+                      <ImageIcon className="h-4 w-4" />
+                      Part Images (Optional)
+                    </Label>
+                    <div className="mt-2 border-2 border-dashed rounded-lg p-4 hover:bg-blue-100 transition">
+                      <label
+                        htmlFor="part-image-upload"
+                        className="flex flex-col items-center justify-center cursor-pointer"
+                      >
+                        <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                        <span className="text-sm text-gray-600">
+                          Click to upload images or drag and drop
+                        </span>
+                        <span className="text-xs text-gray-500 mt-1">
+                          PNG, JPG, GIF, WEBP up to 10MB
+                        </span>
+                      </label>
+                      <input
+                        id="part-image-upload"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => handleImageUpload(e.target.files)}
+                        className="hidden"
+                      />
+                    </div>
+                    {/* Image Preview */}
+                    {editingPart.imageFiles && editingPart.imageFiles.length > 0 && (
+                      <div className="mt-3 grid grid-cols-4 gap-2">
+                        {editingPart.imageFiles.map((file, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={`Preview ${index + 1}`}
+                              className="w-full h-24 object-cover rounded-lg border"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveImage(index)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                            <div className="text-xs text-gray-600 mt-1 truncate">
+                              {file.name}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="flex gap-2 mt-3">
                   <Button onClick={handleAddPart}>
@@ -496,28 +634,71 @@ export default function JobCreate() {
             )}
 
             {/* Parts List */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               {parts.map((part) => (
-                <div key={part.id} className="border rounded-lg p-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-semibold">{part.part_number}</h4>
-                      <p className="text-sm text-gray-600">
-                        Material: {part.material} | Qty: {part.quantity}
-                      </p>
-                      {part.parent_part_id && (
-                        <Badge variant="outline" className="mt-1">
-                          Assembly
-                        </Badge>
+                <div key={part.id} className="border rounded-lg p-4 hover:shadow-md transition">
+                  <div className="flex gap-4">
+                    {/* Part Image Thumbnail */}
+                    <div className="flex-shrink-0">
+                      {part.imageFiles && part.imageFiles.length > 0 ? (
+                        <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-blue-200">
+                          <img
+                            src={URL.createObjectURL(part.imageFiles[0])}
+                            alt={part.part_number}
+                            className="w-full h-full object-cover"
+                          />
+                          {part.imageFiles.length > 1 && (
+                            <div className="absolute bottom-0 right-0 bg-blue-600 text-white text-xs px-2 py-1 rounded-tl">
+                              +{part.imageFiles.length - 1}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="w-20 h-20 rounded-lg bg-gray-100 flex items-center justify-center border-2 border-gray-200">
+                          <ImageIcon className="h-8 w-8 text-gray-400" />
+                        </div>
                       )}
                     </div>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => setParts(parts.filter((p) => p.id !== part.id))}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+
+                    {/* Part Info */}
+                    <div className="flex-grow">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-semibold text-lg">{part.part_number}</h4>
+                          <div className="flex flex-wrap gap-3 mt-1 text-sm text-gray-600">
+                            <span className="flex items-center gap-1">
+                              <strong>Material:</strong> {part.material}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <strong>Qty:</strong> {part.quantity}
+                            </span>
+                            {part.imageFiles && part.imageFiles.length > 0 && (
+                              <span className="flex items-center gap-1 text-blue-600">
+                                <ImageIcon className="h-3 w-3" />
+                                {part.imageFiles.length} image(s)
+                              </span>
+                            )}
+                          </div>
+                          {part.parent_part_id && (
+                            <Badge variant="outline" className="mt-2">
+                              Component of Assembly
+                            </Badge>
+                          )}
+                          {part.notes && (
+                            <p className="text-sm text-gray-500 mt-2 italic">
+                              {part.notes}
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => setParts(parts.filter((p) => p.id !== part.id))}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -704,15 +885,61 @@ export default function JobCreate() {
             </div>
 
             <div>
-              <h3 className="font-semibold text-lg mb-2">Parts & Operations Summary</h3>
-              {parts.map((part) => (
-                <div key={part.id} className="border rounded-lg p-3 mb-2">
-                  <h4 className="font-semibold">{part.part_number}</h4>
-                  <p className="text-sm text-gray-600">
-                    {part.material} | {part.operations.length} operations
-                  </p>
-                </div>
-              ))}
+              <h3 className="font-semibold text-lg mb-3">Parts & Operations Summary</h3>
+              <div className="space-y-3">
+                {parts.map((part) => (
+                  <div key={part.id} className="border rounded-lg p-4 bg-gray-50">
+                    <div className="flex gap-4">
+                      {/* Part Image */}
+                      <div className="flex-shrink-0">
+                        {part.imageFiles && part.imageFiles.length > 0 ? (
+                          <div className="relative w-16 h-16 rounded-lg overflow-hidden border-2 border-blue-200">
+                            <img
+                              src={URL.createObjectURL(part.imageFiles[0])}
+                              alt={part.part_number}
+                              className="w-full h-full object-cover"
+                            />
+                            {part.imageFiles.length > 1 && (
+                              <div className="absolute bottom-0 right-0 bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded-tl">
+                                +{part.imageFiles.length - 1}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="w-16 h-16 rounded-lg bg-white flex items-center justify-center border-2 border-gray-200">
+                            <ImageIcon className="h-6 w-6 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Part Details */}
+                      <div className="flex-grow">
+                        <h4 className="font-semibold text-base">{part.part_number}</h4>
+                        <div className="text-sm text-gray-600 mt-1 space-y-1">
+                          <p>
+                            <strong>Material:</strong> {part.material} | <strong>Qty:</strong> {part.quantity}
+                          </p>
+                          <p>
+                            <strong>Operations:</strong> {part.operations.length}
+                            {part.operations.length > 0 && (
+                              <span className="text-gray-500">
+                                {" "}
+                                ({part.operations.map((op) => op.operation_name).join(", ")})
+                              </span>
+                            )}
+                          </p>
+                          {part.imageFiles && part.imageFiles.length > 0 && (
+                            <p className="text-blue-600">
+                              <ImageIcon className="h-3 w-3 inline mr-1" />
+                              {part.imageFiles.length} image(s) attached
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
