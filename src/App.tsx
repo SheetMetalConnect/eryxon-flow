@@ -26,6 +26,7 @@ import ApiDocs from "./pages/ApiDocs";
 import Pricing from "./pages/Pricing";
 import { MyPlan } from "./pages/MyPlan";
 import NotFound from "./pages/NotFound";
+import { OnboardingWizard } from "./components/onboarding";
 import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
@@ -66,12 +67,27 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/auth" element={<Auth />} />
-      
+
+      <Route
+        path="/onboarding"
+        element={
+          <ProtectedRoute>
+            <OnboardingWizard />
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         path="/"
         element={
           <Navigate
-            to={profile?.role === "admin" ? "/dashboard" : "/work-queue"}
+            to={
+              profile?.onboarding_completed === false
+                ? "/onboarding"
+                : profile?.role === "admin"
+                ? "/dashboard"
+                : "/work-queue"
+            }
             replace
           />
         }
