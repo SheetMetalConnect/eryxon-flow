@@ -1,3 +1,34 @@
+/**
+ * Operations API Endpoint
+ *
+ * This Supabase Edge Function provides a RESTful API for managing operations.
+ *
+ * Supported Methods:
+ * - GET: Retrieve operations with filtering, sorting, and pagination
+ * - PATCH: Update operation fields
+ *
+ * Query Parameters (GET):
+ * - part_id: Filter by part ID
+ * - job_id: Filter by job ID
+ * - cell_id: Filter by cell ID
+ * - cell_name: Filter by cell name (case-insensitive partial match)
+ * - status: Filter by status (not_started, in_progress, completed, on_hold)
+ * - assigned_operator_id: Filter by assigned operator
+ * - search: Search by operation name (case-insensitive partial match)
+ * - sort_by: Sort field (sequence, created_at, estimated_time, actual_time, status, completion_percentage)
+ * - sort_order: Sort order (asc, desc) - default: desc
+ * - limit: Number of results per page (1-1000) - default: 100
+ * - offset: Pagination offset - default: 0
+ * - include_count: Include total count in response (true/false) - default: false
+ *
+ * Authentication:
+ * - Requires API key in Authorization header: "Bearer ery_live_xxx" or "Bearer ery_test_xxx"
+ *
+ * Performance:
+ * - Responses are cached for 5 seconds with stale-while-revalidate of 10 seconds
+ * - Recommended database indexes: (tenant_id, status), (tenant_id, cell_id), (tenant_id, part_id)
+ */
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
@@ -76,6 +107,10 @@ serve(async (req) => {
       const cellName = url.searchParams.get('cell_name');
       const status = url.searchParams.get('status');
       const assignedOperatorId = url.searchParams.get('assigned_operator_id');
+      const search = url.searchParams.get('search'); // Search by operation name
+      const sortBy = url.searchParams.get('sort_by') || 'created_at'; // sequence, created_at, estimated_time, actual_time, status
+      const sortOrder = url.searchParams.get('sort_order') || 'desc'; // asc or desc
+      const includeCount = url.searchParams.get('include_count') === 'true'; // Include total count
 
       // Cap pagination limit to prevent abuse
       let limit = parseInt(url.searchParams.get('limit') || '100');
@@ -83,6 +118,11 @@ serve(async (req) => {
       if (limit > 1000) limit = 1000;
 
       const offset = parseInt(url.searchParams.get('offset') || '0');
+
+      // Validate sort parameters
+      const validSortFields = ['sequence', 'created_at', 'estimated_time', 'actual_time', 'status', 'completion_percentage'];
+      const sortField = validSortFields.includes(sortBy) ? sortBy : 'created_at';
+      const ascending = sortOrder === 'asc';
 
       let query = supabase
         .from('operations')
@@ -125,9 +165,9 @@ serve(async (req) => {
             end_time,
             duration
           )
-        `)
+        `, { count: includeCount ? 'exact' : undefined })
         .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false })
+        .order(sortField, { ascending })
         .range(offset, offset + limit - 1);
 
       if (partId) {
@@ -141,6 +181,10 @@ serve(async (req) => {
       }
       if (assignedOperatorId) {
         query = query.eq('assigned_operator_id', assignedOperatorId);
+      }
+      if (search) {
+        // Search by operation name (case-insensitive)
+        query = query.ilike('operation_name', `%${search}%`);
       }
 
       // Filter by job_id (requires finding parts first)
@@ -194,8 +238,16 @@ serve(async (req) => {
       const { data: operations, error, count } = await query;
 
       if (error) {
+        console.error('Operations query error:', error);
         throw new Error(`Failed to fetch operations: ${error.message}`);
       }
+
+      // Add cache headers for performance (5 seconds cache)
+      const responseHeaders = {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=5, stale-while-revalidate=10'
+      };
 
       return new Response(
         JSON.stringify({
@@ -205,11 +257,24 @@ serve(async (req) => {
             pagination: {
               limit,
               offset,
-              total: count || operations?.length || 0
+              total: count !== null ? count : operations?.length || 0,
+              has_more: operations && operations.length === limit
             }
+          },
+          meta: {
+            filters_applied: {
+              part_id: partId,
+              job_id: jobId,
+              cell_id: cellId,
+              cell_name: cellName,
+              status,
+              assigned_operator_id: assignedOperatorId,
+              search
+            },
+            sort: { field: sortField, order: sortOrder }
           }
         }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: responseHeaders }
       );
     }
 

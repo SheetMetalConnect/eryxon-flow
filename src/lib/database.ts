@@ -71,7 +71,15 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
     .eq("tenant_id", tenantId)
     .order("sequence");
 
-  if (operationsError) throw operationsError;
+  if (operationsError) {
+    console.error("Error fetching operations with details:", operationsError);
+    throw operationsError;
+  }
+
+  if (!operations) {
+    console.warn("No operations found for tenant:", tenantId);
+    return [];
+  }
 
   // Fetch active time entries
   const { data: activeEntries, error: entriesError } = await supabase
@@ -86,7 +94,12 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
     .eq("tenant_id", tenantId)
     .is("end_time", null);
 
-  if (entriesError) throw entriesError;
+  if (entriesError) {
+    console.error("Error fetching active time entries:", entriesError);
+    throw entriesError;
+  }
+
+  console.log(`Fetched ${operations.length} operations with details`);
 
   // Map active entries to operations
   return operations.map((operation) => ({

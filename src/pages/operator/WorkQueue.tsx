@@ -100,7 +100,7 @@ export default function WorkQueue() {
             cell:cells!inner(id, name, color, sequence)
           `)
           .eq("tenant_id", profile.tenant_id)
-          .order("part(job(due_date))"),
+          .order("sequence"),
         supabase
           .from("cells")
           .select("*")
@@ -109,11 +109,29 @@ export default function WorkQueue() {
           .order("sequence"),
       ]);
 
-      if (operationsData.data) setOperations(operationsData.data);
-      if (cellsData.data) setCells(cellsData.data);
+      if (operationsData.error) {
+        console.error("Operations query error:", operationsData.error);
+        toast.error(`Failed to load operations: ${operationsData.error.message}`);
+        return;
+      }
+
+      if (cellsData.error) {
+        console.error("Cells query error:", cellsData.error);
+        toast.error(`Failed to load cells: ${cellsData.error.message}`);
+        return;
+      }
+
+      if (operationsData.data) {
+        console.log(`Loaded ${operationsData.data.length} operations`);
+        setOperations(operationsData.data);
+      }
+      if (cellsData.data) {
+        console.log(`Loaded ${cellsData.data.length} cells`);
+        setCells(cellsData.data);
+      }
     } catch (error) {
       console.error("Error loading data:", error);
-      toast.error("Failed to load work queue");
+      toast.error(`Failed to load work queue: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
