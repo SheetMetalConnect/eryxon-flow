@@ -559,11 +559,12 @@
       "price": "€ 0",
       "description": "Perfect om te beginnen",
       "features": [
-        "Tot 3 gebruikers",
-        "5 productiecellen",
-        "Basis opdrachtregistratie",
-        "Tijdregistratie",
-        "Probleemmelding",
+        "Alle functies inbegrepen",
+        "Tot 100 opdrachten per maand",
+        "Tot 1.000 onderdelen per maand",
+        "5GB opslag",
+        "10GB datagebruik per maand",
+        "Self-service aanmelding",
         "Community-ondersteuning"
       ]
     },
@@ -572,26 +573,27 @@
       "price": "€ 49",
       "description": "Ideaal voor kleine tot middelgrote bedrijven",
       "features": [
-        "Tot 15 gebruikers",
-        "Onbeperkte productiecellen",
-        "Geavanceerd opdrachtbeheer",
-        "Realtime analytics",
-        "Aangepaste workflows",
+        "Alle functies inbegrepen",
+        "Volledig gebruik met hogere limieten",
+        "Gelaagde opslaglimieten",
+        "Upgrades beschikbaar voor intensief opslaggebruik",
+        "Self-service beheer",
         "API-toegang",
         "Prioriteitsondersteuning"
       ]
     },
     "premium": {
       "name": "Premium",
-      "price": "€ 149",
+      "price": "Neem contact op met verkoop",
       "description": "Voor grote productiebedrijven",
       "features": [
-        "Onbeperkte gebruikers",
-        "Onbeperkte productiecellen",
-        "Geavanceerde analytics & rapportage",
-        "Aangepaste integraties",
+        "Alle functies inbegrepen",
+        "Enterprise-functies",
+        "SSO-authenticatie",
+        "Self-hosted deployment optie",
+        "Single-tenant architectuur",
+        "Onbeperkte opslag",
         "Toegewezen accountmanager",
-        "SLA-garantie",
         "24/7 premium ondersteuning"
       ]
     },
