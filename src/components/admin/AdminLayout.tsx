@@ -503,7 +503,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       </Box>
 
       {/* Onboarding Tour - only show if not completed */}
-      {profile && !profile.tour_completed && <AppTour userRole="admin" />}
+      {profile && !(profile as any).tour_completed && <AppTour userRole="admin" />}
     </Box>
   );
 };

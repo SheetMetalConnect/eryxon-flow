@@ -8,7 +8,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSubscription } from '@/hooks/useSubscription';
-import type { ProfileExtended } from '@/types/profile-extended';
 
 const steps = [
   { id: 1, name: 'Choose Plan', description: 'Select your subscription' },
@@ -26,8 +25,8 @@ export function OnboardingWizard() {
 
   // Load existing onboarding state
   useEffect(() => {
-    if (profile?.onboarding_step) {
-      setCurrentStep(profile.onboarding_step);
+    if ((profile as any)?.onboarding_step) {
+      setCurrentStep((profile as any).onboarding_step);
     }
     if (subscription?.plan) {
       setSelectedPlan(subscription.plan);
