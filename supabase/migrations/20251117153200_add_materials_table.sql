@@ -1,7 +1,7 @@
 -- Create materials table
 CREATE TABLE IF NOT EXISTS materials (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL,
   name TEXT NOT NULL,
   description TEXT,
   color TEXT,

@@ -1,7 +1,7 @@
 -- Create resources table for reusable resources (tooling, fixtures, molds, etc.)
 CREATE TABLE IF NOT EXISTS resources (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL,
   name TEXT NOT NULL,
   type TEXT NOT NULL, -- 'tooling', 'fixture', 'mold', 'material', 'other'
   description TEXT,
