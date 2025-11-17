@@ -1,12 +1,43 @@
 import { useState, useEffect } from "react";
-import { OperationWithDetails, startTimeTracking, stopTimeTracking, completeOperation } from "@/lib/database";
+import {
+  OperationWithDetails,
+  startTimeTracking,
+  stopTimeTracking,
+  completeOperation,
+} from "@/lib/database";
 import { useAuth } from "@/contexts/AuthContext";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Clock, Play, Square, CheckCircle, Package, AlertCircle, AlertTriangle, Box, FileText, Eye, Wrench } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Clock,
+  Play,
+  Square,
+  CheckCircle,
+  Package,
+  AlertCircle,
+  AlertTriangle,
+  Box,
+  FileText,
+  Eye,
+  Wrench,
+} from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +45,7 @@ import MetadataDisplay from "@/components/ui/MetadataDisplay";
 import IssueForm from "./IssueForm";
 import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
+import SubstepsManager from "./SubstepsManager";
 import { useTranslation } from "react-i18next";
 
 interface OperationDetailModalProps {
@@ -37,13 +69,18 @@ export default function OperationDetailModal({
   const [incompleteChildren, setIncompleteChildren] = useState<string[]>([]);
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
   const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(null);
-  const [currentFileType, setCurrentFileType] = useState<'step' | 'pdf' | null>(null);
+  const [currentFileType, setCurrentFileType] = useState<"step" | "pdf" | null>(
+    null,
+  );
   const [currentFileTitle, setCurrentFileTitle] = useState<string>("");
   const [requiredResources, setRequiredResources] = useState<any[]>([]);
 
-  const isCurrentUserTiming = operation.active_time_entry?.operator_id === profile?.id;
-  const canStartTiming = !operation.active_time_entry && operation.status !== "completed";
-  const canComplete = operation.status !== "completed" && !operation.active_time_entry;
+  const isCurrentUserTiming =
+    operation.active_time_entry?.operator_id === profile?.id;
+  const canStartTiming =
+    !operation.active_time_entry && operation.status !== "completed";
+  const canComplete =
+    operation.status !== "completed" && !operation.active_time_entry;
   const canReportIssue = isCurrentUserTiming;
 
   // Fetch required resources for this operation
@@ -53,10 +90,12 @@ export default function OperationDetailModal({
 
       const { data, error } = await supabase
         .from("operation_resources")
-        .select(`
+        .select(
+          `
           *,
           resource:resources(*)
-        `)
+        `,
+        )
         .eq("operation_id", operation.id);
 
       if (!error && data) {
@@ -82,8 +121,8 @@ export default function OperationDetailModal({
     }
 
     const incomplete = children
-      .filter(c => c.status !== "completed")
-      .map(c => c.part_number);
+      .filter((c) => c.status !== "completed")
+      .map((c) => c.part_number);
 
     if (incomplete.length > 0) {
       setIncompleteChildren(incomplete);
@@ -163,7 +202,12 @@ export default function OperationDetailModal({
   const handleViewFile = async (filePath: string) => {
     try {
       const fileExt = filePath.split(".").pop()?.toLowerCase();
-      const fileType = fileExt === "pdf" ? "pdf" : (fileExt === "step" || fileExt === "stp") ? "step" : null;
+      const fileType =
+        fileExt === "pdf"
+          ? "pdf"
+          : fileExt === "step" || fileExt === "stp"
+            ? "step"
+            : null;
 
       if (!fileType) {
         toast.error(t("operations.unsupportedFileType"));
@@ -205,7 +249,8 @@ export default function OperationDetailModal({
     setFileViewerOpen(open);
   };
 
-  const dueDate = operation.part.job.due_date_override || operation.part.job.due_date;
+  const dueDate =
+    operation.part.job.due_date_override || operation.part.job.due_date;
   const remainingTime = operation.estimated_time - (operation.actual_time || 0);
   const isOvertime = remainingTime < 0;
 
@@ -213,15 +258,21 @@ export default function OperationDetailModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{operation.operation_name}</DialogTitle>
+          <DialogTitle className="text-2xl">
+            {operation.operation_name}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Job & Part Info */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <div className="text-sm text-muted-foreground mb-1">{t("operations.job")}</div>
-              <div className="font-semibold">{operation.part.job.job_number}</div>
+              <div className="text-sm text-muted-foreground mb-1">
+                {t("operations.job")}
+              </div>
+              <div className="font-semibold">
+                {operation.part.job.job_number}
+              </div>
               {operation.part.job.customer && (
                 <div className="text-sm text-muted-foreground">
                   {operation.part.job.customer}
@@ -229,10 +280,13 @@ export default function OperationDetailModal({
               )}
             </div>
             <div>
-              <div className="text-sm text-muted-foreground mb-1">{t("operations.part")}</div>
+              <div className="text-sm text-muted-foreground mb-1">
+                {t("operations.part")}
+              </div>
               <div className="font-semibold">{operation.part.part_number}</div>
               <div className="text-sm text-muted-foreground">
-                {operation.part.material} • {t("operations.qty")}: {operation.part.quantity}
+                {operation.part.material} • {t("operations.qty")}:{" "}
+                {operation.part.quantity}
               </div>
             </div>
           </div>
@@ -242,10 +296,13 @@ export default function OperationDetailModal({
           {/* Cell & Status */}
           <div className="flex items-center gap-4">
             <div>
-              <div className="text-sm text-muted-foreground mb-1">{t("operations.cell")}</div>
+              <div className="text-sm text-muted-foreground mb-1">
+                {t("operations.cell")}
+              </div>
               <Badge
                 style={{
-                  backgroundColor: operation.cell.color || "hsl(var(--cell-default))",
+                  backgroundColor:
+                    operation.cell.color || "hsl(var(--cell-default))",
                   color: "white",
                 }}
               >
@@ -253,7 +310,9 @@ export default function OperationDetailModal({
               </Badge>
             </div>
             <div>
-              <div className="text-sm text-muted-foreground mb-1">{t("operations.status")}</div>
+              <div className="text-sm text-muted-foreground mb-1">
+                {t("operations.status")}
+              </div>
               <Badge variant="outline" className="capitalize">
                 {operation.status.replace("_", " ")}
               </Badge>
@@ -263,18 +322,26 @@ export default function OperationDetailModal({
           {/* Time Info */}
           <div className="grid grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
             <div>
-              <div className="text-xs text-muted-foreground mb-1">{t("operations.estimated")}</div>
+              <div className="text-xs text-muted-foreground mb-1">
+                {t("operations.estimated")}
+              </div>
               <div className="text-lg font-semibold flex items-center gap-1">
                 <Clock className="h-4 w-4" />
                 {operation.estimated_time}m
               </div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground mb-1">{t("operations.actual")}</div>
-              <div className="text-lg font-semibold">{operation.actual_time || 0}m</div>
+              <div className="text-xs text-muted-foreground mb-1">
+                {t("operations.actual")}
+              </div>
+              <div className="text-lg font-semibold">
+                {operation.actual_time || 0}m
+              </div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground mb-1">{t("operations.remaining")}</div>
+              <div className="text-xs text-muted-foreground mb-1">
+                {t("operations.remaining")}
+              </div>
               <div
                 className={`text-lg font-semibold ${
                   isOvertime ? "text-destructive" : ""
@@ -289,8 +356,12 @@ export default function OperationDetailModal({
           {/* Due Date */}
           {dueDate && (
             <div>
-              <div className="text-sm text-muted-foreground mb-1">{t("operations.dueDate")}</div>
-              <div className="font-medium">{format(new Date(dueDate), "PPP")}</div>
+              <div className="text-sm text-muted-foreground mb-1">
+                {t("operations.dueDate")}
+              </div>
+              <div className="font-medium">
+                {format(new Date(dueDate), "PPP")}
+              </div>
             </div>
           )}
 
@@ -314,8 +385,10 @@ export default function OperationDetailModal({
             <div className="flex items-center gap-2 p-3 bg-active-work/10 border border-active-work/30 rounded-lg">
               <AlertCircle className="h-5 w-5 text-active-work" />
               <div className="text-sm">
-                <span className="font-medium">{operation.active_time_entry.operator.full_name}</span>
-                {" "}{t("operations.currentlyWorking")}
+                <span className="font-medium">
+                  {operation.active_time_entry.operator.full_name}
+                </span>{" "}
+                {t("operations.currentlyWorking")}
               </div>
             </div>
           )}
@@ -323,8 +396,12 @@ export default function OperationDetailModal({
           {/* Notes */}
           {operation.notes && (
             <div>
-              <div className="text-sm text-muted-foreground mb-1">{t("operations.notes")}</div>
-              <div className="text-sm p-3 bg-muted rounded">{operation.notes}</div>
+              <div className="text-sm text-muted-foreground mb-1">
+                {t("operations.notes")}
+              </div>
+              <div className="text-sm p-3 bg-muted rounded">
+                {operation.notes}
+              </div>
             </div>
           )}
 
@@ -334,50 +411,57 @@ export default function OperationDetailModal({
           )}
 
           {/* Files Section */}
-          {operation.part.file_paths && operation.part.file_paths.length > 0 && (
-            <div>
-              <div className="text-sm text-muted-foreground mb-2">{t("operations.files")}</div>
-              <div className="space-y-2">
-                {operation.part.file_paths.map((filePath: string, index: number) => {
-                  const fileName = filePath.split("/").pop() || "Unknown";
-                  const fileExt = filePath.split(".").pop()?.toLowerCase();
-                  const isSTEP = fileExt === "step" || fileExt === "stp";
-                  const isPDF = fileExt === "pdf";
+          {operation.part.file_paths &&
+            operation.part.file_paths.length > 0 && (
+              <div>
+                <div className="text-sm text-muted-foreground mb-2">
+                  {t("operations.files")}
+                </div>
+                <div className="space-y-2">
+                  {operation.part.file_paths.map(
+                    (filePath: string, index: number) => {
+                      const fileName = filePath.split("/").pop() || "Unknown";
+                      const fileExt = filePath.split(".").pop()?.toLowerCase();
+                      const isSTEP = fileExt === "step" || fileExt === "stp";
+                      const isPDF = fileExt === "pdf";
 
-                  if (!isSTEP && !isPDF) return null;
+                      if (!isSTEP && !isPDF) return null;
 
-                  return (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between border rounded-md p-3 bg-muted/50"
-                    >
-                      <div className="flex items-center gap-3">
-                        {isSTEP ? (
-                          <Box className="h-5 w-5 text-blue-600" />
-                        ) : (
-                          <FileText className="h-5 w-5 text-red-600" />
-                        )}
-                        <div>
-                          <p className="font-medium text-sm">{fileName}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {isSTEP ? t("operations.3dModel") : t("operations.drawing")}
-                          </p>
+                      return (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between border rounded-md p-3 bg-muted/50"
+                        >
+                          <div className="flex items-center gap-3">
+                            {isSTEP ? (
+                              <Box className="h-5 w-5 text-blue-600" />
+                            ) : (
+                              <FileText className="h-5 w-5 text-red-600" />
+                            )}
+                            <div>
+                              <p className="font-medium text-sm">{fileName}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {isSTEP
+                                  ? t("operations.3dModel")
+                                  : t("operations.drawing")}
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleViewFile(filePath)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            {t("operations.view")}
+                          </Button>
                         </div>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleViewFile(filePath)}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        {t("operations.view")}
-                      </Button>
-                    </div>
-                  );
-                })}
+                      );
+                    },
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Required Resources Section */}
           {requiredResources.length > 0 && (
@@ -396,7 +480,9 @@ export default function OperationDetailModal({
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <Wrench className="h-4 w-4 text-orange-600" />
-                          <p className="font-medium text-sm">{opResource.resource.name}</p>
+                          <p className="font-medium text-sm">
+                            {opResource.resource.name}
+                          </p>
                           {opResource.quantity > 1 && (
                             <Badge variant="secondary" className="text-xs">
                               {t("operations.qty")}: {opResource.quantity}
@@ -405,13 +491,17 @@ export default function OperationDetailModal({
                         </div>
                         <div className="text-xs text-muted-foreground space-y-0.5 ml-6">
                           <p className="capitalize">
-                            {t("operations.type")}: {opResource.resource.type.replace("_", " ")}
+                            {t("operations.type")}:{" "}
+                            {opResource.resource.type.replace("_", " ")}
                           </p>
                           {opResource.resource.identifier && (
                             <p>ID: {opResource.resource.identifier}</p>
                           )}
                           {opResource.resource.location && (
-                            <p>{t("operations.location")}: {opResource.resource.location}</p>
+                            <p>
+                              {t("operations.location")}:{" "}
+                              {opResource.resource.location}
+                            </p>
                           )}
                           {opResource.notes && (
                             <p className="text-amber-700 dark:text-amber-300 mt-1">
@@ -421,7 +511,11 @@ export default function OperationDetailModal({
                         </div>
                       </div>
                       <Badge
-                        variant={opResource.resource.status === "available" ? "default" : "secondary"}
+                        variant={
+                          opResource.resource.status === "available"
+                            ? "default"
+                            : "secondary"
+                        }
                         className="text-xs capitalize"
                       >
                         {opResource.resource.status.replace("_", " ")}
@@ -450,49 +544,58 @@ export default function OperationDetailModal({
             )}
 
             <div className="flex gap-3">
-            {canStartTiming && (
-              <Button
-                onClick={handleStartTiming}
-                disabled={loading}
-                size="lg"
-                className="flex-1 h-14 text-lg gap-2"
-                data-tour="start-timer"
-              >
-                <Play className="h-5 w-5" />
-                {t("operations.startTime")}
-              </Button>
-            )}
+              {canStartTiming && (
+                <Button
+                  onClick={handleStartTiming}
+                  disabled={loading}
+                  size="lg"
+                  className="flex-1 h-14 text-lg gap-2"
+                  data-tour="start-timer"
+                >
+                  <Play className="h-5 w-5" />
+                  {t("operations.startTime")}
+                </Button>
+              )}
 
-            {isCurrentUserTiming && (
-              <Button
-                onClick={handleStopTiming}
-                disabled={loading}
-                variant="destructive"
-                size="lg"
-                className="flex-1 h-14 text-lg gap-2"
-              >
-                <Square className="h-5 w-5" />
-                {t("operations.stopTime")}
-              </Button>
-            )}
+              {isCurrentUserTiming && (
+                <Button
+                  onClick={handleStopTiming}
+                  disabled={loading}
+                  variant="destructive"
+                  size="lg"
+                  className="flex-1 h-14 text-lg gap-2"
+                >
+                  <Square className="h-5 w-5" />
+                  {t("operations.stopTime")}
+                </Button>
+              )}
 
-            {canComplete && (
-              <Button
-                onClick={handleComplete}
-                disabled={loading}
-                variant="default"
-                size="lg"
-                className="flex-1 h-14 text-lg gap-2 bg-completed hover:bg-completed/90"
-              >
-                <CheckCircle className="h-5 w-5" />
-                {t("operations.markComplete")}
-              </Button>
-            )}
+              {canComplete && (
+                <Button
+                  onClick={handleComplete}
+                  disabled={loading}
+                  variant="default"
+                  size="lg"
+                  className="flex-1 h-14 text-lg gap-2 bg-completed hover:bg-completed/90"
+                >
+                  <CheckCircle className="h-5 w-5" />
+                  {t("operations.markComplete")}
+                </Button>
+              )}
             </div>
+          </div>
+
+          {/* Substeps Section */}
+          <div className="mt-6">
+            <SubstepsManager
+              operationId={operation.id}
+              operationName={operation.operation_name}
+              onUpdate={onUpdate}
+            />
           </div>
         </div>
       </DialogContent>
-      
+
       <IssueForm
         operationId={operation.id}
         open={showIssueForm}
@@ -500,7 +603,10 @@ export default function OperationDetailModal({
         onSuccess={onUpdate}
       />
 
-      <AlertDialog open={showAssemblyWarning} onOpenChange={setShowAssemblyWarning}>
+      <AlertDialog
+        open={showAssemblyWarning}
+        onOpenChange={setShowAssemblyWarning}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
@@ -510,9 +616,11 @@ export default function OperationDetailModal({
             <AlertDialogDescription>
               {t("operations.assemblyWarningDescription")}
               <div className="mt-3">
-                <div className="text-sm font-medium text-foreground mb-2">{t("operations.incompleteComponents")}:</div>
+                <div className="text-sm font-medium text-foreground mb-2">
+                  {t("operations.incompleteComponents")}:
+                </div>
                 <ul className="list-disc list-inside text-sm space-y-1">
-                  {incompleteChildren.map(part => (
+                  {incompleteChildren.map((part) => (
                     <li key={part}>{part}</li>
                   ))}
                 </ul>
