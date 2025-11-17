@@ -28,6 +28,7 @@ import Parts from "./pages/admin/Parts";
 import { ActivityMonitor } from "./pages/admin/ActivityMonitor";
 import { Operations } from "./pages/admin/Operations";
 import { Settings } from "./pages/admin/Settings";
+import IntegrationsMarketplace from "./pages/admin/IntegrationsMarketplace";
 import StepsTemplatesView from "./pages/admin/StepsTemplatesView";
 import ApiDocs from "./pages/ApiDocs";
 import Pricing from "./pages/Pricing";
@@ -295,6 +296,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Settings />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/integrations"
+        element={
+          <ProtectedRoute adminOnly>
+            <IntegrationsMarketplace />
           </ProtectedRoute>
         }
       />
