@@ -62,7 +62,7 @@ export function IconPicker({ value, onValueChange, placeholder = "Select icon...
   const [search, setSearch] = React.useState("");
 
   // Get the icon component
-  const SelectedIcon = value && value in icons ? icons[value as keyof typeof icons] : null;
+  const SelectedIcon = (value && value in icons ? icons[value as keyof typeof icons] : null) as React.ComponentType<{ className?: string }> | null;
 
   // Filter icons based on search
   const filteredCategories = React.useMemo(() => {
@@ -121,7 +121,7 @@ export function IconPicker({ value, onValueChange, placeholder = "Select icon...
               <CommandGroup key={category} heading={category}>
                 <div className="grid grid-cols-6 gap-1 p-2">
                   {iconList.map((iconName) => {
-                    const IconComponent = icons[iconName as keyof typeof icons];
+                    const IconComponent = icons[iconName as keyof typeof icons] as React.ComponentType<{ className?: string }>;
                     if (!IconComponent) return null;
 
                     return (
@@ -158,7 +158,7 @@ export function IconDisplay({ iconName, className, fallback }: IconDisplayProps)
     return fallback || null;
   }
 
-  const IconComponent = iconName in icons ? icons[iconName as keyof typeof icons] : null;
+  const IconComponent = (iconName in icons ? icons[iconName as keyof typeof icons] : null) as React.ComponentType<{ className?: string }> | null;
 
   if (!IconComponent) {
     return fallback || null;

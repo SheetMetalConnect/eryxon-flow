@@ -219,7 +219,7 @@ export default function IssueQueue() {
           <Label htmlFor="status-filter" className="mb-2 block">
             Status
           </Label>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
             <SelectTrigger id="status-filter">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
@@ -237,7 +237,7 @@ export default function IssueQueue() {
           <Label htmlFor="severity-filter" className="mb-2 block">
             Severity
           </Label>
-          <Select value={severityFilter} onValueChange={setSeverityFilter}>
+          <Select value={severityFilter} onValueChange={(v) => setSeverityFilter(v as any)}>
             <SelectTrigger id="severity-filter">
               <SelectValue placeholder="Filter by severity" />
             </SelectTrigger>
