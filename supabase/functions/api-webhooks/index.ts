@@ -13,7 +13,7 @@ async function authenticateApiKey(authHeader: string | null, supabase: any) {
   }
 
   const apiKey = authHeader.substring(7);
-  
+
   if (!apiKey.startsWith('ery_live_') && !apiKey.startsWith('ery_test_')) {
     return null;
   }
@@ -37,7 +37,7 @@ async function authenticateApiKey(authHeader: string | null, supabase: any) {
         .from('api_keys')
         .update({ last_used_at: new Date().toISOString() })
         .eq('id', key.id);
-      
+
       return fullKey.tenant_id;
     }
   }
@@ -68,122 +68,119 @@ serve(async (req) => {
       );
     }
 
-    // Handle GET requests - list cells
+    // Handle GET requests - list webhooks
     if (req.method === 'GET') {
       const url = new URL(req.url);
-      const activeFilter = url.searchParams.get('active');
+      const eventType = url.searchParams.get('event_type');
+      const active = url.searchParams.get('active');
 
       let query = supabase
-        .from('cells')
-        .select('id, name, color, sequence, active, created_at, updated_at')
+        .from('webhooks')
+        .select('id, url, event_type, active, secret_key, created_at, updated_at')
         .eq('tenant_id', tenantId)
-        .order('sequence');
+        .order('created_at', { ascending: false });
 
-      if (activeFilter === 'true') {
+      if (eventType) {
+        query = query.eq('event_type', eventType);
+      }
+      if (active === 'true') {
         query = query.eq('active', true);
+      } else if (active === 'false') {
+        query = query.eq('active', false);
       }
 
-      const { data: cells, error } = await query;
+      const { data: webhooks, error } = await query;
 
       if (error) {
-        throw new Error(`Failed to fetch cells: ${error.message}`);
+        throw new Error(`Failed to fetch webhooks: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { cells }
+          data: { webhooks: webhooks || [] }
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Handle POST requests - create cell
+    // Handle POST requests - create webhook
     if (req.method === 'POST') {
       const body = await req.json();
 
       // Validate required fields
-      if (!body.name) {
+      if (!body.url || !body.event_type) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'name is required' }
+            error: { code: 'VALIDATION_ERROR', message: 'url and event_type are required' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Check for duplicate cell name
-      const { data: existingCell } = await supabase
-        .from('cells')
-        .select('id')
-        .eq('tenant_id', tenantId)
-        .eq('name', body.name)
-        .single();
-
-      if (existingCell) {
+      // Validate URL format
+      try {
+        new URL(body.url);
+      } catch {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'DUPLICATE_CELL', message: `Cell name ${body.name} already exists` }
+            error: { code: 'VALIDATION_ERROR', message: 'Invalid URL format' }
           }),
-          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Get the next sequence number
-      const { data: maxSeq } = await supabase
-        .from('cells')
-        .select('sequence')
-        .eq('tenant_id', tenantId)
-        .order('sequence', { ascending: false })
-        .limit(1)
-        .single();
+      // Generate secret key if not provided
+      let secretKey = body.secret_key;
+      if (!secretKey) {
+        const randomBytes = crypto.getRandomValues(new Uint8Array(32));
+        secretKey = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+      }
 
-      const sequence = body.sequence ?? ((maxSeq?.sequence ?? 0) + 1);
-
-      const { data: cell, error: cellError } = await supabase
-        .from('cells')
+      const { data: webhook, error: webhookError } = await supabase
+        .from('webhooks')
         .insert({
           tenant_id: tenantId,
-          name: body.name,
-          color: body.color || '#3B82F6',
-          sequence: sequence,
+          url: body.url,
+          event_type: body.event_type,
+          secret_key: secretKey,
           active: body.active ?? true
         })
         .select()
         .single();
 
-      if (cellError || !cell) {
-        throw new Error(`Failed to create cell: ${cellError?.message}`);
+      if (webhookError || !webhook) {
+        throw new Error(`Failed to create webhook: ${webhookError?.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { cell }
+          data: { webhook }
         }),
         { status: 201, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Handle PATCH requests - update cell
+    // Handle PATCH requests - update webhook
     if (req.method === 'PATCH') {
       const url = new URL(req.url);
-      const cellId = url.searchParams.get('id');
+      const webhookId = url.searchParams.get('id');
 
-      if (!cellId) {
+      if (!webhookId) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'Cell ID is required in query string (?id=xxx)' }
+            error: { code: 'VALIDATION_ERROR', message: 'Webhook ID is required in query string (?id=xxx)' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       const body = await req.json();
-      const allowedFields = ['name', 'color', 'sequence', 'active'];
+      const allowedFields = ['url', 'event_type', 'active'];
       const updates: any = {};
 
       for (const field of allowedFields) {
@@ -202,33 +199,27 @@ serve(async (req) => {
         );
       }
 
-      // Check for duplicate name if name is being updated
-      if (updates.name) {
-        const { data: existingCell } = await supabase
-          .from('cells')
-          .select('id')
-          .eq('tenant_id', tenantId)
-          .eq('name', updates.name)
-          .neq('id', cellId)
-          .single();
-
-        if (existingCell) {
+      // Validate URL if provided
+      if (updates.url) {
+        try {
+          new URL(updates.url);
+        } catch {
           return new Response(
             JSON.stringify({
               success: false,
-              error: { code: 'DUPLICATE_CELL', message: `Cell name ${updates.name} already exists` }
+              error: { code: 'VALIDATION_ERROR', message: 'Invalid URL format' }
             }),
-            { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
       }
 
       updates.updated_at = new Date().toISOString();
 
-      const { data: cell, error } = await supabase
-        .from('cells')
+      const { data: webhook, error } = await supabase
+        .from('webhooks')
         .update(updates)
-        .eq('id', cellId)
+        .eq('id', webhookId)
         .eq('tenant_id', tenantId)
         .select()
         .single();
@@ -238,59 +229,42 @@ serve(async (req) => {
           return new Response(
             JSON.stringify({
               success: false,
-              error: { code: 'NOT_FOUND', message: 'Cell not found' }
+              error: { code: 'NOT_FOUND', message: 'Webhook not found' }
             }),
             { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        throw new Error(`Failed to update cell: ${error.message}`);
+        throw new Error(`Failed to update webhook: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { cell }
+          data: { webhook }
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Handle DELETE requests - delete cell
+    // Handle DELETE requests - delete webhook
     if (req.method === 'DELETE') {
       const url = new URL(req.url);
-      const cellId = url.searchParams.get('id');
+      const webhookId = url.searchParams.get('id');
 
-      if (!cellId) {
+      if (!webhookId) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'Cell ID is required in query string (?id=xxx)' }
+            error: { code: 'VALIDATION_ERROR', message: 'Webhook ID is required in query string (?id=xxx)' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Check if cell has any operations
-      const { data: operations } = await supabase
-        .from('operations')
-        .select('id')
-        .eq('cell_id', cellId)
-        .limit(1);
-
-      if (operations && operations.length > 0) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: { code: 'CONFLICT', message: 'Cannot delete cell with existing operations. Consider deactivating instead.' }
-          }),
-          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
       const { error } = await supabase
-        .from('cells')
+        .from('webhooks')
         .delete()
-        .eq('id', cellId)
+        .eq('id', webhookId)
         .eq('tenant_id', tenantId);
 
       if (error) {
@@ -298,24 +272,23 @@ serve(async (req) => {
           return new Response(
             JSON.stringify({
               success: false,
-              error: { code: 'NOT_FOUND', message: 'Cell not found' }
+              error: { code: 'NOT_FOUND', message: 'Webhook not found' }
             }),
             { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        throw new Error(`Failed to delete cell: ${error.message}`);
+        throw new Error(`Failed to delete webhook: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { message: 'Cell deleted successfully' }
+          data: { message: 'Webhook deleted successfully' }
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Method not allowed
     return new Response(
       JSON.stringify({
         success: false,
@@ -325,7 +298,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in api-cells:', error);
+    console.error('Error in api-webhooks:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({
