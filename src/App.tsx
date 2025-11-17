@@ -13,6 +13,8 @@ import MyIssues from "./pages/operator/MyIssues";
 import Dashboard from "./pages/admin/Dashboard";
 import IssueQueue from "./pages/admin/IssueQueue";
 import ConfigStages from "./pages/admin/ConfigStages";
+import ConfigMaterials from "./pages/admin/ConfigMaterials";
+import ConfigResources from "./pages/admin/ConfigResources";
 import ConfigUsers from "./pages/admin/ConfigUsers";
 import Assignments from "./pages/admin/Assignments";
 import ConfigApiKeys from "./pages/admin/ConfigApiKeys";
@@ -111,10 +113,46 @@ function AppRoutes() {
       />
 
       <Route
+        path="/admin/stages"
+        element={
+          <ProtectedRoute adminOnly>
+            <ConfigStages />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/admin/config/stages"
         element={
           <ProtectedRoute adminOnly>
             <ConfigStages />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/materials"
+        element={
+          <ProtectedRoute adminOnly>
+            <ConfigMaterials />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/resources"
+        element={
+          <ProtectedRoute adminOnly>
+            <ConfigResources />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute adminOnly>
+            <ConfigUsers />
           </ProtectedRoute>
         }
       />
