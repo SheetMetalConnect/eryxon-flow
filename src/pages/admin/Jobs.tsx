@@ -21,14 +21,31 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Plus, Clock, AlertCircle } from "lucide-react";
+import {
+  Calendar,
+  Plus,
+  Clock,
+  AlertCircle,
+  Box,
+  FileText,
+} from "lucide-react";
 import { format, isAfter, isBefore, addDays } from "date-fns";
 import JobDetailModal from "@/components/admin/JobDetailModal";
 import DueDateOverrideModal from "@/components/admin/DueDateOverrideModal";
+import { STEPViewer } from "@/components/STEPViewer";
+import { PDFViewer } from "@/components/PDFViewer";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Jobs() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"due_date" | "status">("due_date");
@@ -36,15 +53,24 @@ export default function Jobs() {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [overrideJobId, setOverrideJobId] = useState<string | null>(null);
 
-  const { data: jobs, isLoading, refetch } = useQuery({
+  // File viewer state
+  const [fileViewerOpen, setFileViewerOpen] = useState(false);
+  const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(null);
+  const [currentFileType, setCurrentFileType] = useState<"step" | "pdf" | null>(
+    null,
+  );
+  const [currentFileTitle, setCurrentFileTitle] = useState<string>("");
+
+  const {
+    data: jobs,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["admin-jobs", statusFilter, searchQuery, sortBy, sortOrder],
     queryFn: async () => {
-      let query = supabase
-        .from("jobs")
-        .select(`
+      let query = supabase.from("jobs").select(`
           *,
-          parts:parts(count),
-          operations:parts(operations(count))
+          parts(id, file_paths, operations(id))
         `);
 
       if (statusFilter !== "all") {
@@ -52,18 +78,40 @@ export default function Jobs() {
       }
 
       if (searchQuery) {
-        query = query.or(`job_number.ilike.%${searchQuery}%,customer.ilike.%${searchQuery}%`);
+        query = query.or(
+          `job_number.ilike.%${searchQuery}%,customer.ilike.%${searchQuery}%`,
+        );
       }
 
       const { data, error } = await query;
       if (error) throw error;
 
-      // Calculate counts and sort
-      const processedJobs = data.map((job: any) => ({
-        ...job,
-        parts_count: job.parts?.[0]?.count || 0,
-        operations_count: job.operations?.reduce((sum: number, part: any) => sum + (part.operations?.[0]?.count || 0), 0) || 0,
-      }));
+      // Calculate counts and file information
+      const processedJobs = data.map((job: any) => {
+        const allFiles: string[] =
+          job.parts?.flatMap((part: any) => part.file_paths || []) || [];
+        const stepFiles = allFiles.filter((f) => {
+          const ext = f.split(".").pop()?.toLowerCase();
+          return ext === "step" || ext === "stp";
+        });
+        const pdfFiles = allFiles.filter(
+          (f) => f.split(".").pop()?.toLowerCase() === "pdf",
+        );
+
+        return {
+          ...job,
+          parts_count: job.parts?.length || 0,
+          operations_count:
+            job.parts?.reduce(
+              (sum: number, part: any) => sum + (part.operations?.length || 0),
+              0,
+            ) || 0,
+          stepFiles,
+          pdfFiles,
+          hasSTEP: stepFiles.length > 0,
+          hasPDF: pdfFiles.length > 0,
+        };
+      });
 
       // Sort
       processedJobs.sort((a, b) => {
@@ -74,7 +122,12 @@ export default function Jobs() {
             ? dateA.getTime() - dateB.getTime()
             : dateB.getTime() - dateA.getTime();
         } else {
-          const statusOrder = { not_started: 0, in_progress: 1, on_hold: 2, completed: 3 };
+          const statusOrder = {
+            not_started: 0,
+            in_progress: 1,
+            on_hold: 2,
+            completed: 3,
+          };
           const orderA = statusOrder[a.status as keyof typeof statusOrder];
           const orderB = statusOrder[b.status as keyof typeof statusOrder];
           return sortOrder === "asc" ? orderA - orderB : orderB - orderA;
@@ -86,10 +139,7 @@ export default function Jobs() {
   });
 
   const handleSetOnHold = async (jobId: string) => {
-    await supabase
-      .from("jobs")
-      .update({ status: "on_hold" })
-      .eq("id", jobId);
+    await supabase.from("jobs").update({ status: "on_hold" }).eq("id", jobId);
     refetch();
   };
 
@@ -101,8 +151,72 @@ export default function Jobs() {
     refetch();
   };
 
+  // Handle viewing file (STEP or PDF)
+  const handleViewFile = async (filePath: string) => {
+    try {
+      const fileExt = filePath.split(".").pop()?.toLowerCase();
+      const fileType =
+        fileExt === "pdf"
+          ? "pdf"
+          : fileExt === "step" || fileExt === "stp"
+            ? "step"
+            : null;
+
+      if (!fileType) {
+        toast({
+          title: "Error",
+          description: "Unsupported file type",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create signed URL
+      const { data, error } = await supabase.storage
+        .from("parts-cad")
+        .createSignedUrl(filePath, 3600);
+
+      if (error) throw error;
+      if (!data?.signedUrl) throw new Error("Failed to generate signed URL");
+
+      // For STEP files, fetch as blob to avoid CORS issues
+      let viewUrl = data.signedUrl;
+      if (fileType === "step") {
+        const response = await fetch(data.signedUrl);
+        const blob = await response.blob();
+        viewUrl = URL.createObjectURL(blob);
+      }
+
+      const fileName = filePath.split("/").pop() || "File";
+      setCurrentFileUrl(viewUrl);
+      setCurrentFileType(fileType);
+      setCurrentFileTitle(fileName);
+      setFileViewerOpen(true);
+    } catch (error: any) {
+      console.error("Error opening file:", error);
+      toast({
+        title: "Error",
+        description: "Failed to open file viewer",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleFileDialogClose = () => {
+    setFileViewerOpen(false);
+    if (currentFileUrl && currentFileType === "step") {
+      URL.revokeObjectURL(currentFileUrl);
+    }
+    setCurrentFileUrl(null);
+    setCurrentFileType(null);
+    setCurrentFileTitle("");
+  };
+
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+    const variants: Record<
+      string,
+      "default" | "secondary" | "destructive" | "outline"
+    > = {
       not_started: "secondary",
       in_progress: "default",
       completed: "outline",
@@ -157,10 +271,18 @@ export default function Jobs() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t("workQueue.allStatuses")}</SelectItem>
-            <SelectItem value="not_started">{t("operations.status.notStarted")}</SelectItem>
-            <SelectItem value="in_progress">{t("operations.status.inProgress")}</SelectItem>
-            <SelectItem value="completed">{t("operations.status.completed")}</SelectItem>
-            <SelectItem value="on_hold">{t("operations.status.onHold")}</SelectItem>
+            <SelectItem value="not_started">
+              {t("operations.status.notStarted")}
+            </SelectItem>
+            <SelectItem value="in_progress">
+              {t("operations.status.inProgress")}
+            </SelectItem>
+            <SelectItem value="completed">
+              {t("operations.status.completed")}
+            </SelectItem>
+            <SelectItem value="on_hold">
+              {t("operations.status.onHold")}
+            </SelectItem>
           </SelectContent>
         </Select>
 
@@ -197,7 +319,10 @@ export default function Jobs() {
               <TableHead>{t("jobs.dueDate")}</TableHead>
               <TableHead>{t("jobs.status")}</TableHead>
               <TableHead className="text-right">{t("jobs.parts")}</TableHead>
-              <TableHead className="text-right">{t("jobs.operations")}</TableHead>
+              <TableHead className="text-right">
+                {t("jobs.operations")}
+              </TableHead>
+              <TableHead>Files</TableHead>
               <TableHead className="text-right">{t("common.edit")}</TableHead>
             </TableRow>
           </TableHeader>
@@ -209,7 +334,10 @@ export default function Jobs() {
                 <TableCell className={getDueDateStyle(job)}>
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    {format(new Date(job.due_date_override || job.due_date), "MMM dd, yyyy")}
+                    {format(
+                      new Date(job.due_date_override || job.due_date),
+                      "MMM dd, yyyy",
+                    )}
                     {job.due_date_override && (
                       <Badge variant="outline" className="text-xs">
                         {t("jobs.dueDate")}
@@ -219,7 +347,38 @@ export default function Jobs() {
                 </TableCell>
                 <TableCell>{getStatusBadge(job.status)}</TableCell>
                 <TableCell className="text-right">{job.parts_count}</TableCell>
-                <TableCell className="text-right">{job.operations_count}</TableCell>
+                <TableCell className="text-right">
+                  {job.operations_count}
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    {job.hasSTEP && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => handleViewFile(job.stepFiles[0])}
+                        title={`${job.stepFiles.length} STEP file(s)`}
+                      >
+                        <Box className="h-5 w-5 text-blue-600" />
+                      </Button>
+                    )}
+                    {job.hasPDF && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => handleViewFile(job.pdfFiles[0])}
+                        title={`${job.pdfFiles.length} PDF file(s)`}
+                      >
+                        <FileText className="h-5 w-5 text-red-600" />
+                      </Button>
+                    )}
+                    {!job.hasSTEP && !job.hasPDF && (
+                      <span className="text-xs text-gray-400">-</span>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button
@@ -276,6 +435,23 @@ export default function Jobs() {
           onUpdate={() => refetch()}
         />
       )}
+
+      {/* File Viewer Dialog */}
+      <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
+        <DialogContent className="max-w-7xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>{currentFileTitle}</DialogTitle>
+          </DialogHeader>
+          <div className="w-full h-[75vh]">
+            {currentFileType === "step" && currentFileUrl && (
+              <STEPViewer fileUrl={currentFileUrl} />
+            )}
+            {currentFileType === "pdf" && currentFileUrl && (
+              <PDFViewer fileUrl={currentFileUrl} />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

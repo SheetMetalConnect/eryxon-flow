@@ -45,7 +45,16 @@
     "operatorAssignments": "Operator Assignments",
     "apiDocumentation": "API Documentation",
     "pricing": "Pricing",
-    "myPlan": "My Plan"
+    "myPlan": "My Plan",
+    "operations": "Operations",
+    "activityMonitor": "Activity Monitor",
+    "settings": "Settings",
+    "docsAndHelp": "Docs & Help",
+    "sections": {
+      "overview": "OVERVIEW",
+      "operations": "OPERATIONS",
+      "data": "DATA"
+    }
   },
   "subscription": {
     "currentPlan": "Current Plan",
@@ -121,20 +130,8 @@
     "failedToLoad": "Failed to load work queue"
   },
   "common": {
-    "loading": "Loading...",
-    "cancel": "Cancel",
-    "save": "Save",
-    "delete": "Delete",
-    "edit": "Edit",
-    "add": "Add",
-    "search": "Search",
-    "filter": "Filter",
-    "close": "Close",
-    "confirm": "Confirm",
-    "success": "Success",
-    "error": "Error",
-    "warning": "Warning",
-    "info": "Info"
+    "admin": "Admin",
+    "operator": "Operator"
   },
   "onboarding": {
     "welcome": "Welcome to Eryxon MES",
@@ -291,8 +288,18 @@
     "issueDetails": "Issue Details",
     "issueSummary": "Issue Summary",
     "description": "Description",
-    "severity": "Severity",
-    "status": "Status",
+    "severity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "closed": "Closed"
+    },
     "reportedBy": "Reported By",
     "reportedAt": "Reported At",
     "resolvedBy": "Resolved By",
@@ -322,19 +329,7 @@
     "filterBySeverity": "Filter by Severity",
     "filterByStatus": "Filter by Status",
     "searchIssues": "Search issues...",
-    "noIssues": "No issues found",
-    "severity": {
-      "low": "Low",
-      "medium": "Medium",
-      "high": "High",
-      "critical": "Critical"
-    },
-    "status": {
-      "pending": "Pending",
-      "approved": "Approved",
-      "rejected": "Rejected",
-      "closed": "Closed"
-    }
+    "noIssues": "No issues found"
   },
   "stages": {
     "title": "Stage Configuration",
@@ -420,32 +415,39 @@
       "copper": "Copper",
       "brass": "Brass",
       "other": "Other"
-    }
+    },
+    "manageMaterials": "Manage material configurations",
+    "materialNamePlaceholder": "Enter material name",
+    "descriptionPlaceholder": "Enter description",
+    "color": "Color",
+    "active": "Active",
+    "inactive": "Inactive",
+    "cancel": "Cancel",
+    "update": "Update",
+    "create": "Create",
+    "createNewMaterial": "Create New Material",
+    "noMaterialsConfigured": "No materials configured yet",
+    "addFirstMaterial": "Add your first material to get started",
+    "failedToSaveMaterial": "Failed to save material"
   },
   "resources": {
     "title": "Resource Management",
     "createResource": "Create Resource",
     "editResource": "Edit Resource",
-    "deleteResource": "Delete Resource",
-    "resourceDetails": "Resource Details",
     "resourceName": "Resource Name",
     "resourceType": "Resource Type",
     "description": "Description",
-    "stage": "Stage",
-    "isActive": "Active",
-    "isAvailable": "Available",
+    "identifier": "Identifier",
+    "location": "Location",
+    "status": "Status",
+    "available": "Available",
+    "inUse": "In Use",
+    "maintenance": "Maintenance",
     "resourceCreated": "Resource created successfully",
     "resourceUpdated": "Resource updated successfully",
-    "resourceDeleted": "Resource deleted successfully",
-    "deleteConfirm": "Are you sure you want to delete this resource?",
-    "noResources": "No resources configured",
-    "searchResources": "Search resources...",
-    "types": {
-      "machine": "Machine",
-      "tool": "Tool",
-      "equipment": "Equipment",
-      "workstation": "Workstation"
-    }
+    "failedToSaveResource": "Failed to save resource",
+    "noResourcesConfigured": "No resources configured yet",
+    "addFirstResource": "Add your first resource to get started"
   },
   "assignments": {
     "title": "Operator Assignments",
