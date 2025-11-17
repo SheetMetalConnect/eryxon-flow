@@ -77,7 +77,7 @@ serve(async (req) => {
       : allTables.filter(table => entities.includes(table));
 
     // Export data
-    const exportData: Record<string, any[]> = {};
+    const exportData: Record<string, any> = {};
     const exportMetadata = {
       exported_at: new Date().toISOString(),
       tenant_id: tenantId,
@@ -140,8 +140,9 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Export error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
