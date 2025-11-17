@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import { canCreateParts, createLimitErrorResponse } from "../_shared/plan-limits.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -191,6 +192,14 @@ serve(async (req) => {
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
+      }
+
+      // Check plan limits before creating parts
+      const quantity = body.quantity || 1;
+      const quotaCheck = await canCreateParts(supabase, tenantId, quantity);
+
+      if (!quotaCheck.allowed) {
+        return createLimitErrorResponse(quotaCheck, 'part');
       }
 
       // Verify job exists and belongs to tenant
