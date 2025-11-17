@@ -1,188 +1,126 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
+  Card,
+  CardContent,
+  Grid,
+  Avatar,
   Chip,
   FormControl,
   Select,
   MenuItem,
-  FormControlLabel,
-  Switch,
+  TextField,
+  InputAdornment,
+  Paper,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Divider,
   Button,
+  IconButton,
   alpha,
   useTheme,
   CircularProgress,
+  Tooltip,
+  Stack,
+  Badge,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
 import {
-  FiberManualRecord as FiberManualRecordIcon,
+  Timeline as TimelineIcon,
+  Person as PersonIcon,
+  Search as SearchIcon,
   Refresh as RefreshIcon,
   GetApp as GetAppIcon,
+  FiberManualRecord as FiberManualRecordIcon,
+  Add as AddIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Login as LoginIcon,
+  Logout as LogoutIcon,
+  Visibility as VisibilityIcon,
+  Settings as SettingsIcon,
+  CloudDownload as CloudDownloadIcon,
+  CloudUpload as CloudUploadIcon,
+  Work as WorkIcon,
+  Inventory as InventoryIcon,
+  CheckCircle as CheckCircleIcon,
+  People as PeopleIcon,
+  ViewInAr as ViewInArIcon,
+  Build as BuildIcon,
+  Filter1 as FilterIcon,
 } from '@mui/icons-material';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { formatDistanceToNow } from 'date-fns';
 
-interface ActiveWork {
-  operator_id: string;
-  operator_name: string;
-  operator_email: string;
-  status: 'working' | 'paused' | 'idle';
-  current_operation: string | null;
-  current_part: string | null;
-  duration: number; // in seconds
-  stage: string | null;
+interface ActivityLog {
+  id: string;
+  user_email: string;
+  user_name: string;
+  action: string;
+  entity_type: string;
+  entity_id: string | null;
+  entity_name: string | null;
+  description: string;
+  changes: any;
+  metadata: any;
+  created_at: string;
 }
 
-interface StageStatus {
-  stage: string;
-  active_ops: number;
-  queued_ops: number;
-  avg_time_hours: number;
-  wip_status: 'normal' | 'high' | 'bottleneck';
+interface ActivityStats {
+  total_activities: number;
+  unique_users: number;
+  activities_by_action: Record<string, number>;
+  activities_by_entity: Record<string, number>;
 }
 
 export const ActivityMonitor: React.FC = () => {
-  const [activeWork, setActiveWork] = useState<ActiveWork[]>([]);
-  const [stageStatus, setStageStatus] = useState<StageStatus[]>([]);
+  const [activities, setActivities] = useState<ActivityLog[]>([]);
+  const [stats, setStats] = useState<ActivityStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [filterOperator, setFilterOperator] = useState<string>('all');
-  const [filterStage, setFilterStage] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [activeOnly, setActiveOnly] = useState(true);
+  const [filterAction, setFilterAction] = useState<string>('all');
+  const [filterEntityType, setFilterEntityType] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [refreshInterval, setRefreshInterval] = useState(5); // seconds
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [limit, setLimit] = useState(50);
   const theme = useTheme();
   const { profile } = useAuth();
 
-  // Load active work data
-  const loadData = async () => {
+  // Load activity data
+  const loadData = useCallback(async () => {
     if (!profile) return;
 
     try {
-      // Get all operators
-      const { data: operators } = await supabase
-        .from('profiles')
-        .select('id, full_name, email')
-        .eq('tenant_id', profile.tenant_id)
-        .eq('role', 'operator')
-        .eq('active', true);
-
-      if (!operators) {
-        setLoading(false);
-        return;
-      }
-
-      // Get active time entries
-      const { data: activeEntries } = await supabase
-        .from('time_entries')
-        .select(`
-          id,
-          operator_id,
-          operation_id,
-          start_time,
-          end_time,
-          operations (
-            id,
-            operation_type,
-            part_id,
-            parts (
-              part_number,
-              stage_id,
-              stages (
-                name
-              )
-            )
-          )
-        `)
-        .eq('tenant_id', profile.tenant_id)
-        .is('end_time', null)
-        .order('start_time', { ascending: false });
-
-      // Map operators to active work
-      const workData: ActiveWork[] = operators.map((op) => {
-        const activeEntry = activeEntries?.find((e) => e.operator_id === op.id);
-
-        if (activeEntry) {
-          const duration = Math.floor((new Date().getTime() - new Date(activeEntry.start_time).getTime()) / 1000);
-          const operation = activeEntry.operations as any;
-          const part = operation?.parts as any;
-          const stage = part?.stages as any;
-
-          return {
-            operator_id: op.id,
-            operator_name: op.full_name || op.email,
-            operator_email: op.email,
-            status: 'working' as const,
-            current_operation: operation?.operation_type || null,
-            current_part: part?.part_number || null,
-            duration,
-            stage: stage?.name || null,
-          };
-        }
-
-        return {
-          operator_id: op.id,
-          operator_name: op.full_name || op.email,
-          operator_email: op.email,
-          status: 'idle' as const,
-          current_operation: null,
-          current_part: null,
-          duration: 0,
-          stage: null,
-        };
+      // Get activity logs with filters
+      const { data: activityData, error: activityError } = await supabase.rpc('get_activity_logs', {
+        p_limit: limit,
+        p_offset: 0,
+        p_action: filterAction === 'all' ? null : filterAction,
+        p_entity_type: filterEntityType === 'all' ? null : filterEntityType,
+        p_search: searchQuery || null,
       });
 
-      setActiveWork(workData);
+      if (activityError) {
+        console.error('Error loading activities:', activityError);
+      } else {
+        setActivities(activityData || []);
+      }
 
-      // Calculate stage status
-      const { data: stages } = await supabase
-        .from('stages')
-        .select('id, name, sequence')
-        .eq('tenant_id', profile.tenant_id)
-        .eq('active', true)
-        .order('sequence');
+      // Get activity statistics
+      const { data: statsData, error: statsError } = await supabase.rpc('get_activity_stats', {
+        p_start_date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        p_end_date: new Date().toISOString(),
+      });
 
-      if (stages) {
-        const stageData: StageStatus[] = await Promise.all(
-          stages.map(async (stage) => {
-            // Count active operations in this stage
-            const activeInStage = workData.filter((w) => w.stage === stage.name && w.status === 'working').length;
-
-            // Count queued operations (parts in this stage not being worked on)
-            const { count: queuedCount } = await supabase
-              .from('parts')
-              .select('*', { count: 'exact', head: true })
-              .eq('tenant_id', profile.tenant_id)
-              .eq('stage_id', stage.id)
-              .eq('status', 'in_progress');
-
-            // Mock average time calculation (would need historical data)
-            const avgTime = Math.random() * 4 + 1; // 1-5 hours
-
-            // Determine WIP status based on thresholds
-            const totalWIP = activeInStage + (queuedCount || 0);
-            let wipStatus: 'normal' | 'high' | 'bottleneck' = 'normal';
-            if (totalWIP > 30) wipStatus = 'bottleneck';
-            else if (totalWIP > 20) wipStatus = 'high';
-
-            return {
-              stage: stage.name,
-              active_ops: activeInStage,
-              queued_ops: queuedCount || 0,
-              avg_time_hours: avgTime,
-              wip_status: wipStatus,
-            };
-          })
-        );
-
-        setStageStatus(stageData);
+      if (statsError) {
+        console.error('Error loading stats:', statsError);
+      } else if (statsData && statsData.length > 0) {
+        setStats(statsData[0]);
       }
 
       setLastUpdate(new Date());
@@ -191,73 +129,148 @@ export const ActivityMonitor: React.FC = () => {
       console.error('Error loading activity data:', error);
       setLoading(false);
     }
-  };
+  }, [profile, filterAction, filterEntityType, searchQuery, limit]);
 
   // Initial load
   useEffect(() => {
     loadData();
-  }, [profile]);
+  }, [loadData]);
 
-  // Auto-refresh
+  // Auto-refresh every 10 seconds
   useEffect(() => {
     if (!autoRefresh) return;
 
     const interval = setInterval(() => {
       loadData();
-    }, refreshInterval * 1000);
+    }, 10000);
 
     return () => clearInterval(interval);
-  }, [autoRefresh, refreshInterval, profile]);
+  }, [autoRefresh, loadData]);
 
-  // Apply filters
-  const filteredWork = activeWork.filter((work) => {
-    if (filterOperator !== 'all' && work.operator_id !== filterOperator) return false;
-    if (filterStage !== 'all' && work.stage !== filterStage) return false;
-    if (filterStatus !== 'all' && work.status !== filterStatus) return false;
-    if (activeOnly && work.status === 'idle') return false;
-    return true;
-  });
+  // Real-time subscription
+  useEffect(() => {
+    if (!profile) return;
 
-  const formatDuration = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+    // Subscribe to activity log changes
+    const channel = supabase
+      .channel('activity_log_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'activity_log',
+          filter: `tenant_id=eq.${profile.tenant_id}`,
+        },
+        (payload) => {
+          console.log('Real-time activity update:', payload);
+          // Reload data when changes occur
+          loadData();
+        }
+      )
+      .subscribe();
 
-  const getStatusIcon = (status: string) => {
-    const colors = {
-      working: '#10B981',
-      paused: '#F59E0B',
-      idle: '#9CA3AF',
+    return () => {
+      supabase.removeChannel(channel);
     };
-    return <FiberManualRecordIcon sx={{ fontSize: 12, color: colors[status as keyof typeof colors] || '#9CA3AF' }} />;
-  };
+  }, [profile, loadData]);
 
-  const getWIPStatusColor = (status: string) => {
-    switch (status) {
-      case 'normal':
-        return '#10B981';
-      case 'high':
-        return '#F59E0B';
-      case 'bottleneck':
-        return '#EF4444';
+  // Get action icon
+  const getActionIcon = (action: string) => {
+    switch (action) {
+      case 'create':
+        return <AddIcon fontSize="small" />;
+      case 'update':
+        return <EditIcon fontSize="small" />;
+      case 'delete':
+        return <DeleteIcon fontSize="small" />;
+      case 'login':
+        return <LoginIcon fontSize="small" />;
+      case 'logout':
+        return <LogoutIcon fontSize="small" />;
+      case 'view':
+        return <VisibilityIcon fontSize="small" />;
+      case 'configure':
+        return <SettingsIcon fontSize="small" />;
+      case 'export':
+        return <CloudDownloadIcon fontSize="small" />;
+      case 'import':
+        return <CloudUploadIcon fontSize="small" />;
       default:
-        return '#9CA3AF';
+        return <FiberManualRecordIcon fontSize="small" />;
     }
   };
 
+  // Get action color
+  const getActionColor = (action: string) => {
+    switch (action) {
+      case 'create':
+        return '#10B981'; // Green
+      case 'update':
+        return '#3B82F6'; // Blue
+      case 'delete':
+        return '#EF4444'; // Red
+      case 'login':
+        return '#8B5CF6'; // Purple
+      case 'logout':
+        return '#6B7280'; // Gray
+      case 'view':
+        return '#06B6D4'; // Cyan
+      case 'configure':
+        return '#F59E0B'; // Orange
+      case 'export':
+      case 'import':
+        return '#EC4899'; // Pink
+      default:
+        return '#9CA3AF'; // Light Gray
+    }
+  };
+
+  // Get entity icon
+  const getEntityIcon = (entityType: string | null) => {
+    switch (entityType) {
+      case 'job':
+        return <WorkIcon fontSize="small" />;
+      case 'part':
+        return <InventoryIcon fontSize="small" />;
+      case 'operation':
+        return <CheckCircleIcon fontSize="small" />;
+      case 'user':
+        return <PeopleIcon fontSize="small" />;
+      case 'stage':
+        return <ViewInArIcon fontSize="small" />;
+      case 'material':
+      case 'resource':
+        return <BuildIcon fontSize="small" />;
+      default:
+        return <TimelineIcon fontSize="small" />;
+    }
+  };
+
+  // Get user initials
+  const getUserInitials = (name: string | null, email: string) => {
+    if (name) {
+      const parts = name.split(' ');
+      if (parts.length >= 2) {
+        return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+      }
+      return name.slice(0, 2).toUpperCase();
+    }
+    return email.slice(0, 2).toUpperCase();
+  };
+
+  // Export activity log
   const handleExport = () => {
     const csv = [
-      ['Operator', 'Status', 'Operation', 'Part', 'Stage', 'Duration'].join(','),
-      ...filteredWork.map((w) =>
+      ['Timestamp', 'User', 'Action', 'Entity Type', 'Entity', 'Description'].join(','),
+      ...activities.map((a) =>
         [
-          w.operator_name,
-          w.status,
-          w.current_operation || '-',
-          w.current_part || '-',
-          w.stage || '-',
-          formatDuration(w.duration),
+          new Date(a.created_at).toISOString(),
+          a.user_name || a.user_email,
+          a.action,
+          a.entity_type || '-',
+          a.entity_name || '-',
+          `"${a.description || '-'}"`,
         ].join(',')
       ),
     ].join('\n');
@@ -266,10 +279,14 @@ export const ActivityMonitor: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `activity-snapshot-${new Date().toISOString()}.csv`;
+    a.download = `activity-log-${new Date().toISOString()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  // Get unique actions and entity types for filters
+  const uniqueActions = Array.from(new Set(activities.map((a) => a.action).filter(Boolean)));
+  const uniqueEntityTypes = Array.from(new Set(activities.map((a) => a.entity_type).filter(Boolean)));
 
   if (loading) {
     return (
@@ -281,207 +298,314 @@ export const ActivityMonitor: React.FC = () => {
 
   return (
     <Box>
-      {/* Filters */}
-      <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <Select value={filterOperator} onChange={(e) => setFilterOperator(e.target.value)}>
-            <MenuItem value="all">All Operators</MenuItem>
-            {activeWork.map((w) => (
-              <MenuItem key={w.operator_id} value={w.operator_id}>
-                {w.operator_name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <Select value={filterStage} onChange={(e) => setFilterStage(e.target.value)}>
-            <MenuItem value="all">All Stages</MenuItem>
-            {[...new Set(activeWork.map((w) => w.stage).filter(Boolean))].map((stage) => (
-              <MenuItem key={stage} value={stage}>
-                {stage}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-            <MenuItem value="all">All Status</MenuItem>
-            <MenuItem value="working">Working</MenuItem>
-            <MenuItem value="paused">Paused</MenuItem>
-            <MenuItem value="idle">Idle</MenuItem>
-          </Select>
-        </FormControl>
-
-        <FormControlLabel
-          control={<Switch checked={activeOnly} onChange={(e) => setActiveOnly(e.target.checked)} />}
-          label="Active Only"
-        />
-
-        <Box sx={{ flexGrow: 1 }} />
-
-        <FormControl size="small" sx={{ minWidth: 120 }}>
-          <Select
-            value={refreshInterval}
-            onChange={(e) => setRefreshInterval(Number(e.target.value))}
-            disabled={!autoRefresh}
-          >
-            <MenuItem value={5}>5 seconds</MenuItem>
-            <MenuItem value={10}>10 seconds</MenuItem>
-            <MenuItem value={30}>30 seconds</MenuItem>
-          </Select>
-        </FormControl>
-
-        <FormControlLabel
-          control={<Switch checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} />}
-          label="Auto-refresh"
-        />
-
-        <Button startIcon={<RefreshIcon />} onClick={loadData} variant="outlined" size="small">
-          Refresh
-        </Button>
-
-        <Button startIcon={<GetAppIcon />} onClick={handleExport} variant="outlined" size="small">
-          Export
-        </Button>
+      {/* Header Section */}
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+          <TimelineIcon sx={{ fontSize: 40, color: theme.palette.primary.main }} />
+          <Box>
+            <Typography variant="h4" fontWeight={700}>
+              Activity Monitor
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Real-time platform activity feed with comprehensive audit trail
+            </Typography>
+          </Box>
+        </Box>
       </Box>
 
-      {/* Active Now Section */}
-      <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-        ACTIVE NOW ({filteredWork.filter((w) => w.status === 'working').length} operators)
-      </Typography>
-
-      <TableContainer component={Paper} sx={{ mb: 4 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Operator</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Current Operation</TableCell>
-              <TableCell>Duration</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredWork.map((work) => (
-              <TableRow
-                key={work.operator_id}
-                sx={{
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.action.hover, 0.08),
-                  },
-                }}
-              >
-                <TableCell>
-                  <Typography variant="body2" fontWeight={500}>
-                    {work.operator_name}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {work.operator_email}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    {getStatusIcon(work.status)}
-                    <Typography variant="body2" textTransform="capitalize">
-                      {work.status}
+      {/* Statistics Cards */}
+      {stats && (
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1), color: theme.palette.primary.main }}>
+                    <TimelineIcon />
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h4" fontWeight={700}>
+                      {stats.total_activities || 0}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Total Activities (24h)
                     </Typography>
                   </Box>
-                </TableCell>
-                <TableCell>
-                  {work.current_operation ? (
-                    <>
-                      <Typography variant="body2" fontWeight={500}>
-                        {work.current_operation}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Part: {work.current_part} • {work.stage}
-                      </Typography>
-                    </>
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">
-                      -
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Avatar sx={{ bgcolor: alpha('#10B981', 0.1), color: '#10B981' }}>
+                    <PeopleIcon />
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h4" fontWeight={700}>
+                      {stats.unique_users || 0}
                     </Typography>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2" fontFamily="monospace">
-                    {formatDuration(work.duration)}
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            ))}
-            {filteredWork.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    No operators match the current filters
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                    <Typography variant="body2" color="text.secondary">
+                      Active Users (24h)
+                    </Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
 
-      {/* Stage Overview Section */}
-      <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-        STAGE BOTTLENECKS (QRM Indicators)
-      </Typography>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Avatar sx={{ bgcolor: alpha('#3B82F6', 0.1), color: '#3B82F6' }}>
+                    <AddIcon />
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h4" fontWeight={700}>
+                      {stats.activities_by_action?.create || 0}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Created (24h)
+                    </Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Stage</TableCell>
-              <TableCell align="center">Active Ops</TableCell>
-              <TableCell align="center">Queued Ops</TableCell>
-              <TableCell align="center">Avg Time</TableCell>
-              <TableCell align="center">WIP Status</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {stageStatus.map((stage) => (
-              <TableRow key={stage.stage}>
-                <TableCell>
-                  <Typography variant="body2" fontWeight={500}>
-                    {stage.stage}
+          <Grid item xs={12} sm={6} md={3}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Avatar sx={{ bgcolor: alpha('#F59E0B', 0.1), color: '#F59E0B' }}>
+                    <EditIcon />
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h4" fontWeight={700}>
+                      {stats.activities_by_action?.update || 0}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Updated (24h)
+                    </Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      )}
+
+      {/* Filters and Controls */}
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} md={3}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search activities..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={2}>
+            <FormControl fullWidth size="small">
+              <Select value={filterAction} onChange={(e) => setFilterAction(e.target.value)}>
+                <MenuItem value="all">All Actions</MenuItem>
+                {uniqueActions.map((action) => (
+                  <MenuItem key={action} value={action}>
+                    {action.charAt(0).toUpperCase() + action.slice(1)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={2}>
+            <FormControl fullWidth size="small">
+              <Select value={filterEntityType} onChange={(e) => setFilterEntityType(e.target.value)}>
+                <MenuItem value="all">All Entities</MenuItem>
+                {uniqueEntityTypes.map((type) => (
+                  <MenuItem key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={2}>
+            <FormControl fullWidth size="small">
+              <Select value={limit} onChange={(e) => setLimit(Number(e.target.value))}>
+                <MenuItem value={25}>Last 25</MenuItem>
+                <MenuItem value={50}>Last 50</MenuItem>
+                <MenuItem value={100}>Last 100</MenuItem>
+                <MenuItem value={200}>Last 200</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} md={3}>
+            <Stack direction="row" spacing={1} justifyContent="flex-end">
+              <FormControlLabel
+                control={<Switch checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} />}
+                label="Auto-refresh"
+              />
+              <IconButton onClick={loadData} color="primary" size="small">
+                <RefreshIcon />
+              </IconButton>
+              <IconButton onClick={handleExport} color="primary" size="small">
+                <GetAppIcon />
+              </IconButton>
+            </Stack>
+          </Grid>
+        </Grid>
+      </Paper>
+
+      {/* Activity Feed */}
+      <Paper sx={{ p: 0 }}>
+        <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+          <Typography variant="h6" fontWeight={600}>
+            Recent Activity
+            <Chip
+              label={`${activities.length} events`}
+              size="small"
+              sx={{ ml: 2 }}
+              color="primary"
+              variant="outlined"
+            />
+          </Typography>
+          <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+            Last updated: {lastUpdate.toLocaleTimeString()}
+            {autoRefresh && ' (auto-refreshing every 10s)'}
+          </Typography>
+        </Box>
+
+        <List sx={{ p: 0 }}>
+          {activities.length === 0 ? (
+            <ListItem sx={{ py: 8 }}>
+              <ListItemText
+                primary={
+                  <Typography variant="body1" color="text.secondary" align="center">
+                    No activities found
                   </Typography>
-                </TableCell>
-                <TableCell align="center">{stage.active_ops}</TableCell>
-                <TableCell align="center">{stage.queued_ops}</TableCell>
-                <TableCell align="center">{stage.avg_time_hours.toFixed(1)}h</TableCell>
-                <TableCell align="center">
-                  <Chip
-                    label={stage.wip_status.toUpperCase()}
-                    size="small"
-                    sx={{
-                      backgroundColor: getWIPStatusColor(stage.wip_status),
-                      color: '#fff',
-                      fontWeight: 600,
-                    }}
+                }
+                secondary={
+                  <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1 }}>
+                    Try adjusting your filters or search query
+                  </Typography>
+                }
+              />
+            </ListItem>
+          ) : (
+            activities.map((activity, index) => (
+              <React.Fragment key={activity.id}>
+                <ListItem
+                  sx={{
+                    py: 2,
+                    px: 3,
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.action.hover, 0.04),
+                    },
+                  }}
+                >
+                  <ListItemAvatar>
+                    <Badge
+                      overlap="circular"
+                      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                      badgeContent={
+                        <Avatar
+                          sx={{
+                            width: 20,
+                            height: 20,
+                            bgcolor: getActionColor(activity.action),
+                            border: `2px solid ${theme.palette.background.paper}`,
+                          }}
+                        >
+                          {getActionIcon(activity.action)}
+                        </Avatar>
+                      }
+                    >
+                      <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
+                        {getUserInitials(activity.user_name, activity.user_email)}
+                      </Avatar>
+                    </Badge>
+                  </ListItemAvatar>
+
+                  <ListItemText
+                    primary={
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                        <Typography variant="body2" fontWeight={600}>
+                          {activity.user_name || activity.user_email}
+                        </Typography>
+                        <Chip
+                          label={activity.action}
+                          size="small"
+                          sx={{
+                            height: 20,
+                            fontSize: '0.7rem',
+                            fontWeight: 600,
+                            textTransform: 'uppercase',
+                            bgcolor: alpha(getActionColor(activity.action), 0.1),
+                            color: getActionColor(activity.action),
+                          }}
+                        />
+                        {activity.entity_type && (
+                          <Chip
+                            icon={getEntityIcon(activity.entity_type)}
+                            label={activity.entity_type}
+                            size="small"
+                            sx={{
+                              height: 20,
+                              fontSize: '0.7rem',
+                            }}
+                            variant="outlined"
+                          />
+                        )}
+                      </Box>
+                    }
+                    secondary={
+                      <Box>
+                        <Typography variant="body2" color="text.primary" sx={{ mb: 0.5 }}>
+                          {activity.description}
+                        </Typography>
+                        {activity.entity_name && (
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            {activity.entity_type}: <strong>{activity.entity_name}</strong>
+                          </Typography>
+                        )}
+                        <Typography variant="caption" color="text.secondary">
+                          {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}
+                        </Typography>
+                      </Box>
+                    }
                   />
-                </TableCell>
-              </TableRow>
-            ))}
-            {stageStatus.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    No stage data available
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                </ListItem>
+                {index < activities.length - 1 && <Divider variant="inset" component="li" />}
+              </React.Fragment>
+            ))
+          )}
+        </List>
 
-      {/* Last Updated */}
-      <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block', textAlign: 'right' }}>
-        Last updated: {lastUpdate.toLocaleTimeString()}
-        {autoRefresh && ` (auto-refreshing every ${refreshInterval}s)`}
-      </Typography>
+        {/* Load More */}
+        {activities.length >= limit && (
+          <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider', textAlign: 'center' }}>
+            <Button onClick={() => setLimit(limit + 50)} variant="outlined">
+              Load More
+            </Button>
+          </Box>
+        )}
+      </Paper>
     </Box>
   );
 };
