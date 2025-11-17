@@ -123,7 +123,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   const bottomNavItems = [
     { path: '/admin/settings', label: 'Settings', icon: <SettingsIcon /> },
-    { path: '/api-docs', label: 'Docs & Help', icon: <MenuBookIcon /> },
+    { path: '/help', label: 'Docs & Help', icon: <MenuBookIcon /> },
   ];
 
   const drawer = (
