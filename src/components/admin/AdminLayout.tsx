@@ -192,6 +192,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           icon: <BuildIcon />,
         },
         {
+          path: "/admin/config/steps-templates",
+          label: t("Steps & Templates"),
+          icon: <CheckCircleIcon />,
+        },
+        {
           path: "/admin/config/api-keys",
           label: t("navigation.apiKeys"),
           icon: <VpnKeyIcon />,
