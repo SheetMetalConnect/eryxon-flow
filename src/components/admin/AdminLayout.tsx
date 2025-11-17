@@ -122,7 +122,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           display: 'flex',
           alignItems: 'center',
           gap: 1.5,
-          background: 'linear-gradient(135deg, #6658A3 0%, #47B5E2 100%)',
+          background: 'linear-gradient(135deg, #3a4656 0%, #0080ff 100%)',
           color: '#ffffff',
         }}
       >
@@ -311,6 +311,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
           {/* Right Side Actions */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+
             {/* Theme Toggle */}
             <IconButton onClick={toggleTheme} color="inherit">
               {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
