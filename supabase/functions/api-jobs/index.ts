@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import { canCreateJob, canCreateParts, createLimitErrorResponse } from "../_shared/plan-limits.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -298,6 +299,21 @@ serve(async (req) => {
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Check plan limits before creating job
+    const jobQuotaCheck = await canCreateJob(supabase, tenantId);
+
+    if (!jobQuotaCheck.allowed) {
+      return createLimitErrorResponse(jobQuotaCheck, 'job');
+    }
+
+    // Check plan limits for parts (calculate total parts quantity)
+    const totalPartsQuantity = body.parts.reduce((sum, part) => sum + (part.quantity || 1), 0);
+    const partsQuotaCheck = await canCreateParts(supabase, tenantId, totalPartsQuantity);
+
+    if (!partsQuotaCheck.allowed) {
+      return createLimitErrorResponse(partsQuotaCheck, 'part');
     }
 
     // Check for duplicate job number
