@@ -3,13 +3,17 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 
+// SECURITY NOTE: The role field here is for UI convenience only (showing/hiding UI elements).
+// All actual authorization is enforced server-side via Row Level Security (RLS) policies
+// using the has_role() function that queries the user_roles table.
+// Client-side role checks provide ZERO security - they can be bypassed by attackers.
 interface Profile {
   id: string;
   tenant_id: string;
   username: string;
   full_name: string;
   email: string;
-  role: "operator" | "admin";
+  role: "operator" | "admin"; // UI convenience only - NOT for security
   active: boolean;
   is_machine: boolean;
   is_root_admin: boolean;
