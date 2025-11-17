@@ -14,6 +14,7 @@ import MetadataDisplay from "@/components/ui/MetadataDisplay";
 import IssueForm from "./IssueForm";
 import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
+import SubstepsManager from "./SubstepsManager";
 
 interface OperationDetailModalProps {
   operation: OperationWithDetails;
@@ -430,6 +431,15 @@ export default function OperationDetailModal({
               </div>
             </div>
           )}
+
+          {/* Substeps Section */}
+          <div>
+            <SubstepsManager
+              operationId={operation.id}
+              operationName={operation.operation_name}
+              onUpdate={onUpdate}
+            />
+          </div>
 
           <Separator />
 

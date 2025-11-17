@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { Plus, Save, X, Upload, Eye, Trash2, Box, FileText, AlertTriangle, Package, ChevronRight } from "lucide-react";
+import { Plus, Save, X, Upload, Eye, Trash2, Box, FileText, AlertTriangle, Package, ChevronRight, GripVertical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
@@ -26,11 +26,92 @@ import {
 } from "@/components/ui/select";
 import { fetchChildParts, fetchParentPart, checkAssemblyDependencies } from "@/lib/database";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { toast as sonnerToast } from "sonner";
 
 interface PartDetailModalProps {
   partId: string;
   onClose: () => void;
   onUpdate: () => void;
+}
+
+interface SortableOperationItemProps {
+  operation: any;
+}
+
+function SortableOperationItem({ operation }: SortableOperationItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: operation.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-3 border rounded-md p-3 bg-white"
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing"
+      >
+        <GripVertical className="h-5 w-5 text-muted-foreground" />
+      </div>
+      <div className="flex items-center gap-3 flex-1">
+        <Badge
+          variant="outline"
+          style={{
+            borderColor: operation.cell?.color,
+            backgroundColor: `${operation.cell?.color || "#999"}20`,
+          }}
+        >
+          {operation.cell?.name}
+        </Badge>
+        <div className="flex-1">
+          <p className="font-medium">{operation.operation_name}</p>
+          <p className="text-xs text-gray-500">
+            Seq: {operation.sequence}
+            {operation.estimated_time && ` | Est: ${operation.estimated_time}min`}
+            {operation.assigned_operator && (
+              <span className="ml-2">
+                | Assigned: {operation.assigned_operator.full_name}
+              </span>
+            )}
+          </p>
+        </div>
+      </div>
+      <Badge variant={operation.status === "completed" ? "default" : "secondary"}>
+        {operation.status?.replace("_", " ")}
+      </Badge>
+    </div>
+  );
 }
 
 export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetailModalProps) {
@@ -52,6 +133,14 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
   const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(null);
   const [currentFileType, setCurrentFileType] = useState<'step' | 'pdf' | null>(null);
   const [currentFileTitle, setCurrentFileTitle] = useState<string>("");
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const { data: part, isLoading } = useQuery({
     queryKey: ["part-detail", partId],
@@ -348,6 +437,45 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       setCurrentFileUrl(null);
     }
     setFileViewerOpen(open);
+  };
+
+  // Handle drag and drop reordering of operations
+  const handleOperationDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id || !operations) return;
+
+    const oldIndex = operations.findIndex((op) => op.id === active.id);
+    const newIndex = operations.findIndex((op) => op.id === over.id);
+
+    const newOperations = arrayMove(operations, oldIndex, newIndex);
+
+    // Update sequences
+    const updatedOperations = newOperations.map((op, index) => ({
+      ...op,
+      sequence: index + 1,
+    }));
+
+    // Optimistically update the UI
+    refetchOperations();
+
+    try {
+      // Update sequences in database
+      const updates = updatedOperations.map((op) =>
+        supabase
+          .from("operations")
+          .update({ sequence: op.sequence })
+          .eq("id", op.id)
+      );
+
+      await Promise.all(updates);
+      sonnerToast.success("Operation order updated");
+      onUpdate();
+    } catch (error: any) {
+      console.error("Error reordering operations:", error);
+      sonnerToast.error("Failed to reorder operations");
+      refetchOperations();
+    }
   };
 
   if (isLoading) {
@@ -739,43 +867,25 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
             {/* Operations List */}
             <div className="space-y-2">
-              {operations?.map((op: any) => (
-                <div
-                  key={op.id}
-                  className="flex items-center justify-between border rounded-md p-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <Badge
-                      variant="outline"
-                      style={{
-                        borderColor: op.cell?.color,
-                        backgroundColor: `${op.cell?.color || "#999"}20`,
-                      }}
-                    >
-                      {op.cell?.name}
-                    </Badge>
-                    <div>
-                      <p className="font-medium">{op.operation_name}</p>
-                      <p className="text-xs text-gray-500">
-                        Seq: {op.sequence}
-                        {op.estimated_time && ` | Est: ${op.estimated_time}min`}
-                        {op.assigned_operator && (
-                          <span className="ml-2">
-                            | Assigned: {op.assigned_operator.full_name}
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge variant={op.status === "completed" ? "default" : "secondary"}>
-                    {op.status?.replace("_", " ")}
-                  </Badge>
-                </div>
-              ))}
-              {(operations?.length || 0) === 0 && (
+              {(operations?.length || 0) === 0 ? (
                 <p className="text-sm text-gray-500 text-center py-4">
                   No operations added yet
                 </p>
+              ) : (
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleOperationDragEnd}
+                >
+                  <SortableContext
+                    items={operations?.map((op) => op.id) || []}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {operations?.map((op: any) => (
+                      <SortableOperationItem key={op.id} operation={op} />
+                    ))}
+                  </SortableContext>
+                </DndContext>
               )}
             </div>
           </div>
