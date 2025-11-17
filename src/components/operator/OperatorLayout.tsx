@@ -318,7 +318,7 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
       </Box>
 
       {/* Onboarding Tour - only show if not completed */}
-      {profile && !profile.tour_completed && <AppTour userRole="operator" />}
+      {profile && !(profile as any).tour_completed && <AppTour userRole="operator" />}
     </Box>
   );
 };

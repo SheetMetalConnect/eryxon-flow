@@ -83,7 +83,7 @@ function AppRoutes() {
         element={
           <Navigate
             to={
-              profile?.onboarding_completed === false
+              (profile as any)?.onboarding_completed === false
                 ? "/onboarding"
                 : profile?.role === "admin"
                 ? "/dashboard"

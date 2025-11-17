@@ -28,55 +28,49 @@ export async function generateMockData(
         {
           tenant_id: tenantId,
           name: 'Laser Cutting',
-          stage: 'cutting',
+          sequence: 0,
           description: 'High-precision laser cutting station',
           color: '#3b82f6', // blue
-          order_index: 0,
           active: true,
         },
         {
           tenant_id: tenantId,
           name: 'CNC Bending',
-          stage: 'bending',
+          sequence: 1,
           description: 'Press brake and folding operations',
           color: '#f59e0b', // amber
-          order_index: 1,
           active: true,
         },
         {
           tenant_id: tenantId,
           name: 'Welding',
-          stage: 'welding',
+          sequence: 2,
           description: 'MIG/TIG welding and fabrication',
           color: '#ef4444', // red
-          order_index: 2,
           active: true,
         },
         {
           tenant_id: tenantId,
           name: 'Assembly',
-          stage: 'assembly',
+          sequence: 3,
           description: 'Final assembly and hardware installation',
           color: '#8b5cf6', // violet
-          order_index: 3,
           active: true,
         },
         {
           tenant_id: tenantId,
           name: 'Finishing',
-          stage: 'finishing',
+          sequence: 4,
           description: 'Powder coating and surface treatment',
           color: '#10b981', // green
-          order_index: 4,
           active: true,
         },
         {
           tenant_id: tenantId,
           name: 'Quality Control',
-          stage: 'quality',
+          sequence: 5,
           description: 'Final inspection and quality assurance',
           color: '#6366f1', // indigo
-          order_index: 5,
           active: true,
         },
       ];
@@ -97,12 +91,10 @@ export async function generateMockData(
         {
           tenant_id: tenantId,
           job_number: 'JOB-2024-001',
-          customer_name: 'Acme Manufacturing',
-          description: 'Custom stainless steel enclosures',
-          status: 'active',
-          priority: 'high',
+          customer: 'Acme Manufacturing',
+          notes: 'Custom stainless steel enclosures - Rush order - customer needs by end of week',
+          status: 'in_progress' as const,
           due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
-          notes: 'Rush order - customer needs by end of week',
           metadata: {
             material: 'SS304',
             thickness: '2mm',
@@ -113,12 +105,10 @@ export async function generateMockData(
         {
           tenant_id: tenantId,
           job_number: 'JOB-2024-002',
-          customer_name: 'Industrial Solutions Inc',
-          description: 'Aluminum mounting brackets',
-          status: 'active',
-          priority: 'medium',
+          customer: 'Industrial Solutions Inc',
+          notes: 'Aluminum mounting brackets - Standard lead time',
+          status: 'in_progress' as const,
           due_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(), // 14 days
-          notes: 'Standard lead time',
           metadata: {
             material: 'AL6061',
             thickness: '3mm',
@@ -129,12 +119,10 @@ export async function generateMockData(
         {
           tenant_id: tenantId,
           job_number: 'JOB-2024-003',
-          customer_name: 'Tech Innovations LLC',
-          description: 'Steel server rack panels',
-          status: 'active',
-          priority: 'low',
+          customer: 'Tech Innovations LLC',
+          notes: 'Steel server rack panels - Repeat order - use previous setup',
+          status: 'not_started' as const,
           due_date: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(), // 21 days
-          notes: 'Repeat order - use previous setup',
           metadata: {
             material: 'CRS',
             thickness: '1.5mm',
@@ -162,9 +150,10 @@ export async function generateMockData(
           tenant_id: tenantId,
           job_id: jobIds[0],
           part_number: 'ENC-TOP-001',
-          description: 'Enclosure Top Panel',
+          material: 'SS304',
+          notes: 'Enclosure Top Panel',
           quantity: 10,
-          status: 'in_progress',
+          status: 'in_progress' as const,
           metadata: {
             dimensions: '400x300x2mm',
             weight: '2.1kg',
@@ -175,9 +164,10 @@ export async function generateMockData(
           tenant_id: tenantId,
           job_id: jobIds[0],
           part_number: 'ENC-SIDE-001',
-          description: 'Enclosure Side Panel',
+          material: 'SS304',
+          notes: 'Enclosure Side Panel',
           quantity: 20,
-          status: 'queued',
+          status: 'not_started' as const,
           metadata: {
             dimensions: '300x200x2mm',
             weight: '1.4kg',
@@ -189,9 +179,10 @@ export async function generateMockData(
           tenant_id: tenantId,
           job_id: jobIds[1],
           part_number: 'BRK-MNT-A',
-          description: 'L-Bracket Type A',
+          material: 'AL6061',
+          notes: 'L-Bracket Type A',
           quantity: 50,
-          status: 'queued',
+          status: 'not_started' as const,
           metadata: {
             dimensions: '100x75x3mm',
             weight: '0.3kg',
@@ -202,9 +193,10 @@ export async function generateMockData(
           tenant_id: tenantId,
           job_id: jobIds[1],
           part_number: 'BRK-MNT-B',
-          description: 'L-Bracket Type B',
+          material: 'AL6061',
+          notes: 'L-Bracket Type B',
           quantity: 50,
-          status: 'queued',
+          status: 'not_started' as const,
           metadata: {
             dimensions: '150x100x3mm',
             weight: '0.5kg',
@@ -216,9 +208,10 @@ export async function generateMockData(
           tenant_id: tenantId,
           job_id: jobIds[2],
           part_number: 'SRV-PNL-001',
-          description: 'Server Rack Front Panel',
+          material: 'CRS',
+          notes: 'Server Rack Front Panel',
           quantity: 25,
-          status: 'queued',
+          status: 'not_started' as const,
           metadata: {
             dimensions: '482x88x1.5mm',
             weight: '0.8kg',

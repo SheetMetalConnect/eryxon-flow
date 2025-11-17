@@ -87,24 +87,44 @@ serve(async (req) => {
 
     for (const table of tablesToExport) {
       try {
-        let query = supabaseClient.from(table).select('*');
-
-        // Special handling for certain tables
+        // Determine select fields
+        let selectFields = '*';
         if (table === 'api_keys') {
           // Don't export the actual key hash for security
-          query = supabaseClient.from(table).select('id, name, prefix, active, created_at, last_used_at, tenant_id');
+          selectFields = 'id, name, key_prefix, active, created_at, last_used_at, tenant_id';
         }
 
-        const { data, error } = await query;
+        // Fetch ALL rows by paginating in batches
+        const BATCH_SIZE = 1000;
+        let offset = 0;
+        let allData: any[] = [];
+        let hasMore = true;
 
-        if (error) {
-          console.error(`Error exporting ${table}:`, error);
-          exportData[table] = [];
-          exportMetadata.tables.push({ name: table, count: 0 });
-        } else {
-          exportData[table] = data || [];
-          exportMetadata.tables.push({ name: table, count: data?.length || 0 });
+        while (hasMore) {
+          const { data, error } = await supabaseClient
+            .from(table)
+            .select(selectFields, { count: 'exact' })
+            .range(offset, offset + BATCH_SIZE - 1);
+
+          if (error) {
+            console.error(`Error exporting ${table} at offset ${offset}:`, error);
+            break;
+          }
+
+          allData = allData.concat(data || []);
+          hasMore = (data?.length === BATCH_SIZE);
+          offset += BATCH_SIZE;
+
+          // Log progress for monitoring
+          if (data && data.length > 0) {
+            console.log(`Fetched ${data.length} rows from ${table} (total so far: ${allData.length})`);
+          }
         }
+
+        exportData[table] = allData;
+        exportMetadata.tables.push({ name: table, count: allData.length });
+        console.log(`Exported ${allData.length} rows from ${table} (total: ${allData.length})`);
+
       } catch (err) {
         console.error(`Exception exporting ${table}:`, err);
         exportData[table] = [];
