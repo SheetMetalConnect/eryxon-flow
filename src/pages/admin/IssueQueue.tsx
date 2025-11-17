@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { AlertCircle, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface Issue {
   id: string;
@@ -34,6 +35,7 @@ interface Issue {
 }
 
 export default function IssueQueue() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
@@ -99,7 +101,7 @@ export default function IssueQueue() {
 
   const handleReview = async (action: "approved" | "rejected" | "closed") => {
     if (!selectedIssue || !profile?.id || !resolutionNotes.trim()) {
-      toast.error("Please provide resolution notes");
+      toast.error(t("issues.pleaseProvideResolutionNotes"));
       return;
     }
 
@@ -117,12 +119,12 @@ export default function IssueQueue() {
 
       if (error) throw error;
 
-      toast.success(`Issue ${action}`);
+      toast.success(t(`issues.issue${action.charAt(0).toUpperCase() + action.slice(1)}`));
       setSelectedIssue(null);
       setResolutionNotes("");
       loadIssues();
     } catch (error: any) {
-      toast.error(error.message || "Failed to update issue");
+      toast.error(error.message || t("issues.failedToUpdateIssue"));
     } finally {
       setActionLoading(false);
     }
@@ -151,17 +153,17 @@ export default function IssueQueue() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Issue Review Queue</h1>
+          <h1 className="text-3xl font-bold">{t("issues.issueQueue")}</h1>
           <p className="text-muted-foreground">
-            {issues.length} pending issue{issues.length !== 1 ? "s" : ""}
+            {issues.length} {t("issues.pendingIssue", { count: issues.length })}
           </p>
         </div>
 
         {issues.length === 0 ? (
           <Card className="p-12 text-center">
             <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500" />
-            <h3 className="text-lg font-medium mb-2">No pending issues</h3>
-            <p className="text-sm text-muted-foreground">All issues have been reviewed</p>
+            <h3 className="text-lg font-medium mb-2">{t("issues.noPendingIssues")}</h3>
+            <p className="text-sm text-muted-foreground">{t("issues.allIssuesReviewed")}</p>
           </Card>
         ) : (
           <div className="grid gap-4">
@@ -178,7 +180,7 @@ export default function IssueQueue() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
                       <Badge className={severityColors[issue.severity as keyof typeof severityColors]}>
-                        {issue.severity}
+                        {t(`issues.severity.${issue.severity}`)}
                       </Badge>
                     </div>
                     <div className="font-medium mb-1">
@@ -188,10 +190,10 @@ export default function IssueQueue() {
                       {issue.description}
                     </p>
                     <div className="text-xs text-muted-foreground">
-                      Reported by {issue.creator.full_name} on {format(new Date(issue.created_at), "MMM d, yyyy")}
+                      {t("issues.reportedBy", { name: issue.creator.full_name, date: format(new Date(issue.created_at), "MMM d, yyyy") })}
                     </div>
                   </div>
-                  <Button size="sm">Review</Button>
+                  <Button size="sm">{t("issues.review")}</Button>
                 </div>
               </Card>
             ))}
@@ -203,19 +205,19 @@ export default function IssueQueue() {
       <Dialog open={!!selectedIssue} onOpenChange={() => setSelectedIssue(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Review Issue</DialogTitle>
+            <DialogTitle>{t("issues.reviewIssue")}</DialogTitle>
           </DialogHeader>
 
           {selectedIssue && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Badge className={severityColors[selectedIssue.severity as keyof typeof severityColors]}>
-                  {selectedIssue.severity}
+                  {t(`issues.severity.${selectedIssue.severity}`)}
                 </Badge>
               </div>
 
               <div>
-                <div className="text-sm text-muted-foreground mb-1">Operation</div>
+                <div className="text-sm text-muted-foreground mb-1">{t("issues.operation")}</div>
                 <div className="font-medium">
                   {selectedIssue.operation.part.job.job_number} • {selectedIssue.operation.part.part_number} •{" "}
                   {selectedIssue.operation.operation_name}
@@ -223,30 +225,30 @@ export default function IssueQueue() {
               </div>
 
               <div>
-                <div className="text-sm text-muted-foreground mb-1">Description</div>
+                <div className="text-sm text-muted-foreground mb-1">{t("issues.description")}</div>
                 <div className="text-sm p-3 bg-muted rounded">{selectedIssue.description}</div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-sm text-muted-foreground mb-1">Reported By</div>
+                  <div className="text-sm text-muted-foreground mb-1">{t("issues.reportedBy")}</div>
                   <div className="text-sm">{selectedIssue.creator.full_name}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-muted-foreground mb-1">Created</div>
+                  <div className="text-sm text-muted-foreground mb-1">{t("issues.created")}</div>
                   <div className="text-sm">{format(new Date(selectedIssue.created_at), "PPp")}</div>
                 </div>
               </div>
 
               {selectedIssue.image_paths && selectedIssue.image_paths.length > 0 && (
                 <div>
-                  <div className="text-sm text-muted-foreground mb-2">Attached Photos</div>
+                  <div className="text-sm text-muted-foreground mb-2">{t("issues.attachedPhotos")}</div>
                   <div className="grid grid-cols-2 gap-2">
                     {selectedIssue.image_paths.map((path, index) => (
                       <img
                         key={index}
                         src={supabase.storage.from("issues").getPublicUrl(path).data.publicUrl}
-                        alt={`Issue photo ${index + 1}`}
+                        alt={t("issues.issuePhoto", { number: index + 1 })}
                         className="rounded border"
                       />
                     ))}
@@ -255,12 +257,12 @@ export default function IssueQueue() {
               )}
 
               <div>
-                <Label htmlFor="resolution">Resolution Notes *</Label>
+                <Label htmlFor="resolution">{t("issues.resolutionNotes")} *</Label>
                 <Textarea
                   id="resolution"
                   value={resolutionNotes}
                   onChange={(e) => setResolutionNotes(e.target.value)}
-                  placeholder="Enter resolution notes..."
+                  placeholder={t("issues.enterResolutionNotes")}
                   rows={4}
                 />
               </div>
@@ -272,7 +274,7 @@ export default function IssueQueue() {
                   className="flex-1 bg-green-600 hover:bg-green-700"
                 >
                   <CheckCircle className="h-4 w-4 mr-2" />
-                  Approve
+                  {t("issues.approve")}
                 </Button>
                 <Button
                   onClick={() => handleReview("rejected")}
@@ -281,7 +283,7 @@ export default function IssueQueue() {
                   className="flex-1"
                 >
                   <XCircle className="h-4 w-4 mr-2" />
-                  Reject
+                  {t("issues.reject")}
                 </Button>
               </div>
             </div>

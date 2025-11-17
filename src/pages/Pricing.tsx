@@ -5,74 +5,38 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Mail, Shield, Server, Users, Zap, ArrowRight } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const pricingTiers = [
   {
     id: "free",
-    name: "Free",
-    description: "Perfect for getting started",
-    price: "$0",
-    period: "forever",
-    features: [
-      "All features included",
-      "Up to 100 jobs per month",
-      "Up to 1,000 parts per month",
-      "5 GB storage",
-      "Limited API access",
-      "Multi-tenant architecture",
-      "HTTPS traffic only",
-      "Email support",
-      "Documentation access",
-    ],
-    cta: "Current Plan",
+    nameKey: "pricing.free.name",
+    descriptionKey: "pricing.free.description",
+    priceKey: "pricing.free.price",
+    featuresKey: "pricing.free.features",
+    ctaKey: "pricing.currentPlan",
     icon: Users,
     popular: false,
     gradient: false,
   },
   {
     id: "pro",
-    name: "Pro",
-    description: "For growing manufacturing teams",
-    price: "$97",
-    period: "month",
-    features: [
-      "Unlimited users",
-      "Up to 1,000 jobs per month",
-      "Up to 10,000 parts per month",
-      "50 GB storage",
-      "Full API access",
-      "Storage upgrade options",
-      "Multi-tenant architecture",
-      "Row-level security",
-      "Priority email support",
-      "Webhook integrations",
-    ],
-    cta: "Request Upgrade",
+    nameKey: "pricing.pro.name",
+    descriptionKey: "pricing.pro.description",
+    priceKey: "pricing.pro.price",
+    featuresKey: "pricing.pro.features",
+    ctaKey: "pricing.upgrade",
     icon: Zap,
     popular: true,
     gradient: false,
   },
   {
     id: "premium",
-    name: "Enterprise",
-    description: "Custom, bespoke solution",
-    price: "Starting at $497",
-    period: "month",
-    features: [
-      "Everything in Pro",
-      "Unlimited jobs & parts",
-      "Unlimited storage",
-      "Unlimited usage",
-      "Self-hosted (on-premises)",
-      "Single-tenant deployment",
-      "Completely air-gapped",
-      "SSO integration",
-      "Dedicated infrastructure",
-      "Premium support",
-      "Custom SLA",
-      "White-label options",
-    ],
-    cta: "Contact Sales",
+    nameKey: "pricing.premium.name",
+    descriptionKey: "pricing.premium.description",
+    priceKey: "pricing.premium.price",
+    featuresKey: "pricing.premium.features",
+    ctaKey: "pricing.contactSales",
     icon: Server,
     popular: false,
     gradient: true,
@@ -80,6 +44,7 @@ const pricingTiers = [
 ];
 
 export default function Pricing() {
+  const { t } = useTranslation();
   const { subscription, getPlanDisplayName } = useSubscription();
   const currentPlan = subscription?.plan || 'free';
 
@@ -106,19 +71,18 @@ Thank you!`;
       <div className="space-y-6">
         {/* Header */}
         <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold tracking-tight">Choose Your Plan</h1>
+          <h1 className="text-4xl font-bold tracking-tight">{t("pricing.title")}</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Self-service pricing designed for manufacturers. No sales calls, no consultants.
-            Sign up and go.
+            {t("pricing.subtitle")}
           </p>
           {subscription && (
             <div className="flex items-center justify-center gap-2">
               <Badge variant="outline" className="text-sm py-1 px-3">
-                Current Plan: {getPlanDisplayName(currentPlan)}
+                {t("pricing.currentPlan")}: {getPlanDisplayName(currentPlan)}
               </Badge>
               <Link to="/my-plan">
                 <Button variant="link" size="sm" className="gap-1">
-                  View My Plan <ArrowRight className="h-3 w-3" />
+                  {t("navigation.myPlan")} <ArrowRight className="h-3 w-3" />
                 </Button>
               </Link>
             </div>
@@ -162,12 +126,12 @@ Thank you!`;
               >
                 {isCurrent && (
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-600">
-                    Current Plan
+                    {t("pricing.currentPlan")}
                   </Badge>
                 )}
                 {tier.popular && !isCurrent && (
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
-                    Most Popular
+                    {t("onboarding.mostPopular")}
                   </Badge>
                 )}
 
@@ -185,25 +149,23 @@ Thank you!`;
                       }`} />
                     </div>
                     <div>
-                      <CardTitle className="text-2xl">{tier.name}</CardTitle>
-                      <CardDescription>{tier.description}</CardDescription>
+                      <CardTitle className="text-2xl">{t(tier.nameKey)}</CardTitle>
+                      <CardDescription>{t(tier.descriptionKey)}</CardDescription>
                     </div>
                   </div>
 
                   <div className="pt-4">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold">{tier.price}</span>
-                      {tier.period && (
-                        <span className="text-muted-foreground text-sm">/ {tier.period}</span>
-                      )}
+                      <span className="text-4xl font-bold">{t(tier.priceKey)}</span>
+                      <span className="text-muted-foreground text-sm">{t("pricing.perMonth")}</span>
                     </div>
                   </div>
                 </CardHeader>
 
                 <CardContent className="flex-1">
                   <ul className="space-y-3">
-                    {tier.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2">
+                    {(t(tier.featuresKey, { returnObjects: true }) as string[]).map((feature, index) => (
+                      <li key={index} className="flex items-start gap-2">
                         <Check className={`h-5 w-5 flex-shrink-0 mt-0.5 ${
                           isCurrent ? 'text-green-600' : 'text-primary'
                         }`} />
@@ -228,10 +190,10 @@ Thank you!`;
                     <Button
                       className="w-full"
                       variant={tier.popular ? 'default' : 'outline'}
-                      onClick={() => handleUpgradeRequest(tier.name)}
+                      onClick={() => handleUpgradeRequest(t(tier.nameKey))}
                     >
                       <Mail className="h-4 w-4 mr-2" />
-                      {tier.cta}
+                      {t(tier.ctaKey)}
                     </Button>
                   )}
                 </CardFooter>

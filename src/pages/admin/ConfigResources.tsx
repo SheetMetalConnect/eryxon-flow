@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Edit, Loader2, Wrench, Package2, Settings } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "@/contexts/I18nContext";
 
 interface Resource {
   id: string;
@@ -42,6 +43,7 @@ const RESOURCE_STATUS_OPTIONS = [
 ];
 
 export default function ConfigResources() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,7 +101,7 @@ export default function ConfigResources() {
           })
           .eq("id", editingResource.id);
 
-        toast.success("Resource updated successfully");
+        toast.success(t('resources.updated'));
       } else {
         // Create new resource
         await supabase.from("resources").insert({
@@ -113,14 +115,14 @@ export default function ConfigResources() {
           active: formData.active,
         });
 
-        toast.success("Resource created successfully");
+        toast.success(t('resources.created'));
       }
 
       setDialogOpen(false);
       resetForm();
       loadResources();
     } catch (error) {
-      toast.error("Failed to save resource");
+      toast.error(t('resources.failedToSave'));
       console.error(error);
     }
   };
@@ -186,8 +188,8 @@ export default function ConfigResources() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Resources Configuration</h1>
-            <p className="text-muted-foreground">Manage tooling, fixtures, molds, and other resources</p>
+            <h1 className="text-3xl font-bold mb-2">{t('resources.title')}</h1>
+            <p className="text-muted-foreground">{t('resources.description')}</p>
           </div>
 
           <Dialog open={dialogOpen} onOpenChange={(open) => {
@@ -197,32 +199,32 @@ export default function ConfigResources() {
             <DialogTrigger asChild>
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
-                Add Resource
+                {t('resources.addResource')}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>
-                  {editingResource ? "Edit Resource" : "Create New Resource"}
+                  {editingResource ? t('resources.editResource') : t('resources.createResource')}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Name *</Label>
+                    <Label htmlFor="name">{t('resources.name')} *</Label>
                     <Input
                       id="name"
                       value={formData.name}
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      placeholder="e.g., Press Brake Tool #12"
+                      placeholder={t('resources.namePlaceholder')}
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="type">Type *</Label>
+                    <Label htmlFor="type">{t('resources.type')} *</Label>
                     <Select
                       value={formData.type}
                       onValueChange={(value) =>
@@ -243,31 +245,31 @@ export default function ConfigResources() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="identifier">Identifier / Serial Number</Label>
+                    <Label htmlFor="identifier">{t('resources.identifier')}</Label>
                     <Input
                       id="identifier"
                       value={formData.identifier}
                       onChange={(e) =>
                         setFormData({ ...formData, identifier: e.target.value })
                       }
-                      placeholder="e.g., SN-12345"
+                      placeholder={t('resources.identifierPlaceholder')}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="location">Location</Label>
+                    <Label htmlFor="location">{t('resources.location')}</Label>
                     <Input
                       id="location"
                       value={formData.location}
                       onChange={(e) =>
                         setFormData({ ...formData, location: e.target.value })
                       }
-                      placeholder="e.g., Tool Crib A, Shelf 3"
+                      placeholder={t('resources.locationPlaceholder')}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
+                    <Label htmlFor="status">{t('resources.status')}</Label>
                     <Select
                       value={formData.status}
                       onValueChange={(value) =>
@@ -288,7 +290,7 @@ export default function ConfigResources() {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="active">Active</Label>
+                    <Label htmlFor="active">{t('resources.active')}</Label>
                     <Switch
                       id="active"
                       checked={formData.active}
@@ -300,14 +302,14 @@ export default function ConfigResources() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description">{t('resources.descriptionLabel')}</Label>
                   <Textarea
                     id="description"
                     value={formData.description}
                     onChange={(e) =>
                       setFormData({ ...formData, description: e.target.value })
                     }
-                    placeholder="Resource specifications, usage notes, maintenance requirements..."
+                    placeholder={t('resources.descriptionPlaceholder')}
                     rows={3}
                   />
                 </div>
@@ -318,10 +320,10 @@ export default function ConfigResources() {
                     variant="outline"
                     onClick={() => setDialogOpen(false)}
                   >
-                    Cancel
+                    {t('resources.cancel')}
                   </Button>
                   <Button type="submit">
-                    {editingResource ? "Update" : "Create"}
+                    {editingResource ? t('resources.update') : t('resources.create')}
                   </Button>
                 </div>
               </form>
@@ -336,7 +338,7 @@ export default function ConfigResources() {
             size="sm"
             onClick={() => setFilterType("all")}
           >
-            All ({resources.length})
+            {t('resources.all')} ({resources.length})
           </Button>
           {RESOURCE_TYPES.map((type) => {
             const count = resources.filter(r => r.type === type.value).length;
@@ -380,20 +382,20 @@ export default function ConfigResources() {
                     {getStatusBadge(resource.status)}
                     {!resource.active && (
                       <Badge variant="outline" className="bg-red-50 text-red-700">
-                        Inactive
+                        {t('resources.inactive')}
                       </Badge>
                     )}
                   </div>
 
                   {resource.identifier && (
                     <p className="text-sm text-muted-foreground">
-                      <span className="font-medium">ID:</span> {resource.identifier}
+                      <span className="font-medium">{t('resources.id')}:</span> {resource.identifier}
                     </p>
                   )}
 
                   {resource.location && (
                     <p className="text-sm text-muted-foreground">
-                      <span className="font-medium">Location:</span> {resource.location}
+                      <span className="font-medium">{t('resources.location')}:</span> {resource.location}
                     </p>
                   )}
 
@@ -413,16 +415,16 @@ export default function ConfigResources() {
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Settings className="h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-lg font-medium mb-2">
-                {filterType === "all" ? "No resources configured" : `No ${filterType} resources`}
+                {filterType === "all" ? t('resources.noResources') : t('resources.noResourcesOfType', { type: filterType })}
               </p>
               <p className="text-sm text-muted-foreground mb-4">
                 {filterType === "all"
-                  ? "Add your first resource to get started"
-                  : "Add resources of this type to see them here"}
+                  ? t('resources.addFirstResource')
+                  : t('resources.addResourcesOfType')}
               </p>
               <Button onClick={() => setDialogOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Add Resource
+                {t('resources.addResource')}
               </Button>
             </CardContent>
           </Card>

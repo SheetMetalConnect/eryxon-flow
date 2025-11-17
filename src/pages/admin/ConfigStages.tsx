@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface Stage {
   id: string;
@@ -23,6 +24,7 @@ interface Stage {
 }
 
 export default function ConfigStages() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const [stages, setStages] = useState<Stage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,7 +74,7 @@ export default function ConfigStages() {
           })
           .eq("id", editingStage.id);
 
-        toast.success("Stage updated successfully");
+        toast.success(t("stages.stageUpdated"));
       } else {
         // Create new cell
         const maxSequence = Math.max(...stages.map((s) => s.sequence), 0);
@@ -85,14 +87,14 @@ export default function ConfigStages() {
           active: formData.active,
         });
 
-        toast.success("Stage created successfully");
+        toast.success(t("stages.stageCreated"));
       }
 
       setDialogOpen(false);
       resetForm();
       loadStages();
     } catch (error) {
-      toast.error("Failed to save stage");
+      toast.error(t("stages.failedToSaveStage"));
       console.error(error);
     }
   };
@@ -133,8 +135,8 @@ export default function ConfigStages() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Stages Configuration</h1>
-            <p className="text-muted-foreground">Manage manufacturing stages</p>
+            <h1 className="text-3xl font-bold mb-2">{t("stages.title")}</h1>
+            <p className="text-muted-foreground">{t("stages.manageStages")}</p>
           </div>
 
           <Dialog open={dialogOpen} onOpenChange={(open) => {
@@ -144,18 +146,18 @@ export default function ConfigStages() {
             <DialogTrigger asChild>
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
-                Add Stage
+                {t("stages.createStage")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {editingStage ? "Edit Stage" : "Create New Stage"}
+                  {editingStage ? t("stages.editStage") : t("stages.createNewStage")}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
+                  <Label htmlFor="name">{t("stages.stageName")} *</Label>
                   <Input
                     id="name"
                     value={formData.name}
@@ -167,7 +169,7 @@ export default function ConfigStages() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description">{t("stages.description")}</Label>
                   <Textarea
                     id="description"
                     value={formData.description}
@@ -179,7 +181,7 @@ export default function ConfigStages() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="color">Color</Label>
+                  <Label htmlFor="color">{t("stages.color")}</Label>
                   <div className="flex gap-2">
                     <Input
                       id="color"
@@ -202,7 +204,7 @@ export default function ConfigStages() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="active">Active</Label>
+                  <Label htmlFor="active">{t("stages.active")}</Label>
                   <Switch
                     id="active"
                     checked={formData.active}
@@ -213,7 +215,7 @@ export default function ConfigStages() {
                 </div>
 
                 <Button type="submit" className="w-full">
-                  {editingStage ? "Update Stage" : "Create Stage"}
+                  {editingStage ? t("stages.updateStage") : t("stages.createStage")}
                 </Button>
               </form>
             </DialogContent>
@@ -234,9 +236,9 @@ export default function ConfigStages() {
                     <div>
                       <CardTitle>{stage.name}</CardTitle>
                       <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline">Sequence: {stage.sequence}</Badge>
+                        <Badge variant="outline">{t("stages.sequence")}: {stage.sequence}</Badge>
                         <Badge variant={stage.active ? "default" : "secondary"}>
-                          {stage.active ? "Active" : "Inactive"}
+                          {stage.active ? t("stages.active") : t("stages.inactive")}
                         </Badge>
                       </div>
                     </div>

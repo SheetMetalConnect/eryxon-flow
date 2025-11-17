@@ -14,6 +14,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Calendar as CalendarIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface DueDateOverrideModalProps {
   jobId: string;
@@ -27,6 +28,7 @@ export default function DueDateOverrideModal({
   onUpdate,
 }: DueDateOverrideModalProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [overrideDate, setOverrideDate] = useState<Date | undefined>(undefined);
 
   const { data: job, isLoading } = useQuery({
@@ -60,15 +62,15 @@ export default function DueDateOverrideModal({
     },
     onSuccess: () => {
       toast({
-        title: "Due date updated",
-        description: "Due date override has been saved successfully.",
+        title: t("jobs.dueDateUpdated"),
+        description: t("jobs.dueDateUpdateSuccess"),
       });
       onUpdate();
       onClose();
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
+        title: t("common.error"),
         description: error.message,
         variant: "destructive",
       });
@@ -89,7 +91,7 @@ export default function DueDateOverrideModal({
     return (
       <Dialog open onOpenChange={onClose}>
         <DialogContent>
-          <div className="text-center py-8">Loading...</div>
+          <div className="text-center py-8">{t("common.loading")}</div>
         </DialogContent>
       </Dialog>
     );
@@ -99,13 +101,13 @@ export default function DueDateOverrideModal({
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Override Due Date</DialogTitle>
+          <DialogTitle>{t("jobs.overrideDueDate")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Original Due Date */}
           <div>
-            <Label className="text-sm text-gray-600">Original Due Date</Label>
+            <Label className="text-sm text-gray-600">{t("jobs.originalDueDate")}</Label>
             <div className="flex items-center gap-2 mt-1">
               <CalendarIcon className="h-4 w-4 text-gray-500" />
               <span className="font-medium">
@@ -117,7 +119,7 @@ export default function DueDateOverrideModal({
           {/* Current Override */}
           {job?.due_date_override && (
             <div>
-              <Label className="text-sm text-gray-600">Current Override</Label>
+              <Label className="text-sm text-gray-600">{t("jobs.currentOverride")}</Label>
               <div className="flex items-center gap-2 mt-1">
                 <CalendarIcon className="h-4 w-4 text-blue-500" />
                 <span className="font-medium text-blue-600">
@@ -129,7 +131,7 @@ export default function DueDateOverrideModal({
 
           {/* New Override Picker */}
           <div>
-            <Label>Select New Override Date</Label>
+            <Label>{t("jobs.selectNewOverrideDate")}</Label>
             <div className="mt-2 border rounded-md p-3 flex justify-center">
               <Calendar
                 mode="single"
@@ -143,7 +145,7 @@ export default function DueDateOverrideModal({
 
           {overrideDate && (
             <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-              <Label className="text-sm text-blue-800">New Due Date</Label>
+              <Label className="text-sm text-blue-800">{t("jobs.newDueDate")}</Label>
               <p className="font-semibold text-blue-900">
                 {format(overrideDate, "MMM dd, yyyy")}
               </p>
@@ -154,14 +156,14 @@ export default function DueDateOverrideModal({
         <DialogFooter className="gap-2">
           {job?.due_date_override && (
             <Button variant="outline" onClick={handleClear}>
-              Clear Override
+              {t("jobs.clearOverride")}
             </Button>
           )}
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button onClick={handleSave} disabled={!overrideDate}>
-            Save Override
+            {t("jobs.saveOverride")}
           </Button>
         </DialogFooter>
       </DialogContent>

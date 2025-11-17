@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, UserCheck, X } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useTranslation } from "@/contexts/I18nContext";
 
 interface Part {
   id: string;
@@ -52,6 +53,7 @@ interface Assignment {
 }
 
 export default function Assignments() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const [parts, setParts] = useState<Part[]>([]);
   const [operators, setOperators] = useState<Operator[]>([]);
@@ -159,7 +161,7 @@ export default function Assignments() {
       if (assignmentsData) setAssignments(assignmentsData as any);
     } catch (error) {
       console.error("Error loading assignments:", error);
-      toast.error("Failed to load assignments");
+      toast.error(t('assignments.failedToLoad'));
     } finally {
       setLoading(false);
     }
@@ -189,7 +191,7 @@ export default function Assignments() {
 
   const handleAssign = async () => {
     if (!selectedPart || !selectedOperator || !profile?.id || !profile?.tenant_id) {
-      toast.error("Please select both a part and an operator");
+      toast.error(t('assignments.selectBoth'));
       return;
     }
 
@@ -221,12 +223,12 @@ export default function Assignments() {
 
       if (operationError) throw operationError;
 
-      toast.success("Work assigned successfully");
+      toast.success(t('assignments.assignedSuccessfully'));
       setSelectedPart("");
       setSelectedOperator("");
       loadData();
     } catch (error: any) {
-      toast.error(error.message || "Failed to assign work");
+      toast.error(error.message || t('assignments.failedToAssign'));
     } finally {
       setAssigning(false);
     }
@@ -253,10 +255,10 @@ export default function Assignments() {
 
       if (operationError) throw operationError;
 
-      toast.success("Assignment removed");
+      toast.success(t('assignments.removed'));
       loadData();
     } catch (error: any) {
-      toast.error(error.message || "Failed to remove assignment");
+      toast.error(error.message || t('assignments.failedToRemove'));
     }
   };
 
@@ -274,8 +276,8 @@ export default function Assignments() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Work Assignments</h1>
-          <p className="text-muted-foreground">Assign parts to specific operators</p>
+          <h1 className="text-3xl font-bold">{t('assignments.title')}</h1>
+          <p className="text-muted-foreground">{t('assignments.description')}</p>
         </div>
 
         {/* Assignment Interface */}
@@ -283,17 +285,17 @@ export default function Assignments() {
           {/* Available Parts */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Available Parts</CardTitle>
+              <CardTitle className="text-lg">{t('assignments.availableParts')}</CardTitle>
             </CardHeader>
             <CardContent>
               <Select value={selectedPart} onValueChange={setSelectedPart}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a part to assign..." />
+                  <SelectValue placeholder={t('assignments.selectPart')} />
                 </SelectTrigger>
                 <SelectContent>
                   {parts.map((part) => (
                     <SelectItem key={part.id} value={part.id}>
-                      {part.part_number} • {part.job.job_number} • {part._operationCount} operations
+                      {part.part_number} • {part.job.job_number} • {part._operationCount} {t('assignments.operations')}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -306,10 +308,10 @@ export default function Assignments() {
                         {parts.find(p => p.id === selectedPart)?.part_number}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Job: {parts.find(p => p.id === selectedPart)?.job.job_number}
+                        {t('assignments.job')}: {parts.find(p => p.id === selectedPart)?.job.job_number}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Material: {parts.find(p => p.id === selectedPart)?.material}
+                        {t('assignments.material')}: {parts.find(p => p.id === selectedPart)?.material}
                       </div>
                     </>
                   )}
@@ -321,17 +323,17 @@ export default function Assignments() {
           {/* Operators */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Assign To Operator</CardTitle>
+              <CardTitle className="text-lg">{t('assignments.assignToOperator')}</CardTitle>
             </CardHeader>
             <CardContent>
               <Select value={selectedOperator} onValueChange={setSelectedOperator}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select an operator..." />
+                  <SelectValue placeholder={t('assignments.selectOperator')} />
                 </SelectTrigger>
                 <SelectContent>
                   {operators.map((op) => (
                     <SelectItem key={op.id} value={op.id}>
-                      {op.full_name} • {op._assignmentCount} assigned • {op._activeEntryCount} active
+                      {op.full_name} • {op._assignmentCount} {t('assignments.assigned')} • {op._activeEntryCount} {t('assignments.active')}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -343,7 +345,7 @@ export default function Assignments() {
                 size="lg"
               >
                 <UserCheck className="h-4 w-4 mr-2" />
-                {assigning ? "Assigning..." : "Assign Work"}
+                {assigning ? t('assignments.assigning') : t('assignments.assignWork')}
               </Button>
             </CardContent>
           </Card>
@@ -352,23 +354,23 @@ export default function Assignments() {
         {/* Current Assignments */}
         <Card>
           <CardHeader>
-            <CardTitle>Current Assignments</CardTitle>
+            <CardTitle>{t('assignments.currentAssignments')}</CardTitle>
           </CardHeader>
           <CardContent>
             {assignments.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                No active assignments
+                {t('assignments.noActiveAssignments')}
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Part</TableHead>
-                    <TableHead>Job</TableHead>
-                    <TableHead>Assigned To</TableHead>
-                    <TableHead>Assigned By</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
+                    <TableHead>{t('assignments.part')}</TableHead>
+                    <TableHead>{t('assignments.job')}</TableHead>
+                    <TableHead>{t('assignments.assignedTo')}</TableHead>
+                    <TableHead>{t('assignments.assignedBy')}</TableHead>
+                    <TableHead>{t('assignments.date')}</TableHead>
+                    <TableHead className="text-right">{t('assignments.action')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

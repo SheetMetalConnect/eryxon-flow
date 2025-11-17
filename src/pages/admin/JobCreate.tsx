@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
+import { useTranslation } from "react-i18next";
 
 type Part = {
   id: string;
@@ -53,6 +54,7 @@ export default function JobCreate() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { profile } = useAuth();
+  const { t } = useTranslation();
   const [step, setStep] = useState(1);
 
   // Step 1: Job details
@@ -157,14 +159,14 @@ export default function JobCreate() {
     },
     onSuccess: (job) => {
       toast({
-        title: "Job created successfully",
-        description: `Job ${job.job_number} has been created with ${parts.length} parts.`,
+        title: t("jobs.createSuccess"),
+        description: t("jobs.createSuccessDesc", { jobNumber: job.job_number, count: parts.length }),
       });
       navigate("/admin/jobs");
     },
     onError: (error: any) => {
       toast({
-        title: "Error creating job",
+        title: t("common.error"),
         description: error.message,
         variant: "destructive",
       });
@@ -174,16 +176,16 @@ export default function JobCreate() {
   const handleNext = () => {
     if (step === 1 && !jobNumber) {
       toast({
-        title: "Validation error",
-        description: "Job number is required",
+        title: t("common.validationError"),
+        description: t("jobs.jobNumberRequired"),
         variant: "destructive",
       });
       return;
     }
     if (step === 2 && parts.length === 0) {
       toast({
-        title: "Validation error",
-        description: "At least one part is required",
+        title: t("common.validationError"),
+        description: t("jobs.atLeastOnePartRequired"),
         variant: "destructive",
       });
       return;
@@ -192,8 +194,8 @@ export default function JobCreate() {
       const partsWithoutOperations = parts.filter((p) => p.operations.length === 0);
       if (partsWithoutOperations.length > 0) {
         toast({
-          title: "Validation error",
-          description: "Each part must have at least one operation",
+          title: t("common.validationError"),
+          description: t("jobs.eachPartNeedsOperation"),
           variant: "destructive",
         });
         return;
@@ -224,8 +226,8 @@ export default function JobCreate() {
   const handleAddPart = () => {
     if (!editingPart?.part_number || !editingPart?.material) {
       toast({
-        title: "Validation error",
-        description: "Part number and material are required",
+        title: t("common.validationError"),
+        description: t("parts.partNumberMaterialRequired"),
         variant: "destructive",
       });
       return;
@@ -236,8 +238,8 @@ export default function JobCreate() {
       const newPartId = editingPart.id || crypto.randomUUID();
       if (wouldCreateCircularReference(newPartId, editingPart.parent_part_id)) {
         toast({
-          title: "Circular reference detected",
-          description: "This parent selection would create a circular dependency",
+          title: t("parts.circularReferenceDetected"),
+          description: t("parts.circularReferenceDesc"),
           variant: "destructive",
         });
         return;
@@ -262,8 +264,8 @@ export default function JobCreate() {
   const handleAddOperation = (partId: string) => {
     if (!editingOperation?.operation.operation_name || !editingOperation?.operation.cell_id) {
       toast({
-        title: "Validation error",
-        description: "Operation name and cell are required",
+        title: t("common.validationError"),
+        description: t("operations.nameAndCellRequired"),
         variant: "destructive",
       });
       return;
@@ -289,7 +291,7 @@ export default function JobCreate() {
   };
 
   const addMetadataField = () => {
-    const key = prompt("Enter metadata key:");
+    const key = prompt(t("jobs.enterMetadataKey"));
     if (key) {
       setJobMetadata({ ...jobMetadata, [key]: "" });
     }
@@ -300,7 +302,7 @@ export default function JobCreate() {
       <div className="max-w-6xl mx-auto">
         <div className="mb-6">
           <Button variant="outline" onClick={() => navigate("/admin/jobs")}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Jobs
+            <ArrowLeft className="mr-2 h-4 w-4" /> {t("jobs.backToJobs")}
           </Button>
         </div>
 
@@ -330,12 +332,12 @@ export default function JobCreate() {
       {step === 1 && (
         <Card>
           <CardHeader>
-            <CardTitle>Step 1: Job Details</CardTitle>
+            <CardTitle>{t("jobs.step1JobDetails")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Job Number *</Label>
+                <Label>{t("jobs.jobNumber")} *</Label>
                 <Input
                   value={jobNumber}
                   onChange={(e) => setJobNumber(e.target.value)}
@@ -343,15 +345,15 @@ export default function JobCreate() {
                 />
               </div>
               <div>
-                <Label>Customer *</Label>
+                <Label>{t("jobs.customer")} *</Label>
                 <Input
                   value={customer}
                   onChange={(e) => setCustomer(e.target.value)}
-                  placeholder="Customer name"
+                  placeholder={t("jobs.customerPlaceholder")}
                 />
               </div>
               <div>
-                <Label>Due Date *</Label>
+                <Label>{t("jobs.dueDate")} *</Label>
                 <Input
                   type="date"
                   value={dueDate}
@@ -361,7 +363,7 @@ export default function JobCreate() {
             </div>
 
             <div>
-              <Label>Notes</Label>
+              <Label>{t("jobs.notes")}</Label>
               <Textarea
                 value={jobNotes}
                 onChange={(e) => setJobNotes(e.target.value)}
@@ -371,9 +373,9 @@ export default function JobCreate() {
 
             <div>
               <div className="flex justify-between items-center mb-2">
-                <Label>Custom Metadata</Label>
+                <Label>{t("jobs.customMetadata")}</Label>
                 <Button size="sm" variant="outline" onClick={addMetadataField}>
-                  <Plus className="h-4 w-4 mr-2" /> Add Field
+                  <Plus className="h-4 w-4 mr-2" /> {t("jobs.addField")}
                 </Button>
               </div>
               {Object.entries(jobMetadata).map(([key, value]) => (
@@ -384,7 +386,7 @@ export default function JobCreate() {
                     onChange={(e) =>
                       setJobMetadata({ ...jobMetadata, [key]: e.target.value })
                     }
-                    placeholder="Value"
+                    placeholder={t("jobs.valuePlaceholder")}
                   />
                   <Button
                     size="sm"
@@ -409,9 +411,9 @@ export default function JobCreate() {
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
-              <CardTitle>Step 2: Add Parts</CardTitle>
+              <CardTitle>{t("jobs.step2AddParts")}</CardTitle>
               <Button onClick={() => setEditingPart({})}>
-                <Plus className="h-4 w-4 mr-2" /> Add Part
+                <Plus className="h-4 w-4 mr-2" /> {t("parts.addPart")}
               </Button>
             </div>
           </CardHeader>
@@ -419,10 +421,10 @@ export default function JobCreate() {
             {/* Part Form */}
             {editingPart && (
               <div className="border rounded-lg p-4 bg-blue-50">
-                <h4 className="font-semibold mb-3">New Part</h4>
+                <h4 className="font-semibold mb-3">{t("parts.newPart")}</h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label>Part Number *</Label>
+                    <Label>{t("parts.partNumber")} *</Label>
                     <Input
                       value={editingPart.part_number || ""}
                       onChange={(e) =>
@@ -431,7 +433,7 @@ export default function JobCreate() {
                     />
                   </div>
                   <div>
-                    <Label>Material *</Label>
+                    <Label>{t("parts.material")} *</Label>
                     <Input
                       value={editingPart.material || ""}
                       onChange={(e) =>
@@ -440,7 +442,7 @@ export default function JobCreate() {
                     />
                   </div>
                   <div>
-                    <Label>Quantity</Label>
+                    <Label>{t("parts.quantity")}</Label>
                     <Input
                       type="number"
                       value={editingPart.quantity || 1}
@@ -453,7 +455,7 @@ export default function JobCreate() {
                     />
                   </div>
                   <div>
-                    <Label>Parent Part (Optional)</Label>
+                    <Label>{t("parts.parentPartOptional")}</Label>
                     <Select
                       value={editingPart.parent_part_id}
                       onValueChange={(value) =>
@@ -461,10 +463,10 @@ export default function JobCreate() {
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="None" />
+                        <SelectValue placeholder={t("parts.none")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="">{t("parts.none")}</SelectItem>
                         {parts.map((part) => (
                           <SelectItem key={part.id} value={part.id}>
                             {part.part_number}
@@ -474,7 +476,7 @@ export default function JobCreate() {
                     </Select>
                   </div>
                   <div className="col-span-2">
-                    <Label>Notes</Label>
+                    <Label>{t("parts.notes")}</Label>
                     <Textarea
                       value={editingPart.notes || ""}
                       onChange={(e) =>
@@ -486,10 +488,10 @@ export default function JobCreate() {
                 </div>
                 <div className="flex gap-2 mt-3">
                   <Button onClick={handleAddPart}>
-                    <Save className="h-4 w-4 mr-2" /> Save Part
+                    <Save className="h-4 w-4 mr-2" /> {t("parts.savePart")}
                   </Button>
                   <Button variant="outline" onClick={() => setEditingPart(null)}>
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                 </div>
               </div>
@@ -503,11 +505,11 @@ export default function JobCreate() {
                     <div>
                       <h4 className="font-semibold">{part.part_number}</h4>
                       <p className="text-sm text-gray-600">
-                        Material: {part.material} | Qty: {part.quantity}
+                        {t("parts.material")}: {part.material} | {t("parts.qty")}: {part.quantity}
                       </p>
                       {part.parent_part_id && (
                         <Badge variant="outline" className="mt-1">
-                          Assembly
+                          {t("parts.assembly")}
                         </Badge>
                       )}
                     </div>
@@ -530,20 +532,20 @@ export default function JobCreate() {
       {step === 3 && (
         <Card>
           <CardHeader>
-            <CardTitle>Step 3: Add Operations to Parts</CardTitle>
+            <CardTitle>{t("jobs.step3AddOperations")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {parts.map((part) => (
               <div key={part.id} className="border rounded-lg p-4">
                 <div className="flex justify-between items-center mb-3">
-                  <h4 className="font-semibold">Part# {part.part_number}</h4>
+                  <h4 className="font-semibold">{t("parts.partNumber")}# {part.part_number}</h4>
                   <Button
                     size="sm"
                     onClick={() =>
                       setEditingOperation({ partId: part.id, operation: { sequence: part.operations.length + 1 } })
                     }
                   >
-                    <Plus className="h-4 w-4 mr-2" /> Add Operation
+                    <Plus className="h-4 w-4 mr-2" /> {t("operations.addOperation")}
                   </Button>
                 </div>
 
@@ -552,7 +554,7 @@ export default function JobCreate() {
                   <div className="border rounded-lg p-3 bg-blue-50 mb-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <Label>Operation Name *</Label>
+                        <Label>{t("operations.operationName")} *</Label>
                         <Input
                           value={editingOperation.operation.operation_name || ""}
                           onChange={(e) =>
@@ -564,7 +566,7 @@ export default function JobCreate() {
                         />
                       </div>
                       <div>
-                        <Label>Cell *</Label>
+                        <Label>{t("operations.cell")} *</Label>
                         <Select
                           value={editingOperation.operation.cell_id}
                           onValueChange={(value) =>
@@ -575,7 +577,7 @@ export default function JobCreate() {
                           }
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select cell" />
+                            <SelectValue placeholder={t("operations.selectCell")} />
                           </SelectTrigger>
                           <SelectContent>
                             {cells?.map((cell) => (
@@ -587,7 +589,7 @@ export default function JobCreate() {
                         </Select>
                       </div>
                       <div>
-                        <Label>Estimated Time (minutes)</Label>
+                        <Label>{t("operations.estimatedTimeMinutes")}</Label>
                         <Input
                           type="number"
                           value={editingOperation.operation.estimated_time || ""}
@@ -603,7 +605,7 @@ export default function JobCreate() {
                         />
                       </div>
                       <div>
-                        <Label>Sequence</Label>
+                        <Label>{t("operations.sequence")}</Label>
                         <Input
                           type="number"
                           value={editingOperation.operation.sequence || 1}
@@ -621,10 +623,10 @@ export default function JobCreate() {
                     </div>
                     <div className="flex gap-2 mt-3">
                       <Button onClick={() => handleAddOperation(part.id)}>
-                        <Save className="h-4 w-4 mr-2" /> Save Operation
+                        <Save className="h-4 w-4 mr-2" /> {t("operations.saveOperation")}
                       </Button>
                       <Button variant="outline" onClick={() => setEditingOperation(null)}>
-                        Cancel
+                        {t("common.cancel")}
                       </Button>
                     </div>
                   </div>
@@ -640,8 +642,8 @@ export default function JobCreate() {
                       <div>
                         <span className="font-medium">{operation.operation_name}</span>
                         <span className="text-sm text-gray-600 ml-3">
-                          Seq: {operation.sequence}
-                          {operation.estimated_time && ` | Est: ${operation.estimated_time}min`}
+                          {t("operations.seq")}: {operation.sequence}
+                          {operation.estimated_time && ` | ${t("operations.est")}: ${operation.estimated_time}${t("operations.min")}`}
                         </span>
                       </div>
                       <Button
@@ -665,7 +667,7 @@ export default function JobCreate() {
                     </div>
                   ))}
                   {part.operations.length === 0 && (
-                    <p className="text-sm text-gray-500 italic">No operations added yet</p>
+                    <p className="text-sm text-gray-500 italic">{t("operations.noOperationsYet")}</p>
                   )}
                 </div>
               </div>
@@ -678,38 +680,38 @@ export default function JobCreate() {
       {step === 4 && (
         <Card>
           <CardHeader>
-            <CardTitle>Step 4: Review & Create</CardTitle>
+            <CardTitle>{t("jobs.step4ReviewCreate")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <h3 className="font-semibold text-lg mb-2">Job Details</h3>
+              <h3 className="font-semibold text-lg mb-2">{t("jobs.jobDetails")}</h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <span className="font-medium">Job Number:</span> {jobNumber}
+                  <span className="font-medium">{t("jobs.jobNumber")}:</span> {jobNumber}
                 </div>
                 <div>
-                  <span className="font-medium">Customer:</span> {customer}
+                  <span className="font-medium">{t("jobs.customer")}:</span> {customer}
                 </div>
                 <div>
-                  <span className="font-medium">Due Date:</span> {dueDate}
+                  <span className="font-medium">{t("jobs.dueDate")}:</span> {dueDate}
                 </div>
                 <div>
-                  <span className="font-medium">Parts:</span> {parts.length}
+                  <span className="font-medium">{t("jobs.parts")}:</span> {parts.length}
                 </div>
                 <div>
-                  <span className="font-medium">Total Operations:</span>{" "}
+                  <span className="font-medium">{t("jobs.totalOperations")}:</span>{" "}
                   {parts.reduce((sum, part) => sum + part.operations.length, 0)}
                 </div>
               </div>
             </div>
 
             <div>
-              <h3 className="font-semibold text-lg mb-2">Parts & Operations Summary</h3>
+              <h3 className="font-semibold text-lg mb-2">{t("jobs.partsOperationsSummary")}</h3>
               {parts.map((part) => (
                 <div key={part.id} className="border rounded-lg p-3 mb-2">
                   <h4 className="font-semibold">{part.part_number}</h4>
                   <p className="text-sm text-gray-600">
-                    {part.material} | {part.operations.length} operations
+                    {part.material} | {part.operations.length} {t("operations.operations")}
                   </p>
                 </div>
               ))}
@@ -725,12 +727,12 @@ export default function JobCreate() {
           onClick={() => setStep(step - 1)}
           disabled={step === 1}
         >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t("common.back")}
         </Button>
 
         {step < 4 ? (
           <Button onClick={handleNext}>
-            Next <ArrowRight className="ml-2 h-4 w-4" />
+            {t("common.next")} <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
           <Button
@@ -738,7 +740,7 @@ export default function JobCreate() {
             disabled={createJobMutation.isPending}
           >
             <Check className="mr-2 h-4 w-4" />
-            {createJobMutation.isPending ? "Creating..." : "Create Job"}
+            {createJobMutation.isPending ? t("jobs.creating") : t("jobs.createJob")}
           </Button>
         )}
       </div>

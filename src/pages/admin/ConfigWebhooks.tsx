@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Trash2, Eye, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
+import { useTranslation } from "@/contexts/I18nContext";
 
 const AVAILABLE_EVENTS = [
   { id: 'operation.started', label: 'Operation Started' },
@@ -22,6 +23,7 @@ const AVAILABLE_EVENTS = [
 ];
 
 export default function ConfigWebhooks() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const { toast } = useToast();
   const [webhooks, setWebhooks] = useState<any[]>([]);
@@ -50,8 +52,8 @@ export default function ConfigWebhooks() {
 
     if (error) {
       toast({
-        title: "Error",
-        description: "Failed to fetch webhooks",
+        title: t('webhooks.error'),
+        description: t('webhooks.failedToFetch'),
         variant: "destructive",
       });
     } else {
@@ -104,8 +106,8 @@ export default function ConfigWebhooks() {
     if (error) {
       console.error('Error fetching webhook logs:', error);
       toast({
-        title: "Error",
-        description: "Failed to fetch webhook logs",
+        title: t('webhooks.error'),
+        description: t('webhooks.failedToFetchLogs'),
         variant: "destructive",
       });
     } else {
@@ -123,8 +125,8 @@ export default function ConfigWebhooks() {
   const createWebhook = async () => {
     if (!webhookUrl.trim() || !webhookUrl.startsWith('https://')) {
       toast({
-        title: "Error",
-        description: "Please enter a valid HTTPS URL",
+        title: t('webhooks.error'),
+        description: t('webhooks.enterValidUrl'),
         variant: "destructive",
       });
       return;
@@ -132,8 +134,8 @@ export default function ConfigWebhooks() {
 
     if (selectedEvents.length === 0) {
       toast({
-        title: "Error",
-        description: "Please select at least one event",
+        title: t('webhooks.error'),
+        description: t('webhooks.selectAtLeastOne'),
         variant: "destructive",
       });
       return;
@@ -153,14 +155,14 @@ export default function ConfigWebhooks() {
 
     if (error) {
       toast({
-        title: "Error",
-        description: "Failed to create webhook",
+        title: t('webhooks.error'),
+        description: t('webhooks.failedToCreate'),
         variant: "destructive",
       });
     } else {
       toast({
-        title: "Success",
-        description: "Webhook created successfully",
+        title: t('webhooks.success'),
+        description: t('webhooks.created'),
       });
       setDialogOpen(false);
       setWebhookUrl("");
@@ -177,14 +179,14 @@ export default function ConfigWebhooks() {
 
     if (error) {
       toast({
-        title: "Error",
-        description: "Failed to delete webhook",
+        title: t('webhooks.error'),
+        description: t('webhooks.failedToDelete'),
         variant: "destructive",
       });
     } else {
       toast({
-        title: "Success",
-        description: "Webhook deleted",
+        title: t('webhooks.success'),
+        description: t('webhooks.deleted'),
       });
       fetchWebhooks();
     }
@@ -198,8 +200,8 @@ export default function ConfigWebhooks() {
 
     if (error) {
       toast({
-        title: "Error",
-        description: "Failed to update webhook",
+        title: t('webhooks.error'),
+        description: t('webhooks.failedToUpdate'),
         variant: "destructive",
       });
     } else {
@@ -212,42 +214,42 @@ export default function ConfigWebhooks() {
       <div className="p-6 space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Webhooks</h1>
-            <p className="text-muted-foreground">Configure outbound webhook notifications</p>
+            <h1 className="text-3xl font-bold">{t('webhooks.title')}</h1>
+            <p className="text-muted-foreground">{t('webhooks.description')}</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={fetchWebhookLogs}>
               <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh Logs
+              {t('webhooks.refreshLogs')}
             </Button>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Webhook
+                {t('webhooks.addWebhook')}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Create Webhook</DialogTitle>
+                <DialogTitle>{t('webhooks.createWebhook')}</DialogTitle>
                 <DialogDescription>
-                  Configure a webhook to receive event notifications
+                  {t('webhooks.configureWebhook')}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="webhook-url">Webhook URL</Label>
+                  <Label htmlFor="webhook-url">{t('webhooks.webhookUrl')}</Label>
                   <Input
                     id="webhook-url"
                     type="url"
-                    placeholder="https://your-api.com/webhooks/eryxon"
+                    placeholder={t('webhooks.urlPlaceholder')}
                     value={webhookUrl}
                     onChange={(e) => setWebhookUrl(e.target.value)}
                   />
-                  <p className="text-sm text-muted-foreground">Must be HTTPS</p>
+                  <p className="text-sm text-muted-foreground">{t('webhooks.mustBeHttps')}</p>
                 </div>
                 <div className="space-y-2">
-                  <Label>Events</Label>
+                  <Label>{t('webhooks.events')}</Label>
                   {AVAILABLE_EVENTS.map((event) => (
                     <div key={event.id} className="flex items-center space-x-2">
                       <Checkbox
@@ -268,7 +270,7 @@ export default function ConfigWebhooks() {
                   ))}
                 </div>
                 <Button onClick={createWebhook} className="w-full">
-                  Create Webhook
+                  {t('webhooks.createWebhook')}
                 </Button>
               </div>
             </DialogContent>
@@ -278,35 +280,35 @@ export default function ConfigWebhooks() {
 
         <Tabs defaultValue="webhooks" className="w-full">
           <TabsList>
-            <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
-            <TabsTrigger value="logs">Delivery Logs</TabsTrigger>
-            <TabsTrigger value="docs">Documentation</TabsTrigger>
+            <TabsTrigger value="webhooks">{t('webhooks.webhooks')}</TabsTrigger>
+            <TabsTrigger value="logs">{t('webhooks.deliveryLogs')}</TabsTrigger>
+            <TabsTrigger value="docs">{t('webhooks.documentation')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="webhooks" className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Configured Webhooks</CardTitle>
+            <CardTitle>{t('webhooks.configuredWebhooks')}</CardTitle>
             <CardDescription>
-              Webhooks send HTTP POST requests to your endpoints when events occur
+              {t('webhooks.webhooksDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-8">Loading...</div>
+              <div className="text-center py-8">{t('webhooks.loading')}</div>
             ) : webhooks.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                No webhooks configured yet
+                {t('webhooks.noWebhooks')}
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>URL</TableHead>
-                    <TableHead>Events</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t('webhooks.url')}</TableHead>
+                    <TableHead>{t('webhooks.events')}</TableHead>
+                    <TableHead>{t('webhooks.created')}</TableHead>
+                    <TableHead>{t('webhooks.status')}</TableHead>
+                    <TableHead className="text-right">{t('webhooks.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -327,7 +329,7 @@ export default function ConfigWebhooks() {
                       <TableCell>{format(new Date(webhook.created_at), 'MMM d, yyyy')}</TableCell>
                       <TableCell>
                         <Badge variant={webhook.active ? "default" : "secondary"}>
-                          {webhook.active ? "Active" : "Disabled"}
+                          {webhook.active ? t('webhooks.active') : t('webhooks.disabled')}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -337,7 +339,7 @@ export default function ConfigWebhooks() {
                             size="sm"
                             onClick={() => toggleWebhook(webhook.id, webhook.active)}
                           >
-                            {webhook.active ? "Disable" : "Enable"}
+                            {webhook.active ? t('webhooks.disable') : t('webhooks.enable')}
                           </Button>
                           <Button
                             variant="ghost"
@@ -389,11 +391,11 @@ export default function ConfigWebhooks() {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <div>
-                    <CardTitle>Webhook Delivery Logs</CardTitle>
-                    <CardDescription>Recent webhook delivery attempts (last 100)</CardDescription>
+                    <CardTitle>{t('webhooks.webhookDeliveryLogs')}</CardTitle>
+                    <CardDescription>{t('webhooks.recentAttempts')}</CardDescription>
                   </div>
                   <div className="flex gap-2 items-center">
-                    <Label className="text-sm text-muted-foreground">Filter:</Label>
+                    <Label className="text-sm text-muted-foreground">{t('webhooks.filter')}:</Label>
                     <select
                       value={selectedWebhookFilter}
                       onChange={(e) => {
@@ -402,7 +404,7 @@ export default function ConfigWebhooks() {
                       }}
                       className="border rounded px-3 py-1.5 text-sm"
                     >
-                      <option value="all">All Webhooks</option>
+                      <option value="all">{t('webhooks.allWebhooks')}</option>
                       {webhooks.map((wh) => (
                         <option key={wh.id} value={wh.id}>
                           {wh.url}
@@ -414,10 +416,10 @@ export default function ConfigWebhooks() {
               </CardHeader>
               <CardContent>
                 {logsLoading ? (
-                  <div className="text-center py-8">Loading logs...</div>
+                  <div className="text-center py-8">{t('webhooks.loadingLogs')}</div>
                 ) : webhookLogs.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    No webhook deliveries yet
+                    {t('webhooks.noDeliveries')}
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -459,7 +461,7 @@ export default function ConfigWebhooks() {
                         </div>
                         <details className="text-sm">
                           <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
-                            View payload
+                            {t('webhooks.viewPayload')}
                           </summary>
                           <pre className="mt-2 bg-muted p-3 rounded text-xs overflow-x-auto">
                             {JSON.stringify(log.payload, null, 2)}

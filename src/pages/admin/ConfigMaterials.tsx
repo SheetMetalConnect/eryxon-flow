@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Loader2, Package } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface Material {
   id: string;
@@ -22,6 +23,7 @@ interface Material {
 }
 
 export default function ConfigMaterials() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,7 +73,7 @@ export default function ConfigMaterials() {
           })
           .eq("id", editingMaterial.id);
 
-        toast.success("Material updated successfully");
+        toast.success(t("materials.materialUpdated"));
       } else {
         // Create new material
         await supabase.from("materials").insert({
@@ -82,14 +84,14 @@ export default function ConfigMaterials() {
           active: formData.active,
         });
 
-        toast.success("Material created successfully");
+        toast.success(t("materials.materialCreated"));
       }
 
       setDialogOpen(false);
       resetForm();
       loadMaterials();
     } catch (error) {
-      toast.error("Failed to save material");
+      toast.error(t("materials.failedToSaveMaterial"));
       console.error(error);
     }
   };
@@ -130,8 +132,8 @@ export default function ConfigMaterials() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Materials Configuration</h1>
-            <p className="text-muted-foreground">Manage material types</p>
+            <h1 className="text-3xl font-bold mb-2">{t("materials.title")}</h1>
+            <p className="text-muted-foreground">{t("materials.manageMaterials")}</p>
           </div>
 
           <Dialog open={dialogOpen} onOpenChange={(open) => {
@@ -141,44 +143,44 @@ export default function ConfigMaterials() {
             <DialogTrigger asChild>
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
-                Add Material
+                {t("materials.createMaterial")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {editingMaterial ? "Edit Material" : "Create New Material"}
+                  {editingMaterial ? t("materials.editMaterial") : t("materials.createNewMaterial")}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
+                  <Label htmlFor="name">{t("materials.materialName")} *</Label>
                   <Input
                     id="name"
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    placeholder="e.g., Aluminum 5052, Steel 304"
+                    placeholder={t("materials.materialNamePlaceholder")}
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description">{t("materials.description")}</Label>
                   <Textarea
                     id="description"
                     value={formData.description}
                     onChange={(e) =>
                       setFormData({ ...formData, description: e.target.value })
                     }
-                    placeholder="Material specifications and properties"
+                    placeholder={t("materials.descriptionPlaceholder")}
                     rows={3}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="color">Color</Label>
+                  <Label htmlFor="color">{t("materials.color")}</Label>
                   <div className="flex gap-2">
                     <Input
                       id="color"
@@ -201,7 +203,7 @@ export default function ConfigMaterials() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="active">Active</Label>
+                  <Label htmlFor="active">{t("materials.active")}</Label>
                   <Switch
                     id="active"
                     checked={formData.active}
@@ -217,10 +219,10 @@ export default function ConfigMaterials() {
                     variant="outline"
                     onClick={() => setDialogOpen(false)}
                   >
-                    Cancel
+                    {t("materials.cancel")}
                   </Button>
                   <Button type="submit">
-                    {editingMaterial ? "Update" : "Create"}
+                    {editingMaterial ? t("materials.update") : t("materials.create")}
                   </Button>
                 </div>
               </form>
@@ -264,7 +266,7 @@ export default function ConfigMaterials() {
                       variant={material.active ? "default" : "secondary"}
                       className="text-xs"
                     >
-                      {material.active ? "Active" : "Inactive"}
+                      {material.active ? t("materials.active") : t("materials.inactive")}
                     </Badge>
                   </div>
                 </div>
@@ -277,13 +279,13 @@ export default function ConfigMaterials() {
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Package className="h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-lg font-medium mb-2">No materials configured</p>
+              <p className="text-lg font-medium mb-2">{t("materials.noMaterialsConfigured")}</p>
               <p className="text-sm text-muted-foreground mb-4">
-                Add your first material type to get started
+                {t("materials.addFirstMaterial")}
               </p>
               <Button onClick={() => setDialogOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Add Material
+                {t("materials.createMaterial")}
               </Button>
             </CardContent>
           </Card>

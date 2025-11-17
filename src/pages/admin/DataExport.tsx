@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Download, Archive, FileJson, FileSpreadsheet, Loader2 } from "lucide-react";
 import Papa from "papaparse";
 import JSZip from "jszip";
+import { useTranslation } from "@/contexts/I18nContext";
 
 const EXPORTABLE_ENTITIES = [
   { id: 'jobs', label: 'Jobs', description: 'All manufacturing jobs' },
@@ -31,6 +32,7 @@ const EXPORTABLE_ENTITIES = [
 ];
 
 export default function DataExport() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const { toast } = useToast();
   const [selectedEntities, setSelectedEntities] = useState<string[]>([]);
@@ -56,8 +58,8 @@ export default function DataExport() {
   const exportData = async () => {
     if (selectedEntities.length === 0) {
       toast({
-        title: "No entities selected",
-        description: "Please select at least one entity to export",
+        title: t('dataExport.noEntitiesSelected'),
+        description: t('dataExport.selectAtLeastOne'),
         variant: "destructive",
       });
       return;
@@ -140,15 +142,15 @@ export default function DataExport() {
       }
 
       toast({
-        title: "Export successful",
-        description: `Successfully exported ${selectedEntities.length} entities`,
+        title: t('dataExport.exportSuccessful'),
+        description: t('dataExport.exportedEntities', { count: selectedEntities.length }),
       });
 
     } catch (error) {
       console.error('Export error:', error);
       toast({
-        title: "Export failed",
-        description: error.message || "Failed to export data",
+        title: t('dataExport.exportFailed'),
+        description: error.message || t('dataExport.failedToExport'),
         variant: "destructive",
       });
     } finally {
@@ -162,8 +164,8 @@ export default function DataExport() {
         <div className="flex items-center gap-3 mb-6">
           <Archive className="h-8 w-8 text-primary" />
           <div>
-            <h1 className="text-3xl font-bold">Data Export</h1>
-            <p className="text-muted-foreground">Export all your tenant data for backup or migration</p>
+            <h1 className="text-3xl font-bold">{t('dataExport.title')}</h1>
+            <p className="text-muted-foreground">{t('dataExport.description')}</p>
           </div>
         </div>
 
@@ -171,8 +173,8 @@ export default function DataExport() {
           {/* Export Format Selection */}
           <Card>
             <CardHeader>
-              <CardTitle>Export Format</CardTitle>
-              <CardDescription>Choose the format for your data export</CardDescription>
+              <CardTitle>{t('dataExport.exportFormat')}</CardTitle>
+              <CardDescription>{t('dataExport.chooseFormat')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex gap-4">
@@ -182,7 +184,7 @@ export default function DataExport() {
                   className="flex-1"
                 >
                   <FileSpreadsheet className="mr-2 h-4 w-4" />
-                  CSV Files (ZIP)
+                  {t('dataExport.formats.csv')}
                 </Button>
                 <Button
                   variant={exportFormat === 'json' ? 'default' : 'outline'}
@@ -190,13 +192,13 @@ export default function DataExport() {
                   className="flex-1"
                 >
                   <FileJson className="mr-2 h-4 w-4" />
-                  JSON File
+                  {t('dataExport.formats.json')}
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground mt-3">
                 {exportFormat === 'csv'
-                  ? 'CSV format exports each entity as a separate CSV file in a ZIP archive'
-                  : 'JSON format exports all data in a single structured JSON file'}
+                  ? t('dataExport.csvDescription')
+                  : t('dataExport.jsonDescription')}
               </p>
             </CardContent>
           </Card>
@@ -204,16 +206,16 @@ export default function DataExport() {
           {/* Entity Selection */}
           <Card>
             <CardHeader>
-              <CardTitle>Select Data to Export</CardTitle>
+              <CardTitle>{t('dataExport.selectData')}</CardTitle>
               <CardDescription>
-                Choose which entities you want to include in the export
+                {t('dataExport.chooseEntities')}
               </CardDescription>
               <div className="flex gap-2 mt-2">
                 <Button variant="outline" size="sm" onClick={selectAll}>
-                  Select All
+                  {t('dataExport.selectAll')}
                 </Button>
                 <Button variant="outline" size="sm" onClick={deselectAll}>
-                  Deselect All
+                  {t('dataExport.deselectAll')}
                 </Button>
               </div>
             </CardHeader>
@@ -246,19 +248,19 @@ export default function DataExport() {
           {/* Export Action */}
           <Card>
             <CardHeader>
-              <CardTitle>Export Your Data</CardTitle>
+              <CardTitle>{t('dataExport.exportYourData')}</CardTitle>
               <CardDescription>
-                Download all selected data. This includes all records belonging to your tenant.
+                {t('dataExport.downloadSelected')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="bg-muted/50 p-4 rounded-lg mb-4">
-                <h4 className="font-semibold mb-2">What's included:</h4>
+                <h4 className="font-semibold mb-2">{t('dataExport.whatsIncluded')}</h4>
                 <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                  <li>All data is automatically filtered to your tenant</li>
-                  <li>Export metadata including timestamp and record counts</li>
-                  <li>API keys are exported without the secret hash (for security)</li>
-                  <li>File attachments are referenced by path (not included in export)</li>
+                  <li>{t('dataExport.includedItems.tenantFiltered')}</li>
+                  <li>{t('dataExport.includedItems.metadata')}</li>
+                  <li>{t('dataExport.includedItems.apiKeys')}</li>
+                  <li>{t('dataExport.includedItems.fileReferences')}</li>
                 </ul>
               </div>
 
@@ -271,12 +273,15 @@ export default function DataExport() {
                 {isExporting ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Exporting...
+                    {t('dataExport.exporting')}
                   </>
                 ) : (
                   <>
                     <Download className="mr-2 h-5 w-5" />
-                    Export Data ({selectedEntities.length} {selectedEntities.length === 1 ? 'entity' : 'entities'})
+                    {t('dataExport.exportButton', {
+                      count: selectedEntities.length,
+                      entity: selectedEntities.length === 1 ? t('dataExport.entity') : t('dataExport.entities')
+                    })}
                   </>
                 )}
               </Button>
@@ -286,14 +291,14 @@ export default function DataExport() {
           {/* Important Notes */}
           <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
             <CardHeader>
-              <CardTitle className="text-amber-900 dark:text-amber-100">Important Notes</CardTitle>
+              <CardTitle className="text-amber-900 dark:text-amber-100">{t('dataExport.importantNotes')}</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-amber-800 dark:text-amber-200 space-y-2">
-              <p>• This export is for data portability and backup purposes</p>
-              <p>• File attachments (PDFs, CAD files, images) are not included in the export - only their references</p>
-              <p>• To export files, please contact support or use the storage API</p>
-              <p>• Exports are not logged and do not affect your account</p>
-              <p>• Keep your exported data secure as it contains all your tenant information</p>
+              <p>• {t('dataExport.notes.purpose')}</p>
+              <p>• {t('dataExport.notes.filesNotIncluded')}</p>
+              <p>• {t('dataExport.notes.contactSupport')}</p>
+              <p>• {t('dataExport.notes.notLogged')}</p>
+              <p>• {t('dataExport.notes.keepSecure')}</p>
             </CardContent>
           </Card>
         </div>
