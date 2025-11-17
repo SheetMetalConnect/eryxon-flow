@@ -4,7 +4,7 @@ import {
   Card,
   CardContent,
   Typography,
-  Grid,
+  Stack,
   LinearProgress,
   Button,
   Chip,
@@ -223,24 +223,24 @@ export const MyPlan: React.FC = () => {
                       </Typography>
                     </Box>
                     <Typography variant="body2" color="text.secondary">
-                      {usageStats?.current_month_parts || 0} / {subscription?.max_parts_per_month || '∞'}
+                      {usageStats?.parts_this_month || 0} / {subscription?.max_parts_per_month || '∞'}
                     </Typography>
                   </Box>
                   <LinearProgress
                     variant="determinate"
-                    value={getUsagePercentage(usageStats?.current_month_parts || 0, subscription?.max_parts_per_month || null)}
+                    value={getUsagePercentage(usageStats?.parts_this_month || 0, subscription?.max_parts_per_month || null)}
                     sx={{
                       height: 8,
                       borderRadius: 1,
                       backgroundColor: alpha(theme.palette.primary.main, 0.1),
                       '& .MuiLinearProgress-bar': {
-                        backgroundColor: isAtLimit(usageStats?.current_month_parts || 0, subscription?.max_parts_per_month || null)
+                        backgroundColor: isAtLimit(usageStats?.parts_this_month || 0, subscription?.max_parts_per_month || null)
                           ? theme.palette.error.main
                           : theme.palette.primary.main,
                       },
                     }}
                   />
-                  {isAtLimit(usageStats?.current_month_parts || 0, subscription?.max_parts_per_month || null) && (
+                  {isAtLimit(usageStats?.parts_this_month || 0, subscription?.max_parts_per_month || null) && (
                     <Alert severity="warning" sx={{ mt: 1 }}>
                       You've reached your monthly parts limit. Consider upgrading to continue.
                     </Alert>
@@ -286,18 +286,18 @@ export const MyPlan: React.FC = () => {
                       </Typography>
                     </Box>
                     <Typography variant="body2" color="text.secondary">
-                      {((subscription?.current_storage_mb || 0) / 1024).toFixed(2)} GB / {subscription?.max_storage_gb || '∞'} GB
+                      {(subscription?.current_storage_gb || 0).toFixed(2)} GB / {subscription?.max_storage_gb || '∞'} GB
                     </Typography>
                   </Box>
                   <LinearProgress
                     variant="determinate"
-                    value={getUsagePercentage((subscription?.current_storage_mb || 0) / 1024, subscription?.max_storage_gb || null)}
+                    value={getUsagePercentage(subscription?.current_storage_gb || 0, subscription?.max_storage_gb || null)}
                     sx={{
                       height: 8,
                       borderRadius: 1,
                       backgroundColor: alpha(theme.palette.primary.main, 0.1),
                       '& .MuiLinearProgress-bar': {
-                        backgroundColor: isAtLimit((subscription?.current_storage_mb || 0) / 1024, subscription?.max_storage_gb || null)
+                        backgroundColor: isAtLimit(subscription?.current_storage_gb || 0, subscription?.max_storage_gb || null)
                           ? theme.palette.error.main
                           : theme.palette.info.main,
                       },
