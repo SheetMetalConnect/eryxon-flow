@@ -75,7 +75,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       exact: true,
     },
     {
-      path: "/admin/activity-monitor",
+      path: "/admin/activity",
       label: "Activity Monitor",
       icon: Clock,
       exact: true,
