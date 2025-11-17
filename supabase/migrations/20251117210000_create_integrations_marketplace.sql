@@ -45,7 +45,7 @@ CREATE TABLE integrations (
   -- Integration details
   supported_systems jsonb DEFAULT '[]'::jsonb, -- Array of ERP system names
   features jsonb DEFAULT '[]'::jsonb, -- Array of feature descriptions
-  requirements jsonb DEFAULT '{}}'::jsonb, -- System requirements
+  requirements jsonb DEFAULT '{}'::jsonb, -- System requirements
 
   -- Documentation & Resources
   documentation_url text, -- Link to docs
