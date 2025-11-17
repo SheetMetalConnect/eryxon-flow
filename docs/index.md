@@ -52,6 +52,32 @@ Comprehensive guide to the 3D STEP file viewer feature.
 
 ---
 
+### [Interactive Notification System](./NOTIFICATIONS_SYSTEM.md)
+Comprehensive guide to the interactive notification system with real-time updates.
+
+**Contents:**
+- Persistent and toast notifications
+- Interactive features (read, pin, dismiss)
+- Notification types and triggers
+- Database schema and architecture
+- Developer hooks and API
+- Real-time updates with Supabase
+- Security and multi-tenancy
+- Customization guide
+
+**Audience:** Developers, administrators, end users
+
+**Key Topics:**
+- useNotifications hook
+- NotificationsCenter component
+- Toast notifications with actions
+- Automatic notification triggers
+- Database RPC functions
+- Real-time notification delivery
+- User notification preferences
+
+---
+
 ### [Material UI Design System](./material-ui-design-system.md)
 Complete design system documentation for the application's UI components.
 
@@ -145,6 +171,11 @@ Complete design system documentation for the application's UI components.
   - Dark mode support
 
 ### Features
+- [Interactive Notification System](./NOTIFICATIONS_SYSTEM.md)
+  - Real-time notifications
+  - Interactive actions (read/pin/dismiss)
+  - Toast notifications
+  - Automatic triggers
 - [3D Viewer](./3d-viewer.md)
   - STEP file viewing
   - 3D model interaction

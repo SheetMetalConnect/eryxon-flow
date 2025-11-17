@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ThemeProvider } from "./theme/ThemeProvider";
 import { ToastProvider } from "./components/mui/ToastNotification";
+import { NotificationToastProvider } from "./components/NotificationToastProvider";
 import Auth from "./pages/Auth";
 import WorkQueue from "./pages/operator/WorkQueue";
 import MyActivity from "./pages/operator/MyActivity";
@@ -297,7 +298,9 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <AuthProvider>
-              <AppRoutes />
+              <NotificationToastProvider>
+                <AppRoutes />
+              </NotificationToastProvider>
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
