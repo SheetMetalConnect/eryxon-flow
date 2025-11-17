@@ -56,6 +56,7 @@ import { GlobalSearch } from "@/components/GlobalSearch";
 import { QuickCreateMenu } from "@/components/QuickCreateMenu";
 import { NotificationsCenter } from "@/components/NotificationsCenter";
 import { useTranslation } from "react-i18next";
+import { usePendingIssuesCount } from "@/hooks/usePendingIssuesCount";
 
 const DRAWER_WIDTH = 260;
 
@@ -73,6 +74,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [searchOpen, setSearchOpen] = useState(false);
+  const { count: pendingIssuesCount } = usePendingIssuesCount();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -330,7 +332,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                       fontSize: "0.95rem",
                     }}
                   />
-                  {/* TODO: Add badge count for issues */}
+                  {item.badge && pendingIssuesCount > 0 && (
+                    <Chip
+                      label={pendingIssuesCount}
+                      size="small"
+                      color="error"
+                      sx={{ height: 20, fontSize: "0.75rem" }}
+                    />
+                  )}
                 </ListItemButton>
               </ListItem>
             ))}
