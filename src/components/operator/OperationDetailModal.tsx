@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { OperationWithDetails, startTimeTracking, stopTimeTracking, completeOperation } from "@/lib/database";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Clock, Play, Square, CheckCircle, Package, AlertCircle, AlertTriangle, Box, FileText, Eye } from "lucide-react";
+import { Clock, Play, Square, CheckCircle, Package, AlertCircle, AlertTriangle, Box, FileText, Eye, Wrench } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,11 +37,33 @@ export default function OperationDetailModal({
   const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(null);
   const [currentFileType, setCurrentFileType] = useState<'step' | 'pdf' | null>(null);
   const [currentFileTitle, setCurrentFileTitle] = useState<string>("");
+  const [requiredResources, setRequiredResources] = useState<any[]>([]);
 
   const isCurrentUserTiming = operation.active_time_entry?.operator_id === profile?.id;
   const canStartTiming = !operation.active_time_entry && operation.status !== "completed";
   const canComplete = operation.status !== "completed" && !operation.active_time_entry;
   const canReportIssue = isCurrentUserTiming;
+
+  // Fetch required resources for this operation
+  useEffect(() => {
+    const fetchResources = async () => {
+      if (!operation.id) return;
+
+      const { data, error } = await supabase
+        .from("operation_resources")
+        .select(`
+          *,
+          resource:resources(*)
+        `)
+        .eq("operation_id", operation.id);
+
+      if (!error && data) {
+        setRequiredResources(data);
+      }
+    };
+
+    fetchResources();
+  }, [operation.id]);
 
   const checkAssemblyDependencies = async () => {
     if (!profile?.tenant_id) return true;
@@ -351,6 +373,60 @@ export default function OperationDetailModal({
                     </div>
                   );
                 })}
+              </div>
+            </div>
+          )}
+
+          {/* Required Resources Section */}
+          {requiredResources.length > 0 && (
+            <div>
+              <div className="text-sm text-muted-foreground mb-2 flex items-center gap-2">
+                <Wrench className="h-4 w-4" />
+                Required Resources
+              </div>
+              <div className="space-y-2">
+                {requiredResources.map((opResource: any) => (
+                  <div
+                    key={opResource.id}
+                    className="border rounded-md p-3 bg-muted/50"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Wrench className="h-4 w-4 text-orange-600" />
+                          <p className="font-medium text-sm">{opResource.resource.name}</p>
+                          {opResource.quantity > 1 && (
+                            <Badge variant="secondary" className="text-xs">
+                              Qty: {opResource.quantity}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground space-y-0.5 ml-6">
+                          <p className="capitalize">
+                            Type: {opResource.resource.type.replace("_", " ")}
+                          </p>
+                          {opResource.resource.identifier && (
+                            <p>ID: {opResource.resource.identifier}</p>
+                          )}
+                          {opResource.resource.location && (
+                            <p>Location: {opResource.resource.location}</p>
+                          )}
+                          {opResource.notes && (
+                            <p className="text-amber-700 dark:text-amber-300 mt-1">
+                              Note: {opResource.notes}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <Badge
+                        variant={opResource.resource.status === "available" ? "default" : "secondary"}
+                        className="text-xs capitalize"
+                      >
+                        {opResource.resource.status.replace("_", " ")}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
