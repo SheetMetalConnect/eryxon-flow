@@ -8,7 +8,8 @@ import {
   Grid3x3,
   Boxes,
   Loader2,
-  Box
+  Box,
+  Hexagon
 } from 'lucide-react';
 
 // Extend Window interface for occt-import-js
@@ -32,6 +33,7 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
   const [explodedView, setExplodedView] = useState(false);
   const [explosionFactor, setExplosionFactor] = useState(1);
   const [gridVisible, setGridVisible] = useState(true);
+  const [edgesVisible, setEdgesVisible] = useState(true);
 
   // Three.js refs
   const containerRef = useRef<HTMLDivElement>(null);
@@ -40,6 +42,7 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const meshesRef = useRef<THREE.Mesh[]>([]);
+  const edgesRef = useRef<THREE.LineSegments[]>([]);
   const gridRef = useRef<THREE.GridHelper | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
@@ -111,11 +114,23 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // Lights
-    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(1, 1, 1);
-    scene.add(directionalLight);
+    // Lights - Multiple directional lights for better edge visibility
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+    // Key light
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    keyLight.position.set(5, 5, 5);
+    scene.add(keyLight);
+
+    // Fill light
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    fillLight.position.set(-5, 0, -5);
+    scene.add(fillLight);
+
+    // Back light for better edge definition
+    const backLight = new THREE.DirectionalLight(0xffffff, 0.3);
+    backLight.position.set(0, 5, -5);
+    scene.add(backLight);
 
     // Grid
     const grid = new THREE.GridHelper(1000, 50, 0x444444, 0x888888);
@@ -203,6 +218,19 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
           }
         });
         meshesRef.current = [];
+
+        // Clear existing edges
+        edgesRef.current.forEach((edges) => {
+          sceneRef.current?.remove(edges);
+          edges.geometry.dispose();
+          if (Array.isArray(edges.material)) {
+            edges.material.forEach(m => m.dispose());
+          } else {
+            edges.material.dispose();
+          }
+        });
+        edgesRef.current = [];
+
         originalPositionsRef.current = [];
         explosionDataRef.current.initialized = false;
 
@@ -249,7 +277,7 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
             geometry.setIndex(new THREE.BufferAttribute(indices, 1));
           }
 
-          // Material
+          // Material - Using MeshStandardMaterial for better PBR rendering
           const color = meshData.color
             ? new THREE.Color(
                 meshData.color[0],
@@ -258,10 +286,12 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
               )
             : new THREE.Color(0x4a90e2);
 
-          const material = new THREE.MeshPhongMaterial({
+          const material = new THREE.MeshStandardMaterial({
             color,
             side: THREE.DoubleSide,
-            shininess: 30,
+            metalness: 0.3,
+            roughness: 0.6,
+            flatShading: false,
           });
 
           // Create and add mesh
@@ -269,6 +299,21 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
           meshesRef.current.push(mesh);
           originalPositionsRef.current.push(mesh.position.clone());
           sceneRef.current.add(mesh);
+
+          // Add edges for better contour visibility (threshold angle: 30 degrees)
+          const edgesGeometry = new THREE.EdgesGeometry(geometry, 30);
+          const edgesMaterial = new THREE.LineBasicMaterial({
+            color: 0x000000,
+            linewidth: 1,
+            opacity: 0.8,
+            transparent: true,
+          });
+          const edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
+          edges.visible = edgesVisible;
+
+          // Position edges with mesh (for exploded view)
+          mesh.add(edges);
+          edgesRef.current.push(edges);
         }
 
         // Fit camera to view
@@ -454,6 +499,14 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
     }
   };
 
+  // Toggle edges visibility
+  const toggleEdges = () => {
+    edgesRef.current.forEach((edges) => {
+      edges.visible = !edgesVisible;
+    });
+    setEdgesVisible(!edgesVisible);
+  };
+
   return (
     <div className="flex flex-col h-full w-full bg-gray-100">
       {/* Toolbar */}
@@ -486,6 +539,17 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
         >
           <Box className="h-4 w-4 mr-1" />
           Wireframe
+        </Button>
+
+        <Button
+          variant={edgesVisible ? 'default' : 'outline'}
+          size="sm"
+          onClick={toggleEdges}
+          disabled={stepLoading || meshesRef.current.length === 0}
+          title="Toggle edge/contour visibility"
+        >
+          <Hexagon className="h-4 w-4 mr-1" />
+          Edges
         </Button>
 
         <Button
