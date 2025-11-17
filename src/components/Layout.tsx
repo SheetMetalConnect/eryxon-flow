@@ -7,6 +7,8 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
+// SECURITY NOTE: Layout selection based on role is for UI convenience only.
+// Server-side RLS policies enforce actual data access permissions.
 export default function Layout({ children }: LayoutProps) {
   const { profile, loading } = useAuth();
 
@@ -15,7 +17,8 @@ export default function Layout({ children }: LayoutProps) {
     return null;
   }
 
-  // Route to appropriate layout based on user role
+  // UI-only: Route to appropriate layout based on user role
+  // This provides better UX but provides ZERO security
   if (profile.role === "admin") {
     return <AdminLayout>{children}</AdminLayout>;
   }

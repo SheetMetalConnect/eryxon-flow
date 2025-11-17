@@ -41,6 +41,9 @@ import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
 
+// SECURITY NOTE: This route protection is for UI convenience only.
+// Actual authorization is enforced server-side via RLS policies.
+// Attackers can bypass these checks, but they cannot access data without proper RLS permissions.
 function ProtectedRoute({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) {
   const { user, profile, loading } = useAuth();
 
@@ -56,8 +59,9 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
     return <Navigate to="/auth" replace />;
   }
 
+  // UI-only check: redirect operators away from admin pages (convenience, not security)
   if (adminOnly && profile.role !== "admin") {
-    return <Navigate to="/work-queue" replace />;
+    return <Navigate to="/operator/work-queue" replace />;
   }
 
   return <>{children}</>;
