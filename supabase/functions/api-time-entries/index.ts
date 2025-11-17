@@ -68,15 +68,14 @@ serve(async (req) => {
       );
     }
 
+    // Handle GET requests - list time entries
     if (req.method === 'GET') {
       const url = new URL(req.url);
-      const jobId = url.searchParams.get('job_id');
-      const jobNumber = url.searchParams.get('job_number');
-      const material = url.searchParams.get('material');
-      const status = url.searchParams.get('status');
-      const partNumber = url.searchParams.get('part_number');
+      const operationId = url.searchParams.get('operation_id');
+      const operatorId = url.searchParams.get('operator_id');
+      const startDate = url.searchParams.get('start_date');
+      const endDate = url.searchParams.get('end_date');
 
-      // Cap pagination limit to prevent abuse
       let limit = parseInt(url.searchParams.get('limit') || '100');
       if (limit < 1) limit = 100;
       if (limit > 1000) limit = 1000;
@@ -84,93 +83,65 @@ serve(async (req) => {
       const offset = parseInt(url.searchParams.get('offset') || '0');
 
       let query = supabase
-        .from('parts')
+        .from('time_entries')
         .select(`
           id,
-          part_number,
-          material,
-          quantity,
-          status,
-          file_paths,
+          start_time,
+          end_time,
+          duration,
           notes,
-          metadata,
           created_at,
           updated_at,
-          parent_part_id,
-          job:jobs (
-            id,
-            job_number,
-            customer
-          ),
-          operations (
+          operation:operations (
             id,
             operation_name,
-            status,
-            completion_percentage,
-            cell:cells (
+            part:parts (
               id,
-              name,
-              color
+              part_number,
+              job:jobs (
+                id,
+                job_number
+              )
             )
+          ),
+          operator:profiles (
+            id,
+            username,
+            full_name
           )
         `)
         .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false })
+        .order('start_time', { ascending: false })
         .range(offset, offset + limit - 1);
 
-      if (jobId) {
-        query = query.eq('job_id', jobId);
+      if (operationId) {
+        query = query.eq('operation_id', operationId);
       }
-      if (material) {
-        query = query.ilike('material', `%${material}%`);
+      if (operatorId) {
+        query = query.eq('operator_id', operatorId);
       }
-      if (status) {
-        query = query.eq('status', status);
+      if (startDate) {
+        query = query.gte('start_time', startDate);
       }
-      if (partNumber) {
-        query = query.ilike('part_number', `%${partNumber}%`);
-      }
-
-      // Filter by job_number if provided (requires join)
-      if (jobNumber) {
-        const { data: jobs } = await supabase
-          .from('jobs')
-          .select('id')
-          .eq('tenant_id', tenantId)
-          .ilike('job_number', `%${jobNumber}%`);
-
-        if (jobs && jobs.length > 0) {
-          query = query.in('job_id', jobs.map(j => j.id));
-        } else {
-          // No matching jobs, return empty result
-          return new Response(
-            JSON.stringify({
-              success: true,
-              data: {
-                parts: [],
-                pagination: { limit, offset, total: 0 }
-              }
-            }),
-            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
+      if (endDate) {
+        query = query.lte('start_time', endDate);
       }
 
-      const { data: parts, error, count } = await query;
+      const { data: timeEntries, error, count } = await query;
 
       if (error) {
-        throw new Error(`Failed to fetch parts: ${error.message}`);
+        throw new Error(`Failed to fetch time entries: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
           data: {
-            parts: parts || [],
+            time_entries: timeEntries || [],
             pagination: {
               limit,
               offset,
-              total: count || parts?.length || 0
+              total: count || timeEntries?.length || 0
             }
           }
         }),
@@ -178,124 +149,109 @@ serve(async (req) => {
       );
     }
 
-    // POST method for creating parts
+    // Handle POST requests - create time entry
     if (req.method === 'POST') {
       const body = await req.json();
 
       // Validate required fields
-      if (!body.job_id || !body.part_number || !body.material) {
+      if (!body.operation_id || !body.operator_id || !body.start_time) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'job_id, part_number, and material are required' }
+            error: { code: 'VALIDATION_ERROR', message: 'operation_id, operator_id, and start_time are required' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Verify job exists and belongs to tenant
-      const { data: job } = await supabase
-        .from('jobs')
+      // Verify operation exists and belongs to tenant
+      const { data: operation } = await supabase
+        .from('operations')
         .select('id')
-        .eq('id', body.job_id)
+        .eq('id', body.operation_id)
         .eq('tenant_id', tenantId)
         .single();
 
-      if (!job) {
+      if (!operation) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'NOT_FOUND', message: 'Job not found' }
+            error: { code: 'NOT_FOUND', message: 'Operation not found' }
           }),
           { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Check for duplicate part number in same job
-      const { data: existingPart } = await supabase
-        .from('parts')
+      // Verify operator exists and belongs to tenant
+      const { data: operator } = await supabase
+        .from('profiles')
         .select('id')
-        .eq('job_id', body.job_id)
-        .eq('part_number', body.part_number)
+        .eq('id', body.operator_id)
+        .eq('tenant_id', tenantId)
         .single();
 
-      if (existingPart) {
+      if (!operator) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'DUPLICATE_PART', message: `Part number ${body.part_number} already exists in this job` }
+            error: { code: 'NOT_FOUND', message: 'Operator not found' }
           }),
-          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Verify parent_part_id if provided
-      if (body.parent_part_id) {
-        const { data: parentPart } = await supabase
-          .from('parts')
-          .select('id, job_id')
-          .eq('id', body.parent_part_id)
-          .eq('tenant_id', tenantId)
-          .single();
-
-        if (!parentPart || parentPart.job_id !== body.job_id) {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: { code: 'INVALID_PARENT', message: 'Parent part not found or belongs to different job' }
-            }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
+      // Calculate duration if end_time is provided
+      let duration = body.duration;
+      if (body.end_time && !duration) {
+        const start = new Date(body.start_time);
+        const end = new Date(body.end_time);
+        duration = Math.floor((end.getTime() - start.getTime()) / 1000); // duration in seconds
       }
 
-      const { data: part, error: partError } = await supabase
-        .from('parts')
+      const { data: timeEntry, error: timeEntryError } = await supabase
+        .from('time_entries')
         .insert({
           tenant_id: tenantId,
-          job_id: body.job_id,
-          part_number: body.part_number,
-          material: body.material,
-          quantity: body.quantity || 1,
-          parent_part_id: body.parent_part_id,
-          file_paths: body.file_paths,
-          notes: body.notes,
-          metadata: body.metadata,
-          status: 'not_started'
+          operation_id: body.operation_id,
+          operator_id: body.operator_id,
+          start_time: body.start_time,
+          end_time: body.end_time,
+          duration: duration,
+          notes: body.notes
         })
         .select()
         .single();
 
-      if (partError || !part) {
-        throw new Error(`Failed to create part: ${partError?.message}`);
+      if (timeEntryError || !timeEntry) {
+        throw new Error(`Failed to create time entry: ${timeEntryError?.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { part }
+          data: { time_entry: timeEntry }
         }),
         { status: 201, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // PATCH method for updating parts
+    // Handle PATCH requests - update time entry
     if (req.method === 'PATCH') {
       const url = new URL(req.url);
-      const partId = url.searchParams.get('id');
+      const timeEntryId = url.searchParams.get('id');
 
-      if (!partId) {
+      if (!timeEntryId) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'Part ID is required in query string (?id=xxx)' }
+            error: { code: 'VALIDATION_ERROR', message: 'Time entry ID is required in query string (?id=xxx)' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       const body = await req.json();
-      const allowedFields = ['status', 'quantity', 'notes', 'metadata', 'file_paths'];
+      const allowedFields = ['end_time', 'duration', 'notes'];
       const updates: any = {};
 
       for (const field of allowedFields) {
@@ -314,12 +270,28 @@ serve(async (req) => {
         );
       }
 
+      // If end_time is updated, recalculate duration
+      if (updates.end_time && !updates.duration) {
+        const { data: existingEntry } = await supabase
+          .from('time_entries')
+          .select('start_time')
+          .eq('id', timeEntryId)
+          .eq('tenant_id', tenantId)
+          .single();
+
+        if (existingEntry) {
+          const start = new Date(existingEntry.start_time);
+          const end = new Date(updates.end_time);
+          updates.duration = Math.floor((end.getTime() - start.getTime()) / 1000);
+        }
+      }
+
       updates.updated_at = new Date().toISOString();
 
-      const { data: part, error } = await supabase
-        .from('parts')
+      const { data: timeEntry, error } = await supabase
+        .from('time_entries')
         .update(updates)
-        .eq('id', partId)
+        .eq('id', timeEntryId)
         .eq('tenant_id', tenantId)
         .select()
         .single();
@@ -329,60 +301,42 @@ serve(async (req) => {
           return new Response(
             JSON.stringify({
               success: false,
-              error: { code: 'NOT_FOUND', message: 'Part not found' }
+              error: { code: 'NOT_FOUND', message: 'Time entry not found' }
             }),
             { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        throw new Error(`Failed to update part: ${error.message}`);
+        throw new Error(`Failed to update time entry: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { part }
+          data: { time_entry: timeEntry }
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // DELETE method for deleting parts
+    // Handle DELETE requests - delete time entry
     if (req.method === 'DELETE') {
       const url = new URL(req.url);
-      const partId = url.searchParams.get('id');
+      const timeEntryId = url.searchParams.get('id');
 
-      if (!partId) {
+      if (!timeEntryId) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'Part ID is required in query string (?id=xxx)' }
+            error: { code: 'VALIDATION_ERROR', message: 'Time entry ID is required in query string (?id=xxx)' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Check if part has child parts
-      const { data: childParts } = await supabase
-        .from('parts')
-        .select('id')
-        .eq('parent_part_id', partId)
-        .limit(1);
-
-      if (childParts && childParts.length > 0) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: { code: 'CONFLICT', message: 'Cannot delete part with child parts. Delete child parts first.' }
-          }),
-          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Delete part (cascade will delete operations)
       const { error } = await supabase
-        .from('parts')
+        .from('time_entries')
         .delete()
-        .eq('id', partId)
+        .eq('id', timeEntryId)
         .eq('tenant_id', tenantId);
 
       if (error) {
@@ -390,18 +344,18 @@ serve(async (req) => {
           return new Response(
             JSON.stringify({
               success: false,
-              error: { code: 'NOT_FOUND', message: 'Part not found' }
+              error: { code: 'NOT_FOUND', message: 'Time entry not found' }
             }),
             { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        throw new Error(`Failed to delete part: ${error.message}`);
+        throw new Error(`Failed to delete time entry: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { message: 'Part deleted successfully' }
+          data: { message: 'Time entry deleted successfully' }
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -416,7 +370,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in api-parts:', error);
+    console.error('Error in api-time-entries:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({

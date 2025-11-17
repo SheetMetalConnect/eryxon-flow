@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -61,6 +62,7 @@ function StatCard({ title, value, description, icon: Icon, onClick }: StatCardPr
 }
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const navigate = useNavigate();
   const [activeWork, setActiveWork] = useState<ActiveWork[]>([]);
@@ -227,9 +229,9 @@ export default function Dashboard() {
       await seedDemoData(profile.tenant_id);
       await loadData();
       setNeedsSetup(false);
-      toast({ title: "Demo data added", description: "Stages, jobs, parts and tasks were created." });
+      toast({ title: t("dashboard.demoDataAdded"), description: t("dashboard.demoDataDescription") });
     } catch (e: any) {
-      toast({ variant: "destructive", title: "Seeding failed", description: e?.message || String(e) });
+      toast({ variant: "destructive", title: t("dashboard.seedingFailed"), description: e?.message || String(e) });
     } finally {
       setSeeding(false);
     }
@@ -239,22 +241,22 @@ export default function Dashboard() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-          <p className="text-muted-foreground">Real-time activity and statistics</p>
+          <h1 className="text-3xl font-bold mb-2">{t("dashboard.title")}</h1>
+          <p className="text-muted-foreground">{t("dashboard.description")}</p>
         </div>
 
         {needsSetup && (
           <Card>
             <CardHeader>
-              <CardTitle>Initial setup</CardTitle>
+              <CardTitle>{t("dashboard.initialSetup")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between gap-4">
                 <p className="text-muted-foreground">
-                  No stages found for this tenant. Seed demo data to start testing the board.
+                  {t("dashboard.noStagesFound")}
                 </p>
                 <Button onClick={handleSeed} disabled={seeding}>
-                  {seeding ? "Seeding…" : "Seed demo data"}
+                  {seeding ? t("dashboard.seeding") : t("dashboard.seedDemoData")}
                 </Button>
               </div>
             </CardContent>
@@ -264,33 +266,33 @@ export default function Dashboard() {
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4">
           <StatCard
-            title="Active Workers"
+            title={t("dashboard.activeWorkers")}
             value={stats.activeWorkers}
-            description="Currently working"
+            description={t("dashboard.currentlyWorking")}
             icon={Users}
             onClick={() => navigate("/admin/users")}
           />
 
           <StatCard
-            title="Pending Issues"
+            title={t("dashboard.pendingIssues")}
             value={stats.pendingIssues}
-            description="Awaiting review"
+            description={t("dashboard.awaitingReview")}
             icon={AlertTriangle}
             onClick={() => navigate("/admin/issues")}
           />
 
           <StatCard
-            title="In Progress"
+            title={t("dashboard.inProgress")}
             value={stats.inProgressTasks}
-            description="Active tasks"
+            description={t("dashboard.activeTasks")}
             icon={Activity}
             onClick={() => navigate("/admin/assignments")}
           />
 
           <StatCard
-            title="Due This Week"
+            title={t("dashboard.dueThisWeek")}
             value={stats.dueThisWeek}
-            description="Jobs due"
+            description={t("dashboard.jobsDue")}
             icon={Clock}
             onClick={() => navigate("/admin/jobs")}
           />
@@ -299,24 +301,24 @@ export default function Dashboard() {
         {/* Quick Stats Panel */}
         <Card>
           <CardHeader>
-            <CardTitle>Quick Stats</CardTitle>
+            <CardTitle>{t("dashboard.quickStats")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-4">
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Total Jobs</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.totalJobs")}</p>
                 <p className="text-2xl font-bold">{stats.totalJobs}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Total Parts</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.totalParts")}</p>
                 <p className="text-2xl font-bold">{stats.totalParts}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Active Cells</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.activeCells")}</p>
                 <p className="text-2xl font-bold">{stats.activeCells}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Completed Today</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.completedToday")}</p>
                 <p className="text-2xl font-bold">{stats.completedToday}</p>
               </div>
             </div>
@@ -326,23 +328,23 @@ export default function Dashboard() {
         {/* Active Work Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Active Work</CardTitle>
+            <CardTitle>{t("dashboard.activeWork")}</CardTitle>
           </CardHeader>
           <CardContent>
             {activeWork.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                No active work at the moment
+                {t("dashboard.noActiveWork")}
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Operator</TableHead>
-                    <TableHead>Operation</TableHead>
-                    <TableHead>Job</TableHead>
-                    <TableHead>Part</TableHead>
-                    <TableHead>Cell</TableHead>
-                    <TableHead>Elapsed Time</TableHead>
+                    <TableHead>{t("dashboard.operator")}</TableHead>
+                    <TableHead>{t("dashboard.operation")}</TableHead>
+                    <TableHead>{t("dashboard.job")}</TableHead>
+                    <TableHead>{t("dashboard.part")}</TableHead>
+                    <TableHead>{t("dashboard.cell")}</TableHead>
+                    <TableHead>{t("dashboard.elapsedTime")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

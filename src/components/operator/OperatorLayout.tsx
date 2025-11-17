@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   AppBar,
@@ -22,18 +23,19 @@ import {
   Logout as LogoutIcon,
   Brightness4 as Brightness4Icon,
   Brightness7 as Brightness7Icon,
-  AttachMoney as AttachMoneyIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useThemeMode } from '@/theme/ThemeProvider';
-import OperatorFooterBar from './OperatorFooterBar';
+import CurrentlyTimingWidget from './CurrentlyTimingWidget';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 interface OperatorLayoutProps {
   children: React.ReactNode;
 }
 
 export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
+  const { t } = useTranslation();
   const { profile, signOut } = useAuth();
   const { mode, toggleTheme } = useThemeMode();
   const theme = useTheme();
@@ -56,10 +58,9 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
   };
 
   const navItems = [
-    { path: '/work-queue', label: 'Work Queue', icon: <ListAltIcon /> },
-    { path: '/my-activity', label: 'My Activity', icon: <ScheduleIcon /> },
-    { path: '/my-issues', label: 'My Issues', icon: <ReportProblemIcon /> },
-    { path: '/pricing', label: 'Pricing', icon: <AttachMoneyIcon /> },
+    { path: '/work-queue', label: t('navigation.workQueue'), icon: <ListAltIcon /> },
+    { path: '/my-activity', label: t('navigation.myActivity'), icon: <ScheduleIcon /> },
+    { path: '/my-issues', label: t('navigation.myIssues'), icon: <ReportProblemIcon /> },
   ];
 
   const getCurrentNavValue = () => {
@@ -110,13 +111,16 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
             </Box>
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
               <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem' }}>
-                Sheet Metal Connect
+                {t('app.name')}
               </Typography>
             </Box>
           </Box>
 
           {/* Right Side Actions */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+
             {/* Theme Toggle */}
             <IconButton onClick={toggleTheme} color="inherit">
               {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
@@ -175,17 +179,32 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
                     width: 'fit-content',
                   }}
                 >
-                  Operator
+                  {t('app.operator')}
                 </Typography>
               </Box>
               <MenuItem onClick={handleSignOut} sx={{ gap: 1.5, py: 1.5 }}>
                 <LogoutIcon fontSize="small" />
-                Sign Out
+                {t('auth.signOut')}
               </MenuItem>
             </Menu>
           </Box>
         </Toolbar>
       </AppBar>
+
+      {/* Currently Timing Widget - Sticky below header */}
+      <Box
+        sx={{
+          position: 'sticky',
+          top: { xs: 56, sm: 64 },
+          zIndex: theme.zIndex.appBar - 1,
+          backgroundColor: theme.palette.background.default,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}
+      >
+        <Box sx={{ px: { xs: 2, sm: 3 }, py: 1.5 }}>
+          <CurrentlyTimingWidget />
+        </Box>
+      </Box>
 
       {/* Main Content */}
       <Box
@@ -194,14 +213,11 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
           flexGrow: 1,
           px: { xs: 2, sm: 3 },
           py: { xs: 2, sm: 3 },
-          pb: { xs: 12, sm: 10 }, // Extra padding for mobile bottom nav and footer bar
+          pb: { xs: 10, sm: 3 }, // Extra padding for mobile bottom nav
         }}
       >
         {children}
       </Box>
-
-      {/* Operator Footer Bar - Only shows when actively timing */}
-      <OperatorFooterBar />
 
       {/* Bottom Navigation - Mobile Only */}
       <Paper
