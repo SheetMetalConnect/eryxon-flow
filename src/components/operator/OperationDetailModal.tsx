@@ -42,6 +42,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import MetadataDisplay from "@/components/ui/MetadataDisplay";
+import { EnhancedMetadataDisplay } from "@/components/ui/EnhancedMetadataDisplay";
 import IssueForm from "./IssueForm";
 import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
@@ -81,7 +82,8 @@ export default function OperationDetailModal({
     !operation.active_time_entry && operation.status !== "completed";
   const canComplete =
     operation.status !== "completed" && !operation.active_time_entry;
-  const canReportIssue = isCurrentUserTiming;
+  // Allow reporting issues anytime, not just when timing
+  const canReportIssue = operation.status !== "completed";
 
   // Fetch required resources for this operation
   useEffect(() => {
@@ -311,7 +313,7 @@ export default function OperationDetailModal({
             </div>
             <div>
               <div className="text-sm text-muted-foreground mb-1">
-                {t("operations.status")}
+                {t("operations.statusLabel")}
               </div>
               <Badge variant="outline" className="capitalize">
                 {operation.status.replace("_", " ")}
@@ -405,9 +407,22 @@ export default function OperationDetailModal({
             </div>
           )}
 
-          {/* Metadata */}
+          {/* Operation Metadata (Process-specific settings) */}
           {(operation as any).metadata && (
-            <MetadataDisplay metadata={(operation as any).metadata} />
+            <EnhancedMetadataDisplay
+              metadata={(operation as any).metadata}
+              title="Process Settings"
+              showTypeIndicator={true}
+            />
+          )}
+
+          {/* Part Metadata */}
+          {operation.part.metadata && (
+            <EnhancedMetadataDisplay
+              metadata={operation.part.metadata}
+              title="Part Specifications"
+              showTypeIndicator={true}
+            />
           )}
 
           {/* Files Section */}
@@ -466,21 +481,21 @@ export default function OperationDetailModal({
           {/* Required Resources Section */}
           {requiredResources.length > 0 && (
             <div>
-              <div className="text-sm text-muted-foreground mb-2 flex items-center gap-2">
-                <Wrench className="h-4 w-4" />
+              <div className="text-sm font-medium mb-3 flex items-center gap-2">
+                <Wrench className="h-5 w-5" />
                 {t("operations.requiredResources")}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {requiredResources.map((opResource: any) => (
                   <div
                     key={opResource.id}
-                    className="border rounded-md p-3 bg-muted/50"
+                    className="border rounded-lg p-4 bg-card"
                   >
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-2">
                           <Wrench className="h-4 w-4 text-orange-600" />
-                          <p className="font-medium text-sm">
+                          <p className="font-semibold text-base">
                             {opResource.resource.name}
                           </p>
                           {opResource.quantity > 1 && (
@@ -489,23 +504,20 @@ export default function OperationDetailModal({
                             </Badge>
                           )}
                         </div>
-                        <div className="text-xs text-muted-foreground space-y-0.5 ml-6">
+                        <div className="text-xs text-muted-foreground space-y-1 ml-6">
                           <p className="capitalize">
-                            {t("operations.type")}:{" "}
+                            <span className="font-medium">{t("operations.type")}:</span>{" "}
                             {opResource.resource.type.replace("_", " ")}
                           </p>
                           {opResource.resource.identifier && (
-                            <p>ID: {opResource.resource.identifier}</p>
+                            <p>
+                              <span className="font-medium">ID:</span> {opResource.resource.identifier}
+                            </p>
                           )}
                           {opResource.resource.location && (
                             <p>
-                              {t("operations.location")}:{" "}
+                              <span className="font-medium">{t("operations.location")}:</span>{" "}
                               {opResource.resource.location}
-                            </p>
-                          )}
-                          {opResource.notes && (
-                            <p className="text-amber-700 dark:text-amber-300 mt-1">
-                              {t("operations.note")}: {opResource.notes}
                             </p>
                           )}
                         </div>
@@ -514,13 +526,45 @@ export default function OperationDetailModal({
                         variant={
                           opResource.resource.status === "available"
                             ? "default"
-                            : "secondary"
+                            : opResource.resource.status === "in_use"
+                            ? "secondary"
+                            : opResource.resource.status === "maintenance"
+                            ? "destructive"
+                            : "outline"
                         }
                         className="text-xs capitalize"
                       >
                         {opResource.resource.status.replace("_", " ")}
                       </Badge>
                     </div>
+
+                    {/* Resource-specific instructions */}
+                    {opResource.notes && (
+                      <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-md p-3 mb-3">
+                        <div className="flex items-start gap-2">
+                          <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-amber-900 dark:text-amber-100 mb-1">
+                              Instructions:
+                            </p>
+                            <p className="text-sm text-amber-800 dark:text-amber-200">
+                              {opResource.notes}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Resource metadata */}
+                    {opResource.resource.metadata && (
+                      <div className="mt-3">
+                        <EnhancedMetadataDisplay
+                          metadata={opResource.resource.metadata}
+                          compact={true}
+                          showTypeIndicator={false}
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

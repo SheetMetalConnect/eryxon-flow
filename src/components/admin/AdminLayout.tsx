@@ -48,6 +48,7 @@ import {
   Business as BusinessIcon,
   AdminPanelSettings as AdminPanelSettingsIcon,
   SwapHoriz as SwapHorizIcon,
+  Speed as SpeedIcon,
 } from "@mui/icons-material";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -60,6 +61,7 @@ import { QuickCreateMenu } from "@/components/QuickCreateMenu";
 import { NotificationsCenter } from "@/components/NotificationsCenter";
 import { TenantSwitcher } from "@/components/admin/TenantSwitcher";
 import { useTranslation } from "react-i18next";
+import { usePendingIssuesCount } from "@/hooks/usePendingIssuesCount";
 
 const DRAWER_WIDTH = 260;
 
@@ -78,6 +80,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [tenantSwitcherOpen, setTenantSwitcherOpen] = useState(false);
+  const { count: pendingIssuesCount } = usePendingIssuesCount();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -123,6 +126,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           path: "/work-queue",
           label: t("navigation.workQueue"),
           icon: <ListAltIcon />,
+        },
+        {
+          path: "/operator-view",
+          label: "Operator View",
+          icon: <SpeedIcon />,
         },
       ],
     },
@@ -189,6 +197,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           path: "/admin/resources",
           label: t("resources.title"),
           icon: <BuildIcon />,
+        },
+        {
+          path: "/admin/config/steps-templates",
+          label: t("Steps & Templates"),
+          icon: <CheckCircleIcon />,
         },
         {
           path: "/admin/config/api-keys",
@@ -335,7 +348,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                       fontSize: "0.95rem",
                     }}
                   />
-                  {/* TODO: Add badge count for issues */}
+                  {item.badge && pendingIssuesCount > 0 && (
+                    <Chip
+                      label={pendingIssuesCount}
+                      size="small"
+                      color="error"
+                      sx={{ height: 20, fontSize: "0.75rem" }}
+                    />
+                  )}
                 </ListItemButton>
               </ListItem>
             ))}
@@ -427,6 +447,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           >
             {location.pathname === "/dashboard" && t("navigation.dashboard")}
             {location.pathname === "/work-queue" && t("navigation.workQueue")}
+            {location.pathname === "/operator-view" && "Operator View"}
             {location.pathname.startsWith("/admin/jobs") &&
               t("navigation.jobsManagement")}
             {location.pathname.startsWith("/admin/parts") &&

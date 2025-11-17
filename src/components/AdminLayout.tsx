@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Menu,
+  Store,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -76,8 +77,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const bottomNavItems = [
     {
+      path: "/admin/integrations",
+      label: "App Store",
+      icon: Store,
+      exact: true,
+    },
+    {
       path: "/admin/config/api-keys",
-      label: "Integrations",
+      label: "API Keys",
       icon: Plug,
       activePaths: ["/admin/config/api-keys", "/admin/config/webhooks"],
     },

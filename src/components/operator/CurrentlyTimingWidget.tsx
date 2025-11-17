@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -29,6 +29,33 @@ export default function CurrentlyTimingWidget() {
   const { profile } = useAuth();
   const [activeEntries, setActiveEntries] = useState<ActiveEntry[]>([]);
   const [, setTick] = useState(0);
+
+  const loadActiveEntries = useCallback(async () => {
+    if (!profile?.id) return;
+
+    const { data, error } = await supabase
+      .from("time_entries")
+      .select(
+        `
+        id,
+        operation_id,
+        start_time,
+        operation:operations(
+          operation_name,
+          part:parts(
+            part_number,
+            job:jobs(job_number)
+          )
+        )
+      `
+      )
+      .eq("operator_id", profile.id)
+      .is("end_time", null);
+
+    if (!error && data) {
+      setActiveEntries(data as any);
+    }
+  }, [profile?.id]);
 
   useEffect(() => {
     if (!profile?.id) return;
@@ -61,34 +88,7 @@ export default function CurrentlyTimingWidget() {
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
-  }, [profile?.id]);
-
-  const loadActiveEntries = async () => {
-    if (!profile?.id) return;
-
-    const { data, error } = await supabase
-      .from("time_entries")
-      .select(
-        `
-        id,
-        operation_id,
-        start_time,
-        operation:operations(
-          operation_name,
-          part:parts(
-            part_number,
-            job:jobs(job_number)
-          )
-        )
-      `
-      )
-      .eq("operator_id", profile.id)
-      .is("end_time", null);
-
-    if (!error && data) {
-      setActiveEntries(data as any);
-    }
-  };
+  }, [profile?.id, loadActiveEntries]);
 
   const handleStop = async (operationId: string) => {
     if (!profile?.id) return;

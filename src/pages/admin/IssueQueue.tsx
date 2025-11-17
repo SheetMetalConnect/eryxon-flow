@@ -10,8 +10,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { AlertCircle, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -47,17 +55,22 @@ export default function IssueQueue() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Filters
+  const [statusFilter, setStatusFilter] = useState<string>("pending");
+  const [severityFilter, setSeverityFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
   useEffect(() => {
     if (profile?.tenant_id) {
       loadIssues();
       setupRealtime();
     }
-  }, [profile?.tenant_id]);
+  }, [profile?.tenant_id, statusFilter, severityFilter, searchQuery]);
 
   const loadIssues = async () => {
     if (!profile?.tenant_id) return;
 
-    const { data, error } = await supabase
+    let query = supabase
       .from("issues")
       .select(
         `
@@ -72,10 +85,28 @@ export default function IssueQueue() {
         creator:profiles!issues_created_by_fkey(full_name)
       `,
       )
-      .eq("tenant_id", profile.tenant_id)
-      .eq("status", "pending")
-      .order("severity", { ascending: false })
-      .order("created_at", { ascending: true });
+      .eq("tenant_id", profile.tenant_id);
+
+    // Apply status filter
+    if (statusFilter !== "all") {
+      query = query.eq("status", statusFilter);
+    }
+
+    // Apply severity filter
+    if (severityFilter !== "all") {
+      query = query.eq("severity", severityFilter);
+    }
+
+    // Apply search query (job number, part number, or operation name)
+    if (searchQuery) {
+      query = query.or(
+        `operation.part.job.job_number.ilike.%${searchQuery}%,operation.part.part_number.ilike.%${searchQuery}%,operation.operation_name.ilike.%${searchQuery}%`
+      );
+    }
+
+    query = query.order("severity", { ascending: false }).order("created_at", { ascending: true });
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Error loading issues:", error);
@@ -162,6 +193,51 @@ export default function IssueQueue() {
         <p className="text-muted-foreground">
           {issues.length} {t("issues.pendingIssue", { count: issues.length })}
         </p>
+      </div>
+
+      {/* Filters */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <Label htmlFor="search" className="mb-2 block">Search (Job/Part/Operation)</Label>
+          <Input
+            id="search"
+            placeholder="Search by job, part, or operation..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="status-filter" className="mb-2 block">Status</Label>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger id="status-filter">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="closed">Closed</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="severity-filter" className="mb-2 block">Severity</Label>
+          <Select value={severityFilter} onValueChange={setSeverityFilter}>
+            <SelectTrigger id="severity-filter">
+              <SelectValue placeholder="Filter by severity" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Severities</SelectItem>
+              <SelectItem value="critical">Critical</SelectItem>
+              <SelectItem value="high">High</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="low">Low</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {issues.length === 0 ? (
