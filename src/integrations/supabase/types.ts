@@ -197,6 +197,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           enforce_wip_limit: boolean | null
+          icon_name: string | null
           id: string
           image_url: string | null
           name: string
@@ -213,6 +214,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           enforce_wip_limit?: boolean | null
+          icon_name?: string | null
           id?: string
           image_url?: string | null
           name: string
@@ -229,6 +231,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           enforce_wip_limit?: boolean | null
+          icon_name?: string | null
           id?: string
           image_url?: string | null
           name?: string
@@ -749,6 +752,7 @@ export type Database = {
           completion_percentage: number | null
           created_at: string | null
           estimated_time: number
+          icon_name: string | null
           id: string
           metadata: Json | null
           notes: string | null
@@ -768,6 +772,7 @@ export type Database = {
           completion_percentage?: number | null
           created_at?: string | null
           estimated_time: number
+          icon_name?: string | null
           id?: string
           metadata?: Json | null
           notes?: string | null
@@ -787,6 +792,7 @@ export type Database = {
           completion_percentage?: number | null
           created_at?: string | null
           estimated_time?: number
+          icon_name?: string | null
           id?: string
           metadata?: Json | null
           notes?: string | null
@@ -1097,6 +1103,7 @@ export type Database = {
           completed_at: string | null
           completed_by: string | null
           created_at: string | null
+          icon_name: string | null
           id: string
           name: string
           notes: string | null
@@ -1110,6 +1117,7 @@ export type Database = {
           completed_at?: string | null
           completed_by?: string | null
           created_at?: string | null
+          icon_name?: string | null
           id?: string
           name: string
           notes?: string | null
@@ -1123,6 +1131,7 @@ export type Database = {
           completed_at?: string | null
           completed_by?: string | null
           created_at?: string | null
+          icon_name?: string | null
           id?: string
           name?: string
           notes?: string | null

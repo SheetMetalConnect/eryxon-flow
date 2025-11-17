@@ -19,12 +19,14 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, v
 import { CSS } from "@dnd-kit/utilities";
 import { useCellQRMMetrics } from "@/hooks/useQRMMetrics";
 import { WIPIndicator } from "@/components/qrm/WIPIndicator";
+import { IconPicker, IconDisplay } from "@/components/ui/icon-picker";
 
 interface Stage {
   id: string;
   name: string;
   description: string | null;
   color: string | null;
+  icon_name: string | null;
   sequence: number;
   active: boolean;
   wip_limit: number | null;
@@ -71,9 +73,15 @@ function SortableStageCard({ stage, onEdit, onDelete, tenantId, t }: SortableSta
                 <GripVertical className="h-5 w-5 text-muted-foreground" />
               </div>
               <div
-                className="h-8 w-8 rounded flex-shrink-0"
+                className="h-10 w-10 rounded flex items-center justify-center flex-shrink-0"
                 style={{ backgroundColor: stage.color || "#94a3b8" }}
-              />
+              >
+                <IconDisplay
+                  iconName={stage.icon_name}
+                  className="h-5 w-5 text-white"
+                  fallback={<div className="h-2 w-2 rounded-full bg-white" />}
+                />
+              </div>
               <div className="flex-1">
                 <CardTitle>{stage.name}</CardTitle>
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -132,6 +140,7 @@ export default function ConfigStages() {
     name: "",
     description: "",
     color: "#3b82f6",
+    icon_name: "" as string,
     active: true,
     wip_limit: null as number | null,
     wip_warning_threshold: null as number | null,
@@ -179,6 +188,7 @@ export default function ConfigStages() {
             name: formData.name,
             description: formData.description || null,
             color: formData.color,
+            icon_name: formData.icon_name || null,
             active: formData.active,
             wip_limit: formData.wip_limit,
             wip_warning_threshold: formData.wip_warning_threshold,
@@ -196,6 +206,7 @@ export default function ConfigStages() {
           name: formData.name,
           description: formData.description || null,
           color: formData.color,
+          icon_name: formData.icon_name || null,
           sequence: maxSequence + 1,
           active: formData.active,
           wip_limit: formData.wip_limit,
@@ -221,6 +232,7 @@ export default function ConfigStages() {
       name: "",
       description: "",
       color: "#3b82f6",
+      icon_name: "",
       active: true,
       wip_limit: null,
       wip_warning_threshold: null,
@@ -236,6 +248,7 @@ export default function ConfigStages() {
       name: stage.name,
       description: stage.description || "",
       color: stage.color || "#3b82f6",
+      icon_name: stage.icon_name || "",
       active: stage.active,
       wip_limit: stage.wip_limit,
       wip_warning_threshold: stage.wip_warning_threshold,
@@ -382,6 +395,20 @@ export default function ConfigStages() {
                     }
                     rows={3}
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="icon">{t("stages.icon", "Icon")}</Label>
+                  <IconPicker
+                    value={formData.icon_name}
+                    onValueChange={(icon) =>
+                      setFormData({ ...formData, icon_name: icon })
+                    }
+                    placeholder={t("stages.selectIcon", "Select an icon...")}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t("stages.iconHelp", "Choose an icon to visually represent this cell")}
+                  </p>
                 </div>
 
                 <div className="space-y-2">

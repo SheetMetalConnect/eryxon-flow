@@ -34,6 +34,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { IconPicker, IconDisplay } from "@/components/ui/icon-picker";
 import {
   DndContext,
   closestCenter,
@@ -56,6 +57,7 @@ interface Substep {
   id: string;
   operation_id: string;
   name: string;
+  icon_name?: string | null;
   sequence: number;
   status: string;
   notes?: string;
@@ -143,6 +145,9 @@ function SortableSubstepItem({ substep, onStatusChange, onDelete, onNotesChange 
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-2 flex-1 min-w-0">
+            {substep.icon_name && (
+              <IconDisplay iconName={substep.icon_name} className="h-4 w-4 flex-shrink-0" />
+            )}
             <button
               onClick={() => {
                 const nextStatus = {
@@ -223,6 +228,7 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
   const [loading, setLoading] = useState(false);
   const [newSubstepName, setNewSubstepName] = useState("");
   const [newSubstepNotes, setNewSubstepNotes] = useState("");
+  const [newSubstepIcon, setNewSubstepIcon] = useState("");
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
 
@@ -338,6 +344,7 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
           tenant_id: profile.tenant_id,
           name: newSubstepName.trim(),
           notes: newSubstepNotes.trim() || null,
+          icon_name: newSubstepIcon || null,
           sequence: maxSequence + 1,
           status: "not_started",
         })
@@ -349,6 +356,7 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
       setSubsteps([...substeps, data]);
       setNewSubstepName("");
       setNewSubstepNotes("");
+      setNewSubstepIcon("");
       toast.success("Substep added");
       onUpdate?.();
     } catch (error: any) {
@@ -619,6 +627,11 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
           value={newSubstepName}
           onChange={(e) => setNewSubstepName(e.target.value)}
           onKeyPress={(e) => e.key === "Enter" && handleAddSubstep()}
+        />
+        <IconPicker
+          value={newSubstepIcon}
+          onValueChange={setNewSubstepIcon}
+          placeholder="Select icon (optional)..."
         />
         <Textarea
           placeholder="Optional notes..."
