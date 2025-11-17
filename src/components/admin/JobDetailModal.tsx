@@ -15,6 +15,7 @@ import { useState } from "react";
 import { Plus, Edit2, Save, X } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface JobDetailModalProps {
   jobId: string;
@@ -26,6 +27,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
   const [isEditing, setIsEditing] = useState(false);
   const [editedJob, setEditedJob] = useState<any>(null);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const { data: job, isLoading } = useQuery({
     queryKey: ["job-detail", jobId],
@@ -61,15 +63,15 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
     },
     onSuccess: () => {
       toast({
-        title: "Job updated",
-        description: "Job details have been saved successfully.",
+        title: t("jobs.jobUpdated"),
+        description: t("jobs.jobUpdateSuccess"),
       });
       setIsEditing(false);
       onUpdate();
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
+        title: t("common.error"),
         description: error.message,
         variant: "destructive",
       });
@@ -93,7 +95,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
     return (
       <Dialog open onOpenChange={onClose}>
         <DialogContent>
-          <div className="text-center py-8">Loading job details...</div>
+          <div className="text-center py-8">{t("jobs.loadingJobDetails")}</div>
         </DialogContent>
       </Dialog>
     );
@@ -104,20 +106,20 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex justify-between items-center">
-            <DialogTitle>Job Details: {job?.job_number}</DialogTitle>
+            <DialogTitle>{t("jobs.jobDetails")}: {job?.job_number}</DialogTitle>
             <div className="flex gap-2">
               {isEditing ? (
                 <>
                   <Button size="sm" onClick={handleSave}>
-                    <Save className="h-4 w-4 mr-2" /> Save
+                    <Save className="h-4 w-4 mr-2" /> {t("common.save")}
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>
-                    <X className="h-4 w-4 mr-2" /> Cancel
+                    <X className="h-4 w-4 mr-2" /> {t("common.cancel")}
                   </Button>
                 </>
               ) : (
                 <Button size="sm" onClick={handleEdit}>
-                  <Edit2 className="h-4 w-4 mr-2" /> Edit
+                  <Edit2 className="h-4 w-4 mr-2" /> {t("common.edit")}
                 </Button>
               )}
             </div>
@@ -128,7 +130,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
           {/* Job Info */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Customer</Label>
+              <Label>{t("jobs.customer")}</Label>
               {isEditing ? (
                 <Input
                   value={editedJob.customer}
@@ -140,33 +142,33 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
             </div>
 
             <div>
-              <Label>Status</Label>
+              <Label>{t("jobs.status")}</Label>
               <div className="mt-1">
                 <Badge>{job?.status?.replace("_", " ").toUpperCase()}</Badge>
               </div>
             </div>
 
             <div>
-              <Label>Due Date</Label>
+              <Label>{t("jobs.dueDate")}</Label>
               <p className="mt-1 font-medium">
                 {format(new Date(job?.due_date_override || job?.due_date), "MMM dd, yyyy")}
                 {job?.due_date_override && (
                   <Badge variant="outline" className="ml-2 text-xs">
-                    Overridden
+                    {t("jobs.overridden")}
                   </Badge>
                 )}
               </p>
             </div>
 
             <div>
-              <Label>Created</Label>
+              <Label>{t("jobs.created")}</Label>
               <p className="mt-1">{format(new Date(job?.created_at), "MMM dd, yyyy HH:mm")}</p>
             </div>
           </div>
 
           {/* Notes */}
           <div>
-            <Label>Notes</Label>
+            <Label>{t("jobs.notes")}</Label>
             {isEditing ? (
               <Textarea
                 value={editedJob.notes || ""}
@@ -174,14 +176,14 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                 rows={3}
               />
             ) : (
-              <p className="mt-1 text-sm text-gray-600">{job?.notes || "No notes"}</p>
+              <p className="mt-1 text-sm text-gray-600">{job?.notes || t("jobs.noNotes")}</p>
             )}
           </div>
 
           {/* Metadata */}
           {job?.metadata && Object.keys(job.metadata).length > 0 && (
             <div>
-              <Label>Custom Metadata</Label>
+              <Label>{t("jobs.customMetadata")}</Label>
               <div className="mt-2 border rounded-md p-3">
                 <table className="w-full text-sm">
                   <tbody>
@@ -199,19 +201,19 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
 
           {/* Parts and Tasks */}
           <div>
-            <Label className="text-lg">Parts ({job?.parts?.length || 0})</Label>
+            <Label className="text-lg">{t("jobs.parts")} ({job?.parts?.length || 0})</Label>
             <div className="mt-3 space-y-4">
               {job?.parts?.map((part: any) => (
                 <div key={part.id} className="border rounded-lg p-4">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h4 className="font-semibold">Part# {part.part_number}</h4>
+                      <h4 className="font-semibold">{t("parts.partNumber")}# {part.part_number}</h4>
                       <p className="text-sm text-gray-600">
-                        Material: {part.material} | Quantity: {part.quantity}
+                        {t("parts.material")}: {part.material} | {t("parts.quantity")}: {part.quantity}
                       </p>
                       {part.parent_part_id && (
                         <Badge variant="outline" className="mt-1 text-xs">
-                          Assembly
+                          {t("parts.assembly")}
                         </Badge>
                       )}
                     </div>
@@ -220,7 +222,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
 
                   {/* Tasks */}
                   <div className="mt-3">
-                    <Label className="text-sm">Tasks ({part.tasks?.length || 0})</Label>
+                    <Label className="text-sm">{t("jobs.tasks")} ({part.tasks?.length || 0})</Label>
                     <div className="mt-2 space-y-2">
                       {part.tasks?.map((task: any) => (
                         <div

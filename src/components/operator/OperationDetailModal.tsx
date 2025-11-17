@@ -14,6 +14,7 @@ import MetadataDisplay from "@/components/ui/MetadataDisplay";
 import IssueForm from "./IssueForm";
 import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
+import { useTranslation } from "react-i18next";
 
 interface OperationDetailModalProps {
   operation: OperationWithDetails;
@@ -28,6 +29,7 @@ export default function OperationDetailModal({
   onOpenChange,
   onUpdate,
 }: OperationDetailModalProps) {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showIssueForm, setShowIssueForm] = useState(false);
@@ -102,10 +104,10 @@ export default function OperationDetailModal({
     setLoading(true);
     try {
       await startTimeTracking(operation.id, profile.id, profile.tenant_id);
-      toast.success("Time tracking started");
+      toast.success(t("operations.timeTrackingStarted"));
       onUpdate();
     } catch (error: any) {
-      toast.error(error.message || "Failed to start time tracking");
+      toast.error(error.message || t("operations.failedToStartTimeTracking"));
     } finally {
       setLoading(false);
     }
@@ -118,10 +120,10 @@ export default function OperationDetailModal({
     setLoading(true);
     try {
       await startTimeTracking(operation.id, profile.id, profile.tenant_id);
-      toast.success("Time tracking started");
+      toast.success(t("operations.timeTrackingStarted"));
       onUpdate();
     } catch (error: any) {
-      toast.error(error.message || "Failed to start time tracking");
+      toast.error(error.message || t("operations.failedToStartTimeTracking"));
     } finally {
       setLoading(false);
     }
@@ -133,10 +135,10 @@ export default function OperationDetailModal({
     setLoading(true);
     try {
       await stopTimeTracking(operation.id, profile.id);
-      toast.success("Time tracking stopped");
+      toast.success(t("operations.timeTrackingStopped"));
       onUpdate();
     } catch (error: any) {
-      toast.error(error.message || "Failed to stop time tracking");
+      toast.error(error.message || t("operations.failedToStopTimeTracking"));
     } finally {
       setLoading(false);
     }
@@ -148,11 +150,11 @@ export default function OperationDetailModal({
     setLoading(true);
     try {
       await completeOperation(operation.id, profile.tenant_id);
-      toast.success("Operation marked as complete");
+      toast.success(t("operations.operationComplete"));
       onUpdate();
       onOpenChange(false);
     } catch (error: any) {
-      toast.error(error.message || "Failed to complete operation");
+      toast.error(error.message || t("operations.failedToComplete"));
     } finally {
       setLoading(false);
     }
@@ -164,7 +166,7 @@ export default function OperationDetailModal({
       const fileType = fileExt === "pdf" ? "pdf" : (fileExt === "step" || fileExt === "stp") ? "step" : null;
 
       if (!fileType) {
-        toast.error("Unsupported file type");
+        toast.error(t("operations.unsupportedFileType"));
         return;
       }
 
@@ -191,7 +193,7 @@ export default function OperationDetailModal({
       setFileViewerOpen(true);
     } catch (error: any) {
       console.error("Error opening file:", error);
-      toast.error("Failed to open file viewer");
+      toast.error(t("operations.failedToOpenFile"));
     }
   };
 
@@ -218,7 +220,7 @@ export default function OperationDetailModal({
           {/* Job & Part Info */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <div className="text-sm text-muted-foreground mb-1">Job</div>
+              <div className="text-sm text-muted-foreground mb-1">{t("operations.job")}</div>
               <div className="font-semibold">{operation.part.job.job_number}</div>
               {operation.part.job.customer && (
                 <div className="text-sm text-muted-foreground">
@@ -227,10 +229,10 @@ export default function OperationDetailModal({
               )}
             </div>
             <div>
-              <div className="text-sm text-muted-foreground mb-1">Part</div>
+              <div className="text-sm text-muted-foreground mb-1">{t("operations.part")}</div>
               <div className="font-semibold">{operation.part.part_number}</div>
               <div className="text-sm text-muted-foreground">
-                {operation.part.material} • Qty: {operation.part.quantity}
+                {operation.part.material} • {t("operations.qty")}: {operation.part.quantity}
               </div>
             </div>
           </div>
@@ -240,7 +242,7 @@ export default function OperationDetailModal({
           {/* Cell & Status */}
           <div className="flex items-center gap-4">
             <div>
-              <div className="text-sm text-muted-foreground mb-1">Cell</div>
+              <div className="text-sm text-muted-foreground mb-1">{t("operations.cell")}</div>
               <Badge
                 style={{
                   backgroundColor: operation.cell.color || "hsl(var(--cell-default))",
@@ -251,7 +253,7 @@ export default function OperationDetailModal({
               </Badge>
             </div>
             <div>
-              <div className="text-sm text-muted-foreground mb-1">Status</div>
+              <div className="text-sm text-muted-foreground mb-1">{t("operations.status")}</div>
               <Badge variant="outline" className="capitalize">
                 {operation.status.replace("_", " ")}
               </Badge>
@@ -261,18 +263,18 @@ export default function OperationDetailModal({
           {/* Time Info */}
           <div className="grid grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
             <div>
-              <div className="text-xs text-muted-foreground mb-1">Estimated</div>
+              <div className="text-xs text-muted-foreground mb-1">{t("operations.estimated")}</div>
               <div className="text-lg font-semibold flex items-center gap-1">
                 <Clock className="h-4 w-4" />
                 {operation.estimated_time}m
               </div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground mb-1">Actual</div>
+              <div className="text-xs text-muted-foreground mb-1">{t("operations.actual")}</div>
               <div className="text-lg font-semibold">{operation.actual_time || 0}m</div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground mb-1">Remaining</div>
+              <div className="text-xs text-muted-foreground mb-1">{t("operations.remaining")}</div>
               <div
                 className={`text-lg font-semibold ${
                   isOvertime ? "text-destructive" : ""
@@ -287,7 +289,7 @@ export default function OperationDetailModal({
           {/* Due Date */}
           {dueDate && (
             <div>
-              <div className="text-sm text-muted-foreground mb-1">Due Date</div>
+              <div className="text-sm text-muted-foreground mb-1">{t("operations.dueDate")}</div>
               <div className="font-medium">{format(new Date(dueDate), "PPP")}</div>
             </div>
           )}
@@ -298,10 +300,10 @@ export default function OperationDetailModal({
               <Package className="h-5 w-5 text-amber-600 mt-0.5" />
               <div className="text-sm">
                 <div className="font-medium text-amber-900 dark:text-amber-100">
-                  Assembly Part
+                  {t("operations.assemblyPart")}
                 </div>
                 <div className="text-amber-700 dark:text-amber-300">
-                  This part is part of an assembly. Check dependencies before starting.
+                  {t("operations.assemblyWarning")}
                 </div>
               </div>
             </div>
@@ -313,7 +315,7 @@ export default function OperationDetailModal({
               <AlertCircle className="h-5 w-5 text-active-work" />
               <div className="text-sm">
                 <span className="font-medium">{operation.active_time_entry.operator.full_name}</span>
-                {" "}is currently working on this operation
+                {" "}{t("operations.currentlyWorking")}
               </div>
             </div>
           )}
@@ -321,7 +323,7 @@ export default function OperationDetailModal({
           {/* Notes */}
           {operation.notes && (
             <div>
-              <div className="text-sm text-muted-foreground mb-1">Notes</div>
+              <div className="text-sm text-muted-foreground mb-1">{t("operations.notes")}</div>
               <div className="text-sm p-3 bg-muted rounded">{operation.notes}</div>
             </div>
           )}
@@ -334,7 +336,7 @@ export default function OperationDetailModal({
           {/* Files Section */}
           {operation.part.file_paths && operation.part.file_paths.length > 0 && (
             <div>
-              <div className="text-sm text-muted-foreground mb-2">Files</div>
+              <div className="text-sm text-muted-foreground mb-2">{t("operations.files")}</div>
               <div className="space-y-2">
                 {operation.part.file_paths.map((filePath: string, index: number) => {
                   const fileName = filePath.split("/").pop() || "Unknown";
@@ -358,7 +360,7 @@ export default function OperationDetailModal({
                         <div>
                           <p className="font-medium text-sm">{fileName}</p>
                           <p className="text-xs text-muted-foreground">
-                            {isSTEP ? "3D Model" : "Drawing"}
+                            {isSTEP ? t("operations.3dModel") : t("operations.drawing")}
                           </p>
                         </div>
                       </div>
@@ -368,7 +370,7 @@ export default function OperationDetailModal({
                         onClick={() => handleViewFile(filePath)}
                       >
                         <Eye className="h-4 w-4 mr-1" />
-                        View
+                        {t("operations.view")}
                       </Button>
                     </div>
                   );
@@ -382,7 +384,7 @@ export default function OperationDetailModal({
             <div>
               <div className="text-sm text-muted-foreground mb-2 flex items-center gap-2">
                 <Wrench className="h-4 w-4" />
-                Required Resources
+                {t("operations.requiredResources")}
               </div>
               <div className="space-y-2">
                 {requiredResources.map((opResource: any) => (
@@ -397,23 +399,23 @@ export default function OperationDetailModal({
                           <p className="font-medium text-sm">{opResource.resource.name}</p>
                           {opResource.quantity > 1 && (
                             <Badge variant="secondary" className="text-xs">
-                              Qty: {opResource.quantity}
+                              {t("operations.qty")}: {opResource.quantity}
                             </Badge>
                           )}
                         </div>
                         <div className="text-xs text-muted-foreground space-y-0.5 ml-6">
                           <p className="capitalize">
-                            Type: {opResource.resource.type.replace("_", " ")}
+                            {t("operations.type")}: {opResource.resource.type.replace("_", " ")}
                           </p>
                           {opResource.resource.identifier && (
                             <p>ID: {opResource.resource.identifier}</p>
                           )}
                           {opResource.resource.location && (
-                            <p>Location: {opResource.resource.location}</p>
+                            <p>{t("operations.location")}: {opResource.resource.location}</p>
                           )}
                           {opResource.notes && (
                             <p className="text-amber-700 dark:text-amber-300 mt-1">
-                              Note: {opResource.notes}
+                              {t("operations.note")}: {opResource.notes}
                             </p>
                           )}
                         </div>
@@ -443,10 +445,10 @@ export default function OperationDetailModal({
                 className="w-full h-12 text-base gap-2 border-orange-500 text-orange-600 hover:bg-orange-50"
               >
                 <AlertTriangle className="h-5 w-5" />
-                Report Issue
+                {t("operations.reportIssue")}
               </Button>
             )}
-            
+
             <div className="flex gap-3">
             {canStartTiming && (
               <Button
@@ -457,7 +459,7 @@ export default function OperationDetailModal({
                 data-tour="start-timer"
               >
                 <Play className="h-5 w-5" />
-                Start Time
+                {t("operations.startTime")}
               </Button>
             )}
 
@@ -470,7 +472,7 @@ export default function OperationDetailModal({
                 className="flex-1 h-14 text-lg gap-2"
               >
                 <Square className="h-5 w-5" />
-                Stop Time
+                {t("operations.stopTime")}
               </Button>
             )}
 
@@ -483,7 +485,7 @@ export default function OperationDetailModal({
                 className="flex-1 h-14 text-lg gap-2 bg-completed hover:bg-completed/90"
               >
                 <CheckCircle className="h-5 w-5" />
-                Mark Complete
+                {t("operations.markComplete")}
               </Button>
             )}
             </div>
@@ -503,12 +505,12 @@ export default function OperationDetailModal({
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-issue-high" />
-              Assembly Warning
+              {t("operations.assemblyWarningTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This is an assembly. Not all component parts are complete.
+              {t("operations.assemblyWarningDescription")}
               <div className="mt-3">
-                <div className="text-sm font-medium text-foreground mb-2">Incomplete components:</div>
+                <div className="text-sm font-medium text-foreground mb-2">{t("operations.incompleteComponents")}:</div>
                 <ul className="list-disc list-inside text-sm space-y-1">
                   {incompleteChildren.map(part => (
                     <li key={part}>{part}</li>
@@ -518,9 +520,9 @@ export default function OperationDetailModal({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("operations.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleStartAnyway}>
-              Start Anyway
+              {t("operations.startAnyway")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

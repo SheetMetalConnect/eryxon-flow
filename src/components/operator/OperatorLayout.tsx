@@ -23,6 +23,7 @@ import {
   Logout as LogoutIcon,
   Brightness4 as Brightness4Icon,
   Brightness7 as Brightness7Icon,
+  Help as HelpIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -183,6 +184,10 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
                   {t('app.operator')}
                 </Typography>
               </Box>
+              <MenuItem onClick={() => { handleMenuClose(); navigate('/help'); }} sx={{ gap: 1.5, py: 1.5 }}>
+                <HelpIcon fontSize="small" />
+                Help & Docs
+              </MenuItem>
               <MenuItem onClick={handleSignOut} sx={{ gap: 1.5, py: 1.5 }}>
                 <LogoutIcon fontSize="small" />
                 {t('auth.signOut')}

@@ -310,6 +310,77 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          dismissed: boolean
+          dismissed_at: string | null
+          id: string
+          link: string | null
+          message: string
+          metadata: Json | null
+          pinned: boolean
+          pinned_at: string | null
+          read: boolean
+          read_at: string | null
+          reference_id: string | null
+          reference_type: string | null
+          severity: string
+          tenant_id: string
+          title: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          dismissed?: boolean
+          dismissed_at?: string | null
+          id?: string
+          link?: string | null
+          message: string
+          metadata?: Json | null
+          pinned?: boolean
+          pinned_at?: string | null
+          read?: boolean
+          read_at?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          severity?: string
+          tenant_id: string
+          title: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          dismissed?: boolean
+          dismissed_at?: string | null
+          id?: string
+          link?: string | null
+          message?: string
+          metadata?: Json | null
+          pinned?: boolean
+          pinned_at?: string | null
+          read?: boolean
+          read_at?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          severity?: string
+          tenant_id?: string
+          title?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_reset_logs: {
         Row: {
           created_at: string
@@ -957,6 +1028,41 @@ export type Database = {
           success: boolean
           tenant_id: string
         }[]
+      }
+      check_jobs_due_soon: {
+        Args: never
+        Returns: number
+      }
+      create_notification: {
+        Args: {
+          p_tenant_id: string
+          p_user_id: string | null
+          p_type: string
+          p_severity: string
+          p_title: string
+          p_message: string
+          p_link?: string | null
+          p_reference_type?: string | null
+          p_reference_id?: string | null
+          p_metadata?: Json
+        }
+        Returns: string
+      }
+      dismiss_notification: {
+        Args: { p_notification_id: string }
+        Returns: undefined
+      }
+      mark_all_notifications_read: {
+        Args: never
+        Returns: number
+      }
+      mark_notification_read: {
+        Args: { p_notification_id: string }
+        Returns: undefined
+      }
+      toggle_notification_pin: {
+        Args: { p_notification_id: string }
+        Returns: boolean
       }
     }
     Enums: {

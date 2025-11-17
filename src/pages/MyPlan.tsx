@@ -33,6 +33,7 @@ import {
 } from '@mui/icons-material';
 import Layout from '../components/Layout';
 import { useSubscription } from '../hooks/useSubscription';
+import { useTranslation } from 'react-i18next';
 
 const pricingTiers = [
   {
@@ -90,13 +91,18 @@ const pricingTiers = [
 ];
 
 export const MyPlan: React.FC = () => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const { subscription, usageStats, loading, error, getPlanDisplayName, getUsagePercentage, isAtLimit } = useSubscription();
 
   const handleUpgradeRequest = (planName: string) => {
-    const subject = encodeURIComponent(`Upgrade Request - ${planName} Plan`);
+    const subject = encodeURIComponent(t('myPlan.upgradeRequest.subject', { planName }));
     const body = encodeURIComponent(
-      `Hi Sheet Metal Connect Team,\n\nI would like to upgrade my account to the ${planName} plan.\n\nCurrent Plan: ${subscription ? getPlanDisplayName(subscription.plan) : 'Unknown'}\nTenant ID: ${subscription?.tenant_id || 'N/A'}\n\nPlease let me know the next steps.\n\nThank you!`
+      t('myPlan.upgradeRequest.body', {
+        planName,
+        currentPlan: subscription ? getPlanDisplayName(subscription.plan) : t('myPlan.unknown'),
+        tenantId: subscription?.tenant_id || 'N/A'
+      })
     );
     window.location.href = `mailto:office@sheetmetalconnect.com?subject=${subject}&body=${body}`;
   };
@@ -130,10 +136,10 @@ export const MyPlan: React.FC = () => {
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" fontWeight={700} gutterBottom>
-            My Plan & Usage
+            {t('myPlan.title')}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Manage your subscription and monitor your usage
+            {t('myPlan.subtitle')}
           </Typography>
         </Box>
 
@@ -156,11 +162,11 @@ export const MyPlan: React.FC = () => {
               <Grid size={{ xs: 12, md: 8 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                   <Typography variant="h5" fontWeight={700}>
-                    {currentTier?.name || 'Unknown'} Plan
+                    {currentTier?.name || t('myPlan.unknown')} {t('myPlan.plan')}
                   </Typography>
                   {currentTier?.popular && (
                     <Chip
-                      label="Most Popular"
+                      label={t('myPlan.mostPopular')}
                       size="small"
                       sx={{
                         backgroundColor: alpha('#fff', 0.2),
@@ -176,7 +182,7 @@ export const MyPlan: React.FC = () => {
                 <Typography variant="h3" fontWeight={700}>
                   ${currentTier?.price || 0}
                   <Typography component="span" variant="h6" sx={{ opacity: 0.8, ml: 1 }}>
-                    / month
+                    {t('myPlan.perMonth')}
                   </Typography>
                 </Typography>
               </Grid>
@@ -198,7 +204,7 @@ export const MyPlan: React.FC = () => {
                       },
                     }}
                   >
-                    Upgrade Plan
+                    {t('myPlan.upgradePlan')}
                   </Button>
                 )}
               </Grid>
@@ -214,7 +220,7 @@ export const MyPlan: React.FC = () => {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
                   <TrendingUpIcon color="primary" />
                   <Typography variant="h6" fontWeight={600}>
-                    Usage This Month
+                    {t('myPlan.usageThisMonth')}
                   </Typography>
                 </Box>
 
@@ -224,7 +230,7 @@ export const MyPlan: React.FC = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <InventoryIcon fontSize="small" color="action" />
                       <Typography variant="body2" fontWeight={600}>
-                        Parts
+                        {t('myPlan.parts')}
                       </Typography>
                     </Box>
                     <Typography variant="body2" color="text.secondary">
@@ -247,7 +253,7 @@ export const MyPlan: React.FC = () => {
                   />
                   {isAtLimit(usageStats?.parts_this_month || 0, subscription?.max_parts_per_month || null) && (
                     <Alert severity="warning" sx={{ mt: 1 }}>
-                      You've reached your monthly parts limit. Consider upgrading to continue.
+                      {t('myPlan.partsLimitReached')}
                     </Alert>
                   )}
                 </Box>
@@ -258,7 +264,7 @@ export const MyPlan: React.FC = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <WorkIcon fontSize="small" color="action" />
                       <Typography variant="body2" fontWeight={600}>
-                        Total Jobs
+                        {t('myPlan.totalJobs')}
                       </Typography>
                     </Box>
                     <Typography variant="body2" color="text.secondary">
@@ -287,7 +293,7 @@ export const MyPlan: React.FC = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <CloudUploadIcon fontSize="small" color="action" />
                       <Typography variant="body2" fontWeight={600}>
-                        Storage
+                        {t('myPlan.storage')}
                       </Typography>
                     </Box>
                     <Typography variant="body2" color="text.secondary">
@@ -320,7 +326,7 @@ export const MyPlan: React.FC = () => {
                     {usageStats?.active_jobs || 0}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Active Jobs
+                    {t('myPlan.activeJobs')}
                   </Typography>
                 </Paper>
               </Grid>
@@ -330,7 +336,7 @@ export const MyPlan: React.FC = () => {
                     {usageStats?.completed_jobs || 0}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Completed Jobs
+                    {t('myPlan.completedJobs')}
                   </Typography>
                 </Paper>
               </Grid>
@@ -340,7 +346,7 @@ export const MyPlan: React.FC = () => {
                     {usageStats?.total_operators || 0}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Operators
+                    {t('myPlan.operators')}
                   </Typography>
                 </Paper>
               </Grid>
@@ -350,7 +356,7 @@ export const MyPlan: React.FC = () => {
                     {usageStats?.total_admins || 0}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Admins
+                    {t('myPlan.admins')}
                   </Typography>
                 </Paper>
               </Grid>
@@ -363,7 +369,7 @@ export const MyPlan: React.FC = () => {
             <Card sx={{ mb: 3 }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" fontWeight={600} gutterBottom>
-                  Plan Features
+                  {t('myPlan.planFeatures')}
                 </Typography>
                 <List dense>
                   {currentTier?.features.map((feature, index) => (
@@ -396,17 +402,17 @@ export const MyPlan: React.FC = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                     <InfoIcon color="primary" />
                     <Typography variant="h6" fontWeight={600}>
-                      Ready to Upgrade?
+                      {t('myPlan.readyToUpgrade')}
                     </Typography>
                   </Box>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                     {currentPlan === 'free'
-                      ? 'Unlock unlimited jobs, parts, and advanced features with Pro or Premium.'
-                      : 'Get enterprise-grade security, SSO, and self-hosting with Premium.'}
+                      ? t('myPlan.upgradeFromFree')
+                      : t('myPlan.upgradeFromPro')}
                   </Typography>
                   <Divider sx={{ my: 2 }} />
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-                    Contact us to upgrade:
+                    {t('myPlan.contactToUpgrade')}
                   </Typography>
                   <Button
                     variant="contained"
@@ -418,10 +424,10 @@ export const MyPlan: React.FC = () => {
                       fontWeight: 600,
                     }}
                   >
-                    Request Upgrade
+                    {t('myPlan.requestUpgrade')}
                   </Button>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2, textAlign: 'center' }}>
-                    No sales calls. Simple email-based upgrades.
+                    {t('myPlan.noSalesCalls')}
                   </Typography>
                 </CardContent>
               </Card>
@@ -441,12 +447,12 @@ export const MyPlan: React.FC = () => {
           }}
         >
           <Typography variant="body2" fontWeight={600} gutterBottom>
-            {currentPlan === 'premium' ? 'Single-Tenant Architecture' : 'Multi-Tenant Architecture'}
+            {currentPlan === 'premium' ? t('myPlan.singleTenant') : t('myPlan.multiTenant')}
           </Typography>
           <Typography variant="caption" color="text.secondary">
             {currentPlan === 'premium'
-              ? 'Your data is isolated in a dedicated environment with enterprise-grade security controls. You have the option for self-hosted deployment.'
-              : 'Your data is securely isolated in a shared infrastructure. Upgrade to Premium for single-tenant architecture and self-hosting options.'}
+              ? t('myPlan.singleTenantDescription')
+              : t('myPlan.multiTenantDescription')}
           </Typography>
         </Alert>
       </Box>

@@ -329,30 +329,40 @@ When you add a new table to the database and want it included in exports:
 
 ### Performance Considerations
 
-For tenants with large datasets (>100k records):
+✅ **Automatic Pagination Implemented**
 
-1. **Consider pagination** - Modify the function to support pagination
-2. **Add streaming** - Stream data instead of loading all at once
-3. **Background jobs** - Use a job queue for very large exports
-4. **Caching** - Cache recent exports for re-download
+The export function automatically handles large datasets by paginating through results:
 
-Example pagination addition:
+- **Batch Size:** 1,000 rows per fetch
+- **Automatic Iteration:** Continues fetching until all rows are retrieved
+- **No Row Limit:** Exports complete dataset regardless of size
+- **Progress Logging:** Logs progress for each table in function logs
+
+**Implementation Details:**
 ```typescript
-const limit = 1000;
+// The function uses .range() to paginate through all records
+const BATCH_SIZE = 1000;
 let offset = 0;
-let hasMore = true;
+let allData: any[] = [];
 
 while (hasMore) {
-  const { data, error } = await supabase
+  const { data } = await supabaseClient
     .from(table)
-    .select('*')
-    .range(offset, offset + limit - 1);
+    .select(selectFields, { count: 'exact' })
+    .range(offset, offset + BATCH_SIZE - 1);
 
-  // Process batch
-  offset += limit;
-  hasMore = data?.length === limit;
+  allData = allData.concat(data || []);
+  hasMore = (data?.length === BATCH_SIZE);
+  offset += BATCH_SIZE;
 }
 ```
+
+**Additional Optimizations for Very Large Datasets (>1M records):**
+
+1. **Streaming** - Stream data instead of loading all at once
+2. **Background jobs** - Use a job queue for very large exports
+3. **Compressed archives** - Use gzip compression for download
+4. **Partial exports** - Allow date-range filtering to export subsets
 
 ## Support & Troubleshooting
 

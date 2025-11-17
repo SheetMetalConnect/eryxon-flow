@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { OperationWithDetails } from "@/lib/database";
+import { fetchOperationsWithDetails, OperationWithDetails } from "@/lib/database";
 import Layout from "@/components/Layout";
 import OperationCard from "@/components/operator/OperationCard";
 import CurrentlyTimingWidget from "@/components/operator/CurrentlyTimingWidget";
@@ -11,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Search, Filter, Eye, EyeOff, LayoutGrid, List, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, Search, Filter, Eye, EyeOff, LayoutGrid, List } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -25,7 +24,6 @@ import { Label } from "@/components/ui/label";
 import { isAfter, isBefore, addDays, startOfToday, endOfToday } from "date-fns";
 
 export default function WorkQueue() {
-  const { t } = useTranslation();
   const { profile } = useAuth();
   const [operations, setOperations] = useState<OperationWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +38,6 @@ export default function WorkQueue() {
   const [showCompleted, setShowCompleted] = useState<boolean>(true);
   const [viewMode, setViewMode] = useState<"detailed" | "compact">("detailed");
   const [showFilters, setShowFilters] = useState<boolean>(false);
-  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
 
   useEffect(() => {
     if (!profile?.tenant_id) return;
@@ -54,23 +51,7 @@ export default function WorkQueue() {
 
     try {
       const [operationsData, cellsData] = await Promise.all([
-        supabase
-          .from("operations")
-          .select(`
-            *,
-            part:parts!inner(
-              id,
-              part_number,
-              material,
-              quantity,
-              parent_part_id,
-              file_paths,
-              image_paths,
-              job:jobs!inner(id, job_number, due_date, due_date_override, customer)
-            ),
-            cell:cells!inner(id, name, color, sequence)
-          `)
-          .eq("tenant_id", profile.tenant_id),
+        fetchOperationsWithDetails(profile.tenant_id),
         supabase
           .from("cells")
           .select("*")
@@ -79,19 +60,11 @@ export default function WorkQueue() {
           .order("sequence"),
       ]);
 
-      if (operationsData.data) {
-        // Sort operations by job due date client-side
-        const sortedOperations = [...operationsData.data].sort((a, b) => {
-          const dateA = new Date(a.part.job.due_date || 0);
-          const dateB = new Date(b.part.job.due_date || 0);
-          return dateA.getTime() - dateB.getTime();
-        });
-        setOperations(sortedOperations);
-      }
+      setOperations(operationsData);
       if (cellsData.data) setCells(cellsData.data);
     } catch (error) {
       console.error("Error loading data:", error);
-      toast.error(t("workQueue.failedToLoad"));
+      toast.error("Failed to load work queue");
     } finally {
       setLoading(false);
     }
@@ -184,7 +157,7 @@ export default function WorkQueue() {
     // Due date filter
     let matchesDueDate = true;
     if (dueDateFilter !== "all") {
-      const dueDate = new Date(operation.part.job.due_date);
+      const dueDate = new Date(operation.part.job.due_date_override || operation.part.job.due_date);
       const today = startOfToday();
       const endToday = endOfToday();
       const weekFromNow = addDays(today, 7);
@@ -211,10 +184,10 @@ export default function WorkQueue() {
   // Sort operations
   const sortedOperations = [...filteredOperations].sort((a, b) => {
     if (sortBy === "sequence") {
-      return (a.sequence || 0) - (b.sequence || 0);
+      return a.sequence - b.sequence;
     } else if (sortBy === "due_date") {
-      const dateA = new Date(a.part.job.due_date);
-      const dateB = new Date(b.part.job.due_date);
+      const dateA = new Date(a.part.job.due_date_override || a.part.job.due_date);
+      const dateB = new Date(b.part.job.due_date_override || b.part.job.due_date);
       return dateA.getTime() - dateB.getTime();
     } else if (sortBy === "estimated_time") {
       return (a.estimated_time || 0) - (b.estimated_time || 0);
@@ -232,8 +205,8 @@ export default function WorkQueue() {
 
   // Calculate stats
   const totalOperations = filteredOperations.length;
-  const inProgressOperations = filteredOperations.filter((op) => op.status === "in_progress").length;
-  const completedOperations = filteredOperations.filter((op) => op.status === "completed").length;
+  const inProgressOperations = filteredOperations.filter((o) => o.status === "in_progress").length;
+  const completedOperations = filteredOperations.filter((o) => o.status === "completed").length;
 
   if (loading) {
     return (
@@ -247,270 +220,212 @@ export default function WorkQueue() {
 
   return (
     <Layout>
-      <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
-        {/* Collapsible Side Panel */}
-        <div
-          className={`transition-all duration-300 ease-in-out border-r bg-card ${
-            sidebarOpen ? "w-80" : "w-0"
-          } overflow-hidden`}
-        >
-          <div className="w-80 h-full flex flex-col">
-            {/* Side Panel Header */}
-            <div className="p-4 border-b flex items-center justify-between">
-              <h2 className="text-lg font-semibold">{t("workQueue.filtersAndControls")}</h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSidebarOpen(false)}
-                className="h-8 w-8"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
+      <div className="space-y-4">
+        {/* Currently Timing Widget */}
+        <CurrentlyTimingWidget />
+
+        {/* Stats Card */}
+        <Card className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Total Operations</p>
+              <p className="text-2xl font-bold">{totalOperations}</p>
             </div>
+            <div>
+              <p className="text-sm text-muted-foreground">In Progress</p>
+              <p className="text-2xl font-bold text-blue-600">{inProgressOperations}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Completed</p>
+              <p className="text-2xl font-bold text-green-600">{completedOperations}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Not Started</p>
+              <p className="text-2xl font-bold text-gray-600">
+                {totalOperations - inProgressOperations - completedOperations}
+              </p>
+            </div>
+          </div>
+        </Card>
 
-            {/* Side Panel Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6">
-              {/* Stats Section */}
-              <div>
-                <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
-                  {t("workQueue.statistics")}
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center p-3 bg-background rounded-lg border">
-                    <span className="text-sm text-muted-foreground">{t("workQueue.total")}</span>
-                    <span className="text-lg font-bold">{totalOperations}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-background rounded-lg border">
-                    <span className="text-sm text-muted-foreground">{t("workQueue.inProgress")}</span>
-                    <span className="text-lg font-bold text-blue-600">{inProgressOperations}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-background rounded-lg border">
-                    <span className="text-sm text-muted-foreground">{t("workQueue.completed")}</span>
-                    <span className="text-lg font-bold text-green-600">{completedOperations}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-background rounded-lg border">
-                    <span className="text-sm text-muted-foreground">{t("workQueue.notStarted")}</span>
-                    <span className="text-lg font-bold text-gray-600">
-                      {totalOperations - inProgressOperations - completedOperations}
-                    </span>
-                  </div>
-                </div>
-              </div>
+        {/* Search and Material Filter */}
+        <div className="bg-card rounded-lg border p-4 space-y-4">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by job, part, operation, or customer..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Button
+              variant={showFilters ? "default" : "outline"}
+              size="icon"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <Filter className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setViewMode(viewMode === "detailed" ? "compact" : "detailed")}
+            >
+              {viewMode === "detailed" ? (
+                <LayoutGrid className="h-4 w-4" />
+              ) : (
+                <List className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
 
-              {/* Material Filter */}
-              <div>
-                <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
-                  {t("workQueue.materials")}
-                </h3>
-                <Tabs value={selectedMaterial} onValueChange={setSelectedMaterial}>
-                  <TabsList className="w-full flex-col h-auto">
-                    <TabsTrigger value="all" className="w-full justify-start">
-                      {t("workQueue.allMaterials")}
-                    </TabsTrigger>
-                    {materials.map((material) => (
-                      <TabsTrigger key={material} value={material} className="w-full justify-start">
-                        {material}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </Tabs>
-              </div>
+          {/* Material Tabs */}
+          <Tabs value={selectedMaterial} onValueChange={setSelectedMaterial}>
+            <TabsList className="w-full justify-start overflow-x-auto">
+              <TabsTrigger value="all">All Materials</TabsTrigger>
+              {materials.map((material) => (
+                <TabsTrigger key={material} value={material}>
+                  {material}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
 
-              {/* Status Filter */}
+          {/* Advanced Filters */}
+          {showFilters && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
               <div>
-                <Label htmlFor="status-filter" className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
-                  {t("workQueue.status")}
-                </Label>
+                <Label htmlFor="status-filter">Status</Label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger id="status-filter" className="mt-2">
-                    <SelectValue placeholder={t("workQueue.allStatuses")} />
+                  <SelectTrigger id="status-filter">
+                    <SelectValue placeholder="All Statuses" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t("workQueue.allStatuses")}</SelectItem>
-                    <SelectItem value="not_started">{t("workQueue.notStartedStatus")}</SelectItem>
-                    <SelectItem value="in_progress">{t("workQueue.inProgressStatus")}</SelectItem>
-                    <SelectItem value="completed">{t("workQueue.completedStatus")}</SelectItem>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="not_started">Not Started</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Due Date Filter */}
               <div>
-                <Label htmlFor="due-date-filter" className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
-                  {t("workQueue.dueDate")}
-                </Label>
+                <Label htmlFor="due-date-filter">Due Date</Label>
                 <Select value={dueDateFilter} onValueChange={setDueDateFilter}>
-                  <SelectTrigger id="due-date-filter" className="mt-2">
-                    <SelectValue placeholder={t("workQueue.allDates")} />
+                  <SelectTrigger id="due-date-filter">
+                    <SelectValue placeholder="All Dates" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t("workQueue.allDates")}</SelectItem>
-                    <SelectItem value="overdue">{t("workQueue.overdue")}</SelectItem>
-                    <SelectItem value="today">{t("workQueue.dueToday")}</SelectItem>
-                    <SelectItem value="this_week">{t("workQueue.dueThisWeek")}</SelectItem>
+                    <SelectItem value="all">All Dates</SelectItem>
+                    <SelectItem value="overdue">Overdue</SelectItem>
+                    <SelectItem value="today">Due Today</SelectItem>
+                    <SelectItem value="this_week">Due This Week</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Sort By */}
               <div>
-                <Label htmlFor="sort-by" className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
-                  {t("workQueue.sortBy")}
-                </Label>
+                <Label htmlFor="sort-by">Sort By</Label>
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger id="sort-by" className="mt-2">
-                    <SelectValue placeholder={t("workQueue.sortBy")} />
+                  <SelectTrigger id="sort-by">
+                    <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="sequence">{t("workQueue.sequence")}</SelectItem>
-                    <SelectItem value="due_date">{t("workQueue.dueDateSort")}</SelectItem>
-                    <SelectItem value="estimated_time">{t("workQueue.estimatedTime")}</SelectItem>
+                    <SelectItem value="sequence">Sequence</SelectItem>
+                    <SelectItem value="due_date">Due Date</SelectItem>
+                    <SelectItem value="estimated_time">Estimated Time</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Toggle Switches */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="assigned-to-me" className="text-sm font-medium cursor-pointer">
-                    {t("workQueue.assignedToMe")}
-                  </Label>
-                  <Switch
-                    id="assigned-to-me"
-                    checked={assignedToMe}
-                    onCheckedChange={setAssignedToMe}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="show-completed" className="text-sm font-medium cursor-pointer">
-                    {t("workQueue.showCompleted")}
-                  </Label>
-                  <Switch
-                    id="show-completed"
-                    checked={showCompleted}
-                    onCheckedChange={setShowCompleted}
-                  />
-                </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="assigned-to-me"
+                  checked={assignedToMe}
+                  onCheckedChange={setAssignedToMe}
+                />
+                <Label htmlFor="assigned-to-me">Assigned to Me</Label>
               </div>
 
-              {/* Cell Visibility */}
-              <div>
-                <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
-                  {t("workQueue.cellVisibility")}
-                </h3>
-                <div className="space-y-2">
-                  {cells.map((cell) => (
-                    <Button
-                      key={cell.id}
-                      variant={hiddenCells.has(cell.id) ? "outline" : "default"}
-                      size="sm"
-                      onClick={() => toggleCellVisibility(cell.id)}
-                      className="w-full justify-start"
-                      style={{
-                        backgroundColor: hiddenCells.has(cell.id)
-                          ? "transparent"
-                          : cell.color,
-                        borderColor: cell.color,
-                      }}
-                    >
-                      {hiddenCells.has(cell.id) ? (
-                        <EyeOff className="h-4 w-4 mr-2" />
-                      ) : (
-                        <Eye className="h-4 w-4 mr-2" />
-                      )}
-                      {cell.name}
-                    </Button>
-                  ))}
-                </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="show-completed"
+                  checked={showCompleted}
+                  onCheckedChange={setShowCompleted}
+                />
+                <Label htmlFor="show-completed">Show Completed</Label>
               </div>
             </div>
+          )}
+
+          {/* Cell Visibility Toggles */}
+          <div className="flex flex-wrap gap-2">
+            <span className="text-sm font-medium text-muted-foreground">Cells:</span>
+            {cells.map((cell) => (
+              <Button
+                key={cell.id}
+                variant={hiddenCells.has(cell.id) ? "outline" : "default"}
+                size="sm"
+                onClick={() => toggleCellVisibility(cell.id)}
+                style={{
+                  backgroundColor: hiddenCells.has(cell.id)
+                    ? "transparent"
+                    : cell.color,
+                  borderColor: cell.color,
+                }}
+              >
+                {hiddenCells.has(cell.id) ? (
+                  <EyeOff className="h-3 w-3 mr-1" />
+                ) : (
+                  <Eye className="h-3 w-3 mr-1" />
+                )}
+                {cell.name}
+              </Button>
+            ))}
           </div>
         </div>
 
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Top Bar */}
-          <div className="p-4 border-b bg-background space-y-4">
-            {/* Currently Timing Widget */}
-            <CurrentlyTimingWidget />
-
-            {/* Search and Controls */}
-            <div className="flex gap-2">
-              {!sidebarOpen && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setSidebarOpen(true)}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              )}
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={t("workQueue.searchPlaceholder")}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setViewMode(viewMode === "detailed" ? "compact" : "detailed")}
-                title={viewMode === "detailed" ? t("workQueue.switchToCompact") : t("workQueue.switchToDetailed")}
+        {/* Kanban Board */}
+        <div className="overflow-x-auto">
+          <div className="flex gap-4 pb-4" style={{ minWidth: "max-content" }}>
+            {operationsByCell.map(({ cell, operations }) => (
+              <div
+                key={cell.id}
+                className={`flex-shrink-0 ${
+                  viewMode === "detailed" ? "w-80" : "w-64"
+                } bg-card rounded-lg border`}
               >
-                {viewMode === "detailed" ? (
-                  <LayoutGrid className="h-4 w-4" />
-                ) : (
-                  <List className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-          </div>
-
-          {/* Kanban Board */}
-          <div className="flex-1 overflow-x-auto overflow-y-hidden p-4" data-tour="work-queue">
-            <div className="flex gap-4 h-full" style={{ minWidth: "max-content" }}>
-              {operationsByCell.map(({ cell, operations }) => (
                 <div
-                  key={cell.id}
-                  className={`flex-shrink-0 ${
-                    viewMode === "detailed" ? "w-80" : "w-64"
-                  } bg-card rounded-lg border flex flex-col`}
+                  className="p-4 border-b"
+                  style={{
+                    borderTopColor: cell.color || "hsl(var(--cell-default))",
+                    borderTopWidth: "4px",
+                  }}
                 >
-                  <div
-                    className="p-4 border-b"
-                    style={{
-                      borderTopColor: cell.color || "hsl(var(--primary))",
-                      borderTopWidth: "4px",
-                    }}
-                  >
-                    <h3 className="font-semibold text-lg">{cell.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {operations.length} {operations.length !== 1 ? t("workQueue.operations") : t("workQueue.operation")}
-                    </p>
-                  </div>
-                  <div className="flex-1 p-4 space-y-3 overflow-y-auto">
-                    {operations.length === 0 ? (
-                      <div className="text-center text-muted-foreground py-8">
-                        {t("workQueue.noOperations")}
-                      </div>
-                    ) : (
-                      operations.map((operation, index) => (
-                        <OperationCard
-                          key={operation.id}
-                          operation={operation}
-                          onUpdate={loadData}
-                          compact={viewMode === "compact"}
-                          data-tour={index === 0 ? "operation-card" : undefined}
-                        />
-                      ))
-                    )}
-                  </div>
+                  <h3 className="font-semibold text-lg">{cell.name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {operations.length} operation{operations.length !== 1 ? "s" : ""}
+                  </p>
                 </div>
-              ))}
-            </div>
+                <div className="p-4 space-y-3 max-h-[calc(100vh-16rem)] overflow-y-auto">
+                  {operations.length === 0 ? (
+                    <div className="text-center text-muted-foreground py-8">
+                      No operations
+                    </div>
+                  ) : (
+                    operations.map((operation) => (
+                      <OperationCard
+                        key={operation.id}
+                        operation={operation}
+                        onUpdate={loadData}
+                        compact={viewMode === "compact"}
+                      />
+                    ))
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

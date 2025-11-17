@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format, subDays } from "date-fns";
 import { Clock, CheckCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface TimeEntry {
   id: string;
@@ -38,6 +39,7 @@ interface DayGroup {
 }
 
 export default function MyActivity() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -137,26 +139,26 @@ export default function MyActivity() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">My Activity</h1>
-          <p className="text-muted-foreground">Your work history and time tracking</p>
+          <h1 className="text-3xl font-bold">{t("myActivity.title")}</h1>
+          <p className="text-muted-foreground">{t("myActivity.description")}</p>
         </div>
 
         {/* Summary Stats */}
         <div className="grid grid-cols-4 gap-4">
           <Card className="p-4">
-            <div className="text-sm text-muted-foreground mb-1">Today's Time</div>
+            <div className="text-sm text-muted-foreground mb-1">{t("myActivity.todayTime")}</div>
             <div className="text-2xl font-bold">{formatDuration(todayTotal)}</div>
           </Card>
           <Card className="p-4">
-            <div className="text-sm text-muted-foreground mb-1">Week's Time</div>
+            <div className="text-sm text-muted-foreground mb-1">{t("myActivity.weekTime")}</div>
             <div className="text-2xl font-bold">{formatDuration(weekTotal)}</div>
           </Card>
           <Card className="p-4">
-            <div className="text-sm text-muted-foreground mb-1">Today Completed</div>
+            <div className="text-sm text-muted-foreground mb-1">{t("myActivity.todayCompleted")}</div>
             <div className="text-2xl font-bold">{todayCompleted}</div>
           </Card>
           <Card className="p-4">
-            <div className="text-sm text-muted-foreground mb-1">Week Completed</div>
+            <div className="text-sm text-muted-foreground mb-1">{t("myActivity.weekCompleted")}</div>
             <div className="text-2xl font-bold">{weekCompleted}</div>
           </Card>
         </div>
@@ -165,8 +167,8 @@ export default function MyActivity() {
         {dayGroups.length === 0 ? (
           <Card className="p-12 text-center">
             <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-medium mb-2">No activity yet</h3>
-            <p className="text-sm text-muted-foreground">Start tracking time to see your activity here</p>
+            <h3 className="text-lg font-medium mb-2">{t("myActivity.noActivity")}</h3>
+            <p className="text-sm text-muted-foreground">{t("myActivity.noActivityDescription")}</p>
           </Card>
         ) : (
           <div className="space-y-6">
@@ -175,11 +177,11 @@ export default function MyActivity() {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold">{format(new Date(group.date), "EEEE, MMMM d, yyyy")}</h2>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>Total: {formatDuration(group.totalMinutes)}</span>
+                    <span>{t("myActivity.total")}: {formatDuration(group.totalMinutes)}</span>
                     <span>•</span>
-                    <span>{group.tasksCount} operations</span>
+                    <span>{group.tasksCount} {t("myActivity.operations")}</span>
                     <span>•</span>
-                    <span>{group.completedCount} completed</span>
+                    <span>{group.completedCount} {t("myActivity.completed")}</span>
                   </div>
                 </div>
 
@@ -212,7 +214,7 @@ export default function MyActivity() {
                         <div className="text-right shrink-0">
                           <div className="text-sm font-medium flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            {entry.duration ? formatDuration(entry.duration) : "In progress"}
+                            {entry.duration ? formatDuration(entry.duration) : t("myActivity.inProgress")}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {format(new Date(entry.start_time), "h:mm a")}

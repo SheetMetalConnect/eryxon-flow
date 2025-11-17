@@ -22,8 +22,10 @@ import { Badge } from "@/components/ui/badge";
 import PartDetailModal from "@/components/admin/PartDetailModal";
 import Layout from "@/components/Layout";
 import { Package, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Parts() {
+  const { t } = useTranslation();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [materialFilter, setMaterialFilter] = useState<string>("all");
   const [jobFilter, setJobFilter] = useState<string>("all");
@@ -142,35 +144,35 @@ export default function Parts() {
   return (
     <Layout>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Parts Management</h1>
+        <h1 className="text-3xl font-bold">{t("parts.title")}</h1>
       </div>
 
       {/* Filters */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
         <Input
-          placeholder="Search by part number..."
+          placeholder={t("parts.searchByPartNumber")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
 
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger>
-            <SelectValue placeholder="Filter by status" />
+            <SelectValue placeholder={t("parts.filterByStatus")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="not_started">Not Started</SelectItem>
-            <SelectItem value="in_progress">In Progress</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
+            <SelectItem value="all">{t("parts.allStatuses")}</SelectItem>
+            <SelectItem value="not_started">{t("parts.status.notStarted")}</SelectItem>
+            <SelectItem value="in_progress">{t("parts.status.inProgress")}</SelectItem>
+            <SelectItem value="completed">{t("parts.status.completed")}</SelectItem>
           </SelectContent>
         </Select>
 
         <Select value={materialFilter} onValueChange={setMaterialFilter}>
           <SelectTrigger>
-            <SelectValue placeholder="Filter by material" />
+            <SelectValue placeholder={t("parts.filterByMaterial")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Materials</SelectItem>
+            <SelectItem value="all">{t("parts.allMaterials")}</SelectItem>
             {materials?.map((material) => (
               <SelectItem key={material} value={material}>
                 {material}
@@ -181,10 +183,10 @@ export default function Parts() {
 
         <Select value={jobFilter} onValueChange={setJobFilter}>
           <SelectTrigger>
-            <SelectValue placeholder="Filter by job" />
+            <SelectValue placeholder={t("parts.filterByJob")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Jobs</SelectItem>
+            <SelectItem value="all">{t("parts.allJobs")}</SelectItem>
             {jobs?.map((job) => (
               <SelectItem key={job.id} value={job.id}>
                 {job.job_number}
@@ -195,32 +197,32 @@ export default function Parts() {
 
         <Select value={assemblyFilter} onValueChange={setAssemblyFilter}>
           <SelectTrigger>
-            <SelectValue placeholder="Assembly type" />
+            <SelectValue placeholder={t("parts.assemblyType")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="assemblies">Assemblies (has children)</SelectItem>
-            <SelectItem value="components">Components (has parent)</SelectItem>
-            <SelectItem value="standalone">Standalone Parts</SelectItem>
+            <SelectItem value="all">{t("parts.allTypes")}</SelectItem>
+            <SelectItem value="assemblies">{t("parts.assembliesHasChildren")}</SelectItem>
+            <SelectItem value="components">{t("parts.componentsHasParent")}</SelectItem>
+            <SelectItem value="standalone">{t("parts.standaloneParts")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Parts Table */}
       {isLoading ? (
-        <div className="text-center py-8">Loading parts...</div>
+        <div className="text-center py-8">{t("parts.loadingParts")}</div>
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Part #</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Job #</TableHead>
-              <TableHead>Material</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Current Cell</TableHead>
-              <TableHead className="text-right">Operations</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>{t("parts.partNumber")}</TableHead>
+              <TableHead>{t("parts.type")}</TableHead>
+              <TableHead>{t("parts.jobNumber")}</TableHead>
+              <TableHead>{t("parts.material")}</TableHead>
+              <TableHead>{t("parts.status.title")}</TableHead>
+              <TableHead>{t("parts.currentCell")}</TableHead>
+              <TableHead className="text-right">{t("parts.operations")}</TableHead>
+              <TableHead className="text-right">{t("parts.actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -230,19 +232,19 @@ export default function Parts() {
                 <TableCell>
                   <div className="flex gap-1">
                     {part.has_children && (
-                      <Badge variant="outline" className="text-xs" title="This part is an assembly with child components">
+                      <Badge variant="outline" className="text-xs" title={t("parts.assemblyTooltip")}>
                         <Package className="h-3 w-3 mr-1" />
-                        Assembly
+                        {t("parts.assembly")}
                       </Badge>
                     )}
                     {part.parent_part_id && (
-                      <Badge variant="secondary" className="text-xs" title="This part is a component of an assembly">
+                      <Badge variant="secondary" className="text-xs" title={t("parts.componentTooltip")}>
                         <ChevronRight className="h-3 w-3 mr-1" />
-                        Component
+                        {t("parts.component")}
                       </Badge>
                     )}
                     {!part.has_children && !part.parent_part_id && (
-                      <span className="text-xs text-gray-500">Standalone</span>
+                      <span className="text-xs text-gray-500">{t("parts.standalone")}</span>
                     )}
                   </div>
                 </TableCell>
@@ -261,7 +263,7 @@ export default function Parts() {
                       {part.cell.name}
                     </Badge>
                   ) : (
-                    <span className="text-gray-400 text-sm">Not started</span>
+                    <span className="text-gray-400 text-sm">{t("parts.notStarted")}</span>
                   )}
                 </TableCell>
                 <TableCell className="text-right">{part.operations_count}</TableCell>
@@ -271,7 +273,7 @@ export default function Parts() {
                     size="sm"
                     onClick={() => setSelectedPartId(part.id)}
                   >
-                    View Details
+                    {t("parts.viewDetails")}
                   </Button>
                 </TableCell>
               </TableRow>
@@ -279,7 +281,7 @@ export default function Parts() {
             {parts?.length === 0 && (
               <TableRow>
                 <TableCell colSpan={8} className="text-center text-gray-500 py-8">
-                  No parts found
+                  {t("parts.noPartsFound")}
                 </TableCell>
               </TableRow>
             )}

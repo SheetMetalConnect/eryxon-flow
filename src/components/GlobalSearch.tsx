@@ -14,6 +14,7 @@ import {
   useTheme,
   Chip,
   InputAdornment,
+  Tooltip,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -25,20 +26,10 @@ import {
   PlayCircleOutline as PlayCircleOutlineIcon,
   Schedule as ScheduleIcon,
   Close as CloseIcon,
+  Engineering as EngineeringIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-
-interface SearchResult {
-  id: string;
-  type: 'job' | 'part' | 'operation' | 'operator' | 'issue';
-  title: string;
-  subtitle: string;
-  path: string;
-  status?: string;
-  icon?: React.ReactNode;
-}
+import { useGlobalSearch, SearchResult as SearchResultType } from '@/hooks/useGlobalSearch';
 
 interface GlobalSearchProps {
   open: boolean;
@@ -47,13 +38,12 @@ interface GlobalSearchProps {
 
 export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<SearchResultType[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const navigate = useNavigate();
   const theme = useTheme();
-  const { profile } = useAuth();
   const inputRef = useRef<HTMLInputElement>(null);
+  const { search, loading } = useGlobalSearch();
 
   // Debounced search
   useEffect(() => {
@@ -63,12 +53,14 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
       return;
     }
 
-    const timeoutId = setTimeout(() => {
-      performSearch(query);
+    const timeoutId = setTimeout(async () => {
+      const searchResults = await search(query);
+      setResults(searchResults);
+      setSelectedIndex(0);
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [query]);
+  }, [query, search]);
 
   // Focus input when dialog opens
   useEffect(() => {
@@ -86,100 +78,6 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
     }
   }, [open]);
 
-  const performSearch = async (searchQuery: string) => {
-    setLoading(true);
-    const searchResults: SearchResult[] = [];
-    const lowerQuery = searchQuery.toLowerCase();
-
-    try {
-      // Search Jobs
-      const { data: jobs } = await supabase
-        .from('jobs')
-        .select('id, job_number, customer, due_date, status')
-        .eq('tenant_id', profile?.tenant_id)
-        .or(`job_number.ilike.%${searchQuery}%,customer.ilike.%${searchQuery}%`)
-        .limit(10);
-
-      jobs?.forEach((job) => {
-        searchResults.push({
-          id: job.id,
-          type: 'job',
-          title: `JOB-${job.job_number}`,
-          subtitle: job.customer || 'No customer',
-          path: `/admin/jobs`,
-          status: job.status,
-          icon: <WorkIcon />,
-        });
-      });
-
-      // Search Parts
-      const { data: parts } = await supabase
-        .from('parts')
-        .select('id, part_number, job_id, material, current_cell_id')
-        .eq('tenant_id', profile?.tenant_id)
-        .ilike('part_number', `%${searchQuery}%`)
-        .limit(10);
-
-      parts?.forEach((part) => {
-        searchResults.push({
-          id: part.id,
-          type: 'part',
-          title: `Part #${part.part_number}`,
-          subtitle: 'Part',
-          path: `/admin/parts`,
-          icon: <InventoryIcon />,
-        });
-      });
-
-      // Search Operators (Users)
-      const { data: operators } = await supabase
-        .from('profiles')
-        .select('id, full_name, email, role')
-        .eq('tenant_id', profile?.tenant_id)
-        .eq('role', 'operator')
-        .or(`full_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`)
-        .limit(10);
-
-      operators?.forEach((operator) => {
-        searchResults.push({
-          id: operator.id,
-          type: 'operator',
-          title: operator.full_name || operator.email,
-          subtitle: operator.email,
-          path: `/admin/users`,
-          icon: <PersonIcon />,
-        });
-      });
-
-      // Search Issues
-      const { data: issues } = await supabase
-        .from('issues')
-        .select('id, description, severity, status, operation_id')
-        .eq('tenant_id', profile?.tenant_id)
-        .ilike('description', `%${searchQuery}%`)
-        .limit(10);
-
-      issues?.forEach((issue) => {
-        searchResults.push({
-          id: issue.id,
-          type: 'issue',
-          title: issue.description || 'Untitled Issue',
-          subtitle: `${issue.severity} severity`,
-          path: `/admin/issues`,
-          status: issue.status,
-          icon: <ReportProblemIcon />,
-        });
-      });
-
-      setResults(searchResults);
-      setSelectedIndex(0);
-    } catch (error) {
-      console.error('Search error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -196,15 +94,35 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
     }
   };
 
-  const handleSelectResult = (result: SearchResult) => {
+  const handleSelectResult = (result: SearchResultType) => {
     navigate(result.path);
     onClose();
   };
 
+  const getResultIcon = (type: string) => {
+    switch (type) {
+      case 'job':
+        return <WorkIcon />;
+      case 'part':
+        return <InventoryIcon />;
+      case 'operation':
+        return <EngineeringIcon />;
+      case 'user':
+        return <PersonIcon />;
+      case 'issue':
+        return <ReportProblemIcon />;
+      default:
+        return <SearchIcon />;
+    }
+  };
+
   const getStatusIcon = (type: string, status?: string) => {
-    if (type === 'operation') {
+    if (!status) return null;
+
+    if (type === 'operation' || type === 'job' || type === 'part') {
       if (status === 'completed') return <CheckCircleIcon fontSize="small" sx={{ color: '#10B981' }} />;
       if (status === 'in_progress') return <PlayCircleOutlineIcon fontSize="small" sx={{ color: '#F59E0B' }} />;
+      if (status === 'on_hold') return <ScheduleIcon fontSize="small" sx={{ color: '#EF4444' }} />;
       return <ScheduleIcon fontSize="small" sx={{ color: '#3B82F6' }} />;
     }
     return null;
@@ -216,13 +134,13 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
     }
     acc[result.type].push(result);
     return acc;
-  }, {} as Record<string, SearchResult[]>);
+  }, {} as Record<string, SearchResultType[]>);
 
   const typeLabels: Record<string, string> = {
     job: 'Jobs',
     part: 'Parts',
     operation: 'Operations',
-    operator: 'Operators',
+    user: 'Users',
     issue: 'Issues',
   };
 
@@ -244,7 +162,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
         <TextField
           inputRef={inputRef}
           fullWidth
-          placeholder="Search jobs, parts, operators..."
+          placeholder="Search jobs, parts, operations, users, issues..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -273,9 +191,12 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
           <Box sx={{ px: 3, py: 6, textAlign: 'center' }}>
             <SearchIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
             <Typography variant="body2" color="text.secondary">
-              Type to search across jobs, parts, operators, and more...
+              Search across jobs, parts, operations, users, and issues
             </Typography>
             <Typography variant="caption" color="text.disabled" sx={{ mt: 1, display: 'block' }}>
+              Searches in job numbers, customers, part numbers, materials, notes, and more
+            </Typography>
+            <Typography variant="caption" color="text.disabled" sx={{ mt: 0.5, display: 'block' }}>
               Use ↑↓ arrows to navigate, Enter to select, Esc to close
             </Typography>
           </Box>
@@ -310,38 +231,66 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
                 </Typography>
                 {items.map((result, idx) => {
                   const globalIndex = results.findIndex((r) => r.id === result.id);
+                  const hasDescription = result.description && result.description.length > 0;
+
                   return (
                     <ListItem key={result.id} disablePadding sx={{ mb: 0.5 }}>
-                      <ListItemButton
-                        selected={globalIndex === selectedIndex}
-                        onClick={() => handleSelectResult(result)}
-                        sx={{
-                          borderRadius: 1.5,
-                          mx: 1,
-                          '&.Mui-selected': {
-                            backgroundColor: alpha(theme.palette.primary.main, 0.12),
-                            '&:hover': {
-                              backgroundColor: alpha(theme.palette.primary.main, 0.18),
-                            },
-                          },
-                        }}
+                      <Tooltip
+                        title={hasDescription ? result.description : ''}
+                        placement="left"
+                        arrow
                       >
-                        <ListItemIcon sx={{ minWidth: 40 }}>
-                          {result.icon}
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={result.title}
-                          secondary={result.subtitle}
-                          primaryTypographyProps={{
-                            fontWeight: 500,
-                            fontSize: '0.95rem',
+                        <ListItemButton
+                          selected={globalIndex === selectedIndex}
+                          onClick={() => handleSelectResult(result)}
+                          sx={{
+                            borderRadius: 1.5,
+                            mx: 1,
+                            '&.Mui-selected': {
+                              backgroundColor: alpha(theme.palette.primary.main, 0.12),
+                              '&:hover': {
+                                backgroundColor: alpha(theme.palette.primary.main, 0.18),
+                              },
+                            },
                           }}
-                          secondaryTypographyProps={{
-                            fontSize: '0.8rem',
-                          }}
-                        />
-                        {getStatusIcon(result.type, result.status)}
-                      </ListItemButton>
+                        >
+                          <ListItemIcon sx={{ minWidth: 40 }}>
+                            {getResultIcon(result.type)}
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={result.title}
+                            secondary={
+                              <Box component="span">
+                                {result.subtitle}
+                                {hasDescription && (
+                                  <Typography
+                                    component="span"
+                                    variant="caption"
+                                    sx={{
+                                      display: 'block',
+                                      color: 'text.disabled',
+                                      mt: 0.5,
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    {result.description}
+                                  </Typography>
+                                )}
+                              </Box>
+                            }
+                            primaryTypographyProps={{
+                              fontWeight: 500,
+                              fontSize: '0.95rem',
+                            }}
+                            secondaryTypographyProps={{
+                              fontSize: '0.8rem',
+                            }}
+                          />
+                          {getStatusIcon(result.type, result.status)}
+                        </ListItemButton>
+                      </Tooltip>
                     </ListItem>
                   );
                 })}
