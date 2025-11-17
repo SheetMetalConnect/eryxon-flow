@@ -22,6 +22,7 @@ import {
   Logout as LogoutIcon,
   Brightness4 as Brightness4Icon,
   Brightness7 as Brightness7Icon,
+  AttachMoney as AttachMoneyIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -58,6 +59,7 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
     { path: '/work-queue', label: 'Work Queue', icon: <ListAltIcon /> },
     { path: '/my-activity', label: 'My Activity', icon: <ScheduleIcon /> },
     { path: '/my-issues', label: 'My Issues', icon: <ReportProblemIcon /> },
+    { path: '/pricing', label: 'Pricing', icon: <AttachMoneyIcon /> },
   ];
 
   const getCurrentNavValue = () => {
