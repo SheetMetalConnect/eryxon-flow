@@ -102,14 +102,10 @@ supabase db execute -f supabase/migrations/20251117210000_create_integrations_ma
 
 ### 2. Seed Data
 
-The migration includes seed data for 5 example integrations:
-- SAP Business One Connector
-- Microsoft Dynamics 365 Sync
-- QuickBooks Manufacturing
-- Odoo ERP Connector
-- Custom Integration Starter Kit
+The migration includes placeholder seed data for:
+- United Manufacturing Hub (UMH) - Industrial IoT platform integration
 
-These can be modified or additional integrations can be added via the database.
+Additional integrations can be added via the database as they become available.
 
 ### 3. Deploy Edge Function
 
@@ -150,37 +146,33 @@ This has been added to package.json automatically.
    INSERT INTO integrations (
      name, slug, description, category, status,
      provider_name, supported_systems, features,
-     documentation_url, github_repo_url,
-     is_free, requires_api_key
+     is_free, requires_api_key, version
    ) VALUES (
-     'My Custom ERP',
-     'my-custom-erp',
-     'Description here',
-     'erp',
+     'My Integration Name',
+     'my-integration-slug',
+     'Brief description here',
+     'erp', -- or 'accounting', 'analytics', etc.
      'published',
-     'My Company',
+     'Provider Name',
      '["System 1", "System 2"]'::jsonb,
      '["Feature 1", "Feature 2"]'::jsonb,
-     'https://docs.example.com',
-     'https://github.com/example/starter',
-     true,
-     true
+     true, -- is_free
+     true, -- requires_api_key
+     '1.0.0'
    );
    ```
 
 2. Set `status = 'published'` to make it visible in the marketplace
+3. Optionally add `documentation_url`, `github_repo_url`, `long_description` when available
 
 #### Building a Custom Integration
 
-1. Go to the marketplace and find "Custom Integration Starter Kit"
-2. Click "View Code" or visit the GitHub repository
-3. Clone the starter kit:
-   ```bash
-   git clone https://github.com/sheetmetalconnect/eryxon-integration-starter
-   cd eryxon-integration-starter
-   npm install
-   ```
-4. Follow the README in the starter kit for development instructions
+Use the Eryxon Flow REST API and webhooks to build integrations:
+
+1. Generate an API key in `/admin/config/api-keys`
+2. Use the API documentation at `/api-docs` to understand available endpoints
+3. Configure webhooks in `/admin/config/webhooks` for real-time events
+4. Build your integration using any programming language with HTTP/REST support
 
 ## Categories
 

@@ -240,103 +240,32 @@ AFTER INSERT OR DELETE ON installed_integrations
 FOR EACH ROW
 EXECUTE FUNCTION increment_integration_install_count();
 
--- Seed some example integrations
+-- Seed placeholder integration (United Manufacturing Hub)
 INSERT INTO integrations (
   name, slug, description, long_description, category, status,
   provider_name, provider_url, provider_email,
   supported_systems, features,
   documentation_url, github_repo_url,
-  is_free, requires_api_key, published_at
+  is_free, requires_api_key, published_at, version
 ) VALUES
 (
-  'SAP Business One Connector',
-  'sap-business-one',
-  'Bi-directional sync between Eryxon Flow and SAP Business One for seamless manufacturing data exchange.',
-  E'# SAP Business One Integration\n\nThis integration provides real-time synchronization between Eryxon Flow and SAP Business One ERP system.\n\n## Features\n- Automatic job creation from production orders\n- Real-time inventory updates\n- Cost center tracking\n- Production reporting\n\n## Requirements\n- SAP Business One 9.3 or higher\n- Service Layer enabled\n- API access credentials',
-  'erp',
+  'United Manufacturing Hub (UMH)',
+  'united-manufacturing-hub',
+  'Industrial IoT platform for ingesting, contextualizing, and storing factory data.',
+  E'# United Manufacturing Hub (UMH) Integration\n\nIntegration with United Manufacturing Hub for industrial data collection and analysis.\n\n## Features\n\n- Data ingestion from shop floor devices\n- Time-series data storage\n- Real-time monitoring capabilities\n- Industrial protocol support\n\n## Requirements\n\n- UMH deployment (Docker or Kubernetes)\n- Network access to devices\n- API access credentials',
+  'analytics',
   'published',
-  'Sheet Metal Connect e.U.',
-  'https://sheetmetalconnect.com',
-  'support@sheetmetalconnect.com',
-  '["SAP Business One 9.3", "SAP Business One 10.0"]'::jsonb,
-  '["Automatic job sync", "Inventory management", "Real-time reporting", "Cost tracking"]'::jsonb,
-  'https://docs.sheetmetalconnect.com/integrations/sap-b1',
-  'https://github.com/sheetmetalconnect/eryxon-sap-b1-starter',
-  false,
-  true,
-  now()
-),
-(
-  'Microsoft Dynamics 365 Sync',
-  'microsoft-dynamics-365',
-  'Connect your Microsoft Dynamics 365 Business Central with Eryxon Flow for unified manufacturing operations.',
-  E'# Microsoft Dynamics 365 Integration\n\nSeamlessly integrate with Dynamics 365 Business Central for end-to-end manufacturing visibility.\n\n## What This Integration Does\n- Syncs production orders to Eryxon Flow jobs\n- Updates item availability in real-time\n- Posts production output back to Dynamics\n- Tracks labor costs and routing\n\n## Setup Requirements\n- Dynamics 365 Business Central (Cloud or On-Premise)\n- OAuth 2.0 app registration\n- Manufacturing module enabled',
-  'erp',
-  'published',
-  'Sheet Metal Connect e.U.',
-  'https://sheetmetalconnect.com',
-  'support@sheetmetalconnect.com',
-  '["Dynamics 365 Business Central"]'::jsonb,
-  '["Production order sync", "Item availability", "Labor tracking", "Routing integration"]'::jsonb,
-  'https://docs.sheetmetalconnect.com/integrations/dynamics-365',
-  'https://github.com/sheetmetalconnect/eryxon-dynamics-starter',
-  false,
-  true,
-  now()
-),
-(
-  'QuickBooks Manufacturing',
-  'quickbooks-manufacturing',
-  'Sync manufacturing jobs with QuickBooks for accurate job costing and invoicing.',
-  E'# QuickBooks Integration\n\nBridge the gap between shop floor execution and financial accounting.\n\n## Features\n- Job cost tracking\n- Automatic invoice generation\n- Material cost allocation\n- Labor cost posting\n\n## Requirements\n- QuickBooks Online or Desktop (2020+)\n- API access enabled\n- Manufacturing & Wholesale edition recommended',
-  'accounting',
-  'published',
-  'Sheet Metal Connect e.U.',
-  'https://sheetmetalconnect.com',
-  'support@sheetmetalconnect.com',
-  '["QuickBooks Online", "QuickBooks Desktop 2020+"]'::jsonb,
-  '["Job costing", "Invoice automation", "Material tracking", "Labor posting"]'::jsonb,
-  'https://docs.sheetmetalconnect.com/integrations/quickbooks',
-  'https://github.com/sheetmetalconnect/eryxon-quickbooks-starter',
+  'United Manufacturing Hub',
+  NULL,
+  NULL,
+  '["UMH Core", "UMH Helm Chart"]'::jsonb,
+  '["Data ingestion", "Time-series storage", "Real-time monitoring", "Protocol support"]'::jsonb,
+  NULL,
+  NULL,
   true,
   true,
-  now()
-),
-(
-  'Odoo ERP Connector',
-  'odoo-erp',
-  'Open-source integration with Odoo ERP for manufacturing, inventory, and sales synchronization.',
-  E'# Odoo ERP Integration\n\nConnect to the world''s leading open-source ERP platform.\n\n## Capabilities\n- Manufacturing order sync\n- BOM (Bill of Materials) import\n- Stock level updates\n- Quality control integration\n\n## Requirements\n- Odoo 14.0 or higher\n- Manufacturing module installed\n- API key or OAuth credentials',
-  'erp',
-  'published',
-  'Sheet Metal Connect e.U.',
-  'https://sheetmetalconnect.com',
-  'support@sheetmetalconnect.com',
-  '["Odoo 14", "Odoo 15", "Odoo 16", "Odoo 17"]'::jsonb,
-  '["MO sync", "BOM import", "Inventory sync", "QC integration"]'::jsonb,
-  'https://docs.sheetmetalconnect.com/integrations/odoo',
-  'https://github.com/sheetmetalconnect/eryxon-odoo-starter',
-  true,
-  true,
-  now()
-),
-(
-  'Custom Integration Starter Kit',
-  'custom-integration-starter',
-  'Build your own custom integration using our comprehensive starter kit with example code and documentation.',
-  E'# Custom Integration Starter Kit\n\nCreate your own integration tailored to your specific needs.\n\n## What''s Included\n- Complete TypeScript/Node.js example project\n- Authentication handling (API keys + OAuth)\n- Webhook event listeners\n- Data sync utilities\n- Testing framework\n- Comprehensive documentation\n\n## Use Cases\n- Legacy ERP systems\n- Custom in-house software\n- Specialized industry tools\n- Multi-system integrations\n\n## Getting Started\n```bash\ngit clone https://github.com/sheetmetalconnect/eryxon-integration-starter\ncd eryxon-integration-starter\nnpm install\nnpm run dev\n```\n\nFollow the step-by-step guide in the README to build your integration.',
-  'other',
-  'published',
-  'Sheet Metal Connect e.U.',
-  'https://sheetmetalconnect.com',
-  'support@sheetmetalconnect.com',
-  '["Any system with REST API", "Custom software", "Legacy systems"]'::jsonb,
-  '["Full source code", "TypeScript examples", "Webhook templates", "OAuth flow", "Testing suite", "Documentation"]'::jsonb,
-  'https://docs.sheetmetalconnect.com/integrations/starter-kit',
-  'https://github.com/sheetmetalconnect/eryxon-integration-starter',
-  true,
-  true,
-  now()
+  now(),
+  '1.0.0'
 );
 
 -- Update timestamps trigger
