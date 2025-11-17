@@ -11,12 +11,14 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Loader2, Trash2, GripVertical } from "lucide-react";
+import { Plus, Edit, Loader2, Trash2, GripVertical, Infinity, CheckCircle, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useCellQRMMetrics } from "@/hooks/useQRMMetrics";
+import { WIPIndicator } from "@/components/qrm/WIPIndicator";
 
 interface Stage {
   id: string;
@@ -25,16 +27,21 @@ interface Stage {
   color: string | null;
   sequence: number;
   active: boolean;
+  wip_limit: number | null;
+  wip_warning_threshold: number | null;
+  enforce_wip_limit: boolean | null;
+  show_capacity_warning: boolean | null;
 }
 
 interface SortableStageCardProps {
   stage: Stage;
   onEdit: (stage: Stage) => void;
   onDelete: (stage: Stage) => void;
+  tenantId: string;
   t: any;
 }
 
-function SortableStageCard({ stage, onEdit, onDelete, t }: SortableStageCardProps) {
+function SortableStageCard({ stage, onEdit, onDelete, tenantId, t }: SortableStageCardProps) {
   const {
     attributes,
     listeners,
@@ -69,11 +76,23 @@ function SortableStageCard({ stage, onEdit, onDelete, t }: SortableStageCardProp
               />
               <div className="flex-1">
                 <CardTitle>{stage.name}</CardTitle>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
                   <Badge variant="outline">{t("stages.sequence")}: {stage.sequence}</Badge>
                   <Badge variant={stage.active ? "default" : "secondary"}>
                     {stage.active ? t("stages.active") : t("stages.inactive")}
                   </Badge>
+                  {stage.wip_limit !== null ? (
+                    <Badge variant="outline" className="gap-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      {t("qrm.wipLimit", "WIP Limit")}: {stage.wip_limit}
+                      {stage.enforce_wip_limit && " (enforced)"}
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="gap-1 text-gray-500">
+                      <Infinity className="h-3 w-3" />
+                      {t("qrm.noLimit", "No WIP Limit")}
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>
@@ -87,11 +106,14 @@ function SortableStageCard({ stage, onEdit, onDelete, t }: SortableStageCardProp
             </div>
           </div>
         </CardHeader>
-        {stage.description && (
-          <CardContent>
+        <CardContent className="space-y-3">
+          {stage.description && (
             <p className="text-sm text-muted-foreground">{stage.description}</p>
-          </CardContent>
-        )}
+          )}
+          {stage.wip_limit !== null && (
+            <StageWIPDisplay stageId={stage.id} tenantId={tenantId} />
+          )}
+        </CardContent>
       </Card>
     </div>
   );
@@ -111,6 +133,10 @@ export default function ConfigStages() {
     description: "",
     color: "#3b82f6",
     active: true,
+    wip_limit: null as number | null,
+    wip_warning_threshold: null as number | null,
+    enforce_wip_limit: false,
+    show_capacity_warning: true,
   });
 
   const sensors = useSensors(
@@ -154,6 +180,10 @@ export default function ConfigStages() {
             description: formData.description || null,
             color: formData.color,
             active: formData.active,
+            wip_limit: formData.wip_limit,
+            wip_warning_threshold: formData.wip_warning_threshold,
+            enforce_wip_limit: formData.enforce_wip_limit,
+            show_capacity_warning: formData.show_capacity_warning,
           })
           .eq("id", editingStage.id);
 
@@ -168,6 +198,10 @@ export default function ConfigStages() {
           color: formData.color,
           sequence: maxSequence + 1,
           active: formData.active,
+          wip_limit: formData.wip_limit,
+          wip_warning_threshold: formData.wip_warning_threshold,
+          enforce_wip_limit: formData.enforce_wip_limit,
+          show_capacity_warning: formData.show_capacity_warning,
         });
 
         toast.success(t("stages.stageCreated"));
@@ -188,6 +222,10 @@ export default function ConfigStages() {
       description: "",
       color: "#3b82f6",
       active: true,
+      wip_limit: null,
+      wip_warning_threshold: null,
+      enforce_wip_limit: false,
+      show_capacity_warning: true,
     });
     setEditingStage(null);
   };
@@ -199,6 +237,10 @@ export default function ConfigStages() {
       description: stage.description || "",
       color: stage.color || "#3b82f6",
       active: stage.active,
+      wip_limit: stage.wip_limit,
+      wip_warning_threshold: stage.wip_warning_threshold,
+      enforce_wip_limit: stage.enforce_wip_limit ?? false,
+      show_capacity_warning: stage.show_capacity_warning ?? true,
     });
     setDialogOpen(true);
   };
@@ -376,6 +418,88 @@ export default function ConfigStages() {
                   />
                 </div>
 
+                {/* WIP Limit Configuration */}
+                <div className="space-y-4 border-t pt-4">
+                  <h3 className="font-semibold">{t("qrm.wipConfiguration", "WIP Limit Configuration")}</h3>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="wip_limit">{t("qrm.wipLimit", "WIP Limit")}</Label>
+                    <Input
+                      id="wip_limit"
+                      type="number"
+                      min="1"
+                      value={formData.wip_limit ?? ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          wip_limit: e.target.value ? parseInt(e.target.value) : null
+                        })
+                      }
+                      placeholder={t("qrm.noLimit", "No limit")}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {t("qrm.wipLimitHelp", "Maximum number of jobs allowed in this stage. Leave empty for no limit.")}
+                    </p>
+                  </div>
+
+                  {formData.wip_limit !== null && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="wip_warning_threshold">{t("qrm.wipWarningThreshold", "Warning Threshold")}</Label>
+                        <Input
+                          id="wip_warning_threshold"
+                          type="number"
+                          min="1"
+                          max={formData.wip_limit || undefined}
+                          value={formData.wip_warning_threshold ?? ""}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              wip_warning_threshold: e.target.value ? parseInt(e.target.value) : null
+                            })
+                          }
+                          placeholder="80% of limit"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          {t("qrm.wipWarningHelp", "Show warning when WIP reaches this threshold.")}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="enforce_wip_limit">{t("qrm.enforceLimit", "Enforce Limit")}</Label>
+                          <p className="text-xs text-muted-foreground">
+                            {t("qrm.enforceLimitHelp", "Prevent new jobs from entering when limit is reached")}
+                          </p>
+                        </div>
+                        <Switch
+                          id="enforce_wip_limit"
+                          checked={formData.enforce_wip_limit}
+                          onCheckedChange={(checked) =>
+                            setFormData({ ...formData, enforce_wip_limit: checked })
+                          }
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="show_capacity_warning">{t("qrm.showCapacityWarning", "Show Capacity Warning")}</Label>
+                          <p className="text-xs text-muted-foreground">
+                            {t("qrm.showCapacityWarningHelp", "Display visual warnings when approaching limit")}
+                          </p>
+                        </div>
+                        <Switch
+                          id="show_capacity_warning"
+                          checked={formData.show_capacity_warning}
+                          onCheckedChange={(checked) =>
+                            setFormData({ ...formData, show_capacity_warning: checked })
+                          }
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+
                 <Button type="submit" className="w-full">
                   {editingStage ? t("stages.updateStage") : t("stages.createStage")}
                 </Button>
@@ -401,6 +525,7 @@ export default function ConfigStages() {
                   stage={stage}
                   onEdit={handleEdit}
                   onDelete={handleDeleteClick}
+                  tenantId={profile?.tenant_id || ""}
                   t={t}
                 />
               ))}
@@ -427,5 +552,33 @@ export default function ConfigStages() {
         </AlertDialog>
       </div>
     </Layout>
+  );
+}
+
+// Component to display WIP metrics for a stage
+function StageWIPDisplay({ stageId, tenantId }: { stageId: string; tenantId: string }) {
+  const { metrics, loading } = useCellQRMMetrics(stageId, tenantId);
+  const { t } = useTranslation();
+
+  if (loading || !metrics) {
+    return (
+      <div className="text-sm text-gray-500">
+        {t("qrm.loadingMetrics", "Loading WIP metrics...")}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium">{t("qrm.currentWIP", "Current WIP")}</span>
+        <WIPIndicator metrics={metrics} compact />
+      </div>
+      {metrics.jobs_in_cell && metrics.jobs_in_cell.length > 0 && (
+        <div className="text-xs text-gray-600">
+          {t("qrm.jobsInCell", "Jobs")}: {metrics.jobs_in_cell.map((j) => j.job_number).join(", ")}
+        </div>
+      )}
+    </div>
   );
 }
