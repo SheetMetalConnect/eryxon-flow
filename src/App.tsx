@@ -34,6 +34,7 @@ import ApiDocs from "./pages/ApiDocs";
 import Pricing from "./pages/Pricing";
 import { MyPlan } from "./pages/MyPlan";
 import Help from "./pages/Help";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import { OnboardingWizard } from "./components/onboarding";
 import Layout from "./components/Layout";
@@ -399,6 +400,17 @@ function AppRoutes() {
           <ProtectedRoute>
             <Layout>
               <Help />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/about"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <About />
             </Layout>
           </ProtectedRoute>
         }
