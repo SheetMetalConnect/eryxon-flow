@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,6 +42,8 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { JobIssueBadge } from "@/components/issues/JobIssueBadge";
+import { CompactOperationsFlow } from "@/components/qrm/OperationsFlowVisualization";
+import { useMultipleJobsRouting } from "@/hooks/useQRMMetrics";
 
 export default function Jobs() {
   const { t } = useTranslation();
@@ -140,6 +142,12 @@ export default function Jobs() {
       return processedJobs;
     },
   });
+
+  // Get job IDs for routing fetch
+  const jobIds = useMemo(() => jobs?.map((job: any) => job.id) || [], [jobs]);
+
+  // Fetch routing for all jobs
+  const { routings, loading: routingsLoading } = useMultipleJobsRouting(jobIds);
 
   const handleSetOnHold = async (jobId: string) => {
     await supabase.from("jobs").update({ status: "on_hold" }).eq("id", jobId);
@@ -321,6 +329,7 @@ export default function Jobs() {
               <TableHead>{t("jobs.customer")}</TableHead>
               <TableHead>{t("jobs.dueDate")}</TableHead>
               <TableHead>{t("jobs.status")}</TableHead>
+              <TableHead>{t("qrm.flow", "Flow")}</TableHead>
               <TableHead className="text-right">{t("jobs.parts")}</TableHead>
               <TableHead className="text-right">
                 {t("jobs.operations")}
@@ -350,6 +359,12 @@ export default function Jobs() {
                   </div>
                 </TableCell>
                 <TableCell>{getStatusBadge(job.status)}</TableCell>
+                <TableCell>
+                  <CompactOperationsFlow
+                    routing={routings[job.id] || []}
+                    loading={routingsLoading}
+                  />
+                </TableCell>
                 <TableCell className="text-right">{job.parts_count}</TableCell>
                 <TableCell className="text-right">
                   {job.operations_count}

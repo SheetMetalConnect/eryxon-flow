@@ -12,13 +12,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { Plus, Edit2, Save, X } from "lucide-react";
+import { Plus, Edit2, Save, X, CheckCircle2, Clock, Circle } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { PartIssueBadge } from "@/components/issues/PartIssueBadge";
 import { IssuesSummarySection } from "@/components/issues/IssuesSummarySection";
-import { RoutingVisualization } from "@/components/qrm/RoutingVisualization";
+import { OperationsFlowVisualization } from "@/components/qrm/OperationsFlowVisualization";
 import { useJobRouting } from "@/hooks/useQRMMetrics";
 
 interface JobDetailModalProps {
@@ -173,9 +173,9 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
 
           {/* Routing Visualization */}
           <div>
-            <Label className="text-lg">{t("qrm.routing", "Routing")}</Label>
-            <div className="mt-3 border rounded-lg p-4 bg-gray-50">
-              <RoutingVisualization routing={routing} loading={routingLoading} />
+            <Label className="text-lg">{t("qrm.operationsFlow", "Operations Flow")}</Label>
+            <div className="mt-3 border rounded-lg p-4 bg-gradient-to-br from-gray-50 to-white">
+              <OperationsFlowVisualization routing={routing} loading={routingLoading} />
             </div>
           </div>
 
@@ -241,30 +241,69 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
 
                   {/* Tasks */}
                   <div className="mt-3">
-                    <Label className="text-sm">{t("jobs.tasks")} ({part.tasks?.length || 0})</Label>
+                    <Label className="text-sm">{t("jobs.operations", "Operations")} ({part.tasks?.length || 0})</Label>
                     <div className="mt-2 space-y-2">
-                      {part.tasks?.map((task: any) => (
-                        <div
-                          key={task.id}
-                          className="flex items-center justify-between bg-gray-50 p-2 rounded text-sm"
-                        >
-                          <div className="flex items-center gap-3">
+                      {part.tasks?.map((task: any, index: number) => {
+                        const isCompleted = task.status === "completed";
+                        const isInProgress = task.status === "in_progress";
+                        const cellColor = task.stage?.color || '#6B7280';
+
+                        return (
+                          <div
+                            key={task.id}
+                            className={`
+                              flex items-center justify-between p-3 rounded-lg text-sm
+                              border-l-4 transition-all duration-200
+                              ${isCompleted
+                                ? 'bg-green-50/50'
+                                : isInProgress
+                                  ? 'bg-blue-50/50 shadow-sm'
+                                  : 'bg-gray-50'}
+                            `}
+                            style={{
+                              borderLeftColor: cellColor,
+                            }}
+                          >
+                            <div className="flex items-center gap-3">
+                              {/* Status icon */}
+                              {isCompleted ? (
+                                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                              ) : isInProgress ? (
+                                <Clock className="h-4 w-4 text-blue-600 animate-pulse" />
+                              ) : (
+                                <Circle className="h-4 w-4 text-gray-400" />
+                              )}
+
+                              {/* Cell badge */}
+                              <div
+                                className="px-2 py-0.5 rounded text-xs font-medium"
+                                style={{
+                                  backgroundColor: `${cellColor}20`,
+                                  color: cellColor,
+                                }}
+                              >
+                                {task.stage?.name}
+                              </div>
+
+                              {/* Operation name */}
+                              <span className={`font-medium ${isCompleted ? 'text-gray-500' : ''}`}>
+                                {task.task_name}
+                              </span>
+                            </div>
+
+                            {/* Status badge */}
                             <Badge
-                              variant="outline"
-                              style={{
-                                borderColor: task.stage?.color,
-                                backgroundColor: `${task.stage?.color}20`,
-                              }}
+                              variant={isCompleted ? "outline" : isInProgress ? "default" : "secondary"}
+                              className={`
+                                ${isCompleted ? 'text-green-600 border-green-300' : ''}
+                                ${isInProgress ? 'bg-blue-600' : ''}
+                              `}
                             >
-                              {task.stage?.name}
+                              {task.status?.replace("_", " ")}
                             </Badge>
-                            <span>{task.task_name}</span>
                           </div>
-                          <Badge variant={task.status === "completed" ? "default" : "secondary"}>
-                            {task.status?.replace("_", " ")}
-                          </Badge>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
