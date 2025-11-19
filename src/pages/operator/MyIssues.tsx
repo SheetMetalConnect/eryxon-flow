@@ -156,9 +156,9 @@ export default function MyIssues() {
                   </div>
                 </div>
               </Card>
-            ))}
-          </div>
-        )}
+          ))}
+        </div>
+      )}
       </div>
 
       {/* Issue Detail Modal */}

@@ -242,148 +242,148 @@ export default function Dashboard() {
         <p className="text-muted-foreground">{t("dashboard.description")}</p>
       </div>
 
-        {needsSetup && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("dashboard.initialSetup")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between gap-4">
-                <p className="text-muted-foreground">
-                  {t("dashboard.noStagesFound")}
-                </p>
-                <Button onClick={handleSeed} disabled={seeding}>
-                  {seeding ? t("dashboard.seeding") : t("dashboard.seedDemoData")}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4" data-tour="dashboard-stats">
-          <StatCard
-            title={t("dashboard.activeWorkers")}
-            value={stats.activeWorkers}
-            description={t("dashboard.currentlyWorking")}
-            icon={Users}
-            onClick={() => navigate("/admin/users")}
-          />
-
-          <StatCard
-            title={t("dashboard.pendingIssues")}
-            value={stats.pendingIssues}
-            description={t("dashboard.awaitingReview")}
-            icon={AlertTriangle}
-            onClick={() => navigate("/admin/issues")}
-          />
-
-          <StatCard
-            title={t("dashboard.inProgress")}
-            value={stats.inProgressTasks}
-            description={t("dashboard.activeTasks")}
-            icon={Activity}
-            onClick={() => navigate("/admin/assignments")}
-          />
-
-          <StatCard
-            title={t("dashboard.dueThisWeek")}
-            value={stats.dueThisWeek}
-            description={t("dashboard.jobsDue")}
-            icon={Clock}
-            onClick={() => navigate("/admin/jobs")}
-          />
-        </div>
-
-        {/* Quick Stats Panel */}
+      {needsSetup && (
         <Card>
           <CardHeader>
-            <CardTitle>{t("dashboard.quickStats")}</CardTitle>
+            <CardTitle>{t("dashboard.initialSetup")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">{t("dashboard.totalJobs")}</p>
-                <p className="text-2xl font-bold">{stats.totalJobs}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">{t("dashboard.totalParts")}</p>
-                <p className="text-2xl font-bold">{stats.totalParts}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">{t("dashboard.activeCells")}</p>
-                <p className="text-2xl font-bold">{stats.activeCells}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">{t("dashboard.completedToday")}</p>
-                <p className="text-2xl font-bold">{stats.completedToday}</p>
-              </div>
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-muted-foreground">
+                {t("dashboard.noStagesFound")}
+              </p>
+              <Button onClick={handleSeed} disabled={seeding}>
+                {seeding ? t("dashboard.seeding") : t("dashboard.seedDemoData")}
+              </Button>
             </div>
           </CardContent>
         </Card>
+      )}
 
-        {/* QRM Dashboard */}
-        <QRMDashboard />
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-4" data-tour="dashboard-stats">
+        <StatCard
+          title={t("dashboard.activeWorkers")}
+          value={stats.activeWorkers}
+          description={t("dashboard.currentlyWorking")}
+          icon={Users}
+          onClick={() => navigate("/admin/users")}
+        />
 
-        {/* Active Work Table */}
-        <Card data-tour="active-operations">
-          <CardHeader>
-            <CardTitle>{t("dashboard.activeWork")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {activeWork.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                {t("dashboard.noActiveWork")}
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("dashboard.operator")}</TableHead>
-                    <TableHead>{t("dashboard.operation")}</TableHead>
-                    <TableHead>{t("dashboard.job")}</TableHead>
-                    <TableHead>{t("dashboard.part")}</TableHead>
-                    <TableHead>{t("dashboard.cell")}</TableHead>
-                    <TableHead>{t("dashboard.elapsedTime")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {activeWork.map((work) => (
-                    <TableRow key={work.id}>
-                      <TableCell className="font-medium">
-                        {work.operator.full_name}
-                      </TableCell>
-                      <TableCell>{work.operation.operation_name}</TableCell>
-                      <TableCell>
-                        <div>{work.operation.part.job.job_number}</div>
-                        {work.operation.part.job.customer && (
-                          <div className="text-xs text-muted-foreground">
-                            {work.operation.part.job.customer}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>{work.operation.part.part_number}</TableCell>
-                      <TableCell>
-                        <Badge
-                          style={{
-                            backgroundColor:
-                              work.operation.cell.color || "hsl(var(--accent))",
-                            color: "white",
-                          }}
-                        >
-                          {work.operation.cell.name}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {formatDistanceToNow(new Date(work.start_time))}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+        <StatCard
+          title={t("dashboard.pendingIssues")}
+          value={stats.pendingIssues}
+          description={t("dashboard.awaitingReview")}
+          icon={AlertTriangle}
+          onClick={() => navigate("/admin/issues")}
+        />
+
+        <StatCard
+          title={t("dashboard.inProgress")}
+          value={stats.inProgressTasks}
+          description={t("dashboard.activeTasks")}
+          icon={Activity}
+          onClick={() => navigate("/admin/assignments")}
+        />
+
+        <StatCard
+          title={t("dashboard.dueThisWeek")}
+          value={stats.dueThisWeek}
+          description={t("dashboard.jobsDue")}
+          icon={Clock}
+          onClick={() => navigate("/admin/jobs")}
+        />
       </div>
+
+      {/* Quick Stats Panel */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("dashboard.quickStats")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-4">
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">{t("dashboard.totalJobs")}</p>
+              <p className="text-2xl font-bold">{stats.totalJobs}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">{t("dashboard.totalParts")}</p>
+              <p className="text-2xl font-bold">{stats.totalParts}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">{t("dashboard.activeCells")}</p>
+              <p className="text-2xl font-bold">{stats.activeCells}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">{t("dashboard.completedToday")}</p>
+              <p className="text-2xl font-bold">{stats.completedToday}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* QRM Dashboard */}
+      <QRMDashboard />
+
+      {/* Active Work Table */}
+      <Card data-tour="active-operations">
+        <CardHeader>
+          <CardTitle>{t("dashboard.activeWork")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {activeWork.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              {t("dashboard.noActiveWork")}
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("dashboard.operator")}</TableHead>
+                  <TableHead>{t("dashboard.operation")}</TableHead>
+                  <TableHead>{t("dashboard.job")}</TableHead>
+                  <TableHead>{t("dashboard.part")}</TableHead>
+                  <TableHead>{t("dashboard.cell")}</TableHead>
+                  <TableHead>{t("dashboard.elapsedTime")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {activeWork.map((work) => (
+                  <TableRow key={work.id}>
+                    <TableCell className="font-medium">
+                      {work.operator.full_name}
+                    </TableCell>
+                    <TableCell>{work.operation.operation_name}</TableCell>
+                    <TableCell>
+                      <div>{work.operation.part.job.job_number}</div>
+                      {work.operation.part.job.customer && (
+                        <div className="text-xs text-muted-foreground">
+                          {work.operation.part.job.customer}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>{work.operation.part.part_number}</TableCell>
+                    <TableCell>
+                      <Badge
+                        style={{
+                          backgroundColor:
+                            work.operation.cell.color || "hsl(var(--accent))",
+                          color: "white",
+                        }}
+                      >
+                        {work.operation.cell.name}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {formatDistanceToNow(new Date(work.start_time))}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

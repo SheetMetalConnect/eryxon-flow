@@ -125,8 +125,8 @@ export function OperationsFlowVisualization({
                         backgroundColor: bgColor,
                         borderColor: borderColor,
                         color: textColor,
-                        ringColor: isInProgress ? `${cellColor}40` : undefined,
-                      }}
+                        '--tw-ring-color': isInProgress ? `${cellColor}40` : undefined,
+                      } as React.CSSProperties}
                     >
                       {/* Status icon */}
                       {getStatusIcon(step)}
@@ -231,8 +231,8 @@ export function CompactOperationsFlow({
                     style={{
                       backgroundColor: isCompleted || isInProgress ? cellColor : `${cellColor}30`,
                       color: isCompleted || isInProgress ? '#FFFFFF' : cellColor,
-                      ringColor: isInProgress ? `${cellColor}50` : undefined,
-                    }}
+                      '--tw-ring-color': isInProgress ? `${cellColor}50` : undefined,
+                    } as React.CSSProperties}
                   >
                     {/* Shortened name - first 3 chars or icon */}
                     {step.cell_name.slice(0, 3).toUpperCase()}
