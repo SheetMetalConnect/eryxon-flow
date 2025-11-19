@@ -84,7 +84,7 @@ export default function Help() {
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card elevation={2}>
-            <CardActionArea href="/api-docs">
+            <CardActionArea href="/admin/api-docs">
               <CardContent sx={{ textAlign: "center", py: 3 }}>
                 <CodeIcon sx={{ fontSize: 48, color: "primary.main", mb: 2 }} />
                 <Typography variant="h6" gutterBottom>
@@ -100,7 +100,7 @@ export default function Help() {
 
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card elevation={2}>
-            <CardActionArea href="/pricing">
+            <CardActionArea href="/admin/pricing">
               <CardContent sx={{ textAlign: "center", py: 3 }}>
                 <StorageIcon
                   sx={{ fontSize: 48, color: "primary.main", mb: 2 }}
@@ -1091,14 +1091,14 @@ export default function Help() {
                   subscription plan.
                 </Typography>
                 <Typography paragraph>
-                  <strong>Free plan:</strong> 10 jobs max
+                  <strong>Free plan:</strong> 100 jobs/month, 1,000 parts/month
                   <br />
-                  <strong>Pro plan:</strong> 100 jobs max
+                  <strong>Pro plan:</strong> 1,000 jobs/month, 10,000 parts/month
                   <br />
                   <strong>Premium plan:</strong> Unlimited
                 </Typography>
                 <Typography paragraph>
-                  <strong>Solution:</strong> Complete or delete old jobs, or
+                  <strong>Solution:</strong> Wait for the monthly reset, complete or delete old jobs, or
                   upgrade your plan.
                 </Typography>
               </AccordionDetails>
@@ -1241,10 +1241,13 @@ export default function Help() {
             flexWrap: "wrap",
           }}
         >
-          <Button size="small" href="/api-docs" startIcon={<CodeIcon />}>
+          <Button size="small" href="/admin/about" startIcon={<BuildIcon />}>
+            About Eryxon
+          </Button>
+          <Button size="small" href="/admin/api-docs" startIcon={<CodeIcon />}>
             API Documentation
           </Button>
-          <Button size="small" href="/pricing" startIcon={<StorageIcon />}>
+          <Button size="small" href="/admin/pricing" startIcon={<StorageIcon />}>
             Plans & Pricing
           </Button>
           <Button

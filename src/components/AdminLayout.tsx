@@ -37,6 +37,7 @@ import {
   ListTodo,
   Activity,
   Flag,
+  Info,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -229,6 +230,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       path: "/admin/help",
       label: "Help",
       icon: HelpCircle,
+      exact: true,
+    },
+    {
+      path: "/admin/about",
+      label: "About",
+      icon: Info,
       exact: true,
     },
   ];
