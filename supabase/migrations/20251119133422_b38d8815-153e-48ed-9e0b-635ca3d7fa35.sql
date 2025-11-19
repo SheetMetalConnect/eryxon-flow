@@ -1,5 +1,5 @@
--- Migration: Add icon fields to cells and operations tables
--- Description: Adds icon_name field to support lucide-react icon selection
+-- Apply pending migration: Add icon fields to cells, operations, and substeps tables
+-- This migration adds icon_name VARCHAR(100) fields for lucide-react icon support
 
 -- Add icon_name column to cells table (formerly stages)
 ALTER TABLE cells

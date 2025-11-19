@@ -43,9 +43,9 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
           *,
           parts (
             *,
-            tasks (
+            operations (
               *,
-              stage:stages(name, color)
+              cell:cells(name, color)
             )
           )
         `)
@@ -252,18 +252,18 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                     <Badge>{part.status?.replace("_", " ")}</Badge>
                   </div>
 
-                  {/* Tasks */}
+                  {/* Operations */}
                   <div className="mt-3">
-                    <Label className="text-sm">{t("jobs.operations", "Operations")} ({part.tasks?.length || 0})</Label>
+                    <Label className="text-sm">{t("jobs.operations", "Operations")} ({part.operations?.length || 0})</Label>
                     <div className="mt-2 space-y-2">
-                      {part.tasks?.map((task: any, index: number) => {
-                        const isCompleted = task.status === "completed";
-                        const isInProgress = task.status === "in_progress";
-                        const cellColor = task.stage?.color || '#6B7280';
+                      {part.operations?.map((operation: any, index: number) => {
+                        const isCompleted = operation.status === "completed";
+                        const isInProgress = operation.status === "in_progress";
+                        const cellColor = operation.cell?.color || '#6B7280';
 
                         return (
                           <div
-                            key={task.id}
+                            key={operation.id}
                             className={`
                               flex items-center justify-between p-3 rounded-lg text-sm
                               border-l-4 transition-all duration-200
@@ -295,12 +295,12 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                                   color: cellColor,
                                 }}
                               >
-                                {task.stage?.name}
+                                {operation.cell?.name}
                               </div>
 
                               {/* Operation name */}
                               <span className={`font-medium ${isCompleted ? 'text-gray-500' : ''}`}>
-                                {task.task_name}
+                                {operation.operation_name}
                               </span>
                             </div>
 
@@ -312,7 +312,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                                 ${isInProgress ? 'bg-blue-600' : ''}
                               `}
                             >
-                              {task.status?.replace("_", " ")}
+                              {operation.status?.replace("_", " ")}
                             </Badge>
                           </div>
                         );

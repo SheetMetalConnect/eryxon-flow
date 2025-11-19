@@ -13,6 +13,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { seedDemoData } from "@/lib/seed";
 import { QRMDashboard } from "@/components/qrm/QRMDashboard";
 import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface ActiveWork {
   id: string;
