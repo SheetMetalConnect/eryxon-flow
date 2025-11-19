@@ -170,20 +170,225 @@ export function usePartRouting(partId: string | null) {
 }
 
 /**
- * Hook to fetch job routing (commented out until SQL function is implemented)
+ * Hook to fetch job routing
  */
 export function useJobRouting(jobId: string | null) {
-  const [routing] = useState<JobRouting>([]);
-  const [loading] = useState(false);
-  const [error] = useState<Error | null>(null);
+  const [routing, setRouting] = useState<JobRouting>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  // TODO: Implement when get_job_routing SQL function is created
-  // useEffect(() => {
-  //   if (!jobId) return;
-  //   // Implementation here
-  // }, [jobId]);
+  useEffect(() => {
+    if (!jobId) {
+      setRouting([]);
+      return;
+    }
+
+    const fetchRouting = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Fetch all operations for the job's parts with cell information
+        const { data, error: queryError } = await supabase
+          .from("operations")
+          .select(`
+            id,
+            status,
+            sequence,
+            cell_id,
+            cells:cell_id (
+              id,
+              name,
+              color,
+              sequence
+            ),
+            parts!inner (
+              id,
+              job_id
+            )
+          `)
+          .eq("parts.job_id", jobId);
+
+        if (queryError) throw queryError;
+
+        // Group operations by cell
+        const cellMap = new Map<string, {
+          cell_id: string;
+          cell_name: string;
+          cell_color: string | null;
+          sequence: number;
+          operation_count: number;
+          completed_operations: number;
+        }>();
+
+        (data || []).forEach((op: any) => {
+          if (!op.cells) return;
+
+          const cellId = op.cell_id;
+          const existing = cellMap.get(cellId);
+
+          if (existing) {
+            existing.operation_count++;
+            if (op.status === 'completed') {
+              existing.completed_operations++;
+            }
+          } else {
+            cellMap.set(cellId, {
+              cell_id: cellId,
+              cell_name: op.cells.name,
+              cell_color: op.cells.color,
+              sequence: op.cells.sequence,
+              operation_count: 1,
+              completed_operations: op.status === 'completed' ? 1 : 0,
+            });
+          }
+        });
+
+        // Convert to array and sort by cell sequence
+        const routingData = Array.from(cellMap.values())
+          .sort((a, b) => a.sequence - b.sequence);
+
+        setRouting(routingData);
+      } catch (err) {
+        setError(err as Error);
+        console.error("Error fetching job routing:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRouting();
+
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel(`job-routing-${jobId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "operations",
+        },
+        () => {
+          fetchRouting();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [jobId]);
 
   return { routing, loading, error };
+}
+
+/**
+ * Hook to fetch routing for multiple jobs efficiently
+ */
+export function useMultipleJobsRouting(jobIds: string[]) {
+  const [routings, setRoutings] = useState<Record<string, JobRouting>>({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    if (jobIds.length === 0) {
+      setRoutings({});
+      return;
+    }
+
+    const fetchRoutings = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Fetch all operations for all jobs in one query
+        const { data, error: queryError } = await supabase
+          .from("operations")
+          .select(`
+            id,
+            status,
+            sequence,
+            cell_id,
+            cells:cell_id (
+              id,
+              name,
+              color,
+              sequence
+            ),
+            parts!inner (
+              id,
+              job_id
+            )
+          `)
+          .in("parts.job_id", jobIds);
+
+        if (queryError) throw queryError;
+
+        // Group operations by job, then by cell
+        const jobRoutingsMap: Record<string, Map<string, {
+          cell_id: string;
+          cell_name: string;
+          cell_color: string | null;
+          sequence: number;
+          operation_count: number;
+          completed_operations: number;
+        }>> = {};
+
+        // Initialize maps for each job
+        jobIds.forEach(jobId => {
+          jobRoutingsMap[jobId] = new Map();
+        });
+
+        // Process operations
+        (data || []).forEach((op: any) => {
+          if (!op.cells || !op.parts) return;
+
+          const jobId = op.parts.job_id;
+          const cellId = op.cell_id;
+          const cellMap = jobRoutingsMap[jobId];
+
+          if (!cellMap) return;
+
+          const existing = cellMap.get(cellId);
+
+          if (existing) {
+            existing.operation_count++;
+            if (op.status === 'completed') {
+              existing.completed_operations++;
+            }
+          } else {
+            cellMap.set(cellId, {
+              cell_id: cellId,
+              cell_name: op.cells.name,
+              cell_color: op.cells.color,
+              sequence: op.cells.sequence,
+              operation_count: 1,
+              completed_operations: op.status === 'completed' ? 1 : 0,
+            });
+          }
+        });
+
+        // Convert to final format
+        const result: Record<string, JobRouting> = {};
+        Object.entries(jobRoutingsMap).forEach(([jobId, cellMap]) => {
+          result[jobId] = Array.from(cellMap.values())
+            .sort((a, b) => a.sequence - b.sequence);
+        });
+
+        setRoutings(result);
+      } catch (err) {
+        setError(err as Error);
+        console.error("Error fetching multiple jobs routing:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoutings();
+  }, [JSON.stringify(jobIds)]);
+
+  return { routings, loading, error };
 }
 
 /**

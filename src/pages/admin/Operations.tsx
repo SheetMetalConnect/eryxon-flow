@@ -43,6 +43,7 @@ interface Operation {
   job_id: string;
   job_number: string;
   cell: string;
+  cell_color: string | null;
   assigned_operator_id: string | null;
   assigned_name: string | null;
   due_date: string | null;
@@ -89,7 +90,8 @@ export const Operations: React.FC = () => {
             )
           ),
           cells (
-            name
+            name,
+            color
           ),
           profiles:assigned_operator_id (
             full_name,
@@ -111,6 +113,7 @@ export const Operations: React.FC = () => {
           job_id: op.parts?.job_id || "",
           job_number: op.parts?.jobs?.job_number || "Unknown",
           cell: op.cells?.name || "Unknown",
+          cell_color: op.cells?.color || null,
           assigned_operator_id: op.assigned_operator_id,
           assigned_name: op.profiles?.full_name || op.profiles?.email || null,
           due_date: null, // Would come from parts or jobs
@@ -418,7 +421,17 @@ export const Operations: React.FC = () => {
                   </Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="body2">{op.cell}</Typography>
+                  <Chip
+                    label={op.cell}
+                    size="small"
+                    sx={{
+                      backgroundColor: op.cell_color ? `${op.cell_color}20` : '#f3f4f6',
+                      color: op.cell_color || '#374151',
+                      fontWeight: 600,
+                      fontSize: '0.75rem',
+                      borderLeft: op.cell_color ? `3px solid ${op.cell_color}` : 'none',
+                    }}
+                  />
                 </TableCell>
                 <TableCell>
                   {op.assigned_name ? (
