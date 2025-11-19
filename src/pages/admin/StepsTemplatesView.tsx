@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TemplatesManager } from "@/components/admin/TemplatesManager";
@@ -11,8 +10,7 @@ export default function StepsTemplatesView() {
   const [activeTab, setActiveTab] = useState("templates");
 
   return (
-    <Layout>
-      <div className="container mx-auto py-6 space-y-6">
+    <div className="container mx-auto py-6 space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
             {t("Steps & Templates")}
@@ -61,6 +59,5 @@ export default function StepsTemplatesView() {
           </TabsContent>
         </Tabs>
       </div>
-    </Layout>
   );
 }

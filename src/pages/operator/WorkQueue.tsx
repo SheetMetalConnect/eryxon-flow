@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchOperationsWithDetails, OperationWithDetails } from "@/lib/database";
-import Layout from "@/components/Layout";
 import OperationCard from "@/components/operator/OperationCard";
 import CurrentlyTimingWidget from "@/components/operator/CurrentlyTimingWidget";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -210,16 +209,14 @@ export default function WorkQueue() {
 
   if (loading) {
     return (
-      <Layout>
-        <div className="flex items-center justify-center h-96">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
   }
 
   return (
-    <Layout>
+    <>
       <div className="space-y-4">
         {/* Currently Timing Widget */}
         <CurrentlyTimingWidget />
@@ -429,6 +426,6 @@ export default function WorkQueue() {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 }

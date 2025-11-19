@@ -35,6 +35,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { usePendingIssuesCount } from "@/hooks/usePendingIssuesCount";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -320,8 +321,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <Badge variant="secondary" className="text-xs capitalize">
                 {tenant.plan}
               </Badge>
-              <Badge 
-                variant={tenant.status === 'active' ? 'default' : 'outline'} 
+              <Badge
+                variant={tenant.status === 'active' ? 'default' : 'outline'}
                 className="text-xs capitalize"
               >
                 {tenant.status}
@@ -337,6 +338,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </div>
           </div>
         )}
+        <div className={cn("mb-2 flex", collapsed ? "justify-center" : "justify-start")}>
+          <LanguageSwitcher />
+        </div>
         <Button
           variant="outline"
           size="sm"

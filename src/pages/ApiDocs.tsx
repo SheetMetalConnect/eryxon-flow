@@ -21,7 +21,6 @@ import {
   PlayCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import Layout from "@/components/Layout";
 
 export default function ApiDocs() {
   const { toast } = useToast();
@@ -184,7 +183,7 @@ apiClient.post('/api-jobs', jobData)
   };
 
   return (
-    <Layout>
+    <>
       <div className="space-y-6">
         {/* Hero Section */}
         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
@@ -546,6 +545,6 @@ apiClient.post('/api-jobs', jobData)
           margin: 0;
         }
       `}</style>
-    </Layout>
+    </>
   );
 }

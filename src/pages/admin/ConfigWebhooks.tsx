@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -210,11 +209,10 @@ export default function ConfigWebhooks() {
   };
 
   return (
-    <Layout>
-      <div className="p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">{t('webhooks.title')}</h1>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">{t('webhooks.title')}</h1>
             <p className="text-muted-foreground">{t('webhooks.description')}</p>
           </div>
           <div className="flex gap-2">
@@ -551,7 +549,6 @@ app.post('/webhooks/eryxon', (req, res) => {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
-    </Layout>
+    </div>
   );
 }
