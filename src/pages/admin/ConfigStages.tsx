@@ -11,14 +11,14 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Loader2, Trash2, GripVertical, Infinity, CheckCircle, AlertTriangle } from "lucide-react";
+import { Plus, Edit, Loader2, Trash2, GripVertical, Infinity, CheckCircle, AlertTriangle, Factory, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useCellQRMMetrics } from "@/hooks/useQRMMetrics";
-import { WIPIndicator } from "@/components/qrm/WIPIndicator";
+import { WIPIndicator, WIPBar } from "@/components/qrm/WIPIndicator";
 import { IconPicker, IconDisplay } from "@/components/ui/icon-picker";
 
 interface Stage {
@@ -61,67 +61,102 @@ function SortableStageCard({ stage, onEdit, onDelete, tenantId, t }: SortableSta
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 flex-1">
+      <Card className="hover:shadow-md transition-shadow duration-200 overflow-hidden">
+        {/* Color accent bar */}
+        <div
+          className="h-1 w-full"
+          style={{ backgroundColor: stage.color || "#94a3b8" }}
+        />
+
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3 flex-1 min-w-0">
+              {/* Drag handle */}
               <div
                 {...attributes}
                 {...listeners}
-                className="cursor-grab active:cursor-grabbing"
+                className="cursor-grab active:cursor-grabbing p-1.5 rounded hover:bg-muted transition-colors mt-0.5"
               >
-                <GripVertical className="h-5 w-5 text-muted-foreground" />
+                <GripVertical className="h-4 w-4 text-muted-foreground" />
               </div>
+
+              {/* Icon */}
               <div
-                className="h-10 w-10 rounded flex items-center justify-center flex-shrink-0"
+                className="h-12 w-12 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
                 style={{ backgroundColor: stage.color || "#94a3b8" }}
               >
                 <IconDisplay
                   iconName={stage.icon_name}
-                  className="h-5 w-5 text-white"
-                  fallback={<div className="h-2 w-2 rounded-full bg-white" />}
+                  className="h-6 w-6 text-white"
+                  fallback={<Factory className="h-6 w-6 text-white" />}
                 />
               </div>
-              <div className="flex-1">
-                <CardTitle>{stage.name}</CardTitle>
-                <div className="flex items-center gap-2 mt-1 flex-wrap">
-                  <Badge variant="outline">{t("stages.sequence")}: {stage.sequence}</Badge>
-                  <Badge variant={stage.active ? "default" : "secondary"}>
-                    {stage.active ? t("stages.active") : t("stages.inactive")}
-                  </Badge>
+
+              {/* Title and status */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <CardTitle className="text-lg truncate">{stage.name}</CardTitle>
+                  {!stage.active && (
+                    <Badge variant="secondary" className="text-xs">
+                      {t("stages.inactive")}
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <span className="font-medium">#{stage.sequence}</span>
+                  </span>
                   {stage.wip_limit !== null ? (
-                    <Badge variant="outline" className="gap-1">
-                      <AlertTriangle className="h-3 w-3" />
+                    <span className="flex items-center gap-1">
+                      <Settings2 className="h-3.5 w-3.5" />
                       {t("qrm.wipLimit", "WIP Limit")}: {stage.wip_limit}
-                      {stage.enforce_wip_limit && " (enforced)"}
-                    </Badge>
+                      {stage.enforce_wip_limit && (
+                        <span className="text-xs text-orange-600 font-medium">(enforced)</span>
+                      )}
+                    </span>
                   ) : (
-                    <Badge variant="outline" className="gap-1 text-gray-500">
-                      <Infinity className="h-3 w-3" />
+                    <span className="flex items-center gap-1 text-muted-foreground/70">
+                      <Infinity className="h-3.5 w-3.5" />
                       {t("qrm.noLimit", "No WIP Limit")}
-                    </Badge>
+                    </span>
                   )}
                 </div>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => onEdit(stage)}>
+
+            {/* Actions */}
+            <div className="flex gap-1.5 flex-shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onEdit(stage)}
+                className="h-8 w-8 p-0 hover:bg-primary/10"
+              >
                 <Edit className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="sm" onClick={() => onDelete(stage)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDelete(stage)}
+                className="h-8 w-8 p-0 hover:bg-destructive/10"
+              >
                 <Trash2 className="h-4 w-4 text-destructive" />
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {stage.description && (
-            <p className="text-sm text-muted-foreground">{stage.description}</p>
-          )}
-          {stage.wip_limit !== null && (
-            <StageWIPDisplay stageId={stage.id} tenantId={tenantId} />
-          )}
-        </CardContent>
+
+        {/* Content section */}
+        {(stage.description || stage.wip_limit !== null) && (
+          <CardContent className="pt-0 space-y-3">
+            {stage.description && (
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {stage.description}
+              </p>
+            )}
+            <StageWIPDisplay stageId={stage.id} tenantId={tenantId} wipLimit={stage.wip_limit} />
+          </CardContent>
+        )}
       </Card>
     </div>
   );
@@ -350,10 +385,24 @@ export default function ConfigStages() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">{t("stages.title")}</h1>
-            <p className="text-muted-foreground">{t("stages.manageStages")}</p>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-bold">{t("stages.title")}</h1>
+              {stages.length > 0 && (
+                <Badge variant="secondary" className="text-sm">
+                  {stages.length} {stages.length === 1 ? t("common.stage", "stage") : t("common.stages", "stages")}
+                </Badge>
+              )}
+            </div>
+            <p className="text-muted-foreground">
+              {t("stages.manageStages")}
+              {stages.length > 1 && (
+                <span className="text-xs ml-2">
+                  ({t("stages.dragToReorder", "Drag to reorder")})
+                </span>
+              )}
+            </p>
           </div>
 
           <Dialog open={dialogOpen} onOpenChange={(open) => {
@@ -372,161 +421,176 @@ export default function ConfigStages() {
                   {editingStage ? t("stages.editStage") : t("stages.createNewStage")}
                 </DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">{t("stages.stageName")} *</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">{t("stages.description")}</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                    rows={3}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="icon">{t("stages.icon", "Icon")}</Label>
-                  <IconPicker
-                    value={formData.icon_name}
-                    onValueChange={(icon) =>
-                      setFormData({ ...formData, icon_name: icon })
-                    }
-                    placeholder={t("stages.selectIcon", "Select an icon...")}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {t("stages.iconHelp", "Choose an icon to visually represent this cell")}
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="color">{t("stages.color")}</Label>
-                  <div className="flex gap-2">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Basic Information */}
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">{t("stages.stageName")} *</Label>
                     <Input
-                      id="color"
-                      type="color"
-                      value={formData.color}
+                      id="name"
+                      value={formData.name}
                       onChange={(e) =>
-                        setFormData({ ...formData, color: e.target.value })
+                        setFormData({ ...formData, name: e.target.value })
                       }
-                      className="w-20 h-10"
-                    />
-                    <Input
-                      type="text"
-                      value={formData.color}
-                      onChange={(e) =>
-                        setFormData({ ...formData, color: e.target.value })
-                      }
-                      placeholder="#000000"
+                      placeholder={t("stages.stageNamePlaceholder", "e.g., Cutting, Welding, Assembly")}
+                      required
                     />
                   </div>
-                </div>
 
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="active">{t("stages.active")}</Label>
-                  <Switch
-                    id="active"
-                    checked={formData.active}
-                    onCheckedChange={(checked) =>
-                      setFormData({ ...formData, active: checked })
-                    }
-                  />
+                  <div className="space-y-2">
+                    <Label htmlFor="description">{t("stages.description")}</Label>
+                    <Textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) =>
+                        setFormData({ ...formData, description: e.target.value })
+                      }
+                      placeholder={t("stages.descriptionPlaceholder", "Describe what happens at this stage...")}
+                      rows={2}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="icon">{t("stages.icon", "Icon")}</Label>
+                      <IconPicker
+                        value={formData.icon_name}
+                        onValueChange={(icon) =>
+                          setFormData({ ...formData, icon_name: icon })
+                        }
+                        placeholder={t("stages.selectIcon", "Select...")}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="color">{t("stages.color")}</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="color"
+                          type="color"
+                          value={formData.color}
+                          onChange={(e) =>
+                            setFormData({ ...formData, color: e.target.value })
+                          }
+                          className="w-12 h-9 p-1 cursor-pointer"
+                        />
+                        <Input
+                          type="text"
+                          value={formData.color}
+                          onChange={(e) =>
+                            setFormData({ ...formData, color: e.target.value })
+                          }
+                          placeholder="#3b82f6"
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div>
+                      <Label htmlFor="active" className="font-medium">{t("stages.active")}</Label>
+                      <p className="text-xs text-muted-foreground">
+                        {t("stages.activeHelp", "Inactive stages are hidden from operators")}
+                      </p>
+                    </div>
+                    <Switch
+                      id="active"
+                      checked={formData.active}
+                      onCheckedChange={(checked) =>
+                        setFormData({ ...formData, active: checked })
+                      }
+                    />
+                  </div>
                 </div>
 
                 {/* QRM Settings */}
-                <div className="space-y-4 pt-4 border-t">
-                  <h3 className="font-semibold text-sm">{t("qrm.settings", "QRM Settings")}</h3>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="wip_limit">{t("qrm.wipLimit", "WIP Limit")}</Label>
-                    <Input
-                      id="wip_limit"
-                      type="number"
-                      min="0"
-                      value={formData.wip_limit ?? ""}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          wip_limit: e.target.value ? parseInt(e.target.value) : null
-                        })
-                      }
-                      placeholder={t("qrm.unlimited", "Unlimited")}
-                    />
-                    <p className="text-xs text-gray-500">
-                      {t("qrm.wipLimitHelp", "Maximum work-in-progress items allowed (leave empty for unlimited)")}
-                    </p>
+                <div className="space-y-4 pt-2 border-t">
+                  <div className="flex items-center gap-2">
+                    <Settings2 className="h-4 w-4 text-muted-foreground" />
+                    <h3 className="font-semibold text-sm">{t("qrm.settings", "Capacity Settings")}</h3>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="wip_warning_threshold">
-                      {t("qrm.wipWarningThreshold", "Warning Threshold")}
-                    </Label>
-                    <Input
-                      id="wip_warning_threshold"
-                      type="number"
-                      min="0"
-                      value={formData.wip_warning_threshold ?? ""}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          wip_warning_threshold: e.target.value ? parseInt(e.target.value) : null
-                        })
-                      }
-                      placeholder={t("qrm.autoCalculate", "Auto (80% of limit)")}
-                      disabled={!formData.wip_limit}
-                    />
-                    <p className="text-xs text-gray-500">
-                      {t("qrm.wipWarningHelp", "Show warning when WIP reaches this count")}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label htmlFor="enforce_wip_limit">
-                        {t("qrm.enforceLimit", "Enforce WIP Limit")}
-                      </Label>
-                      <p className="text-xs text-gray-500">
-                        {t("qrm.enforceLimitHelp", "Prevent starting new work when at capacity")}
-                      </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="wip_limit">{t("qrm.wipLimit", "WIP Limit")}</Label>
+                      <Input
+                        id="wip_limit"
+                        type="number"
+                        min="0"
+                        value={formData.wip_limit ?? ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            wip_limit: e.target.value ? parseInt(e.target.value) : null
+                          })
+                        }
+                        placeholder={t("qrm.unlimited", "No limit")}
+                      />
                     </div>
-                    <Switch
-                      id="enforce_wip_limit"
-                      checked={formData.enforce_wip_limit}
-                      onCheckedChange={(checked) =>
-                        setFormData({ ...formData, enforce_wip_limit: checked })
-                      }
-                      disabled={!formData.wip_limit}
-                    />
+
+                    <div className="space-y-2">
+                      <Label htmlFor="wip_warning_threshold">
+                        {t("qrm.wipWarningThreshold", "Warning At")}
+                      </Label>
+                      <Input
+                        id="wip_warning_threshold"
+                        type="number"
+                        min="0"
+                        value={formData.wip_warning_threshold ?? ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            wip_warning_threshold: e.target.value ? parseInt(e.target.value) : null
+                          })
+                        }
+                        placeholder={formData.wip_limit ? `${Math.floor(formData.wip_limit * 0.8)}` : "—"}
+                        disabled={!formData.wip_limit}
+                      />
+                    </div>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label htmlFor="show_capacity_warning">
-                        {t("qrm.showWarnings", "Show Capacity Warnings")}
-                      </Label>
-                      <p className="text-xs text-gray-500">
-                        {t("qrm.showWarningsHelp", "Display visual warnings for capacity")}
-                      </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("qrm.wipLimitHelp", "Set capacity limits to prevent overloading this stage. Leave empty for unlimited.")}
+                  </p>
+
+                  <div className="space-y-3 p-3 bg-muted/50 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="enforce_wip_limit" className="text-sm">
+                          {t("qrm.enforceLimit", "Enforce Limit")}
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          {t("qrm.enforceLimitHelp", "Block new work at capacity")}
+                        </p>
+                      </div>
+                      <Switch
+                        id="enforce_wip_limit"
+                        checked={formData.enforce_wip_limit}
+                        onCheckedChange={(checked) =>
+                          setFormData({ ...formData, enforce_wip_limit: checked })
+                        }
+                        disabled={!formData.wip_limit}
+                      />
                     </div>
-                    <Switch
-                      id="show_capacity_warning"
-                      checked={formData.show_capacity_warning}
-                      onCheckedChange={(checked) =>
-                        setFormData({ ...formData, show_capacity_warning: checked })
-                      }
-                    />
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="show_capacity_warning" className="text-sm">
+                          {t("qrm.showWarnings", "Visual Warnings")}
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          {t("qrm.showWarningsHelp", "Show capacity indicators")}
+                        </p>
+                      </div>
+                      <Switch
+                        id="show_capacity_warning"
+                        checked={formData.show_capacity_warning}
+                        onCheckedChange={(checked) =>
+                          setFormData({ ...formData, show_capacity_warning: checked })
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -539,29 +603,55 @@ export default function ConfigStages() {
         </div>
 
         {/* Stages List */}
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={stages.map((s) => s.id)}
-            strategy={verticalListSortingStrategy}
+        {stages.length === 0 ? (
+          <Card className="border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                <Factory className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">
+                {t("stages.noStages", "No stages configured")}
+              </h3>
+              <p className="text-muted-foreground text-center max-w-md mb-6">
+                {t(
+                  "stages.noStagesDescription",
+                  "Stages represent different steps in your manufacturing process. Create your first stage to start organizing your workflow."
+                )}
+              </p>
+              <Button
+                onClick={() => setDialogOpen(true)}
+                className="gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                {t("stages.createFirstStage", "Create your first stage")}
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
           >
-            <div className="grid gap-4">
-              {stages.map((stage) => (
-                <SortableStageCard
-                  key={stage.id}
-                  stage={stage}
-                  onEdit={handleEdit}
-                  onDelete={handleDeleteClick}
-                  tenantId={profile?.tenant_id || ""}
-                  t={t}
-                />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
+            <SortableContext
+              items={stages.map((s) => s.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="grid gap-4">
+                {stages.map((stage) => (
+                  <SortableStageCard
+                    key={stage.id}
+                    stage={stage}
+                    onEdit={handleEdit}
+                    onDelete={handleDeleteClick}
+                    tenantId={profile?.tenant_id || ""}
+                    t={t}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        )}
 
         {/* Delete Confirmation Dialog */}
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -586,29 +676,63 @@ export default function ConfigStages() {
 }
 
 // Component to display WIP metrics for a stage
-function StageWIPDisplay({ stageId, tenantId }: { stageId: string; tenantId: string }) {
+function StageWIPDisplay({
+  stageId,
+  tenantId,
+  wipLimit
+}: {
+  stageId: string;
+  tenantId: string;
+  wipLimit: number | null;
+}) {
   const { metrics, loading } = useCellQRMMetrics(stageId, tenantId);
   const { t } = useTranslation();
 
-  if (loading || !metrics) {
+  // Show visual bar for stages with WIP limits
+  if (wipLimit !== null) {
+    if (loading) {
+      return (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>WIP</span>
+            <span>/ {wipLimit}</span>
+          </div>
+          <div className="h-2 bg-muted rounded-full animate-pulse" />
+        </div>
+      );
+    }
+
+    if (!metrics) {
+      return (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>WIP: 0</span>
+            <span>Limit: {wipLimit}</span>
+          </div>
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-2 bg-green-600 w-0" />
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div className="text-sm text-gray-500">
-        {t("qrm.loadingMetrics", "Loading WIP metrics...")}
+      <div className="space-y-2">
+        <WIPBar
+          current={metrics.current_wip}
+          limit={wipLimit}
+          warningThreshold={metrics.wip_warning_threshold}
+          height="sm"
+        />
+        {metrics.jobs_in_cell && metrics.jobs_in_cell.length > 0 && (
+          <div className="text-xs text-muted-foreground">
+            {t("qrm.jobsInCell", "Jobs")}: {metrics.jobs_in_cell.map((j) => j.job_number).join(", ")}
+          </div>
+        )}
       </div>
     );
   }
 
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">{t("qrm.currentWIP", "Current WIP")}</span>
-        <WIPIndicator metrics={metrics} compact />
-      </div>
-      {metrics.jobs_in_cell && metrics.jobs_in_cell.length > 0 && (
-        <div className="text-xs text-gray-600">
-          {t("qrm.jobsInCell", "Jobs")}: {metrics.jobs_in_cell.map((j) => j.job_number).join(", ")}
-        </div>
-      )}
-    </div>
-  );
+  // No WIP limit set - don't display anything
+  return null;
 }
