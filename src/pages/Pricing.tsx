@@ -1,4 +1,3 @@
-import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -67,8 +66,7 @@ Thank you!`;
   const isCurrentPlan = (tierId: string) => tierId === currentPlan;
 
   return (
-    <Layout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Header */}
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold tracking-tight">{t("pricing.title")}</h1>
@@ -237,6 +235,5 @@ Thank you!`;
           </CardContent>
         </Card>
       </div>
-    </Layout>
   );
 }

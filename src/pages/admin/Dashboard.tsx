@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -239,8 +238,7 @@ export default function Dashboard() {
   };
 
   return (
-    <Layout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold mb-2">{t("dashboard.title")}</h1>
           <p className="text-muted-foreground">{t("dashboard.description")}</p>
@@ -389,6 +387,5 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
-    </Layout>
   );
 }
