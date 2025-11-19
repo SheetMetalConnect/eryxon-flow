@@ -1,16 +1,12 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
   Box,
-  Container,
   Paper,
   Typography,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
-  Grid,
-  Card,
-  CardContent,
   Button,
   Chip,
   Stack,
@@ -20,19 +16,30 @@ import {
   Alert,
   CircularProgress,
   SelectChangeEvent,
+  Tabs,
+  Tab,
+  Tooltip,
+  LinearProgress,
 } from "@mui/material";
 import {
   PlayArrow,
   Stop,
   CheckCircle,
-  Warning,
   CalendarToday,
   Timer,
   Build,
   Description,
   ViewInAr,
+  ZoomIn,
+  ZoomOut,
+  Fullscreen,
+  FitScreen,
   Flag,
   ReportProblem,
+  CheckCircleOutline,
+  RadioButtonUnchecked,
+  ArrowForward,
+  Close,
 } from "@mui/icons-material";
 import { useAuth } from "../../contexts/AuthContext";
 import { supabase } from "../../integrations/supabase/client";
@@ -41,7 +48,7 @@ import {
   stopTimeTracking,
   completeOperation,
 } from "../../lib/database";
-import { formatDistanceToNow, format } from "date-fns";
+import { format } from "date-fns";
 import { PDFViewer } from "../../components/PDFViewer";
 import { STEPViewer } from "../../components/STEPViewer";
 import SubstepsManager from "../../components/operator/SubstepsManager";
@@ -107,10 +114,8 @@ export default function OperatorView() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [stepUrl, setStepUrl] = useState<string | null>(null);
-  const [viewerDialog, setViewerDialog] = useState<{
-    type: "pdf" | "step";
-    url: string;
-  } | null>(null);
+  const [viewerTab, setViewerTab] = useState<number>(0);
+  const [fullscreenViewer, setFullscreenViewer] = useState<boolean>(false);
 
   // Load jobs
   useEffect(() => {
@@ -139,6 +144,8 @@ export default function OperatorView() {
         setElapsedSeconds(diffInSeconds);
       }, 1000);
       return () => clearInterval(interval);
+    } else {
+      setElapsedSeconds(0);
     }
   }, [activeTimeEntry]);
 
@@ -151,6 +158,13 @@ export default function OperatorView() {
       setStepUrl(null);
     }
   }, [selectedOperation]);
+
+  // Auto-select viewer tab based on available files
+  useEffect(() => {
+    if (pdfUrl && !stepUrl) setViewerTab(0);
+    else if (stepUrl && !pdfUrl) setViewerTab(1);
+    else if (pdfUrl) setViewerTab(0);
+  }, [pdfUrl, stepUrl]);
 
   // Subscribe to time entry changes
   useEffect(() => {
@@ -246,15 +260,17 @@ export default function OperatorView() {
 
       setOperations(operationsWithTimeEntries || []);
 
-      // Auto-select first operation if none selected
+      // Auto-select first non-completed operation if none selected
       if (
         !selectedOperation &&
         operationsWithTimeEntries &&
         operationsWithTimeEntries.length > 0
       ) {
-        const firstOp = operationsWithTimeEntries[0];
-        setSelectedOperation(firstOp);
-        setActiveTimeEntry(firstOp.active_time_entry || null);
+        const firstIncomplete = operationsWithTimeEntries.find(
+          (op) => op.status !== "completed"
+        ) || operationsWithTimeEntries[0];
+        setSelectedOperation(firstIncomplete);
+        setActiveTimeEntry(firstIncomplete.active_time_entry || null);
       } else if (selectedOperation) {
         // Update selected operation
         const updated = operationsWithTimeEntries?.find(
@@ -378,6 +394,11 @@ export default function OperatorView() {
     : null;
   const isOverdue = dueDate && dueDate < new Date();
 
+  // Calculate progress
+  const completedOps = operations.filter((op) => op.status === "completed").length;
+  const totalOps = operations.length;
+  const progressPercent = totalOps > 0 ? (completedOps / totalOps) * 100 : 0;
+
   if (loading) {
     return (
       <Box
@@ -392,453 +413,489 @@ export default function OperatorView() {
   }
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "background.default", pb: 4 }}>
-      <Container maxWidth={false} sx={{ pt: 3 }}>
-        {/* Header: Job Selection */}
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Grid container spacing={3} alignItems="center">
-            <Grid size={{ xs: 12, md: 6 }}>
-              <FormControl fullWidth>
-                <InputLabel>{t("Select Job")}</InputLabel>
-                <Select
-                  value={selectedJobId}
-                  onChange={(e: SelectChangeEvent) =>
-                    setSelectedJobId(e.target.value)
-                  }
-                  label={t("Select Job")}
-                >
-                  {jobs.map((job) => (
-                    <MenuItem key={job.id} value={job.id}>
-                      {job.job_number} - {job.customer || "No Customer"} (
-                      {format(
-                        new Date(job.due_date_override || job.due_date),
-                        "MMM dd, yyyy",
-                      )}
-                      )
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            {selectedJob && (
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <Chip
-                    icon={<CalendarToday />}
-                    label={format(dueDate!, "MMM dd, yyyy")}
-                    color={isOverdue ? "error" : "default"}
-                  />
-                  <Chip
-                    label={selectedJob.status}
-                    color={getStatusColor(selectedJob.status) as any}
-                  />
-                  {selectedJob.customer && (
-                    <Typography variant="body2" color="text.secondary">
-                      Customer: {selectedJob.customer}
-                    </Typography>
-                  )}
-                </Stack>
-              </Grid>
-            )}
-          </Grid>
-        </Paper>
-
-        {/* Operation Selection */}
-        {selectedJobId && operations.length > 0 && (
-          <Paper sx={{ p: 2, mb: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              {t("Operations")}
-            </Typography>
-            <Grid container spacing={2}>
-              {operations.map((op) => (
-                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={op.id}>
-                  <Card
-                    variant={
-                      selectedOperation?.id === op.id ? "outlined" : "elevation"
-                    }
-                    sx={{
-                      cursor: "pointer",
-                      borderColor:
-                        selectedOperation?.id === op.id
-                          ? "primary.main"
-                          : undefined,
-                      borderWidth: selectedOperation?.id === op.id ? 2 : 1,
-                      "&:hover": {
-                        boxShadow: 3,
-                      },
-                    }}
-                    onClick={() => {
-                      setSelectedOperation(op);
-                      setActiveTimeEntry(op.active_time_entry || null);
-                    }}
-                  >
-                    <CardContent>
-                      <Stack spacing={1}>
-                        <Typography variant="subtitle2" fontWeight="bold">
-                          {op.operation_name}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {op.part.part_number}
-                        </Typography>
-                        <Chip
-                          label={op.status}
-                          size="small"
-                          color={getStatusColor(op.status) as any}
-                        />
-                        {op.active_time_entry && (
-                          <Chip
-                            icon={<Timer />}
-                            label="Timing"
-                            size="small"
-                            color="primary"
-                            variant="outlined"
-                          />
-                        )}
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                </Grid>
+    <Box
+      sx={{
+        height: "calc(100vh - 64px)",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        bgcolor: "background.default",
+      }}
+    >
+      {/* HEADER BAR - Job Selection, Timer, Actions */}
+      <Paper
+        elevation={3}
+        sx={{
+          px: 2,
+          py: 1.5,
+          borderRadius: 0,
+          flexShrink: 0,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+          {/* Job Selector */}
+          <FormControl size="small" sx={{ minWidth: 280 }}>
+            <InputLabel>{t("Job")}</InputLabel>
+            <Select
+              value={selectedJobId}
+              onChange={(e: SelectChangeEvent) => setSelectedJobId(e.target.value)}
+              label={t("Job")}
+            >
+              {jobs.map((job) => (
+                <MenuItem key={job.id} value={job.id}>
+                  <strong>{job.job_number}</strong>&nbsp;- {job.customer || "N/A"}
+                </MenuItem>
               ))}
-            </Grid>
-          </Paper>
-        )}
+            </Select>
+          </FormControl>
 
-        {selectedOperation && (
-          <>
-            {/* Full Screen Time Tracker */}
-            <Paper
+          {/* Job Info Chips */}
+          {selectedJob && (
+            <>
+              <Chip
+                icon={<CalendarToday />}
+                label={format(dueDate!, "MMM dd")}
+                color={isOverdue ? "error" : "default"}
+                size="small"
+              />
+              <Chip
+                label={`${completedOps}/${totalOps} ops`}
+                size="small"
+                color="primary"
+                variant="outlined"
+              />
+            </>
+          )}
+
+          {/* Spacer */}
+          <Box sx={{ flexGrow: 1 }} />
+
+          {/* Timer Display */}
+          {selectedOperation && (
+            <Box
               sx={{
-                p: 4,
-                mb: 3,
-                background: activeTimeEntry
-                  ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                  : "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-                color: "white",
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                bgcolor: activeTimeEntry ? "primary.main" : "grey.200",
+                color: activeTimeEntry ? "white" : "text.primary",
+                px: 2,
+                py: 0.5,
+                borderRadius: 2,
               }}
             >
-              <Grid container spacing={4} alignItems="center">
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <Stack spacing={2}>
-                    <Typography variant="h4" fontWeight="bold">
-                      {selectedOperation.operation_name}
-                    </Typography>
-                    <Typography variant="h6">
-                      {selectedOperation.part.part_number} -{" "}
-                      {selectedOperation.cell.name}
-                    </Typography>
-                    <Stack direction="row" spacing={2}>
-                      <Chip
-                        icon={<Timer />}
-                        label={`Est: ${selectedOperation.estimated_time} min`}
-                        sx={{
-                          bgcolor: "rgba(255,255,255,0.2)",
-                          color: "white",
-                        }}
-                      />
-                      <Chip
-                        icon={<Timer />}
-                        label={`Actual: ${selectedOperation.actual_time || 0} min`}
-                        sx={{
-                          bgcolor: "rgba(255,255,255,0.2)",
-                          color: "white",
-                        }}
-                      />
-                    </Stack>
-                  </Stack>
-                </Grid>
+              <Timer />
+              <Typography
+                variant="h5"
+                sx={{
+                  fontFamily: "monospace",
+                  fontWeight: "bold",
+                  minWidth: 100,
+                }}
+              >
+                {formatElapsedTime(elapsedSeconds)}
+              </Typography>
+            </Box>
+          )}
 
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <Stack spacing={3} alignItems="center">
-                    {activeTimeEntry ? (
-                      <>
-                        <Typography
-                          variant="h2"
-                          fontWeight="bold"
-                          sx={{ fontFamily: "monospace" }}
-                        >
-                          {formatElapsedTime(elapsedSeconds)}
-                        </Typography>
-                        <Stack direction="row" spacing={2}>
-                          <Button
-                            variant="contained"
-                            size="large"
-                            startIcon={<Stop />}
-                            onClick={handleStopTracking}
-                            sx={{
-                              bgcolor: "error.main",
-                              "&:hover": { bgcolor: "error.dark" },
-                              minWidth: 150,
-                            }}
-                          >
-                            {t("Stop")}
-                          </Button>
-                          {selectedOperation.status !== "completed" && (
-                            <Button
-                              variant="outlined"
-                              size="large"
-                              startIcon={<CheckCircle />}
-                              onClick={handleCompleteOperation}
-                              disabled={!!activeTimeEntry}
-                              sx={{
-                                color: "white",
-                                borderColor: "white",
-                                "&:hover": {
-                                  borderColor: "white",
-                                  bgcolor: "rgba(255,255,255,0.1)",
-                                },
-                              }}
-                            >
-                              {t("Complete")}
-                            </Button>
-                          )}
-                        </Stack>
-                      </>
-                    ) : (
-                      <>
-                        <Typography variant="h3" fontWeight="bold">
-                          {t("Ready to Start")}
-                        </Typography>
-                        <Button
-                          variant="contained"
-                          size="large"
-                          startIcon={<PlayArrow />}
-                          onClick={handleStartTracking}
-                          disabled={selectedOperation.status === "completed"}
-                          sx={{
-                            bgcolor: "success.main",
-                            "&:hover": { bgcolor: "success.dark" },
-                            minWidth: 200,
-                            py: 2,
-                            fontSize: "1.2rem",
-                          }}
-                        >
-                          {t("Start Tracking")}
-                        </Button>
-                      </>
-                    )}
-                  </Stack>
-                </Grid>
-              </Grid>
-            </Paper>
+          {/* Action Buttons */}
+          {selectedOperation && (
+            <Stack direction="row" spacing={1}>
+              {activeTimeEntry ? (
+                <Button
+                  variant="contained"
+                  color="error"
+                  startIcon={<Stop />}
+                  onClick={handleStopTracking}
+                  size="medium"
+                >
+                  {t("Stop")}
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  color="success"
+                  startIcon={<PlayArrow />}
+                  onClick={handleStartTracking}
+                  disabled={selectedOperation.status === "completed"}
+                  size="medium"
+                >
+                  {t("Start")}
+                </Button>
+              )}
+              <Button
+                variant="outlined"
+                color="primary"
+                startIcon={<CheckCircle />}
+                onClick={handleCompleteOperation}
+                disabled={!!activeTimeEntry || selectedOperation.status === "completed"}
+                size="medium"
+              >
+                {t("Complete")}
+              </Button>
+            </Stack>
+          )}
+        </Box>
 
-            {/* Main Content Grid */}
-            <Grid container spacing={3}>
-              {/* Left Column: File Viewers */}
-              <Grid size={{ xs: 12, lg: 8 }}>
-                <Stack spacing={3}>
-                  {/* PDF Viewer */}
-                  {pdfUrl && (
-                    <Paper sx={{ p: 2 }}>
-                      <Stack
-                        direction="row"
-                        justifyContent="space-between"
-                        alignItems="center"
-                        mb={2}
-                      >
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <Description color="error" />
-                          <Typography variant="h6">
-                            {t("PDF Drawing")}
-                          </Typography>
-                        </Stack>
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          onClick={() =>
-                            setViewerDialog({ type: "pdf", url: pdfUrl })
-                          }
-                        >
-                          {t("Fullscreen")}
-                        </Button>
-                      </Stack>
-                      <Box
-                        sx={{
-                          height: 400,
-                          bgcolor: "grey.100",
-                          borderRadius: 1,
-                        }}
-                      >
-                        <PDFViewer url={pdfUrl} title="Drawing" />
-                      </Box>
-                    </Paper>
-                  )}
-
-                  {/* STEP Viewer */}
-                  {stepUrl && (
-                    <Paper sx={{ p: 2 }}>
-                      <Stack
-                        direction="row"
-                        justifyContent="space-between"
-                        alignItems="center"
-                        mb={2}
-                      >
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <ViewInAr color="primary" />
-                          <Typography variant="h6">{t("3D Model")}</Typography>
-                        </Stack>
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          onClick={() =>
-                            setViewerDialog({ type: "step", url: stepUrl })
-                          }
-                        >
-                          {t("Fullscreen")}
-                        </Button>
-                      </Stack>
-                      <Box
-                        sx={{
-                          height: 500,
-                          bgcolor: "grey.100",
-                          borderRadius: 1,
-                        }}
-                      >
-                        <STEPViewer url={stepUrl} title="3D Model" />
-                      </Box>
-                    </Paper>
-                  )}
-
-                  {!pdfUrl && !stepUrl && (
-                    <Paper sx={{ p: 4, textAlign: "center" }}>
-                      <Typography variant="body1" color="text.secondary">
-                        {t("No files available for this part")}
-                      </Typography>
-                    </Paper>
-                  )}
-                </Stack>
-              </Grid>
-
-              {/* Right Column: Info & Substeps */}
-              <Grid size={{ xs: 12, lg: 4 }}>
-                <Stack spacing={3}>
-                  {/* Job & Part Info */}
-                  <Paper sx={{ p: 3 }}>
-                    <Typography variant="h6" gutterBottom>
-                      {t("Details")}
-                    </Typography>
-                    <Divider sx={{ my: 2 }} />
-                    <Stack spacing={2}>
-                      <Box>
-                        <Typography variant="caption" color="text.secondary">
-                          {t("Job Number")}
-                        </Typography>
-                        <Typography variant="body1" fontWeight="bold">
-                          {selectedJob?.job_number}
-                        </Typography>
-                      </Box>
-
-                      <Box>
-                        <Typography variant="caption" color="text.secondary">
-                          {t("Part Number")}
-                        </Typography>
-                        <Typography variant="body1" fontWeight="bold">
-                          {selectedOperation.part.part_number}
-                        </Typography>
-                      </Box>
-
-                      <Box>
-                        <Typography variant="caption" color="text.secondary">
-                          {t("Material")}
-                        </Typography>
-                        <Typography variant="body1">
-                          {selectedOperation.part.material}
-                        </Typography>
-                      </Box>
-
-                      <Box>
-                        <Typography variant="caption" color="text.secondary">
-                          {t("Quantity")}
-                        </Typography>
-                        <Typography variant="body1">
-                          {selectedOperation.part.quantity}
-                        </Typography>
-                      </Box>
-
-                      <Box>
-                        <Typography variant="caption" color="text.secondary">
-                          {t("Cell")}
-                        </Typography>
-                        <Chip
-                          label={selectedOperation.cell.name}
-                          size="small"
-                          sx={{
-                            bgcolor: selectedOperation.cell.color,
-                            color: "white",
-                          }}
-                        />
-                      </Box>
-
-                      <Divider />
-
-                      <Box>
-                        <Typography variant="caption" color="text.secondary">
-                          {t("Due Date")}
-                        </Typography>
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <CalendarToday
-                            fontSize="small"
-                            color={isOverdue ? "error" : "action"}
-                          />
-                          <Typography
-                            variant="body1"
-                            color={isOverdue ? "error" : "text.primary"}
-                            fontWeight={isOverdue ? "bold" : "normal"}
-                          >
-                            {dueDate ? format(dueDate, "MMM dd, yyyy") : "N/A"}
-                          </Typography>
-                        </Stack>
-                        {isOverdue && (
-                          <Alert severity="error" sx={{ mt: 1 }}>
-                            {t("This job is overdue!")}
-                          </Alert>
-                        )}
-                      </Box>
-
-                      {selectedOperation.notes && (
-                        <Box>
-                          <Typography variant="caption" color="text.secondary">
-                            {t("Notes")}
-                          </Typography>
-                          <Typography variant="body2">
-                            {selectedOperation.notes}
-                          </Typography>
-                        </Box>
-                      )}
-                    </Stack>
-                  </Paper>
-
-                  {/* Substeps */}
-                  <Paper sx={{ p: 3 }}>
-                    <Typography variant="h6" gutterBottom>
-                      {t("Steps")}
-                    </Typography>
-                    <Divider sx={{ my: 2 }} />
-                    <SubstepsManager
-                      operationId={selectedOperation.id}
-                      operationName={selectedOperation.operation_name}
-                    />
-                  </Paper>
-                </Stack>
-              </Grid>
-            </Grid>
-          </>
+        {/* Progress Bar */}
+        {selectedJobId && totalOps > 0 && (
+          <LinearProgress
+            variant="determinate"
+            value={progressPercent}
+            sx={{ mt: 1, height: 4, borderRadius: 2 }}
+          />
         )}
+      </Paper>
 
-        {!selectedJobId && (
+      {/* MAIN CONTENT AREA */}
+      {!selectedJobId ? (
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}
+        >
           <Paper sx={{ p: 6, textAlign: "center" }}>
             <Build sx={{ fontSize: 80, color: "text.secondary", mb: 2 }} />
             <Typography variant="h5" color="text.secondary">
               {t("Select a job to get started")}
             </Typography>
           </Paper>
-        )}
-      </Container>
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            overflow: "hidden",
+            p: 1.5,
+            gap: 1.5,
+          }}
+        >
+          {/* LEFT PANE - File Viewers */}
+          <Paper
+            sx={{
+              flex: "0 0 60%",
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+            }}
+          >
+            {/* Viewer Tabs */}
+            {(pdfUrl || stepUrl) && (
+              <>
+                <Box sx={{ borderBottom: 1, borderColor: "divider", px: 1 }}>
+                  <Stack direction="row" alignItems="center" justifyContent="space-between">
+                    <Tabs
+                      value={viewerTab}
+                      onChange={(_, v) => setViewerTab(v)}
+                      sx={{ minHeight: 40 }}
+                    >
+                      {pdfUrl && (
+                        <Tab
+                          icon={<Description fontSize="small" />}
+                          iconPosition="start"
+                          label={t("PDF Drawing")}
+                          sx={{ minHeight: 40, py: 0 }}
+                        />
+                      )}
+                      {stepUrl && (
+                        <Tab
+                          icon={<ViewInAr fontSize="small" />}
+                          iconPosition="start"
+                          label={t("3D Model")}
+                          sx={{ minHeight: 40, py: 0 }}
+                        />
+                      )}
+                    </Tabs>
+                    <Tooltip title={t("Fullscreen")}>
+                      <IconButton
+                        size="small"
+                        onClick={() => setFullscreenViewer(true)}
+                      >
+                        <Fullscreen />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                </Box>
+
+                {/* Viewer Content */}
+                <Box sx={{ flex: 1, overflow: "hidden", p: 1 }}>
+                  {viewerTab === 0 && pdfUrl && (
+                    <PDFViewer url={pdfUrl} title="Drawing" />
+                  )}
+                  {((viewerTab === 1 && stepUrl) || (viewerTab === 0 && !pdfUrl && stepUrl)) && (
+                    <STEPViewer url={stepUrl} title="3D Model" />
+                  )}
+                </Box>
+              </>
+            )}
+
+            {!pdfUrl && !stepUrl && (
+              <Box
+                sx={{
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "text.secondary",
+                }}
+              >
+                <Stack alignItems="center" spacing={1}>
+                  <ViewInAr sx={{ fontSize: 60, opacity: 0.3 }} />
+                  <Typography variant="body1">
+                    {t("No files available for this part")}
+                  </Typography>
+                </Stack>
+              </Box>
+            )}
+          </Paper>
+
+          {/* RIGHT PANE - Info & Operations */}
+          <Box
+            sx={{
+              flex: "0 0 40%",
+              display: "flex",
+              flexDirection: "column",
+              gap: 1.5,
+              overflow: "hidden",
+            }}
+          >
+            {/* Job & Part Info */}
+            {selectedOperation && (
+              <Paper sx={{ p: 2, flexShrink: 0 }}>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  {t("Current Operation")}
+                </Typography>
+                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                  {selectedOperation.operation_name}
+                </Typography>
+
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 1.5,
+                    mt: 1,
+                  }}
+                >
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      {t("Job")}
+                    </Typography>
+                    <Typography variant="body2" fontWeight="medium">
+                      {selectedJob?.job_number}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      {t("Part")}
+                    </Typography>
+                    <Typography variant="body2" fontWeight="medium">
+                      {selectedOperation.part.part_number}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      {t("Material")}
+                    </Typography>
+                    <Typography variant="body2">
+                      {selectedOperation.part.material}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      {t("Quantity")}
+                    </Typography>
+                    <Typography variant="body2" fontWeight="bold">
+                      {selectedOperation.part.quantity}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      {t("Cell")}
+                    </Typography>
+                    <Chip
+                      label={selectedOperation.cell.name}
+                      size="small"
+                      sx={{
+                        bgcolor: selectedOperation.cell.color,
+                        color: "white",
+                        mt: 0.5,
+                      }}
+                    />
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      {t("Time")}
+                    </Typography>
+                    <Typography variant="body2">
+                      {selectedOperation.actual_time || 0}m / {selectedOperation.estimated_time}m
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {selectedOperation.notes && (
+                  <Alert severity="info" sx={{ mt: 1.5, py: 0.5 }}>
+                    <Typography variant="caption">
+                      {selectedOperation.notes}
+                    </Typography>
+                  </Alert>
+                )}
+
+                {isOverdue && (
+                  <Alert severity="error" sx={{ mt: 1, py: 0.5 }}>
+                    <Typography variant="caption">
+                      {t("Job overdue!")} Due: {format(dueDate!, "MMM dd")}
+                    </Typography>
+                  </Alert>
+                )}
+              </Paper>
+            )}
+
+            {/* All Operations List */}
+            <Paper
+              sx={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
+              }}
+            >
+              <Box sx={{ p: 1.5, borderBottom: 1, borderColor: "divider" }}>
+                <Typography variant="subtitle2" fontWeight="bold">
+                  {t("All Operations")} ({operations.length})
+                </Typography>
+              </Box>
+
+              <Box sx={{ flex: 1, overflow: "auto", p: 1 }}>
+                {operations.map((op, index) => {
+                  const isSelected = selectedOperation?.id === op.id;
+                  const isCompleted = op.status === "completed";
+                  const isInProgress = op.status === "in_progress";
+
+                  return (
+                    <Box
+                      key={op.id}
+                      onClick={() => {
+                        setSelectedOperation(op);
+                        setActiveTimeEntry(op.active_time_entry || null);
+                      }}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        p: 1,
+                        mb: 0.5,
+                        borderRadius: 1,
+                        cursor: "pointer",
+                        bgcolor: isSelected
+                          ? "rgba(58, 70, 86, 0.12)"
+                          : isCompleted
+                            ? "rgba(20, 136, 83, 0.08)"
+                            : "transparent",
+                        border: isSelected ? 2 : 1,
+                        borderColor: isSelected
+                          ? "primary.main"
+                          : "transparent",
+                        "&:hover": {
+                          bgcolor: isSelected
+                            ? "rgba(58, 70, 86, 0.12)"
+                            : "action.hover",
+                        },
+                      }}
+                    >
+                      {/* Status Icon */}
+                      {isCompleted ? (
+                        <CheckCircleOutline
+                          fontSize="small"
+                          color="success"
+                        />
+                      ) : isInProgress ? (
+                        <ArrowForward
+                          fontSize="small"
+                          color="primary"
+                        />
+                      ) : (
+                        <RadioButtonUnchecked
+                          fontSize="small"
+                          color="disabled"
+                        />
+                      )}
+
+                      {/* Operation Info */}
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography
+                          variant="body2"
+                          fontWeight={isSelected ? "bold" : "medium"}
+                          noWrap
+                          sx={{
+                            textDecoration: isCompleted ? "line-through" : "none",
+                            color: isCompleted ? "text.secondary" : "text.primary",
+                          }}
+                        >
+                          {index + 1}. {op.operation_name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" noWrap>
+                          {op.part.part_number}
+                        </Typography>
+                      </Box>
+
+                      {/* Time */}
+                      <Box sx={{ textAlign: "right" }}>
+                        <Typography variant="caption" color="text.secondary">
+                          {op.actual_time || 0}/{op.estimated_time}m
+                        </Typography>
+                        {op.active_time_entry && (
+                          <Chip
+                            icon={<Timer />}
+                            label=""
+                            size="small"
+                            color="primary"
+                            sx={{ ml: 0.5, height: 20, "& .MuiChip-icon": { mr: -0.5 } }}
+                          />
+                        )}
+                      </Box>
+                    </Box>
+                  );
+                })}
+              </Box>
+            </Paper>
+
+            {/* Substeps - Compact */}
+            {selectedOperation && (
+              <Paper
+                sx={{
+                  flexShrink: 0,
+                  maxHeight: "30%",
+                  display: "flex",
+                  flexDirection: "column",
+                  overflow: "hidden",
+                }}
+              >
+                <Box sx={{ p: 1.5, borderBottom: 1, borderColor: "divider" }}>
+                  <Typography variant="subtitle2" fontWeight="bold">
+                    {t("Substeps")}
+                  </Typography>
+                </Box>
+                <Box sx={{ flex: 1, overflow: "auto", p: 1 }}>
+                  <SubstepsManager
+                    operationId={selectedOperation.id}
+                    operationName={selectedOperation.operation_name}
+                  />
+                </Box>
+              </Paper>
+            )}
+          </Box>
+        </Box>
+      )}
 
       {/* Fullscreen Viewer Dialog */}
       <Dialog
-        open={!!viewerDialog}
-        onClose={() => setViewerDialog(null)}
+        open={fullscreenViewer}
+        onClose={() => setFullscreenViewer(false)}
         maxWidth={false}
         fullWidth
         PaperProps={{
@@ -849,13 +906,48 @@ export default function OperatorView() {
           },
         }}
       >
-        <Box sx={{ height: "100%", p: 2 }}>
-          {viewerDialog?.type === "pdf" && (
-            <PDFViewer url={viewerDialog.url} title="Drawing" />
-          )}
-          {viewerDialog?.type === "step" && (
-            <STEPViewer url={viewerDialog.url} title="3D Model" />
-          )}
+        <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+          {/* Dialog Header */}
+          <Box
+            sx={{
+              p: 1,
+              borderBottom: 1,
+              borderColor: "divider",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Tabs value={viewerTab} onChange={(_, v) => setViewerTab(v)}>
+              {pdfUrl && (
+                <Tab
+                  icon={<Description fontSize="small" />}
+                  iconPosition="start"
+                  label={t("PDF Drawing")}
+                />
+              )}
+              {stepUrl && (
+                <Tab
+                  icon={<ViewInAr fontSize="small" />}
+                  iconPosition="start"
+                  label={t("3D Model")}
+                />
+              )}
+            </Tabs>
+            <IconButton onClick={() => setFullscreenViewer(false)}>
+              <Close />
+            </IconButton>
+          </Box>
+
+          {/* Dialog Content */}
+          <Box sx={{ flex: 1, overflow: "hidden", p: 1 }}>
+            {viewerTab === 0 && pdfUrl && (
+              <PDFViewer url={pdfUrl} title="Drawing" />
+            )}
+            {((viewerTab === 1 && stepUrl) || (viewerTab === 0 && !pdfUrl && stepUrl)) && (
+              <STEPViewer url={stepUrl} title="3D Model" />
+            )}
+          </Box>
         </Box>
       </Dialog>
     </Box>
