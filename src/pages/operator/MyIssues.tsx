@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import Layout from "@/components/Layout";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -105,17 +104,14 @@ export default function MyIssues() {
 
   if (loading) {
     return (
-      <Layout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
     );
   }
 
   return (
-    <Layout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">{t("myIssues.title")}</h1>
           <p className="text-muted-foreground">{t("myIssues.description")}</p>
@@ -159,10 +155,9 @@ export default function MyIssues() {
                   </div>
                 </div>
               </Card>
-            ))}
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Issue Detail Modal */}
       <Dialog open={!!selectedIssue} onOpenChange={() => setSelectedIssue(null)}>
@@ -231,9 +226,9 @@ export default function MyIssues() {
                 </div>
               )}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </Layout>
+        )}
+      </DialogContent>
+    </Dialog>
+    </div>
   );
 }

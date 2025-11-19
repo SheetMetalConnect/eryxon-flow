@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import PartDetailModal from "@/components/admin/PartDetailModal";
-import Layout from "@/components/Layout";
 import { Package, ChevronRight, Box, FileText } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { STEPViewer } from "@/components/STEPViewer";
@@ -252,7 +251,7 @@ export default function Parts() {
   };
 
   return (
-    <Layout>
+    <>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">{t("parts.title")}</h1>
       </div>
@@ -486,6 +485,6 @@ export default function Parts() {
           </div>
         </DialogContent>
       </Dialog>
-    </Layout>
+    </>
   );
 }

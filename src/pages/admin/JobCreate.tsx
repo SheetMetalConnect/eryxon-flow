@@ -27,7 +27,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
-import Layout from "@/components/Layout";
 import { useTranslation } from "react-i18next";
 
 type Part = {
@@ -298,8 +297,7 @@ export default function JobCreate() {
   };
 
   return (
-    <Layout>
-      <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto">
         <div className="mb-6">
           <Button variant="outline" onClick={() => navigate("/admin/jobs")}>
             <ArrowLeft className="mr-2 h-4 w-4" /> {t("jobs.backToJobs")}
@@ -744,7 +742,6 @@ export default function JobCreate() {
           </Button>
         )}
       </div>
-      </div>
-    </Layout>
+    </div>
   );
 }
