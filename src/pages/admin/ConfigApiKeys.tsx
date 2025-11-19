@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -216,8 +215,7 @@ export default function ConfigApiKeys() {
   ], [t]);
 
   return (
-    <Layout>
-      <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">{t('apiKeys.title')}</h1>
@@ -399,6 +397,5 @@ export default function ConfigApiKeys() {
           </CardContent>
         </Card>
       </div>
-    </Layout>
   );
 }

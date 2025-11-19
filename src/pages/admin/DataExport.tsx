@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -159,8 +158,7 @@ export default function DataExport() {
   };
 
   return (
-    <Layout>
-      <div className="container mx-auto py-8 px-4 max-w-5xl">
+    <div className="container mx-auto py-8 px-4 max-w-5xl">
         <div className="flex items-center gap-3 mb-6">
           <Archive className="h-8 w-8 text-primary" />
           <div>
@@ -303,6 +301,5 @@ export default function DataExport() {
           </Card>
         </div>
       </div>
-    </Layout>
   );
 }

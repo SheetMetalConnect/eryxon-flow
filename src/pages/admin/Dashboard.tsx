@@ -4,7 +4,6 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Activity, Clock, Loader2, AlertTriangle, LucideIcon } from "lucide-react";
@@ -304,8 +303,7 @@ export default function Dashboard() {
   };
 
   return (
-    <Layout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold mb-2">{t("dashboard.title")}</h1>
           <p className="text-muted-foreground">{t("dashboard.description")}</p>
@@ -416,6 +414,5 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
-    </Layout>
   );
 }

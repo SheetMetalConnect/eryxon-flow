@@ -101,8 +101,8 @@ export function RoutingVisualization({
                         backgroundColor: bgColor,
                         borderColor: cellColor,
                         color: textColor,
-                        ringColor: isInProgress ? `${cellColor}40` : undefined,
-                      }}
+                        '--tw-ring-color': isInProgress ? `${cellColor}40` : undefined,
+                      } as React.CSSProperties}
                     >
                       {/* Status icon */}
                       {isCompleted ? (
