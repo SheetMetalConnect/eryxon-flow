@@ -105,19 +105,23 @@ interface WIPBarProps {
  * Visual bar showing WIP utilization
  */
 export function WIPBar({ current, limit, warningThreshold, height = 'md' }: WIPBarProps) {
-  if (limit === null) {
+  // Handle undefined/null current values
+  const safeCurrentWip = current ?? 0;
+
+  if (limit === null || limit === undefined) {
     return (
       <div className="flex items-center gap-2 text-sm text-gray-500">
         <Infinity className="h-4 w-4" />
-        <span>{current} items (no limit)</span>
+        <span>{safeCurrentWip} items (no limit)</span>
       </div>
     );
   }
 
-  const percentage = Math.min((current / limit) * 100, 100);
-  const effectiveThreshold = warningThreshold ?? Math.floor(limit * 0.8);
-  const isAtWarning = current >= effectiveThreshold && current < limit;
-  const isAtCapacity = current >= limit;
+  const safeLimit = limit || 1; // Prevent division by zero
+  const percentage = Math.min((safeCurrentWip / safeLimit) * 100, 100);
+  const effectiveThreshold = warningThreshold ?? Math.floor(safeLimit * 0.8);
+  const isAtWarning = safeCurrentWip >= effectiveThreshold && safeCurrentWip < safeLimit;
+  const isAtCapacity = safeCurrentWip >= safeLimit;
 
   const heightClass = {
     sm: 'h-1',
@@ -128,15 +132,15 @@ export function WIPBar({ current, limit, warningThreshold, height = 'md' }: WIPB
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs text-gray-600">
-        <span>WIP: {current}</span>
-        <span>Limit: {limit}</span>
+        <span>WIP: {safeCurrentWip}</span>
+        <span>Limit: {safeLimit}</span>
       </div>
       <div className={`bg-gray-200 rounded-full ${heightClass} overflow-hidden relative`}>
         {/* Warning threshold marker */}
-        {limit > 0 && (
+        {safeLimit > 0 && (
           <div
             className="absolute top-0 bottom-0 w-px bg-yellow-400 z-10"
-            style={{ left: `${(effectiveThreshold / limit) * 100}%` }}
+            style={{ left: `${(effectiveThreshold / safeLimit) * 100}%` }}
           />
         )}
 

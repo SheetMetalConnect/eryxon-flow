@@ -86,11 +86,12 @@ export function getQRMStatusIcon(status: QRMStatus): string {
 /**
  * Format WIP display text
  */
-export function formatWIPDisplay(current: number, limit: number | null): string {
-  if (limit === null) {
-    return `${current}`;
+export function formatWIPDisplay(current: number | undefined | null, limit: number | null | undefined): string {
+  const safeCurrent = current ?? 0;
+  if (limit === null || limit === undefined) {
+    return `${safeCurrent}`;
   }
-  return `${current}/${limit}`;
+  return `${safeCurrent}/${limit}`;
 }
 
 /**

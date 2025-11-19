@@ -118,14 +118,14 @@ export function QRMDashboard() {
           <div className="pt-4 border-t grid grid-cols-3 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold">
-                {Object.values(cellsMetrics).reduce((sum, m) => sum + m.current_wip, 0)}
+                {Object.values(cellsMetrics).reduce((sum, m) => sum + (m?.current_wip ?? 0), 0)}
               </div>
               <div className="text-xs text-gray-600">{t("qrm.totalWIP", "Total WIP")}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold">
                 {
-                  Object.values(cellsMetrics).filter((m) => m.status === "at_capacity")
+                  Object.values(cellsMetrics).filter((m) => m?.status === "at_capacity")
                     .length
                 }
               </div>
@@ -135,7 +135,7 @@ export function QRMDashboard() {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold">
-                {Object.values(cellsMetrics).filter((m) => m.status === "warning").length}
+                {Object.values(cellsMetrics).filter((m) => m?.status === "warning").length}
               </div>
               <div className="text-xs text-gray-600">
                 {t("qrm.cellsNearCapacity", "Cells Near Capacity")}
