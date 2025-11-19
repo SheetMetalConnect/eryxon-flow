@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { ColumnDef } from "@tanstack/react-table";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Users, Activity, Clock, Loader2, AlertTriangle, LucideIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { seedDemoData } from "@/lib/seed";
 import { QRMDashboard } from "@/components/qrm/QRMDashboard";
+import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
 
 interface ActiveWork {
   id: string;
@@ -211,6 +212,70 @@ export default function Dashboard() {
       supabase.removeChannel(channel);
     };
   };
+
+  const columns: ColumnDef<ActiveWork>[] = useMemo(() => [
+    {
+      accessorKey: "operator.full_name",
+      id: "operator",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("dashboard.operator")} />
+      ),
+      cell: ({ row }) => (
+        <span className="font-medium">{row.original.operator.full_name}</span>
+      ),
+    },
+    {
+      accessorKey: "operation.operation_name",
+      id: "operation",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("dashboard.operation")} />
+      ),
+      cell: ({ row }) => row.original.operation.operation_name,
+    },
+    {
+      id: "job",
+      header: t("dashboard.job"),
+      cell: ({ row }) => (
+        <div>
+          <div>{row.original.operation.part.job.job_number}</div>
+          {row.original.operation.part.job.customer && (
+            <div className="text-xs text-muted-foreground">
+              {row.original.operation.part.job.customer}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "operation.part.part_number",
+      id: "part",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("dashboard.part")} />
+      ),
+      cell: ({ row }) => row.original.operation.part.part_number,
+    },
+    {
+      id: "cell",
+      header: t("dashboard.cell"),
+      cell: ({ row }) => (
+        <Badge
+          style={{
+            backgroundColor: row.original.operation.cell.color || "hsl(var(--accent))",
+            color: "white",
+          }}
+        >
+          {row.original.operation.cell.name}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: "start_time",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("dashboard.elapsedTime")} />
+      ),
+      cell: ({ row }) => formatDistanceToNow(new Date(row.getValue("start_time"))),
+    },
+  ], [t]);
 
   if (loading) {
     return (

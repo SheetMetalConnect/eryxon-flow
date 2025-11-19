@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { ColumnDef } from "@tanstack/react-table";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,11 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { DataTable, DataTableColumnHeader, DataTableFilterableColumn } from "@/components/ui/data-table";
 
 interface UserProfile {
   id: string;
@@ -144,6 +145,123 @@ export default function ConfigUsers() {
     loadUsers();
   };
 
+  const columns: ColumnDef<UserProfile>[] = useMemo(() => [
+    {
+      accessorKey: "username",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("users.username")} />
+      ),
+      cell: ({ row }) => (
+        <span className="font-medium">{row.getValue("username")}</span>
+      ),
+    },
+    {
+      accessorKey: "full_name",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("users.fullName")} />
+      ),
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          {row.getValue("full_name")}
+          {row.original.is_machine && (
+            <Badge variant="outline">{t("users.machine")}</Badge>
+          )}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "email",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("users.email")} />
+      ),
+    },
+    {
+      accessorKey: "role",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("users.role")} />
+      ),
+      cell: ({ row }) => {
+        const role = row.getValue("role") as string;
+        return (
+          <Badge variant={role === "admin" ? "default" : "secondary"}>
+            {t(`users.roles.${role}`)}
+          </Badge>
+        );
+      },
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id));
+      },
+    },
+    {
+      accessorKey: "active",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("users.status")} />
+      ),
+      cell: ({ row }) => {
+        const active = row.getValue("active") as boolean;
+        return (
+          <Badge variant={active ? "default" : "secondary"}>
+            {active ? t("users.active") : t("users.inactive")}
+          </Badge>
+        );
+      },
+      filterFn: (row, id, value) => {
+        const active = row.getValue(id) as boolean;
+        return value.includes(active ? "active" : "inactive");
+      },
+    },
+    {
+      id: "actions",
+      header: t("users.actions"),
+      cell: ({ row }) => {
+        const user = row.original;
+        return (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEdit(user);
+              }}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleActive(user.id, user.active);
+              }}
+            >
+              {user.active ? t("users.deactivate") : t("users.activate")}
+            </Button>
+          </div>
+        );
+      },
+    },
+  ], [t]);
+
+  const filterableColumns: DataTableFilterableColumn[] = useMemo(() => [
+    {
+      id: "role",
+      title: t("users.role"),
+      options: [
+        { label: t("users.roles.admin"), value: "admin" },
+        { label: t("users.roles.operator"), value: "operator" },
+      ],
+    },
+    {
+      id: "active",
+      title: t("users.status"),
+      options: [
+        { label: t("users.active"), value: "active" },
+        { label: t("users.inactive"), value: "inactive" },
+      ],
+    },
+  ], [t]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -269,60 +387,14 @@ export default function ConfigUsers() {
             <CardTitle>{t("users.title")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("users.username")}</TableHead>
-                  <TableHead>{t("users.fullName")}</TableHead>
-                  <TableHead>{t("users.email")}</TableHead>
-                  <TableHead>{t("users.role")}</TableHead>
-                  <TableHead>{t("users.status")}</TableHead>
-                  <TableHead>{t("users.actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.username}</TableCell>
-                    <TableCell>
-                      {user.full_name}
-                      {user.is_machine && (
-                        <Badge variant="outline" className="ml-2">{t("users.machine")}</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      <Badge variant={user.role === "admin" ? "default" : "secondary"}>
-                        {t(`users.roles.${user.role}`)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={user.active ? "default" : "secondary"}>
-                        {user.active ? t("users.active") : t("users.inactive")}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(user)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => toggleActive(user.id, user.active)}
-                        >
-                          {user.active ? t("users.deactivate") : t("users.activate")}
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <DataTable
+              columns={columns}
+              data={users}
+              filterableColumns={filterableColumns}
+              searchPlaceholder={t("users.searchUsers") || "Search users..."}
+              pageSize={10}
+              emptyMessage={t("users.noUsersFound") || "No users found."}
+            />
           </CardContent>
         </Card>
       </div>
