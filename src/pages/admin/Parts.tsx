@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import PartDetailModal from "@/components/admin/PartDetailModal";
-import Layout from "@/components/Layout";
 import { Package, ChevronRight, Box, FileText, Eye } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { STEPViewer } from "@/components/STEPViewer";
@@ -397,8 +396,7 @@ export default function Parts() {
   ], [t, materials, jobs]);
 
   return (
-    <Layout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">{t("parts.title")}</h1>
         </div>
@@ -437,7 +435,6 @@ export default function Parts() {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
-    </Layout>
+    </div>
   );
 }

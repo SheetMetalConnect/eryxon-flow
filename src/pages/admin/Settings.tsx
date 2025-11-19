@@ -1,194 +1,216 @@
-import React, { useState } from "react";
-import { Box, Typography, Tabs, Tab, Paper } from "@mui/material";
+import React from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { useThemeMode } from "@/theme/ThemeProvider";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useAuth } from "@/contexts/AuthContext";
 import {
-  People as PeopleIcon,
-  AccountTree as AccountTreeIcon,
-  Build as BuildIcon,
-  IntegrationInstructions as IntegrationIcon,
-  CardMembership as CardMembershipIcon,
-  Security as SecurityIcon,
-  Storage as StorageIcon,
-} from "@mui/icons-material";
-import { useSearchParams } from "react-router-dom";
-
-// Import existing config components
-import ConfigUsers from "./ConfigUsers";
-import ConfigStages from "./ConfigStages";
-import ConfigMaterials from "./ConfigMaterials";
-import ConfigResources from "./ConfigResources";
-import ConfigApiKeys from "./ConfigApiKeys";
-import ConfigWebhooks from "./ConfigWebhooks";
-import DataExport from "./DataExport";
-import { MyPlan } from "@/pages/MyPlan";
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => {
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`settings-tabpanel-${index}`}
-    >
-      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
-    </div>
-  );
-};
-
-const tabs = [
-  { label: "Team", icon: <PeopleIcon />, value: "team" },
-  { label: "Workflow", icon: <AccountTreeIcon />, value: "workflow" },
-  { label: "Resources", icon: <BuildIcon />, value: "resources" },
-  { label: "Integration", icon: <IntegrationIcon />, value: "integration" },
-  {
-    label: "Subscription",
-    icon: <CardMembershipIcon />,
-    value: "subscription",
-  },
-  { label: "Data", icon: <StorageIcon />, value: "data" },
-];
+  Moon,
+  Sun,
+  Globe,
+  Bell,
+  Shield,
+  User,
+  Building,
+  ExternalLink,
+} from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const Settings: React.FC = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const currentTab = searchParams.get("tab") || "team";
-  const currentIndex = tabs.findIndex((t) => t.value === currentTab);
-  const [value, setValue] = useState(currentIndex >= 0 ? currentIndex : 0);
-
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-    setSearchParams({ tab: tabs[newValue].value });
-  };
+  const { t } = useTranslation();
+  const { mode, toggleTheme } = useThemeMode();
+  const { profile, tenant } = useAuth();
 
   return (
-    <Box>
-      <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
-        Settings
-      </Typography>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">{t("navigation.settings")}</h1>
+        <p className="text-muted-foreground">
+          Manage your application preferences and account settings
+        </p>
+      </div>
 
-      <Paper sx={{ borderRadius: 2 }}>
-        <Tabs
-          value={value}
-          onChange={handleChange}
-          variant="scrollable"
-          scrollButtons="auto"
-          sx={{
-            borderBottom: 1,
-            borderColor: "divider",
-            px: 2,
-          }}
-        >
-          {tabs.map((tab, index) => (
-            <Tab
-              key={tab.value}
-              icon={tab.icon}
-              label={tab.label}
-              iconPosition="start"
-              sx={{
-                minHeight: 64,
-                textTransform: "none",
-                fontSize: "0.95rem",
-                fontWeight: 500,
-              }}
-            />
-          ))}
-        </Tabs>
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Appearance Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              {mode === "dark" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+              Appearance
+            </CardTitle>
+            <CardDescription>
+              Customize the look and feel of the application
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="dark-mode">Dark Mode</Label>
+                <p className="text-sm text-muted-foreground">
+                  Toggle dark mode for better visibility in low light
+                </p>
+              </div>
+              <Switch
+                id="dark-mode"
+                checked={mode === "dark"}
+                onCheckedChange={toggleTheme}
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-        <Box sx={{ px: 3 }}>
-          {/* Team Tab */}
-          <TabPanel value={value} index={0}>
-            <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
-              Team Management
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Manage users, operators, admins, and machine accounts for your
-              organization.
-            </Typography>
-            <ConfigUsers />
-          </TabPanel>
+        {/* Language Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              Language
+            </CardTitle>
+            <CardDescription>
+              Choose your preferred language for the interface
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Interface Language</Label>
+                <p className="text-sm text-muted-foreground">
+                  Select your preferred language
+                </p>
+              </div>
+              <LanguageSwitcher />
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Workflow Tab */}
-          <TabPanel value={value} index={1}>
-            <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
-              Workflow Configuration
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Configure production stages and materials for your manufacturing
-              workflow.
-            </Typography>
+        {/* Account Info */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Account
+            </CardTitle>
+            <CardDescription>
+              Your account information
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-muted-foreground text-xs">Full Name</Label>
+              <p className="font-medium">{profile?.full_name || "Not set"}</p>
+            </div>
+            <Separator />
+            <div className="space-y-2">
+              <Label className="text-muted-foreground text-xs">Email</Label>
+              <p className="font-medium">{profile?.email || "Not set"}</p>
+            </div>
+            <Separator />
+            <div className="space-y-2">
+              <Label className="text-muted-foreground text-xs">Role</Label>
+              <p className="font-medium capitalize">{profile?.role || "Not set"}</p>
+            </div>
+          </CardContent>
+        </Card>
 
-            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
-              Production Stages
-            </Typography>
-            <ConfigStages />
+        {/* Organization Info */}
+        {tenant && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building className="h-5 w-5" />
+                Organization
+              </CardTitle>
+              <CardDescription>
+                Your organization details
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-muted-foreground text-xs">Company Name</Label>
+                <p className="font-medium">{tenant.company_name || tenant.name}</p>
+              </div>
+              <Separator />
+              <div className="space-y-2">
+                <Label className="text-muted-foreground text-xs">Plan</Label>
+                <p className="font-medium capitalize">{tenant.plan}</p>
+              </div>
+              <Separator />
+              <div className="space-y-2">
+                <Label className="text-muted-foreground text-xs">Status</Label>
+                <p className="font-medium capitalize">{tenant.status}</p>
+              </div>
+              <Link to="/admin/my-plan">
+                <Button variant="outline" size="sm" className="mt-2 w-full">
+                  Manage Subscription
+                  <ExternalLink className="h-4 w-4 ml-2" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
-            <Box sx={{ my: 4 }} />
-
-            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
-              Materials Catalog
-            </Typography>
-            <ConfigMaterials />
-          </TabPanel>
-
-          {/* Resources Tab */}
-          <TabPanel value={value} index={2}>
-            <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
-              Resources & Equipment
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Manage tools, fixtures, molds, and equipment used in production.
-            </Typography>
-            <ConfigResources />
-          </TabPanel>
-
-          {/* Integration Tab */}
-          <TabPanel value={value} index={3}>
-            <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
-              Integration Settings
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Configure API keys and webhooks for third-party integrations.
-            </Typography>
-
-            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
-              API Keys
-            </Typography>
-            <ConfigApiKeys />
-
-            <Box sx={{ my: 4 }} />
-
-            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
-              Webhooks
-            </Typography>
-            <ConfigWebhooks />
-          </TabPanel>
-
-          {/* Subscription Tab */}
-          <TabPanel value={value} index={4}>
-            <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
-              Subscription & Billing
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              View your current plan, usage statistics, and upgrade options.
-            </Typography>
-            <MyPlan />
-          </TabPanel>
-
-          {/* Data Tab */}
-          <TabPanel value={value} index={5}>
-            <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
-              Data Management
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Export your data in CSV or JSON format for backup or analysis.
-            </Typography>
-            <DataExport />
-          </TabPanel>
-        </Box>
-      </Paper>
-    </Box>
+      {/* Quick Links to Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Configuration
+          </CardTitle>
+          <CardDescription>
+            Quick access to configuration pages
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <Link to="/admin/config/users">
+              <Button variant="outline" className="w-full justify-start">
+                <User className="h-4 w-4 mr-2" />
+                Users
+              </Button>
+            </Link>
+            <Link to="/admin/config/stages">
+              <Button variant="outline" className="w-full justify-start">
+                Cells
+              </Button>
+            </Link>
+            <Link to="/admin/config/materials">
+              <Button variant="outline" className="w-full justify-start">
+                Materials
+              </Button>
+            </Link>
+            <Link to="/admin/config/resources">
+              <Button variant="outline" className="w-full justify-start">
+                Resources
+              </Button>
+            </Link>
+            <Link to="/admin/config/api-keys">
+              <Button variant="outline" className="w-full justify-start">
+                API Keys
+              </Button>
+            </Link>
+            <Link to="/admin/config/webhooks">
+              <Button variant="outline" className="w-full justify-start">
+                Webhooks
+              </Button>
+            </Link>
+            <Link to="/admin/data-export">
+              <Button variant="outline" className="w-full justify-start">
+                Data Export
+              </Button>
+            </Link>
+            <Link to="/admin/config/steps-templates">
+              <Button variant="outline" className="w-full justify-start">
+                Templates
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
