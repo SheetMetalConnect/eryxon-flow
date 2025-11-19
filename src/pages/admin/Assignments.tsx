@@ -1,17 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -23,6 +16,7 @@ import { Loader2, UserCheck, X } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
 
 interface Part {
   id: string;
@@ -207,12 +201,7 @@ export default function Assignments() {
   };
 
   const handleAssign = async () => {
-    if (
-      !selectedPart ||
-      !selectedOperator ||
-      !profile?.id ||
-      !profile?.tenant_id
-    ) {
+    if (!selectedPart || !selectedOperator || !profile?.id || !profile?.tenant_id) {
       toast.error(t("assignments.selectBoth"));
       return;
     }
@@ -254,10 +243,7 @@ export default function Assignments() {
     }
   };
 
-  const handleRemoveAssignment = async (
-    assignmentId: string,
-    partId: string,
-  ) => {
+  const handleRemoveAssignment = async (assignmentId: string, partId: string) => {
     if (!profile?.tenant_id) return;
 
     try {
@@ -285,6 +271,76 @@ export default function Assignments() {
     }
   };
 
+  const columns: ColumnDef<Assignment>[] = useMemo(() => [
+    {
+      accessorKey: "part.part_number",
+      id: "part_number",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("assignments.part")} />
+      ),
+      cell: ({ row }) => (
+        <span className="font-medium">{row.original.part.part_number}</span>
+      ),
+    },
+    {
+      accessorKey: "part.job.job_number",
+      id: "job_number",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("assignments.job")} />
+      ),
+      cell: ({ row }) => row.original.part.job.job_number,
+    },
+    {
+      accessorKey: "operator.full_name",
+      id: "operator_name",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("assignments.assignedTo")} />
+      ),
+      cell: ({ row }) => (
+        <Badge variant="secondary">{row.original.operator.full_name}</Badge>
+      ),
+    },
+    {
+      accessorKey: "assigned_by_user.full_name",
+      id: "assigned_by",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("assignments.assignedBy")} />
+      ),
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">
+          {row.original.assigned_by_user.full_name}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "created_at",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("assignments.date")} />
+      ),
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">
+          {format(new Date(row.getValue("created_at")), "MMM d, yyyy")}
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: t("assignments.action"),
+      cell: ({ row }) => {
+        const assignment = row.original;
+        return (
+          <Button
+            onClick={() => handleRemoveAssignment(assignment.id, assignment.part_id)}
+            variant="ghost"
+            size="sm"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        );
+      },
+    },
+  ], [t]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -305,9 +361,7 @@ export default function Assignments() {
         {/* Available Parts */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">
-              {t("assignments.availableParts")}
-            </CardTitle>
+            <CardTitle className="text-lg">{t("assignments.availableParts")}</CardTitle>
           </CardHeader>
           <CardContent>
             <Select value={selectedPart} onValueChange={setSelectedPart}>
@@ -317,8 +371,7 @@ export default function Assignments() {
               <SelectContent>
                 {parts.map((part) => (
                   <SelectItem key={part.id} value={part.id}>
-                    {part.part_number} • {part.job.job_number} •{" "}
-                    {part._operationCount} {t("assignments.operations")}
+                    {part.part_number} • {part.job.job_number} • {part._operationCount} {t("assignments.operations")}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -331,12 +384,10 @@ export default function Assignments() {
                       {parts.find((p) => p.id === selectedPart)?.part_number}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {t("assignments.job")}:{" "}
-                      {parts.find((p) => p.id === selectedPart)?.job.job_number}
+                      {t("assignments.job")}: {parts.find((p) => p.id === selectedPart)?.job.job_number}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {t("assignments.material")}:{" "}
-                      {parts.find((p) => p.id === selectedPart)?.material}
+                      {t("assignments.material")}: {parts.find((p) => p.id === selectedPart)?.material}
                     </div>
                   </>
                 )}
@@ -348,24 +399,17 @@ export default function Assignments() {
         {/* Operators */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">
-              {t("assignments.assignToOperator")}
-            </CardTitle>
+            <CardTitle className="text-lg">{t("assignments.assignToOperator")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Select
-              value={selectedOperator}
-              onValueChange={setSelectedOperator}
-            >
+            <Select value={selectedOperator} onValueChange={setSelectedOperator}>
               <SelectTrigger>
                 <SelectValue placeholder={t("assignments.selectOperator")} />
               </SelectTrigger>
               <SelectContent>
                 {operators.map((op) => (
                   <SelectItem key={op.id} value={op.id}>
-                    {op.full_name} • {op._assignmentCount}{" "}
-                    {t("assignments.assigned")} • {op._activeEntryCount}{" "}
-                    {t("assignments.active")}
+                    {op.full_name} • {op._assignmentCount} {t("assignments.assigned")} • {op._activeEntryCount} {t("assignments.active")}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -377,77 +421,34 @@ export default function Assignments() {
               size="lg"
             >
               <UserCheck className="h-4 w-4 mr-2" />
-              {assigning
-                ? t("assignments.assigning")
-                : t("assignments.assignWork")}
+              {assigning ? t("assignments.assigning") : t("assignments.assignWork")}
             </Button>
           </CardContent>
         </Card>
-
-        {/* Current Assignments */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("assignments.currentAssignments")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {assignments.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                {t("assignments.noActiveAssignments")}
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("assignments.part")}</TableHead>
-                    <TableHead>{t("assignments.job")}</TableHead>
-                    <TableHead>{t("assignments.assignedTo")}</TableHead>
-                    <TableHead>{t("assignments.assignedBy")}</TableHead>
-                    <TableHead>{t("assignments.date")}</TableHead>
-                    <TableHead className="text-right">
-                      {t("assignments.action")}
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {assignments.map((assignment) => (
-                    <TableRow key={assignment.id}>
-                      <TableCell className="font-medium">
-                        {assignment.part.part_number}
-                      </TableCell>
-                      <TableCell>{assignment.part.job.job_number}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">
-                          {assignment.operator.full_name}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {assignment.assigned_by_user.full_name}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {format(new Date(assignment.created_at), "MMM d, yyyy")}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          onClick={() =>
-                            handleRemoveAssignment(
-                              assignment.id,
-                              assignment.part_id,
-                            )
-                          }
-                          variant="ghost"
-                          size="sm"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
       </div>
+
+      {/* Current Assignments Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("assignments.currentAssignments")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {assignments.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              {t("assignments.noActiveAssignments")}
+            </div>
+          ) : (
+            <DataTable
+              columns={columns}
+              data={assignments}
+              searchPlaceholder={t("assignments.searchAssignments") || "Search assignments..."}
+              pageSize={10}
+              showToolbar={false}
+              emptyMessage={t("assignments.noActiveAssignments")}
+            />
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

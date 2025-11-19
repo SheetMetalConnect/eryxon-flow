@@ -1,20 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { ColumnDef } from "@tanstack/react-table";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Plus, Trash2, Eye, RefreshCw } from "lucide-react";
+import { Plus, Trash2, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
 
 const AVAILABLE_EVENTS = [
   { id: 'operation.started', label: 'Operation Started' },
@@ -22,18 +23,36 @@ const AVAILABLE_EVENTS = [
   { id: 'issue.created', label: 'Issue Created' },
 ];
 
+interface Webhook {
+  id: string;
+  url: string;
+  events: string[];
+  created_at: string;
+  active: boolean;
+}
+
+interface WebhookLog {
+  id: string;
+  webhook_id: string;
+  event_type: string;
+  payload: any;
+  status_code: number | null;
+  error_message: string | null;
+  created_at: string;
+  webhook?: { url: string };
+}
+
 export default function ConfigWebhooks() {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const { toast } = useToast();
-  const [webhooks, setWebhooks] = useState<any[]>([]);
-  const [webhookLogs, setWebhookLogs] = useState<any[]>([]);
+  const [webhooks, setWebhooks] = useState<Webhook[]>([]);
+  const [webhookLogs, setWebhookLogs] = useState<WebhookLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [logsLoading, setLogsLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
-  const [selectedWebhookFilter, setSelectedWebhookFilter] = useState<string>("all");
 
   useEffect(() => {
     if (profile?.tenant_id) {
@@ -65,7 +84,6 @@ export default function ConfigWebhooks() {
   const fetchWebhookLogs = async () => {
     setLogsLoading(true);
 
-    // First get all webhook IDs for this tenant
     const { data: tenantWebhooks } = await supabase
       .from('webhooks')
       .select('id')
@@ -79,8 +97,7 @@ export default function ConfigWebhooks() {
 
     const webhookIds = tenantWebhooks.map(w => w.id);
 
-    // Then get logs for those webhooks
-    let query = supabase
+    const { data, error } = await supabase
       .from('webhook_logs')
       .select(`
         id,
@@ -95,13 +112,6 @@ export default function ConfigWebhooks() {
       .in('webhook_id', webhookIds)
       .order('created_at', { ascending: false })
       .limit(100);
-
-    // Apply filter if not "all"
-    if (selectedWebhookFilter !== "all") {
-      query = query.eq('webhook_id', selectedWebhookFilter);
-    }
-
-    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching webhook logs:', error);
@@ -209,6 +219,131 @@ export default function ConfigWebhooks() {
     }
   };
 
+  const webhookColumns: ColumnDef<Webhook>[] = useMemo(() => [
+    {
+      accessorKey: "url",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('webhooks.url')} />
+      ),
+      cell: ({ row }) => (
+        <code className="text-sm">{row.getValue("url")}</code>
+      ),
+    },
+    {
+      accessorKey: "events",
+      header: t('webhooks.events'),
+      cell: ({ row }) => {
+        const events = row.getValue("events") as string[];
+        return (
+          <div className="flex gap-1 flex-wrap">
+            {events.map((event) => (
+              <Badge key={event} variant="outline" className="text-xs">
+                {event}
+              </Badge>
+            ))}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "created_at",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('webhooks.created')} />
+      ),
+      cell: ({ row }) => format(new Date(row.getValue("created_at")), 'MMM d, yyyy'),
+    },
+    {
+      accessorKey: "active",
+      header: t('webhooks.status'),
+      cell: ({ row }) => {
+        const active = row.getValue("active") as boolean;
+        return (
+          <Badge variant={active ? "default" : "secondary"}>
+            {active ? t('webhooks.active') : t('webhooks.disabled')}
+          </Badge>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: t('webhooks.actions'),
+      cell: ({ row }) => {
+        const webhook = row.original;
+        return (
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => toggleWebhook(webhook.id, webhook.active)}
+            >
+              {webhook.active ? t('webhooks.disable') : t('webhooks.enable')}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => deleteWebhook(webhook.id)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
+    },
+  ], [t]);
+
+  const logColumns: ColumnDef<WebhookLog>[] = useMemo(() => [
+    {
+      accessorKey: "event_type",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Event" />
+      ),
+      cell: ({ row }) => (
+        <Badge variant="outline">{row.getValue("event_type")}</Badge>
+      ),
+    },
+    {
+      accessorKey: "status_code",
+      header: "Status",
+      cell: ({ row }) => {
+        const statusCode = row.getValue("status_code") as number | null;
+        return statusCode ? (
+          <Badge variant={statusCode >= 200 && statusCode < 300 ? "default" : "destructive"}>
+            {statusCode}
+          </Badge>
+        ) : (
+          <Badge variant="destructive">Failed</Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "webhook.url",
+      id: "webhook_url",
+      header: "Webhook",
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">
+          {row.original.webhook?.url || 'Unknown'}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "error_message",
+      header: "Error",
+      cell: ({ row }) => {
+        const error = row.getValue("error_message") as string | null;
+        return error ? (
+          <span className="text-sm text-destructive">{error}</span>
+        ) : null;
+      },
+    },
+    {
+      accessorKey: "created_at",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Time" />
+      ),
+      cell: ({ row }) => format(new Date(row.getValue("created_at")), 'MMM d, HH:mm:ss'),
+    },
+  ], []);
+
   return (
     <Layout>
       <div className="p-6 space-y-6">
@@ -223,58 +358,58 @@ export default function ConfigWebhooks() {
               {t('webhooks.refreshLogs')}
             </Button>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                {t('webhooks.addWebhook')}
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{t('webhooks.createWebhook')}</DialogTitle>
-                <DialogDescription>
-                  {t('webhooks.configureWebhook')}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="webhook-url">{t('webhooks.webhookUrl')}</Label>
-                  <Input
-                    id="webhook-url"
-                    type="url"
-                    placeholder={t('webhooks.urlPlaceholder')}
-                    value={webhookUrl}
-                    onChange={(e) => setWebhookUrl(e.target.value)}
-                  />
-                  <p className="text-sm text-muted-foreground">{t('webhooks.mustBeHttps')}</p>
-                </div>
-                <div className="space-y-2">
-                  <Label>{t('webhooks.events')}</Label>
-                  {AVAILABLE_EVENTS.map((event) => (
-                    <div key={event.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={event.id}
-                        checked={selectedEvents.includes(event.id)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setSelectedEvents([...selectedEvents, event.id]);
-                          } else {
-                            setSelectedEvents(selectedEvents.filter(e => e !== event.id));
-                          }
-                        }}
-                      />
-                      <Label htmlFor={event.id} className="cursor-pointer">
-                        {event.label}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-                <Button onClick={createWebhook} className="w-full">
-                  {t('webhooks.createWebhook')}
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t('webhooks.addWebhook')}
                 </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{t('webhooks.createWebhook')}</DialogTitle>
+                  <DialogDescription>
+                    {t('webhooks.configureWebhook')}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="webhook-url">{t('webhooks.webhookUrl')}</Label>
+                    <Input
+                      id="webhook-url"
+                      type="url"
+                      placeholder={t('webhooks.urlPlaceholder')}
+                      value={webhookUrl}
+                      onChange={(e) => setWebhookUrl(e.target.value)}
+                    />
+                    <p className="text-sm text-muted-foreground">{t('webhooks.mustBeHttps')}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('webhooks.events')}</Label>
+                    {AVAILABLE_EVENTS.map((event) => (
+                      <div key={event.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={event.id}
+                          checked={selectedEvents.includes(event.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedEvents([...selectedEvents, event.id]);
+                            } else {
+                              setSelectedEvents(selectedEvents.filter(e => e !== event.id));
+                            }
+                          }}
+                        />
+                        <Label htmlFor={event.id} className="cursor-pointer">
+                          {event.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                  <Button onClick={createWebhook} className="w-full">
+                    {t('webhooks.createWebhook')}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
@@ -286,85 +421,33 @@ export default function ConfigWebhooks() {
           </TabsList>
 
           <TabsContent value="webhooks" className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('webhooks.configuredWebhooks')}</CardTitle>
-            <CardDescription>
-              {t('webhooks.webhooksDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-center py-8">{t('webhooks.loading')}</div>
-            ) : webhooks.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                {t('webhooks.noWebhooks')}
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('webhooks.url')}</TableHead>
-                    <TableHead>{t('webhooks.events')}</TableHead>
-                    <TableHead>{t('webhooks.created')}</TableHead>
-                    <TableHead>{t('webhooks.status')}</TableHead>
-                    <TableHead className="text-right">{t('webhooks.actions')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {webhooks.map((webhook) => (
-                    <TableRow key={webhook.id}>
-                      <TableCell>
-                        <code className="text-sm">{webhook.url}</code>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1 flex-wrap">
-                          {webhook.events.map((event: string) => (
-                            <Badge key={event} variant="outline" className="text-xs">
-                              {event}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>{format(new Date(webhook.created_at), 'MMM d, yyyy')}</TableCell>
-                      <TableCell>
-                        <Badge variant={webhook.active ? "default" : "secondary"}>
-                          {webhook.active ? t('webhooks.active') : t('webhooks.disabled')}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleWebhook(webhook.id, webhook.active)}
-                          >
-                            {webhook.active ? t('webhooks.disable') : t('webhooks.enable')}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => deleteWebhook(webhook.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('webhooks.configuredWebhooks')}</CardTitle>
+                <CardDescription>
+                  {t('webhooks.webhooksDescription')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <DataTable
+                  columns={webhookColumns}
+                  data={webhooks}
+                  loading={loading}
+                  searchPlaceholder={t('webhooks.searchWebhooks') || "Search webhooks..."}
+                  pageSize={10}
+                  emptyMessage={t('webhooks.noWebhooks')}
+                  showToolbar={false}
+                />
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Webhook Payload Format</CardTitle>
-            <CardDescription>Example of webhook POST request</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <pre className="text-sm bg-muted p-4 rounded overflow-x-auto">
+            <Card>
+              <CardHeader>
+                <CardTitle>Webhook Payload Format</CardTitle>
+                <CardDescription>Example of webhook POST request</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <pre className="text-sm bg-muted p-4 rounded overflow-x-auto">
 {`{
   "event": "operation.completed",
   "timestamp": "2024-01-15T10:30:00Z",
@@ -378,99 +461,29 @@ export default function ConfigWebhooks() {
     "actual_time": 50
   }
 }`}
-            </pre>
-            <p className="text-sm text-muted-foreground mt-4">
-              All requests include an <code>X-Eryxon-Signature</code> header with HMAC signature for verification.
-            </p>
-          </CardContent>
-        </Card>
+                </pre>
+                <p className="text-sm text-muted-foreground mt-4">
+                  All requests include an <code>X-Eryxon-Signature</code> header with HMAC signature for verification.
+                </p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="logs" className="space-y-4">
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>{t('webhooks.webhookDeliveryLogs')}</CardTitle>
-                    <CardDescription>{t('webhooks.recentAttempts')}</CardDescription>
-                  </div>
-                  <div className="flex gap-2 items-center">
-                    <Label className="text-sm text-muted-foreground">{t('webhooks.filter')}:</Label>
-                    <select
-                      value={selectedWebhookFilter}
-                      onChange={(e) => {
-                        setSelectedWebhookFilter(e.target.value);
-                        fetchWebhookLogs();
-                      }}
-                      className="border rounded px-3 py-1.5 text-sm"
-                    >
-                      <option value="all">{t('webhooks.allWebhooks')}</option>
-                      {webhooks.map((wh) => (
-                        <option key={wh.id} value={wh.id}>
-                          {wh.url}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                <CardTitle>{t('webhooks.webhookDeliveryLogs')}</CardTitle>
+                <CardDescription>{t('webhooks.recentAttempts')}</CardDescription>
               </CardHeader>
               <CardContent>
-                {logsLoading ? (
-                  <div className="text-center py-8">{t('webhooks.loadingLogs')}</div>
-                ) : webhookLogs.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    {t('webhooks.noDeliveries')}
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {webhookLogs.map((log: any) => (
-                      <div
-                        key={log.id}
-                        className="border rounded-lg p-4 space-y-2"
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <Badge variant="outline">{log.event_type}</Badge>
-                              {log.status_code ? (
-                                <Badge
-                                  variant={
-                                    log.status_code >= 200 && log.status_code < 300
-                                      ? "default"
-                                      : "destructive"
-                                  }
-                                >
-                                  {log.status_code}
-                                </Badge>
-                              ) : (
-                                <Badge variant="destructive">Failed</Badge>
-                              )}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              {log.webhook?.url || 'Unknown webhook'}
-                            </p>
-                            {log.error_message && (
-                              <p className="text-sm text-destructive mt-1">
-                                {log.error_message}
-                              </p>
-                            )}
-                          </div>
-                          <div className="text-right text-sm text-muted-foreground">
-                            {format(new Date(log.created_at), 'MMM d, HH:mm:ss')}
-                          </div>
-                        </div>
-                        <details className="text-sm">
-                          <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
-                            {t('webhooks.viewPayload')}
-                          </summary>
-                          <pre className="mt-2 bg-muted p-3 rounded text-xs overflow-x-auto">
-                            {JSON.stringify(log.payload, null, 2)}
-                          </pre>
-                        </details>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <DataTable
+                  columns={logColumns}
+                  data={webhookLogs}
+                  loading={logsLoading}
+                  searchPlaceholder="Search logs..."
+                  pageSize={20}
+                  emptyMessage={t('webhooks.noDeliveries')}
+                />
               </CardContent>
             </Card>
           </TabsContent>
@@ -512,21 +525,7 @@ function verifyWebhook(payload, signature, secret) {
     Buffer.from(signature),
     Buffer.from(expectedSignature)
   );
-}
-
-// In your webhook handler
-app.post('/webhooks/eryxon', (req, res) => {
-  const signature = req.headers['x-eryxon-signature'];
-  const payload = JSON.stringify(req.body);
-  const secret = 'your_webhook_secret';
-
-  if (!verifyWebhook(payload, signature, secret)) {
-    return res.status(401).send('Invalid signature');
-  }
-
-  // Process webhook...
-  res.status(200).send('OK');
-});`}
+}`}
                   </pre>
                 </div>
 
@@ -539,13 +538,6 @@ app.post('/webhooks/eryxon', (req, res) => {
                     <li>Implement retry logic for processing failures</li>
                     <li>Log webhook payloads for debugging</li>
                   </ul>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold mb-2">Testing Webhooks</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Use tools like <a href="https://webhook.site" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">webhook.site</a> or <a href="https://requestbin.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">requestbin.com</a> to test and inspect webhook payloads during development.
-                  </p>
                 </div>
               </CardContent>
             </Card>

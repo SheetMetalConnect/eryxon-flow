@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { ColumnDef } from "@tanstack/react-table";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,12 +13,22 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Key, Copy, Trash2, Plus, BookOpen, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
+
+interface ApiKey {
+  id: string;
+  name: string;
+  key_prefix: string;
+  created_at: string;
+  last_used_at: string | null;
+  active: boolean;
+}
 
 export default function ConfigApiKeys() {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const { toast } = useToast();
-  const [apiKeys, setApiKeys] = useState<any[]>([]);
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [newKeyDialog, setNewKeyDialog] = useState(false);
@@ -64,11 +74,9 @@ export default function ConfigApiKeys() {
     setIsGenerating(true);
 
     try {
-      // Get current user's session token
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 
-      // Call secure edge function to generate and hash the key
       const response = await fetch(
         `https://vatgianzotsurljznsry.supabase.co/functions/v1/api-key-generate`,
         {
@@ -87,7 +95,6 @@ export default function ConfigApiKeys() {
         throw new Error(result.error?.message || 'Failed to generate API key');
       }
 
-      // Set the generated key (only time it will be shown)
       setGeneratedKey(result.data.api_key);
       setKeyName("");
       fetchApiKeys();
@@ -142,6 +149,72 @@ export default function ConfigApiKeys() {
     setGeneratedKey(null);
   };
 
+  const columns: ColumnDef<ApiKey>[] = useMemo(() => [
+    {
+      accessorKey: "name",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('apiKeys.name')} />
+      ),
+      cell: ({ row }) => (
+        <span className="font-medium">{row.getValue("name")}</span>
+      ),
+    },
+    {
+      accessorKey: "key_prefix",
+      header: t('apiKeys.keyPrefix'),
+      cell: ({ row }) => (
+        <code className="text-sm">{row.getValue("key_prefix")}****</code>
+      ),
+    },
+    {
+      accessorKey: "created_at",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('apiKeys.created')} />
+      ),
+      cell: ({ row }) => format(new Date(row.getValue("created_at")), 'MMM d, yyyy'),
+    },
+    {
+      accessorKey: "last_used_at",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('apiKeys.lastUsed')} />
+      ),
+      cell: ({ row }) => {
+        const lastUsed = row.getValue("last_used_at") as string | null;
+        return lastUsed
+          ? format(new Date(lastUsed), 'MMM d, yyyy HH:mm')
+          : t('apiKeys.never');
+      },
+    },
+    {
+      accessorKey: "active",
+      header: t('apiKeys.status'),
+      cell: ({ row }) => {
+        const active = row.getValue("active") as boolean;
+        return (
+          <Badge variant={active ? "default" : "secondary"}>
+            {active ? t('apiKeys.active') : t('apiKeys.revoked')}
+          </Badge>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: t('apiKeys.actions'),
+      cell: ({ row }) => {
+        const key = row.original;
+        return key.active ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => revokeKey(key.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        ) : null;
+      },
+    },
+  ], [t]);
+
   return (
     <Layout>
       <div className="p-6 space-y-6">
@@ -166,7 +239,7 @@ export default function ConfigApiKeys() {
                     : t('apiKeys.createNewKey')}
                 </DialogDescription>
               </DialogHeader>
-              
+
               {generatedKey ? (
                 <div className="space-y-4">
                   <div className="p-4 bg-muted rounded-md">
@@ -238,58 +311,15 @@ export default function ConfigApiKeys() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <div className="text-center py-8">{t('apiKeys.loading')}</div>
-            ) : apiKeys.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                {t('apiKeys.noKeys')}
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('apiKeys.name')}</TableHead>
-                    <TableHead>{t('apiKeys.keyPrefix')}</TableHead>
-                    <TableHead>{t('apiKeys.created')}</TableHead>
-                    <TableHead>{t('apiKeys.lastUsed')}</TableHead>
-                    <TableHead>{t('apiKeys.status')}</TableHead>
-                    <TableHead className="text-right">{t('apiKeys.actions')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {apiKeys.map((key) => (
-                    <TableRow key={key.id}>
-                      <TableCell className="font-medium">{key.name}</TableCell>
-                      <TableCell>
-                        <code className="text-sm">{key.key_prefix}****</code>
-                      </TableCell>
-                      <TableCell>{format(new Date(key.created_at), 'MMM d, yyyy')}</TableCell>
-                      <TableCell>
-                        {key.last_used_at
-                          ? format(new Date(key.last_used_at), 'MMM d, yyyy HH:mm')
-                          : t('apiKeys.never')}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={key.active ? "default" : "secondary"}>
-                          {key.active ? t('apiKeys.active') : t('apiKeys.revoked')}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {key.active && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => revokeKey(key.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
+            <DataTable
+              columns={columns}
+              data={apiKeys}
+              loading={loading}
+              searchPlaceholder={t('apiKeys.searchKeys') || "Search keys..."}
+              pageSize={10}
+              emptyMessage={t('apiKeys.noKeys')}
+              showToolbar={false}
+            />
           </CardContent>
         </Card>
 

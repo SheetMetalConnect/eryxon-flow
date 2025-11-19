@@ -1,27 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import PartDetailModal from "@/components/admin/PartDetailModal";
 import Layout from "@/components/Layout";
-import { Package, ChevronRight, Box, FileText } from "lucide-react";
+import { Package, ChevronRight, Box, FileText, Eye } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
@@ -32,23 +17,33 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { DataTable, DataTableColumnHeader, DataTableFilterableColumn } from "@/components/ui/data-table";
+
+interface PartData {
+  id: string;
+  part_number: string;
+  material: string;
+  status: string;
+  parent_part_id: string | null;
+  job?: { job_number: string };
+  cell?: { name: string; color: string };
+  operations_count: number;
+  has_children: boolean;
+  stepFiles: string[];
+  pdfFiles: string[];
+  hasSTEP: boolean;
+  hasPDF: boolean;
+}
 
 export default function Parts() {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [materialFilter, setMaterialFilter] = useState<string>("all");
-  const [jobFilter, setJobFilter] = useState<string>("all");
-  const [assemblyFilter, setAssemblyFilter] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
 
   // File viewer state
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
   const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(null);
-  const [currentFileType, setCurrentFileType] = useState<"step" | "pdf" | null>(
-    null,
-  );
+  const [currentFileType, setCurrentFileType] = useState<"step" | "pdf" | null>(null);
   const [currentFileTitle, setCurrentFileTitle] = useState<string>("");
 
   const { data: materials } = useQuery({
@@ -84,59 +79,14 @@ export default function Parts() {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: [
-      "admin-parts",
-      statusFilter,
-      materialFilter,
-      jobFilter,
-      assemblyFilter,
-      searchQuery,
-    ],
+    queryKey: ["admin-parts-all"],
     queryFn: async () => {
-      let query = supabase.from("parts").select(`
+      const query = supabase.from("parts").select(`
           *,
           job:jobs(job_number),
           cell:cells(name, color),
           operations(count)
         `);
-
-      if (statusFilter !== "all") {
-        query = query.eq("status", statusFilter as any);
-      }
-
-      if (materialFilter !== "all") {
-        query = query.eq("material", materialFilter);
-      }
-
-      if (jobFilter !== "all") {
-        query = query.eq("job_id", jobFilter);
-      }
-
-      if (assemblyFilter === "assemblies") {
-        // Get parts that have children (are assemblies)
-        const { data: childParts } = await supabase
-          .from("parts")
-          .select("parent_part_id")
-          .not("parent_part_id", "is", null);
-
-        const assemblyIds = [
-          ...new Set(childParts?.map((p) => p.parent_part_id)),
-        ];
-        if (assemblyIds.length > 0) {
-          query = query.in("id", assemblyIds);
-        } else {
-          // No assemblies exist, return empty
-          return [];
-        }
-      } else if (assemblyFilter === "components") {
-        query = query.not("parent_part_id", "is", null);
-      } else if (assemblyFilter === "standalone") {
-        query = query.is("parent_part_id", null);
-      }
-
-      if (searchQuery) {
-        query = query.ilike("part_number", `%${searchQuery}%`);
-      }
 
       const { data, error } = await query;
       if (error) throw error;
@@ -236,10 +186,7 @@ export default function Parts() {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<
-      string,
-      "default" | "secondary" | "destructive" | "outline"
-    > = {
+    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
       not_started: "secondary",
       in_progress: "default",
       completed: "outline",
@@ -251,241 +198,246 @@ export default function Parts() {
     );
   };
 
-  return (
-    <Layout>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">{t("parts.title")}</h1>
-      </div>
-
-      {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-        <Input
-          placeholder={t("parts.searchByPartNumber")}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger>
-            <SelectValue placeholder={t("parts.filterByStatus")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t("parts.allStatuses")}</SelectItem>
-            <SelectItem value="not_started">
-              {t("parts.status.notStarted")}
-            </SelectItem>
-            <SelectItem value="in_progress">
-              {t("parts.status.inProgress")}
-            </SelectItem>
-            <SelectItem value="completed">
-              {t("parts.status.completed")}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select value={materialFilter} onValueChange={setMaterialFilter}>
-          <SelectTrigger>
-            <SelectValue placeholder={t("parts.filterByMaterial")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t("parts.allMaterials")}</SelectItem>
-            {materials?.map((material) => (
-              <SelectItem key={material} value={material}>
-                {material}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={jobFilter} onValueChange={setJobFilter}>
-          <SelectTrigger>
-            <SelectValue placeholder={t("parts.filterByJob")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t("parts.allJobs")}</SelectItem>
-            {jobs?.map((job) => (
-              <SelectItem key={job.id} value={job.id}>
-                {job.job_number}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={assemblyFilter} onValueChange={setAssemblyFilter}>
-          <SelectTrigger>
-            <SelectValue placeholder={t("parts.assemblyType")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t("parts.allTypes")}</SelectItem>
-            <SelectItem value="assemblies">
-              {t("parts.assembliesHasChildren")}
-            </SelectItem>
-            <SelectItem value="components">
-              {t("parts.componentsHasParent")}
-            </SelectItem>
-            <SelectItem value="standalone">
-              {t("parts.standaloneParts")}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Parts Table */}
-      {isLoading ? (
-        <div className="text-center py-8">{t("parts.loadingParts")}</div>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("parts.partNumber")}</TableHead>
-              <TableHead>{t("parts.type")}</TableHead>
-              <TableHead>{t("parts.jobNumber")}</TableHead>
-              <TableHead>{t("parts.material")}</TableHead>
-              <TableHead>{t("parts.status.title")}</TableHead>
-              <TableHead>{t("parts.currentCell")}</TableHead>
-              <TableHead className="text-right">
-                {t("parts.operations")}
-              </TableHead>
-              <TableHead>Files</TableHead>
-              <TableHead className="text-right">{t("parts.actions")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {parts?.map((part: any) => (
-              <TableRow key={part.id}>
-                <TableCell className="font-medium">
-                  {part.part_number}
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    {part.has_children && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs"
-                        title={t("parts.assemblyTooltip")}
-                      >
-                        <Package className="h-3 w-3 mr-1" />
-                        {t("parts.assembly")}
-                      </Badge>
-                    )}
-                    {part.parent_part_id && (
-                      <Badge
-                        variant="secondary"
-                        className="text-xs"
-                        title={t("parts.componentTooltip")}
-                      >
-                        <ChevronRight className="h-3 w-3 mr-1" />
-                        {t("parts.component")}
-                      </Badge>
-                    )}
-                    {!part.has_children && !part.parent_part_id && (
-                      <span className="text-xs text-gray-500">
-                        {t("parts.standalone")}
-                      </span>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>{part.job?.job_number}</TableCell>
-                <TableCell>{part.material}</TableCell>
-                <TableCell>{getStatusBadge(part.status)}</TableCell>
-                <TableCell>
-                  {part.cell ? (
-                    <Badge
-                      variant="outline"
-                      style={{
-                        borderColor: part.cell.color,
-                        backgroundColor: `${part.cell.color}20`,
-                      }}
-                    >
-                      {part.cell.name}
-                    </Badge>
-                  ) : (
-                    <span className="text-gray-400 text-sm">
-                      {t("parts.notStarted")}
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell className="text-right">
-                  {part.operations_count}
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    {part.hasSTEP && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => handleViewFile(part.stepFiles[0])}
-                        title={`${part.stepFiles.length} STEP file(s)`}
-                      >
-                        <Box className="h-5 w-5 text-blue-600" />
-                      </Button>
-                    )}
-                    {part.hasPDF && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => handleViewFile(part.pdfFiles[0])}
-                        title={`${part.pdfFiles.length} PDF file(s)`}
-                      >
-                        <FileText className="h-5 w-5 text-red-600" />
-                      </Button>
-                    )}
-                    {!part.hasSTEP && !part.hasPDF && (
-                      <span className="text-xs text-gray-400">-</span>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedPartId(part.id)}
-                  >
-                    {t("parts.viewDetails")}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-            {parts?.length === 0 && (
-              <TableRow>
-                <TableCell
-                  colSpan={9}
-                  className="text-center text-gray-500 py-8"
-                >
-                  {t("parts.noPartsFound")}
-                </TableCell>
-              </TableRow>
+  const columns: ColumnDef<PartData>[] = useMemo(() => [
+    {
+      accessorKey: "part_number",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("parts.partNumber")} />
+      ),
+      cell: ({ row }) => (
+        <span className="font-medium">{row.getValue("part_number")}</span>
+      ),
+    },
+    {
+      id: "type",
+      header: t("parts.type"),
+      cell: ({ row }) => {
+        const part = row.original;
+        return (
+          <div className="flex gap-1">
+            {part.has_children && (
+              <Badge variant="outline" className="text-xs" title={t("parts.assemblyTooltip")}>
+                <Package className="h-3 w-3 mr-1" />
+                {t("parts.assembly")}
+              </Badge>
             )}
-          </TableBody>
-        </Table>
-      )}
-
-      {selectedPartId && (
-        <PartDetailModal
-          partId={selectedPartId}
-          onClose={() => setSelectedPartId(null)}
-          onUpdate={() => refetch()}
-        />
-      )}
-
-      {/* File Viewer Dialog */}
-      <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
-        <DialogContent className="max-w-7xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>{currentFileTitle}</DialogTitle>
-          </DialogHeader>
-          <div className="w-full h-[75vh]">
-            {currentFileType === "step" && currentFileUrl && (
-              <STEPViewer url={currentFileUrl} />
+            {part.parent_part_id && (
+              <Badge variant="secondary" className="text-xs" title={t("parts.componentTooltip")}>
+                <ChevronRight className="h-3 w-3 mr-1" />
+                {t("parts.component")}
+              </Badge>
             )}
-            {currentFileType === "pdf" && currentFileUrl && (
-              <PDFViewer url={currentFileUrl} />
+            {!part.has_children && !part.parent_part_id && (
+              <span className="text-xs text-muted-foreground">{t("parts.standalone")}</span>
             )}
           </div>
-        </DialogContent>
-      </Dialog>
+        );
+      },
+      filterFn: (row, id, value) => {
+        const part = row.original;
+        if (value.includes("assemblies") && part.has_children) return true;
+        if (value.includes("components") && part.parent_part_id) return true;
+        if (value.includes("standalone") && !part.has_children && !part.parent_part_id) return true;
+        return false;
+      },
+    },
+    {
+      accessorKey: "job.job_number",
+      id: "job_number",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("parts.jobNumber")} />
+      ),
+      cell: ({ row }) => row.original.job?.job_number || "-",
+      filterFn: (row, id, value) => {
+        const jobNumber = row.original.job?.job_number;
+        return value.includes(jobNumber);
+      },
+    },
+    {
+      accessorKey: "material",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("parts.material")} />
+      ),
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id));
+      },
+    },
+    {
+      accessorKey: "status",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("parts.status.title")} />
+      ),
+      cell: ({ row }) => getStatusBadge(row.getValue("status")),
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id));
+      },
+    },
+    {
+      id: "cell",
+      header: t("parts.currentCell"),
+      cell: ({ row }) => {
+        const part = row.original;
+        return part.cell ? (
+          <Badge
+            variant="outline"
+            style={{
+              borderColor: part.cell.color,
+              backgroundColor: `${part.cell.color}20`,
+            }}
+          >
+            {part.cell.name}
+          </Badge>
+        ) : (
+          <span className="text-muted-foreground text-sm">{t("parts.notStarted")}</span>
+        );
+      },
+    },
+    {
+      accessorKey: "operations_count",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("parts.operations")} />
+      ),
+      cell: ({ row }) => (
+        <div className="text-right">{row.getValue("operations_count")}</div>
+      ),
+    },
+    {
+      id: "files",
+      header: "Files",
+      cell: ({ row }) => {
+        const part = row.original;
+        return (
+          <div className="flex gap-1">
+            {part.hasSTEP && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewFile(part.stepFiles[0]);
+                }}
+                title={`${part.stepFiles.length} STEP file(s)`}
+              >
+                <Box className="h-4 w-4 text-blue-600" />
+              </Button>
+            )}
+            {part.hasPDF && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewFile(part.pdfFiles[0]);
+                }}
+                title={`${part.pdfFiles.length} PDF file(s)`}
+              >
+                <FileText className="h-4 w-4 text-red-600" />
+              </Button>
+            )}
+            {!part.hasSTEP && !part.hasPDF && (
+              <span className="text-xs text-muted-foreground">-</span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: t("parts.actions"),
+      cell: ({ row }) => {
+        const part = row.original;
+        return (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedPartId(part.id);
+            }}
+          >
+            <Eye className="h-4 w-4 mr-1" />
+            {t("parts.viewDetails")}
+          </Button>
+        );
+      },
+    },
+  ], [t]);
+
+  const filterableColumns: DataTableFilterableColumn[] = useMemo(() => [
+    {
+      id: "status",
+      title: t("parts.status.title"),
+      options: [
+        { label: t("parts.status.notStarted"), value: "not_started" },
+        { label: t("parts.status.inProgress"), value: "in_progress" },
+        { label: t("parts.status.completed"), value: "completed" },
+      ],
+    },
+    {
+      id: "material",
+      title: t("parts.material"),
+      options: (materials || []).map((m) => ({ label: m, value: m })),
+    },
+    {
+      id: "job_number",
+      title: t("parts.jobNumber"),
+      options: (jobs || []).map((j) => ({ label: j.job_number, value: j.job_number })),
+    },
+    {
+      id: "type",
+      title: t("parts.type"),
+      options: [
+        { label: t("parts.assembliesHasChildren"), value: "assemblies" },
+        { label: t("parts.componentsHasParent"), value: "components" },
+        { label: t("parts.standaloneParts"), value: "standalone" },
+      ],
+    },
+  ], [t, materials, jobs]);
+
+  return (
+    <Layout>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">{t("parts.title")}</h1>
+        </div>
+
+        <DataTable
+          columns={columns}
+          data={parts || []}
+          filterableColumns={filterableColumns}
+          searchPlaceholder={t("parts.searchByPartNumber")}
+          loading={isLoading}
+          pageSize={20}
+          emptyMessage={t("parts.noPartsFound")}
+        />
+
+        {selectedPartId && (
+          <PartDetailModal
+            partId={selectedPartId}
+            onClose={() => setSelectedPartId(null)}
+            onUpdate={() => refetch()}
+          />
+        )}
+
+        {/* File Viewer Dialog */}
+        <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
+          <DialogContent className="max-w-7xl max-h-[90vh]">
+            <DialogHeader>
+              <DialogTitle>{currentFileTitle}</DialogTitle>
+            </DialogHeader>
+            <div className="w-full h-[75vh]">
+              {currentFileType === "step" && currentFileUrl && (
+                <STEPViewer url={currentFileUrl} />
+              )}
+              {currentFileType === "pdf" && currentFileUrl && (
+                <PDFViewer url={currentFileUrl} />
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
     </Layout>
   );
 }
