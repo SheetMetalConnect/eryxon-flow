@@ -344,36 +344,36 @@ export default function ConfigWebhooks() {
   ], []);
 
   return (
-    <div className="p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">{t('webhooks.title')}</h1>
-            <p className="text-muted-foreground">{t('webhooks.description')}</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={fetchWebhookLogs}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              {t('webhooks.refreshLogs')}
-            </Button>
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t('webhooks.addWebhook')}
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{t('webhooks.createWebhook')}</DialogTitle>
-                  <DialogDescription>
-                    {t('webhooks.configureWebhook')}
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="webhook-url">{t('webhooks.webhookUrl')}</Label>
-                    <Input
-                      id="webhook-url"
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">{t('webhooks.title')}</h1>
+          <p className="text-muted-foreground">{t('webhooks.description')}</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={fetchWebhookLogs}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            {t('webhooks.refreshLogs')}
+          </Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                {t('webhooks.addWebhook')}
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{t('webhooks.createWebhook')}</DialogTitle>
+                <DialogDescription>
+                  {t('webhooks.configureWebhook')}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="webhook-url">{t('webhooks.webhookUrl')}</Label>
+                  <Input
+                    id="webhook-url"
                       type="url"
                       placeholder={t('webhooks.urlPlaceholder')}
                       value={webhookUrl}
@@ -541,6 +541,6 @@ function verifyWebhook(payload, signature, secret) {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
+    </div>
   );
 }

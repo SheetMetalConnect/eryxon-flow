@@ -183,7 +183,8 @@ apiClient.post('/api-jobs', jobData)
   };
 
   return (
-    <div className="space-y-6">
+    <>
+      <div className="space-y-6">
         {/* Hero Section */}
         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
           <CardHeader>
@@ -544,6 +545,6 @@ apiClient.post('/api-jobs', jobData)
           margin: 0;
         }
       `}</style>
-    </div>
+    </>
   );
 }

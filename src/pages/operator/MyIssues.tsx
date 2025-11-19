@@ -111,7 +111,8 @@ export default function MyIssues() {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">{t("myIssues.title")}</h1>
           <p className="text-muted-foreground">{t("myIssues.description")}</p>
@@ -158,6 +159,7 @@ export default function MyIssues() {
           ))}
         </div>
       )}
+      </div>
 
       {/* Issue Detail Modal */}
       <Dialog open={!!selectedIssue} onOpenChange={() => setSelectedIssue(null)}>
@@ -226,9 +228,9 @@ export default function MyIssues() {
                 </div>
               )}
             </div>
-        )}
-      </DialogContent>
-    </Dialog>
-    </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

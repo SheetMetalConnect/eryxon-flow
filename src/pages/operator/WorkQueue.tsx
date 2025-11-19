@@ -216,7 +216,8 @@ export default function WorkQueue() {
   }
 
   return (
-    <div className="space-y-4">
+    <>
+      <div className="space-y-4">
         {/* Currently Timing Widget */}
         <CurrentlyTimingWidget />
 
@@ -425,5 +426,6 @@ export default function WorkQueue() {
           </div>
         </div>
       </div>
+    </>
   );
 }
