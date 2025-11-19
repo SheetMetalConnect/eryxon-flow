@@ -11,7 +11,6 @@ import {
   Card,
   CardContent,
   CardActionArea,
-  Chip,
   Tabs,
   Tab,
   List,
@@ -19,7 +18,6 @@ import {
   ListItemIcon,
   ListItemText,
   Alert,
-  Button,
   Divider,
 } from "@mui/material";
 import {
@@ -30,12 +28,8 @@ import {
   Timer as TimerIcon,
   BugReport as BugReportIcon,
   Description as DocsIcon,
-  VideoLibrary as VideoIcon,
-  Email as EmailIcon,
   CheckCircle as CheckIcon,
-  Settings as SettingsIcon,
   Code as CodeIcon,
-  Storage as StorageIcon,
   Build as BuildIcon,
 } from "@mui/icons-material";
 
@@ -73,16 +67,16 @@ export default function Help() {
       {/* Header */}
       <Box sx={{ mb: 4, textAlign: "center" }}>
         <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
-          Help & Documentation
+          Help
         </Typography>
         <Typography variant="h6" color="text.secondary">
-          Everything you need to know about Eryxon Flow
+          How to use Eryxon MES
         </Typography>
       </Box>
 
       {/* Quick Links */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <Card elevation={2}>
             <CardActionArea href="/admin/api-docs">
               <CardContent sx={{ textAlign: "center", py: 3 }}>
@@ -98,25 +92,7 @@ export default function Help() {
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Card elevation={2}>
-            <CardActionArea href="/admin/pricing">
-              <CardContent sx={{ textAlign: "center", py: 3 }}>
-                <StorageIcon
-                  sx={{ fontSize: 48, color: "primary.main", mb: 2 }}
-                />
-                <Typography variant="h6" gutterBottom>
-                  Plans & Pricing
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  View subscription plans
-                </Typography>
-              </CardContent>
-            </CardActionArea>
-          </Card>
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <Card elevation={2}>
             <CardActionArea
               onClick={() =>
@@ -129,32 +105,26 @@ export default function Help() {
               <CardContent sx={{ textAlign: "center", py: 3 }}>
                 <DocsIcon sx={{ fontSize: 48, color: "primary.main", mb: 2 }} />
                 <Typography variant="h6" gutterBottom>
-                  Documentation
+                  GitHub
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Full technical docs
+                  Source and docs
                 </Typography>
               </CardContent>
             </CardActionArea>
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <Card elevation={2}>
-            <CardActionArea
-              onClick={() =>
-                window.open("mailto:support@eryxonflow.com", "_blank")
-              }
-            >
+            <CardActionArea href="/admin/about">
               <CardContent sx={{ textAlign: "center", py: 3 }}>
-                <EmailIcon
-                  sx={{ fontSize: 48, color: "primary.main", mb: 2 }}
-                />
+                <BuildIcon sx={{ fontSize: 48, color: "primary.main", mb: 2 }} />
                 <Typography variant="h6" gutterBottom>
-                  Contact Support
+                  About
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Get help from our team
+                  About Eryxon MES
                 </Typography>
               </CardContent>
             </CardActionArea>
@@ -184,7 +154,7 @@ export default function Help() {
           <Tab icon={<AdminIcon />} label="For Admins" iconPosition="start" />
           <Tab
             icon={<BugReportIcon />}
-            label="FAQ & Troubleshooting"
+            label="FAQ"
             iconPosition="start"
           />
         </Tabs>
@@ -193,26 +163,23 @@ export default function Help() {
         <TabPanel value={tabValue} index={0}>
           <Box sx={{ px: 3 }}>
             <Typography variant="h5" gutterBottom fontWeight="600">
-              Welcome to Eryxon Flow!
+              Getting Started
             </Typography>
             <Typography paragraph color="text.secondary">
-              Eryxon Flow is a manufacturing execution system designed for sheet
-              metal fabrication. Here's how to get started:
+              Eryxon MES is a manufacturing execution system for sheet metal fabrication.
             </Typography>
 
             <Alert severity="info" sx={{ mb: 3 }}>
               <Typography variant="subtitle2" gutterBottom>
-                Quick Tip: Your role determines what you can access
+                Your role determines what you can access
               </Typography>
               <Typography variant="body2">
-                <strong>Operators</strong> focus on executing work, while{" "}
-                <strong>Admins</strong> manage jobs, configure settings, and
-                oversee production.
+                <strong>Operators</strong> execute work and track time. <strong>Admins</strong> manage jobs, configure settings, and oversee production.
               </Typography>
             </Alert>
 
             <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
-              How Eryxon Flow Works
+              How It Works
             </Typography>
 
             <List>
@@ -273,17 +240,12 @@ export default function Help() {
               <Grid size={{ xs: 12, md: 6 }}>
                 <Card variant="outlined">
                   <CardContent>
-                    <Typography
-                      variant="subtitle1"
-                      gutterBottom
-                      fontWeight="600"
-                    >
+                    <Typography variant="subtitle1" gutterBottom fontWeight="600">
                       <TimerIcon sx={{ verticalAlign: "middle", mr: 1 }} />
                       Time Tracking
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Track actual time vs. estimated time for accurate costing
-                      and scheduling. Pause and resume as needed.
+                      Track actual time vs. estimated time. Pause and resume as needed.
                     </Typography>
                   </CardContent>
                 </Card>
@@ -291,17 +253,12 @@ export default function Help() {
               <Grid size={{ xs: 12, md: 6 }}>
                 <Card variant="outlined">
                   <CardContent>
-                    <Typography
-                      variant="subtitle1"
-                      gutterBottom
-                      fontWeight="600"
-                    >
+                    <Typography variant="subtitle1" gutterBottom fontWeight="600">
                       <BugReportIcon sx={{ verticalAlign: "middle", mr: 1 }} />
                       Issue Management
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Report production issues with photos. Admins review and
-                      resolve issues in real-time.
+                      Report production issues with photos. Admins review and resolve issues.
                     </Typography>
                   </CardContent>
                 </Card>
@@ -309,17 +266,12 @@ export default function Help() {
               <Grid size={{ xs: 12, md: 6 }}>
                 <Card variant="outlined">
                   <CardContent>
-                    <Typography
-                      variant="subtitle1"
-                      gutterBottom
-                      fontWeight="600"
-                    >
+                    <Typography variant="subtitle1" gutterBottom fontWeight="600">
                       <BuildIcon sx={{ verticalAlign: "middle", mr: 1 }} />
                       3D CAD Viewer
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      View STEP files directly in the browser with interactive
-                      3D controls, wireframe mode, and exploded views.
+                      View STEP files in browser with 3D controls, wireframe mode, and exploded views.
                     </Typography>
                   </CardContent>
                 </Card>
@@ -327,17 +279,12 @@ export default function Help() {
               <Grid size={{ xs: 12, md: 6 }}>
                 <Card variant="outlined">
                   <CardContent>
-                    <Typography
-                      variant="subtitle1"
-                      gutterBottom
-                      fontWeight="600"
-                    >
+                    <Typography variant="subtitle1" gutterBottom fontWeight="600">
                       <CodeIcon sx={{ verticalAlign: "middle", mr: 1 }} />
                       API Integration
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Connect with ERP, accounting, and other systems via
-                      RESTful API with webhooks for real-time events.
+                      Connect with ERP and other systems via REST API with webhooks.
                     </Typography>
                   </CardContent>
                 </Card>
@@ -353,8 +300,7 @@ export default function Help() {
               Operator Guide
             </Typography>
             <Typography paragraph color="text.secondary">
-              As an operator, you'll spend most of your time in the Work Queue
-              executing operations assigned to you.
+              As an operator, you'll spend most of your time in the Work Queue executing operations.
             </Typography>
 
             <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
@@ -363,14 +309,11 @@ export default function Help() {
 
             <Accordion defaultExpanded>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography fontWeight="600">
-                  1. View Your Work Queue
-                </Typography>
+                <Typography fontWeight="600">1. View Your Work Queue</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography paragraph>
-                  After logging in, you'll see your <strong>Work Queue</strong>{" "}
-                  with all operations assigned to you.
+                  After logging in, you'll see your <strong>Work Queue</strong> with all operations assigned to you.
                 </Typography>
                 <List dense>
                   <ListItem>
@@ -400,9 +343,7 @@ export default function Help() {
                 <Typography fontWeight="600">2. Start an Operation</Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <Typography paragraph>
-                  Click on an operation card to open details:
-                </Typography>
+                <Typography paragraph>Click on an operation card to open details:</Typography>
                 <List dense>
                   <ListItem>
                     <ListItemText
@@ -424,8 +365,7 @@ export default function Help() {
                   </ListItem>
                 </List>
                 <Alert severity="warning" sx={{ mt: 2 }}>
-                  You can only time one operation at a time. Starting a new
-                  operation will stop timing on the previous one.
+                  You can only time one operation at a time. Starting a new operation will stop timing on the previous one.
                 </Alert>
               </AccordionDetails>
             </Accordion>
@@ -435,9 +375,7 @@ export default function Help() {
                 <Typography fontWeight="600">3. During Work</Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <Typography paragraph>
-                  While working on an operation:
-                </Typography>
+                <Typography paragraph>While working on an operation:</Typography>
                 <List dense>
                   <ListItem>
                     <ListItemText
@@ -469,9 +407,7 @@ export default function Help() {
 
             <Accordion>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography fontWeight="600">
-                  4. Complete the Operation
-                </Typography>
+                <Typography fontWeight="600">4. Complete the Operation</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography paragraph>When you're done:</Typography>
@@ -500,14 +436,11 @@ export default function Help() {
 
             <Accordion>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography fontWeight="600">
-                  5. Review Your Activity
-                </Typography>
+                <Typography fontWeight="600">5. Review Your Activity</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography paragraph>
-                  Click <strong>My Activity</strong> in the bottom navigation to
-                  see:
+                  Click <strong>My Activity</strong> in the bottom navigation to see:
                 </Typography>
                 <List dense>
                   <ListItem>
@@ -527,40 +460,37 @@ export default function Help() {
               Tips for Operators
             </Typography>
 
-            <Paper
-              variant="outlined"
-              sx={{ p: 2, bgcolor: "background.default" }}
-            >
+            <Paper variant="outlined" sx={{ p: 2, bgcolor: "background.default" }}>
               <List dense>
                 <ListItem>
                   <ListItemIcon>
                     <CheckIcon fontSize="small" color="primary" />
                   </ListItemIcon>
-                  <ListItemText primary="Always start timing before you begin work - accurate time tracking helps with scheduling" />
+                  <ListItemText primary="Always start timing before you begin work" />
                 </ListItem>
                 <ListItem>
                   <ListItemIcon>
                     <CheckIcon fontSize="small" color="primary" />
                   </ListItemIcon>
-                  <ListItemText primary="Pause the timer during breaks or interruptions - only work time should be tracked" />
+                  <ListItemText primary="Pause the timer during breaks or interruptions" />
                 </ListItem>
                 <ListItem>
                   <ListItemIcon>
                     <CheckIcon fontSize="small" color="primary" />
                   </ListItemIcon>
-                  <ListItemText primary="Report issues immediately when they occur - don't wait until the end of the day" />
+                  <ListItemText primary="Report issues immediately when they occur" />
                 </ListItem>
                 <ListItem>
                   <ListItemIcon>
                     <CheckIcon fontSize="small" color="primary" />
                   </ListItemIcon>
-                  <ListItemText primary="Take photos of issues - visual documentation helps admins resolve problems faster" />
+                  <ListItemText primary="Take photos of issues for documentation" />
                 </ListItem>
                 <ListItem>
                   <ListItemIcon>
                     <CheckIcon fontSize="small" color="primary" />
                   </ListItemIcon>
-                  <ListItemText primary="Mark operations complete as soon as you finish - keeps the queue current" />
+                  <ListItemText primary="Mark operations complete as soon as you finish" />
                 </ListItem>
               </List>
             </Paper>
@@ -574,8 +504,7 @@ export default function Help() {
               Admin Guide
             </Typography>
             <Typography paragraph color="text.secondary">
-              As an admin, you have full access to manage jobs, configure the
-              system, and oversee production.
+              As an admin, you have full access to manage jobs, configure the system, and oversee production.
             </Typography>
 
             <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
@@ -711,8 +640,7 @@ export default function Help() {
                   </ListItem>
                 </List>
                 <Alert severity="info" sx={{ mt: 2 }}>
-                  You can assign the same part to multiple operators for
-                  collaborative work.
+                  You can assign the same part to multiple operators for collaborative work.
                 </Alert>
               </AccordionDetails>
             </Accordion>
@@ -723,8 +651,7 @@ export default function Help() {
               </AccordionSummary>
               <AccordionDetails>
                 <Typography paragraph>
-                  When operators report issues, they appear in{" "}
-                  <strong>Issues</strong> page:
+                  When operators report issues, they appear in <strong>Issues</strong> page:
                 </Typography>
                 <List dense>
                   <ListItem>
@@ -767,23 +694,21 @@ export default function Help() {
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="subtitle2" gutterBottom>
-                  Settings Menu (click Settings in sidebar)
+                  Settings Menu
                 </Typography>
 
                 <Typography variant="body2" fontWeight="600" sx={{ mt: 2 }}>
                   Stages/Cells
                 </Typography>
                 <Typography variant="body2" color="text.secondary" paragraph>
-                  Define your workflow stages (Cutting, Bending, Welding, etc.).
-                  Assign colors for visual identification.
+                  Define your workflow stages (Cutting, Bending, Welding, etc.). Assign colors for visual identification.
                 </Typography>
 
                 <Typography variant="body2" fontWeight="600">
                   Materials
                 </Typography>
                 <Typography variant="body2" color="text.secondary" paragraph>
-                  Create a catalog of materials you work with (Steel 1018,
-                  Aluminum 6061, etc.)
+                  Create a catalog of materials you work with (Steel 1018, Aluminum 6061, etc.)
                 </Typography>
 
                 <Typography variant="body2" fontWeight="600">
@@ -804,16 +729,14 @@ export default function Help() {
                   API Keys
                 </Typography>
                 <Typography variant="body2" color="text.secondary" paragraph>
-                  Generate keys for external system integrations (ERP,
-                  accounting software)
+                  Generate keys for external system integrations (ERP, accounting software)
                 </Typography>
 
                 <Typography variant="body2" fontWeight="600">
                   Webhooks
                 </Typography>
                 <Typography variant="body2" color="text.secondary" paragraph>
-                  Configure real-time notifications to external systems when
-                  events occur
+                  Configure real-time notifications to external systems when events occur
                 </Typography>
               </AccordionDetails>
             </Accordion>
@@ -846,65 +769,51 @@ export default function Help() {
                     />
                   </ListItem>
                 </List>
-                <Alert severity="info" sx={{ mt: 2 }}>
-                  Exports include all your data but exclude uploaded files. File
-                  paths are included so you can download files separately from
-                  storage.
-                </Alert>
               </AccordionDetails>
             </Accordion>
 
             <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
-              Best Practices for Admins
+              Best Practices
             </Typography>
 
-            <Paper
-              variant="outlined"
-              sx={{ p: 2, bgcolor: "background.default" }}
-            >
+            <Paper variant="outlined" sx={{ p: 2, bgcolor: "background.default" }}>
               <List dense>
                 <ListItem>
                   <ListItemIcon>
                     <CheckIcon fontSize="small" color="primary" />
                   </ListItemIcon>
-                  <ListItemText primary="Set up your workflow cells first - this makes job creation much easier" />
+                  <ListItemText primary="Set up your workflow cells first - this makes job creation easier" />
                 </ListItem>
                 <ListItem>
                   <ListItemIcon>
                     <CheckIcon fontSize="small" color="primary" />
                   </ListItemIcon>
-                  <ListItemText primary="Create a materials catalog before adding jobs - saves time later" />
+                  <ListItemText primary="Create a materials catalog before adding jobs" />
                 </ListItem>
                 <ListItem>
                   <ListItemIcon>
                     <CheckIcon fontSize="small" color="primary" />
                   </ListItemIcon>
-                  <ListItemText primary="Review the dashboard daily - catch issues early and see what needs attention" />
+                  <ListItemText primary="Review the dashboard daily to catch issues early" />
                 </ListItem>
                 <ListItem>
                   <ListItemIcon>
                     <CheckIcon fontSize="small" color="primary" />
                   </ListItemIcon>
-                  <ListItemText primary="Respond to issues quickly - operators are waiting for your approval/guidance" />
+                  <ListItemText primary="Respond to issues quickly" />
                 </ListItem>
                 <ListItem>
                   <ListItemIcon>
                     <CheckIcon fontSize="small" color="primary" />
                   </ListItemIcon>
-                  <ListItemText primary="Use due date overrides when customer dates change - keeps planning accurate" />
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon>
-                    <CheckIcon fontSize="small" color="primary" />
-                  </ListItemIcon>
-                  <ListItemText primary="Export data regularly for backups - monthly exports are recommended" />
+                  <ListItemText primary="Export data regularly for backups" />
                 </ListItem>
               </List>
             </Paper>
           </Box>
         </TabPanel>
 
-        {/* FAQ & Troubleshooting Tab */}
+        {/* FAQ Tab */}
         <TabPanel value={tabValue} index={3}>
           <Box sx={{ px: 3 }}>
             <Typography variant="h5" gutterBottom fontWeight="600">
@@ -912,29 +821,22 @@ export default function Help() {
             </Typography>
 
             <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
-              General Questions
+              General
             </Typography>
 
             <Accordion>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>
-                  What's the difference between Jobs, Parts, and Operations?
-                </Typography>
+                <Typography>What's the difference between Jobs, Parts, and Operations?</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography paragraph>
-                  <strong>Job:</strong> A customer order or manufacturing
-                  project (e.g., "Bracket Assembly for Customer ABC")
+                  <strong>Job:</strong> A customer order or manufacturing project
                 </Typography>
                 <Typography paragraph>
-                  <strong>Part:</strong> An individual component within a job
-                  (e.g., "Left Bracket Plate"). Parts can be assemblies
-                  (containing other parts) or standalone components.
+                  <strong>Part:</strong> An individual component within a job. Parts can be assemblies containing other parts.
                 </Typography>
                 <Typography paragraph>
-                  <strong>Operation:</strong> A specific task performed on a
-                  part (e.g., "Laser Cut", "Bend 90°", "Weld Corner").
-                  Operations are what operators actually do.
+                  <strong>Operation:</strong> A specific task performed on a part (e.g., "Laser Cut", "Bend 90°")
                 </Typography>
                 <Typography paragraph>
                   <strong>Hierarchy:</strong> Job → Parts → Operations
@@ -948,10 +850,7 @@ export default function Help() {
               </AccordionSummary>
               <AccordionDetails>
                 <Typography>
-                  No, you can only time one operation at a time per operator. If
-                  you start timing a new operation, any previously active timer
-                  will automatically stop. This ensures accurate time tracking
-                  and prevents overlapping time entries.
+                  No, you can only time one operation at a time per operator. Starting a new timer automatically stops any previous one.
                 </Typography>
               </AccordionDetails>
             </Accordion>
@@ -962,20 +861,15 @@ export default function Help() {
               </AccordionSummary>
               <AccordionDetails>
                 <Typography paragraph>
-                  When you pause a timer, the pause duration is tracked
-                  separately. When you stop timing, the system calculates:
+                  Pause time is tracked separately. When you stop timing:
                 </Typography>
-                <Typography
-                  component="pre"
-                  sx={{ bgcolor: "background.default", p: 2, borderRadius: 1 }}
-                >
+                <Typography component="pre" sx={{ bgcolor: "background.default", p: 2, borderRadius: 1 }}>
                   Total Time = Stop Time - Start Time{"\n"}
                   Pause Time = Sum of all pauses{"\n"}
                   Effective Time = Total Time - Pause Time
                 </Typography>
                 <Typography paragraph sx={{ mt: 2 }}>
-                  Only the Effective Time counts toward the operation's actual
-                  time. This ensures accurate costing and scheduling.
+                  Only Effective Time counts toward the operation's actual time.
                 </Typography>
               </AccordionDetails>
             </Accordion>
@@ -986,21 +880,16 @@ export default function Help() {
               </AccordionSummary>
               <AccordionDetails>
                 <Typography paragraph>
-                  Assemblies are parts that contain other parts. For example:
+                  Assemblies are parts that contain other parts:
                 </Typography>
-                <Typography
-                  component="pre"
-                  sx={{ bgcolor: "background.default", p: 2, borderRadius: 1 }}
-                >
+                <Typography component="pre" sx={{ bgcolor: "background.default", p: 2, borderRadius: 1 }}>
                   Bracket Assembly (parent){"\n"}
                   ├── Left Plate (child){"\n"}
                   ├── Right Plate (child){"\n"}
                   └── Mounting Bracket (child)
                 </Typography>
                 <Typography paragraph sx={{ mt: 2 }}>
-                  Each part (parent and children) can have its own operations.
-                  The assembly hierarchy just shows how parts relate to each
-                  other.
+                  Each part can have its own operations. The hierarchy shows how parts relate to each other.
                 </Typography>
               </AccordionDetails>
             </Accordion>
@@ -1011,47 +900,31 @@ export default function Help() {
 
             <Accordion>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>
-                  I don't see any operations in my Work Queue
-                </Typography>
+                <Typography>I don't see any operations in my Work Queue</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography paragraph>
-                  <strong>Check 1:</strong> Make sure work has been assigned to
-                  you. Ask your admin to assign parts to your account.
+                  <strong>Check 1:</strong> Make sure work has been assigned to you by an admin.
                 </Typography>
                 <Typography paragraph>
-                  <strong>Check 2:</strong> Check your filters. Clear all
-                  filters to see if operations appear.
+                  <strong>Check 2:</strong> Clear all filters to see if operations appear.
                 </Typography>
                 <Typography paragraph>
-                  <strong>Check 3:</strong> You might have already completed all
-                  your assigned work. Check "My Activity" to see recent
-                  completions.
+                  <strong>Check 3:</strong> You might have completed all assigned work. Check "My Activity".
                 </Typography>
               </AccordionDetails>
             </Accordion>
 
             <Accordion>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>
-                  Timer doesn't start when I click "Start Timing"
-                </Typography>
+                <Typography>Timer doesn't start when I click "Start Timing"</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography paragraph>
-                  <strong>Cause:</strong> You likely have another operation
-                  already timing.
+                  <strong>Cause:</strong> You likely have another operation already timing.
                 </Typography>
                 <Typography paragraph>
-                  <strong>Solution:</strong> Check the "Currently Timing" widget
-                  at the top. Stop that timer first, then start the new
-                  operation.
-                </Typography>
-                <Typography paragraph>
-                  <strong>Note:</strong> The system only allows one active timer
-                  per operator to prevent confusion and ensure accurate time
-                  tracking.
+                  <strong>Solution:</strong> Check the "Currently Timing" widget at the top. Stop that timer first.
                 </Typography>
               </AccordionDetails>
             </Accordion>
@@ -1062,76 +935,22 @@ export default function Help() {
               </AccordionSummary>
               <AccordionDetails>
                 <Typography paragraph>
-                  <strong>Check 1:</strong> Is the file a valid STEP format
-                  (.step or .stp)?
+                  <strong>Check 1:</strong> Is the file a valid STEP format (.step or .stp)?
                 </Typography>
                 <Typography paragraph>
-                  <strong>Check 2:</strong> File size - Maximum is 50MB. Large
-                  assemblies may need to be split.
+                  <strong>Check 2:</strong> File size - Maximum is 50MB.
                 </Typography>
                 <Typography paragraph>
-                  <strong>Check 3:</strong> Try re-exporting from your CAD
-                  software with standard STEP settings.
+                  <strong>Check 3:</strong> Try re-exporting from your CAD software with standard STEP settings.
                 </Typography>
                 <Typography paragraph>
-                  <strong>Check 4:</strong> Click "Fit View" if the model loaded
-                  but appears off-screen.
+                  <strong>Check 4:</strong> Click "Fit View" if the model loaded but appears off-screen.
                 </Typography>
-              </AccordionDetails>
-            </Accordion>
-
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>Can't create a new job (Admin)</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>
-                  <strong>Check plan limits:</strong> Go to "My Plan" page and
-                  check if you've reached your maximum job count for your
-                  subscription plan.
-                </Typography>
-                <Typography paragraph>
-                  <strong>Free plan:</strong> 100 jobs/month, 1,000 parts/month
-                  <br />
-                  <strong>Pro plan:</strong> 1,000 jobs/month, 10,000 parts/month
-                  <br />
-                  <strong>Premium plan:</strong> Unlimited
-                </Typography>
-                <Typography paragraph>
-                  <strong>Solution:</strong> Wait for the monthly reset, complete or delete old jobs, or
-                  upgrade your plan.
-                </Typography>
-              </AccordionDetails>
-            </Accordion>
-
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>Data export is taking a long time</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>
-                  Large datasets can take 30-60 seconds to export. This is
-                  normal.
-                </Typography>
-                <Typography paragraph>
-                  <strong>Tips:</strong>
-                </Typography>
-                <List dense>
-                  <ListItem>
-                    <ListItemText primary="Export fewer entities if you don't need everything" />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText primary="CSV format is typically faster than JSON for large datasets" />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText primary="Don't close the browser tab while export is processing" />
-                  </ListItem>
-                </List>
               </AccordionDetails>
             </Accordion>
 
             <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
-              API & Integration Questions
+              API & Integration
             </Typography>
 
             <Accordion>
@@ -1140,27 +959,19 @@ export default function Help() {
               </AccordionSummary>
               <AccordionDetails>
                 <Typography paragraph>
-                  <strong>Step 1:</strong> Ensure you're on Pro or Premium plan
-                  (API access not available on Free plan)
+                  <strong>Step 1:</strong> Go to Settings → API Keys
                 </Typography>
                 <Typography paragraph>
-                  <strong>Step 2:</strong> Go to Settings → API Keys
+                  <strong>Step 2:</strong> Click "Generate New API Key"
                 </Typography>
                 <Typography paragraph>
-                  <strong>Step 3:</strong> Click "Generate New API Key"
+                  <strong>Step 3:</strong> Copy the key immediately (shown only once)
                 </Typography>
                 <Typography paragraph>
-                  <strong>Step 4:</strong> Copy the key immediately (shown only
-                  once)
-                </Typography>
-                <Typography paragraph>
-                  <strong>Step 5:</strong> Use the key in Authorization header:{" "}
-                  <br />
-                  <code>Authorization: Bearer ery_live_xxxxx</code>
+                  <strong>Step 4:</strong> Use the key in Authorization header: <code>Authorization: Bearer ery_live_xxxxx</code>
                 </Typography>
                 <Alert severity="warning" sx={{ mt: 2 }}>
-                  Store your API key securely. It cannot be retrieved later. If
-                  lost, you must generate a new key.
+                  Store your API key securely. It cannot be retrieved later.
                 </Alert>
               </AccordionDetails>
             </Accordion>
@@ -1171,8 +982,7 @@ export default function Help() {
               </AccordionSummary>
               <AccordionDetails>
                 <Typography paragraph>
-                  Webhooks send real-time HTTP POST notifications to your server
-                  when events occur:
+                  Webhooks send HTTP POST notifications to your server when events occur:
                 </Typography>
                 <List dense>
                   <ListItem>
@@ -1189,81 +999,13 @@ export default function Help() {
                   </ListItem>
                 </List>
                 <Typography paragraph sx={{ mt: 2 }}>
-                  <strong>Setup:</strong> Go to Settings → Webhooks → Add
-                  endpoint URL → Select events
-                </Typography>
-                <Typography paragraph>
-                  <strong>Security:</strong> Each webhook includes HMAC-SHA256
-                  signature for verification
+                  <strong>Setup:</strong> Go to Settings → Webhooks → Add endpoint URL → Select events
                 </Typography>
               </AccordionDetails>
             </Accordion>
-
-            <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
-              Still Need Help?
-            </Typography>
-
-            <Paper variant="outlined" sx={{ p: 3, textAlign: "center" }}>
-              <EmailIcon sx={{ fontSize: 48, color: "primary.main", mb: 2 }} />
-              <Typography variant="h6" gutterBottom>
-                Contact Support
-              </Typography>
-              <Typography paragraph color="text.secondary">
-                Can't find what you're looking for? Our support team is here to
-                help.
-              </Typography>
-              <Button
-                variant="contained"
-                size="large"
-                startIcon={<EmailIcon />}
-                onClick={() => window.open("mailto:support@eryxonflow.com")}
-              >
-                Email Support
-              </Button>
-              <Typography variant="caption" display="block" sx={{ mt: 2 }}>
-                Response time: Within 24 hours (Pro/Premium: Within 4 hours)
-              </Typography>
-            </Paper>
           </Box>
         </TabPanel>
       </Paper>
-
-      {/* Footer Links */}
-      <Box sx={{ mt: 4, textAlign: "center" }}>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
-          Additional Resources
-        </Typography>
-        <Box
-          sx={{
-            display: "flex",
-            gap: 2,
-            justifyContent: "center",
-            flexWrap: "wrap",
-          }}
-        >
-          <Button size="small" href="/admin/about" startIcon={<BuildIcon />}>
-            About Eryxon
-          </Button>
-          <Button size="small" href="/admin/api-docs" startIcon={<CodeIcon />}>
-            API Documentation
-          </Button>
-          <Button size="small" href="/admin/pricing" startIcon={<StorageIcon />}>
-            Plans & Pricing
-          </Button>
-          <Button
-            size="small"
-            onClick={() =>
-              window.open(
-                "https://github.com/SheetMetalConnect/eryxon-flow",
-                "_blank",
-              )
-            }
-            startIcon={<DocsIcon />}
-          >
-            GitHub Repository
-          </Button>
-        </Box>
-      </Box>
     </Container>
   );
 }
