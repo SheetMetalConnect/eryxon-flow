@@ -401,9 +401,15 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
             </div>
 
             <div>
-              <Label>{t("parts.status")}</Label>
+              <Label>{t("parts.status.title")}</Label>
               <div className="mt-1">
-                <Badge>{part?.status?.replace("_", " ").toUpperCase()}</Badge>
+                <Badge>
+                  {part?.status === "not_started" && t("parts.status.notStarted")}
+                  {part?.status === "in_progress" && t("parts.status.inProgress")}
+                  {part?.status === "completed" && t("parts.status.completed")}
+                  {!["not_started", "in_progress", "completed"].includes(part?.status || "") &&
+                    part?.status?.replace("_", " ").toUpperCase()}
+                </Badge>
               </div>
             </div>
 
