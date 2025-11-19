@@ -34,7 +34,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
   const { t } = useTranslation();
   const { routing, loading: routingLoading } = useJobRouting(jobId);
 
-  const { data: job, isLoading } = useQuery({
+  const { data: job, isLoading, error } = useQuery({
     queryKey: ["job-detail", jobId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -55,6 +55,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
       if (error) throw error;
       return data;
     },
+    enabled: !!jobId,
   });
 
   const updateJobMutation = useMutation({
@@ -101,6 +102,18 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
       <Dialog open onOpenChange={onClose}>
         <DialogContent>
           <div className="text-center py-8">{t("jobs.loadingJobDetails")}</div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (error || !job) {
+    return (
+      <Dialog open onOpenChange={onClose}>
+        <DialogContent>
+          <div className="text-center py-8 text-red-600">
+            {error ? `Error loading job: ${(error as Error).message}` : "Job not found"}
+          </div>
         </DialogContent>
       </Dialog>
     );
