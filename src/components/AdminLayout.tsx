@@ -30,6 +30,13 @@ import {
   Key,
   Webhook,
   FileDown,
+  HelpCircle,
+  CreditCard,
+  Code,
+  Eye,
+  ListTodo,
+  Activity,
+  Flag,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -46,12 +53,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [configOpen, setConfigOpen] = useState(true);
+  const [operatorViewsOpen, setOperatorViewsOpen] = useState(false);
+  const [configOpen, setConfigOpen] = useState(false);
+  const [integrationsOpen, setIntegrationsOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const { count: pendingIssuesCount } = usePendingIssuesCount();
 
   const isActive = (path: string) => location.pathname === path;
   const isActiveGroup = (...paths: string[]) => paths.some(path => location.pathname.startsWith(path));
 
+  // Main navigation - Daily operations (always visible)
   const mainNavItems = [
     {
       path: "/admin/dashboard",
@@ -98,6 +109,35 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     },
   ];
 
+  // Operator views - Admin can see what operators see
+  const operatorViewItems = [
+    {
+      path: "/operator/work-queue",
+      label: "Work Queue",
+      icon: ListTodo,
+      exact: true,
+    },
+    {
+      path: "/operator/view",
+      label: "Operator View",
+      icon: Eye,
+      exact: true,
+    },
+    {
+      path: "/operator/my-activity",
+      label: "My Activity",
+      icon: Activity,
+      exact: true,
+    },
+    {
+      path: "/operator/my-issues",
+      label: "My Issues",
+      icon: Flag,
+      exact: true,
+    },
+  ];
+
+  // Configuration - Setup tasks (rarely changed)
   const configNavItems = [
     {
       path: "/admin/config/stages",
@@ -143,7 +183,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     },
   ];
 
-  const bottomNavItems = [
+  // Integrations - Developer tools
+  const integrationsNavItems = [
     {
       path: "/admin/integrations",
       label: "App Store",
@@ -157,33 +198,37 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       exact: true,
     },
     {
+      path: "/admin/api-docs",
+      label: "API Docs",
+      icon: Code,
+      exact: true,
+    },
+  ];
+
+  // Account & Support
+  const accountNavItems = [
+    {
+      path: "/admin/my-plan",
+      label: "My Plan",
+      icon: CreditCard,
+      exact: true,
+    },
+    {
       path: "/admin/pricing",
       label: "Pricing",
       icon: DollarSign,
       exact: true,
     },
     {
-      path: "/admin/my-plan",
-      label: "My Plan",
-      icon: DollarSign,
-      exact: true,
-    },
-    {
-      path: "/admin/api-docs",
-      label: "API Docs",
-      icon: BookOpen,
+      path: "/admin/settings",
+      label: "Settings",
+      icon: Settings,
       exact: true,
     },
     {
       path: "/admin/help",
       label: "Help",
-      icon: BookOpen,
-      exact: true,
-    },
-    {
-      path: "/admin/settings",
-      label: "Settings",
-      icon: Settings,
+      icon: HelpCircle,
       exact: true,
     },
   ];
@@ -200,7 +245,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Navigation */}
       <ScrollArea className="flex-1 px-3 py-4">
-        {/* Main Navigation */}
+        {/* Main Navigation - Daily Operations */}
         <div className="space-y-1">
           {mainNavItems.map((item) => {
             const isItemActive = item.exact
@@ -238,6 +283,50 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             );
           })}
         </div>
+
+        {!collapsed && <Separator className="my-4" />}
+
+        {/* Operator Views Section - Collapsible */}
+        {!collapsed && (
+          <Collapsible open={operatorViewsOpen} onOpenChange={setOperatorViewsOpen} className="space-y-1">
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2 font-semibold text-muted-foreground"
+              >
+                <Eye className="h-4 w-4" />
+                <span className="flex-1 text-left">Operator Views</span>
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 transition-transform",
+                    operatorViewsOpen && "rotate-180"
+                  )}
+                />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-1 pl-4">
+              {operatorViewItems.map((item) => {
+                const isItemActive = item.exact
+                  ? isActive(item.path)
+                  : location.pathname.startsWith(item.path);
+
+                return (
+                  <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}>
+                    <Button
+                      variant={isItemActive ? "default" : "ghost"}
+                      className="w-full justify-start gap-3"
+                      size="sm"
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      <span>{item.label}</span>
+                    </Button>
+                  </Link>
+                );
+              })}
+            </CollapsibleContent>
+          </Collapsible>
+        )}
 
         {!collapsed && <Separator className="my-4" />}
 
@@ -285,30 +374,91 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
         {!collapsed && <Separator className="my-4" />}
 
-        {/* Bottom Navigation */}
-        <div className="space-y-1">
-          {bottomNavItems.map((item) => {
-            const isItemActive = item.exact
-              ? isActive(item.path)
-              : location.pathname.startsWith(item.path);
-
-            return (
-              <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}>
-                <Button
-                  variant={isItemActive ? "default" : "ghost"}
+        {/* Integrations Section - Collapsible */}
+        {!collapsed && (
+          <Collapsible open={integrationsOpen} onOpenChange={setIntegrationsOpen} className="space-y-1">
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2 font-semibold text-muted-foreground"
+              >
+                <Plug className="h-4 w-4" />
+                <span className="flex-1 text-left">Integrations</span>
+                <ChevronDown
                   className={cn(
-                    "w-full justify-start gap-3",
-                    collapsed && "justify-center px-2"
+                    "h-4 w-4 transition-transform",
+                    integrationsOpen && "rotate-180"
                   )}
-                  size="sm"
-                >
-                  <item.icon className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span>{item.label}</span>}
-                </Button>
-              </Link>
-            );
-          })}
-        </div>
+                />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-1 pl-4">
+              {integrationsNavItems.map((item) => {
+                const isItemActive = item.exact
+                  ? isActive(item.path)
+                  : location.pathname.startsWith(item.path);
+
+                return (
+                  <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}>
+                    <Button
+                      variant={isItemActive ? "default" : "ghost"}
+                      className="w-full justify-start gap-3"
+                      size="sm"
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      <span>{item.label}</span>
+                    </Button>
+                  </Link>
+                );
+              })}
+            </CollapsibleContent>
+          </Collapsible>
+        )}
+
+        {!collapsed && <Separator className="my-4" />}
+
+        {/* Account & Support Section - Collapsible */}
+        {!collapsed && (
+          <Collapsible open={accountOpen} onOpenChange={setAccountOpen} className="space-y-1">
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2 font-semibold text-muted-foreground"
+              >
+                <CreditCard className="h-4 w-4" />
+                <span className="flex-1 text-left">Account & Support</span>
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 transition-transform",
+                    accountOpen && "rotate-180"
+                  )}
+                />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-1 pl-4">
+              {accountNavItems.map((item) => {
+                const isItemActive = item.exact
+                  ? isActive(item.path)
+                  : location.pathname.startsWith(item.path);
+
+                return (
+                  <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}>
+                    <Button
+                      variant={isItemActive ? "default" : "ghost"}
+                      className="w-full justify-start gap-3"
+                      size="sm"
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      <span>{item.label}</span>
+                    </Button>
+                  </Link>
+                );
+              })}
+            </CollapsibleContent>
+          </Collapsible>
+        )}
       </ScrollArea>
 
       {/* User Profile & Sign Out */}

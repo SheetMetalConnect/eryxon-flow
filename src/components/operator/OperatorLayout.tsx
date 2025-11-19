@@ -62,15 +62,15 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
   };
 
   const navItems = [
-    { path: '/work-queue', label: t('navigation.workQueue'), icon: <ListAltIcon /> },
-    { path: '/operator-view', label: 'Operator View', icon: <SpeedIcon /> },
-    { path: '/my-activity', label: t('navigation.myActivity'), icon: <ScheduleIcon /> },
-    { path: '/my-issues', label: t('navigation.myIssues'), icon: <ReportProblemIcon /> },
+    { path: '/operator/work-queue', label: t('navigation.workQueue'), icon: <ListAltIcon /> },
+    { path: '/operator/view', label: 'Operator View', icon: <SpeedIcon /> },
+    { path: '/operator/my-activity', label: t('navigation.myActivity'), icon: <ScheduleIcon /> },
+    { path: '/operator/my-issues', label: t('navigation.myIssues'), icon: <ReportProblemIcon /> },
   ];
 
   const getCurrentNavValue = () => {
     const currentItem = navItems.find((item) => location.pathname === item.path);
-    return currentItem?.path || '/work-queue';
+    return currentItem?.path || '/operator/work-queue';
   };
 
   const handleNavigationChange = (_event: React.SyntheticEvent, newValue: string) => {
