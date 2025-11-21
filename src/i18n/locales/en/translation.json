@@ -1136,5 +1136,23 @@
     "thisMonth": "This Month",
     "lastMonth": "Last Month",
     "custom": "Custom Range"
+  },
+  "terminal": {
+    "columns": {
+      "jobNumber": "Job #",
+      "partNumber": "Part #",
+      "operation": "Operation",
+      "cell": "Cell",
+      "material": "Material",
+      "quantity": "Qty",
+      "hours": "Hours",
+      "dueDate": "Due Date",
+      "files": "Files"
+    },
+    "inProcess": "In Process",
+    "inBuffer": "In Buffer",
+    "expected": "Expected",
+    "noActiveJobs": "No active jobs",
+    "jobsFound": "jobs found"
   }
 }

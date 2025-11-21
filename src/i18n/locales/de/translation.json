@@ -1136,5 +1136,23 @@
     "thisMonth": "Dieser Monat",
     "lastMonth": "Letzter Monat",
     "custom": "Benutzerdefinierter Bereich"
+  },
+  "terminal": {
+    "columns": {
+      "jobNumber": "Auftragsnr.",
+      "partNumber": "Teilenr.",
+      "operation": "Bearbeitung",
+      "cell": "Zelle",
+      "material": "Material",
+      "quantity": "Menge",
+      "hours": "Stunden",
+      "dueDate": "Fälligkeitsdatum",
+      "files": "Dateien"
+    },
+    "inProcess": "In Bearbeitung",
+    "inBuffer": "Im Puffer",
+    "expected": "Erwartet",
+    "noActiveJobs": "Keine aktiven Aufträge",
+    "jobsFound": "Aufträge gefunden"
   }
 }

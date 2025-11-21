@@ -12,6 +12,7 @@ import { JobRow } from "@/components/terminal/JobRow";
 import { DetailPanel } from "@/components/terminal/DetailPanel";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useTranslation } from "react-i18next";
 
 // Define the interface locally if not exported, matching the one in JobRow
 import { TerminalJob } from '@/types/terminal';
@@ -28,6 +29,7 @@ interface Cell {
 }
 
 export default function OperatorTerminal() {
+    const { t } = useTranslation();
     const { profile } = useAuth();
     const [operations, setOperations] = useState<OperationWithDetails[]>([]);
     const [cells, setCells] = useState<Cell[]>([]);
@@ -277,35 +279,35 @@ export default function OperatorTerminal() {
                         </Select>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                        {filteredJobs.length} jobs found
+                        {filteredJobs.length} {t("terminal.jobsFound")}
                     </div>
                 </div>
 
                 {/* 1. IN PROCESS */}
                 <div className="flex-1 flex flex-col min-h-0 border-b border-border bg-accent/5 overflow-hidden">
                     <div className="px-4 py-2 bg-emerald-950/10 border-l-4 border-emerald-500 flex items-center justify-between dark:bg-emerald-950/30 shrink-0">
-                        <h2 className="text-base font-bold text-emerald-600 dark:text-emerald-400">In bewerking ({inProcessJobs.length})</h2>
+                        <h2 className="text-base font-bold text-emerald-600 dark:text-emerald-400">{t("terminal.inProcess")} ({inProcessJobs.length})</h2>
                     </div>
                     <div className="flex-1 overflow-auto">
                         <table className="w-full text-left border-collapse">
                             <thead className="bg-muted/50 sticky top-0 z-10">
                                 <tr className="border-b border-border">
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">PONr</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Omschrijving</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Naar cel</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center"></th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-right">Uren</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Huidige bewerking</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Materiaaldikte</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Geplande einddatum</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Backorder status</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.jobNumber")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.partNumber")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.operation")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.cell")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.material")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center">{t("terminal.columns.quantity")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-right">{t("terminal.columns.hours")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.dueDate")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center">{t("terminal.columns.files")}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {inProcessJobs.length === 0 ? (
                                     <tr>
                                         <td colSpan={9} className="text-center py-8 text-muted-foreground italic">
-                                            No active jobs
+                                            {t("terminal.noActiveJobs")}
                                         </td>
                                     </tr>
                                 ) : (
@@ -327,21 +329,21 @@ export default function OperatorTerminal() {
                 {/* 2. IN BUFFER */}
                 <div className="flex-1 flex flex-col min-h-0 border-b border-border overflow-hidden">
                     <div className="px-4 py-2 bg-blue-950/10 border-l-4 border-blue-500 flex items-center justify-between dark:bg-blue-950/30 shrink-0">
-                        <h2 className="text-base font-bold text-blue-600 dark:text-blue-400">In buffer ({inBufferJobs.length})</h2>
+                        <h2 className="text-base font-bold text-blue-600 dark:text-blue-400">{t("terminal.inBuffer")} ({inBufferJobs.length})</h2>
                     </div>
                     <div className="flex-1 overflow-auto">
                         <table className="w-full text-left border-collapse">
                             <thead className="bg-muted/50 sticky top-0 z-10">
                                 <tr className="border-b border-border">
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">PONr</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Omschrijving</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Naar cel</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center"></th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-right">Uren</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Huidige bewerking</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Materiaaldikte</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Geplande einddatum</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Backorder status</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.jobNumber")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.partNumber")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.operation")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.cell")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.material")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center">{t("terminal.columns.quantity")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-right">{t("terminal.columns.hours")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.dueDate")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center">{t("terminal.columns.files")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -362,21 +364,21 @@ export default function OperatorTerminal() {
                 {/* 3. EXPECTED */}
                 <div className="flex-1 flex flex-col min-h-0 bg-accent/5 overflow-hidden">
                     <div className="px-4 py-2 bg-amber-950/10 border-l-4 border-amber-500 flex items-center justify-between dark:bg-amber-950/30 shrink-0">
-                        <h2 className="text-base font-bold text-amber-600 dark:text-amber-400">Verwacht ({expectedJobs.length})</h2>
+                        <h2 className="text-base font-bold text-amber-600 dark:text-amber-400">{t("terminal.expected")} ({expectedJobs.length})</h2>
                     </div>
                     <div className="flex-1 overflow-auto">
                         <table className="w-full text-left border-collapse">
                             <thead className="bg-muted/50 sticky top-0 z-10">
                                 <tr className="border-b border-border">
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">PONr</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Omschrijving</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Naar cel</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center"></th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-right">Uren</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Huidige bewerking</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Materiaaldikte</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Geplande einddatum</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Backorder status</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.jobNumber")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.partNumber")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.operation")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.cell")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.material")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center">{t("terminal.columns.quantity")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-right">{t("terminal.columns.hours")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.dueDate")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center">{t("terminal.columns.files")}</th>
                                 </tr>
                             </thead>
                             <tbody>
