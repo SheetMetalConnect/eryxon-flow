@@ -218,7 +218,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       exact: true,
     },
     {
-      path: ROUTES.ADMIN.PRICING,
+      path: ROUTES.COMMON.PRICING,
       label: t("navigation.pricing"),
       icon: DollarSign,
       exact: true,

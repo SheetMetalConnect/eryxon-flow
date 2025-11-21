@@ -492,6 +492,7 @@
     "reportIssue": "Report Issue",
     "review": "Review",
     "reviewIssue": "Review Issue",
+    "severityLabel": "Severity",
     "severity": {
       "low": "Low",
       "medium": "Medium",
