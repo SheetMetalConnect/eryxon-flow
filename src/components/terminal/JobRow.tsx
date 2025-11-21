@@ -32,17 +32,17 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
                 variant === 'process' && "bg-emerald-500/5",
             )}
         >
-            {/* PONr - Part/Job Number */}
+            {/* PONr - Part Number */}
             <td className="px-2 py-1.5 text-sm font-medium text-foreground whitespace-nowrap">
                 {job.description}
             </td>
 
-            {/* Omschrijving - Job Code */}
-            <td className="px-2 py-1.5 text-sm text-muted-foreground whitespace-nowrap">
+            {/* Omschrijving - Job Description/Code */}
+            <td className="px-2 py-1.5 text-sm text-foreground whitespace-nowrap">
                 {job.jobCode}
             </td>
 
-            {/* Naar cel - Operation Status Badge */}
+            {/* Naar cel - Operation Badge */}
             <td className="px-2 py-1.5">
                 <Badge 
                     className={cn(
@@ -54,7 +54,7 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
                 </Badge>
             </td>
 
-            {/* Play/Pause button */}
+            {/* Action Icon */}
             <td className="px-2 py-1.5 text-center">
                 {variant === 'process' ? (
                     <Pause className="w-4 h-4 text-foreground inline" />
@@ -63,29 +63,29 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
                 )}
             </td>
 
-            {/* Uren - Hours */}
+            {/* Uren - Remaining Hours */}
             <td className="px-2 py-1.5 text-sm font-mono text-foreground text-right whitespace-nowrap">
                 {job.hours}
             </td>
 
-            {/* Huidige bewerking - Cell Name */}
-            <td className="px-2 py-1.5 text-sm text-muted-foreground whitespace-nowrap">
+            {/* Huidige bewerking - Cell/Workstation */}
+            <td className="px-2 py-1.5 text-sm text-foreground whitespace-nowrap">
                 {job.cellName || '-'}
             </td>
 
             {/* Materiaaldikte - Material */}
-            <td className="px-2 py-1.5 text-sm text-muted-foreground whitespace-nowrap">
-                {job.material}
+            <td className="px-2 py-1.5 text-sm text-foreground whitespace-nowrap">
+                {job.material || '-'}
             </td>
 
             {/* Geplande einddatum - Due Date */}
-            <td className="px-2 py-1.5 text-sm text-muted-foreground whitespace-nowrap">
-                {new Date(job.dueDate).toLocaleDateString()}
+            <td className="px-2 py-1.5 text-sm text-foreground whitespace-nowrap">
+                {new Date(job.dueDate).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' })}
             </td>
 
-            {/* Backorder status - Status badges and icons */}
+            {/* Backorder status - Icons & Badges */}
             <td className="px-2 py-1.5">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 justify-center">
                     {job.hasPdf && (
                         <div title="PDF Available">
                             <FileText className="w-3.5 h-3.5 text-blue-500" />
