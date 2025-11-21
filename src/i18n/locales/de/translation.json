@@ -492,6 +492,7 @@
     "reportIssue": "Problem melden",
     "review": "Überprüfen",
     "reviewIssue": "Problem überprüfen",
+    "severityLabel": "Schweregrad",
     "severity": {
       "low": "Niedrig",
       "medium": "Mittel",

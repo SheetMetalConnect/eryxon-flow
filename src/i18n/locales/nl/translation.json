@@ -492,6 +492,7 @@
     "reportIssue": "Probleem melden",
     "review": "Beoordelen",
     "reviewIssue": "Probleem beoordelen",
+    "severityLabel": "Ernst",
     "severity": {
       "low": "Laag",
       "medium": "Gemiddeld",

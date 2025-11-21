@@ -125,16 +125,16 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess }
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="severity">{t("issues.severity")}</Label>
+            <Label htmlFor="severity">{t("issues.severityLabel")}</Label>
             <Select value={severity} onValueChange={(v: any) => setSeverity(v)}>
               <SelectTrigger id="severity">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="low">{t("issues.low")}</SelectItem>
-                <SelectItem value="medium">{t("issues.medium")}</SelectItem>
-                <SelectItem value="high">{t("issues.high")}</SelectItem>
-                <SelectItem value="critical">{t("issues.critical")}</SelectItem>
+                <SelectItem value="low">{t("issues.severity.low")}</SelectItem>
+                <SelectItem value="medium">{t("issues.severity.medium")}</SelectItem>
+                <SelectItem value="high">{t("issues.severity.high")}</SelectItem>
+                <SelectItem value="critical">{t("issues.severity.critical")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
