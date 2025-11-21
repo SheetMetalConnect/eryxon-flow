@@ -32,19 +32,19 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
                 variant === 'process' && "bg-emerald-500/5",
             )}
         >
-            {/* PONr - Part Number */}
+            {/* Job Number */}
             <td className="px-2 py-1.5 text-sm font-medium text-foreground whitespace-nowrap">
-                {job.description}
-            </td>
-
-            {/* Omschrijving - Job Description/Code */}
-            <td className="px-2 py-1.5 text-sm text-foreground whitespace-nowrap">
                 {job.jobCode}
             </td>
 
-            {/* Naar cel - Operation Badge */}
+            {/* Part Number */}
+            <td className="px-2 py-1.5 text-sm text-foreground whitespace-nowrap">
+                {job.description}
+            </td>
+
+            {/* Operation */}
             <td className="px-2 py-1.5">
-                <Badge 
+                <Badge
                     className={cn(
                         "text-white text-xs font-semibold px-2 py-0.5 whitespace-nowrap",
                         getOperationBadgeColor(job.currentOp)
@@ -54,36 +54,40 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
                 </Badge>
             </td>
 
-            {/* Action Icon */}
-            <td className="px-2 py-1.5 text-center">
-                {variant === 'process' ? (
-                    <Pause className="w-4 h-4 text-foreground inline" />
-                ) : (
-                    <Play className="w-4 h-4 text-foreground inline" />
-                )}
-            </td>
-
-            {/* Uren - Remaining Hours */}
-            <td className="px-2 py-1.5 text-sm font-mono text-foreground text-right whitespace-nowrap">
-                {job.hours}
-            </td>
-
-            {/* Huidige bewerking - Cell/Workstation */}
+            {/* Cell (Next Cell) */}
             <td className="px-2 py-1.5 text-sm text-foreground whitespace-nowrap">
-                {job.cellName || '-'}
+                <span
+                    className="inline-block px-2 py-0.5 rounded text-xs font-medium"
+                    style={{
+                        backgroundColor: job.cellColor ? `${job.cellColor}20` : 'transparent',
+                        color: job.cellColor || 'inherit'
+                    }}
+                >
+                    {job.cellName || '-'}
+                </span>
             </td>
 
-            {/* Materiaaldikte - Material */}
+            {/* Material */}
             <td className="px-2 py-1.5 text-sm text-foreground whitespace-nowrap">
                 {job.material || '-'}
             </td>
 
-            {/* Geplande einddatum - Due Date */}
+            {/* Quantity */}
+            <td className="px-2 py-1.5 text-sm text-foreground text-center whitespace-nowrap">
+                {job.quantity}
+            </td>
+
+            {/* Remaining Hours */}
+            <td className="px-2 py-1.5 text-sm font-mono text-foreground text-right whitespace-nowrap">
+                {job.hours}h
+            </td>
+
+            {/* Due Date */}
             <td className="px-2 py-1.5 text-sm text-foreground whitespace-nowrap">
                 {new Date(job.dueDate).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' })}
             </td>
 
-            {/* Backorder status - Icons & Badges */}
+            {/* Files - Icons & Badges */}
             <td className="px-2 py-1.5">
                 <div className="flex items-center gap-1.5 justify-center">
                     {job.hasPdf && (
