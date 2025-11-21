@@ -1,7 +1,7 @@
 import React from 'react';
 import { TerminalJob } from '@/types/terminal';
 import { Badge } from '@/components/ui/badge';
-import { Clock, FileText, Box, AlertTriangle } from 'lucide-react';
+import { Play, Pause, FileText, Box, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface JobRowProps {
@@ -11,82 +11,98 @@ interface JobRowProps {
     variant: 'process' | 'buffer' | 'expected';
 }
 
+// Helper to get status badge colors based on operation/cell type
+const getOperationBadgeColor = (opName: string) => {
+    const name = opName.toLowerCase();
+    if (name.includes('frezen') || name.includes('mill')) return 'bg-blue-500';
+    if (name.includes('afbramen') || name.includes('deburr')) return 'bg-emerald-500';
+    if (name.includes('assemblage') || name.includes('assembly')) return 'bg-amber-500';
+    if (name.includes('lassen') || name.includes('weld')) return 'bg-red-500';
+    if (name.includes('autorisatie') || name.includes('auth')) return 'bg-gray-400';
+    return 'bg-primary';
+};
+
 export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
     return (
-        <div
+        <tr
             onClick={onClick}
             className={cn(
-                "p-3 rounded-lg border cursor-pointer transition-all duration-200 relative overflow-hidden group",
-                // Selection state
-                isSelected
-                    ? "bg-accent/20 border-primary shadow-md ring-1 ring-primary"
-                    : "bg-card border-border hover:border-primary/50 hover:bg-accent/5",
-                // Variant specific styling (subtle tint)
-                variant === 'process' && !isSelected && "border-l-4 border-l-emerald-500",
-                variant === 'buffer' && !isSelected && "border-l-4 border-l-blue-500",
-                variant === 'expected' && !isSelected && "border-l-4 border-l-amber-500 opacity-80"
+                "cursor-pointer transition-colors border-b border-border hover:bg-accent/30",
+                isSelected && "bg-accent/50 ring-1 ring-primary",
+                variant === 'process' && "bg-emerald-500/5",
             )}
         >
-            <div className="flex justify-between items-start mb-2">
-                <div>
-                    <div className="flex items-center gap-2">
-                        <span className={cn(
-                            "font-bold text-lg tracking-tight",
-                            isSelected ? "text-primary" : "text-foreground"
-                        )}>
-                            {job.jobCode}
-                        </span>
-                        {job.quantity > 1 && (
-                            <Badge variant="secondary" className="text-xs font-mono">
-                                {job.quantity}x
-                            </Badge>
-                        )}
-                    </div>
-                    <div className="text-sm text-muted-foreground font-medium">{job.description}</div>
-                </div>
-                <div className="text-right">
-                    <div className={cn(
-                        "text-xl font-bold font-mono",
-                        job.hours <= 0 ? "text-emerald-500" : "text-foreground"
-                    )}>
-                        {job.hours}h
-                    </div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Remaining</div>
-                </div>
-            </div>
+            {/* PONr - Part/Job Number */}
+            <td className="px-2 py-1.5 text-sm font-medium text-foreground whitespace-nowrap">
+                {job.description}
+            </td>
 
-            {/* Current Operation Highlight */}
-            <div className="mb-3 p-2 rounded bg-accent/10 border border-accent/20">
-                <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mb-0.5">Current Step</div>
-                <div className="font-semibold text-foreground flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            {/* Omschrijving - Job Code */}
+            <td className="px-2 py-1.5 text-sm text-muted-foreground whitespace-nowrap">
+                {job.jobCode}
+            </td>
+
+            {/* Naar cel - Operation Status Badge */}
+            <td className="px-2 py-1.5">
+                <Badge 
+                    className={cn(
+                        "text-white text-xs font-semibold px-2 py-0.5 whitespace-nowrap",
+                        getOperationBadgeColor(job.currentOp)
+                    )}
+                >
                     {job.currentOp}
-                </div>
-            </div>
+                </Badge>
+            </td>
 
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <div className="flex gap-3">
+            {/* Play/Pause button */}
+            <td className="px-2 py-1.5 text-center">
+                {variant === 'process' ? (
+                    <Pause className="w-4 h-4 text-foreground inline" />
+                ) : (
+                    <Play className="w-4 h-4 text-foreground inline" />
+                )}
+            </td>
+
+            {/* Uren - Hours */}
+            <td className="px-2 py-1.5 text-sm font-mono text-foreground text-right whitespace-nowrap">
+                {job.hours}
+            </td>
+
+            {/* Huidige bewerking - Cell Name */}
+            <td className="px-2 py-1.5 text-sm text-muted-foreground whitespace-nowrap">
+                {job.cellName || '-'}
+            </td>
+
+            {/* Materiaaldikte - Material */}
+            <td className="px-2 py-1.5 text-sm text-muted-foreground whitespace-nowrap">
+                {job.material}
+            </td>
+
+            {/* Geplande einddatum - Due Date */}
+            <td className="px-2 py-1.5 text-sm text-muted-foreground whitespace-nowrap">
+                {new Date(job.dueDate).toLocaleDateString()}
+            </td>
+
+            {/* Backorder status - Status badges and icons */}
+            <td className="px-2 py-1.5">
+                <div className="flex items-center gap-1.5">
                     {job.hasPdf && (
-                        <div className="flex items-center gap-1 text-blue-400" title="Drawing Available">
-                            <FileText className="w-3 h-3" /> <span className="hidden sm:inline">PDF</span>
+                        <div title="PDF Available">
+                            <FileText className="w-3.5 h-3.5 text-blue-500" />
                         </div>
                     )}
                     {job.hasModel && (
-                        <div className="flex items-center gap-1 text-purple-400" title="3D Model Available">
-                            <Box className="w-3 h-3" /> <span className="hidden sm:inline">3D</span>
+                        <div title="3D Model">
+                            <Box className="w-3.5 h-3.5 text-purple-500" />
                         </div>
                     )}
                     {job.warnings && job.warnings.length > 0 && (
-                        <div className="flex items-center gap-1 text-amber-500 font-medium">
-                            <AlertTriangle className="w-3 h-3" /> <span>{job.warnings.length}</span>
+                        <div title={job.warnings.join(', ')}>
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
                         </div>
                     )}
                 </div>
-                <div className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    <span>{new Date(job.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
-                </div>
-            </div>
-        </div>
+            </td>
+        </tr>
     );
 }

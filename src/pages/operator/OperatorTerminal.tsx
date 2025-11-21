@@ -282,70 +282,115 @@ export default function OperatorTerminal() {
                 </div>
 
                 {/* 1. IN PROCESS */}
-                <div className="flex-1 flex flex-col min-h-0 border-b border-border bg-accent/5">
-                    <div className="px-4 py-2 bg-emerald-950/10 border-l-4 border-emerald-500 flex items-center justify-between dark:bg-emerald-950/30">
-                        <h2 className="text-lg font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">In Process</h2>
-                        <span className="text-xs font-mono text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/50 px-2 py-1 rounded">
-                            {inProcessJobs.length} ACTIVE
-                        </span>
+                <div className="flex-1 flex flex-col min-h-0 border-b border-border bg-accent/5 overflow-hidden">
+                    <div className="px-4 py-2 bg-emerald-950/10 border-l-4 border-emerald-500 flex items-center justify-between dark:bg-emerald-950/30 shrink-0">
+                        <h2 className="text-base font-bold text-emerald-600 dark:text-emerald-400">In bewerking ({inProcessJobs.length})</h2>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                        {inProcessJobs.length === 0 && (
-                            <div className="h-full flex items-center justify-center text-muted-foreground italic">
-                                No active jobs
-                            </div>
-                        )}
-                        {inProcessJobs.map(job => (
-                            <JobRow
-                                key={job.id}
-                                job={job}
-                                isSelected={selectedJobId === job.id}
-                                onClick={() => setSelectedJobId(job.id)}
-                                variant="process"
-                            />
-                        ))}
+                    <div className="flex-1 overflow-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-muted/50 sticky top-0 z-10">
+                                <tr className="border-b border-border">
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">PONr</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Omschrijving</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Naar cel</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center"></th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-right">Uren</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Huidige bewerking</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Materiaaldikte</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Geplande einddatum</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Backorder status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {inProcessJobs.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={9} className="text-center py-8 text-muted-foreground italic">
+                                            No active jobs
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    inProcessJobs.map(job => (
+                                        <JobRow
+                                            key={job.id}
+                                            job={job}
+                                            isSelected={selectedJobId === job.id}
+                                            onClick={() => setSelectedJobId(job.id)}
+                                            variant="process"
+                                        />
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
                 {/* 2. IN BUFFER */}
-                <div className="flex-1 flex flex-col min-h-0 border-b border-border">
-                    <div className="px-4 py-2 bg-blue-950/10 border-l-4 border-blue-500 flex items-center justify-between dark:bg-blue-950/30">
-                        <h2 className="text-lg font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">In Buffer</h2>
-                        <span className="text-xs font-mono text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-950/50 px-2 py-1 rounded">
-                            {inBufferJobs.length} READY
-                        </span>
+                <div className="flex-1 flex flex-col min-h-0 border-b border-border overflow-hidden">
+                    <div className="px-4 py-2 bg-blue-950/10 border-l-4 border-blue-500 flex items-center justify-between dark:bg-blue-950/30 shrink-0">
+                        <h2 className="text-base font-bold text-blue-600 dark:text-blue-400">In buffer ({inBufferJobs.length})</h2>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                        {inBufferJobs.map(job => (
-                            <JobRow
-                                key={job.id}
-                                job={job}
-                                isSelected={selectedJobId === job.id}
-                                onClick={() => setSelectedJobId(job.id)}
-                                variant="buffer"
-                            />
-                        ))}
+                    <div className="flex-1 overflow-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-muted/50 sticky top-0 z-10">
+                                <tr className="border-b border-border">
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">PONr</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Omschrijving</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Naar cel</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center"></th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-right">Uren</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Huidige bewerking</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Materiaaldikte</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Geplande einddatum</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Backorder status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {inBufferJobs.map(job => (
+                                    <JobRow
+                                        key={job.id}
+                                        job={job}
+                                        isSelected={selectedJobId === job.id}
+                                        onClick={() => setSelectedJobId(job.id)}
+                                        variant="buffer"
+                                    />
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
                 {/* 3. EXPECTED */}
-                <div className="flex-1 flex flex-col min-h-0 bg-accent/5">
-                    <div className="px-4 py-2 bg-amber-950/10 border-l-4 border-amber-500 flex items-center justify-between dark:bg-amber-950/30">
-                        <h2 className="text-lg font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Expected</h2>
-                        <span className="text-xs font-mono text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/50 px-2 py-1 rounded">
-                            {expectedJobs.length} UPCOMING
-                        </span>
+                <div className="flex-1 flex flex-col min-h-0 bg-accent/5 overflow-hidden">
+                    <div className="px-4 py-2 bg-amber-950/10 border-l-4 border-amber-500 flex items-center justify-between dark:bg-amber-950/30 shrink-0">
+                        <h2 className="text-base font-bold text-amber-600 dark:text-amber-400">Verwacht ({expectedJobs.length})</h2>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                        {expectedJobs.map(job => (
-                            <JobRow
-                                key={job.id}
-                                job={job}
-                                isSelected={selectedJobId === job.id}
-                                onClick={() => setSelectedJobId(job.id)}
-                                variant="expected"
-                            />
-                        ))}
+                    <div className="flex-1 overflow-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-muted/50 sticky top-0 z-10">
+                                <tr className="border-b border-border">
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">PONr</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Omschrijving</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Naar cel</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center"></th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-right">Uren</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Huidige bewerking</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Materiaaldikte</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Geplande einddatum</th>
+                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Backorder status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {expectedJobs.map(job => (
+                                    <JobRow
+                                        key={job.id}
+                                        job={job}
+                                        isSelected={selectedJobId === job.id}
+                                        onClick={() => setSelectedJobId(job.id)}
+                                        variant="expected"
+                                    />
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
