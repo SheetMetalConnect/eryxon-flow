@@ -11,7 +11,7 @@ import Auth from "./pages/Auth";
 import WorkQueue from "./pages/operator/WorkQueue";
 import MyActivity from "./pages/operator/MyActivity";
 import MyIssues from "./pages/operator/MyIssues";
-import OperatorView from "./pages/operator/OperatorView";
+import OperatorTerminal from "./pages/operator/OperatorTerminal";
 import Dashboard from "./pages/admin/Dashboard";
 import IssueQueue from "./pages/admin/IssueQueue";
 import ConfigStages from "./pages/admin/ConfigStages";
@@ -100,8 +100,8 @@ function AppRoutes() {
               (profile as any)?.onboarding_completed === false
                 ? "/onboarding"
                 : profile?.role === "admin"
-                ? "/admin/dashboard"
-                : "/operator/work-queue"
+                  ? "/admin/dashboard"
+                  : "/operator/work-queue"
             }
             replace
           />
@@ -147,7 +147,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <OperatorView />
+              <OperatorTerminal />
             </Layout>
           </ProtectedRoute>
         }
