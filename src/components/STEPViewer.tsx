@@ -283,10 +283,10 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
           // Material - Using MeshStandardMaterial for better PBR rendering
           const color = meshData.color
             ? new THREE.Color(
-                meshData.color[0],
-                meshData.color[1],
-                meshData.color[2]
-              )
+              meshData.color[0],
+              meshData.color[1],
+              meshData.color[2]
+            )
             : new THREE.Color(0x4a90e2);
 
           const material = new THREE.MeshStandardMaterial({
@@ -511,14 +511,15 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-gray-100">
+    <div className="flex flex-col h-full w-full bg-background">
       {/* Toolbar */}
-      <div className="flex items-center gap-2 p-2 bg-white border-b">
+      <div className="flex items-center gap-2 p-2 bg-card border-b border-border">
         <Button
           variant="outline"
           size="sm"
           onClick={fitCameraToMeshes}
           disabled={stepLoading || meshesRef.current.length === 0}
+          className="bg-card text-foreground hover:bg-accent"
         >
           <Maximize2 className="h-4 w-4 mr-1" />
           Fit View
@@ -529,6 +530,7 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
           size="sm"
           onClick={toggleGrid}
           disabled={stepLoading}
+          className={gridVisible ? "" : "bg-card text-foreground hover:bg-accent"}
         >
           <Grid3x3 className="h-4 w-4 mr-1" />
           Grid
@@ -539,6 +541,7 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
           size="sm"
           onClick={toggleWireframe}
           disabled={stepLoading || meshesRef.current.length === 0}
+          className={wireframeMode ? "" : "bg-card text-foreground hover:bg-accent"}
         >
           <Box className="h-4 w-4 mr-1" />
           Wireframe
@@ -550,6 +553,7 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
           onClick={toggleEdges}
           disabled={stepLoading || meshesRef.current.length === 0}
           title="Toggle edge/contour visibility"
+          className={edgesVisible ? "" : "bg-card text-foreground hover:bg-accent"}
         >
           <Hexagon className="h-4 w-4 mr-1" />
           Edges
@@ -560,6 +564,7 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
           size="sm"
           onClick={toggleExplodedView}
           disabled={stepLoading || meshesRef.current.length === 0}
+          className={explodedView ? "" : "bg-card text-foreground hover:bg-accent"}
         >
           <Boxes className="h-4 w-4 mr-1" />
           Explode
@@ -567,7 +572,7 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
 
         {explodedView && (
           <div className="flex items-center gap-2 ml-4">
-            <span className="text-sm text-gray-600">Explosion:</span>
+            <span className="text-sm text-muted-foreground">Explosion:</span>
             <Slider
               value={[explosionFactor]}
               onValueChange={handleExplosionFactorChange}
@@ -580,35 +585,35 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
         )}
 
         {title && (
-          <div className="ml-auto text-sm font-medium text-gray-700">
+          <div className="ml-auto text-sm font-medium text-muted-foreground">
             {title}
           </div>
         )}
       </div>
 
       {/* 3D Viewer Container */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative bg-accent/5">
         <div ref={containerRef} className="absolute inset-0" />
 
         {/* Loading Overlay */}
         {stepLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/80">
+          <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-2">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-              <p className="text-sm text-gray-600">Loading 3D model...</p>
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Loading 3D model...</p>
             </div>
           </div>
         )}
 
         {/* Error Display */}
         {loadingError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white">
+          <div className="absolute inset-0 flex items-center justify-center bg-background">
             <div className="text-center p-6 max-w-md">
-              <div className="text-red-600 text-5xl mb-4">⚠️</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <div className="text-destructive text-5xl mb-4">⚠️</div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
                 Failed to Load 3D Model
               </h3>
-              <p className="text-sm text-gray-600">{loadingError}</p>
+              <p className="text-sm text-muted-foreground">{loadingError}</p>
             </div>
           </div>
         )}
