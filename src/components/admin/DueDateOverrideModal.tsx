@@ -107,9 +107,9 @@ export default function DueDateOverrideModal({
         <div className="space-y-4">
           {/* Original Due Date */}
           <div>
-            <Label className="text-sm text-gray-600">{t("jobs.originalDueDate")}</Label>
+            <Label className="text-sm text-muted-foreground">{t("jobs.originalDueDate")}</Label>
             <div className="flex items-center gap-2 mt-1">
-              <CalendarIcon className="h-4 w-4 text-gray-500" />
+              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">
                 {format(new Date(job?.due_date), "MMM dd, yyyy")}
               </span>
@@ -119,10 +119,10 @@ export default function DueDateOverrideModal({
           {/* Current Override */}
           {job?.due_date_override && (
             <div>
-              <Label className="text-sm text-gray-600">{t("jobs.currentOverride")}</Label>
+              <Label className="text-sm text-muted-foreground">{t("jobs.currentOverride")}</Label>
               <div className="flex items-center gap-2 mt-1">
-                <CalendarIcon className="h-4 w-4 text-blue-500" />
-                <span className="font-medium text-blue-600">
+                <CalendarIcon className="h-4 w-4 text-brand-primary" />
+                <span className="font-medium text-brand-primary">
                   {format(new Date(job.due_date_override), "MMM dd, yyyy")}
                 </span>
               </div>
@@ -144,9 +144,9 @@ export default function DueDateOverrideModal({
           </div>
 
           {overrideDate && (
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-              <Label className="text-sm text-blue-800">{t("jobs.newDueDate")}</Label>
-              <p className="font-semibold text-blue-900">
+            <div className="bg-alert-info-bg border border-alert-info-border rounded-md p-3">
+              <Label className="text-sm text-brand-primary">{t("jobs.newDueDate")}</Label>
+              <p className="font-semibold text-brand-primary">
                 {format(overrideDate, "MMM dd, yyyy")}
               </p>
             </div>

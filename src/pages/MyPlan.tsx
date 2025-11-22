@@ -145,9 +145,9 @@ export const MyPlan: React.FC = () => {
             background: currentPlan === 'premium'
               ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
               : currentPlan === 'pro'
-              ? `linear-gradient(135deg, ${alpha('#8b5cf6', 0.9)} 0%, ${alpha('#6366f1', 0.9)} 100%)`
-              : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-            color: '#fff',
+                ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.9)} 0%, ${alpha(theme.palette.primary.dark, 0.9)} 100%)`
+                : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+            color: theme.palette.primary.contrastText,
             position: 'relative',
             overflow: 'hidden',
           }}
@@ -164,8 +164,8 @@ export const MyPlan: React.FC = () => {
                       label={t('myPlan.mostPopular')}
                       size="small"
                       sx={{
-                        backgroundColor: alpha('#fff', 0.2),
-                        color: '#fff',
+                        backgroundColor: alpha(theme.palette.background.paper, 0.2),
+                        color: theme.palette.primary.contrastText,
                         fontWeight: 600,
                       }}
                     />
@@ -189,13 +189,13 @@ export const MyPlan: React.FC = () => {
                     startIcon={<UpgradeIcon />}
                     onClick={() => handleUpgradeRequest(currentPlan === 'free' ? 'Pro' : 'Premium')}
                     sx={{
-                      backgroundColor: '#fff',
+                      backgroundColor: theme.palette.background.paper,
                       color: theme.palette.primary.main,
                       fontWeight: 600,
                       px: 4,
                       py: 1.5,
                       '&:hover': {
-                        backgroundColor: alpha('#fff', 0.9),
+                        backgroundColor: alpha(theme.palette.background.paper, 0.9),
                       },
                     }}
                   >

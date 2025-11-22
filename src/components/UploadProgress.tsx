@@ -29,32 +29,32 @@ export function UploadProgress({ progress, className = '' }: UploadProgressProps
       {progress.map((file) => (
         <div
           key={file.fileIndex}
-          className="border rounded-lg p-4 bg-white shadow-sm"
+          className="border rounded-lg p-4 bg-card shadow-sm"
         >
           {/* File header */}
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 flex-1 min-w-0">
               {file.status === 'pending' && (
-                <FileUp className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                <FileUp className="h-4 w-4 text-muted-foreground flex-shrink-0" />
               )}
               {file.status === 'uploading' && (
-                <Loader2 className="h-4 w-4 text-blue-600 animate-spin flex-shrink-0" />
+                <Loader2 className="h-4 w-4 text-brand-primary animate-spin flex-shrink-0" />
               )}
               {file.status === 'completed' && (
-                <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0" />
               )}
               {file.status === 'error' && (
-                <XCircle className="h-4 w-4 text-red-600 flex-shrink-0" />
+                <XCircle className="h-4 w-4 text-destructive flex-shrink-0" />
               )}
               <p className="text-sm font-medium truncate" title={file.fileName}>
                 {file.fileName}
               </p>
             </div>
             <div className="flex items-center gap-2 text-sm ml-3 flex-shrink-0">
-              <span className="text-gray-600">
+              <span className="text-muted-foreground">
                 {formatMB(file.uploadedMB)} / {formatMB(file.totalMB)}
               </span>
-              <span className="font-semibold text-blue-600 min-w-[3rem] text-right">
+              <span className="font-semibold text-brand-primary min-w-[3rem] text-right">
                 {file.percentage}%
               </span>
             </div>
@@ -65,14 +65,14 @@ export function UploadProgress({ progress, className = '' }: UploadProgressProps
 
           {/* Error message */}
           {file.status === 'error' && file.error && (
-            <p className="mt-2 text-xs text-red-600">
+            <p className="mt-2 text-xs text-destructive">
               {file.error}
             </p>
           )}
 
           {/* Status text */}
           {file.status === 'completed' && (
-            <p className="mt-2 text-xs text-green-600">
+            <p className="mt-2 text-xs text-success">
               Upload completed successfully
             </p>
           )}
@@ -83,20 +83,20 @@ export function UploadProgress({ progress, className = '' }: UploadProgressProps
       {progress.length > 1 && (
         <div className="border-t pt-3 mt-3">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">
+            <span className="text-muted-foreground">
               Total: {progress.length} file{progress.length !== 1 ? 's' : ''}
             </span>
             <div className="flex gap-4 text-xs">
-              <span className="text-gray-600">
+              <span className="text-muted-foreground">
                 Completed: {progress.filter(p => p.status === 'completed').length}
               </span>
               {progress.some(p => p.status === 'error') && (
-                <span className="text-red-600">
+                <span className="text-destructive">
                   Failed: {progress.filter(p => p.status === 'error').length}
                 </span>
               )}
               {progress.some(p => p.status === 'uploading') && (
-                <span className="text-blue-600">
+                <span className="text-brand-primary">
                   Uploading: {progress.filter(p => p.status === 'uploading').length}
                 </span>
               )}
@@ -132,14 +132,14 @@ export function StorageQuotaDisplay({ quota, className = '' }: StorageQuotaDispl
   const isAtLimit = !quota.isUnlimited && quota.usedPercentage >= 95;
 
   return (
-    <div className={`border rounded-lg p-4 ${isAtLimit ? 'bg-red-50 border-red-200' : isNearLimit ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50'} ${className}`}>
+    <div className={`border rounded-lg p-4 ${isAtLimit ? 'bg-alert-error-bg border-alert-error-border' : isNearLimit ? 'bg-alert-warning-bg border-alert-warning-border' : 'bg-muted'} ${className}`}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <HardDrive className={`h-4 w-4 ${isAtLimit ? 'text-red-600' : isNearLimit ? 'text-yellow-600' : 'text-gray-600'}`} />
+          <HardDrive className={`h-4 w-4 ${isAtLimit ? 'text-destructive' : isNearLimit ? 'text-warning' : 'text-muted-foreground'}`} />
           <span className="text-sm font-medium">Storage Usage</span>
         </div>
         {quota.isUnlimited ? (
-          <Badge variant="outline" className="bg-white">Unlimited</Badge>
+          <Badge variant="outline" className="bg-card">Unlimited</Badge>
         ) : (
           <span className="text-sm font-semibold">
             {formatMB(quota.currentMB)} / {formatMB(quota.maxMB || 0)}
@@ -151,30 +151,30 @@ export function StorageQuotaDisplay({ quota, className = '' }: StorageQuotaDispl
         <>
           <Progress
             value={quota.usedPercentage}
-            className={`h-2 mb-2 ${isAtLimit ? '[&>div]:bg-red-600' : isNearLimit ? '[&>div]:bg-yellow-600' : ''}`}
+            className={`h-2 mb-2 ${isAtLimit ? '[&>div]:bg-destructive' : isNearLimit ? '[&>div]:bg-warning' : ''}`}
           />
           <div className="flex items-center justify-between text-xs">
-            <span className={isAtLimit ? 'text-red-600' : isNearLimit ? 'text-yellow-600' : 'text-gray-600'}>
+            <span className={isAtLimit ? 'text-destructive' : isNearLimit ? 'text-warning' : 'text-muted-foreground'}>
               {quota.usedPercentage.toFixed(1)}% used
             </span>
-            <span className="text-gray-600">
+            <span className="text-muted-foreground">
               {formatMB(quota.remainingMB)} remaining
             </span>
           </div>
 
           {isAtLimit && (
-            <div className="mt-3 flex items-start gap-2 p-2 bg-red-100 rounded border border-red-200">
-              <AlertTriangle className="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-red-800">
+            <div className="mt-3 flex items-start gap-2 p-2 bg-alert-error-bg rounded border border-alert-error-border">
+              <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-destructive">
                 Storage limit almost reached. Please upgrade your plan or delete old files to continue uploading.
               </p>
             </div>
           )}
 
           {isNearLimit && !isAtLimit && (
-            <div className="mt-3 flex items-start gap-2 p-2 bg-yellow-100 rounded border border-yellow-200">
-              <AlertTriangle className="h-4 w-4 text-yellow-600 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-yellow-800">
+            <div className="mt-3 flex items-start gap-2 p-2 bg-alert-warning-bg rounded border border-alert-warning-border">
+              <AlertTriangle className="h-4 w-4 text-warning flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-warning">
                 Storage usage is high. Consider upgrading your plan.
               </p>
             </div>

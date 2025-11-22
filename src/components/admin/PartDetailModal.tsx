@@ -972,7 +972,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                           </Badge>
                         )}
                       </div>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         {t("operations.seq")}: {op.sequence}
                         {op.estimated_time && ` | ${t("operations.est")}: ${op.estimated_time}${t("operations.min")}`}
                         {op.assigned_operator && (
@@ -989,7 +989,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                 </div>
               ))}
               {(operations?.length || 0) === 0 && (
-                <p className="text-sm text-gray-500 text-center py-4">
+                <p className="text-sm text-muted-foreground text-center py-4">
                   {t("operations.noOperationsYet")}
                 </p>
               )}

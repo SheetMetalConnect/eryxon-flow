@@ -111,13 +111,13 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
                 width: 36,
                 height: 36,
                 borderRadius: 1,
-                background: 'linear-gradient(135deg, #3a4656 0%, #0080ff 100%)',
+                background: 'var(--operator-gradient)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: 700,
                 fontSize: '1rem',
-                color: '#ffffff',
+                color: 'hsl(var(--foreground))',
               }}
             >
               SM
@@ -145,7 +145,7 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
                 sx={{
                   width: 36,
                   height: 36,
-                  background: 'linear-gradient(135deg, #3a4656 0%, #0080ff 100%)',
+                  background: 'var(--operator-gradient)',
                   fontWeight: 600,
                   fontSize: '0.95rem',
                 }}
@@ -220,8 +220,8 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
                     px: 1,
                     py: 0.25,
                     borderRadius: 0.5,
-                    background: 'linear-gradient(135deg, #3a4656 0%, #0080ff 100%)',
-                    color: '#ffffff',
+                    background: 'var(--operator-gradient)',
+                    color: 'hsl(var(--foreground))',
                     fontWeight: 600,
                     textTransform: 'uppercase',
                     fontSize: '0.65rem',

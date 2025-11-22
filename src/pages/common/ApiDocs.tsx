@@ -336,17 +336,17 @@ apiClient.post('/api-jobs', jobData)
                           <Copy className="h-4 w-4" />
                         </Button>
                       </div>
-                      <pre className="p-4 bg-slate-950 text-green-400 rounded-md overflow-x-auto text-xs">
-{`curl ${apiBaseUrl}/api-stages \\
+                      <pre className="p-4 bg-code-bg text-code-fg rounded-md overflow-x-auto text-xs">
+                        {`curl ${apiBaseUrl}/api-stages \\
   -H "Authorization: Bearer YOUR_API_KEY"`}
                       </pre>
                     </div>
-                    <Alert className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                      <AlertTitle className="text-green-800 dark:text-green-300">Expected Response</AlertTitle>
-                      <AlertDescription className="text-green-700 dark:text-green-400">
+                    <Alert className="bg-alert-success-bg border-alert-success-border">
+                      <CheckCircle2 className="h-4 w-4 text-success" />
+                      <AlertTitle className="text-success">Expected Response</AlertTitle>
+                      <AlertDescription className="text-success">
                         <pre className="mt-2 text-xs overflow-x-auto">
-{`{
+                          {`{
   "success": true,
   "data": {
     "stages": [...]
@@ -430,7 +430,7 @@ apiClient.post('/api-jobs', jobData)
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
-                        <pre className="p-4 bg-slate-950 text-green-400 rounded-md overflow-x-auto text-xs">
+                        <pre className="p-4 bg-code-bg text-code-fg rounded-md overflow-x-auto text-xs">
                           {code}
                         </pre>
                       </div>
