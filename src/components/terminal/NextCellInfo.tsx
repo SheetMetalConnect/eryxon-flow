@@ -1,13 +1,12 @@
 import React from 'react';
-import { useNextCellCapacity } from '@/hooks/useQRMMetrics';
-import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, CheckCircle2, XCircle, ArrowRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { QRMStatus } from '@/types/qrm';
+import type { CellQRMMetrics } from '@/types/qrm';
 
 interface NextCellInfoProps {
-    currentCellId: string;
-    nextCellName?: string;
+    nextCellName: string;
+    metrics: CellQRMMetrics | null;
+    loading?: boolean;
     className?: string;
 }
 
@@ -15,15 +14,9 @@ interface NextCellInfoProps {
  * Displays information about the next cell in the routing sequence
  * including capacity status according to QRM methodology
  */
-export function NextCellInfo({ currentCellId, nextCellName, className }: NextCellInfoProps) {
-    const { profile } = useAuth();
-    const { capacity, loading, error } = useNextCellCapacity(
-        currentCellId,
-        profile?.tenant_id || null
-    );
-
+export function NextCellInfo({ nextCellName, metrics, loading = false, className }: NextCellInfoProps) {
     // Don't render if there's no next cell
-    if (!loading && capacity && !capacity.next_cell_id) {
+    if (!loading && !metrics) {
         return null;
     }
 
@@ -34,7 +27,7 @@ export function NextCellInfo({ currentCellId, nextCellName, className }: NextCel
         borderColor: string;
         label: string;
     } => {
-        if (!capacity || loading) {
+        if (!metrics || loading) {
             return {
                 icon: <Loader2 className="w-4 h-4 animate-spin" />,
                 bgColor: 'bg-slate-50 dark:bg-slate-900/30',
@@ -44,10 +37,10 @@ export function NextCellInfo({ currentCellId, nextCellName, className }: NextCel
             };
         }
 
-        // Determine status based on capacity
-        const hasLimit = capacity.wip_limit !== null && capacity.wip_limit !== undefined;
-        const currentWip = capacity.current_wip || 0;
-        const wipLimit = capacity.wip_limit || 0;
+        // Determine status based on QRM metrics
+        const hasLimit = metrics.wip_limit !== null && metrics.wip_limit !== undefined;
+        const currentWip = metrics.current_wip || 0;
+        const wipLimit = metrics.wip_limit || 0;
 
         if (!hasLimit) {
             // No limit set - always normal
@@ -109,46 +102,42 @@ export function NextCellInfo({ currentCellId, nextCellName, className }: NextCel
                 </div>
             </div>
 
-            {error ? (
-                <div className="text-xs text-red-600 dark:text-red-400">
-                    Error loading capacity info
-                </div>
-            ) : loading ? (
+            {loading ? (
                 <div className="text-sm font-medium text-muted-foreground">
                     Loading next cell...
                 </div>
-            ) : capacity ? (
+            ) : metrics ? (
                 <>
                     <div className="flex items-center justify-between">
                         <div className="text-base font-bold text-foreground">
-                            {capacity.next_cell_name || nextCellName || 'Unknown Cell'}
+                            {nextCellName || metrics.cell_name || 'Unknown Cell'}
                         </div>
-                        {capacity.wip_limit !== null && capacity.wip_limit !== undefined && (
+                        {metrics.wip_limit !== null && metrics.wip_limit !== undefined && (
                             <div className="font-mono text-sm font-semibold">
                                 <span className={statusConfig.textColor}>
-                                    {capacity.current_wip || 0}
+                                    {metrics.current_wip || 0}
                                 </span>
                                 <span className="text-muted-foreground mx-0.5">/</span>
                                 <span className="text-muted-foreground">
-                                    {capacity.wip_limit}
+                                    {metrics.wip_limit}
                                 </span>
                                 <span className="text-xs text-muted-foreground ml-1">jobs</span>
                             </div>
                         )}
                     </div>
 
-                    {/* Message/Warning */}
-                    {capacity.message && (
-                        <div className={cn("text-xs mt-2 font-medium", statusConfig.textColor)}>
-                            {capacity.message}
-                        </div>
-                    )}
-
                     {/* Blocking indicator */}
-                    {!capacity.has_capacity && capacity.enforce_limit && (
+                    {metrics.enforce_limit && metrics.wip_limit !== null && metrics.current_wip >= metrics.wip_limit && (
                         <div className="mt-2 flex items-center gap-1.5 text-xs font-bold text-red-700 dark:text-red-300">
                             <XCircle className="w-3 h-3" />
                             <span>Cannot proceed - next cell at capacity</span>
+                        </div>
+                    )}
+
+                    {/* Warning indicator */}
+                    {metrics.show_warning && metrics.wip_limit !== null && metrics.current_wip < metrics.wip_limit && (
+                        <div className="mt-2 text-xs font-medium text-amber-700 dark:text-amber-300">
+                            Approaching capacity limit
                         </div>
                     )}
                 </>

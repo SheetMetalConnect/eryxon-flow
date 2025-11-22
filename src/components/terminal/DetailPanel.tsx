@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 import IssueForm from '@/components/operator/IssueForm';
 import { NextCellInfo } from './NextCellInfo';
 import { RoutingVisualization } from './RoutingVisualization';
-import { useNextCellCapacity } from '@/hooks/useQRMMetrics';
+import { useCellQRMMetrics } from '@/hooks/useQRMMetrics';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface DetailPanelProps {
@@ -29,13 +29,7 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
     const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
     const { profile } = useAuth();
 
-    // Get next cell capacity information
-    const { capacity: nextCellCapacity } = useNextCellCapacity(
-        job.cellId,
-        profile?.tenant_id || null
-    );
-
-    // Compute next operation in the sequence
+    // Compute next operation in the sequence FIRST
     const nextOperation = useMemo(() => {
         if (!job.currentSequence) return null;
         // Find the next operation in sequence order
@@ -45,11 +39,20 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
         return sorted[currentIndex + 1];
     }, [operations, job.currentSequence, job.operationId]);
 
+    // Get QRM metrics for the ACTUAL next cell in the job routing
+    const { metrics: nextCellMetrics } = useCellQRMMetrics(
+        nextOperation?.cell_id || null,
+        profile?.tenant_id || null
+    );
+
     // Check if we can complete (blocked by next cell capacity)
     const isBlockedByCapacity = useMemo(() => {
-        if (!nextCellCapacity) return false;
-        return nextCellCapacity.enforce_limit && !nextCellCapacity.has_capacity;
-    }, [nextCellCapacity]);
+        if (!nextOperation || !nextCellMetrics) return false;
+        // Check if capacity is enforced and if we're at or over the limit
+        if (!nextCellMetrics.enforce_limit) return false;
+        if (nextCellMetrics.wip_limit === null) return false;
+        return nextCellMetrics.current_wip >= nextCellMetrics.wip_limit;
+    }, [nextOperation, nextCellMetrics]);
 
     return (
         <div className="flex flex-col h-full bg-card text-card-foreground">
@@ -114,8 +117,8 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                 {/* Next Cell Capacity */}
                 {nextOperation && (
                     <NextCellInfo
-                        currentCellId={job.cellId}
-                        nextCellName={nextOperation.cell?.name}
+                        nextCellName={nextOperation.cell?.name || 'Unknown Cell'}
+                        metrics={nextCellMetrics}
                     />
                 )}
 
