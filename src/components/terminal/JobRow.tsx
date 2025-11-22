@@ -27,26 +27,26 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
         <tr
             onClick={onClick}
             className={cn(
-                "cursor-pointer transition-colors border-b border-border hover:bg-accent/30",
-                isSelected && "bg-accent/50 ring-1 ring-primary",
-                variant === 'process' && "bg-status-active/5",
+                "cursor-pointer transition-all duration-200 border-b border-border/50 hover:bg-primary/10 hover:shadow-sm",
+                isSelected && "bg-primary/20 ring-2 ring-primary/50 shadow-md",
+                variant === 'process' && "bg-status-active/10",
             )}
         >
             {/* Job Number */}
-            <td className="px-2 py-1.5 text-sm font-medium text-foreground whitespace-nowrap">
+            <td className="px-3 py-3 text-sm font-semibold text-foreground whitespace-nowrap">
                 {job.jobCode}
             </td>
 
             {/* Part Number */}
-            <td className="px-2 py-1.5 text-sm text-foreground whitespace-nowrap">
+            <td className="px-3 py-3 text-sm font-medium text-foreground/90 whitespace-nowrap">
                 {job.description}
             </td>
 
             {/* Operation */}
-            <td className="px-2 py-1.5">
+            <td className="px-3 py-3">
                 <Badge
                     className={cn(
-                        "text-primary-foreground text-xs font-semibold px-2 py-0.5 whitespace-nowrap",
+                        "text-primary-foreground text-xs font-bold px-2.5 py-1 whitespace-nowrap shadow-sm",
                         getOperationBadgeColor(job.currentOp)
                     )}
                 >
@@ -55,12 +55,13 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
             </td>
 
             {/* Cell (Next Cell) */}
-            <td className="px-2 py-1.5 text-sm text-foreground whitespace-nowrap">
+            <td className="px-3 py-3 text-sm text-foreground whitespace-nowrap">
                 <span
-                    className="inline-block px-2 py-0.5 rounded text-xs font-medium"
+                    className="inline-block px-2.5 py-1 rounded-md text-xs font-bold shadow-sm backdrop-blur-sm"
                     style={{
-                        backgroundColor: job.cellColor ? `${job.cellColor}20` : 'transparent',
-                        color: job.cellColor || 'inherit'
+                        backgroundColor: job.cellColor ? `${job.cellColor}30` : 'hsl(var(--muted))',
+                        color: job.cellColor || 'hsl(var(--foreground))',
+                        border: `1px solid ${job.cellColor ? `${job.cellColor}50` : 'hsl(var(--border))'}`
                     }}
                 >
                     {job.cellName || '-'}
@@ -68,41 +69,41 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
             </td>
 
             {/* Material */}
-            <td className="px-2 py-1.5 text-sm text-foreground whitespace-nowrap">
+            <td className="px-3 py-3 text-sm font-medium text-foreground/80 whitespace-nowrap">
                 {job.material || '-'}
             </td>
 
             {/* Quantity */}
-            <td className="px-2 py-1.5 text-sm text-foreground text-center whitespace-nowrap">
-                {job.quantity}
+            <td className="px-3 py-3 text-sm font-semibold text-foreground text-center whitespace-nowrap">
+                <span className="inline-block px-2 py-0.5 rounded bg-muted/50">{job.quantity}</span>
             </td>
 
             {/* Remaining Hours */}
-            <td className="px-2 py-1.5 text-sm font-mono text-foreground text-right whitespace-nowrap">
+            <td className="px-3 py-3 text-sm font-mono font-bold text-primary text-right whitespace-nowrap">
                 {job.hours}h
             </td>
 
             {/* Due Date */}
-            <td className="px-2 py-1.5 text-sm text-foreground whitespace-nowrap">
+            <td className="px-3 py-3 text-sm font-medium text-foreground/80 whitespace-nowrap">
                 {new Date(job.dueDate).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' })}
             </td>
 
             {/* Files - Icons & Badges */}
-            <td className="px-2 py-1.5">
-                <div className="flex items-center gap-1.5 justify-center">
+            <td className="px-3 py-3">
+                <div className="flex items-center gap-2 justify-center">
                     {job.hasPdf && (
-                        <div title="PDF Available">
-                            <FileText className="w-3.5 h-3.5 text-brand-primary" />
+                        <div title="PDF Available" className="p-1 rounded bg-primary/20 backdrop-blur-sm">
+                            <FileText className="w-4 h-4 text-primary" />
                         </div>
                     )}
                     {job.hasModel && (
-                        <div title="3D Model">
-                            <Box className="w-3.5 h-3.5 text-accent" />
+                        <div title="3D Model" className="p-1 rounded bg-accent/20 backdrop-blur-sm">
+                            <Box className="w-4 h-4 text-accent" />
                         </div>
                     )}
                     {job.warnings && job.warnings.length > 0 && (
-                        <div title={job.warnings.join(', ')}>
-                            <AlertTriangle className="w-3.5 h-3.5 text-warning" />
+                        <div title={job.warnings.join(', ')} className="p-1 rounded bg-warning/20 backdrop-blur-sm">
+                            <AlertTriangle className="w-4 h-4 text-warning" />
                         </div>
                     )}
                 </div>

@@ -254,25 +254,25 @@ export default function OperatorTerminal() {
     return (
         <div className="flex h-screen w-full bg-background text-foreground overflow-hidden font-sans relative">
             {loading && (
-                <div className="absolute inset-0 bg-background/80 z-50 flex items-center justify-center backdrop-blur-sm">
-                    <div className="flex flex-col items-center gap-4">
+                <div className="absolute inset-0 bg-background/90 z-50 flex items-center justify-center backdrop-blur-md">
+                    <div className="glass-card p-8 flex flex-col items-center gap-4">
                         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                        <p className="text-primary font-medium animate-pulse">Loading Terminal Data...</p>
+                        <p className="text-foreground font-medium animate-pulse">Loading Terminal Data...</p>
                     </div>
                 </div>
             )}
             {/* LEFT PANEL - 70% */}
-            <div className="w-[70%] flex flex-col border-r border-border">
+            <div className="w-[70%] flex flex-col border-r border-border/50">
 
                 {/* HEADER / CELL SELECTOR */}
-                <div className="h-14 border-b border-border bg-card/50 flex items-center px-4 justify-between shrink-0">
+                <div className="h-16 border-b border-border/50 bg-surface-elevated/80 backdrop-blur-sm flex items-center px-6 justify-between shrink-0">
                     <div className="flex items-center gap-4">
-                        <span className="text-muted-foreground font-medium">Terminal View:</span>
+                        <span className="text-foreground font-semibold text-sm">Terminal View</span>
                         <Select value={selectedCellId} onValueChange={handleCellChange}>
-                            <SelectTrigger className="w-[200px] bg-card border-input text-foreground">
+                            <SelectTrigger className="w-[220px] bg-card/50 backdrop-blur-sm border-border/50 text-foreground hover:bg-card/70 transition-colors">
                                 <SelectValue placeholder="Select Cell" />
                             </SelectTrigger>
-                            <SelectContent className="bg-card border-border text-foreground">
+                            <SelectContent className="glass-card border-border/50">
                                 <SelectItem value="all">All Cells</SelectItem>
                                 {cells.map(cell => (
                                     <SelectItem key={cell.id} value={cell.id}>{cell.name}</SelectItem>
@@ -280,29 +280,29 @@ export default function OperatorTerminal() {
                             </SelectContent>
                         </Select>
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-muted-foreground font-medium">
                         {filteredJobs.length} {t("terminal.jobsFound")}
                     </div>
                 </div>
 
                 {/* 1. IN PROCESS */}
-                <div className="flex-1 flex flex-col min-h-0 border-b border-border bg-accent/5 overflow-hidden">
-                    <div className="px-4 py-2 bg-status-active/10 border-l-4 border-status-active flex items-center justify-between shrink-0">
-                        <h2 className="text-base font-bold text-status-active">{t("terminal.inProcess")} ({inProcessJobs.length})</h2>
+                <div className="flex-1 flex flex-col min-h-0 border-b border-border/50 overflow-hidden">
+                    <div className="px-6 py-3 bg-status-active/20 backdrop-blur-sm border-l-4 border-status-active flex items-center justify-between shrink-0">
+                        <h2 className="text-sm font-bold text-status-active uppercase tracking-wide">{t("terminal.inProcess")} ({inProcessJobs.length})</h2>
                     </div>
                     <div className="flex-1 overflow-auto">
                         <table className="w-full text-left border-collapse">
-                            <thead className="bg-muted/50 sticky top-0 z-10">
-                                <tr className="border-b border-border">
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.jobNumber")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.partNumber")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.operation")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.cell")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.material")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center">{t("terminal.columns.quantity")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-right">{t("terminal.columns.hours")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.dueDate")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center">{t("terminal.columns.files")}</th>
+                            <thead className="bg-surface-elevated/90 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
+                                <tr className="border-b border-border/50">
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.jobNumber")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.partNumber")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.operation")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.cell")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.material")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-center">{t("terminal.columns.quantity")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">{t("terminal.columns.hours")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.dueDate")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-center">{t("terminal.columns.files")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -329,23 +329,23 @@ export default function OperatorTerminal() {
                 </div>
 
                 {/* 2. IN BUFFER */}
-                <div className="flex-1 flex flex-col min-h-0 border-b border-border overflow-hidden">
-                    <div className="px-4 py-2 bg-alert-info-bg border-l-4 border-alert-info-border flex items-center justify-between shrink-0">
-                        <h2 className="text-base font-bold text-info">{t("terminal.inBuffer")} ({inBufferJobs.length})</h2>
+                <div className="flex-1 flex flex-col min-h-0 border-b border-border/50 overflow-hidden">
+                    <div className="px-6 py-3 bg-info/20 backdrop-blur-sm border-l-4 border-info flex items-center justify-between shrink-0">
+                        <h2 className="text-sm font-bold text-info uppercase tracking-wide">{t("terminal.inBuffer")} ({inBufferJobs.length})</h2>
                     </div>
                     <div className="flex-1 overflow-auto">
                         <table className="w-full text-left border-collapse">
-                            <thead className="bg-muted/50 sticky top-0 z-10">
-                                <tr className="border-b border-border">
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.jobNumber")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.partNumber")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.operation")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.cell")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.material")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center">{t("terminal.columns.quantity")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-right">{t("terminal.columns.hours")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.dueDate")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center">{t("terminal.columns.files")}</th>
+                            <thead className="bg-surface-elevated/90 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
+                                <tr className="border-b border-border/50">
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.jobNumber")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.partNumber")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.operation")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.cell")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.material")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-center">{t("terminal.columns.quantity")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">{t("terminal.columns.hours")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.dueDate")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-center">{t("terminal.columns.files")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -364,23 +364,23 @@ export default function OperatorTerminal() {
                 </div>
 
                 {/* 3. EXPECTED */}
-                <div className="flex-1 flex flex-col min-h-0 bg-accent/5 overflow-hidden">
-                    <div className="px-4 py-2 bg-status-pending/10 border-l-4 border-status-pending flex items-center justify-between shrink-0">
-                        <h2 className="text-base font-bold text-status-pending">{t("terminal.expected")} ({expectedJobs.length})</h2>
+                <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                    <div className="px-6 py-3 bg-status-pending/20 backdrop-blur-sm border-l-4 border-status-pending flex items-center justify-between shrink-0">
+                        <h2 className="text-sm font-bold text-status-pending uppercase tracking-wide">{t("terminal.expected")} ({expectedJobs.length})</h2>
                     </div>
                     <div className="flex-1 overflow-auto">
                         <table className="w-full text-left border-collapse">
-                            <thead className="bg-muted/50 sticky top-0 z-10">
-                                <tr className="border-b border-border">
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.jobNumber")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.partNumber")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.operation")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.cell")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.material")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center">{t("terminal.columns.quantity")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-right">{t("terminal.columns.hours")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t("terminal.columns.dueDate")}</th>
-                                    <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center">{t("terminal.columns.files")}</th>
+                            <thead className="bg-surface-elevated/90 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
+                                <tr className="border-b border-border/50">
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.jobNumber")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.partNumber")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.operation")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.cell")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.material")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-center">{t("terminal.columns.quantity")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">{t("terminal.columns.hours")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.dueDate")}</th>
+                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-center">{t("terminal.columns.files")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -400,7 +400,7 @@ export default function OperatorTerminal() {
             </div>
 
             {/* RIGHT PANEL - 30% */}
-            <div className="w-[30%] bg-card flex flex-col border-l border-border shadow-2xl z-10">
+            <div className="w-[30%] bg-surface-elevated/80 backdrop-blur-md flex flex-col border-l border-border/50 shadow-2xl z-10">
                 {selectedJob ? (
                     <DetailPanel
                         job={selectedJob}
@@ -413,11 +413,11 @@ export default function OperatorTerminal() {
                     />
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8 text-center">
-                        <div className="w-16 h-16 rounded-full bg-accent/10 mb-4 flex items-center justify-center">
-                            <span className="text-3xl">👈</span>
+                        <div className="w-20 h-20 rounded-full bg-primary/10 backdrop-blur-sm border border-primary/20 mb-6 flex items-center justify-center">
+                            <span className="text-4xl">👈</span>
                         </div>
-                        <h3 className="text-xl font-medium text-foreground mb-2">No Job Selected</h3>
-                        <p className="text-sm">Select a job from the list to view details and controls.</p>
+                        <h3 className="text-xl font-semibold text-foreground mb-3">No Job Selected</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">Select a job from the list to view details and controls.</p>
                     </div>
                 )}
             </div>
