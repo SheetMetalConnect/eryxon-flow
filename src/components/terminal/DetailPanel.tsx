@@ -3,8 +3,9 @@ import { TerminalJob } from '@/types/terminal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { Play, Pause, Square, FileText, Box, AlertTriangle, CheckCircle2, Clock, Circle } from 'lucide-react';
+import { Play, Pause, Square, FileText, Box, AlertTriangle, CheckCircle2, Clock, Circle, Maximize2, X } from 'lucide-react';
 import { STEPViewer } from '@/components/STEPViewer'; // Reusing existing viewer
 import { PDFViewer } from '@/components/PDFViewer';
 import { OperationWithDetails } from '@/lib/database';
@@ -27,6 +28,7 @@ interface DetailPanelProps {
 
 export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl, operations = [] }: DetailPanelProps) {
     const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
+    const [fullscreenViewer, setFullscreenViewer] = useState<'pdf' | '3d' | null>(null);
     const { profile } = useAuth();
 
     // Compute next operation in the sequence FIRST
@@ -57,25 +59,22 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
     return (
         <div className="flex flex-col h-full bg-transparent text-card-foreground">
 
-            {/* Header Card */}
-            <div className="p-6 border-b border-border/50 bg-card/30 backdrop-blur-sm">
-                <div className="flex justify-between items-start mb-3">
+            {/* Header Card - More Compact */}
+            <div className="p-4 border-b border-border/50 bg-card/30 backdrop-blur-sm">
+                <div className="flex justify-between items-center mb-3">
                     <div>
-                        <h2 className="text-2xl font-bold text-foreground mb-1">{job.jobCode}</h2>
-                        <p className="text-muted-foreground text-sm font-medium">{job.description}</p>
+                        <div className="flex items-baseline gap-2">
+                            <h2 className="text-xl font-bold text-foreground">{job.jobCode}</h2>
+                            <span className="text-sm text-muted-foreground">• {job.description}</span>
+                        </div>
+                        <div className="text-base font-bold text-primary mt-1 flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-lg shadow-primary/50" />
+                            {job.currentOp}
+                        </div>
                     </div>
                     <div className="text-right">
-                        <div className="text-2xl font-mono font-bold text-primary">{job.quantity} <span className="text-sm text-muted-foreground font-normal">pcs</span></div>
-                        <div className="text-xs text-muted-foreground font-medium">Due: {new Date(job.dueDate).toLocaleDateString()}</div>
-                    </div>
-                </div>
-
-                {/* Current Operation Highlight */}
-                <div className="my-4 p-4 glass-card">
-                    <div className="text-xs text-primary uppercase tracking-widest font-bold mb-2">Ready to Start</div>
-                    <div className="text-lg font-bold text-foreground flex items-center gap-2">
-                        <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-lg shadow-primary/50" />
-                        {job.currentOp}
+                        <div className="text-xl font-mono font-bold text-primary">{job.quantity} <span className="text-xs text-muted-foreground font-normal">pcs</span></div>
+                        <div className="text-xs text-muted-foreground font-medium">{new Date(job.dueDate).toLocaleDateString()}</div>
                     </div>
                 </div>
 
@@ -134,25 +133,35 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
             {/* Main Content Tabs */}
             <div className="flex-1 min-h-0">
                 <Tabs defaultValue={job.hasModel ? "3d" : job.hasPdf ? "pdf" : "ops"} className="h-full flex flex-col">
-                    <div className="px-4 pt-3">
-                        <TabsList className="w-full bg-surface-elevated/70 backdrop-blur-sm text-muted-foreground border border-border/50">
+                    <div className="px-3 pt-2 flex items-center gap-2">
+                        <TabsList className="flex-1 bg-surface-elevated/70 backdrop-blur-sm text-muted-foreground border border-border/50">
                             {job.hasModel && (
                                 <TabsTrigger value="3d" className="flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-md data-[state=active]:font-semibold transition-all">
-                                    <Box className="w-4 h-4 mr-2" /> 3D View
+                                    <Box className="w-4 h-4 mr-1" /> 3D
                                 </TabsTrigger>
                             )}
                             {job.hasPdf && (
                                 <TabsTrigger value="pdf" className="flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-md data-[state=active]:font-semibold transition-all">
-                                    <FileText className="w-4 h-4 mr-2" /> Drawing
+                                    <FileText className="w-4 h-4 mr-1" /> PDF
                                 </TabsTrigger>
                             )}
                             <TabsTrigger value="ops" className="flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-md data-[state=active]:font-semibold transition-all">
                                 Ops
                             </TabsTrigger>
                         </TabsList>
+                        {(job.hasModel || job.hasPdf) && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setFullscreenViewer(job.hasModel ? '3d' : 'pdf')}
+                                className="shrink-0"
+                            >
+                                <Maximize2 className="h-4 w-4" />
+                            </Button>
+                        )}
                     </div>
 
-                    <div className="flex-1 p-4 min-h-0 overflow-hidden">
+                    <div className="flex-1 p-3 min-h-0 overflow-hidden">
                         {job.hasModel && (
                             <TabsContent value="3d" className="h-full m-0 rounded-lg overflow-hidden border border-border/50 bg-background/50 backdrop-blur-sm shadow-lg">
                                 <STEPViewer url={stepUrl || ""} title={job.jobCode} />
@@ -234,6 +243,34 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                 onOpenChange={setIsIssueModalOpen}
                 onSuccess={() => setIsIssueModalOpen(false)}
             />
+
+            {/* Fullscreen Viewer Dialog */}
+            <Dialog open={fullscreenViewer !== null} onOpenChange={() => setFullscreenViewer(null)}>
+                <DialogContent className="max-w-[95vw] h-[95vh] p-0 gap-0">
+                    <div className="flex flex-col h-full">
+                        <div className="flex items-center justify-between p-3 border-b">
+                            <h3 className="font-semibold">
+                                {fullscreenViewer === '3d' ? '3D Model' : 'PDF Drawing'} - {job.jobCode}
+                            </h3>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setFullscreenViewer(null)}
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+                        <div className="flex-1 overflow-hidden">
+                            {fullscreenViewer === '3d' && stepUrl && (
+                                <STEPViewer url={stepUrl} title={job.jobCode} />
+                            )}
+                            {fullscreenViewer === 'pdf' && pdfUrl && (
+                                <PDFViewer url={pdfUrl} title={job.jobCode} />
+                            )}
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

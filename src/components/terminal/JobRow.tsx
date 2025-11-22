@@ -33,20 +33,20 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
             )}
         >
             {/* Job Number */}
-            <td className="px-3 py-3 text-sm font-semibold text-foreground whitespace-nowrap">
+            <td className="px-2 py-2 text-sm font-semibold text-foreground whitespace-nowrap">
                 {job.jobCode}
             </td>
 
             {/* Part Number */}
-            <td className="px-3 py-3 text-sm font-medium text-foreground/90 whitespace-nowrap">
+            <td className="px-2 py-2 text-sm font-medium text-foreground/90 whitespace-nowrap">
                 {job.description}
             </td>
 
             {/* Operation */}
-            <td className="px-3 py-3">
+            <td className="px-2 py-2">
                 <Badge
                     className={cn(
-                        "text-primary-foreground text-xs font-bold px-2.5 py-1 whitespace-nowrap shadow-sm",
+                        "text-primary-foreground text-xs font-bold px-2 py-0.5 whitespace-nowrap shadow-sm",
                         getOperationBadgeColor(job.currentOp)
                     )}
                 >
@@ -54,8 +54,20 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
                 </Badge>
             </td>
 
+            {/* Operator - Only for 'process' variant */}
+            {variant === 'process' && (
+                <td className="px-2 py-2 text-sm text-foreground whitespace-nowrap">
+                    <div className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-active-work animate-pulse" />
+                        <span className="font-medium text-active-work">
+                            {job.operatorName || 'Unknown'}
+                        </span>
+                    </div>
+                </td>
+            )}
+
             {/* Next Cell */}
-            <td className="px-3 py-3 text-sm text-foreground whitespace-nowrap">
+            <td className="px-2 py-2 text-sm text-foreground whitespace-nowrap">
                 {job.nextCellName ? (
                     <span
                         className="inline-block px-2.5 py-1 rounded-md text-xs font-bold shadow-sm backdrop-blur-sm"
@@ -73,17 +85,17 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
             </td>
 
             {/* Material */}
-            <td className="px-3 py-3 text-sm font-medium text-foreground/80 whitespace-nowrap">
+            <td className="px-2 py-2 text-sm font-medium text-foreground/80 whitespace-nowrap">
                 {job.material || '-'}
             </td>
 
             {/* Quantity */}
-            <td className="px-3 py-3 text-sm font-semibold text-foreground text-center whitespace-nowrap">
-                <span className="inline-block px-2 py-0.5 rounded bg-muted/50">{job.quantity}</span>
+            <td className="px-2 py-2 text-sm font-semibold text-foreground text-center whitespace-nowrap">
+                <span className="inline-block px-1.5 py-0.5 rounded bg-muted/50 text-xs">{job.quantity}</span>
             </td>
 
             {/* Hours Progress */}
-            <td className="px-3 py-3 text-sm whitespace-nowrap">
+            <td className="px-2 py-2 text-sm whitespace-nowrap">
                 <div className="flex flex-col gap-1 min-w-[120px]">
                     {/* Progress Bar */}
                     <div className="relative w-full h-2 bg-muted/50 rounded-full overflow-hidden">
@@ -121,12 +133,12 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
             </td>
 
             {/* Due Date */}
-            <td className="px-3 py-3 text-sm font-medium text-foreground/80 whitespace-nowrap">
-                {new Date(job.dueDate).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+            <td className="px-2 py-2 text-xs font-medium text-foreground/80 whitespace-nowrap">
+                {new Date(job.dueDate).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit'})}
             </td>
 
             {/* Files - Icons & Badges */}
-            <td className="px-3 py-3">
+            <td className="px-2 py-2">
                 <div className="flex items-center gap-2 justify-center">
                     {job.hasPdf && (
                         <div title="PDF Available" className="p-1 rounded bg-primary/20 backdrop-blur-sm">

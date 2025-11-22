@@ -29,4 +29,5 @@ export interface TerminalJob {
     nextCellColor?: string; // Next cell color
     nextCellId?: string; // Next cell ID
     currentSequence?: number; // Added for next operation detection
+    operatorName?: string; // Name of operator currently working on this (if active time entry)
 }
