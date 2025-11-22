@@ -442,25 +442,22 @@ function AppRoutes() {
         }
       />
 
+      {/* Public legal pages - must be accessible without authentication */}
       <Route
         path="/privacy-policy"
         element={
-          <ProtectedRoute>
-            <Layout>
-              <PrivacyPolicy />
-            </Layout>
-          </ProtectedRoute>
+          <Layout>
+            <PrivacyPolicy />
+          </Layout>
         }
       />
 
       <Route
         path="/terms-of-service"
         element={
-          <ProtectedRoute>
-            <Layout>
-              <TermsOfService />
-            </Layout>
-          </ProtectedRoute>
+          <Layout>
+            <TermsOfService />
+          </Layout>
         }
       />
 
