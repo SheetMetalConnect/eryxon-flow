@@ -1,10 +1,10 @@
 # Eryxon Flow MCP Server
 
-**Version 2.0** - Modular, Future-Proof Architecture
+**Version 2.1** - Modular Architecture with Per-Tenant Authentication
 
 ## Overview
 
-The Eryxon Flow MCP (Model Context Protocol) server enables AI assistants like Claude to directly interact with manufacturing data. This refactored version features a modular architecture designed for scalability, maintainability, and ease of testing.
+The Eryxon Flow MCP (Model Context Protocol) server enables AI assistants like Claude to directly interact with manufacturing data. This version features a modular architecture with **per-tenant authentication**, matching the security model of the REST API.
 
 ## Architecture
 
@@ -49,14 +49,16 @@ mcp-server/
 
 ### Key Architectural Improvements
 
-1. **Modular Tool Organization**: Tools organized by domain (jobs, parts, tasks, etc.)
-2. **Tool Registry Pattern**: Centralized tool registration and handler management
-3. **Shared Utilities**: Reusable query builders, formatters, and error handlers
-4. **Type Safety**: Comprehensive TypeScript types throughout
-5. **Error Handling**: Consistent error handling with custom error types
-6. **Logging System**: Structured logging with configurable levels
-7. **Configuration Management**: Environment-based configuration
-8. **Testing Ready**: Modular design enables easy unit testing
+1. **Per-Tenant Authentication**: Each tenant generates their own MCP keys (like `mcp_live_xxx`)
+2. **Modular Tool Organization**: Tools organized by domain (jobs, parts, tasks, etc.)
+3. **Tool Registry Pattern**: Centralized tool registration and handler management
+4. **Shared Utilities**: Reusable query builders, formatters, and error handlers
+5. **Type Safety**: Comprehensive TypeScript types throughout
+6. **Error Handling**: Consistent error handling with custom error types
+7. **Logging System**: Structured logging with configurable levels
+8. **Full Audit Trail**: Every tool call logged with tenant, key, response time
+9. **Granular Permissions**: Configure which tools each key can access
+10. **Same Security as REST API**: Bcrypt key hashing, RLS enforcement, validation
 
 ## Available Tools
 
@@ -112,7 +114,14 @@ mcp-server/
    npm install
    ```
 
-2. **Configure environment:**
+2. **Apply database migrations:**
+   ```sql
+   -- Apply these migrations in order:
+   -- 1. supabase/migrations/20251122195800_mcp_server_configuration.sql
+   -- 2. supabase/migrations/20251122203000_mcp_authentication_keys.sql
+   ```
+
+3. **Configure environment:**
    Create `.env` file:
    ```env
    SUPABASE_URL=https://your-project.supabase.co
@@ -143,6 +152,29 @@ npm run build
 npm start
 ```
 
+### Generate MCP Authentication Key
+
+**⚠️ IMPORTANT:** Each tenant must generate their own MCP key!
+
+1. **Via UI (Recommended):**
+   - Navigate to `/admin/config/mcp-keys`
+   - Click "Generate New Key"
+   - Choose environment (live/test)
+   - Configure tool permissions
+   - **Save the key immediately** (shown only once!)
+
+2. **Via SQL (Advanced):**
+   ```sql
+   SELECT * FROM generate_mcp_key(
+     p_tenant_id := 'your-tenant-id',
+     p_name := 'Claude Desktop Integration',
+     p_description := 'Production MCP key for Claude',
+     p_environment := 'live',
+     p_allowed_tools := '["*"]'::jsonb,  -- All tools
+     p_created_by := 'your-user-id'
+   );
+   ```
+
 ### Claude Desktop Configuration
 
 Add to Claude Desktop config (`claude_desktop_config.json`):
@@ -162,6 +194,26 @@ Add to Claude Desktop config (`claude_desktop_config.json`):
   }
 }
 ```
+
+### Using Your MCP Key
+
+When calling MCP tools, include your key in the request:
+
+```json
+{
+  "params": {
+    "name": "fetch_jobs",
+    "arguments": {
+      "status": "in_progress"
+    },
+    "_meta": {
+      "apiKey": "mcp_live_your_key_here"
+    }
+  }
+}
+```
+
+**Note:** Claude Desktop doesn't support custom authentication yet. For now, the key validation happens server-side via the `_meta.apiKey` parameter.
 
 ## Configuration
 
@@ -314,10 +366,44 @@ npm run build
 
 ## Security
 
-- **Service Role Key**: Uses Supabase service role for full database access
-- **RLS Enforcement**: All queries respect Row Level Security policies
-- **Tenant Isolation**: Multi-tenancy enforced at database level
-- **Error Messages**: Sanitized to prevent information leakage
+### Authentication & Authorization
+
+- **Per-Tenant Keys**: Each tenant generates unique MCP authentication keys
+- **Bcrypt Hashing**: Keys hashed with bcrypt (cost factor 10) like REST API keys
+- **Key Validation**: Every request validates key and extracts tenant context
+- **Tenant Isolation**: RLS policies enforce multi-tenancy at database level
+- **Service Role**: Server uses service role, but tenant context set per-request
+
+### Permission Model
+
+- **Granular Tool Access**: Restrict which tools each key can access
+- **Wildcard Support**: `["*"]` allows all tools
+- **Specific Tools**: `["fetch_jobs", "update_job"]` limits to specific tools
+- **Rate Limiting**: Per-key rate limits (default: 100 req/min)
+
+### Audit Trail
+
+Every MCP request is logged:
+- Tenant ID and Key ID
+- Tool name and arguments
+- Success/failure status
+- Response time in milliseconds
+- Error messages (if any)
+
+Query audit logs:
+```sql
+SELECT * FROM mcp_key_usage_logs
+WHERE tenant_id = 'your-tenant-id'
+ORDER BY created_at DESC;
+```
+
+### Key Management
+
+- **Environment Support**: Separate live and test keys
+- **Enable/Disable**: Toggle keys without deletion
+- **Usage Tracking**: Monitor request counts and last usage
+- **Key Rotation**: Generate new keys and revoke old ones
+- **One-Time Display**: Keys shown only once at generation
 
 ## Performance
 

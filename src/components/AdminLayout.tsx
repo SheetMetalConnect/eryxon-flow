@@ -180,6 +180,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       exact: true,
     },
     {
+      path: "/admin/config/mcp-keys",
+      label: "MCP Keys",
+      icon: Key,
+      exact: true,
+    },
+    {
       path: "/admin/config/webhooks",
       label: "Webhooks",
       icon: Webhook,

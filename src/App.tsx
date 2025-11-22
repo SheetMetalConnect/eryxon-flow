@@ -21,6 +21,7 @@ import ConfigScrapReasons from "./pages/admin/ConfigScrapReasons";
 import OrganizationSettings from "./pages/admin/OrganizationSettings";
 import Assignments from "./pages/admin/Assignments";
 import ConfigApiKeys from "./pages/admin/ConfigApiKeys";
+import ConfigMcpKeys from "./pages/admin/ConfigMcpKeys";
 import ConfigWebhooks from "./pages/admin/ConfigWebhooks";
 import DataExport from "./pages/admin/DataExport";
 import Jobs from "./pages/admin/Jobs";
@@ -271,6 +272,17 @@ function AppRoutes() {
           <ProtectedRoute adminOnly>
             <Layout>
               <ConfigApiKeys />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/config/mcp-keys"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <ConfigMcpKeys />
             </Layout>
           </ProtectedRoute>
         }
