@@ -533,5 +533,6 @@ export default function ConfigUsers() {
           </CardContent>
         </Card>
       </div>
+    </div>
   );
 }
