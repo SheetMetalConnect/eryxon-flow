@@ -16,6 +16,7 @@ interface Operation {
   estimated_time: number;
   actual_time: number | null;
   cell_id: string;
+  completed_at: string | null;
   part: {
     id: string;
     part_number: string;
@@ -59,6 +60,13 @@ export function QRMDashboard() {
     queryKey: ["operations-by-cell", profile?.tenant_id],
     queryFn: async () => {
       if (!profile?.tenant_id) return [];
+
+      // Get today's date at midnight for comparison
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayISO = today.toISOString();
+
+      // Fetch operations with parts and jobs using simpler query
       const { data, error } = await supabase
         .from("operations")
         .select(`
@@ -68,22 +76,63 @@ export function QRMDashboard() {
           estimated_time,
           actual_time,
           cell_id,
-          part:parts!inner(
+          completed_at,
+          part_id,
+          parts(
             id,
             part_number,
             material,
             quantity,
-            job:jobs!inner(
+            job_id,
+            jobs(
               job_number,
               due_date
             )
           )
         `)
-        .eq("tenant_id", profile.tenant_id)
-        .in("status", ["not_started", "in_progress"])
-        .order("part(job(due_date))", { ascending: true });
-      if (error) throw error;
-      return data as unknown as Operation[];
+        .eq("tenant_id", profile.tenant_id);
+
+      if (error) {
+        console.error("Error fetching operations:", error);
+        throw error;
+      }
+
+      // Filter and map the data
+      const now = new Date();
+      const filteredData = (data || [])
+        .filter((op: any) => {
+          // Include not_started and in_progress operations
+          if (op.status === "not_started" || op.status === "in_progress") {
+            return true;
+          }
+          // Include completed operations from today
+          if (op.status === "completed" && op.completed_at) {
+            const completedDate = new Date(op.completed_at);
+            return completedDate.toDateString() === now.toDateString();
+          }
+          return false;
+        })
+        .map((op: any) => ({
+          id: op.id,
+          operation_name: op.operation_name,
+          status: op.status,
+          estimated_time: op.estimated_time,
+          actual_time: op.actual_time,
+          cell_id: op.cell_id,
+          completed_at: op.completed_at,
+          part: {
+            id: op.parts?.id || "",
+            part_number: op.parts?.part_number || "",
+            material: op.parts?.material || "",
+            quantity: op.parts?.quantity || 0,
+            job: {
+              job_number: op.parts?.jobs?.job_number || "",
+              due_date: op.parts?.jobs?.due_date || null,
+            },
+          },
+        }));
+
+      return filteredData as Operation[];
     },
     enabled: !!profile?.tenant_id,
   });
@@ -109,6 +158,7 @@ export function QRMDashboard() {
       active: ops.filter((op) => op.status === "in_progress"),
       buffer: ops.filter((op) => op.status === "not_started").slice(0, 5),
       expected: ops.filter((op) => op.status === "not_started").slice(5),
+      completed: ops.filter((op) => op.status === "completed"),
     };
   };
 
@@ -281,6 +331,34 @@ export function QRMDashboard() {
                         {grouped.expected.length > 3 && (
                           <div className="text-xs text-muted-foreground text-center p-1">
                             +{grouped.expected.length - 3} {t("qrm.more", "more")}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Completed Today */}
+                  {grouped.completed.length > 0 && (
+                    <div>
+                      <div className="text-xs font-semibold text-green-700 mb-1.5 flex items-center gap-2">
+                        <div className="h-0.5 w-2 bg-green-600 rounded" />
+                        {t("qrm.completedToday", "Completed Today")} ({grouped.completed.length})
+                      </div>
+                      <div className="space-y-1">
+                        {grouped.completed.slice(0, 3).map((op) => (
+                          <div
+                            key={op.id}
+                            className="flex items-center justify-between text-xs p-2 bg-green-950/5 rounded hover:bg-green-950/10 cursor-pointer transition-colors"
+                            onClick={() => navigate(`/admin/operations`)}
+                          >
+                            <span className="font-medium">{op.part.job.job_number}</span>
+                            <span className="text-muted-foreground">{op.part.part_number}</span>
+                            <Badge variant="secondary" className="text-xs bg-green-100 text-green-800 border-green-200">{op.operation_name}</Badge>
+                          </div>
+                        ))}
+                        {grouped.completed.length > 3 && (
+                          <div className="text-xs text-muted-foreground text-center p-1">
+                            +{grouped.completed.length - 3} {t("qrm.more", "more")}
                           </div>
                         )}
                       </div>
