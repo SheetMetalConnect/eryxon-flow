@@ -477,10 +477,10 @@
 
   /* Glass morphism utility */
   .glass {
-    background: hsl(var(--glass-background));
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid hsl(var(--glass-border));
+    background: hsl(var(--glass-background)) !important;
+    backdrop-filter: blur(var(--glass-blur)) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+    border: 1px solid hsl(var(--glass-border)) !important;
   }
 
   /* Status indicator utilities */
@@ -536,10 +536,10 @@
 
   /* Navigation utilities - Clean premium look with subtle glow */
   .nav-active {
-    background-color: hsl(var(--nav-active-bg));
-    color: hsl(var(--nav-active-fg));
-    border-color: hsl(var(--nav-active-border));
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+    background-color: hsl(var(--nav-active-bg)) !important;
+    color: hsl(var(--nav-active-fg)) !important;
+    border-color: hsl(var(--nav-active-border)) !important;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.05) !important;
     position: relative;
   }
 
@@ -553,25 +553,25 @@
   }
 
   .nav-hover:hover {
-    background-color: hsl(var(--nav-hover-bg));
-    color: hsl(var(--nav-hover-fg));
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.03);
+    background-color: hsl(var(--nav-hover-bg)) !important;
+    color: hsl(var(--nav-hover-fg)) !important;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.03) !important;
   }
 
   /* Premium transparent sidebar with inner glow */
   .sidebar-glass {
-    background: hsl(var(--sidebar-background));
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-color: hsl(var(--sidebar-border));
-    box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.05);
+    background: hsl(var(--sidebar-background)) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-color: hsl(var(--sidebar-border)) !important;
+    box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.05) !important;
   }
 
   /* Transparent card - shows background */
   .card-transparent {
-    background: hsl(var(--card));
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: hsl(var(--card)) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
   }
 }
 
@@ -582,31 +582,31 @@
 @layer components {
   /* Glass card pattern - Beautiful depth */
   .glass-card {
-    background: hsl(var(--glass-background));
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid hsl(var(--glass-border));
+    background: hsl(var(--glass-background)) !important;
+    backdrop-filter: blur(var(--glass-blur)) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+    border: 1px solid hsl(var(--glass-border)) !important;
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-glass);
+    box-shadow: var(--shadow-glass) !important;
     transition: var(--transition-smooth);
   }
 
   .glass-card:hover {
-    border-color: hsl(var(--glass-border) / 0.2);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    border-color: hsl(var(--glass-border) / 0.2) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5) !important;
   }
 
   /* Onboarding card - Premium auth experience */
   .onboarding-card {
-    background: hsl(var(--glass-background));
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid hsl(var(--glass-border));
+    background: hsl(var(--glass-background)) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid hsl(var(--glass-border)) !important;
     border-radius: 24px;
     padding: 1rem 2.5rem 2rem;
     max-width: 520px;
     width: 100%;
-    box-shadow: var(--shadow-glass);
+    box-shadow: var(--shadow-glass) !important;
     text-align: center;
     animation: fadeInUp 0.8s ease-out;
   }
