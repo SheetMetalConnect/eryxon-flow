@@ -502,57 +502,94 @@ export type Database = {
       }
       issues: {
         Row: {
+          affected_quantity: number | null
+          corrective_action: string | null
           created_at: string | null
           created_by: string
           description: string
+          disposition: Database["public"]["Enums"]["ncr_disposition"] | null
           id: string
           image_paths: string[] | null
+          issue_type: Database["public"]["Enums"]["issue_type"] | null
+          ncr_category: Database["public"]["Enums"]["ncr_category"] | null
           operation_id: string
+          preventive_action: string | null
+          reported_by_id: string | null
           resolution_notes: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          root_cause: string | null
           search_vector: unknown
           severity: Database["public"]["Enums"]["issue_severity"]
           status: Database["public"]["Enums"]["issue_status"] | null
           tenant_id: string
+          title: string | null
           updated_at: string | null
+          verification_required: boolean | null
         }
         Insert: {
+          affected_quantity?: number | null
+          corrective_action?: string | null
           created_at?: string | null
           created_by: string
           description: string
+          disposition?: Database["public"]["Enums"]["ncr_disposition"] | null
           id?: string
           image_paths?: string[] | null
+          issue_type?: Database["public"]["Enums"]["issue_type"] | null
+          ncr_category?: Database["public"]["Enums"]["ncr_category"] | null
           operation_id: string
+          preventive_action?: string | null
+          reported_by_id?: string | null
           resolution_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          root_cause?: string | null
           search_vector?: unknown
           severity: Database["public"]["Enums"]["issue_severity"]
           status?: Database["public"]["Enums"]["issue_status"] | null
           tenant_id: string
+          title?: string | null
           updated_at?: string | null
+          verification_required?: boolean | null
         }
         Update: {
+          affected_quantity?: number | null
+          corrective_action?: string | null
           created_at?: string | null
           created_by?: string
           description?: string
+          disposition?: Database["public"]["Enums"]["ncr_disposition"] | null
           id?: string
           image_paths?: string[] | null
+          issue_type?: Database["public"]["Enums"]["issue_type"] | null
+          ncr_category?: Database["public"]["Enums"]["ncr_category"] | null
           operation_id?: string
+          preventive_action?: string | null
+          reported_by_id?: string | null
           resolution_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          root_cause?: string | null
           search_vector?: unknown
           severity?: Database["public"]["Enums"]["issue_severity"]
           status?: Database["public"]["Enums"]["issue_status"] | null
           tenant_id?: string
+          title?: string | null
           updated_at?: string | null
+          verification_required?: boolean | null
         }
         Relationships: [
           {
             foreignKeyName: "issues_created_by_fkey"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issues_reported_by_id_fkey"
+            columns: ["reported_by_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1968,7 +2005,15 @@ export type Database = {
       integration_status: "draft" | "published" | "deprecated" | "archived"
       issue_severity: "low" | "medium" | "high" | "critical"
       issue_status: "pending" | "approved" | "rejected" | "closed"
+      issue_type: "general" | "ncr"
       job_status: "not_started" | "in_progress" | "completed" | "on_hold"
+      ncr_category:
+        | "material_defect"
+        | "dimensional"
+        | "surface_finish"
+        | "process_error"
+        | "other"
+      ncr_disposition: "scrap" | "rework" | "use_as_is" | "return_to_supplier"
       subscription_plan: "free" | "pro" | "premium"
       subscription_status: "active" | "cancelled" | "suspended" | "trial"
       task_status: "not_started" | "in_progress" | "completed" | "on_hold"
@@ -2113,7 +2158,16 @@ export const Constants = {
       integration_status: ["draft", "published", "deprecated", "archived"],
       issue_severity: ["low", "medium", "high", "critical"],
       issue_status: ["pending", "approved", "rejected", "closed"],
+      issue_type: ["general", "ncr"],
       job_status: ["not_started", "in_progress", "completed", "on_hold"],
+      ncr_category: [
+        "material_defect",
+        "dimensional",
+        "surface_finish",
+        "process_error",
+        "other",
+      ],
+      ncr_disposition: ["scrap", "rework", "use_as_is", "return_to_supplier"],
       subscription_plan: ["free", "pro", "premium"],
       subscription_status: ["active", "cancelled", "suspended", "trial"],
       task_status: ["not_started", "in_progress", "completed", "on_hold"],
