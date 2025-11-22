@@ -171,10 +171,16 @@ export default function PrivacyPolicy() {
             please contact us at:
           </Typography>
           <Typography paragraph color="text.secondary">
-            <strong>Email:</strong> [CONTACT EMAIL TO BE ADDED]
+            <strong>Email:</strong> luke@sheetmetalconnect.com
           </Typography>
           <Typography paragraph color="text.secondary">
-            <strong>Data Controller:</strong> [COMPANY NAME TO BE ADDED]
+            <strong>Data Controller:</strong> Sheet Metal Connect e.U.
+          </Typography>
+          <Typography paragraph color="text.secondary">
+            <strong>Address:</strong> Dr.-Karl-Lueger-Platz 4B / 16, 1010 Vienna, Austria
+          </Typography>
+          <Typography paragraph color="text.secondary">
+            <strong>Contact Person:</strong> Luke van Enkhuizen
           </Typography>
         </Box>
 

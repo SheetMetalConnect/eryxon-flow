@@ -210,9 +210,9 @@ export default function TermsOfService() {
             11. Governing Law
           </Typography>
           <Typography paragraph color="text.secondary">
-            These Terms are governed by the laws of [JURISDICTION TO BE ADDED], without regard
+            These Terms are governed by the laws of Austria, without regard
             to conflict of law provisions. Any disputes shall be resolved in the courts of
-            [JURISDICTION TO BE ADDED].
+            Vienna, Austria.
           </Typography>
         </Box>
 
@@ -239,10 +239,16 @@ export default function TermsOfService() {
             For questions about these Terms, please contact us at:
           </Typography>
           <Typography paragraph color="text.secondary">
-            <strong>Email:</strong> [CONTACT EMAIL TO BE ADDED]
+            <strong>Email:</strong> luke@sheetmetalconnect.com
           </Typography>
           <Typography paragraph color="text.secondary">
-            <strong>Company:</strong> [COMPANY NAME TO BE ADDED]
+            <strong>Company:</strong> Sheet Metal Connect e.U.
+          </Typography>
+          <Typography paragraph color="text.secondary">
+            <strong>Address:</strong> Dr.-Karl-Lueger-Platz 4B / 16, 1010 Vienna, Austria
+          </Typography>
+          <Typography paragraph color="text.secondary">
+            <strong>Contact Person:</strong> Luke van Enkhuizen
           </Typography>
         </Box>
       </Paper>
