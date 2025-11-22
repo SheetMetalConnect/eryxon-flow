@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
-import { Plus, Save, X, Upload, Eye, Trash2, Box, FileText, AlertTriangle, Package, ChevronRight } from "lucide-react";
+import { Plus, Save, X, Upload, Eye, Trash2, Box, FileText, AlertTriangle, Package, ChevronRight, Wrench } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
@@ -51,6 +51,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     estimated_time: 0,
     sequence: 1,
     notes: "",
+    selected_resources: [] as { resource_id: string; quantity: number; notes: string }[],
   });
 
   // CAD file management state
@@ -107,6 +108,25 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     },
   });
 
+  // Fetch available resources for linking
+  const { data: availableResources } = useQuery({
+    queryKey: ["available-resources", profile?.tenant_id],
+    queryFn: async () => {
+      if (!profile?.tenant_id) return [];
+
+      const { data, error } = await supabase
+        .from("resources")
+        .select("*")
+        .eq("tenant_id", profile.tenant_id)
+        .eq("active", true)
+        .order("name");
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.tenant_id,
+  });
+
   const { data: operations, refetch: refetchOperations } = useQuery({
     queryKey: ["operations", partId],
     queryFn: async () => {
@@ -120,6 +140,28 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         .eq("part_id", partId)
         .order("sequence");
       if (error) throw error;
+
+      // Fetch resource counts for each operation
+      if (data && data.length > 0) {
+        const operationIds = data.map(op => op.id);
+        const { data: resourceCounts } = await supabase
+          .from("operation_resources")
+          .select("operation_id")
+          .in("operation_id", operationIds);
+
+        // Count resources per operation
+        const countMap = new Map<string, number>();
+        resourceCounts?.forEach(item => {
+          countMap.set(item.operation_id, (countMap.get(item.operation_id) || 0) + 1);
+        });
+
+        // Add resource count to each operation
+        return data.map(op => ({
+          ...op,
+          resources_count: countMap.get(op.id) || 0,
+        }));
+      }
+
       return data;
     },
   });
@@ -156,18 +198,39 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
   const addOperationMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("operations").insert({
-        part_id: partId,
-        operation_name: newOperation.operation_name,
-        cell_id: newOperation.cell_id,
-        estimated_time: newOperation.estimated_time || null,
-        sequence: newOperation.sequence,
-        notes: newOperation.notes || null,
-        status: "not_started",
-        tenant_id: (part as any)?.tenant_id,
-      });
+      // Insert the operation first
+      const { data: opData, error: opError } = await supabase
+        .from("operations")
+        .insert({
+          part_id: partId,
+          operation_name: newOperation.operation_name,
+          cell_id: newOperation.cell_id,
+          estimated_time: newOperation.estimated_time || null,
+          sequence: newOperation.sequence,
+          notes: newOperation.notes || null,
+          status: "not_started",
+          tenant_id: (part as any)?.tenant_id,
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (opError) throw opError;
+
+      // Link resources if any were selected
+      if (newOperation.selected_resources.length > 0 && opData) {
+        const resourceLinks = newOperation.selected_resources.map((res) => ({
+          operation_id: opData.id,
+          resource_id: res.resource_id,
+          quantity: res.quantity,
+          notes: res.notes || null,
+        }));
+
+        const { error: linkError } = await supabase
+          .from("operation_resources")
+          .insert(resourceLinks);
+
+        if (linkError) throw linkError;
+      }
     },
     onSuccess: async () => {
       toast({
@@ -181,6 +244,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         estimated_time: 0,
         sequence: 1,
         notes: "",
+        selected_resources: [],
       });
       await refetchOperations();
       onUpdate();
@@ -757,6 +821,118 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                       rows={2}
                     />
                   </div>
+
+                  {/* Resource Linking Section */}
+                  <div className="col-span-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Wrench className="h-4 w-4 text-orange-600" />
+                      <Label>Required Resources (Optional)</Label>
+                    </div>
+
+                    {/* Resource Selection Dropdown */}
+                    <Select
+                      onValueChange={(resourceId) => {
+                        // Add resource to selected list if not already added
+                        if (!newOperation.selected_resources.find(r => r.resource_id === resourceId)) {
+                          setNewOperation({
+                            ...newOperation,
+                            selected_resources: [
+                              ...newOperation.selected_resources,
+                              { resource_id: resourceId, quantity: 1, notes: "" }
+                            ]
+                          });
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Add a resource..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableResources
+                          ?.filter(res => !newOperation.selected_resources.find(sr => sr.resource_id === res.id))
+                          .map((resource: any) => (
+                            <SelectItem key={resource.id} value={resource.id}>
+                              <div className="flex items-center gap-2">
+                                <span>{resource.name}</span>
+                                <Badge variant="outline" className="text-xs">
+                                  {resource.type}
+                                </Badge>
+                              </div>
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+
+                    {/* Selected Resources List */}
+                    {newOperation.selected_resources.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        {newOperation.selected_resources.map((selectedRes, idx) => {
+                          const resource = availableResources?.find(r => r.id === selectedRes.resource_id);
+                          return (
+                            <div key={idx} className="border rounded-md p-3 bg-white">
+                              <div className="flex items-start justify-between mb-2">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <Wrench className="h-3 w-3 text-orange-600" />
+                                    <span className="font-medium text-sm">{resource?.name}</span>
+                                    <Badge variant="outline" className="text-xs">
+                                      {resource?.type}
+                                    </Badge>
+                                  </div>
+                                  {resource?.description && (
+                                    <p className="text-xs text-muted-foreground">{resource.description}</p>
+                                  )}
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 w-6 p-0"
+                                  onClick={() => {
+                                    setNewOperation({
+                                      ...newOperation,
+                                      selected_resources: newOperation.selected_resources.filter((_, i) => i !== idx)
+                                    });
+                                  }}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <Label className="text-xs">Quantity</Label>
+                                  <Input
+                                    type="number"
+                                    min="0.1"
+                                    step="0.1"
+                                    value={selectedRes.quantity}
+                                    onChange={(e) => {
+                                      const updated = [...newOperation.selected_resources];
+                                      updated[idx].quantity = parseFloat(e.target.value) || 1;
+                                      setNewOperation({ ...newOperation, selected_resources: updated });
+                                    }}
+                                    className="h-8 text-xs"
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Instructions (Optional)</Label>
+                                  <Input
+                                    value={selectedRes.notes}
+                                    onChange={(e) => {
+                                      const updated = [...newOperation.selected_resources];
+                                      updated[idx].notes = e.target.value;
+                                      setNewOperation({ ...newOperation, selected_resources: updated });
+                                    }}
+                                    placeholder="Special instructions..."
+                                    className="h-8 text-xs"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="flex gap-2 mt-3">
                   <Button onClick={handleAddOperation} disabled={addOperationMutation.isPending}>
@@ -788,7 +964,15 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                       {op.cell?.name}
                     </Badge>
                     <div>
-                      <p className="font-medium">{op.operation_name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{op.operation_name}</p>
+                        {op.resources_count > 0 && (
+                          <Badge variant="outline" className="gap-1 text-xs px-1.5 py-0">
+                            <Wrench className="h-3 w-3 text-orange-600" />
+                            {op.resources_count}
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-500">
                         {t("operations.seq")}: {op.sequence}
                         {op.estimated_time && ` | ${t("operations.est")}: ${op.estimated_time}${t("operations.min")}`}

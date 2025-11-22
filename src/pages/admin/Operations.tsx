@@ -5,8 +5,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Eye, UserPlus, Download } from "lucide-react";
+import { Loader2, Eye, UserPlus, Download, Wrench } from "lucide-react";
 import { DataTable, DataTableColumnHeader, DataTableFilterableColumn } from "@/components/ui/data-table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Operation {
   id: string;
@@ -21,6 +27,8 @@ interface Operation {
   assigned_operator_id: string | null;
   assigned_name: string | null;
   due_date: string | null;
+  resources_count: number;
+  resource_names: string[];
 }
 
 export const Operations: React.FC = () => {
@@ -71,20 +79,51 @@ export const Operations: React.FC = () => {
         .limit(500);
 
       if (data) {
-        const mappedOps: Operation[] = data.map((op: any) => ({
-          id: op.id,
-          operation_name: op.operation_name || "Unknown",
-          status: op.status || "not_started",
-          part_id: op.part_id,
-          part_number: op.parts?.part_number || "Unknown",
-          job_id: op.parts?.job_id || "",
-          job_number: op.parts?.jobs?.job_number || "Unknown",
-          cell: op.cells?.name || "Unknown",
-          cell_color: op.cells?.color || null,
-          assigned_operator_id: op.assigned_operator_id,
-          assigned_name: op.profiles?.full_name || op.profiles?.email || null,
-          due_date: null,
-        }));
+        // Fetch resource counts and names for all operations
+        const operationIds = data.map((op: any) => op.id);
+        const { data: resourceData } = await supabase
+          .from("operation_resources")
+          .select(`
+            operation_id,
+            resource:resources(name)
+          `)
+          .in("operation_id", operationIds);
+
+        // Build a map of operation_id -> resource info
+        const resourceMap = new Map<string, { count: number; names: string[] }>();
+        resourceData?.forEach((item: any) => {
+          const opId = item.operation_id;
+          const resourceName = item.resource?.name || "Unknown";
+
+          if (!resourceMap.has(opId)) {
+            resourceMap.set(opId, { count: 0, names: [] });
+          }
+
+          const info = resourceMap.get(opId)!;
+          info.count += 1;
+          info.names.push(resourceName);
+        });
+
+        const mappedOps: Operation[] = data.map((op: any) => {
+          const resourceInfo = resourceMap.get(op.id) || { count: 0, names: [] };
+
+          return {
+            id: op.id,
+            operation_name: op.operation_name || "Unknown",
+            status: op.status || "not_started",
+            part_id: op.part_id,
+            part_number: op.parts?.part_number || "Unknown",
+            job_id: op.parts?.job_id || "",
+            job_number: op.parts?.jobs?.job_number || "Unknown",
+            cell: op.cells?.name || "Unknown",
+            cell_color: op.cells?.color || null,
+            assigned_operator_id: op.assigned_operator_id,
+            assigned_name: op.profiles?.full_name || op.profiles?.email || null,
+            due_date: null,
+            resources_count: resourceInfo.count,
+            resource_names: resourceInfo.names,
+          };
+        });
 
         setOperations(mappedOps);
       }
@@ -141,7 +180,31 @@ export const Operations: React.FC = () => {
         <DataTableColumnHeader column={column} title="Operation" />
       ),
       cell: ({ row }) => (
-        <span className="font-medium">{row.getValue("operation_name")}</span>
+        <div className="flex items-center gap-2">
+          <span className="font-medium">{row.getValue("operation_name")}</span>
+          {row.original.resources_count > 0 && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline" className="gap-1 text-xs px-1.5 py-0">
+                    <Wrench className="h-3 w-3 text-orange-600" />
+                    {row.original.resources_count}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="text-xs">
+                    <p className="font-semibold mb-1">Required Resources:</p>
+                    <ul className="list-disc list-inside">
+                      {row.original.resource_names.map((name, idx) => (
+                        <li key={idx}>{name}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
       ),
     },
     {
