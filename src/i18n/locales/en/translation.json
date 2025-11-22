@@ -58,6 +58,22 @@
     "checkEmail": "Check your email to confirm your account",
     "unexpectedError": "An unexpected error occurred"
   },
+  "legal": {
+    "privacyPolicy": {
+      "title": "Privacy Policy",
+      "backToAbout": "Back to About",
+      "lastUpdated": "Last updated",
+      "impressumLink": "For complete company information, please visit our",
+      "impressumText": "Impressum page"
+    },
+    "termsOfService": {
+      "title": "Terms of Service",
+      "backToAbout": "Back to About",
+      "lastUpdated": "Last updated",
+      "impressumLink": "For complete company information, please visit our",
+      "impressumText": "Impressum page"
+    }
+  },
   "navigation": {
     "dashboard": "Dashboard",
     "workQueue": "Work Queue",

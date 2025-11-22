@@ -8,22 +8,25 @@ import {
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 export default function TermsOfService() {
+  const { t } = useTranslation();
+
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Link to="/about">
         <Button variant="ghost" className="mb-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to About
+          {t("legal.termsOfService.backToAbout")}
         </Button>
       </Link>
 
       <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
-        Terms of Service
+        {t("legal.termsOfService.title")}
       </Typography>
       <Typography variant="body2" color="text.secondary" gutterBottom>
-        Last updated: {new Date().toLocaleDateString()}
+        {t("legal.termsOfService.lastUpdated")}: {new Date().toLocaleDateString()}
       </Typography>
 
       <Paper sx={{ p: 4, mt: 3 }}>
@@ -249,6 +252,16 @@ export default function TermsOfService() {
           </Typography>
           <Typography paragraph color="text.secondary">
             <strong>Contact Person:</strong> Luke van Enkhuizen
+          </Typography>
+          <Typography paragraph color="text.secondary" sx={{ mt: 2 }}>
+            {t("legal.termsOfService.impressumLink")}{" "}
+            <Link
+              href="https://www.sheetmetalconnect.nl/impressum/"
+              target="_blank"
+              style={{ color: 'inherit', textDecoration: 'underline' }}
+            >
+              {t("legal.termsOfService.impressumText")}
+            </Link>.
           </Typography>
         </Box>
       </Paper>

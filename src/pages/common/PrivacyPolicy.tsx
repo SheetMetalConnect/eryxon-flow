@@ -8,22 +8,25 @@ import {
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 export default function PrivacyPolicy() {
+  const { t } = useTranslation();
+
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Link to="/about">
         <Button variant="ghost" className="mb-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to About
+          {t("legal.privacyPolicy.backToAbout")}
         </Button>
       </Link>
 
       <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
-        Privacy Policy
+        {t("legal.privacyPolicy.title")}
       </Typography>
       <Typography variant="body2" color="text.secondary" gutterBottom>
-        Last updated: {new Date().toLocaleDateString()}
+        {t("legal.privacyPolicy.lastUpdated")}: {new Date().toLocaleDateString()}
       </Typography>
 
       <Paper sx={{ p: 4, mt: 3 }}>
@@ -181,6 +184,16 @@ export default function PrivacyPolicy() {
           </Typography>
           <Typography paragraph color="text.secondary">
             <strong>Contact Person:</strong> Luke van Enkhuizen
+          </Typography>
+          <Typography paragraph color="text.secondary" sx={{ mt: 2 }}>
+            {t("legal.privacyPolicy.impressumLink")}{" "}
+            <Link
+              href="https://www.sheetmetalconnect.nl/impressum/"
+              target="_blank"
+              style={{ color: 'inherit', textDecoration: 'underline' }}
+            >
+              {t("legal.privacyPolicy.impressumText")}
+            </Link>.
           </Typography>
         </Box>
 
