@@ -411,7 +411,7 @@ export default function OperationDetailModal({
           {(operation as any).metadata && (
             <EnhancedMetadataDisplay
               metadata={(operation as any).metadata}
-              title="Process Settings"
+              title={t("common.processSettings")}
               showTypeIndicator={true}
             />
           )}
@@ -420,7 +420,7 @@ export default function OperationDetailModal({
           {(operation.part as any).metadata && (
             <EnhancedMetadataDisplay
               metadata={(operation.part as any).metadata}
-              title="Part Specifications"
+              title={t("common.partSpecifications")}
               showTypeIndicator={true}
             />
           )}
@@ -545,7 +545,7 @@ export default function OperationDetailModal({
                           <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-amber-900 dark:text-amber-100 mb-1">
-                              Instructions:
+                              {t("common.instructions")}:
                             </p>
                             <p className="text-sm text-amber-800 dark:text-amber-200">
                               {opResource.notes}

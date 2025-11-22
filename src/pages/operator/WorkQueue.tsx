@@ -235,19 +235,19 @@ export default function WorkQueue() {
         <Card className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Total Operations</p>
+              <p className="text-sm text-muted-foreground">{t("workQueue.totalOperations")}</p>
               <p className="text-2xl font-bold">{totalOperations}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">In Progress</p>
+              <p className="text-sm text-muted-foreground">{t("workQueue.inProgress")}</p>
               <p className="text-2xl font-bold text-brand-primary">{inProgressOperations}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Completed</p>
+              <p className="text-sm text-muted-foreground">{t("workQueue.completed")}</p>
               <p className="text-2xl font-bold text-status-completed">{completedOperations}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Not Started</p>
+              <p className="text-sm text-muted-foreground">{t("workQueue.notStarted")}</p>
               <p className="text-2xl font-bold text-muted-foreground">
                 {totalOperations - inProgressOperations - completedOperations}
               </p>
@@ -261,7 +261,7 @@ export default function WorkQueue() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by job, part, operation, or customer..."
+                placeholder={t("workQueue.searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -290,7 +290,7 @@ export default function WorkQueue() {
           {/* Material Tabs */}
           <Tabs value={selectedMaterial} onValueChange={setSelectedMaterial}>
             <TabsList className="w-full justify-start overflow-x-auto">
-              <TabsTrigger value="all">All Materials</TabsTrigger>
+              <TabsTrigger value="all">{t("workQueue.allMaterials")}</TabsTrigger>
               {materials.map((material) => (
                 <TabsTrigger key={material} value={material}>
                   {material}
@@ -303,45 +303,45 @@ export default function WorkQueue() {
           {showFilters && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
               <div>
-                <Label htmlFor="status-filter">Status</Label>
+                <Label htmlFor="status-filter">{t("workQueue.status")}</Label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger id="status-filter">
-                    <SelectValue placeholder="All Statuses" />
+                    <SelectValue placeholder={t("workQueue.allStatuses")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="not_started">Not Started</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="all">{t("workQueue.allStatuses")}</SelectItem>
+                    <SelectItem value="not_started">{t("workQueue.notStartedStatus")}</SelectItem>
+                    <SelectItem value="in_progress">{t("workQueue.inProgressStatus")}</SelectItem>
+                    <SelectItem value="completed">{t("workQueue.completedStatus")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label htmlFor="due-date-filter">Due Date</Label>
+                <Label htmlFor="due-date-filter">{t("workQueue.dueDate")}</Label>
                 <Select value={dueDateFilter} onValueChange={setDueDateFilter}>
                   <SelectTrigger id="due-date-filter">
-                    <SelectValue placeholder="All Dates" />
+                    <SelectValue placeholder={t("workQueue.allDates")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Dates</SelectItem>
-                    <SelectItem value="overdue">Overdue</SelectItem>
-                    <SelectItem value="today">Due Today</SelectItem>
-                    <SelectItem value="this_week">Due This Week</SelectItem>
+                    <SelectItem value="all">{t("workQueue.allDates")}</SelectItem>
+                    <SelectItem value="overdue">{t("workQueue.overdue")}</SelectItem>
+                    <SelectItem value="today">{t("workQueue.dueToday")}</SelectItem>
+                    <SelectItem value="this_week">{t("workQueue.dueThisWeek")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label htmlFor="sort-by">Sort By</Label>
+                <Label htmlFor="sort-by">{t("workQueue.sortBy")}</Label>
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger id="sort-by">
-                    <SelectValue placeholder="Sort by" />
+                    <SelectValue placeholder={t("workQueue.sortBy")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="sequence">Sequence</SelectItem>
-                    <SelectItem value="due_date">Due Date</SelectItem>
-                    <SelectItem value="estimated_time">Estimated Time</SelectItem>
+                    <SelectItem value="sequence">{t("workQueue.sequence")}</SelectItem>
+                    <SelectItem value="due_date">{t("workQueue.dueDateSort")}</SelectItem>
+                    <SelectItem value="estimated_time">{t("workQueue.estimatedTime")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -352,7 +352,7 @@ export default function WorkQueue() {
                   checked={assignedToMe}
                   onCheckedChange={setAssignedToMe}
                 />
-                <Label htmlFor="assigned-to-me">Assigned to Me</Label>
+                <Label htmlFor="assigned-to-me">{t("workQueue.assignedToMe")}</Label>
               </div>
 
               <div className="flex items-center space-x-2">
@@ -361,14 +361,14 @@ export default function WorkQueue() {
                   checked={showCompleted}
                   onCheckedChange={setShowCompleted}
                 />
-                <Label htmlFor="show-completed">Show Completed</Label>
+                <Label htmlFor="show-completed">{t("workQueue.showCompleted")}</Label>
               </div>
             </div>
           )}
 
           {/* Cell Visibility Toggles */}
           <div className="flex flex-wrap gap-2">
-            <span className="text-sm font-medium text-muted-foreground">Cells:</span>
+            <span className="text-sm font-medium text-muted-foreground">{t("workQueue.cells")}:</span>
             {cells.map((cell) => (
               <Button
                 key={cell.id}
@@ -405,13 +405,13 @@ export default function WorkQueue() {
                 >
                   <h3 className="font-semibold text-lg">{cell.name}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {operations.length} operation{operations.length !== 1 ? "s" : ""}
+                    {operations.length} {operations.length !== 1 ? t("workQueue.operations") : t("workQueue.operation")}
                   </p>
                 </div>
                 <div className="p-4 space-y-3 max-h-[calc(100vh-16rem)] overflow-y-auto">
                   {operations.length === 0 ? (
                     <div className="text-center text-muted-foreground py-8">
-                      No operations
+                      {t("workQueue.noOperations")}
                     </div>
                   ) : (
                     operations.map((operation) => (

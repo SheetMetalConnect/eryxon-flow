@@ -63,7 +63,7 @@ export default function OperatorTerminal() {
 
         } catch (error) {
             console.error("Error loading data:", error);
-            toast.error("Failed to load data");
+            toast.error(t("terminal.failedToLoadData"));
         } finally {
             setLoading(false);
         }
@@ -223,10 +223,10 @@ export default function OperatorTerminal() {
         if (!selectedJob || !profile) return;
         try {
             await startTimeTracking(selectedJob.operationId, profile.id, profile.tenant_id);
-            toast.success(`Started: ${selectedJob.currentOp}`);
+            toast.success(`${t("operations.started")}: ${selectedJob.currentOp}`);
             // Data will reload via subscription
         } catch (error: any) {
-            toast.error(error.message || "Failed to start");
+            toast.error(error.message || t("operations.failedToStart"));
         }
     };
 
@@ -234,9 +234,9 @@ export default function OperatorTerminal() {
         if (!selectedJob || !profile) return;
         try {
             await stopTimeTracking(selectedJob.operationId, profile.id);
-            toast.success("Operation paused");
+            toast.success(t("operations.operationPaused"));
         } catch (error: any) {
-            toast.error(error.message || "Failed to pause");
+            toast.error(error.message || t("operations.failedToPause"));
         }
     };
 
@@ -244,10 +244,10 @@ export default function OperatorTerminal() {
         if (!selectedJob || !profile) return;
         try {
             await completeOperation(selectedJob.operationId, profile.tenant_id, profile.id);
-            toast.success("Operation completed");
+            toast.success(t("operations.operationComplete"));
             setSelectedJobId(null); // Deselect
         } catch (error: any) {
-            toast.error(error.message || "Failed to complete");
+            toast.error(error.message || t("operations.failedToComplete"));
         }
     };
 
@@ -257,7 +257,7 @@ export default function OperatorTerminal() {
                 <div className="absolute inset-0 bg-background/90 z-50 flex items-center justify-center backdrop-blur-md">
                     <div className="glass-card p-8 flex flex-col items-center gap-4">
                         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                        <p className="text-foreground font-medium animate-pulse">Loading Terminal Data...</p>
+                        <p className="text-foreground font-medium animate-pulse">{t("terminal.loadingTerminalData")}</p>
                     </div>
                 </div>
             )}
@@ -267,13 +267,13 @@ export default function OperatorTerminal() {
                 {/* HEADER / CELL SELECTOR */}
                 <div className="h-16 border-b border-border/50 bg-surface-elevated/80 backdrop-blur-sm flex items-center px-6 justify-between shrink-0">
                     <div className="flex items-center gap-4">
-                        <span className="text-foreground font-semibold text-sm">Terminal View</span>
+                        <span className="text-foreground font-semibold text-sm">{t("terminal.terminalView")}</span>
                         <Select value={selectedCellId} onValueChange={handleCellChange}>
                             <SelectTrigger className="w-[220px] bg-card/50 backdrop-blur-sm border-border/50 text-foreground hover:bg-card/70 transition-colors">
-                                <SelectValue placeholder="Select Cell" />
+                                <SelectValue placeholder={t("terminal.selectCell")} />
                             </SelectTrigger>
                             <SelectContent className="glass-card border-border/50">
-                                <SelectItem value="all">All Cells</SelectItem>
+                                <SelectItem value="all">{t("terminal.allCells")}</SelectItem>
                                 {cells.map(cell => (
                                     <SelectItem key={cell.id} value={cell.id}>{cell.name}</SelectItem>
                                 ))}
@@ -416,8 +416,8 @@ export default function OperatorTerminal() {
                         <div className="w-20 h-20 rounded-full bg-primary/10 backdrop-blur-sm border border-primary/20 mb-6 flex items-center justify-center">
                             <span className="text-4xl">👈</span>
                         </div>
-                        <h3 className="text-xl font-semibold text-foreground mb-3">No Job Selected</h3>
-                        <p className="text-sm text-muted-foreground leading-relaxed">Select a job from the list to view details and controls.</p>
+                        <h3 className="text-xl font-semibold text-foreground mb-3">{t("terminal.noJobSelected")}</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{t("terminal.selectJobPrompt")}</p>
                     </div>
                 )}
             </div>
