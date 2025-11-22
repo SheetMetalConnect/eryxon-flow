@@ -1,16 +1,22 @@
-# AI Chatbot Setup Guide
+# AI Chatbot Quick Setup Guide
+
+> **📖 For complete documentation, see [AI_CHATBOT_DOCUMENTATION.md](./AI_CHATBOT_DOCUMENTATION.md)**
 
 ## Overview
 
-The Eryxon AI Assistant is a chatbot that helps operators quickly find information about their work queue, jobs, parts, and issues using natural language queries.
+The Eryxon AI Assistant helps operators query manufacturing data using natural language.
 
-## Features
+**Technology**: OpenAI GPT-4o-mini + Supabase Edge Functions
+**Language**: English (monolingual)
+**Library**: Direct OpenAI API calls (no SDK)
 
-- **Natural Language Queries**: Ask questions in plain English
-- **Work Queue Information**: "What should I work on next?"
-- **Job Details**: "Tell me about Job #1234"
-- **Issue Lookup**: "Show me issues on this job"
-- **Mobile Friendly**: Works on tablets and phones
+## Quick Features
+
+- ✅ Natural language queries in English
+- ✅ Work queue information
+- ✅ Job details lookup
+- ✅ Issue/NCR queries
+- ✅ Mobile friendly
 
 ## Setup Instructions
 
