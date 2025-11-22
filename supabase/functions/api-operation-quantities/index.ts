@@ -221,15 +221,20 @@ serve(async (req) => {
       // Calculate summary if data exists
       let summary = null;
       if (quantities && quantities.length > 0) {
+        const total_produced = quantities.reduce((sum, q) => sum + q.quantity_produced, 0);
+        const total_good = quantities.reduce((sum, q) => sum + q.quantity_good, 0);
+        const total_scrap = quantities.reduce((sum, q) => sum + q.quantity_scrap, 0);
+        const total_rework = quantities.reduce((sum, q) => sum + q.quantity_rework, 0);
+        
         summary = {
-          total_produced: quantities.reduce((sum, q) => sum + q.quantity_produced, 0),
-          total_good: quantities.reduce((sum, q) => sum + q.quantity_good, 0),
-          total_scrap: quantities.reduce((sum, q) => sum + q.quantity_scrap, 0),
-          total_rework: quantities.reduce((sum, q) => sum + q.quantity_rework, 0),
+          total_produced,
+          total_good,
+          total_scrap,
+          total_rework,
+          yield_percentage: total_produced > 0
+            ? (total_good / total_produced * 100).toFixed(2)
+            : 0,
         };
-        summary.yield_percentage = summary.total_produced > 0
-          ? (summary.total_good / summary.total_produced * 100).toFixed(2)
-          : 0;
       }
 
       return new Response(
