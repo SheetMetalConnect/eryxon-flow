@@ -193,13 +193,17 @@ export default function IssueQueue() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-8 p-6">
       <div>
-        <h1 className="text-3xl font-bold">{t("issues.issueQueue")}</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+          {t("issues.issueQueue")}
+        </h1>
+        <p className="text-muted-foreground text-lg">
           {issues.length} {t("issues.pendingIssue", { count: issues.length })}
         </p>
       </div>
+
+      <hr className="title-divider" />
 
       {/* Filters */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -253,7 +257,7 @@ export default function IssueQueue() {
       </div>
 
       {issues.length === 0 ? (
-        <Card className="p-12 text-center">
+        <Card className="glass-card p-12 text-center">
           <CheckCircle className="h-12 w-12 mx-auto mb-4 text-success" />
           <h3 className="text-lg font-medium mb-2">
             {t("issues.noPendingIssues")}
@@ -267,7 +271,7 @@ export default function IssueQueue() {
           {issues.map((issue) => (
             <Card
               key={issue.id}
-              className="p-4 cursor-pointer hover:shadow-md transition"
+              className="glass-card p-4 cursor-pointer hover:shadow-xl hover:scale-105 transition-all hover:border-white/20"
               onClick={() => {
                 setSelectedIssue(issue);
                 setResolutionNotes("");
@@ -313,7 +317,7 @@ export default function IssueQueue() {
         open={!!selectedIssue}
         onOpenChange={() => setSelectedIssue(null)}
       >
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="glass-card max-w-2xl">
           <DialogHeader>
             <DialogTitle>{t("issues.reviewIssue")}</DialogTitle>
           </DialogHeader>
