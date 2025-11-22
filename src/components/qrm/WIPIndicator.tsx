@@ -139,7 +139,7 @@ export function WIPBar({ current, limit, warningThreshold, height = 'md' }: WIPB
         {/* Warning threshold marker */}
         {safeLimit > 0 && (
           <div
-            className="absolute top-0 bottom-0 w-px bg-yellow-400 z-10"
+            className="absolute top-0 bottom-0 w-px bg-warning z-10"
             style={{ left: `${(effectiveThreshold / safeLimit) * 100}%` }}
           />
         )}
@@ -148,10 +148,9 @@ export function WIPBar({ current, limit, warningThreshold, height = 'md' }: WIPB
         <div
           className={`
             ${heightClass} transition-all duration-300
-            ${
-              isAtCapacity
-                ? 'bg-red-600'
-                : isAtWarning
+            ${isAtCapacity
+              ? 'bg-destructive'
+              : isAtWarning
                 ? 'bg-yellow-500'
                 : 'bg-green-600'
             }

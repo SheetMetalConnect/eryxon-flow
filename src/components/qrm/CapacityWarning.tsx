@@ -25,12 +25,11 @@ export function CapacityWarning({
     <div
       className={`
         rounded-lg border p-4
-        ${
-          isBlocking
-            ? 'bg-red-50 border-red-300 text-red-800'
-            : isWarning
-            ? 'bg-yellow-50 border-yellow-300 text-yellow-800'
-            : 'bg-blue-50 border-blue-300 text-blue-800'
+        ${isBlocking
+          ? 'bg-alert-error-bg border-alert-error-border text-red-800'
+          : isWarning
+            ? 'bg-alert-warning-bg border-alert-warning-border text-yellow-800'
+            : 'bg-alert-info-bg border-alert-info-border text-blue-800'
         }
       `}
     >
@@ -52,8 +51,8 @@ export function CapacityWarning({
             {isBlocking
               ? 'Cannot Start Work - Next Cell at Capacity'
               : isWarning
-              ? 'Capacity Warning - Next Cell Approaching Limit'
-              : 'Next Cell Capacity Information'}
+                ? 'Capacity Warning - Next Cell Approaching Limit'
+                : 'Next Cell Capacity Information'}
           </h4>
 
           <div className="text-sm space-y-1">
@@ -91,7 +90,7 @@ export function CapacityWarning({
               {!isBlocking && onProceed && (
                 <button
                   onClick={onProceed}
-                  className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 bg-card border border-border rounded-md text-sm font-medium hover:bg-gray-50 transition-colors"
                 >
                   Proceed Anyway
                 </button>
@@ -99,7 +98,7 @@ export function CapacityWarning({
               {onCancel && (
                 <button
                   onClick={onCancel}
-                  className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 bg-card border border-border rounded-md text-sm font-medium hover:bg-gray-50 transition-colors"
                 >
                   {isBlocking ? 'Close' : 'Cancel'}
                 </button>
@@ -133,10 +132,9 @@ export function CapacityBadge({ capacity, compact = false }: CapacityBadgeProps)
       className={`
         inline-flex items-center gap-1 px-2 py-0.5 rounded-full border font-medium
         ${compact ? 'text-xs' : 'text-sm'}
-        ${
-          isBlocking
-            ? 'bg-red-50 border-red-300 text-red-700'
-            : 'bg-yellow-50 border-yellow-300 text-yellow-700'
+        ${isBlocking
+          ? 'bg-alert-error-bg border-alert-error-border text-red-700'
+          : 'bg-alert-warning-bg border-alert-warning-border text-yellow-700'
         }
       `}
     >
@@ -149,8 +147,8 @@ export function CapacityBadge({ capacity, compact = false }: CapacityBadgeProps)
         {isBlocking
           ? 'Next cell full'
           : isWarning
-          ? 'Next cell near capacity'
-          : 'Check capacity'}
+            ? 'Next cell near capacity'
+            : 'Check capacity'}
       </span>
     </div>
   );

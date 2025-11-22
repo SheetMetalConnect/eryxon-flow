@@ -56,9 +56,8 @@ export function RoutingVisualization({
                 }}
               />
             </div>
-            <span className={`font-semibold min-w-[3.5rem] text-right ${
-              progress === 100 ? 'text-green-600' : 'text-blue-600'
-            } ${compact ? 'text-xs' : 'text-sm'}`}>
+            <span className={`font-semibold min-w-[3.5rem] text-right ${progress === 100 ? 'text-status-completed' : 'text-brand-primary'
+              } ${compact ? 'text-xs' : 'text-sm'}`}>
               {progress}%
             </span>
           </div>
@@ -118,9 +117,8 @@ export function RoutingVisualization({
 
                       {/* Operation count */}
                       {!compact && (
-                        <span className={`text-xs font-semibold ${
-                          isCompleted || isInProgress ? 'bg-white/20 px-1.5 py-0.5 rounded' : 'opacity-75'
-                        }`}>
+                        <span className={`text-xs font-semibold ${isCompleted || isInProgress ? 'bg-white/20 px-1.5 py-0.5 rounded' : 'opacity-75'
+                          }`}>
                           {step.completed_operations}/{step.operation_count}
                         </span>
                       )}
@@ -138,8 +136,8 @@ export function RoutingVisualization({
                         </div>
                       )}
                       <div className="text-xs">
-                        {isCompleted && <span className="text-green-600 font-medium">Completed</span>}
-                        {isInProgress && <span className="text-blue-600 font-medium">In Progress</span>}
+                        {isCompleted && <span className="text-status-completed font-medium">Completed</span>}
+                        {isInProgress && <span className="text-brand-primary font-medium">In Progress</span>}
                         {isNotStarted && <span className="text-gray-500">Not Started</span>}
                       </div>
                     </div>
@@ -149,11 +147,9 @@ export function RoutingVisualization({
                 {/* Arrow separator */}
                 {index < routing.length - 1 && (
                   <ArrowRight
-                    className={`${
-                      compact ? 'h-3 w-3' : 'h-4 w-4'
-                    } ${
-                      isCompleted ? 'text-green-500' : 'text-gray-300'
-                    } flex-shrink-0 transition-colors duration-300`}
+                    className={`${compact ? 'h-3 w-3' : 'h-4 w-4'
+                      } ${isCompleted ? 'text-status-completed' : 'text-muted-foreground'
+                      } flex-shrink-0 transition-colors duration-300`}
                   />
                 )}
               </div>
