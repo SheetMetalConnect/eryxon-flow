@@ -684,7 +684,48 @@
     "filterBySeverity": "Nach Schweregrad filtern",
     "filterByStatus": "Nach Status filtern",
     "searchIssues": "Probleme suchen...",
-    "noIssues": "Keine Probleme gefunden"
+    "noIssues": "Keine Probleme gefunden",
+    "issueTitle": "Titel",
+    "titlePlaceholder": "Titel eingeben",
+    "issueType": "Problemtyp",
+    "pendingIssue": "{{count}} ausstehendes Problem",
+    "pendingIssue_plural": "{{count}} ausstehende Probleme",
+    "types": {
+      "general": "Allgemeines Problem",
+      "ncr": "Abweichungsbericht (NCR)"
+    },
+    "ncrDetails": "NCR-Details",
+    "ncrCategory": "NCR-Kategorie",
+    "selectCategory": "Kategorie auswählen",
+    "categories": {
+      "materialDefect": "Materialfehler",
+      "dimensional": "Dimensional",
+      "surfaceFinish": "Oberflächenfinish",
+      "processError": "Prozessfehler",
+      "other": "Sonstiges"
+    },
+    "disposition": "Disposition",
+    "selectDisposition": "Disposition auswählen",
+    "dispositions": {
+      "scrap": "Ausschuss",
+      "rework": "Nacharbeit",
+      "useAsIs": "Wie besehen verwenden",
+      "returnToSupplier": "Rücksendung an Lieferanten"
+    },
+    "affectedQuantity": "Betroffene Menge",
+    "affectedQuantityPlaceholder": "Betroffene Menge eingeben",
+    "rootCause": "Grundursache",
+    "rootCausePlaceholder": "Beschreiben Sie die Grundursache",
+    "correctiveAction": "Korrekturmaßnahme",
+    "correctiveActionPlaceholder": "Beschreiben Sie die ergriffene Korrekturmaßnahme",
+    "preventiveAction": "Präventivmaßnahme",
+    "preventiveActionPlaceholder": "Beschreiben Sie Präventivmaßnahme zur Vermeidung von Wiederholungen",
+    "verificationRequired": "Überprüfung erforderlich",
+    "filesSelected": "{{count}} Datei ausgewählt",
+    "filesSelected_plural": "{{count}} Dateien ausgewählt",
+    "ncrReported": "NCR erfolgreich gemeldet",
+    "reportNCR": "NCR melden",
+    "issuePhoto": "Problemfoto {{number}}"
   },
   "stages": {
     "title": "Fertigungsstufen-Konfiguration",
@@ -1245,7 +1286,8 @@
     "selectTime": "Zeit auswählen",
     "enterValue": "Wert eingeben",
     "chooseOption": "Option wählen",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "submitting": "Wird gesendet..."
   },
   "notifications": {
     "success": "Erfolg",

@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { Plus, Edit2, Save, X, CheckCircle2, Clock, Circle } from "lucide-react";
+import { Plus, Edit2, Save, X, CheckCircle2, Clock, Circle, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
@@ -20,6 +20,7 @@ import { PartIssueBadge } from "@/components/issues/PartIssueBadge";
 import { IssuesSummarySection } from "@/components/issues/IssuesSummarySection";
 import { OperationsFlowVisualization } from "@/components/qrm/OperationsFlowVisualization";
 import { useJobRouting } from "@/hooks/useQRMMetrics";
+import IssueForm from "@/components/operator/IssueForm";
 
 interface JobDetailModalProps {
   jobId: string;
@@ -30,6 +31,7 @@ interface JobDetailModalProps {
 export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedJob, setEditedJob] = useState<any>(null);
+  const [issueOperationId, setIssueOperationId] = useState<string | null>(null);
   const { toast } = useToast();
   const { t } = useTranslation();
   const { routing, loading: routingLoading } = useJobRouting(jobId);
@@ -277,7 +279,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                               borderLeftColor: cellColor,
                             }}
                           >
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 flex-1">
                               {/* Status icon */}
                               {isCompleted ? (
                                 <CheckCircle2 className="h-4 w-4 text-success" />
@@ -304,16 +306,29 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                               </span>
                             </div>
 
-                            {/* Status badge */}
-                            <Badge
-                              variant={isCompleted ? "outline" : isInProgress ? "default" : "secondary"}
-                              className={`
-                                ${isCompleted ? 'text-success border-alert-success-border' : ''}
-                                ${isInProgress ? 'bg-brand-primary' : ''}
-                              `}
-                            >
-                              {operation.status?.replace("_", " ")}
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                              {/* Report Issue Button */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setIssueOperationId(operation.id)}
+                                title={t("operations.reportIssue")}
+                                className="h-8 px-2"
+                              >
+                                <AlertTriangle className="h-4 w-4 text-warning" />
+                              </Button>
+
+                              {/* Status badge */}
+                              <Badge
+                                variant={isCompleted ? "outline" : isInProgress ? "default" : "secondary"}
+                                className={`
+                                  ${isCompleted ? 'text-success border-alert-success-border' : ''}
+                                  ${isInProgress ? 'bg-brand-primary' : ''}
+                                `}
+                              >
+                                {operation.status?.replace("_", " ")}
+                              </Badge>
+                            </div>
                           </div>
                         );
                       })}
@@ -324,6 +339,19 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
             </div>
           </div>
         </div>
+
+        {/* Issue Form */}
+        {issueOperationId && (
+          <IssueForm
+            operationId={issueOperationId}
+            open={!!issueOperationId}
+            onOpenChange={(open) => !open && setIssueOperationId(null)}
+            onSuccess={() => {
+              setIssueOperationId(null);
+              onUpdate();
+            }}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

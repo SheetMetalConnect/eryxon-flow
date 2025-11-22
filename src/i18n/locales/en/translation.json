@@ -686,6 +686,8 @@
   },
   "issues": {
     "title": "Issue Management",
+    "issueTitle": "Title",
+    "titlePlaceholder": "Enter issue title",
     "allIssuesReviewed": "All issues reviewed",
     "approve": "Approve",
     "approveIssue": "Approve Issue",
@@ -742,6 +744,8 @@
     "operation": "Operation",
     "allIssues": "All Issues",
     "pendingIssues": "Pending Issues",
+    "pendingIssue": "{{count}} pending issue",
+    "pendingIssue_plural": "{{count}} pending issues",
     "approvedIssues": "Approved Issues",
     "rejectedIssues": "Rejected Issues",
     "closedIssues": "Closed Issues",
@@ -756,7 +760,44 @@
     "filterBySeverity": "Filter by Severity",
     "filterByStatus": "Filter by Status",
     "searchIssues": "Search issues...",
-    "noIssues": "No issues found"
+    "noIssues": "No issues found",
+    "issueType": "Issue Type",
+    "types": {
+      "general": "General Issue",
+      "ncr": "Non-Conformance Report (NCR)"
+    },
+    "ncrDetails": "NCR Details",
+    "ncrCategory": "NCR Category",
+    "selectCategory": "Select category",
+    "categories": {
+      "materialDefect": "Material Defect",
+      "dimensional": "Dimensional",
+      "surfaceFinish": "Surface Finish",
+      "processError": "Process Error",
+      "other": "Other"
+    },
+    "disposition": "Disposition",
+    "selectDisposition": "Select disposition",
+    "dispositions": {
+      "scrap": "Scrap",
+      "rework": "Rework",
+      "useAsIs": "Use As-Is",
+      "returnToSupplier": "Return to Supplier"
+    },
+    "affectedQuantity": "Affected Quantity",
+    "affectedQuantityPlaceholder": "Enter affected quantity",
+    "rootCause": "Root Cause",
+    "rootCausePlaceholder": "Describe the root cause",
+    "correctiveAction": "Corrective Action",
+    "correctiveActionPlaceholder": "Describe corrective action taken",
+    "preventiveAction": "Preventive Action",
+    "preventiveActionPlaceholder": "Describe preventive action to avoid recurrence",
+    "verificationRequired": "Verification Required",
+    "filesSelected": "{{count}} file selected",
+    "filesSelected_plural": "{{count}} files selected",
+    "ncrReported": "NCR reported successfully",
+    "reportNCR": "Report NCR",
+    "issuePhoto": "Issue Photo {{number}}"
   },
   "stages": {
     "title": "Stage Configuration",
@@ -1321,7 +1362,8 @@
     "selectTime": "Select time",
     "enterValue": "Enter value",
     "chooseOption": "Choose an option",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "submitting": "Submitting..."
   },
   "notifications": {
     "success": "Success",
