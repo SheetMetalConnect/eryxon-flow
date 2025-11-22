@@ -15,6 +15,7 @@ interface Operation {
   status: string;
   estimated_time: number;
   actual_time: number | null;
+  cell_id: string;
   part: {
     id: string;
     part_number: string;
@@ -100,7 +101,7 @@ export function QRMDashboard() {
   };
 
   const getOperationsForCell = (cellId: string) => {
-    return operations.filter((op) => (op as any).cell_id === cellId);
+    return operations.filter((op) => op.cell_id === cellId);
   };
 
   const groupOperations = (ops: Operation[]) => {
@@ -147,15 +148,15 @@ export function QRMDashboard() {
           <CardTitle className="text-lg">{t("qrm.dashboard", "QRM Dashboard")}</CardTitle>
           <div className="flex gap-4 text-sm">
             <div className="flex items-center gap-1.5">
-              <span className="text-muted-foreground">Total WIP:</span>
+              <span className="text-muted-foreground">{t("qrm.totalWIP", "Total WIP")}:</span>
               <span className="font-bold">{totalWIP}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-muted-foreground">At Capacity:</span>
+              <span className="text-muted-foreground">{t("qrm.atCapacity", "At Capacity")}:</span>
               <span className="font-bold text-destructive">{atCapacity}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-muted-foreground">Near Capacity:</span>
+              <span className="text-muted-foreground">{t("qrm.nearCapacity", "Near Capacity")}:</span>
               <span className="font-bold text-amber-600">{nearCapacity}</span>
             </div>
           </div>
@@ -201,10 +202,10 @@ export function QRMDashboard() {
                     )}
                   </div>
                   {metrics?.status === "at_capacity" && (
-                    <Badge variant="destructive" className="text-xs">At Capacity</Badge>
+                    <Badge variant="destructive" className="text-xs">{t("qrm.atCapacity", "At Capacity")}</Badge>
                   )}
                   {metrics?.status === "warning" && (
-                    <Badge className="bg-amber-500 text-xs">Warning</Badge>
+                    <Badge className="bg-amber-500 text-xs">{t("qrm.warning", "Warning")}</Badge>
                   )}
                 </div>
               </div>
@@ -217,7 +218,7 @@ export function QRMDashboard() {
                     <div>
                       <div className="text-xs font-semibold text-emerald-600 mb-1.5 flex items-center gap-2">
                         <div className="h-0.5 w-2 bg-emerald-500 rounded" />
-                        Active ({grouped.active.length})
+                        {t("qrm.active", "Active")} ({grouped.active.length})
                       </div>
                       <div className="space-y-1">
                         {grouped.active.map((op) => (
@@ -240,7 +241,7 @@ export function QRMDashboard() {
                     <div>
                       <div className="text-xs font-semibold text-blue-600 mb-1.5 flex items-center gap-2">
                         <div className="h-0.5 w-2 bg-blue-500 rounded" />
-                        Buffer ({grouped.buffer.length})
+                        {t("qrm.buffer", "Buffer")} ({grouped.buffer.length})
                       </div>
                       <div className="space-y-1">
                         {grouped.buffer.map((op) => (
@@ -263,7 +264,7 @@ export function QRMDashboard() {
                     <div>
                       <div className="text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-2">
                         <div className="h-0.5 w-2 bg-muted rounded" />
-                        Expected ({grouped.expected.length})
+                        {t("qrm.expected", "Expected")} ({grouped.expected.length})
                       </div>
                       <div className="space-y-1">
                         {grouped.expected.slice(0, 3).map((op) => (
@@ -279,7 +280,7 @@ export function QRMDashboard() {
                         ))}
                         {grouped.expected.length > 3 && (
                           <div className="text-xs text-muted-foreground text-center p-1">
-                            +{grouped.expected.length - 3} more
+                            +{grouped.expected.length - 3} {t("qrm.more", "more")}
                           </div>
                         )}
                       </div>
@@ -288,7 +289,7 @@ export function QRMDashboard() {
 
                   {cellOps.length === 0 && (
                     <div className="text-xs text-muted-foreground text-center py-2">
-                      No operations in this cell
+                      {t("qrm.noOperations", "No operations in this cell")}
                     </div>
                   )}
                 </div>
