@@ -444,7 +444,7 @@ export default function Dashboard() {
           value={stats.activeWorkers}
           description={t("dashboard.currentlyWorking")}
           icon={Users}
-          onClick={() => navigate("/admin/users")}
+          onClick={() => navigate("/admin/activity")}
         />
 
         <StatCard
@@ -460,7 +460,7 @@ export default function Dashboard() {
           value={stats.inProgressTasks}
           description={t("dashboard.activeTasks")}
           icon={Activity}
-          onClick={() => navigate("/admin/assignments")}
+          onClick={() => navigate("/admin/operations")}
         />
 
         <StatCard

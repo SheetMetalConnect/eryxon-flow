@@ -138,7 +138,7 @@ export function QRMDashboard() {
 
   if (loading) {
     return (
-      <Card>
+      <Card className="glass-card">
         <CardContent className="flex items-center justify-center p-8">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </CardContent>
@@ -148,14 +148,14 @@ export function QRMDashboard() {
 
   if (!cells || cells.length === 0) {
     return (
-      <Card>
+      <Card className="glass-card">
         <CardHeader>
           <CardTitle>{t("qrm.dashboard", "QRM Dashboard")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
+          <div className="informational-text">
             {t("qrm.noCells", "No cells configured yet.")}
-          </p>
+          </div>
         </CardContent>
       </Card>
     );
@@ -166,7 +166,7 @@ export function QRMDashboard() {
   const nearCapacity = Object.values(cellsMetrics).filter((m) => m?.status === "warning").length;
 
   return (
-    <Card>
+    <Card className="glass-card">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">{t("qrm.dashboard", "QRM Dashboard")}</CardTitle>
