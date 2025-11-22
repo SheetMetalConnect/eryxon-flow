@@ -6,7 +6,7 @@ type SubscriptionPlan = Database['public']['Enums']['subscription_plan'];
 
 export interface SubscriptionAccessResult {
   allowed: boolean;
-  reason: 'free_tier' | 'active_subscription' | 'trial_period' | 'payment_overdue' | 'payment_failed' | 'subscription_cancelled' | 'no_subscription';
+  reason: 'free_tier' | 'active_subscription' | 'trial_period' | 'payment_overdue' | 'payment_failed' | 'subscription_cancelled' | 'subscription_required' | 'no_subscription';
   gracePeriodEnds?: Date | null;
   trialEnds?: Date | null;
 }
@@ -42,8 +42,8 @@ export function canAccessApp(tenant: Tenant | null): SubscriptionAccessResult {
   }
 
   // Check if in trial period
-  if (tenant.status === 'trial' && tenant.trial_end) {
-    const trialEnd = new Date(tenant.trial_end);
+  if (tenant.status === 'trial' && tenant.trial_ends_at) {
+    const trialEnd = new Date(tenant.trial_ends_at);
     if (trialEnd > now) {
       return {
         allowed: true,
@@ -53,19 +53,7 @@ export function canAccessApp(tenant: Tenant | null): SubscriptionAccessResult {
     }
   }
 
-  // Check if in grace period for payment failures (7 days)
-  if (tenant.status === 'suspended' && tenant.grace_period_ends_at) {
-    const gracePeriodEnd = new Date(tenant.grace_period_ends_at);
-    if (gracePeriodEnd > now) {
-      return {
-        allowed: true,
-        reason: 'payment_overdue',
-        gracePeriodEnds: gracePeriodEnd,
-      };
-    }
-  }
-
-  // Payment failed and grace period expired
+  // Payment failed
   if (tenant.status === 'suspended') {
     return {
       allowed: false,
@@ -81,10 +69,10 @@ export function canAccessApp(tenant: Tenant | null): SubscriptionAccessResult {
     };
   }
 
-  // Default: no access
+  // Default: Access denied - subscription required
   return {
     allowed: false,
-    reason: 'no_subscription',
+    reason: 'subscription_required',
   };
 }
 
@@ -105,6 +93,8 @@ export function getSubscriptionMessage(result: SubscriptionAccessResult): string
       return 'Your payment has failed and the grace period has expired. Please update your payment method to restore access.';
     case 'subscription_cancelled':
       return 'Your subscription has been cancelled. Upgrade to restore access to premium features.';
+    case 'subscription_required':
+      return 'Subscription required to access this feature.';
     case 'no_subscription':
       return 'No active subscription found.';
     default:
@@ -114,16 +104,8 @@ export function getSubscriptionMessage(result: SubscriptionAccessResult): string
 
 /**
  * Check if billing features should be shown to user
- * COMING SOON MODE: Only show to users with billing_enabled = true
  */
 export function canSeeBillingFeatures(tenant: Tenant | null, isAdmin: boolean): boolean {
-  if (!tenant) return false;
-
-  // Super admin can always see billing features (for testing)
-  if (isAdmin && tenant.billing_enabled) {
-    return true;
-  }
-
-  // Regular users cannot see billing yet (coming soon mode)
+  // Billing features not implemented yet
   return false;
 }

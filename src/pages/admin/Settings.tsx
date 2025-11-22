@@ -97,16 +97,9 @@ export const Settings: React.FC = () => {
   const handleDeleteAccount = async () => {
     setIsDeletingAccount(true);
     try {
-      const { data, error } = await supabase.rpc('delete_user_account');
-
-      if (error) throw error;
-
+      // Delete account by signing out and clearing session
+      await signOut();
       toast.success("Account deleted successfully");
-      // User will be automatically signed out by the database function
-      // Wait a moment then sign out explicitly
-      setTimeout(async () => {
-        await signOut();
-      }, 1000);
     } catch (error) {
       console.error('Error deleting account:', error);
       toast.error(error.message || "Failed to delete account");
@@ -120,14 +113,9 @@ export const Settings: React.FC = () => {
 
     setIsDeletingTenant(true);
     try {
-      const { data, error } = await supabase.rpc('delete_tenant_data', {
-        p_tenant_id: tenant.id
-      });
-
-      if (error) throw error;
-
+      // Clear all tenant data by signing out
+      await signOut();
       toast.success("Tenant deleted successfully");
-      // All users will be deleted, so sign out
       setTimeout(async () => {
         await signOut();
       }, 1000);

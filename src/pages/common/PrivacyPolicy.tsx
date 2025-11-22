@@ -187,13 +187,14 @@ export default function PrivacyPolicy() {
           </Typography>
           <Typography paragraph color="text.secondary" sx={{ mt: 2 }}>
             {t("legal.privacyPolicy.impressumLink")}{" "}
-            <Link
+            <a
               href="https://www.sheetmetalconnect.nl/impressum/"
               target="_blank"
+              rel="noopener noreferrer"
               style={{ color: 'inherit', textDecoration: 'underline' }}
             >
               {t("legal.privacyPolicy.impressumText")}
-            </Link>.
+            </a>.
           </Typography>
         </Box>
 

@@ -1462,27 +1462,6 @@ export async function clearMockData(
 
     console.log(`Clearing all mock data for tenant: ${tenantId}...`);
 
-    // Try using the database function first (more reliable)
-    if (useDatabaseFunction) {
-      console.log("Using database function clear_demo_data()...");
-      const { data, error } = await supabase.rpc("clear_demo_data", {
-        p_tenant_id: tenantId,
-      });
-
-      if (error) {
-        console.warn("Database function failed, falling back to client-side deletion:", error);
-        // Fall through to client-side deletion
-      } else {
-        console.log("✅ Database function completed successfully");
-        if (data && Array.isArray(data)) {
-          data.forEach((row: any) => {
-            console.log(`  ${row.table_name}: ${row.message}`);
-          });
-        }
-        return { success: true };
-      }
-    }
-
     // CRITICAL: Delete in reverse order of dependencies
     // All deletions MUST include tenant_id filter to prevent cross-tenant contamination
 

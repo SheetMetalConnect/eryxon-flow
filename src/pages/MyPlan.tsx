@@ -293,7 +293,7 @@ export const MyPlan: React.FC = () => {
           <StripeBillingSection
             currentPlan={currentPlan}
             tenantId={subscription?.tenant_id || ''}
-            billingEnabled={subscription?.billing_enabled || false}
+            billingEnabled={false}
           />
 
           {/* Upgrade Info */}
