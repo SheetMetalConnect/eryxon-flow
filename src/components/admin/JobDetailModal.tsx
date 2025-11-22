@@ -202,7 +202,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                 rows={3}
               />
             ) : (
-              <p className="mt-1 text-sm text-gray-600">{job?.notes || t("jobs.noNotes")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{job?.notes || t("jobs.noNotes")}</p>
             )}
           </div>
 
@@ -237,7 +237,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <h4 className="font-semibold">{t("parts.partNumber")}# {part.part_number}</h4>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         {t("parts.material")}: {part.material} | {t("parts.quantity")}: {part.quantity}
                       </p>
                       <div className="flex gap-2 mt-1">
@@ -268,10 +268,10 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                               flex items-center justify-between p-3 rounded-lg text-sm
                               border-l-4 transition-all duration-200
                               ${isCompleted
-                                ? 'bg-green-50/50'
+                                ? 'bg-alert-success-bg'
                                 : isInProgress
-                                  ? 'bg-blue-50/50 shadow-sm'
-                                  : 'bg-gray-50'}
+                                  ? 'bg-alert-info-bg shadow-sm'
+                                  : 'bg-muted'}
                             `}
                             style={{
                               borderLeftColor: cellColor,
@@ -284,7 +284,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                               ) : isInProgress ? (
                                 <Clock className="h-4 w-4 text-brand-primary animate-pulse" />
                               ) : (
-                                <Circle className="h-4 w-4 text-gray-400" />
+                                <Circle className="h-4 w-4 text-muted-foreground" />
                               )}
 
                               {/* Cell badge */}
@@ -299,7 +299,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                               </div>
 
                               {/* Operation name */}
-                              <span className={`font-medium ${isCompleted ? 'text-gray-500' : ''}`}>
+                              <span className={`font-medium ${isCompleted ? 'text-muted-foreground' : ''}`}>
                                 {operation.operation_name}
                               </span>
                             </div>

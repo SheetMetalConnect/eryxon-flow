@@ -287,8 +287,8 @@ export default function OperatorTerminal() {
 
                 {/* 1. IN PROCESS */}
                 <div className="flex-1 flex flex-col min-h-0 border-b border-border bg-accent/5 overflow-hidden">
-                    <div className="px-4 py-2 bg-emerald-950/10 border-l-4 border-emerald-500 flex items-center justify-between dark:bg-emerald-950/30 shrink-0">
-                        <h2 className="text-base font-bold text-emerald-600 dark:text-emerald-400">{t("terminal.inProcess")} ({inProcessJobs.length})</h2>
+                    <div className="px-4 py-2 bg-status-active/10 border-l-4 border-status-active flex items-center justify-between shrink-0">
+                        <h2 className="text-base font-bold text-status-active">{t("terminal.inProcess")} ({inProcessJobs.length})</h2>
                     </div>
                     <div className="flex-1 overflow-auto">
                         <table className="w-full text-left border-collapse">
@@ -331,7 +331,7 @@ export default function OperatorTerminal() {
                 {/* 2. IN BUFFER */}
                 <div className="flex-1 flex flex-col min-h-0 border-b border-border overflow-hidden">
                     <div className="px-4 py-2 bg-alert-info-bg border-l-4 border-alert-info-border flex items-center justify-between shrink-0">
-                        <h2 className="text-base font-bold text-blue-600 dark:text-blue-400">{t("terminal.inBuffer")} ({inBufferJobs.length})</h2>
+                        <h2 className="text-base font-bold text-info">{t("terminal.inBuffer")} ({inBufferJobs.length})</h2>
                     </div>
                     <div className="flex-1 overflow-auto">
                         <table className="w-full text-left border-collapse">
@@ -365,8 +365,8 @@ export default function OperatorTerminal() {
 
                 {/* 3. EXPECTED */}
                 <div className="flex-1 flex flex-col min-h-0 bg-accent/5 overflow-hidden">
-                    <div className="px-4 py-2 bg-amber-950/10 border-l-4 border-amber-500 flex items-center justify-between dark:bg-amber-950/30 shrink-0">
-                        <h2 className="text-base font-bold text-amber-600 dark:text-amber-400">{t("terminal.expected")} ({expectedJobs.length})</h2>
+                    <div className="px-4 py-2 bg-status-pending/10 border-l-4 border-status-pending flex items-center justify-between shrink-0">
+                        <h2 className="text-base font-bold text-status-pending">{t("terminal.expected")} ({expectedJobs.length})</h2>
                     </div>
                     <div className="flex-1 overflow-auto">
                         <table className="w-full text-left border-collapse">

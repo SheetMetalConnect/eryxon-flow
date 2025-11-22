@@ -15,11 +15,11 @@ interface JobRowProps {
 const getOperationBadgeColor = (opName: string) => {
     const name = opName.toLowerCase();
     if (name.includes('frezen') || name.includes('mill')) return 'bg-operation-milling';
-    if (name.includes('afbramen') || name.includes('deburr')) return 'bg-emerald-500';
-    if (name.includes('assemblage') || name.includes('assembly')) return 'bg-amber-500';
+    if (name.includes('afbramen') || name.includes('deburr')) return 'bg-status-completed';
+    if (name.includes('assemblage') || name.includes('assembly')) return 'bg-status-on-hold';
     if (name.includes('lassen') || name.includes('weld')) return 'bg-operation-welding';
     if (name.includes('autorisatie') || name.includes('auth')) return 'bg-operation-default';
-    return 'bg-primary';
+    return 'bg-operation-default';
 };
 
 export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
@@ -29,7 +29,7 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
             className={cn(
                 "cursor-pointer transition-colors border-b border-border hover:bg-accent/30",
                 isSelected && "bg-accent/50 ring-1 ring-primary",
-                variant === 'process' && "bg-emerald-500/5",
+                variant === 'process' && "bg-status-active/5",
             )}
         >
             {/* Job Number */}
@@ -102,7 +102,7 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
                     )}
                     {job.warnings && job.warnings.length > 0 && (
                         <div title={job.warnings.join(', ')}>
-                            <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                            <AlertTriangle className="w-3.5 h-3.5 text-warning" />
                         </div>
                     )}
                 </div>
