@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, ArrowRight, Factory } from "lucide-react";
+import { Loader2, ArrowRight, Factory, Activity, Users, BarChart3, Shield } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { Link } from "react-router-dom";
@@ -82,7 +82,7 @@ export default function Auth() {
     <>
       <AnimatedBackground />
 
-      <div className="relative min-h-screen flex items-start justify-center p-8 pt-20">
+      <div className="landing-container">
         {/* Language Switcher - Top Right */}
         <div className="absolute top-4 right-4 z-10">
           <LanguageSwitcher />
@@ -91,33 +91,34 @@ export default function Auth() {
         {/* Main Auth Card */}
         <div className="onboarding-card">
           {/* Icon/Logo */}
-          <div className="inline-flex items-center justify-center mb-4">
-            <Factory className="w-12 h-12 text-primary" strokeWidth={1.5} />
+          <div className="icon-container">
+            <Factory className="w-32 h-32 text-primary browser-icon" strokeWidth={1.5} />
           </div>
 
           {/* Welcome Text */}
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">
+          <p className="welcome-text">
             Welcome to
           </p>
 
-          {/* Hero Title */}
-          <h1 className="hero-title">
-            Eryxon Flow
-          </h1>
-
-          {/* Tagline */}
-          <p className="text-base text-foreground/80 mb-6">
-            The simple MES you love to use
-          </p>
+          {/* Title Container with Preview Pill */}
+          <div className="title-container">
+            <h1 className="main-title">Eryxon Flow</h1>
+            <p className="preview-pill">Manufacturing Execution System</p>
+          </div>
 
           {/* Divider */}
           <hr className="title-divider" />
 
-          {/* Description */}
-          <p className="text-sm text-muted-foreground mb-6">
+          {/* Hero Section Title */}
+          <h2 className="hero-title">
+            {isLogin ? t("auth.signIn") : t("auth.signUp")}
+          </h2>
+
+          {/* Informational Text */}
+          <p className="informational-text">
             {isLogin
-              ? t("auth.signInDescription")
-              : t("auth.signUpDescription")}
+              ? "Track jobs, manage operations, and monitor your shop floor in real-time. Sign in to access your manufacturing dashboard."
+              : "Create your account to start managing your manufacturing operations. Simple, beautiful, and powerful."}
           </p>
 
           {/* Auth Form */}
@@ -263,6 +264,40 @@ export default function Auth() {
               </button>
             </div>
           </form>
+
+          {/* Features Section - Show on Signup */}
+          {!isLogin && (
+            <div className="use-cases-section">
+              <h3 className="section-heading">Why Choose Eryxon Flow?</h3>
+              <div className="use-cases-grid">
+                <div className="use-case-card">
+                  <Activity className="use-case-icon icon-blue" />
+                  <span className="use-case-text">Real-time job and operation tracking</span>
+                </div>
+                <div className="use-case-card">
+                  <Users className="use-case-icon icon-green" />
+                  <span className="use-case-text">Operator-friendly touch interface</span>
+                </div>
+                <div className="use-case-card">
+                  <BarChart3 className="use-case-icon icon-yellow" />
+                  <span className="use-case-text">Quick Response Manufacturing metrics</span>
+                </div>
+                <div className="use-case-card">
+                  <Shield className="use-case-icon icon-red" />
+                  <span className="use-case-text">Secure multi-tenant architecture</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Workflow Section - Show on Login */}
+          {isLogin && (
+            <div className="workflow-section">
+              <p className="workflow-description">
+                New to Eryxon Flow? Create an account to get started with our simple MES platform.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </>

@@ -306,19 +306,18 @@ export const ActivityMonitor: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-8">
       {/* Header Section */}
       <div>
-        <div className="flex items-center gap-3 mb-2">
-          <Activity className="h-10 w-10 text-foreground/80" />
-          <div>
-            <h1 className="text-3xl font-bold">Activity Monitor</h1>
-            <p className="text-sm text-muted-foreground">
-              Real-time platform activity feed with comprehensive audit trail
-            </p>
-          </div>
-        </div>
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+          Activity Monitor
+        </h1>
+        <p className="text-muted-foreground text-lg">
+          Real-time platform activity feed with comprehensive audit trail
+        </p>
       </div>
+
+      <hr className="title-divider" />
 
       {/* Statistics Cards */}
       {stats && (

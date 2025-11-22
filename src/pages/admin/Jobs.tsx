@@ -413,23 +413,34 @@ export default function Jobs() {
   ], [t]);
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">{t("jobs.title")}</h1>
-        <Button onClick={() => navigate("/admin/jobs/new")}>
-          <Plus className="mr-2 h-4 w-4" /> {t("jobs.createJob")}
-        </Button>
+    <div className="p-6 space-y-8">
+      <div>
+        <div className="flex justify-between items-center mb-2">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+            {t("jobs.title")}
+          </h1>
+          <Button onClick={() => navigate("/admin/jobs/new")} className="cta-button">
+            <Plus className="mr-2 h-4 w-4" /> {t("jobs.createJob")}
+          </Button>
+        </div>
+        <p className="text-muted-foreground text-lg">
+          Manage all jobs, track progress, and monitor deadlines
+        </p>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={jobs || []}
-        filterableColumns={filterableColumns}
-        searchPlaceholder={t("jobs.searchJobs")}
-        loading={isLoading}
-        pageSize={20}
-        emptyMessage={t("jobs.noJobsFound") || "No jobs found."}
-      />
+      <hr className="title-divider" />
+
+      <div className="glass-card p-6">
+        <DataTable
+          columns={columns}
+          data={jobs || []}
+          filterableColumns={filterableColumns}
+          searchPlaceholder={t("jobs.searchJobs")}
+          loading={isLoading}
+          pageSize={20}
+          emptyMessage={t("jobs.noJobsFound") || "No jobs found."}
+        />
+      </div>
 
       {selectedJobId && (
         <JobDetailModal
@@ -449,11 +460,11 @@ export default function Jobs() {
 
       {/* File Viewer Dialog */}
       <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
-        <DialogContent className="max-w-7xl max-h-[90vh]">
+        <DialogContent className="glass-card max-w-7xl max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>{currentFileTitle}</DialogTitle>
+            <DialogTitle className="text-xl">{currentFileTitle}</DialogTitle>
           </DialogHeader>
-          <div className="w-full h-[75vh]">
+          <div className="w-full h-[75vh] rounded-lg overflow-hidden border border-white/10">
             {currentFileType === "step" && currentFileUrl && (
               <STEPViewer url={currentFileUrl} />
             )}

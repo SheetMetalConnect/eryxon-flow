@@ -105,16 +105,20 @@ export default function OrganizationSettings() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-8">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Organization Settings</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+          Organization Settings
+        </h1>
+        <p className="text-muted-foreground text-lg">
           Manage your organization profile and preferences
         </p>
       </div>
 
+      <hr className="title-divider" />
+
       <form onSubmit={handleSave}>
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Building2 className="h-5 w-5" />
@@ -182,7 +186,7 @@ export default function OrganizationSettings() {
             </div>
 
             <div className="pt-4">
-              <Button type="submit" disabled={saving} className="gap-2">
+              <Button type="submit" disabled={saving} className="cta-button gap-2">
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                 <Save className="h-4 w-4" />
                 Save Changes
@@ -194,7 +198,7 @@ export default function OrganizationSettings() {
 
       {/* Subscription Info (Read-only for now) */}
       {tenant && (
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle>Subscription</CardTitle>
             <CardDescription>Your current plan and usage</CardDescription>

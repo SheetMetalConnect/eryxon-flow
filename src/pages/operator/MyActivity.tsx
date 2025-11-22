@@ -147,11 +147,15 @@ export default function MyActivity() {
 
   return (
     <>
-      <div className="space-y-6">
+      <div className="p-6 space-y-8">
         <div>
-          <h1 className="text-3xl font-bold">{t("myActivity.title")}</h1>
-          <p className="text-muted-foreground">{t("myActivity.description")}</p>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+            {t("myActivity.title")}
+          </h1>
+          <p className="text-muted-foreground text-lg">{t("myActivity.description")}</p>
         </div>
+
+        <hr className="title-divider" />
 
         {/* Summary Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">

@@ -1158,9 +1158,236 @@ Smooth floating animation for gradient orbs.
 
 ---
 
+## Manufacturing-Specific Patterns
+
+### Dashboard Stat Cards with Glass Effect
+
+Perfect for displaying key manufacturing metrics like active workers, pending issues, or completed tasks.
+
+```tsx
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Users, Activity, Clock, AlertTriangle } from 'lucide-react';
+
+function StatCard({ title, value, description, icon: Icon, onClick }) {
+  return (
+    <Card
+      className="glass-card cursor-pointer transition-all hover:shadow-xl hover:scale-105 active:scale-100 hover:border-white/20"
+      onClick={onClick}
+    >
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <div className="p-2 rounded-lg bg-primary/10">
+          <Icon className="h-5 w-5 text-primary" />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+          {value}
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">{description}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Usage in Dashboard
+<div className="grid gap-4 md:grid-cols-4">
+  <StatCard
+    title="Active Workers"
+    value={stats.activeWorkers}
+    description="Currently working"
+    icon={Users}
+    onClick={() => navigate("/admin/users")}
+  />
+  <StatCard
+    title="Pending Issues"
+    value={stats.pendingIssues}
+    description="Awaiting review"
+    icon={AlertTriangle}
+    onClick={() => navigate("/admin/issues")}
+  />
+</div>
+```
+
+### Page Headers with Gradient Text
+
+Standard pattern for all admin pages to create visual hierarchy and brand consistency.
+
+```tsx
+<div className="space-y-8">
+  <div>
+    <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+      Jobs Management
+    </h1>
+    <p className="text-muted-foreground text-lg">
+      Manage all jobs, track progress, and monitor deadlines
+    </p>
+  </div>
+
+  <hr className="title-divider" />
+
+  {/* Page content */}
+</div>
+```
+
+### Glass Data Tables
+
+Wrap data tables in glass cards for depth and visual appeal.
+
+```tsx
+<div className="glass-card p-6">
+  <DataTable
+    columns={columns}
+    data={jobs || []}
+    filterableColumns={filterableColumns}
+    searchPlaceholder="Search jobs..."
+    loading={isLoading}
+    pageSize={20}
+  />
+</div>
+```
+
+### Modal Dialogs with Glass Effect
+
+All dialogs should use glass morphism for consistency.
+
+```tsx
+<Dialog open={isOpen} onOpenChange={setIsOpen}>
+  <DialogContent className="glass-card max-w-2xl">
+    <DialogHeader>
+      <DialogTitle className="text-xl flex items-center gap-2">
+        <Activity className="h-5 w-5 text-primary" />
+        Operation Details
+      </DialogTitle>
+    </DialogHeader>
+    <div className="space-y-4">
+      {/* Dialog content */}
+    </div>
+  </DialogContent>
+</Dialog>
+```
+
+### Status Badges with Manufacturing Colors
+
+Use consistent color coding for manufacturing statuses.
+
+```tsx
+// Work status badges
+<Badge className="bg-status-active text-black">Active</Badge>
+<Badge className="bg-status-completed text-white">Completed</Badge>
+<Badge className="bg-status-on-hold text-white">On Hold</Badge>
+<Badge className="bg-status-blocked text-white">Blocked</Badge>
+
+// Cell/Stage badges with glass effect
+<Badge className="bg-primary/20 text-primary border-primary/30">
+  Cutting Cell
+</Badge>
+```
+
+### Empty States with Informational Capsules
+
+Use informational-text class for empty states to maintain visual interest.
+
+```tsx
+{activeWork.length === 0 ? (
+  <div className="text-center py-12">
+    <div className="informational-text max-w-md mx-auto">
+      No active work sessions. Operators can start timing from the work queue.
+    </div>
+  </div>
+) : (
+  // Display data
+)}
+```
+
 ## Component Examples
 
-### Antigravity Browser Control Screen
+### Auth/Onboarding Screen (Full Antigravity Pattern)
+
+```tsx
+import AnimatedBackground from '@/components/AnimatedBackground';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, Factory, Activity, Users, BarChart3, Shield } from 'lucide-react';
+
+export default function Auth() {
+  const [isLogin, setIsLogin] = useState(true);
+
+  return (
+    <>
+      <AnimatedBackground />
+
+      <div className="landing-container">
+        <div className="onboarding-card">
+          {/* Icon */}
+          <div className="icon-container">
+            <Factory className="w-32 h-32 text-primary browser-icon" strokeWidth={1.5} />
+          </div>
+
+          {/* Welcome Text */}
+          <p className="welcome-text">Welcome to</p>
+
+          {/* Title Container with Preview Pill */}
+          <div className="title-container">
+            <h1 className="main-title">Eryxon Flow</h1>
+            <p className="preview-pill">Manufacturing Execution System</p>
+          </div>
+
+          {/* Divider */}
+          <hr className="title-divider" />
+
+          {/* Hero Section Title */}
+          <h2 className="hero-title">
+            {isLogin ? "Sign In" : "Create Account"}
+          </h2>
+
+          {/* Informational Text */}
+          <p className="informational-text">
+            {isLogin
+              ? "Track jobs, manage operations, and monitor your shop floor in real-time."
+              : "Create your account to start managing your manufacturing operations."}
+          </p>
+
+          {/* Auth Form */}
+          <form className="space-y-4 text-left">
+            {/* Form fields */}
+            <Button type="submit" className="w-full cta-button">
+              {isLogin ? "Sign In" : "Sign Up"}
+              <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />
+            </Button>
+          </form>
+
+          {/* Features Section - Show on Signup */}
+          {!isLogin && (
+            <div className="use-cases-section">
+              <h3 className="section-heading">Why Choose Eryxon Flow?</h3>
+              <div className="use-cases-grid">
+                <div className="use-case-card">
+                  <Activity className="use-case-icon icon-blue" />
+                  <span className="use-case-text">Real-time job and operation tracking</span>
+                </div>
+                <div className="use-case-card">
+                  <Users className="use-case-icon icon-green" />
+                  <span className="use-case-text">Operator-friendly touch interface</span>
+                </div>
+                <div className="use-case-card">
+                  <BarChart3 className="use-case-icon icon-yellow" />
+                  <span className="use-case-text">Quick Response Manufacturing metrics</span>
+                </div>
+                <div className="use-case-card">
+                  <Shield className="use-case-icon icon-red" />
+                  <span className="use-case-text">Secure multi-tenant architecture</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+```
+
+### Generic Antigravity Onboarding Template
 
 ```tsx
 import AnimatedBackground from '@/components/AnimatedBackground';
