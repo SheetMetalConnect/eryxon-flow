@@ -20,6 +20,7 @@ import ConfigStages from "./pages/admin/ConfigStages";
 import ConfigMaterials from "./pages/admin/ConfigMaterials";
 import ConfigResources from "./pages/admin/ConfigResources";
 import ConfigUsers from "./pages/admin/ConfigUsers";
+import ConfigScrapReasons from "./pages/admin/ConfigScrapReasons";
 import OrganizationSettings from "./pages/admin/OrganizationSettings";
 import Assignments from "./pages/admin/Assignments";
 import ConfigApiKeys from "./pages/admin/ConfigApiKeys";
@@ -228,6 +229,17 @@ function AppRoutes() {
           <ProtectedRoute adminOnly>
             <Layout>
               <OrganizationSettings />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/config/scrap-reasons"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <ConfigScrapReasons />
             </Layout>
           </ProtectedRoute>
         }
