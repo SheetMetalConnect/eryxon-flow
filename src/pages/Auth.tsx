@@ -16,6 +16,7 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { signIn, signUp, profile } = useAuth();
@@ -43,15 +44,16 @@ export default function Auth() {
           setError(error.message);
         }
       } else {
-        if (!fullName) {
+        if (!fullName || !companyName) {
           setError(t("auth.fillAllFields"));
           setLoading(false);
           return;
         }
 
-        const { error } = await signUp(email, password, {
+        const { error, data } = await signUp(email, password, {
           full_name: fullName,
           role: "operator",
+          company_name: companyName,
         });
 
         if (error) {
@@ -87,17 +89,31 @@ export default function Auth() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName">{t("auth.fullName")}</Label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required={!isLogin}
-                  placeholder={t("auth.fullNamePlaceholder")}
-                />
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">{t("auth.fullName")}</Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required={!isLogin}
+                    placeholder={t("auth.fullNamePlaceholder")}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="companyName">Company Name</Label>
+                  <Input
+                    id="companyName"
+                    type="text"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    required={!isLogin}
+                    placeholder="Acme Manufacturing"
+                  />
+                </div>
+              </>
             )}
 
             <div className="space-y-2">

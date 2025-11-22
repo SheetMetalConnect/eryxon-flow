@@ -10,10 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Loader2 } from "lucide-react";
+import { Plus, Edit, Loader2, Mail, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { DataTable, DataTableColumnHeader, DataTableFilterableColumn } from "@/components/ui/data-table";
+import { useInvitations } from "@/hooks/useInvitations";
 
 interface UserProfile {
   id: string;
@@ -28,9 +29,11 @@ interface UserProfile {
 export default function ConfigUsers() {
   const { t } = useTranslation();
   const { profile } = useAuth();
+  const { createInvitation } = useInvitations();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [formData, setFormData] = useState({
     username: "",
@@ -39,7 +42,12 @@ export default function ConfigUsers() {
     password: "",
     role: "operator" as "operator" | "admin",
     is_machine: false,
+    no_email_login: false,
+    employee_id: "",
+    pin: "",
   });
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<"operator" | "admin">("operator");
 
   useEffect(() => {
     if (!profile?.tenant_id) return;
@@ -79,26 +87,40 @@ export default function ConfigUsers() {
 
         toast.success(t("users.userUpdated"));
       } else {
-        // Create new user - generate username from email
-        const username = formData.email.split('@')[0];
+        if (formData.no_email_login) {
+          // Create operator with PIN (no email)
+          const employeeId = formData.employee_id || `OPR-${Date.now().toString().slice(-6)}`;
 
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-          options: {
-            data: {
-              username,
-              full_name: formData.full_name,
-              role: formData.role,
-              tenant_id: profile.tenant_id,
-              is_machine: formData.is_machine,
+          const { error } = await supabase.rpc('create_operator_with_pin', {
+            p_full_name: formData.full_name,
+            p_employee_id: employeeId,
+            p_pin: formData.pin,
+            p_role: formData.role,
+          });
+
+          if (error) throw error;
+          toast.success(`Operator created: ${employeeId}`);
+        } else {
+          // Create new user with email - generate username from email
+          const username = formData.email.split('@')[0];
+
+          const { error: authError } = await supabase.auth.signUp({
+            email: formData.email,
+            password: formData.password,
+            options: {
+              data: {
+                username,
+                full_name: formData.full_name,
+                role: formData.role,
+                tenant_id: profile.tenant_id,
+                is_machine: formData.is_machine,
+              },
             },
-          },
-        });
+          });
 
-        if (authError) throw authError;
-
-        toast.success(t("users.userCreated"));
+          if (authError) throw authError;
+          toast.success(t("users.userCreated"));
+        }
       }
 
       setDialogOpen(false);
@@ -110,6 +132,18 @@ export default function ConfigUsers() {
     }
   };
 
+  const handleSendInvite = async () => {
+    if (!inviteEmail) {
+      toast.error('Please enter an email address');
+      return;
+    }
+
+    await createInvitation(inviteEmail, inviteRole);
+    setInviteDialogOpen(false);
+    setInviteEmail('');
+    setInviteRole('operator');
+  };
+
   const resetForm = () => {
     setFormData({
       username: "",
@@ -118,6 +152,9 @@ export default function ConfigUsers() {
       password: "",
       role: "operator",
       is_machine: false,
+      no_email_login: false,
+      employee_id: "",
+      pin: "",
     });
     setEditingUser(null);
   };
@@ -278,16 +315,66 @@ export default function ConfigUsers() {
             <p className="text-muted-foreground">{t("users.manageUsers")}</p>
           </div>
 
-          <Dialog open={dialogOpen} onOpenChange={(open) => {
-            setDialogOpen(open);
-            if (!open) resetForm();
-          }}>
-            <DialogTrigger asChild>
-              <Button className="gap-2">
-                <Plus className="h-4 w-4" />
-                {t("users.createUser")}
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            {/* Invite User Dialog */}
+            <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <Mail className="h-4 w-4" />
+                  Invite User
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Invite Team Member</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="inviteEmail">Email Address *</Label>
+                    <Input
+                      id="inviteEmail"
+                      type="email"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      placeholder="colleague@example.com"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="inviteRole">Role *</Label>
+                    <Select
+                      value={inviteRole}
+                      onValueChange={(value: "operator" | "admin") => setInviteRole(value)}
+                    >
+                      <SelectTrigger id="inviteRole">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="operator">Operator</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button onClick={handleSendInvite} className="w-full gap-2">
+                    <Mail className="h-4 w-4" />
+                    Send Invitation
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Create User Dialog */}
+            <Dialog open={dialogOpen} onOpenChange={(open) => {
+              setDialogOpen(open);
+              if (!open) resetForm();
+            }}>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  {t("users.createUser")}
+                </Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
@@ -310,37 +397,85 @@ export default function ConfigUsers() {
 
                 {!editingUser && (
                   <>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">{t("users.email")} *</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) =>
-                          setFormData({ ...formData, email: e.target.value })
+                    <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                      <Label htmlFor="no_email_login">Operator without Email (PIN Login)</Label>
+                      <Switch
+                        id="no_email_login"
+                        checked={formData.no_email_login}
+                        onCheckedChange={(checked) =>
+                          setFormData({ ...formData, no_email_login: checked })
                         }
-                        required
-                        placeholder={t("users.emailPlaceholder")}
                       />
-                      <p className="text-xs text-muted-foreground">
-                        {t("users.usernameAutoGenerated")}
-                      </p>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="password">{t("users.password")} *</Label>
-                      <Input
-                        id="password"
-                        type="password"
-                        value={formData.password}
-                        onChange={(e) =>
-                          setFormData({ ...formData, password: e.target.value })
-                        }
-                        required
-                        minLength={6}
-                        placeholder={t("users.passwordPlaceholder")}
-                      />
-                    </div>
+                    {formData.no_email_login ? (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="employee_id">
+                            Employee ID{' '}
+                            <span className="text-muted-foreground text-xs">(auto-generated if empty)</span>
+                          </Label>
+                          <Input
+                            id="employee_id"
+                            value={formData.employee_id}
+                            onChange={(e) =>
+                              setFormData({ ...formData, employee_id: e.target.value })
+                            }
+                            placeholder="OPR-123456"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="pin">PIN (4-6 digits) *</Label>
+                          <Input
+                            id="pin"
+                            type="password"
+                            value={formData.pin}
+                            onChange={(e) =>
+                              setFormData({ ...formData, pin: e.target.value })
+                            }
+                            required
+                            minLength={4}
+                            maxLength={6}
+                            placeholder="1234"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="email">{t("users.email")} *</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) =>
+                              setFormData({ ...formData, email: e.target.value })
+                            }
+                            required
+                            placeholder={t("users.emailPlaceholder")}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            {t("users.usernameAutoGenerated")}
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="password">{t("users.password")} *</Label>
+                          <Input
+                            id="password"
+                            type="password"
+                            value={formData.password}
+                            onChange={(e) =>
+                              setFormData({ ...formData, password: e.target.value })
+                            }
+                            required
+                            minLength={6}
+                            placeholder={t("users.passwordPlaceholder")}
+                          />
+                        </div>
+                      </>
+                    )}
                   </>
                 )}
 
