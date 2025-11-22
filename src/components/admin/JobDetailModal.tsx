@@ -20,6 +20,7 @@ import { PartIssueBadge } from "@/components/issues/PartIssueBadge";
 import { IssuesSummarySection } from "@/components/issues/IssuesSummarySection";
 import { OperationsFlowVisualization } from "@/components/qrm/OperationsFlowVisualization";
 import { useJobRouting } from "@/hooks/useQRMMetrics";
+import { ResourceCountBadge } from "@/components/ui/ResourceUsageDisplay";
 
 interface JobDetailModalProps {
   jobId: string;
@@ -302,6 +303,9 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                               <span className={`font-medium ${isCompleted ? 'text-muted-foreground' : ''}`}>
                                 {operation.operation_name}
                               </span>
+
+                              {/* Resource count badge */}
+                              <ResourceCountBadge operationId={operation.id} />
                             </div>
 
                             {/* Status badge */}
