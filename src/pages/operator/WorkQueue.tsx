@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchOperationsWithDetails, OperationWithDetails } from "@/lib/database";
@@ -33,6 +34,7 @@ const getStageClass = (cellName: string) => {
 };
 
 export default function WorkQueue() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const [operations, setOperations] = useState<OperationWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
