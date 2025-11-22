@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { AlertTriangle, Check } from "lucide-react";
 
 interface ProductionQuantityModalProps {
@@ -46,6 +47,7 @@ export default function ProductionQuantityModal({
   plannedQuantity,
   onSuccess,
 }: ProductionQuantityModalProps) {
+  const { profile } = useAuth();
   const [formData, setFormData] = useState<FormData>({
     quantity_produced: 0,
     quantity_good: 0,
@@ -109,9 +111,14 @@ export default function ProductionQuantityModal({
 
   const handleSubmit = async () => {
     if (!validate()) return;
+    if (!profile?.tenant_id) {
+      toast.error("No tenant found");
+      return;
+    }
     setIsSubmitting(true);
     try {
-      const { data, error } = await supabase.from("operation_quantities").insert({
+      const { data, error } = await supabase.from("operation_quantities").insert([{
+        tenant_id: profile.tenant_id,
         operation_id: operationId,
         quantity_produced: formData.quantity_produced,
         quantity_good: formData.quantity_good,
@@ -121,7 +128,7 @@ export default function ProductionQuantityModal({
         material_lot: formData.material_lot || null,
         notes: formData.notes || null,
         recorded_at: new Date().toISOString(),
-      }).select().single();
+      }]).select().single();
       if (error) throw error;
       const yieldPercentage = formData.quantity_produced > 0
         ? ((formData.quantity_good / formData.quantity_produced) * 100).toFixed(1)

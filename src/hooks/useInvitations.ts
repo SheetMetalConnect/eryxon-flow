@@ -37,7 +37,7 @@ export function useInvitations() {
         .order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
-      setInvitations(data || []);
+      setInvitations((data || []) as any);
     } catch (err: any) {
       setError(err.message);
       console.error('Error loading invitations:', err);
@@ -78,7 +78,7 @@ export function useInvitations() {
   // Cancel invitation
   const cancelInvitation = async (invitationId: string) => {
     try {
-      const { data, error: rpcError } = await supabase.rpc('cancel_invitation', {
+      const { data, error: rpcError } = await supabase.rpc('cancel_invitation' as any, {
         p_invitation_id: invitationId,
       });
 
@@ -121,7 +121,7 @@ export function useInvitations() {
   // Accept invitation (called during signup)
   const acceptInvitation = async (token: string, userId: string) => {
     try {
-      const { data, error: rpcError } = await supabase.rpc('accept_invitation', {
+      const { data, error: rpcError } = await supabase.rpc('accept_invitation' as any, {
         p_token: token,
         p_user_id: userId,
       });

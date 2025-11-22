@@ -91,7 +91,7 @@ export default function ConfigUsers() {
           // Create operator with PIN (no email)
           const employeeId = formData.employee_id || `OPR-${Date.now().toString().slice(-6)}`;
 
-          const { error } = await supabase.rpc('create_operator_with_pin', {
+          const { error } = await supabase.rpc('create_operator_with_pin' as any, {
             p_full_name: formData.full_name,
             p_employee_id: employeeId,
             p_pin: formData.pin,
@@ -168,6 +168,9 @@ export default function ConfigUsers() {
       password: "",
       role: user.role,
       is_machine: user.is_machine,
+      no_email_login: false,
+      employee_id: "",
+      pin: "",
     });
     setDialogOpen(true);
   };
