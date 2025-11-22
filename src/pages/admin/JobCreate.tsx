@@ -93,7 +93,7 @@ export default function JobCreate() {
       if (!profile?.tenant_id) throw new Error("No tenant ID");
 
       // Start transaction
-      const { data: job, error: jobError} = await supabase
+      const { data: job, error: jobError } = await supabase
         .from("jobs")
         .insert({
           tenant_id: profile.tenant_id,
@@ -298,28 +298,26 @@ export default function JobCreate() {
 
   return (
     <div className="max-w-6xl mx-auto">
-        <div className="mb-6">
-          <Button variant="outline" onClick={() => navigate("/admin/jobs")}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> {t("jobs.backToJobs")}
-          </Button>
-        </div>
+      <div className="mb-6">
+        <Button variant="outline" onClick={() => navigate("/admin/jobs")}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t("jobs.backToJobs")}
+        </Button>
+      </div>
 
       {/* Progress Indicator */}
       <div className="flex justify-between mb-8">
         {[1, 2, 3, 4].map((s) => (
           <div key={s} className="flex items-center">
             <div
-              className={`flex items-center justify-center w-10 h-10 rounded-full ${
-                s <= step ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"
-              }`}
+              className={`flex items-center justify-center w-10 h-10 rounded-full ${s <= step ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"
+                }`}
             >
               {s < step ? <Check className="h-5 w-5" /> : s}
             </div>
             {s < 4 && (
               <div
-                className={`w-20 h-1 mx-2 ${
-                  s < step ? "bg-blue-600" : "bg-gray-200"
-                }`}
+                className={`w-20 h-1 mx-2 ${s < step ? "bg-blue-600" : "bg-gray-200"
+                  }`}
               />
             )}
           </div>
@@ -482,6 +480,52 @@ export default function JobCreate() {
                       }
                       rows={2}
                     />
+                  </div>
+
+                  {/* Material Traceability Section */}
+                  <div className="col-span-2 border-t pt-3 mt-2">
+                    <h5 className="text-sm font-medium mb-2">Material Traceability (Optional)</h5>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <Label>Material Lot/Heat Number</Label>
+                        <Input
+                          value={(editingPart.metadata as any)?.material_lot || ""}
+                          onChange={(e) =>
+                            setEditingPart({
+                              ...editingPart,
+                              metadata: { ...(editingPart.metadata || {}), material_lot: e.target.value }
+                            })
+                          }
+                          placeholder="e.g., LOT-2024-1234"
+                        />
+                      </div>
+                      <div>
+                        <Label>Material Supplier</Label>
+                        <Input
+                          value={(editingPart.metadata as any)?.material_supplier || ""}
+                          onChange={(e) =>
+                            setEditingPart({
+                              ...editingPart,
+                              metadata: { ...(editingPart.metadata || {}), material_supplier: e.target.value }
+                            })
+                          }
+                          placeholder="e.g., Metal Supply Co"
+                        />
+                      </div>
+                      <div>
+                        <Label>Material Certification #</Label>
+                        <Input
+                          value={(editingPart.metadata as any)?.material_cert_number || ""}
+                          onChange={(e) =>
+                            setEditingPart({
+                              ...editingPart,
+                              metadata: { ...(editingPart.metadata || {}), material_cert_number: e.target.value }
+                            })
+                          }
+                          placeholder="e.g., CERT-ABC-123"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="flex gap-2 mt-3">
@@ -652,9 +696,9 @@ export default function JobCreate() {
                             parts.map((p) =>
                               p.id === part.id
                                 ? {
-                                    ...p,
-                                    operations: p.operations.filter((o) => o.id !== operation.id),
-                                  }
+                                  ...p,
+                                  operations: p.operations.filter((o) => o.id !== operation.id),
+                                }
                                 : p
                             )
                           )
