@@ -104,7 +104,7 @@ export const Settings: React.FC = () => {
               {t("settings.demoData.title")}
             </CardTitle>
             {isDemoMode && (
-              <Badge variant="warning">{t("settings.demoData.active")}</Badge>
+              <Badge variant="secondary">{t("settings.demoData.active")}</Badge>
             )}
           </div>
           <CardDescription>
@@ -364,9 +364,9 @@ export const Settings: React.FC = () => {
               {t("settings.demoData.confirmCancel")}
             </AlertDialogCancel>
             <AlertDialogAction
-              variant="destructive"
               onClick={handleClearDemoData}
               disabled={isLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isLoading
                 ? t("settings.demoData.confirmClearing")

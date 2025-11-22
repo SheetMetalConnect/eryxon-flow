@@ -168,7 +168,6 @@ export async function generateMockData(
           full_name: "Jan de Vries",
           email: "jan.devries@sheetmetalconnect.nl",
           active: true,
-          pin: "1234",
         },
         {
           id: crypto.randomUUID(),
@@ -178,7 +177,6 @@ export async function generateMockData(
           full_name: "Emma Bakker",
           email: "emma.bakker@sheetmetalconnect.nl",
           active: true,
-          pin: "2345",
         },
         {
           id: crypto.randomUUID(),
@@ -188,7 +186,6 @@ export async function generateMockData(
           full_name: "Luuk van der Berg",
           email: "luuk.vandenberg@sheetmetalconnect.nl",
           active: true,
-          pin: "3456",
         },
         {
           id: crypto.randomUUID(),
@@ -198,7 +195,6 @@ export async function generateMockData(
           full_name: "Sophie Jansen",
           email: "sophie.jansen@sheetmetalconnect.nl",
           active: true,
-          pin: "4567",
         },
         {
           id: crypto.randomUUID(),
@@ -208,7 +204,6 @@ export async function generateMockData(
           full_name: "Daan Mulder",
           email: "daan.mulder@sheetmetalconnect.nl",
           active: true,
-          pin: "5678",
         },
         {
           id: crypto.randomUUID(),
@@ -218,7 +213,6 @@ export async function generateMockData(
           full_name: "Lisa Visser",
           email: "lisa.visser@sheetmetalconnect.nl",
           active: true,
-          pin: "6789",
         },
       ];
 
