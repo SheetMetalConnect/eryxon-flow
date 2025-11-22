@@ -686,7 +686,48 @@
     "filterBySeverity": "Filteren op ernst",
     "filterByStatus": "Filteren op status",
     "searchIssues": "Problemen zoeken...",
-    "noIssues": "Geen problemen gevonden"
+    "noIssues": "Geen problemen gevonden",
+    "issueTitle": "Titel",
+    "titlePlaceholder": "Voer titel in",
+    "issueType": "Probleemtype",
+    "pendingIssue": "{{count}} openstaand probleem",
+    "pendingIssue_plural": "{{count}} openstaande problemen",
+    "types": {
+      "general": "Algemeen probleem",
+      "ncr": "Afwijkingsrapport (NCR)"
+    },
+    "ncrDetails": "NCR-details",
+    "ncrCategory": "NCR-categorie",
+    "selectCategory": "Selecteer categorie",
+    "categories": {
+      "materialDefect": "Materiaaldefect",
+      "dimensional": "Dimensionaal",
+      "surfaceFinish": "Oppervlakteafwerking",
+      "processError": "Procesfout",
+      "other": "Anders"
+    },
+    "disposition": "Dispositie",
+    "selectDisposition": "Selecteer dispositie",
+    "dispositions": {
+      "scrap": "Afval",
+      "rework": "Herbewerken",
+      "useAsIs": "Gebruiken zoals het is",
+      "returnToSupplier": "Retour naar leverancier"
+    },
+    "affectedQuantity": "Getroffen aantal",
+    "affectedQuantityPlaceholder": "Voer getroffen aantal in",
+    "rootCause": "Grondoorzaak",
+    "rootCausePlaceholder": "Beschrijf de grondoorzaak",
+    "correctiveAction": "Corrigerende actie",
+    "correctiveActionPlaceholder": "Beschrijf uitgevoerde corrigerende actie",
+    "preventiveAction": "Preventieve actie",
+    "preventiveActionPlaceholder": "Beschrijf preventieve actie om herhaling te voorkomen",
+    "verificationRequired": "Verificatie vereist",
+    "filesSelected": "{{count}} bestand geselecteerd",
+    "filesSelected_plural": "{{count}} bestanden geselecteerd",
+    "ncrReported": "NCR succesvol gemeld",
+    "reportNCR": "NCR melden",
+    "issuePhoto": "Probleemfoto {{number}}"
   },
   "stages": {
     "title": "Productiefase-configuratie",
@@ -1247,7 +1288,8 @@
     "selectTime": "Tijd selecteren",
     "enterValue": "Waarde invoeren",
     "chooseOption": "Optie kiezen",
-    "cancel": "Annuleren"
+    "cancel": "Annuleren",
+    "submitting": "Bezig met verzenden..."
   },
   "notifications": {
     "success": "Succes",
