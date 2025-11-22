@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
-import { canCreateParts, createLimitErrorResponse } from "../_shared/plan-limits.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -69,16 +68,14 @@ serve(async (req) => {
       );
     }
 
+    // Handle GET requests - list scrap reasons
     if (req.method === 'GET') {
       const url = new URL(req.url);
-      const jobId = url.searchParams.get('job_id');
-      const jobNumber = url.searchParams.get('job_number');
-      const material = url.searchParams.get('material');
-      const status = url.searchParams.get('status');
-      const partNumber = url.searchParams.get('part_number');
-      const materialLot = url.searchParams.get('material_lot');
+      const category = url.searchParams.get('category');
+      const code = url.searchParams.get('code');
+      const search = url.searchParams.get('search');
+      const active = url.searchParams.get('active');
 
-      // Cap pagination limit to prevent abuse
       let limit = parseInt(url.searchParams.get('limit') || '100');
       if (limit < 1) limit = 100;
       if (limit > 1000) limit = 1000;
@@ -86,96 +83,45 @@ serve(async (req) => {
       const offset = parseInt(url.searchParams.get('offset') || '0');
 
       let query = supabase
-        .from('parts')
-        .select(`
-          id,
-          part_number,
-          material,
-          quantity,
-          status,
-          file_paths,
-          notes,
-          metadata,
-          created_at,
-          updated_at,
-          parent_part_id,
-          job:jobs (
-            id,
-            job_number,
-            customer
-          ),
-          operations (
-            id,
-            operation_name,
-            status,
-            completion_percentage,
-            cell:cells (
-              id,
-              name,
-              color
-            )
-          )
-        `)
+        .from('scrap_reasons')
+        .select('*')
         .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false })
+        .order('category', { ascending: true })
+        .order('code', { ascending: true })
         .range(offset, offset + limit - 1);
 
-      if (jobId) {
-        query = query.eq('job_id', jobId);
+      if (category) {
+        query = query.eq('category', category);
       }
-      if (material) {
-        query = query.ilike('material', `%${material}%`);
+      if (code) {
+        query = query.ilike('code', `%${code}%`);
       }
-      if (status) {
-        query = query.eq('status', status);
+      if (search) {
+        query = query.or(`code.ilike.%${search}%,description.ilike.%${search}%`);
       }
-      if (partNumber) {
-        query = query.ilike('part_number', `%${partNumber}%`);
-      }
-      if (materialLot) {
-        query = query.ilike('material_lot', `%${materialLot}%`);
-      }
-
-      // Filter by job_number if provided (requires join)
-      if (jobNumber) {
-        const { data: jobs } = await supabase
-          .from('jobs')
-          .select('id')
-          .eq('tenant_id', tenantId)
-          .ilike('job_number', `%${jobNumber}%`);
-
-        if (jobs && jobs.length > 0) {
-          query = query.in('job_id', jobs.map(j => j.id));
-        } else {
-          // No matching jobs, return empty result
-          return new Response(
-            JSON.stringify({
-              success: true,
-              data: {
-                parts: [],
-                pagination: { limit, offset, total: 0 }
-              }
-            }),
-            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
+      if (active !== null) {
+        const isActive = active === 'true';
+        query = query.eq('active', isActive);
+      } else {
+        // Default to showing only active scrap reasons
+        query = query.eq('active', true);
       }
 
-      const { data: parts, error, count } = await query;
+      const { data: scrapReasons, error, count } = await query;
 
       if (error) {
-        throw new Error(`Failed to fetch parts: ${error.message}`);
+        throw new Error(`Failed to fetch scrap reasons: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
           data: {
-            parts: parts || [],
+            scrap_reasons: scrapReasons || [],
             pagination: {
               limit,
               offset,
-              total: count || parts?.length || 0
+              total: count || scrapReasons?.length || 0
             }
           }
         }),
@@ -183,135 +129,97 @@ serve(async (req) => {
       );
     }
 
-    // POST method for creating parts
+    // Handle POST requests - create scrap reason
     if (req.method === 'POST') {
       const body = await req.json();
 
       // Validate required fields
-      if (!body.job_id || !body.part_number || !body.material) {
+      if (!body.code || !body.description || !body.category) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'job_id, part_number, and material are required' }
+            error: { code: 'VALIDATION_ERROR', message: 'code, description, and category are required' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Check plan limits before creating parts
-      const quantity = body.quantity || 1;
-      const quotaCheck = await canCreateParts(supabase, tenantId, quantity);
-
-      if (!quotaCheck.allowed) {
-        return createLimitErrorResponse(quotaCheck, 'part');
-      }
-
-      // Verify job exists and belongs to tenant
-      const { data: job } = await supabase
-        .from('jobs')
-        .select('id')
-        .eq('id', body.job_id)
-        .eq('tenant_id', tenantId)
-        .single();
-
-      if (!job) {
+      // Validate category
+      const validCategories = ['material', 'process', 'equipment', 'operator', 'design', 'other'];
+      if (!validCategories.includes(body.category)) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'NOT_FOUND', message: 'Job not found' }
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: `category must be one of: ${validCategories.join(', ')}`
+            }
           }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Check for duplicate part number in same job
-      const { data: existingPart } = await supabase
-        .from('parts')
+      // Check for duplicate code
+      const { data: existingReason } = await supabase
+        .from('scrap_reasons')
         .select('id')
-        .eq('job_id', body.job_id)
-        .eq('part_number', body.part_number)
+        .eq('tenant_id', tenantId)
+        .eq('code', body.code)
         .single();
 
-      if (existingPart) {
+      if (existingReason) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'DUPLICATE_PART', message: `Part number ${body.part_number} already exists in this job` }
+            error: { code: 'DUPLICATE_CODE', message: `Scrap reason code ${body.code} already exists` }
           }),
           { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Verify parent_part_id if provided
-      if (body.parent_part_id) {
-        const { data: parentPart } = await supabase
-          .from('parts')
-          .select('id, job_id')
-          .eq('id', body.parent_part_id)
-          .eq('tenant_id', tenantId)
-          .single();
-
-        if (!parentPart || parentPart.job_id !== body.job_id) {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: { code: 'INVALID_PARENT', message: 'Parent part not found or belongs to different job' }
-            }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-      }
-
-      const { data: part, error: partError } = await supabase
-        .from('parts')
+      const { data: scrapReason, error: scrapReasonError } = await supabase
+        .from('scrap_reasons')
         .insert({
           tenant_id: tenantId,
-          job_id: body.job_id,
-          part_number: body.part_number,
-          material: body.material,
-          material_lot: body.material_lot,
-          material_supplier: body.material_supplier,
-          material_cert_number: body.material_cert_number,
-          quantity: body.quantity || 1,
-          parent_part_id: body.parent_part_id,
-          file_paths: body.file_paths,
-          notes: body.notes,
-          metadata: body.metadata,
-          status: 'not_started'
+          code: body.code,
+          description: body.description,
+          category: body.category,
+          active: body.active ?? true,
+          metadata: body.metadata
         })
         .select()
         .single();
 
-      if (partError || !part) {
-        throw new Error(`Failed to create part: ${partError?.message}`);
+      if (scrapReasonError || !scrapReason) {
+        throw new Error(`Failed to create scrap reason: ${scrapReasonError?.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { part }
+          data: { scrap_reason: scrapReason }
         }),
         { status: 201, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // PATCH method for updating parts
+    // Handle PATCH requests - update scrap reason
     if (req.method === 'PATCH') {
       const url = new URL(req.url);
-      const partId = url.searchParams.get('id');
+      const reasonId = url.searchParams.get('id');
 
-      if (!partId) {
+      if (!reasonId) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'Part ID is required in query string (?id=xxx)' }
+            error: { code: 'VALIDATION_ERROR', message: 'Scrap reason ID is required in query string (?id=xxx)' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       const body = await req.json();
-      const allowedFields = ['status', 'quantity', 'notes', 'metadata', 'file_paths', 'material_lot', 'material_supplier', 'material_cert_number'];
+      const allowedFields = ['code', 'description', 'category', 'active', 'metadata'];
       const updates: any = {};
 
       for (const field of allowedFields) {
@@ -330,12 +238,50 @@ serve(async (req) => {
         );
       }
 
+      // Validate category if being updated
+      if (updates.category) {
+        const validCategories = ['material', 'process', 'equipment', 'operator', 'design', 'other'];
+        if (!validCategories.includes(updates.category)) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: {
+                code: 'VALIDATION_ERROR',
+                message: `category must be one of: ${validCategories.join(', ')}`
+              }
+            }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+
+      // Check for duplicate code if updating code
+      if (updates.code) {
+        const { data: existingReason } = await supabase
+          .from('scrap_reasons')
+          .select('id')
+          .eq('tenant_id', tenantId)
+          .eq('code', updates.code)
+          .neq('id', reasonId)
+          .single();
+
+        if (existingReason) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: { code: 'DUPLICATE_CODE', message: `Scrap reason code ${updates.code} already exists` }
+            }),
+            { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+
       updates.updated_at = new Date().toISOString();
 
-      const { data: part, error } = await supabase
-        .from('parts')
+      const { data: scrapReason, error } = await supabase
+        .from('scrap_reasons')
         .update(updates)
-        .eq('id', partId)
+        .eq('id', reasonId)
         .eq('tenant_id', tenantId)
         .select()
         .single();
@@ -345,60 +291,62 @@ serve(async (req) => {
           return new Response(
             JSON.stringify({
               success: false,
-              error: { code: 'NOT_FOUND', message: 'Part not found' }
+              error: { code: 'NOT_FOUND', message: 'Scrap reason not found' }
             }),
             { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        throw new Error(`Failed to update part: ${error.message}`);
+        throw new Error(`Failed to update scrap reason: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { part }
+          data: { scrap_reason: scrapReason }
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // DELETE method for deleting parts
+    // Handle DELETE requests - delete scrap reason
     if (req.method === 'DELETE') {
       const url = new URL(req.url);
-      const partId = url.searchParams.get('id');
+      const reasonId = url.searchParams.get('id');
 
-      if (!partId) {
+      if (!reasonId) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'Part ID is required in query string (?id=xxx)' }
+            error: { code: 'VALIDATION_ERROR', message: 'Scrap reason ID is required in query string (?id=xxx)' }
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Check if part has child parts
-      const { data: childParts } = await supabase
-        .from('parts')
+      // Check if scrap reason is referenced by operation_quantities
+      const { data: references } = await supabase
+        .from('operation_quantities')
         .select('id')
-        .eq('parent_part_id', partId)
+        .eq('scrap_reason_id', reasonId)
         .limit(1);
 
-      if (childParts && childParts.length > 0) {
+      if (references && references.length > 0) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: { code: 'CONFLICT', message: 'Cannot delete part with child parts. Delete child parts first.' }
+            error: {
+              code: 'CONFLICT',
+              message: 'Cannot delete scrap reason that is referenced by operation quantities. Set active=false instead.'
+            }
           }),
           { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Delete part (cascade will delete operations)
       const { error } = await supabase
-        .from('parts')
+        .from('scrap_reasons')
         .delete()
-        .eq('id', partId)
+        .eq('id', reasonId)
         .eq('tenant_id', tenantId);
 
       if (error) {
@@ -406,18 +354,18 @@ serve(async (req) => {
           return new Response(
             JSON.stringify({
               success: false,
-              error: { code: 'NOT_FOUND', message: 'Part not found' }
+              error: { code: 'NOT_FOUND', message: 'Scrap reason not found' }
             }),
             { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        throw new Error(`Failed to delete part: ${error.message}`);
+        throw new Error(`Failed to delete scrap reason: ${error.message}`);
       }
 
       return new Response(
         JSON.stringify({
           success: true,
-          data: { message: 'Part deleted successfully' }
+          data: { message: 'Scrap reason deleted successfully' }
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -432,7 +380,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in api-parts:', error);
+    console.error('Error in api-scrap-reasons:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({

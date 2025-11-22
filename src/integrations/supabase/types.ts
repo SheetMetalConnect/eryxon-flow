@@ -828,6 +828,95 @@ export type Database = {
           },
         ]
       }
+      operation_quantities: {
+        Row: {
+          created_at: string
+          id: string
+          material_cert_number: string | null
+          material_lot: string | null
+          material_supplier: string | null
+          metadata: Json | null
+          notes: string | null
+          operation_id: string
+          quantity_good: number
+          quantity_produced: number
+          quantity_rework: number
+          quantity_scrap: number
+          recorded_at: string
+          recorded_by: string | null
+          scrap_reason_id: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          material_cert_number?: string | null
+          material_lot?: string | null
+          material_supplier?: string | null
+          metadata?: Json | null
+          notes?: string | null
+          operation_id: string
+          quantity_good?: number
+          quantity_produced?: number
+          quantity_rework?: number
+          quantity_scrap?: number
+          recorded_at?: string
+          recorded_by?: string | null
+          scrap_reason_id?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          material_cert_number?: string | null
+          material_lot?: string | null
+          material_supplier?: string | null
+          metadata?: Json | null
+          notes?: string | null
+          operation_id?: string
+          quantity_good?: number
+          quantity_produced?: number
+          quantity_rework?: number
+          quantity_scrap?: number
+          recorded_at?: string
+          recorded_by?: string | null
+          scrap_reason_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operation_quantities_operation_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: false
+            referencedRelation: "operations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_quantities_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_quantities_scrap_reason_id_fkey"
+            columns: ["scrap_reason_id"]
+            isOneToOne: false
+            referencedRelation: "scrap_reasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_quantities_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       parts: {
         Row: {
           created_at: string | null
@@ -837,6 +926,9 @@ export type Database = {
           image_paths: string[] | null
           job_id: string
           material: string
+          material_cert_number: string | null
+          material_lot: string | null
+          material_supplier: string | null
           metadata: Json | null
           notes: string | null
           parent_part_id: string | null
@@ -855,6 +947,9 @@ export type Database = {
           image_paths?: string[] | null
           job_id: string
           material: string
+          material_cert_number?: string | null
+          material_lot?: string | null
+          material_supplier?: string | null
           metadata?: Json | null
           notes?: string | null
           parent_part_id?: string | null
@@ -873,6 +968,9 @@ export type Database = {
           image_paths?: string[] | null
           job_id?: string
           material?: string
+          material_cert_number?: string | null
+          material_lot?: string | null
+          material_supplier?: string | null
           metadata?: Json | null
           notes?: string | null
           parent_part_id?: string | null
@@ -1008,6 +1106,50 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      scrap_reasons: {
+        Row: {
+          active: boolean
+          category: string
+          code: string
+          created_at: string
+          description: string
+          id: string
+          metadata: Json | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category: string
+          code: string
+          created_at?: string
+          description: string
+          id?: string
+          metadata?: Json | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          code?: string
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scrap_reasons_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       substep_template_items: {
         Row: {
@@ -1218,6 +1360,7 @@ export type Database = {
           operator_id: string
           start_time: string
           tenant_id: string
+          time_type: string
         }
         Insert: {
           created_at?: string | null
@@ -1230,6 +1373,7 @@ export type Database = {
           operator_id: string
           start_time?: string
           tenant_id: string
+          time_type?: string
         }
         Update: {
           created_at?: string | null
@@ -1242,6 +1386,7 @@ export type Database = {
           operator_id?: string
           start_time?: string
           tenant_id?: string
+          time_type?: string
         }
         Relationships: [
           {

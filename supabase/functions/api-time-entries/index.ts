@@ -75,6 +75,7 @@ serve(async (req) => {
       const operatorId = url.searchParams.get('operator_id');
       const startDate = url.searchParams.get('start_date');
       const endDate = url.searchParams.get('end_date');
+      const timeType = url.searchParams.get('time_type');
 
       let limit = parseInt(url.searchParams.get('limit') || '100');
       if (limit < 1) limit = 100;
@@ -125,6 +126,9 @@ serve(async (req) => {
       }
       if (endDate) {
         query = query.lte('start_time', endDate);
+      }
+      if (timeType) {
+        query = query.eq('time_type', timeType);
       }
 
       const { data: timeEntries, error, count } = await query;
@@ -217,6 +221,7 @@ serve(async (req) => {
           start_time: body.start_time,
           end_time: body.end_time,
           duration: duration,
+          time_type: body.time_type || 'run',
           notes: body.notes
         })
         .select()
@@ -251,7 +256,7 @@ serve(async (req) => {
       }
 
       const body = await req.json();
-      const allowedFields = ['end_time', 'duration', 'notes'];
+      const allowedFields = ['end_time', 'duration', 'time_type', 'notes'];
       const updates: any = {};
 
       for (const field of allowedFields) {
