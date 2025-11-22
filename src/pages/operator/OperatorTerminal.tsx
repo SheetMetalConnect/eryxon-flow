@@ -13,6 +13,7 @@ import { DetailPanel } from "@/components/terminal/DetailPanel";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTranslation } from "react-i18next";
+import { ChatAssistant } from "@/components/ChatAssistant";
 
 // Define the interface locally if not exported, matching the one in JobRow
 import { TerminalJob } from '@/types/terminal';
@@ -252,6 +253,7 @@ export default function OperatorTerminal() {
     };
 
     return (
+        <>
         <div className="flex h-screen w-full bg-background text-foreground overflow-hidden font-sans relative">
             {loading && (
                 <div className="absolute inset-0 bg-background/80 z-50 flex items-center justify-center backdrop-blur-sm">
@@ -422,5 +424,7 @@ export default function OperatorTerminal() {
                 )}
             </div>
         </div>
+        <ChatAssistant />
+    </>
     );
 }

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchOperationsWithDetails, OperationWithDetails } from "@/lib/database";
 import OperationCard from "@/components/operator/OperationCard";
 import CurrentlyTimingWidget from "@/components/operator/CurrentlyTimingWidget";
+import { ChatAssistant } from "@/components/ChatAssistant";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -429,6 +430,7 @@ export default function WorkQueue() {
           </div>
         </div>
       </div>
+      <ChatAssistant />
     </>
   );
 }
