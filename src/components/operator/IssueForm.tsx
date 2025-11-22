@@ -88,12 +88,13 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess }
         id: issueId,
         tenant_id: profile.tenant_id,
         operation_id: operationId,
-        reported_by_id: profile.id,
+        created_by: profile.id,
+        reported_by_id: profile.id, // Also set reported_by_id for API compatibility
         title: title.trim(),
         description: description.trim(),
         severity,
         issue_type: issueType,
-        status: 'open',
+        status: 'pending', // Use 'pending' status for admin queue
         image_paths: imagePaths.length > 0 ? imagePaths : null,
       };
 
