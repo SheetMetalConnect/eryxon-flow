@@ -9,7 +9,6 @@ import { ToastProvider } from "./components/mui/ToastNotification";
 import { NotificationToastProvider } from "./components/NotificationToastProvider";
 import AnimatedBackground from "./components/AnimatedBackground";
 import Auth from "./pages/Auth";
-import LanguageSelection from "./pages/LanguageSelection";
 import AcceptInvitation from "./pages/AcceptInvitation";
 import WorkQueue from "./pages/operator/WorkQueue";
 import MyActivity from "./pages/operator/MyActivity";
@@ -90,15 +89,6 @@ function AppRoutes() {
       <Route path="/accept-invitation/:token" element={<AcceptInvitation />} />
 
       <Route
-        path="/language-selection"
-        element={
-          <ProtectedRoute>
-            <LanguageSelection />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
         path="/onboarding"
         element={
           <ProtectedRoute>
@@ -112,10 +102,7 @@ function AppRoutes() {
         element={
           <Navigate
             to={
-              // Check language preference first
-              !(profile as any)?.language_preference
-                ? "/language-selection"
-                : (profile as any)?.onboarding_completed === false
+              (profile as any)?.onboarding_completed === false
                 ? "/onboarding"
                 : profile?.role === "admin"
                   ? "/admin/dashboard"

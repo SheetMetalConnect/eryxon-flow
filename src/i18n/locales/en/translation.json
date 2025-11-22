@@ -344,7 +344,79 @@
     "onboardingComplete": "Onboarding complete! Welcome to Eryxon MES 🎉",
     "needHelp": "Need help? Check out our",
     "documentation": "documentation",
-    "orContactSupport": "or contact support"
+    "orContactSupport": "or contact support",
+    "tour": {
+      "buttons": {
+        "back": "Back",
+        "close": "Close",
+        "last": "Finish",
+        "next": "Next",
+        "skip": "Skip Tour"
+      },
+      "admin": {
+        "welcome": {
+          "title": "Welcome to Eryxon MES! 👋",
+          "description": "This is your Admin Dashboard for managing your metal fabrication shop. Let's take a quick tour of the key features."
+        },
+        "sidebar": {
+          "title": "Navigation Sidebar",
+          "description": "Access all admin functions from here: Dashboard, Jobs, Parts, Issues, Assignments, and Configuration."
+        },
+        "stats": {
+          "title": "Real-time Metrics",
+          "description": "Monitor active jobs, parts in progress, ongoing operations, and reported issues at a glance."
+        },
+        "operations": {
+          "title": "Active Operations",
+          "description": "See what operators are currently working on in real-time. Track progress by cell/stage."
+        },
+        "jobs": {
+          "title": "Jobs Management",
+          "description": "Create and manage customer jobs. Each job contains parts that flow through your manufacturing cells."
+        },
+        "config": {
+          "title": "Configuration",
+          "description": "Set up your shop: add operators, define manufacturing cells/stages, configure API integrations, and customize workflows."
+        },
+        "complete": {
+          "title": "You're All Set! 🎉",
+          "description": "Eryxon MES organizes work by manufacturing stages (cutting, bending, welding, etc.) using Quick Response Manufacturing (QRM) principles.",
+          "description2": "Operators pull work when ready, and you get real-time visibility into the shop floor without walking around.",
+          "cta": "Explore the sample data or start creating your own jobs!"
+        }
+      },
+      "operator": {
+        "welcome": {
+          "title": "Welcome to Eryxon MES! 👋",
+          "description": "This is your Work Queue - your mobile-first interface for tracking manufacturing tasks. Let's show you around!"
+        },
+        "queue": {
+          "title": "Your Work Queue",
+          "description": "All operations assigned to you appear here, organized by manufacturing stage (cutting, bending, welding, etc.)."
+        },
+        "card": {
+          "title": "Operation Cards",
+          "description": "Each card shows the part, operation details, and status. Tap a card to see drawings, STEP files, and custom instructions."
+        },
+        "timer": {
+          "title": "Time Tracking",
+          "description": "Tap Start when you begin work and Stop when done. Simple, visual, and accurate time tracking."
+        },
+        "nav": {
+          "title": "Bottom Navigation",
+          "description": "Quickly switch between your Work Queue, My Activity (time entries), and Issues you've reported."
+        },
+        "complete": {
+          "title": "Ready to Work! 🔧",
+          "description": "Eryxon shows you what to work on, grouped by materials and stages - organized the way your shop runs.",
+          "description2": "Visual indicators (colors, images) make tasks instantly recognizable. Everything you need, nothing extra.",
+          "cta": "Start by selecting an operation from your queue!"
+        }
+      },
+      "completed": "Tour completed! You can restart it anytime from settings.",
+      "resetSuccess": "Tour reset! Refresh the page to start the tour again.",
+      "resetFailed": "Failed to restart tour"
+    }
   },
   "jobs": {
     "title": "Job Management",
