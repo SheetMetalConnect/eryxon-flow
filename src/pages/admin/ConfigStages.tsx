@@ -384,21 +384,23 @@ export default function ConfigStages() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold">{t("stages.title")}</h1>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+                {t("stages.title")}
+              </h1>
               {stages.length > 0 && (
-                <Badge variant="secondary" className="text-sm">
+                <Badge className="bg-primary/20 text-primary border-primary/30 text-sm px-3 py-1">
                   {stages.length} {stages.length === 1 ? t("common.stage", "stage") : t("common.stages", "stages")}
                 </Badge>
               )}
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-lg">
               {t("stages.manageStages")}
               {stages.length > 1 && (
-                <span className="text-xs ml-2">
+                <span className="text-sm ml-2 opacity-70">
                   ({t("stages.dragToReorder", "Drag to reorder")})
                 </span>
               )}
@@ -410,12 +412,12 @@ export default function ConfigStages() {
             if (!open) resetForm();
           }}>
             <DialogTrigger asChild>
-              <Button className="gap-2">
+              <Button className="cta-button gap-2">
                 <Plus className="h-4 w-4" />
                 {t("stages.createStage")}
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="glass-card">
               <DialogHeader>
                 <DialogTitle>
                   {editingStage ? t("stages.editStage") : t("stages.createNewStage")}
@@ -602,9 +604,11 @@ export default function ConfigStages() {
           </Dialog>
         </div>
 
+        <hr className="title-divider" />
+
         {/* Stages List */}
         {stages.length === 0 ? (
-          <Card className="border-dashed">
+          <Card className="glass-card border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-16">
               <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
                 <Factory className="h-8 w-8 text-muted-foreground" />
@@ -655,7 +659,7 @@ export default function ConfigStages() {
 
         {/* Delete Confirmation Dialog */}
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <AlertDialogContent>
+          <AlertDialogContent className="glass-card">
             <AlertDialogHeader>
               <AlertDialogTitle>{t("stages.deleteStage")}</AlertDialogTitle>
               <AlertDialogDescription>

@@ -188,11 +188,13 @@ export default function ConfigResources() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">{t('resources.title')}</h1>
-            <p className="text-muted-foreground">{t('resources.description')}</p>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+              {t('resources.title')}
+            </h1>
+            <p className="text-muted-foreground text-lg">{t('resources.description')}</p>
           </div>
 
           <Dialog open={dialogOpen} onOpenChange={(open) => {
@@ -200,12 +202,12 @@ export default function ConfigResources() {
             if (!open) resetForm();
           }}>
             <DialogTrigger asChild>
-              <Button className="gap-2">
+              <Button className="cta-button gap-2">
                 <Plus className="h-4 w-4" />
                 {t('resources.addResource')}
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="glass-card max-w-2xl">
               <DialogHeader>
                 <DialogTitle>
                   {editingResource ? t('resources.editResource') : t('resources.createResource')}
@@ -348,6 +350,8 @@ export default function ConfigResources() {
           </Dialog>
         </div>
 
+        <hr className="title-divider" />
+
         {/* Filter Tabs */}
         <div className="flex gap-2 flex-wrap">
           <Button
@@ -374,7 +378,7 @@ export default function ConfigResources() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredResources.map((resource) => (
-            <Card key={resource.id} className="hover:shadow-lg transition-shadow">
+            <Card key={resource.id} className="glass-card hover:shadow-xl hover:scale-105 transition-all hover:border-white/20">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

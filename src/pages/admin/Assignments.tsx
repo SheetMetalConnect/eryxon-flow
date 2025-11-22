@@ -350,16 +350,20 @@ export default function Assignments() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-8 p-6">
       <div>
-        <h1 className="text-3xl font-bold">{t("assignments.title")}</h1>
-        <p className="text-muted-foreground">{t("assignments.description")}</p>
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+          {t("assignments.title")}
+        </h1>
+        <p className="text-muted-foreground text-lg">{t("assignments.description")}</p>
       </div>
 
+      <hr className="title-divider" />
+
       {/* Assignment Interface */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Available Parts */}
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle className="text-lg">{t("assignments.availableParts")}</CardTitle>
           </CardHeader>
@@ -397,7 +401,7 @@ export default function Assignments() {
         </Card>
 
         {/* Operators */}
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle className="text-lg">{t("assignments.assignToOperator")}</CardTitle>
           </CardHeader>
@@ -417,7 +421,7 @@ export default function Assignments() {
             <Button
               onClick={handleAssign}
               disabled={!selectedPart || !selectedOperator || assigning}
-              className="w-full mt-4"
+              className="w-full mt-4 cta-button"
               size="lg"
             >
               <UserCheck className="h-4 w-4 mr-2" />
@@ -428,14 +432,19 @@ export default function Assignments() {
       </div>
 
       {/* Current Assignments Table */}
-      <Card>
+      <Card className="glass-card">
         <CardHeader>
-          <CardTitle>{t("assignments.currentAssignments")}</CardTitle>
+          <CardTitle className="text-xl flex items-center gap-2">
+            <UserCheck className="h-5 w-5 text-primary" />
+            {t("assignments.currentAssignments")}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {assignments.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              {t("assignments.noActiveAssignments")}
+            <div className="text-center py-12">
+              <div className="informational-text max-w-md mx-auto">
+                {t("assignments.noActiveAssignments")}
+              </div>
             </div>
           ) : (
             <DataTable
