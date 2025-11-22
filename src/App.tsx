@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { NotificationToastProvider } from "./components/NotificationToastProvider";
+import { McpActivityToasts } from "./components/admin/McpActivityToasts";
 import Auth from "./pages/Auth";
 import AcceptInvitation from "./pages/AcceptInvitation";
 import WorkQueue from "./pages/operator/WorkQueue";
@@ -508,6 +509,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <NotificationToastProvider>
+            <McpActivityToasts />
             <AppRoutes />
           </NotificationToastProvider>
         </AuthProvider>

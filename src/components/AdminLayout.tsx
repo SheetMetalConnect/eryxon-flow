@@ -47,7 +47,6 @@ import { usePendingIssuesCount } from "@/hooks/usePendingIssuesCount";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { McpServerStatus } from "@/components/admin/McpServerStatus";
-import { McpActivityToasts } from "@/components/admin/McpActivityToasts";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -569,7 +568,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <>
       <AnimatedBackground />
-      <McpActivityToasts />
       <div className="relative flex h-screen overflow-hidden bg-background">
       {/* Mobile Menu Button */}
       <Button

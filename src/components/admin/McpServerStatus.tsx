@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 import {
   Tooltip,
   TooltipContent,
@@ -21,9 +22,10 @@ export function McpServerStatus() {
   const { tenant } = useAuth();
   const [health, setHealth] = useState<McpServerHealth>({ status: "unknown" });
   const [isLoading, setIsLoading] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
 
-  const fetchHealth = async () => {
-    if (!tenant?.id) return;
+  const fetchHealthWithRetry = async (attempt = 0, maxRetries = 3): Promise<boolean> => {
+    if (!tenant?.id) return false;
 
     try {
       const { data, error } = await supabase
@@ -36,8 +38,21 @@ export function McpServerStatus() {
 
       if (error) {
         console.error("Error fetching MCP health:", error);
+
+        // Retry with exponential backoff on error
+        if (attempt < maxRetries) {
+          const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
+          console.log(`Retrying health check in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return fetchHealthWithRetry(attempt + 1, maxRetries);
+        }
+
         setHealth({ status: "unknown" });
-        return;
+        // Only show toast on first load after all retries exhausted
+        if (isLoading) {
+          toast.error("Failed to load MCP server status after retries");
+        }
+        return false;
       }
 
       if (data) {
@@ -47,21 +62,42 @@ export function McpServerStatus() {
           response_time_ms: data.response_time_ms,
           error_message: data.error_message,
         });
+        setRetryCount(0); // Reset retry count on success
+        return true;
       } else {
         setHealth({ status: "unknown" });
+        return true; // No error, just no data
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error fetching MCP health:", err);
+
+      // Retry with exponential backoff on exception
+      if (attempt < maxRetries) {
+        const delay = Math.pow(2, attempt) * 1000;
+        console.log(`Retrying health check in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return fetchHealthWithRetry(attempt + 1, maxRetries);
+      }
+
       setHealth({ status: "unknown" });
+      // Only show toast on first load after all retries exhausted
+      if (isLoading) {
+        toast.error("Failed to load MCP status: " + (err.message || "Unknown error"));
+      }
+      return false;
     } finally {
       setIsLoading(false);
     }
   };
 
+  const fetchHealth = () => fetchHealthWithRetry(0, 3);
+
   useEffect(() => {
+    if (!tenant?.id) return;
+
     fetchHealth();
 
-    // Subscribe to real-time updates
+    // Subscribe to real-time updates for immediate health status changes
     const channel = supabase
       .channel("mcp_health_changes")
       .on(
@@ -73,17 +109,20 @@ export function McpServerStatus() {
           filter: `tenant_id=eq.${tenant?.id}`,
         },
         () => {
-          fetchHealth();
+          // Fetch health without retries on real-time updates (subscription already handles reconnection)
+          fetchHealthWithRetry(0, 0);
         }
       )
-      .subscribe();
-
-    // Poll every 30 seconds
-    const interval = setInterval(fetchHealth, 30000);
+      .subscribe((status) => {
+        if (status === 'SUBSCRIPTION_ERROR') {
+          console.error('MCP health subscription error');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('MCP health channel error');
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
-      clearInterval(interval);
     };
   }, [tenant?.id]);
 
