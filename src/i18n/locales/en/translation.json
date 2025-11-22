@@ -250,7 +250,7 @@
       "description": "Start with our free plan and upgrade anytime as your shop grows",
       "free": {
         "name": "Free",
-        "price": "$0",
+        "price": "€0",
         "period": "forever",
         "description": "Perfect for getting started",
         "features": [
@@ -327,8 +327,8 @@
     "proPlan": "Pro Plan",
     "bestForSmallTeams": "Best for Small Teams",
     "mostPopular": "Most Popular",
-    "freePrice": "$0",
-    "proPrice": "$49",
+    "freePrice": "€0",
+    "proPrice": "€149",
     "perMonth": "/month",
     "freePlanDescription": "Perfect for getting started with Eryxon MES",
     "proPlanDescription": "Advanced features for growing metal fabrication shops",
@@ -1198,14 +1198,18 @@
         "title": "Payments via Stripe",
         "description": "All payments are processed securely via Stripe with support for SEPA Direct Debit and credit cards. Pricing is in Euros. Fully automated billing and invoicing."
       },
-      "selfService": {
-        "title": "Self-Service Setup",
-        "description": "Sign up, configure your stages and materials, and start tracking production. No sales calls, no complex onboarding. Documentation and email support only."
+      "setup": {
+        "title": "Getting Started",
+        "description": "Sign up and start using the platform immediately. For upgrades or custom requirements, contact us at office@sheetmetalconnect.com - we're here to help!"
       },
       "upgrade": {
-        "title": "Interested in Pro or On-Premise?",
+        "title": "Interested in Pro or Premium?",
         "description": "Contact us at"
       }
+    },
+    "euHosting": {
+      "title": "European Union Hosting",
+      "description": "All data is hosted on secure European servers in Superna, ensuring GDPR compliance and data sovereignty for our European customers."
     }
   },
   "myPlan": {
@@ -1227,8 +1231,6 @@
     "managePayment": "Manage Payment Method",
     "manufacturingCells": "Manufacturing Cells",
     "mostPopular": "Most Popular",
-    "multiTenant": "Multi-Tenant",
-    "multiTenantDescription": "Shared infrastructure with dedicated data isolation",
     "nextBillingDate": "Next Billing Date",
     "noSalesCalls": "No sales calls required",
     "operators": "Operators",
@@ -1241,8 +1243,6 @@
     "planFeatures": "Plan Features",
     "readyToUpgrade": "Ready to upgrade?",
     "requestUpgrade": "Request Upgrade",
-    "singleTenant": "Single-Tenant",
-    "singleTenantDescription": "Dedicated infrastructure for maximum control and security",
     "status": "Status",
     "storage": "Storage",
     "subtitle": "Manage your subscription and usage",
@@ -1250,12 +1250,16 @@
     "unlimited": "Unlimited",
     "unknown": "Unknown",
     "upgrade": "Upgrade Plan",
-    "upgradeFromFree": "Upgrade from Free",
-    "upgradeFromPro": "Upgrade from Pro",
+    "upgradeFromFree": "Unlock higher limits and priority support with Pro",
+    "upgradeFromPro": "Get dedicated infrastructure and custom integrations with Premium",
     "upgradePlan": "Upgrade Plan",
     "usage": "Usage",
     "usageThisMonth": "Usage This Month",
-    "users": "Users"
+    "users": "Users",
+    "upgradeRequest": {
+      "subject": "Upgrade Request: {{planName}} Tier",
+      "body": "Hello,\n\nI would like to request an upgrade to the {{planName}} tier.\n\nCurrent Plan: {{currentPlan}}\nTenant ID: {{tenantId}}\n\nPlease provide me with more information about the upgrade process.\n\nThank you!"
+    }
   },
   "myActivity": {
     "title": "My Activity",
