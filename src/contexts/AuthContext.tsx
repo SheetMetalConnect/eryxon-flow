@@ -34,7 +34,7 @@ interface AuthContextType {
   tenant: TenantInfo | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, userData: Partial<Profile>) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, userData: Partial<Profile> & { company_name?: string }) => Promise<{ error: Error | null; data?: any }>;
   signOut: () => Promise<void>;
   switchTenant: (tenantId: string) => Promise<void>;
   refreshTenant: () => Promise<void>;
@@ -163,13 +163,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (
     email: string,
     password: string,
-    userData: Partial<Profile>
+    userData: Partial<Profile> & { company_name?: string }
   ) => {
     try {
       // Generate username from email (part before @)
       const username = email.split('@')[0];
-      
-      const { error } = await supabase.auth.signUp({
+
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -179,10 +179,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             full_name: userData.full_name,
             role: userData.role || "operator",
             tenant_id: userData.tenant_id,
+            company_name: userData.company_name,
           },
         },
       });
-      return { error };
+      return { error, data };
     } catch (error) {
       return { error: error as Error };
     }

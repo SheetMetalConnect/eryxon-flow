@@ -9,6 +9,7 @@ import { ToastProvider } from "./components/mui/ToastNotification";
 import { NotificationToastProvider } from "./components/NotificationToastProvider";
 import AnimatedBackground from "./components/AnimatedBackground";
 import Auth from "./pages/Auth";
+import AcceptInvitation from "./pages/AcceptInvitation";
 import WorkQueue from "./pages/operator/WorkQueue";
 import MyActivity from "./pages/operator/MyActivity";
 import MyIssues from "./pages/operator/MyIssues";
@@ -19,6 +20,7 @@ import ConfigStages from "./pages/admin/ConfigStages";
 import ConfigMaterials from "./pages/admin/ConfigMaterials";
 import ConfigResources from "./pages/admin/ConfigResources";
 import ConfigUsers from "./pages/admin/ConfigUsers";
+import OrganizationSettings from "./pages/admin/OrganizationSettings";
 import Assignments from "./pages/admin/Assignments";
 import ConfigApiKeys from "./pages/admin/ConfigApiKeys";
 import ConfigWebhooks from "./pages/admin/ConfigWebhooks";
@@ -83,6 +85,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/auth" element={<Auth />} />
+      <Route path="/accept-invitation/:token" element={<AcceptInvitation />} />
 
       <Route
         path="/onboarding"
@@ -214,6 +217,17 @@ function AppRoutes() {
           <ProtectedRoute adminOnly>
             <Layout>
               <ConfigUsers />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/organization/settings"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <OrganizationSettings />
             </Layout>
           </ProtectedRoute>
         }

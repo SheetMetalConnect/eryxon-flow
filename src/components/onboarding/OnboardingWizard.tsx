@@ -4,15 +4,17 @@ import { Check } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PlanSelection, PlanType } from './PlanSelection';
 import { MockDataImport } from './MockDataImport';
+import { TeamSetup } from './TeamSetup';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSubscription } from '@/hooks/useSubscription';
 
 const steps = [
-  { id: 1, name: 'Choose Plan', description: 'Select your subscription' },
-  { id: 2, name: 'Sample Data', description: 'Import demo content' },
-  { id: 3, name: 'Complete', description: 'Start using Eryxon' },
+  { id: 1, name: 'Build Team', description: 'Invite your team' },
+  { id: 2, name: 'Choose Plan', description: 'Select your subscription' },
+  { id: 3, name: 'Sample Data', description: 'Import demo content' },
+  { id: 4, name: 'Complete', description: 'Start using Eryxon' },
 ];
 
 export function OnboardingWizard() {
@@ -57,6 +59,16 @@ export function OnboardingWizard() {
     }
   };
 
+  const handleTeamSetupComplete = async () => {
+    await updateOnboardingProgress(2);
+    setCurrentStep(2);
+  };
+
+  const handleTeamSetupSkip = async () => {
+    await updateOnboardingProgress(2);
+    setCurrentStep(2);
+  };
+
   const handlePlanSelect = async (plan: PlanType) => {
     setSelectedPlan(plan);
 
@@ -80,12 +92,12 @@ export function OnboardingWizard() {
       }
     }
 
-    await updateOnboardingProgress(2);
-    setCurrentStep(2);
+    await updateOnboardingProgress(3);
+    setCurrentStep(3);
   };
 
   const handleMockDataComplete = async () => {
-    await updateOnboardingProgress(3, {
+    await updateOnboardingProgress(4, {
       mock_data_imported: true,
       onboarding_completed: true,
     });
@@ -93,7 +105,7 @@ export function OnboardingWizard() {
   };
 
   const handleMockDataSkip = async () => {
-    await updateOnboardingProgress(3, {
+    await updateOnboardingProgress(4, {
       mock_data_imported: false,
       onboarding_completed: true,
     });
@@ -199,9 +211,12 @@ export function OnboardingWizard() {
         <Card className="max-w-6xl mx-auto border-2">
           <CardContent className="p-8 sm:p-12">
             {currentStep === 1 && (
-              <PlanSelection onPlanSelect={handlePlanSelect} defaultPlan={selectedPlan} />
+              <TeamSetup onComplete={handleTeamSetupComplete} onSkip={handleTeamSetupSkip} />
             )}
             {currentStep === 2 && (
+              <PlanSelection onPlanSelect={handlePlanSelect} defaultPlan={selectedPlan} />
+            )}
+            {currentStep === 3 && (
               <MockDataImport onComplete={handleMockDataComplete} onSkip={handleMockDataSkip} />
             )}
           </CardContent>
