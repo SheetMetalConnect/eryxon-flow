@@ -8,9 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Loader2, Mail, UserPlus } from "lucide-react";
+import { Plus, Edit, Loader2, Mail, UserPlus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { DataTable, DataTableColumnHeader, DataTableFilterableColumn } from "@/components/ui/data-table";
@@ -34,6 +34,7 @@ export default function ConfigUsers() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [operatorDialogOpen, setOperatorDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [formData, setFormData] = useState({
     username: "",
@@ -42,12 +43,20 @@ export default function ConfigUsers() {
     password: "",
     role: "operator" as "operator" | "admin",
     is_machine: false,
-    no_email_login: false,
+  });
+
+  // Quick invite form
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<"operator" | "admin">("operator");
+  const [inviting, setInviting] = useState(false);
+
+  // Quick operator form
+  const [operatorForm, setOperatorForm] = useState({
+    full_name: "",
     employee_id: "",
     pin: "",
   });
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState<"operator" | "admin">("operator");
+  const [creatingOperator, setCreatingOperator] = useState(false);
 
   useEffect(() => {
     if (!profile?.tenant_id) return;
@@ -87,40 +96,25 @@ export default function ConfigUsers() {
 
         toast.success(t("users.userUpdated"));
       } else {
-        if (formData.no_email_login) {
-          // Create operator with PIN (no email)
-          const employeeId = formData.employee_id || `OPR-${Date.now().toString().slice(-6)}`;
+        // Create new user with email
+        const username = formData.email.split('@')[0];
 
-          const { error } = await supabase.rpc('create_operator_with_pin' as any, {
-            p_full_name: formData.full_name,
-            p_employee_id: employeeId,
-            p_pin: formData.pin,
-            p_role: formData.role,
-          });
-
-          if (error) throw error;
-          toast.success(`Operator created: ${employeeId}`);
-        } else {
-          // Create new user with email - generate username from email
-          const username = formData.email.split('@')[0];
-
-          const { error: authError } = await supabase.auth.signUp({
-            email: formData.email,
-            password: formData.password,
-            options: {
-              data: {
-                username,
-                full_name: formData.full_name,
-                role: formData.role,
-                tenant_id: profile.tenant_id,
-                is_machine: formData.is_machine,
-              },
+        const { error: authError } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              username,
+              full_name: formData.full_name,
+              role: formData.role,
+              tenant_id: profile.tenant_id,
+              is_machine: formData.is_machine,
             },
-          });
+          },
+        });
 
-          if (authError) throw authError;
-          toast.success(t("users.userCreated"));
-        }
+        if (authError) throw authError;
+        toast.success(t("users.userCreated"));
       }
 
       setDialogOpen(false);
@@ -138,10 +132,66 @@ export default function ConfigUsers() {
       return;
     }
 
-    await createInvitation(inviteEmail, inviteRole);
-    setInviteDialogOpen(false);
-    setInviteEmail('');
-    setInviteRole('operator');
+    setInviting(true);
+    try {
+      await createInvitation(inviteEmail, inviteRole);
+      setInviteDialogOpen(false);
+      setInviteEmail('');
+      setInviteRole('operator');
+      toast.success('Invitation sent successfully!');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send invitation');
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const handleCreateOperator = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!operatorForm.full_name.trim()) {
+      toast.error("Please enter operator name");
+      return;
+    }
+
+    if (!operatorForm.pin || operatorForm.pin.length < 4 || operatorForm.pin.length > 6) {
+      toast.error("PIN must be 4-6 digits");
+      return;
+    }
+
+    if (!/^\d+$/.test(operatorForm.pin)) {
+      toast.error("PIN must contain only numbers");
+      return;
+    }
+
+    setCreatingOperator(true);
+
+    try {
+      const employeeId = operatorForm.employee_id.trim() || `OPR-${Date.now().toString().slice(-6)}`;
+
+      const { error } = await supabase.rpc('create_operator_with_pin' as any, {
+        p_full_name: operatorForm.full_name,
+        p_employee_id: employeeId,
+        p_pin: operatorForm.pin,
+        p_role: 'operator',
+      });
+
+      if (error) throw error;
+
+      toast.success(`Operator created: ${employeeId}`);
+      setOperatorDialogOpen(false);
+      setOperatorForm({
+        full_name: "",
+        employee_id: "",
+        pin: "",
+      });
+      loadUsers();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create operator");
+      console.error("Error creating operator:", error);
+    } finally {
+      setCreatingOperator(false);
+    }
   };
 
   const resetForm = () => {
@@ -152,9 +202,6 @@ export default function ConfigUsers() {
       password: "",
       role: "operator",
       is_machine: false,
-      no_email_login: false,
-      employee_id: "",
-      pin: "",
     });
     setEditingUser(null);
   };
@@ -168,9 +215,6 @@ export default function ConfigUsers() {
       password: "",
       role: user.role,
       is_machine: user.is_machine,
-      no_email_login: false,
-      employee_id: "",
-      pin: "",
     });
     setDialogOpen(true);
   };
@@ -204,7 +248,7 @@ export default function ConfigUsers() {
         <div className="flex items-center gap-2">
           {row.getValue("full_name")}
           {row.original.is_machine && (
-            <Badge variant="outline">{t("users.machine")}</Badge>
+            <Badge variant="outline" className="text-xs">{t("users.machine")}</Badge>
           )}
         </div>
       ),
@@ -213,6 +257,9 @@ export default function ConfigUsers() {
       accessorKey: "email",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t("users.email")} />
+      ),
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">{row.getValue("email")}</span>
       ),
     },
     {
@@ -240,7 +287,7 @@ export default function ConfigUsers() {
       cell: ({ row }) => {
         const active = row.getValue("active") as boolean;
         return (
-          <Badge variant={active ? "default" : "secondary"}>
+          <Badge variant={active ? "default" : "secondary"} className="text-xs">
             {active ? t("users.active") : t("users.inactive")}
           </Badge>
         );
@@ -256,24 +303,26 @@ export default function ConfigUsers() {
       cell: ({ row }) => {
         const user = row.original;
         return (
-          <div className="flex gap-2">
+          <div className="flex gap-1">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
                 handleEdit(user);
               }}
+              className="h-8 w-8 p-0"
             >
-              <Edit className="h-4 w-4" />
+              <Edit className="h-3.5 w-3.5" />
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
                 toggleActive(user.id, user.active);
               }}
+              className="h-8 px-2 text-xs"
             >
               {user.active ? t("users.deactivate") : t("users.activate")}
             </Button>
@@ -311,42 +360,64 @@ export default function ConfigUsers() {
   }
 
   return (
-    <div className="p-6 space-y-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
-              {t("users.title")}
-            </h1>
-            <p className="text-muted-foreground text-lg">{t("users.manageUsers")}</p>
-          </div>
+    <div className="container max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+            {t("users.title")}
+          </h1>
+          <p className="text-muted-foreground text-base sm:text-lg">{t("users.manageUsers")}</p>
+        </div>
+      </div>
 
-          <div className="flex gap-2">
-            {/* Invite User Dialog */}
+      <hr className="title-divider" />
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Invite Team Member */}
+        <Card className="glass-card border-primary/20 hover:border-primary/40 transition-colors">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Mail className="h-5 w-5 text-primary" />
+              </div>
+              Invite Team Member
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Send an email invitation to a colleague to join your organization.
+            </p>
             <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" className="w-full gap-2">
                   <Mail className="h-4 w-4" />
-                  Invite User
+                  Send Invite
                 </Button>
               </DialogTrigger>
-              <DialogContent className="glass-card">
+              <DialogContent className="glass-card max-w-md">
                 <DialogHeader>
                   <DialogTitle>Invite Team Member</DialogTitle>
+                  <DialogDescription>
+                    Send an invitation email to add a new team member.
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="inviteEmail">Email Address *</Label>
+                    <Label htmlFor="inviteEmail">Email Address</Label>
                     <Input
                       id="inviteEmail"
                       type="email"
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
                       placeholder="colleague@example.com"
+                      className="bg-[rgba(17,25,40,0.75)] border-white/10"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="inviteRole">Role *</Label>
+                    <Label htmlFor="inviteRole">Role</Label>
                     <Select
                       value={inviteRole}
                       onValueChange={(value: "operator" | "admin") => setInviteRole(value)}
@@ -361,188 +432,269 @@ export default function ConfigUsers() {
                     </Select>
                   </div>
 
-                  <Button onClick={handleSendInvite} className="w-full gap-2">
-                    <Mail className="h-4 w-4" />
-                    Send Invitation
+                  <Button
+                    onClick={handleSendInvite}
+                    className="w-full cta-button gap-2"
+                    disabled={inviting}
+                  >
+                    {inviting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="h-4 w-4" />
+                        Send Invitation
+                      </>
+                    )}
                   </Button>
                 </div>
               </DialogContent>
             </Dialog>
+          </CardContent>
+        </Card>
 
-            {/* Create User Dialog */}
+        {/* Create Operator (No Email) */}
+        <Card className="glass-card border-primary/20 hover:border-primary/40 transition-colors">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <UserPlus className="h-5 w-5 text-primary" />
+              </div>
+              Create Operator
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Quickly create an operator account with PIN login (no email required).
+            </p>
+            <Dialog open={operatorDialogOpen} onOpenChange={setOperatorDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  Create Now
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-card max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Create New Operator</DialogTitle>
+                  <DialogDescription>
+                    Create an operator account with PIN-based login.
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleCreateOperator} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="op_full_name">Full Name *</Label>
+                    <Input
+                      id="op_full_name"
+                      value={operatorForm.full_name}
+                      onChange={(e) => setOperatorForm({ ...operatorForm, full_name: e.target.value })}
+                      placeholder="John Smith"
+                      required
+                      className="bg-[rgba(17,25,40,0.75)] border-white/10"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="op_employee_id">
+                      Employee ID{' '}
+                      <span className="text-muted-foreground text-xs">(optional)</span>
+                    </Label>
+                    <Input
+                      id="op_employee_id"
+                      value={operatorForm.employee_id}
+                      onChange={(e) => setOperatorForm({ ...operatorForm, employee_id: e.target.value })}
+                      placeholder="Auto-generated if empty"
+                      className="bg-[rgba(17,25,40,0.75)] border-white/10"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="op_pin">PIN (4-6 digits) *</Label>
+                    <Input
+                      id="op_pin"
+                      type="password"
+                      value={operatorForm.pin}
+                      onChange={(e) => setOperatorForm({ ...operatorForm, pin: e.target.value })}
+                      placeholder="1234"
+                      required
+                      minLength={4}
+                      maxLength={6}
+                      className="bg-[rgba(17,25,40,0.75)] border-white/10"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Operators will use Employee ID + PIN to login
+                    </p>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full cta-button gap-2"
+                    disabled={creatingOperator}
+                  >
+                    {creatingOperator ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="h-4 w-4" />
+                        Create Operator
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </CardContent>
+        </Card>
+
+        {/* Advanced User Creation */}
+        <Card className="glass-card border-muted/30 hover:border-muted/50 transition-colors">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-muted/10">
+                <Plus className="h-5 w-5 text-muted-foreground" />
+              </div>
+              Advanced Options
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Create users with custom settings and machine accounts.
+            </p>
             <Dialog open={dialogOpen} onOpenChange={(open) => {
               setDialogOpen(open);
               if (!open) resetForm();
             }}>
               <DialogTrigger asChild>
-                <Button className="cta-button gap-2">
+                <Button variant="outline" className="w-full gap-2">
                   <Plus className="h-4 w-4" />
                   {t("users.createUser")}
                 </Button>
               </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  {editingUser ? t("users.editUser") : t("users.createNewUser")}
-                </DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="full_name">{t("users.fullName")} *</Label>
-                  <Input
-                    id="full_name"
-                    value={formData.full_name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, full_name: e.target.value })
-                    }
-                    required
-                    placeholder={t("users.fullNamePlaceholder")}
-                  />
-                </div>
+              <DialogContent className="glass-card max-w-md max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>
+                    {editingUser ? t("users.editUser") : t("users.createNewUser")}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {editingUser ? "Update user information" : "Create a new user with email login"}
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="full_name">{t("users.fullName")} *</Label>
+                    <Input
+                      id="full_name"
+                      value={formData.full_name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, full_name: e.target.value })
+                      }
+                      required
+                      placeholder={t("users.fullNamePlaceholder")}
+                      className="bg-[rgba(17,25,40,0.75)] border-white/10"
+                    />
+                  </div>
 
-                {!editingUser && (
-                  <>
-                    <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                      <Label htmlFor="no_email_login">Operator without Email (PIN Login)</Label>
-                      <Switch
-                        id="no_email_login"
-                        checked={formData.no_email_login}
-                        onCheckedChange={(checked) =>
-                          setFormData({ ...formData, no_email_login: checked })
-                        }
-                      />
-                    </div>
+                  {!editingUser && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">{t("users.email")} *</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) =>
+                            setFormData({ ...formData, email: e.target.value })
+                          }
+                          required
+                          placeholder={t("users.emailPlaceholder")}
+                          className="bg-[rgba(17,25,40,0.75)] border-white/10"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          {t("users.usernameAutoGenerated")}
+                        </p>
+                      </div>
 
-                    {formData.no_email_login ? (
-                      <>
-                        <div className="space-y-2">
-                          <Label htmlFor="employee_id">
-                            Employee ID{' '}
-                            <span className="text-muted-foreground text-xs">(auto-generated if empty)</span>
-                          </Label>
-                          <Input
-                            id="employee_id"
-                            value={formData.employee_id}
-                            onChange={(e) =>
-                              setFormData({ ...formData, employee_id: e.target.value })
-                            }
-                            placeholder="OPR-123456"
-                          />
-                        </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="password">{t("users.password")} *</Label>
+                        <Input
+                          id="password"
+                          type="password"
+                          value={formData.password}
+                          onChange={(e) =>
+                            setFormData({ ...formData, password: e.target.value })
+                          }
+                          required
+                          minLength={6}
+                          placeholder={t("users.passwordPlaceholder")}
+                          className="bg-[rgba(17,25,40,0.75)] border-white/10"
+                        />
+                      </div>
+                    </>
+                  )}
 
-                        <div className="space-y-2">
-                          <Label htmlFor="pin">PIN (4-6 digits) *</Label>
-                          <Input
-                            id="pin"
-                            type="password"
-                            value={formData.pin}
-                            onChange={(e) =>
-                              setFormData({ ...formData, pin: e.target.value })
-                            }
-                            required
-                            minLength={4}
-                            maxLength={6}
-                            placeholder="1234"
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="space-y-2">
-                          <Label htmlFor="email">{t("users.email")} *</Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) =>
-                              setFormData({ ...formData, email: e.target.value })
-                            }
-                            required
-                            placeholder={t("users.emailPlaceholder")}
-                          />
-                          <p className="text-xs text-muted-foreground">
-                            {t("users.usernameAutoGenerated")}
-                          </p>
-                        </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="role">{t("users.role")} *</Label>
+                    <Select
+                      value={formData.role}
+                      onValueChange={(value: "operator" | "admin") =>
+                        setFormData({ ...formData, role: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="operator">{t("users.roles.operator")}</SelectItem>
+                        <SelectItem value="admin">{t("users.roles.admin")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="password">{t("users.password")} *</Label>
-                          <Input
-                            id="password"
-                            type="password"
-                            value={formData.password}
-                            onChange={(e) =>
-                              setFormData({ ...formData, password: e.target.value })
-                            }
-                            required
-                            minLength={6}
-                            placeholder={t("users.passwordPlaceholder")}
-                          />
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
+                  <div className="flex items-center justify-between p-3 bg-muted/10 rounded-lg">
+                    <Label htmlFor="is_machine" className="text-sm">{t("users.machineAutomatedProcess")}</Label>
+                    <Switch
+                      id="is_machine"
+                      checked={formData.is_machine}
+                      onCheckedChange={(checked) =>
+                        setFormData({ ...formData, is_machine: checked })
+                      }
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="role">{t("users.role")} *</Label>
-                  <Select
-                    value={formData.role}
-                    onValueChange={(value: "operator" | "admin") =>
-                      setFormData({ ...formData, role: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="operator">{t("users.roles.operator")}</SelectItem>
-                      <SelectItem value="admin">{t("users.roles.admin")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="is_machine">{t("users.machineAutomatedProcess")}</Label>
-                  <Switch
-                    id="is_machine"
-                    checked={formData.is_machine}
-                    onCheckedChange={(checked) =>
-                      setFormData({ ...formData, is_machine: checked })
-                    }
-                  />
-                </div>
-
-                <Button type="submit" className="w-full">
-                  {editingUser ? t("users.updateUser") : t("users.createUser")}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        <hr className="title-divider" />
-
-        {/* Users Table */}
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="text-xl flex items-center gap-2">
-              <UserPlus className="h-5 w-5 text-primary" />
-              {t("users.title")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DataTable
-              columns={columns}
-              data={users}
-              filterableColumns={filterableColumns}
-              searchPlaceholder={t("users.searchUsers") || "Search users..."}
-              pageSize={10}
-              emptyMessage={t("users.noUsersFound") || "No users found."}
-            />
+                  <Button type="submit" className="w-full cta-button">
+                    {editingUser ? t("users.updateUser") : t("users.createUser")}
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
       </div>
+
+      {/* Users Table */}
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle className="text-xl flex items-center gap-2">
+            <Users className="h-5 w-5 text-primary" />
+            All Users ({users.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0 sm:p-6">
+          <DataTable
+            columns={columns}
+            data={users}
+            filterableColumns={filterableColumns}
+            searchPlaceholder={t("users.searchUsers") || "Search users..."}
+            pageSize={10}
+            emptyMessage={t("users.noUsersFound") || "No users found."}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }
