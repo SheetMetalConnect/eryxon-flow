@@ -5,6 +5,7 @@ import { Check, Mail, Shield, Server, Users, Zap, ArrowRight } from "lucide-reac
 import { useSubscription } from "@/hooks/useSubscription";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import AnimatedBackground from "@/components/AnimatedBackground";
 
 const pricingTiers = [
   {
@@ -66,13 +67,15 @@ Thank you!`;
   const isCurrentPlan = (tierId: string) => tierId === currentPlan;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold tracking-tight">{t("pricing.title")}</h1>
-        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          {t("pricing.subtitle")}
-        </p>
+    <>
+      <AnimatedBackground />
+      <div className="relative space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl font-bold tracking-tight">{t("pricing.title")}</h1>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            {t("pricing.subtitle")}
+          </p>
         {subscription && (
           <div className="flex items-center justify-center gap-2">
             <Badge variant="outline" className="text-sm py-1 px-3">
@@ -96,7 +99,7 @@ Thank you!`;
           return (
             <Card
               key={tier.id}
-              className={`relative flex flex-col ${isCurrent ? 'border-success shadow-xl ring-2 ring-success/20' : ''
+              className={`relative flex flex-col card-transparent ${isCurrent ? 'border-success shadow-xl ring-2 ring-success/20' : ''
                 } ${tier.popular && !isCurrent ? 'border-primary shadow-lg' : ''} ${tier.gradient ? 'border-primary' : ''
                 }`}
             >
@@ -175,11 +178,11 @@ Thank you!`;
         })}
       </div>
 
-      {/* FAQ / Additional Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("pricing.howItWorks.title")}</CardTitle>
-        </CardHeader>
+        {/* FAQ / Additional Info */}
+        <Card className="card-transparent">
+          <CardHeader>
+            <CardTitle>{t("pricing.howItWorks.title")}</CardTitle>
+          </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <h4 className="font-semibold mb-2">{t("pricing.howItWorks.payments.title")}</h4>
@@ -205,7 +208,8 @@ Thank you!`;
             </p>
           </div>
         </CardContent>
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </>
   );
 }

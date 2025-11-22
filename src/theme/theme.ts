@@ -82,7 +82,7 @@ const theme = createTheme({
     },
     background: {
       default: brandColors.deepBlack,
-      paper: brandColors.darkSurface,
+      paper: alpha(brandColors.darkSurface, 0.85), // Semi-transparent for glass effect
     },
     divider: alpha('#ffffff', 0.1),
   },
@@ -277,7 +277,8 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          backgroundColor: brandColors.darkSurface,
+          backgroundColor: alpha(brandColors.darkSurface, 0.85),
+          backdropFilter: 'blur(12px)',
           backgroundImage: 'none',
           border: '1px solid rgba(255, 255, 255, 0.08)',
         },

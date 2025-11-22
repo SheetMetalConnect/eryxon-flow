@@ -18,6 +18,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@mui/material';
+import AnimatedBackground from '@/components/AnimatedBackground';
 import {
   ListAlt as ListAltIcon,
   Schedule as ScheduleIcon,
@@ -86,17 +87,20 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      {/* Top App Bar */}
-      <AppBar
-        position="sticky"
-        elevation={0}
-        sx={{
-          backgroundColor: theme.palette.background.paper,
-          color: theme.palette.text.primary,
-          borderBottom: `1px solid ${theme.palette.divider}`,
-        }}
-      >
+    <>
+      <AnimatedBackground />
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', position: 'relative' }}>
+        {/* Top App Bar */}
+        <AppBar
+          position="sticky"
+          elevation={0}
+          sx={{
+            backgroundColor: alpha(theme.palette.background.paper, 0.7),
+            backdropFilter: 'blur(20px)',
+            color: theme.palette.text.primary,
+            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          }}
+        >
         <Toolbar
           sx={{
             justifyContent: 'space-between',
@@ -106,25 +110,20 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
         >
           {/* Logo/Brand */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box
-              sx={{
-                width: 36,
-                height: 36,
-                borderRadius: 1,
-                background: 'var(--operator-gradient)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 700,
-                fontSize: '1rem',
-                color: 'hsl(var(--foreground))',
-              }}
-            >
-              SM
-            </Box>
+            <SpeedIcon sx={{ width: 36, height: 36, color: 'hsl(var(--brand-primary))' }} />
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem' }}>
-                {t('app.name')}
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 600,
+                  fontSize: '1.1rem',
+                  background: 'linear-gradient(135deg, hsl(var(--brand-primary)), hsl(var(--brand-primary-light)), hsl(var(--color-warning)))',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+              >
+                Eryxon Flow
               </Typography>
             </Box>
           </Box>
@@ -246,48 +245,51 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
         </Toolbar>
       </AppBar>
 
-      {/* Currently Timing Widget - Sticky below header */}
-      <Box
-        sx={{
-          position: 'sticky',
-          top: { xs: 56, sm: 64 },
-          zIndex: theme.zIndex.appBar - 1,
-          backgroundColor: theme.palette.background.default,
-          borderBottom: `1px solid ${theme.palette.divider}`,
-        }}
-      >
-        <Box sx={{ px: { xs: 2, sm: 3 }, py: 1.5 }}>
-          <CurrentlyTimingWidget />
+        {/* Currently Timing Widget - Sticky below header */}
+        <Box
+          sx={{
+            position: 'sticky',
+            top: { xs: 56, sm: 64 },
+            zIndex: theme.zIndex.appBar - 1,
+            backgroundColor: alpha(theme.palette.background.default, 0.7),
+            backdropFilter: 'blur(12px)',
+            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          }}
+        >
+          <Box sx={{ px: { xs: 2, sm: 3 }, py: 1.5 }}>
+            <CurrentlyTimingWidget />
+          </Box>
         </Box>
-      </Box>
 
-      {/* Main Content */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          px: { xs: 2, sm: 3 },
-          py: { xs: 2, sm: 3 },
-          pb: { xs: 10, sm: 3 }, // Extra padding for mobile bottom nav
-        }}
-      >
-        {children}
-      </Box>
+        {/* Main Content */}
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            px: { xs: 2, sm: 3 },
+            py: { xs: 2, sm: 3 },
+            pb: { xs: 10, sm: 3 }, // Extra padding for mobile bottom nav
+          }}
+        >
+          {children}
+        </Box>
 
-      {/* Bottom Navigation - Mobile Only */}
-      <Paper
-        sx={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          display: { xs: 'block', sm: 'none' },
-          zIndex: theme.zIndex.appBar,
-          borderTop: `1px solid ${theme.palette.divider}`,
-        }}
-        elevation={3}
-        data-tour="bottom-nav"
-      >
+        {/* Bottom Navigation - Mobile Only */}
+        <Paper
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            display: { xs: 'block', sm: 'none' },
+            zIndex: theme.zIndex.appBar,
+            backgroundColor: alpha(theme.palette.background.paper, 0.9),
+            backdropFilter: 'blur(20px)',
+            borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          }}
+          elevation={3}
+          data-tour="bottom-nav"
+        >
         <BottomNavigation
           value={getCurrentNavValue()}
           onChange={handleNavigationChange}
@@ -314,17 +316,18 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
         </BottomNavigation>
       </Paper>
 
-      {/* Desktop Navigation Tabs - Hidden on mobile */}
-      <Box
-        sx={{
-          display: { xs: 'none', sm: 'block' },
-          position: 'sticky',
-          top: { sm: 64 },
-          zIndex: theme.zIndex.appBar - 2,
-          backgroundColor: theme.palette.background.paper,
-          borderBottom: `1px solid ${theme.palette.divider}`,
-        }}
-      >
+        {/* Desktop Navigation Tabs - Hidden on mobile */}
+        <Box
+          sx={{
+            display: { xs: 'none', sm: 'block' },
+            position: 'sticky',
+            top: { sm: 64 },
+            zIndex: theme.zIndex.appBar - 2,
+            backgroundColor: alpha(theme.palette.background.paper, 0.7),
+            backdropFilter: 'blur(20px)',
+            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          }}
+        >
         <Box
           sx={{
             display: 'flex',
@@ -347,20 +350,22 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
                 cursor: 'pointer',
                 backgroundColor:
                   location.pathname === item.path
-                    ? alpha(theme.palette.primary.main, 0.12)
+                    ? alpha('#ffffff', 0.12)
                     : 'transparent',
                 color:
                   location.pathname === item.path
-                    ? theme.palette.primary.main
+                    ? '#ffffff'
                     : theme.palette.text.primary,
                 fontWeight: location.pathname === item.path ? 600 : 500,
                 fontSize: '0.95rem',
                 transition: 'all 0.2s ease',
+                border: location.pathname === item.path ? `1px solid ${alpha('#ffffff', 0.2)}` : '1px solid transparent',
                 '&:hover': {
                   backgroundColor:
                     location.pathname === item.path
-                      ? alpha(theme.palette.primary.main, 0.18)
-                      : alpha(theme.palette.action.hover, 0.08),
+                      ? alpha('#ffffff', 0.15)
+                      : alpha('#ffffff', 0.06),
+                  color: location.pathname === item.path ? '#ffffff' : alpha('#ffffff', 0.9),
                 },
               }}
             >
@@ -371,8 +376,9 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
         </Box>
       </Box>
 
-      {/* Onboarding Tour - only show if not completed */}
-      {profile && !(profile as any).tour_completed && <AppTour userRole="operator" />}
-    </Box>
+        {/* Onboarding Tour - only show if not completed */}
+        {profile && !(profile as any).tour_completed && <AppTour userRole="operator" />}
+      </Box>
+    </>
   );
 };
