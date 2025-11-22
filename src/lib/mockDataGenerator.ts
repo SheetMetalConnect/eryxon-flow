@@ -5,6 +5,8 @@ export interface MockDataOptions {
   includeJobs?: boolean;
   includeParts?: boolean;
   includeOperations?: boolean;
+  includeResources?: boolean;
+  includeOperators?: boolean;
 }
 
 /**
@@ -18,6 +20,8 @@ export async function generateMockData(
     includeJobs: true,
     includeParts: true,
     includeOperations: true,
+    includeResources: true,
+    includeOperators: true,
   }
 ): Promise<{ success: boolean; error?: string }> {
   try {
@@ -341,12 +345,106 @@ export async function generateMockData(
           });
         }
 
-        const { error: operationsError } = await supabase
+        const { data: operationData, error: operationsError } = await supabase
           .from('operations')
-          .insert(operations);
+          .insert(operations)
+          .select('id, cell_id');
 
         if (operationsError) throw operationsError;
+
+        // Step 5: Create resources and link them to operations
+        if (options.includeResources && operationData && operationData.length > 0) {
+          // First, seed demo resources using the SQL function
+          const { error: resourceSeedError } = await supabase.rpc('seed_demo_resources', {
+            p_tenant_id: tenantId,
+          });
+
+          if (resourceSeedError) {
+            console.warn('Resource seeding warning:', resourceSeedError);
+            // Continue even if resources already exist
+          }
+
+          // Fetch the created resources
+          const { data: resourceData, error: resourceFetchError } = await supabase
+            .from('resources')
+            .select('id, name, type')
+            .eq('tenant_id', tenantId);
+
+          if (resourceFetchError) throw resourceFetchError;
+
+          if (resourceData && resourceData.length > 0) {
+            // Link resources to operations based on cell type
+            const operationResources = [];
+
+            for (const op of operationData) {
+              const cellIndex = cellIds.indexOf(op.cell_id);
+
+              // Map resources to cells:
+              // Laser Cutting (0) -> Laser Cutting Head
+              // CNC Bending (1) -> V-Die Set
+              // Welding (2) -> Spot Welding Gun, Welding Fixture
+              // Assembly (3) -> (no specific resources)
+              // Finishing (4) -> (no specific resources)
+              // QC (5) -> QC Inspection Gauge
+
+              const resourceMappings: Record<number, string[]> = {
+                0: ['Laser Cutting Head'],
+                1: ['V-Die', 'Enclosure Mold', 'Bracket Forming Die'],
+                2: ['Spot Welding Gun', 'Welding Fixture'],
+                5: ['QC Inspection Gauge'],
+              };
+
+              const resourceNames = resourceMappings[cellIndex] || [];
+
+              for (const resourceName of resourceNames) {
+                const resource = resourceData.find((r) => r.name.includes(resourceName));
+                if (resource) {
+                  operationResources.push({
+                    tenant_id: tenantId,
+                    operation_id: op.id,
+                    resource_id: resource.id,
+                    quantity: 1,
+                    notes: `Required for ${cellIds[cellIndex] ? 'operation' : 'process'}`,
+                  });
+                }
+              }
+            }
+
+            if (operationResources.length > 0) {
+              const { error: linkError } = await supabase
+                .from('operation_resources')
+                .insert(operationResources);
+
+              if (linkError) {
+                console.warn('Resource linking warning:', linkError);
+                // Continue even if some links fail
+              }
+            }
+          }
+        }
       }
+    }
+
+    // Step 6: Create demo operators
+    if (options.includeOperators) {
+      const { error: operatorSeedError } = await supabase.rpc('seed_demo_operators', {
+        p_tenant_id: tenantId,
+      });
+
+      if (operatorSeedError) {
+        console.warn('Operator seeding warning:', operatorSeedError);
+        // Continue even if operators already exist
+      }
+    }
+
+    // Step 7: Seed default scrap reasons
+    const { error: scrapReasonsError } = await supabase.rpc('seed_default_scrap_reasons', {
+      p_tenant_id: tenantId,
+    });
+
+    if (scrapReasonsError) {
+      console.warn('Scrap reasons seeding warning:', scrapReasonsError);
+      // Continue even if scrap reasons already exist
     }
 
     return { success: true };
@@ -367,10 +465,23 @@ export async function clearMockData(tenantId: string): Promise<{ success: boolea
   try {
     // Delete in reverse order of dependencies
     await supabase.from('time_entries').delete().eq('tenant_id', tenantId);
+    await supabase.from('operation_resources').delete().eq('tenant_id', tenantId);
     await supabase.from('operations').delete().eq('tenant_id', tenantId);
     await supabase.from('parts').delete().eq('tenant_id', tenantId);
     await supabase.from('jobs').delete().eq('tenant_id', tenantId);
     await supabase.from('cells').delete().eq('tenant_id', tenantId);
+    await supabase.from('resources').delete().eq('tenant_id', tenantId);
+
+    // Delete demo operators (only those with names starting with "Demo Operator")
+    await supabase
+      .from('profiles')
+      .delete()
+      .eq('tenant_id', tenantId)
+      .eq('role', 'operator')
+      .like('full_name', 'Demo Operator%');
+
+    // Delete scrap reasons
+    await supabase.from('scrap_reasons').delete().eq('tenant_id', tenantId);
 
     return { success: true };
   } catch (error) {
