@@ -361,14 +361,13 @@ export async function generateMockData(
       console.log("✓ Created 4 realistic Dutch customer jobs");
     }
 
-    // Step 6: Create parts with realistic Dutch naming
+    // Step 6: Create parts with assembly relationships
     let partIds: string[] = [];
-    let partData: Array<{ id: string; part_number: string; job_id: string }> =
-      [];
+    let partData: Array<{ id: string; part_number: string; job_id: string; parent_part_id?: string | null }> = [];
 
     if (options.includeParts && jobIds.length > 0) {
-      const parts = [
-        // WO-2025-1047 parts (completed job)
+      // First: Create parent parts
+      const parentParts = [
         {
           tenant_id: tenantId,
           job_id: jobIdMap["WO-2025-1047"],
@@ -377,6 +376,7 @@ export async function generateMockData(
           notes: "Hoofdframe hydraulische hef - Gelast constructiestaal",
           quantity: 2,
           status: "completed" as const,
+          parent_part_id: null,
           metadata: {
             dimensions: "1200x800x150mm",
             weight: "45.5kg",
@@ -386,28 +386,13 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_id: jobIdMap["WO-2025-1047"],
-          part_number: "HF-BRACKET-002",
-          material: "S355J2",
-          notes: "Montagebeugels zijkant (set van 4)",
-          quantity: 8,
-          status: "completed" as const,
-          metadata: {
-            dimensions: "250x180x12mm",
-            weight: "3.2kg",
-            material_spec: "EN 10025-2",
-          },
-        },
-
-        // WO-2025-1089 parts (in progress - cleanroom panels)
-        {
-          tenant_id: tenantId,
           job_id: jobIdMap["WO-2025-1089"],
           part_number: "CR-PANEL-A1",
           material: "RVS 316L",
           notes: "Bedieningspaneel voorzijde - Cleanroom ISO 5",
           quantity: 12,
           status: "in_progress" as const,
+          parent_part_id: null,
           metadata: {
             dimensions: "400x300x2mm",
             weight: "2.8kg",
@@ -418,29 +403,13 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_id: jobIdMap["WO-2025-1089"],
-          part_number: "CR-PANEL-B1",
-          material: "RVS 316L",
-          notes: "Bedieningspaneel zijkant links",
-          quantity: 12,
-          status: "in_progress" as const,
-          metadata: {
-            dimensions: "300x250x2mm",
-            weight: "2.1kg",
-            material_spec: "EN 1.4404",
-            surface_finish: "Elektropolish Ra<0.4μm",
-          },
-        },
-
-        // WO-2025-1124 parts (energy storage enclosures)
-        {
-          tenant_id: tenantId,
           job_id: jobIdMap["WO-2025-1124"],
           part_number: "ESS-BOX-TOP",
           material: "AlMg3",
-          notes: "Deksel energieopslag behuizing",
+          notes: "Deksel energieopslag behuizing - Parent assembly",
           quantity: 25,
           status: "in_progress" as const,
+          parent_part_id: null,
           metadata: {
             dimensions: "600x400x3mm",
             weight: "1.9kg",
@@ -450,28 +419,13 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_id: jobIdMap["WO-2025-1124"],
-          part_number: "ESS-BOX-SIDE",
-          material: "AlMg3",
-          notes: "Zijpaneel behuizing (links/rechts identiek)",
-          quantity: 50,
-          status: "not_started" as const,
-          metadata: {
-            dimensions: "400x350x3mm",
-            weight: "1.4kg",
-            material_spec: "EN AW-5754",
-          },
-        },
-
-        // WO-2025-1156 parts (ASML high-precision)
-        {
-          tenant_id: tenantId,
           job_id: jobIdMap["WO-2025-1156"],
           part_number: "ASML-FRAME-MAIN",
           material: "RVS 304",
           notes: "Precisie framewerk - CMM inspectie verplicht",
           quantity: 4,
           status: "not_started" as const,
+          parent_part_id: null,
           metadata: {
             dimensions: "800x600x100mm",
             weight: "18.5kg",
@@ -481,14 +435,84 @@ export async function generateMockData(
             flatness: "< 0.02mm",
           },
         },
+      ];
+
+      console.log("📦 Inserting parent parts...");
+      const { data: parentPartsData, error: parentError } = await supabase
+        .from("parts")
+        .insert(parentParts)
+        .select("id, part_number, job_id, parent_part_id");
+
+      if (parentError) {
+        console.error("❌ Parent parts error:", parentError);
+        throw parentError;
+      }
+
+      console.log(`✓ Created ${parentPartsData?.length || 0} parent parts`);
+
+      // Build lookup for parent IDs
+      const partIdLookup: Record<string, string> = {};
+      parentPartsData?.forEach((p) => {
+        partIdLookup[p.part_number] = p.id;
+      });
+
+      // Second: Create child parts linked to parents
+      const childParts = [
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap["WO-2025-1047"],
+          part_number: "HF-BRACKET-002",
+          material: "S355J2",
+          notes: "Montagebeugels zijkant - Child of HF-FRAME-001",
+          quantity: 8,
+          status: "completed" as const,
+          parent_part_id: partIdLookup["HF-FRAME-001"],
+          metadata: {
+            dimensions: "250x180x12mm",
+            weight: "3.2kg",
+            material_spec: "EN 10025-2",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap["WO-2025-1089"],
+          part_number: "CR-PANEL-B1",
+          material: "RVS 316L",
+          notes: "Bedieningspaneel zijkant - Child of CR-PANEL-A1",
+          quantity: 12,
+          status: "in_progress" as const,
+          parent_part_id: partIdLookup["CR-PANEL-A1"],
+          metadata: {
+            dimensions: "300x250x2mm",
+            weight: "2.1kg",
+            material_spec: "EN 1.4404",
+            surface_finish: "Elektropolish Ra<0.4μm",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap["WO-2025-1124"],
+          part_number: "ESS-BOX-SIDE",
+          material: "AlMg3",
+          notes: "Zijpaneel behuizing - Child of ESS-BOX-TOP",
+          quantity: 50,
+          status: "not_started" as const,
+          parent_part_id: partIdLookup["ESS-BOX-TOP"],
+          metadata: {
+            dimensions: "400x350x3mm",
+            weight: "1.4kg",
+            material_spec: "EN AW-5754",
+          },
+        },
         {
           tenant_id: tenantId,
           job_id: jobIdMap["WO-2025-1156"],
           part_number: "ASML-MOUNT-PLT",
           material: "RVS 304",
-          notes: "Montageplaat precisie bewerkingen",
+          notes: "Montageplaat precisie - Child of ASML-FRAME-MAIN",
           quantity: 8,
           status: "not_started" as const,
+          parent_part_id: partIdLookup["ASML-FRAME-MAIN"],
           metadata: {
             dimensions: "300x200x15mm",
             weight: "6.8kg",
@@ -498,17 +522,24 @@ export async function generateMockData(
         },
       ];
 
-      const { data: partsInserted, error: partError } = await supabase
+      console.log("📦 Inserting child parts with parent links...");
+      const { data: childPartsData, error: childError } = await supabase
         .from("parts")
-        .insert(parts)
-        .select("id, part_number, job_id");
+        .insert(childParts)
+        .select("id, part_number, job_id, parent_part_id");
 
-      if (partError) throw partError;
+      if (childError) {
+        console.error("❌ Child parts error:", childError);
+        throw childError;
+      }
 
-      partIds = partsInserted?.map((p) => p.id) || [];
-      partData = partsInserted || [];
+      console.log(`✓ Created ${childPartsData?.length || 0} child parts`);
 
-      console.log("✓ Created 8 parts with realistic specifications");
+      // Combine all parts for operations creation
+      partData = [...(parentPartsData || []), ...(childPartsData || [])];
+      partIds = partData.map((p) => p.id);
+
+      console.log(`✓ Total parts created: ${partData.length} (${parentPartsData?.length} parents + ${childPartsData?.length} children)`);
     }
 
     // Step 7: Create QRM-aligned operations with proper routing
@@ -1052,18 +1083,29 @@ export async function generateMockData(
         );
       }
 
-      const { data: operationsInserted, error: operationsError } =
-        await supabase
-          .from("operations")
-          .insert(operations)
-          .select("id, cell_id, part_id, status");
+      console.log(`🔧 Prepared ${operations.length} operations to insert...`);
+      
+      if (operations.length === 0) {
+        console.warn("⚠️ No operations created - check if parts were found");
+        console.log("Available parts:", partData.map(p => p.part_number));
+        console.log("Available cells:", Object.keys(cellIdMap));
+      } else {
+        const { data: operationsInserted, error: operationsError } =
+          await supabase
+            .from("operations")
+            .insert(operations)
+            .select("id, cell_id, part_id, status");
 
-      if (operationsError) throw operationsError;
+        if (operationsError) {
+          console.error("❌ Operations insert error:", operationsError);
+          throw operationsError;
+        }
 
-      operationData = operationsInserted || [];
-      console.log(
-        `✓ Created ${operations.length} QRM-aligned operations with detailed routing`,
-      );
+        operationData = operationsInserted || [];
+        console.log(
+          `✓ Created ${operationsInserted?.length || 0} QRM-aligned operations with detailed routing`,
+        );
+      }
     }
 
     // Step 8: Link resources to operations
