@@ -463,25 +463,26 @@ export async function generateMockData(
  */
 export async function clearMockData(tenantId: string): Promise<{ success: boolean; error?: string }> {
   try {
+    // Cast to any to avoid TypeScript deep instantiation issues
+    const db = supabase as any;
+    
     // Delete in reverse order of dependencies
-    await supabase.from('time_entries').delete().eq('tenant_id', tenantId);
-    await supabase.from('operation_resources').delete().eq('tenant_id', tenantId);
-    await supabase.from('operations').delete().eq('tenant_id', tenantId);
-    await supabase.from('parts').delete().eq('tenant_id', tenantId);
-    await supabase.from('jobs').delete().eq('tenant_id', tenantId);
-    await supabase.from('cells').delete().eq('tenant_id', tenantId);
-    await supabase.from('resources').delete().eq('tenant_id', tenantId);
+    await db.from('time_entries').delete().eq('tenant_id', tenantId);
+    await db.from('operation_resources').delete().eq('tenant_id', tenantId);
+    await db.from('operations').delete().eq('tenant_id', tenantId);
+    await db.from('parts').delete().eq('tenant_id', tenantId);
+    await db.from('jobs').delete().eq('tenant_id', tenantId);
+    await db.from('cells').delete().eq('tenant_id', tenantId);
+    await db.from('resources').delete().eq('tenant_id', tenantId);
+    await db.from('scrap_reasons').delete().eq('tenant_id', tenantId);
 
     // Delete demo operators (only those with names starting with "Demo Operator")
-    await supabase
+    await db
       .from('profiles')
       .delete()
       .eq('tenant_id', tenantId)
       .eq('role', 'operator')
       .like('full_name', 'Demo Operator%');
-
-    // Delete scrap reasons
-    await supabase.from('scrap_reasons').delete().eq('tenant_id', tenantId);
 
     return { success: true };
   } catch (error) {

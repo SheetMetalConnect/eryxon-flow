@@ -1820,6 +1820,20 @@ export type Database = {
           total_count: number
         }[]
       }
+      get_part_routing: {
+        Args: { p_part_id: string }
+        Returns: {
+          actual_time: number
+          cell_id: string
+          cell_name: string
+          completed_at: string
+          estimated_time: number
+          operation_id: string
+          operation_name: string
+          sequence: number
+          status: Database["public"]["Enums"]["task_status"]
+        }[]
+      }
       get_storage_quota: {
         Args: never
         Returns: {
@@ -1902,6 +1916,12 @@ export type Database = {
           tenant_id: string
         }[]
       }
+      seed_default_scrap_reasons: {
+        Args: { p_tenant_id: string }
+        Returns: undefined
+      }
+      seed_demo_operators: { Args: { p_tenant_id: string }; Returns: undefined }
+      seed_demo_resources: { Args: { p_tenant_id: string }; Returns: undefined }
       set_active_tenant: { Args: { p_tenant_id: string }; Returns: undefined }
       toggle_notification_pin: {
         Args: { p_notification_id: string }
