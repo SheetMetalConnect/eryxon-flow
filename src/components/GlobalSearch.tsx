@@ -120,10 +120,10 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
     if (!status) return null;
 
     if (type === 'operation' || type === 'job' || type === 'part') {
-      if (status === 'completed') return <CheckCircleIcon fontSize="small" sx={{ color: '#10B981' }} />;
-      if (status === 'in_progress') return <PlayCircleOutlineIcon fontSize="small" sx={{ color: '#F59E0B' }} />;
-      if (status === 'on_hold') return <ScheduleIcon fontSize="small" sx={{ color: '#EF4444' }} />;
-      return <ScheduleIcon fontSize="small" sx={{ color: '#3B82F6' }} />;
+      if (status === 'completed') return <CheckCircleIcon fontSize="small" sx={{ color: theme.palette.success.main }} />;
+      if (status === 'in_progress') return <PlayCircleOutlineIcon fontSize="small" sx={{ color: theme.palette.warning.main }} />;
+      if (status === 'on_hold') return <ScheduleIcon fontSize="small" sx={{ color: theme.palette.error.main }} />;
+      return <ScheduleIcon fontSize="small" sx={{ color: theme.palette.info.main }} />;
     }
     return null;
   };

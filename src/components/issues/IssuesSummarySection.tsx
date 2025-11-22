@@ -38,17 +38,17 @@ export function IssuesSummarySection({ partId, jobId }: IssuesSummarySectionProp
   if (!partId && !jobId) return null;
 
   const severityColors = {
-    low: 'bg-gray-500',
-    medium: 'bg-yellow-500',
-    high: 'bg-orange-500',
-    critical: 'bg-red-500',
+    low: 'bg-severity-low',
+    medium: 'bg-severity-medium',
+    high: 'bg-severity-high',
+    critical: 'bg-severity-critical',
   };
 
   const statusColors = {
-    pending: 'bg-blue-500',
-    approved: 'bg-green-500',
-    rejected: 'bg-red-500',
-    closed: 'bg-gray-500',
+    pending: 'bg-issue-pending',
+    approved: 'bg-issue-approved',
+    rejected: 'bg-issue-rejected',
+    closed: 'bg-issue-closed',
   };
 
   if (isLoading) {

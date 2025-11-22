@@ -20,6 +20,10 @@ import { useCellQRMMetrics } from "@/hooks/useQRMMetrics";
 import { WIPIndicator, WIPBar } from "@/components/qrm/WIPIndicator";
 import { IconPicker, IconDisplay } from "@/components/ui/icon-picker";
 
+// Default colors using design system tokens
+const DEFAULT_STAGE_COLOR = "hsl(var(--neutral-600))"; // Fallback gray
+const DEFAULT_NEW_STAGE_COLOR = "hsl(var(--brand-primary))"; // Primary blue for new stages
+
 interface Stage {
   id: string;
   name: string;
@@ -64,7 +68,7 @@ function SortableStageCard({ stage, onEdit, onDelete, tenantId, t }: SortableSta
         {/* Color accent bar */}
         <div
           className="h-1 w-full"
-          style={{ backgroundColor: stage.color || "#94a3b8" }}
+          style={{ backgroundColor: stage.color || DEFAULT_STAGE_COLOR }}
         />
 
         <CardHeader className="pb-3">
@@ -82,7 +86,7 @@ function SortableStageCard({ stage, onEdit, onDelete, tenantId, t }: SortableSta
               {/* Icon */}
               <div
                 className="h-12 w-12 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
-                style={{ backgroundColor: stage.color || "#94a3b8" }}
+                style={{ backgroundColor: stage.color || DEFAULT_STAGE_COLOR }}
               >
                 <IconDisplay
                   iconName={stage.icon_name}
@@ -173,7 +177,7 @@ export default function ConfigStages() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    color: "#3b82f6",
+    color: "DEFAULT_NEW_STAGE_COLOR",
     icon_name: "" as string,
     active: true,
     wip_limit: null as number | null,
@@ -265,7 +269,7 @@ export default function ConfigStages() {
     setFormData({
       name: "",
       description: "",
-      color: "#3b82f6",
+      color: "DEFAULT_NEW_STAGE_COLOR",
       icon_name: "",
       active: true,
       wip_limit: null,
@@ -281,7 +285,7 @@ export default function ConfigStages() {
     setFormData({
       name: stage.name,
       description: stage.description || "",
-      color: stage.color || "#3b82f6",
+      color: stage.color || "DEFAULT_NEW_STAGE_COLOR",
       icon_name: stage.icon_name || "",
       active: stage.active,
       wip_limit: stage.wip_limit,
@@ -476,7 +480,7 @@ export default function ConfigStages() {
                           onChange={(e) =>
                             setFormData({ ...formData, color: e.target.value })
                           }
-                          placeholder="#3b82f6"
+                          placeholder="DEFAULT_NEW_STAGE_COLOR"
                           className="flex-1"
                         />
                       </div>
