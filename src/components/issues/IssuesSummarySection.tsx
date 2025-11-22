@@ -56,9 +56,9 @@ export function IssuesSummarySection({ partId, jobId }: IssuesSummarySectionProp
       <div className="border rounded-lg p-4">
         <Label className="text-lg flex items-center gap-2 mb-3">
           <AlertTriangle className="h-5 w-5" />
-          NCRs
+          {t('issues.ncrs')}
         </Label>
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
       </div>
     );
   }
@@ -68,9 +68,11 @@ export function IssuesSummarySection({ partId, jobId }: IssuesSummarySectionProp
       <div className="border rounded-lg p-4">
         <Label className="text-lg flex items-center gap-2 mb-3">
           <AlertTriangle className="h-5 w-5" />
-          NCRs (0)
+          {t('issues.ncrsSummary', { count: 0 })}
         </Label>
-        <p className="text-sm text-muted-foreground">No NCRs reported for this {partId ? 'part' : 'job'}.</p>
+        <p className="text-sm text-muted-foreground">
+          {t('issues.noNcrsReported', { type: partId ? t('issues.part').toLowerCase() : t('issues.job').toLowerCase() })}
+        </p>
       </div>
     );
   }
@@ -79,7 +81,7 @@ export function IssuesSummarySection({ partId, jobId }: IssuesSummarySectionProp
     <div className="border rounded-lg p-4">
       <Label className="text-lg flex items-center gap-2 mb-3">
         <AlertTriangle className="h-5 w-5" />
-        NCRs ({issues.length})
+        {t('issues.ncrsSummary', { count: issues.length })}
       </Label>
 
       <div className="space-y-3">
@@ -93,12 +95,12 @@ export function IssuesSummarySection({ partId, jobId }: IssuesSummarySectionProp
                 <Badge
                   className={`${severityColors[issue.severity as keyof typeof severityColors]} text-white`}
                 >
-                  {issue.severity}
+                  {t(`issues.severity.${issue.severity}`)}
                 </Badge>
                 <Badge
                   className={`${statusColors[issue.status as keyof typeof statusColors]} text-white`}
                 >
-                  {issue.status}
+                  {t(`issues.status.${issue.status}`)}
                 </Badge>
               </div>
               <span className="text-xs text-muted-foreground">
@@ -110,19 +112,19 @@ export function IssuesSummarySection({ partId, jobId }: IssuesSummarySectionProp
 
             <div className="text-xs text-muted-foreground space-y-1">
               <div>
-                <span className="font-medium">Operation:</span> {issue.operation_name}
+                <span className="font-medium">{t('issues.operation')}:</span> {issue.operation_name}
               </div>
               {jobId && (
                 <div>
-                  <span className="font-medium">Part:</span> {issue.part_number}
+                  <span className="font-medium">{t('issues.part')}:</span> {issue.part_number}
                 </div>
               )}
               <div>
-                <span className="font-medium">Reported by:</span> {issue.creator_name}
+                <span className="font-medium">{t('issues.reportedBy')}:</span> {issue.creator_name}
               </div>
               {issue.resolution_notes && (
                 <div className="mt-2 pt-2 border-t">
-                  <span className="font-medium">Resolution:</span> {issue.resolution_notes}
+                  <span className="font-medium">{t('issues.resolution')}:</span> {issue.resolution_notes}
                   {issue.reviewer_name && (
                     <span className="ml-2">({issue.reviewer_name})</span>
                   )}
@@ -133,7 +135,7 @@ export function IssuesSummarySection({ partId, jobId }: IssuesSummarySectionProp
             {issue.image_paths && issue.image_paths.length > 0 && (
               <div className="mt-2">
                 <Badge variant="outline" className="text-xs">
-                  {issue.image_paths.length} photo(s) attached
+                  {t('issues.photoAttached', { count: issue.image_paths.length })}
                 </Badge>
               </div>
             )}
