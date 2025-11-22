@@ -12,12 +12,12 @@ import {
 /**
  * Custom error classes
  */
-export class ValidationError extends Error {
+export class ValidationException extends Error {
   constructor(
     public validationResult: ValidationResult,
   ) {
     super(validationResult.summary);
-    this.name = "ValidationError";
+    this.name = "ValidationException";
   }
 }
 
@@ -139,7 +139,7 @@ export function handleError(error: unknown): Response {
   console.error("Error:", error);
 
   // Validation errors (422)
-  if (error instanceof ValidationError) {
+  if (error instanceof ValidationException) {
     return createErrorResponse(
       "VALIDATION_ERROR",
       error.validationResult.summary,

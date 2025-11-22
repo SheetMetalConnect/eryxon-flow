@@ -15,7 +15,7 @@ import {
   handleOptions,
   NotFoundError,
   ConflictError,
-  ValidationError,
+  ValidationException,
   UnauthorizedError,
   PaymentRequiredError,
   BadRequestError,
@@ -264,7 +264,7 @@ async function handleCreateJob(
   const validationResult = validator.validate(body, context);
 
   if (!validationResult.valid) {
-    throw new ValidationError(validationResult);
+    throw new ValidationException(validationResult);
   }
 
   // Check for duplicate job number
@@ -335,7 +335,7 @@ async function handleCreateJob(
       if (parentId && childId) {
         // Check for circular reference
         if (parentId === childId) {
-          throw new ValidationError({
+          throw new ValidationException({
             valid: false,
             severity: "error" as any,
             httpStatus: 422,
@@ -531,7 +531,7 @@ async function handleUpdateJob(
       tenantId,
     );
     if (!validCellIds.includes(updates.current_cell_id)) {
-      throw new ValidationError({
+      throw new ValidationException({
         valid: false,
         severity: "error" as any,
         httpStatus: 422,
