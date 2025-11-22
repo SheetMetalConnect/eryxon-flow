@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Timeline,
+  Activity,
   User,
   Search,
   RefreshCw,
@@ -195,28 +195,28 @@ export const ActivityMonitor: React.FC = () => {
     }
   };
 
-  // Get action color
+  // Get action color using design system tokens
   const getActionColor = (action: string) => {
     switch (action) {
       case "create":
-        return "bg-green-500/10 text-green-500 border-green-500/20";
+        return "bg-[hsl(var(--color-success))]/10 text-[hsl(var(--color-success))] border-[hsl(var(--color-success))]/20";
       case "update":
-        return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+        return "bg-[hsl(var(--brand-primary))]/10 text-[hsl(var(--brand-primary))] border-[hsl(var(--brand-primary))]/20";
       case "delete":
-        return "bg-red-500/10 text-red-500 border-red-500/20";
+        return "bg-[hsl(var(--color-error))]/10 text-[hsl(var(--color-error))] border-[hsl(var(--color-error))]/20";
       case "login":
-        return "bg-purple-500/10 text-purple-500 border-purple-500/20";
+        return "bg-[hsl(var(--stage-bending))]/10 text-[hsl(var(--stage-bending))] border-[hsl(var(--stage-bending))]/20";
       case "logout":
-        return "bg-gray-500/10 text-gray-500 border-gray-500/20";
+        return "bg-[hsl(var(--status-pending))]/10 text-[hsl(var(--status-pending))] border-[hsl(var(--status-pending))]/20";
       case "view":
-        return "bg-cyan-500/10 text-cyan-500 border-cyan-500/20";
+        return "bg-[hsl(var(--color-info))]/10 text-[hsl(var(--color-info))] border-[hsl(var(--color-info))]/20";
       case "configure":
-        return "bg-orange-500/10 text-orange-500 border-orange-500/20";
+        return "bg-[hsl(var(--stage-welding))]/10 text-[hsl(var(--stage-welding))] border-[hsl(var(--stage-welding))]/20";
       case "export":
       case "import":
-        return "bg-pink-500/10 text-pink-500 border-pink-500/20";
+        return "bg-[hsl(var(--color-warning))]/10 text-[hsl(var(--color-warning))] border-[hsl(var(--color-warning))]/20";
       default:
-        return "bg-gray-400/10 text-gray-400 border-gray-400/20";
+        return "bg-[hsl(var(--foreground))]/10 text-[hsl(var(--foreground))]/60 border-[hsl(var(--foreground))]/20";
     }
   };
 
@@ -238,7 +238,7 @@ export const ActivityMonitor: React.FC = () => {
       case "resource":
         return <Wrench className={iconClass} />;
       default:
-        return <Timeline className={iconClass} />;
+        return <Activity className={iconClass} />;
     }
   };
 
@@ -307,7 +307,7 @@ export const ActivityMonitor: React.FC = () => {
       {/* Header Section */}
       <div>
         <div className="flex items-center gap-3 mb-2">
-          <Timeline className="h-10 w-10 text-foreground/80" />
+          <Activity className="h-10 w-10 text-foreground/80" />
           <div>
             <h1 className="text-3xl font-bold">Activity Monitor</h1>
             <p className="text-sm text-muted-foreground">
@@ -320,11 +320,11 @@ export const ActivityMonitor: React.FC = () => {
       {/* Statistics Cards */}
       {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="glass-card">
+          <Card className="glass-card transition-smooth hover:scale-[1.02]">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-lg bg-white/10">
-                  <Timeline className="h-6 w-6 text-foreground" />
+                <div className="p-3 rounded-xl bg-[hsl(var(--brand-primary))]/10">
+                  <Activity className="h-6 w-6 text-[hsl(var(--brand-primary))]" />
                 </div>
                 <div>
                   <div className="text-2xl font-bold">
@@ -338,11 +338,11 @@ export const ActivityMonitor: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="glass-card">
+          <Card className="glass-card transition-smooth hover:scale-[1.02]">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-lg bg-green-500/10">
-                  <Users className="h-6 w-6 text-green-500" />
+                <div className="p-3 rounded-xl bg-[hsl(var(--color-success))]/10">
+                  <Users className="h-6 w-6 text-[hsl(var(--color-success))]" />
                 </div>
                 <div>
                   <div className="text-2xl font-bold">
@@ -356,11 +356,11 @@ export const ActivityMonitor: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="glass-card">
+          <Card className="glass-card transition-smooth hover:scale-[1.02]">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-lg bg-blue-500/10">
-                  <Plus className="h-6 w-6 text-blue-500" />
+                <div className="p-3 rounded-xl bg-[hsl(var(--color-info))]/10">
+                  <Plus className="h-6 w-6 text-[hsl(var(--color-info))]" />
                 </div>
                 <div>
                   <div className="text-2xl font-bold">
@@ -374,11 +374,11 @@ export const ActivityMonitor: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="glass-card">
+          <Card className="glass-card transition-smooth hover:scale-[1.02]">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-lg bg-orange-500/10">
-                  <Edit className="h-6 w-6 text-orange-500" />
+                <div className="p-3 rounded-xl bg-[hsl(var(--color-warning))]/10">
+                  <Edit className="h-6 w-6 text-[hsl(var(--color-warning))]" />
                 </div>
                 <div>
                   <div className="text-2xl font-bold">
@@ -505,7 +505,7 @@ export const ActivityMonitor: React.FC = () => {
             activities.map((activity) => (
               <div
                 key={activity.id}
-                className="p-4 hover:bg-white/5 transition-base"
+                className="p-4 hover:bg-[hsl(var(--surface-elevated))] transition-smooth"
               >
                 <div className="flex items-start gap-3">
                   <div className="relative">
