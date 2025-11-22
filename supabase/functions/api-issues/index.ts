@@ -356,6 +356,52 @@ serve(async (req) => {
         updates.verified_at = new Date().toISOString();
       }
 
+      // Verify resolved_by user if being updated
+      if (updates.resolved_by_id !== undefined) {
+        if (updates.resolved_by_id !== null) {
+          const { data: resolver } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', updates.resolved_by_id)
+            .eq('tenant_id', tenantId)
+            .eq('active', true)
+            .single();
+
+          if (!resolver) {
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: { code: 'NOT_FOUND', message: 'Resolver user not found, inactive, or belongs to different tenant' }
+              }),
+              { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+        }
+      }
+
+      // Verify verified_by user if being updated
+      if (updates.verified_by_id !== undefined) {
+        if (updates.verified_by_id !== null) {
+          const { data: verifier } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', updates.verified_by_id)
+            .eq('tenant_id', tenantId)
+            .eq('active', true)
+            .single();
+
+          if (!verifier) {
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: { code: 'NOT_FOUND', message: 'Verifier user not found, inactive, or belongs to different tenant' }
+              }),
+              { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+        }
+      }
+
       updates.updated_at = new Date().toISOString();
 
       const { data: issue, error } = await supabase

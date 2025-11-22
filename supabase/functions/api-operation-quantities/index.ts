@@ -466,6 +466,30 @@ serve(async (req) => {
         );
       }
 
+      // Verify scrap reason if being updated
+      if (updates.scrap_reason_id !== undefined) {
+        if (updates.scrap_reason_id !== null) {
+          const { data: scrapReason } = await supabase
+            .from('scrap_reasons')
+            .select('id')
+            .eq('id', updates.scrap_reason_id)
+            .eq('tenant_id', tenantId)
+            .eq('active', true)
+            .single();
+
+          if (!scrapReason) {
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: { code: 'NOT_FOUND', message: 'Scrap reason not found, inactive, or belongs to different tenant' }
+              }),
+              { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+        }
+        // null is allowed to clear the scrap_reason_id
+      }
+
       updates.updated_at = new Date().toISOString();
 
       const { data: quantity, error } = await supabase

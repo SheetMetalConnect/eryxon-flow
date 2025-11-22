@@ -412,6 +412,30 @@ serve(async (req) => {
         updates.completed_at = new Date().toISOString();
       }
 
+      // Verify assigned operator if being updated
+      if (updates.assigned_operator_id !== undefined) {
+        if (updates.assigned_operator_id !== null) {
+          const { data: operator } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', updates.assigned_operator_id)
+            .eq('tenant_id', tenantId)
+            .eq('active', true)
+            .single();
+
+          if (!operator) {
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: { code: 'NOT_FOUND', message: 'Operator not found, inactive, or belongs to different tenant' }
+              }),
+              { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+        }
+        // null is allowed to clear the assigned_operator_id
+      }
+
       updates.updated_at = new Date().toISOString();
 
       const { data: operation, error } = await supabase
