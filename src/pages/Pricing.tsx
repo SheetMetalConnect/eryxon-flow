@@ -175,37 +175,53 @@ Thank you!`;
         })}
       </div>
 
-      {/* FAQ / Additional Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("pricing.howItWorks.title")}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <h4 className="font-semibold mb-2">{t("pricing.howItWorks.payments.title")}</h4>
+      {/* How It Works & EU Hosting */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              {t("pricing.euHosting.title")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              {t("pricing.howItWorks.payments.description")}
+              {t("pricing.euHosting.description")}
             </p>
-          </div>
+          </CardContent>
+        </Card>
 
-          <div>
-            <h4 className="font-semibold mb-2">{t("pricing.howItWorks.selfService.title")}</h4>
-            <p className="text-sm text-muted-foreground">
-              {t("pricing.howItWorks.selfService.description")}
-            </p>
-          </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("pricing.howItWorks.title")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <h4 className="font-semibold mb-2">{t("pricing.howItWorks.payments.title")}</h4>
+              <p className="text-sm text-muted-foreground">
+                {t("pricing.howItWorks.payments.description")}
+              </p>
+            </div>
 
-          <div>
-            <h4 className="font-semibold mb-2">{t("pricing.howItWorks.upgrade.title")}</h4>
-            <p className="text-sm text-muted-foreground">
-              {t("pricing.howItWorks.upgrade.description")}{" "}
-              <a href="mailto:office@sheetmetalconnect.com" className="text-primary hover:underline">
-                office@sheetmetalconnect.com
-              </a>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+            <div>
+              <h4 className="font-semibold mb-2">{t("pricing.howItWorks.setup.title")}</h4>
+              <p className="text-sm text-muted-foreground">
+                {t("pricing.howItWorks.setup.description")}
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-2">{t("pricing.howItWorks.upgrade.title")}</h4>
+              <p className="text-sm text-muted-foreground">
+                {t("pricing.howItWorks.upgrade.description")}{" "}
+                <a href="mailto:office@sheetmetalconnect.com" className="text-primary hover:underline">
+                  office@sheetmetalconnect.com
+                </a>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

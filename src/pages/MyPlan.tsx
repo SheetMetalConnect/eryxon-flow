@@ -34,49 +34,7 @@ import {
 import { useSubscription } from '../hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
 
-const pricingTiers = [
-  {
-    id: 'free',
-    name: 'Free',
-    price: 0,
-    description: 'Get started',
-    features: [
-      'All features included',
-      'Up to 100 jobs',
-      'Up to 1,000 parts per month',
-      '5 GB storage',
-      'Full API access',
-      'Hosted on EU servers',
-    ],
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    price: 149,
-    popular: true,
-    description: 'For growing shops',
-    features: [
-      'Everything in Free',
-      'Higher usage limits',
-      'Standard integrations',
-      'Priority support',
-      'Coming soon',
-    ],
-  },
-  {
-    id: 'premium',
-    name: 'Premium',
-    price: null,
-    description: 'For enterprise needs',
-    features: [
-      'Self-hosted deployment',
-      'Unlimited usage',
-      'Custom integrations',
-      'Dedicated support',
-      'Coming soon',
-    ],
-  },
-];
+// Pricing tiers are now loaded from translation keys to ensure consistency
 
 export const MyPlan: React.FC = () => {
   const { t } = useTranslation();
@@ -112,7 +70,12 @@ export const MyPlan: React.FC = () => {
   }
 
   const currentPlan = subscription?.plan || 'free';
-  const currentTier = pricingTiers.find(tier => tier.id === currentPlan);
+
+  // Get tier info from translations
+  const getTierName = (plan: string) => t(`pricing.${plan}.name`);
+  const getTierPrice = (plan: string) => t(`pricing.${plan}.price`);
+  const getTierDescription = (plan: string) => t(`pricing.${plan}.description`);
+  const getTierFeatures = (plan: string) => t(`pricing.${plan}.features`, { returnObjects: true }) as string[];
 
   return (
     <Box>
@@ -146,9 +109,9 @@ export const MyPlan: React.FC = () => {
               <Grid size={{ xs: 12, md: 8 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                   <Typography variant="h5" fontWeight={700}>
-                    {currentTier?.name || t('myPlan.unknown')} {t('myPlan.plan')}
+                    {getTierName(currentPlan)} {t('myPlan.plan')}
                   </Typography>
-                  {currentTier?.popular && (
+                  {currentPlan === 'pro' && (
                     <Chip
                       label={t('myPlan.mostPopular')}
                       size="small"
@@ -161,12 +124,12 @@ export const MyPlan: React.FC = () => {
                   )}
                 </Box>
                 <Typography variant="body1" sx={{ mb: 2, opacity: 0.95 }}>
-                  {currentTier?.description}
+                  {getTierDescription(currentPlan)}
                 </Typography>
                 <Typography variant="h3" fontWeight={700}>
-                  {currentTier?.price !== null ? `€${currentTier?.price}` : t('pricing.premium.price')}
+                  {getTierPrice(currentPlan)}
                   <Typography component="span" variant="h6" sx={{ opacity: 0.8, ml: 1 }}>
-                    {currentTier?.price !== null ? t('myPlan.perMonth') : ''}
+                    {currentPlan !== 'premium' ? t('myPlan.perMonth') : ''}
                   </Typography>
                 </Typography>
               </Grid>
@@ -356,7 +319,7 @@ export const MyPlan: React.FC = () => {
                   {t('myPlan.planFeatures')}
                 </Typography>
                 <List dense>
-                  {currentTier?.features.map((feature, index) => (
+                  {getTierFeatures(currentPlan).map((feature, index) => (
                     <ListItem key={index} sx={{ px: 0 }}>
                       <ListItemIcon sx={{ minWidth: 32 }}>
                         <CheckCircleIcon fontSize="small" color="success" />
@@ -419,7 +382,7 @@ export const MyPlan: React.FC = () => {
           </Grid>
         </Grid>
 
-        {/* Security & Architecture Notice */}
+        {/* EU Hosting Notice */}
         <Alert
           severity="info"
           icon={<InfoIcon />}
@@ -431,12 +394,10 @@ export const MyPlan: React.FC = () => {
           }}
         >
           <Typography variant="body2" fontWeight={600} gutterBottom>
-            {currentPlan === 'premium' ? t('myPlan.singleTenant') : t('myPlan.multiTenant')}
+            {t('pricing.euHosting.title')}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            {currentPlan === 'premium'
-              ? t('myPlan.singleTenantDescription')
-              : t('myPlan.multiTenantDescription')}
+            {t('pricing.euHosting.description')}
           </Typography>
         </Alert>
       </Box>
