@@ -79,6 +79,20 @@ export default function McpServerSettings() {
 
       if (data) {
         setConfig(data as McpConfig);
+      } else {
+        // Initialize default config for new tenants
+        setConfig({
+          id: "",
+          server_name: "eryxon-flow-mcp",
+          server_version: "2.0.0",
+          enabled: true,
+          supabase_url: import.meta.env.VITE_SUPABASE_URL || "",
+          features: {
+            logging: true,
+            healthCheck: true,
+            autoReconnect: true,
+          },
+        });
       }
     } catch (error) {
       console.error("Error fetching MCP config:", error);
@@ -179,13 +193,21 @@ export default function McpServerSettings() {
     setIsSaving(true);
 
     try {
+      // Prepare data for upsert, removing id if it's empty (new config)
+      const configData = {
+        ...config,
+        tenant_id: tenant.id,
+        updated_at: new Date().toISOString(),
+      };
+
+      // Remove empty id for new configs to let database generate it
+      if (!configData.id) {
+        delete (configData as any).id;
+      }
+
       const { error } = await supabase
         .from("mcp_server_config")
-        .upsert({
-          ...config,
-          tenant_id: tenant.id,
-          updated_at: new Date().toISOString(),
-        });
+        .upsert(configData);
 
       if (error) throw error;
 
