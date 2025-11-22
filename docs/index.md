@@ -2,10 +2,12 @@
 
 Welcome to the Eryxon Flow documentation. This index provides an overview of all available documentation to help you understand, use, and extend the application.
 
+> **Note:** This folder contains documentation explaining how features work. For planned features and implementation tasks, see the `/agent` folder.
+
 ## Documentation Overview
 
-### [API Documentation](./api-documentation.md)
-Complete API reference for the Eryxon Flow backend services.
+### [API Documentation](./API_DOCUMENTATION.md)
+Complete API reference for the Eryxon Flow backend services (comprehensive version).
 
 **Contents:**
 - RESTful API endpoints (CRUD operations)
@@ -49,6 +51,26 @@ Comprehensive guide to the 3D STEP file viewer feature.
 - Supabase storage bucket setup
 - RLS policies for tenant isolation
 - Three.js and occt-import-js integration
+
+---
+
+### [Resource Seeding Instructions](./RESOURCE_SEEDING_INSTRUCTIONS.md)
+Setup guide for the resource linking system.
+
+**Contents:**
+- Resource types (tools, fixtures, molds)
+- Database migration setup
+- Linking resources to operations
+- Testing the resource system
+- Example resource data
+
+**Audience:** Developers, administrators, database managers
+
+**Key Topics:**
+- Running resource migrations
+- Adding resources to the catalog
+- Associating resources with operations
+- Resource availability tracking
 
 ---
 
@@ -157,11 +179,18 @@ Complete design system documentation for the application's UI components.
 ## Documentation by Topic
 
 ### Backend & API
-- [API Documentation](./api-documentation.md)
+- [API Documentation (Comprehensive)](./API_DOCUMENTATION.md)
+  - Complete REST API reference
+  - Multi-tenant architecture
+  - Edge functions guide
+- [API Documentation (Concise)](./api-documentation.md)
+  - Quick API reference
   - All endpoints and operations
   - Authentication mechanisms
-  - Multi-tenancy implementation
   - Webhooks and events
+- [Resource Seeding Instructions](./RESOURCE_SEEDING_INSTRUCTIONS.md)
+  - Resource system setup
+  - Migration guide
 
 ### Frontend & UI
 - [Material UI Design System](./material-ui-design-system.md)
@@ -243,13 +272,27 @@ If you can't find what you're looking for:
 
 ---
 
+## Planned Features & Agent Instructions
+
+For planned features and implementation tasks, see the `/agent` folder:
+
+- **[Stripe Integration & Signup Plan](../agent/stripe-integration-signup-plan.md)** - Complete plan for implementing Stripe payment processing, self-service signup, and team management
+- **[Modular Architecture Plan](../agent/modular-architecture-plan.md)** - Architecture planning and refactoring strategies
+
+These files contain step-by-step implementation guides and are designed for AI agents or developers to execute.
+
+---
+
 ## Documentation Maintenance
 
 This documentation is maintained alongside the codebase. When making changes:
 
+- **docs/** - Only documentation explaining how features work (no TODOs)
+- **agent/** - Planned features with implementation tasks
+- **root/** - Only README.md with app overview and dev notes
 - Update relevant documentation files
 - Keep examples current with actual code
 - Add new features to this index
 - Maintain consistent formatting and structure
 
-**Last Updated:** 2025-01-17
+**Last Updated:** 2025-11-22
