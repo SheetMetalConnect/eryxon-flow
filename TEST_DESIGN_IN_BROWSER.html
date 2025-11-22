@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design System Browser Test</title>
+    <style>
+        /* Copy exact CSS from design-system.css */
+        :root {
+            --nav-active-bg: 0 0% 100% / 0.12;
+            --nav-active-fg: 0 0% 100%;
+            --nav-active-border: 0 0% 100% / 0.2;
+            --brand-primary: 211 100% 56%;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 { color: white; margin-bottom: 30px; }
+        h2 { color: #ccc; margin-top: 30px; margin-bottom: 15px; }
+
+        /* OLD STYLE - Bright Blue */
+        .old-blue-button {
+            background-color: #1e90ff;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border-radius: 6px;
+            display: inline-block;
+            min-width: 200px;
+        }
+
+        /* NEW STYLE - Clean White/Transparent */
+        .nav-active {
+            background-color: hsl(var(--nav-active-bg));
+            color: hsl(var(--nav-active-fg));
+            border: 1px solid hsl(var(--nav-active-border));
+            padding: 10px 20px;
+            margin: 10px 0;
+            border-radius: 6px;
+            display: inline-block;
+            min-width: 200px;
+        }
+
+        .comparison {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .check-item {
+            background: #252525;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 4px solid #333;
+        }
+
+        .check-item.pass {
+            border-left-color: #34a853;
+        }
+
+        .check-item.fail {
+            border-left-color: #ea4335;
+        }
+
+        .code {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+            margin: 10px 0;
+        }
+
+        .expected {
+            color: #34a853;
+        }
+
+        .actual {
+            color: #1e90ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Design System Visual Test</h1>
+
+        <div class="comparison">
+            <h2>❌ OLD STYLE (What you might be seeing):</h2>
+            <div class="old-blue-button">Dashboard - Active (BRIGHT BLUE)</div>
+            <div class="old-blue-button">Jobs - Active (BRIGHT BLUE)</div>
+            <div class="code">background-color: #1e90ff; (bright blue)</div>
+        </div>
+
+        <div class="comparison">
+            <h2>✅ NEW STYLE (What you should see):</h2>
+            <div class="nav-active">Dashboard - Active (WHITE/TRANSPARENT)</div>
+            <div class="nav-active">Jobs - Active (WHITE/TRANSPARENT)</div>
+            <div class="code">background-color: rgba(255, 255, 255, 0.12); (white 12% opacity)</div>
+        </div>
+
+        <h2>🔍 Checklist - Open DevTools (F12) and verify:</h2>
+
+        <div class="check-item">
+            <strong>1. Check Computed Styles</strong><br>
+            • Select an active navigation button<br>
+            • Check computed background-color<br>
+            • Expected: <span class="expected">rgba(255, 255, 255, 0.12)</span><br>
+            • NOT: <span class="actual">#1e90ff or rgb(30, 144, 255)</span>
+        </div>
+
+        <div class="check-item">
+            <strong>2. Check CSS Variables</strong><br>
+            Open Console and run:<br>
+            <div class="code">
+                getComputedStyle(document.documentElement).getPropertyValue('--nav-active-bg')
+            </div>
+            Expected: <span class="expected">"0 0% 100% / 0.12"</span>
+        </div>
+
+        <div class="check-item">
+            <strong>3. Check Classes Applied</strong><br>
+            • Inspect active button in sidebar<br>
+            • Should have class: <span class="expected">nav-active</span><br>
+            • Should have class: <span class="expected">nav-hover</span>
+        </div>
+
+        <div class="check-item">
+            <strong>4. Check AnimatedBackground</strong><br>
+            • Look for <span class="expected">&lt;div class="fixed top-0..."&gt;</span><br>
+            • Should contain 3 gradient orbs<br>
+            • z-index should be -1
+        </div>
+
+        <div class="check-item">
+            <strong>5. Verify CSS Loading</strong><br>
+            Network tab → Filter CSS → Find <span class="expected">index-*.css</span><br>
+            • Should be ~275KB<br>
+            • Status should be 200<br>
+            • Search in file for ".nav-active"
+        </div>
+
+        <h2>🚨 If you still see BRIGHT BLUE:</h2>
+        <ul style="line-height: 1.8;">
+            <li>1. Clear browser cache completely (not just reload)</li>
+            <li>2. Close ALL browser windows and reopen</li>
+            <li>3. Try incognito/private window</li>
+            <li>4. Check if you're running production build (npm run build && npm run preview)</li>
+            <li>5. Verify you're on the main branch (git status)</li>
+        </ul>
+
+        <h2>💡 Quick Debug Commands:</h2>
+        <div class="code">
+# Check if CSS has nav-active class<br>
+grep -c "nav-active" dist/assets/index-*.css<br>
+<br>
+# Rebuild completely<br>
+rm -rf dist node_modules/.vite<br>
+npm run build<br>
+npm run preview
+        </div>
+    </div>
+
+    <script>
+        // Auto-check CSS variables
+        window.addEventListener('DOMContentLoaded', () => {
+            const navActiveBg = getComputedStyle(document.documentElement).getPropertyValue('--nav-active-bg').trim();
+            console.log('✅ CSS Variable --nav-active-bg:', navActiveBg);
+            console.log('Expected: "0 0% 100% / 0.12"');
+            console.log('Match:', navActiveBg === '0 0% 100% / 0.12' ? '✅ PASS' : '❌ FAIL');
+        });
+    </script>
+</body>
+</html>
