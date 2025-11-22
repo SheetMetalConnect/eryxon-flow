@@ -1,38 +1,25 @@
 import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Stack,
-  LinearProgress,
-  Button,
-  Chip,
-  Paper,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Alert,
-  Divider,
-  useTheme,
-  alpha,
-  CircularProgress,
-  Grid,
-} from '@mui/material';
-import {
-  CheckCircle as CheckCircleIcon,
-  TrendingUp as TrendingUpIcon,
-  Email as EmailIcon,
-  Info as InfoIcon,
-  Upgrade as UpgradeIcon,
-  CloudUpload as CloudUploadIcon,
-  Work as WorkIcon,
-  Inventory as InventoryIcon,
-  People as PeopleIcon,
-} from '@mui/icons-material';
+  CheckCircle,
+  TrendingUp,
+  Mail,
+  Info,
+  ArrowUp,
+  CloudUpload,
+  Briefcase,
+  Package,
+  Users,
+  Loader2,
+} from 'lucide-react';
 import { useSubscription } from '../hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 
 const pricingTiers = [
   {
@@ -91,7 +78,6 @@ const pricingTiers = [
 
 export const MyPlan: React.FC = () => {
   const { t } = useTranslation();
-  const theme = useTheme();
   const { subscription, usageStats, loading, error, getPlanDisplayName, getUsagePercentage, isAtLimit } = useSubscription();
 
   const handleUpgradeRequest = (planName: string) => {
@@ -108,16 +94,16 @@ export const MyPlan: React.FC = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
-        <CircularProgress />
-      </Box>
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Alert severity="error" sx={{ mb: 3 }}>
-        {error}
+      <Alert variant="destructive" className="mb-4">
+        <AlertDescription>{error}</AlertDescription>
       </Alert>
     );
   }
@@ -126,331 +112,229 @@ export const MyPlan: React.FC = () => {
   const currentTier = pricingTiers.find(tier => tier.id === currentPlan);
 
   return (
-    <Box>
-      <Box sx={{ pb: 8 }}>
-        {/* Header */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" fontWeight={700} gutterBottom>
-            {t('myPlan.title')}
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            {t('myPlan.subtitle')}
-          </Typography>
-        </Box>
+    <div className="space-y-6 pb-16">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold mb-2">{t('myPlan.title')}</h1>
+        <p className="text-muted-foreground">{t('myPlan.subtitle')}</p>
+      </div>
 
-        {/* Current Plan Overview */}
-        <Card
-          sx={{
-            mb: 4,
-            background: currentPlan === 'premium'
-              ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-              : currentPlan === 'pro'
-                ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.9)} 0%, ${alpha(theme.palette.primary.dark, 0.9)} 100%)`
-                : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-            color: theme.palette.primary.contrastText,
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          <CardContent sx={{ p: 4 }}>
-            <Grid container spacing={3} alignItems="center">
-              <Grid size={{ xs: 12, md: 8 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                  <Typography variant="h5" fontWeight={700}>
-                    {currentTier?.name || t('myPlan.unknown')} {t('myPlan.plan')}
-                  </Typography>
-                  {currentTier?.popular && (
-                    <Chip
-                      label={t('myPlan.mostPopular')}
-                      size="small"
-                      sx={{
-                        backgroundColor: alpha(theme.palette.background.paper, 0.2),
-                        color: theme.palette.primary.contrastText,
-                        fontWeight: 600,
-                      }}
-                    />
-                  )}
-                </Box>
-                <Typography variant="body1" sx={{ mb: 2, opacity: 0.95 }}>
-                  {currentTier?.description}
-                </Typography>
-                <Typography variant="h3" fontWeight={700}>
-                  ${currentTier?.price || 0}
-                  <Typography component="span" variant="h6" sx={{ opacity: 0.8, ml: 1 }}>
-                    {t('myPlan.perMonth')}
-                  </Typography>
-                </Typography>
-              </Grid>
-              <Grid size={{ xs: 12, md: 4 }} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
-                {currentPlan !== 'premium' && (
-                  <Button
-                    variant="contained"
-                    size="large"
-                    startIcon={<UpgradeIcon />}
-                    onClick={() => handleUpgradeRequest(currentPlan === 'free' ? 'Pro' : 'Premium')}
-                    sx={{
-                      backgroundColor: theme.palette.background.paper,
-                      color: theme.palette.primary.main,
-                      fontWeight: 600,
-                      px: 4,
-                      py: 1.5,
-                      '&:hover': {
-                        backgroundColor: alpha(theme.palette.background.paper, 0.9),
-                      },
-                    }}
-                  >
-                    {t('myPlan.upgradePlan')}
-                  </Button>
+      {/* Current Plan Overview */}
+      <Card
+        className={cn(
+          "relative overflow-hidden border-0",
+          currentPlan === 'premium' && "bg-gradient-to-br from-purple-600/90 to-purple-800/90",
+          currentPlan === 'pro' && "bg-gradient-to-br from-blue-600/90 to-blue-800/90",
+          currentPlan === 'free' && "bg-gradient-to-br from-blue-500/90 to-blue-700/90"
+        )}
+      >
+        <CardContent className="p-6 md:p-8 text-white">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+            <div className="md:col-span-2">
+              <div className="flex items-center gap-2 mb-2">
+                <h2 className="text-2xl font-bold">
+                  {currentTier?.name || t('myPlan.unknown')} {t('myPlan.plan')}
+                </h2>
+                {currentTier?.popular && (
+                  <Badge variant="secondary" className="bg-white/20 text-white border-0">
+                    {t('myPlan.mostPopular')}
+                  </Badge>
                 )}
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
+              </div>
+              <p className="text-white/90 mb-4">{currentTier?.description}</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-5xl font-bold">${currentTier?.price || 0}</span>
+                <span className="text-lg text-white/80">{t('myPlan.perMonth')}</span>
+              </div>
+            </div>
+            <div className="md:text-right">
+              {currentPlan !== 'premium' && (
+                <Button
+                  size="lg"
+                  onClick={() => handleUpgradeRequest(currentPlan === 'free' ? 'Pro' : 'Premium')}
+                  className="bg-white text-blue-600 hover:bg-white/90 font-semibold px-6"
+                >
+                  <ArrowUp className="h-4 w-4 mr-2" />
+                  {t('myPlan.upgradePlan')}
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        <Grid container spacing={3}>
-          {/* Usage Statistics */}
-          <Grid size={{ xs: 12, lg: 8 }}>
-            <Card sx={{ mb: 3 }}>
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                  <TrendingUpIcon color="primary" />
-                  <Typography variant="h6" fontWeight={600}>
-                    {t('myPlan.usageThisMonth')}
-                  </Typography>
-                </Box>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Usage Statistics */}
+        <div className="lg:col-span-2 space-y-4">
+          <Card className="glass-card">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <TrendingUp className="h-5 w-5 text-foreground/80" />
+                <h3 className="text-lg font-semibold">{t('myPlan.usageThisMonth')}</h3>
+              </div>
 
-                {/* Parts Usage */}
-                <Box sx={{ mb: 3 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <InventoryIcon fontSize="small" color="action" />
-                      <Typography variant="body2" fontWeight={600}>
-                        {t('myPlan.parts')}
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      {usageStats?.parts_this_month || 0} / {subscription?.max_parts_per_month || '∞'}
-                    </Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={getUsagePercentage(usageStats?.parts_this_month || 0, subscription?.max_parts_per_month || null)}
-                    sx={{
-                      height: 8,
-                      borderRadius: 1,
-                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                      '& .MuiLinearProgress-bar': {
-                        backgroundColor: isAtLimit(usageStats?.parts_this_month || 0, subscription?.max_parts_per_month || null)
-                          ? theme.palette.error.main
-                          : theme.palette.primary.main,
-                      },
-                    }}
-                  />
-                  {isAtLimit(usageStats?.parts_this_month || 0, subscription?.max_parts_per_month || null) && (
-                    <Alert severity="warning" sx={{ mt: 1 }}>
-                      {t('myPlan.partsLimitReached')}
-                    </Alert>
+              {/* Parts Usage */}
+              <div className="mb-6">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center gap-2">
+                    <Package className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-semibold">{t('myPlan.parts')}</span>
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {usageStats?.parts_this_month || 0} / {subscription?.max_parts_per_month || '∞'}
+                  </span>
+                </div>
+                <Progress
+                  value={getUsagePercentage(usageStats?.parts_this_month || 0, subscription?.max_parts_per_month || null)}
+                  className={cn(
+                    "h-2",
+                    isAtLimit(usageStats?.parts_this_month || 0, subscription?.max_parts_per_month || null) && "[&>div]:bg-destructive"
                   )}
-                </Box>
+                />
+                {isAtLimit(usageStats?.parts_this_month || 0, subscription?.max_parts_per_month || null) && (
+                  <Alert variant="default" className="mt-2 bg-yellow-500/10 border-yellow-500/20">
+                    <AlertDescription className="text-sm">
+                      {t('myPlan.partsLimitReached')}
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
 
-                {/* Jobs Usage */}
-                <Box sx={{ mb: 3 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <WorkIcon fontSize="small" color="action" />
-                      <Typography variant="body2" fontWeight={600}>
-                        {t('myPlan.totalJobs')}
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      {usageStats?.total_jobs || 0} {subscription?.max_jobs && `/ ${subscription.max_jobs}`}
-                    </Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={getUsagePercentage(usageStats?.total_jobs || 0, subscription?.max_jobs || null)}
-                    sx={{
-                      height: 8,
-                      borderRadius: 1,
-                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                      '& .MuiLinearProgress-bar': {
-                        backgroundColor: isAtLimit(usageStats?.total_jobs || 0, subscription?.max_jobs || null)
-                          ? theme.palette.error.main
-                          : theme.palette.success.main,
-                      },
-                    }}
-                  />
-                </Box>
+              {/* Jobs Usage */}
+              <div className="mb-6">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-semibold">{t('myPlan.totalJobs')}</span>
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {usageStats?.total_jobs || 0} {subscription?.max_jobs && `/ ${subscription.max_jobs}`}
+                  </span>
+                </div>
+                <Progress
+                  value={getUsagePercentage(usageStats?.total_jobs || 0, subscription?.max_jobs || null)}
+                  className={cn(
+                    "h-2",
+                    isAtLimit(usageStats?.total_jobs || 0, subscription?.max_jobs || null) && "[&>div]:bg-destructive"
+                  )}
+                />
+              </div>
 
-                {/* Storage Usage */}
-                <Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <CloudUploadIcon fontSize="small" color="action" />
-                      <Typography variant="body2" fontWeight={600}>
-                        {t('myPlan.storage')}
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      {(subscription?.current_storage_gb || 0).toFixed(2)} GB / {subscription?.max_storage_gb || '∞'} GB
-                    </Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={getUsagePercentage(subscription?.current_storage_gb || 0, subscription?.max_storage_gb || null)}
-                    sx={{
-                      height: 8,
-                      borderRadius: 1,
-                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                      '& .MuiLinearProgress-bar': {
-                        backgroundColor: isAtLimit(subscription?.current_storage_gb || 0, subscription?.max_storage_gb || null)
-                          ? theme.palette.error.main
-                          : theme.palette.info.main,
-                      },
-                    }}
-                  />
-                </Box>
+              {/* Storage Usage */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center gap-2">
+                    <CloudUpload className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-semibold">{t('myPlan.storage')}</span>
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {(subscription?.current_storage_gb || 0).toFixed(2)} GB / {subscription?.max_storage_gb || '∞'} GB
+                  </span>
+                </div>
+                <Progress
+                  value={getUsagePercentage(subscription?.current_storage_gb || 0, subscription?.max_storage_gb || null)}
+                  className={cn(
+                    "h-2",
+                    isAtLimit(subscription?.current_storage_gb || 0, subscription?.max_storage_gb || null) && "[&>div]:bg-destructive"
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Card className="glass-card">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-foreground">{usageStats?.active_jobs || 0}</div>
+                <div className="text-xs text-muted-foreground">{t('myPlan.activeJobs')}</div>
               </CardContent>
             </Card>
-
-            {/* Quick Stats */}
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Paper sx={{ p: 2, textAlign: 'center' }}>
-                  <Typography variant="h4" fontWeight={700} color="primary">
-                    {usageStats?.active_jobs || 0}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {t('myPlan.activeJobs')}
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Paper sx={{ p: 2, textAlign: 'center' }}>
-                  <Typography variant="h4" fontWeight={700} color="success.main">
-                    {usageStats?.completed_jobs || 0}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {t('myPlan.completedJobs')}
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Paper sx={{ p: 2, textAlign: 'center' }}>
-                  <Typography variant="h4" fontWeight={700} color="info.main">
-                    {usageStats?.total_operators || 0}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {t('myPlan.operators')}
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <Paper sx={{ p: 2, textAlign: 'center' }}>
-                  <Typography variant="h4" fontWeight={700} color="secondary.main">
-                    {usageStats?.total_admins || 0}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {t('myPlan.admins')}
-                  </Typography>
-                </Paper>
-              </Grid>
-            </Grid>
-          </Grid>
-
-          {/* Plan Features & Upgrade Options */}
-          <Grid size={{ xs: 12, lg: 4 }}>
-            {/* Current Plan Features */}
-            <Card sx={{ mb: 3 }}>
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="h6" fontWeight={600} gutterBottom>
-                  {t('myPlan.planFeatures')}
-                </Typography>
-                <List dense>
-                  {currentTier?.features.map((feature, index) => (
-                    <ListItem key={index} sx={{ px: 0 }}>
-                      <ListItemIcon sx={{ minWidth: 32 }}>
-                        <CheckCircleIcon fontSize="small" color="success" />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={feature}
-                        primaryTypographyProps={{
-                          variant: 'body2',
-                          fontWeight: 500,
-                        }}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
+            <Card className="glass-card">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-green-500">{usageStats?.completed_jobs || 0}</div>
+                <div className="text-xs text-muted-foreground">{t('myPlan.completedJobs')}</div>
               </CardContent>
             </Card>
+            <Card className="glass-card">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-cyan-500">{usageStats?.total_operators || 0}</div>
+                <div className="text-xs text-muted-foreground">{t('myPlan.operators')}</div>
+              </CardContent>
+            </Card>
+            <Card className="glass-card">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-purple-500">{usageStats?.total_admins || 0}</div>
+                <div className="text-xs text-muted-foreground">{t('myPlan.admins')}</div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
-            {/* Upgrade Info */}
-            {currentPlan !== 'premium' && (
-              <Card
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
-                  border: `1px solid ${theme.palette.divider}`,
-                }}
-              >
-                <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                    <InfoIcon color="primary" />
-                    <Typography variant="h6" fontWeight={600}>
-                      {t('myPlan.readyToUpgrade')}
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    {currentPlan === 'free'
-                      ? t('myPlan.upgradeFromFree')
-                      : t('myPlan.upgradeFromPro')}
-                  </Typography>
-                  <Divider sx={{ my: 2 }} />
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-                    {t('myPlan.contactToUpgrade')}
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    startIcon={<EmailIcon />}
-                    onClick={() => handleUpgradeRequest(currentPlan === 'free' ? 'Pro' : 'Premium')}
-                    sx={{
-                      textTransform: 'none',
-                      fontWeight: 600,
-                    }}
-                  >
-                    {t('myPlan.requestUpgrade')}
-                  </Button>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2, textAlign: 'center' }}>
-                    {t('myPlan.noSalesCalls')}
-                  </Typography>
-                </CardContent>
-              </Card>
-            )}
-          </Grid>
-        </Grid>
+        {/* Plan Features & Upgrade Options */}
+        <div className="space-y-4">
+          {/* Current Plan Features */}
+          <Card className="glass-card">
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold mb-4">{t('myPlan.planFeatures')}</h3>
+              <ul className="space-y-2">
+                {currentTier?.features.map((feature, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
 
-        {/* Security & Architecture Notice */}
-        <Alert
-          severity="info"
-          icon={<InfoIcon />}
-          sx={{
-            mt: 4,
-            '& .MuiAlert-message': {
-              width: '100%',
-            },
-          }}
-        >
-          <Typography variant="body2" fontWeight={600} gutterBottom>
+          {/* Upgrade Info */}
+          {currentPlan !== 'premium' && (
+            <Card className="glass-card bg-gradient-to-br from-blue-500/10 to-purple-500/10">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Info className="h-5 w-5 text-foreground/80" />
+                  <h3 className="text-lg font-semibold">{t('myPlan.readyToUpgrade')}</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {currentPlan === 'free'
+                    ? t('myPlan.upgradeFromFree')
+                    : t('myPlan.upgradeFromPro')}
+                </p>
+                <Separator className="my-4 bg-border-subtle" />
+                <p className="text-xs text-muted-foreground mb-4">
+                  {t('myPlan.contactToUpgrade')}
+                </p>
+                <Button
+                  className="w-full"
+                  onClick={() => handleUpgradeRequest(currentPlan === 'free' ? 'Pro' : 'Premium')}
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  {t('myPlan.requestUpgrade')}
+                </Button>
+                <p className="text-xs text-muted-foreground text-center mt-3">
+                  {t('myPlan.noSalesCalls')}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+
+      {/* Security & Architecture Notice */}
+      <Alert className="bg-cyan-500/10 border-cyan-500/20">
+        <Info className="h-4 w-4" />
+        <AlertDescription>
+          <div className="font-semibold mb-1">
             {currentPlan === 'premium' ? t('myPlan.singleTenant') : t('myPlan.multiTenant')}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
+          </div>
+          <div className="text-xs text-muted-foreground">
             {currentPlan === 'premium'
               ? t('myPlan.singleTenantDescription')
               : t('myPlan.multiTenantDescription')}
-          </Typography>
-        </Alert>
-      </Box>
-    </Box>
+          </div>
+        </AlertDescription>
+      </Alert>
+    </div>
   );
 };
