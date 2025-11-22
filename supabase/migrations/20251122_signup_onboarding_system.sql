@@ -86,14 +86,8 @@ CREATE POLICY "Admins can delete invitations in their tenant"
     AND public.get_user_role() = 'admin'
   );
 
--- Public policy: Anyone can view invitation by token (for acceptance page)
-CREATE POLICY "Anyone can view invitation by valid token"
-  ON public.invitations FOR SELECT
-  USING (
-    token IS NOT NULL
-    AND status = 'pending'
-    AND expires_at > NOW()
-  );
+-- Note: Invitation viewing by token is handled by get_invitation_by_token() function
+-- No public RLS policy needed - the function uses SECURITY DEFINER to bypass RLS
 
 -- ============================================================================
 -- 4. INVITATION MANAGEMENT FUNCTIONS
@@ -248,7 +242,12 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  -- Check if user is admin in the invitation's tenant
+  -- Check if user is admin
+  IF public.get_user_role() != 'admin' THEN
+    RAISE EXCEPTION 'Only admins can cancel invitations';
+  END IF;
+
+  -- Check if invitation belongs to user's tenant
   IF NOT EXISTS (
     SELECT 1 FROM public.invitations
     WHERE id = p_invitation_id
@@ -309,8 +308,9 @@ DECLARE
   v_tenant_id UUID;
   v_user_id UUID;
   v_pin_hash TEXT;
-  v_profile_id UUID;
   v_generated_email TEXT;
+  v_random_password TEXT;
+  v_auth_user_id UUID;
 BEGIN
   -- Get current user and tenant
   v_user_id := auth.uid();
@@ -337,37 +337,63 @@ BEGIN
   -- Generate a synthetic email for Supabase Auth
   v_generated_email := 'operator-' || p_employee_id || '@internal.eryxon.local';
 
+  -- Generate a random password (won't be used, but required by Supabase Auth)
+  v_random_password := encode(gen_random_bytes(32), 'base64');
+
   -- Create auth user with synthetic email
-  -- Note: In production, you might want to use a custom auth flow
-  -- For now, we'll create a profile directly without auth
-  v_profile_id := gen_random_uuid();
-
-  -- Insert profile directly (bypassing Supabase Auth for non-email operators)
-  INSERT INTO public.profiles (
+  -- This creates the user in auth.users which profiles.id references
+  INSERT INTO auth.users (
+    instance_id,
     id,
-    tenant_id,
-    username,
-    full_name,
-    email,
+    aud,
     role,
-    has_email_login,
-    employee_id,
-    pin_hash,
-    active
+    email,
+    encrypted_password,
+    email_confirmed_at,
+    raw_app_meta_data,
+    raw_user_meta_data,
+    created_at,
+    updated_at,
+    confirmation_token,
+    email_change,
+    email_change_token_new,
+    recovery_token
   ) VALUES (
-    v_profile_id,
-    v_tenant_id,
-    p_employee_id,
-    p_full_name,
+    '00000000-0000-0000-0000-000000000000',
+    gen_random_uuid(),
+    'authenticated',
+    'authenticated',
     v_generated_email,
-    p_role,
-    false,
-    p_employee_id,
-    v_pin_hash,
-    true
-  );
+    crypt(v_random_password, gen_salt('bf')),
+    NOW(),
+    '{"provider":"email","providers":["email"]}',
+    jsonb_build_object(
+      'username', p_employee_id,
+      'full_name', p_full_name,
+      'role', p_role,
+      'tenant_id', v_tenant_id,
+      'has_email_login', false,
+      'employee_id', p_employee_id
+    ),
+    NOW(),
+    NOW(),
+    '',
+    '',
+    '',
+    ''
+  )
+  RETURNING id INTO v_auth_user_id;
 
-  RETURN v_profile_id;
+  -- The handle_new_user trigger will create the profile automatically
+  -- But we need to update it with PIN hash and employee_id
+  UPDATE public.profiles
+  SET
+    has_email_login = false,
+    employee_id = p_employee_id,
+    pin_hash = v_pin_hash
+  WHERE id = v_auth_user_id;
+
+  RETURN v_auth_user_id;
 END;
 $$;
 
