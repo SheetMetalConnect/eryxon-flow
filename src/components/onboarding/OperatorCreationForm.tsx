@@ -56,7 +56,7 @@ export function OperatorCreationForm() {
     setCreating(true);
 
     try {
-      const { data, error } = await supabase.rpc('create_operator_with_pin', {
+      const { data, error } = await supabase.rpc('create_operator_with_pin' as any, {
         p_full_name: fullName,
         p_employee_id: finalEmployeeId,
         p_pin: pin,
@@ -71,7 +71,7 @@ export function OperatorCreationForm() {
       setCreatedOperators([
         ...createdOperators,
         {
-          id: data,
+          id: (data as any) || finalEmployeeId,
           full_name: fullName,
           employee_id: finalEmployeeId,
           role: 'operator',

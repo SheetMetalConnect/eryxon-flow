@@ -31,7 +31,6 @@ export default function OrganizationSettings() {
     name: '',
     company_name: '',
     timezone: 'UTC',
-    contact_email: '',
     billing_email: '',
   });
 
@@ -57,7 +56,6 @@ export default function OrganizationSettings() {
         name: data.name || '',
         company_name: data.company_name || '',
         timezone: data.timezone || 'UTC',
-        contact_email: data.contact_email || '',
         billing_email: data.billing_email || '',
       });
     } catch (error: any) {
@@ -82,7 +80,6 @@ export default function OrganizationSettings() {
           name: formData.name,
           company_name: formData.company_name,
           timezone: formData.timezone,
-          contact_email: formData.contact_email,
           billing_email: formData.billing_email,
         })
         .eq('id', tenant.id);
@@ -173,28 +170,15 @@ export default function OrganizationSettings() {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="contact_email">Contact Email</Label>
-                <Input
-                  id="contact_email"
-                  type="email"
-                  value={formData.contact_email}
-                  onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
-                  placeholder="contact@example.com"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="billing_email">Billing Email</Label>
-                <Input
-                  id="billing_email"
-                  type="email"
-                  value={formData.billing_email}
-                  onChange={(e) => setFormData({ ...formData, billing_email: e.target.value })}
-                  placeholder="billing@example.com"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="billing_email">Billing Email</Label>
+              <Input
+                id="billing_email"
+                type="email"
+                value={formData.billing_email}
+                onChange={(e) => setFormData({ ...formData, billing_email: e.target.value })}
+                placeholder="billing@example.com"
+              />
             </div>
 
             <div className="pt-4">

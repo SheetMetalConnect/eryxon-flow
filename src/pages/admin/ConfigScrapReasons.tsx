@@ -56,7 +56,7 @@ export default function ConfigScrapReasons() {
 
   const seedDefaultMutation = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.rpc("seed_default_scrap_reasons", { p_tenant_id: profile?.tenant_id });
+      const { data, error } = await supabase.rpc("seed_default_scrap_reasons" as any);
       if (error) throw error;
       return data;
     },
