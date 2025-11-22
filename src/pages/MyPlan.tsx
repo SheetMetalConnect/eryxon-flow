@@ -39,52 +39,41 @@ const pricingTiers = [
     id: 'free',
     name: 'Free',
     price: 0,
-    description: 'Perfect for small shops getting started',
+    description: 'Get started',
     features: [
-      '100 jobs per month',
-      '1,000 parts per month',
-      '5 GB file storage',
-      'Limited API access',
-      'Multi-tenant architecture',
-      'Community support (docs only)',
-      'Basic workflow tracking',
+      'All features included',
+      'Up to 100 jobs',
+      'Up to 1,000 parts per month',
+      '5 GB storage',
+      'Full API access',
+      'Hosted on EU servers',
     ],
   },
   {
     id: 'pro',
     name: 'Pro',
-    price: 97,
+    price: 149,
     popular: true,
-    description: 'For growing shops with higher volume',
+    description: 'For growing shops',
     features: [
-      'Unlimited users',
-      '1,000 jobs per month',
-      '10,000 parts per month',
-      '50 GB file storage',
-      'Full API access',
-      'Multi-tenant architecture',
-      'Priority email support',
-      'Advanced analytics',
-      'Webhook integrations',
+      'Everything in Free',
+      'Higher usage limits',
+      'Standard integrations',
+      'Priority support',
+      'Coming soon',
     ],
   },
   {
     id: 'premium',
-    name: 'Enterprise',
-    price: 497,
-    description: 'Custom, bespoke solution',
+    name: 'Premium',
+    price: null,
+    description: 'For enterprise needs',
     features: [
-      'Everything in Pro',
-      'Unlimited jobs & parts',
-      'Unlimited storage',
+      'Self-hosted deployment',
       'Unlimited usage',
-      'Self-hosted (on-premises)',
-      'Single-tenant architecture',
-      'SSO/SAML authentication',
-      'Dedicated support channel',
-      'Custom SLA',
-      'White-label options',
-      'Advanced security controls',
+      'Custom integrations',
+      'Dedicated support',
+      'Coming soon',
     ],
   },
 ];
@@ -175,9 +164,9 @@ export const MyPlan: React.FC = () => {
                   {currentTier?.description}
                 </Typography>
                 <Typography variant="h3" fontWeight={700}>
-                  ${currentTier?.price || 0}
+                  {currentTier?.price !== null ? `€${currentTier?.price}` : t('pricing.premium.price')}
                   <Typography component="span" variant="h6" sx={{ opacity: 0.8, ml: 1 }}>
-                    {t('myPlan.perMonth')}
+                    {currentTier?.price !== null ? t('myPlan.perMonth') : ''}
                   </Typography>
                 </Typography>
               </Grid>

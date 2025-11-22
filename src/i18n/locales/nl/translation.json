@@ -1070,63 +1070,73 @@
     }
   },
   "pricing": {
-    "title": "Abonnementen",
-    "subtitle": "Kies het perfecte abonnement voor uw metaalbedrijf",
+    "title": "Prijzen",
+    "subtitle": "Eenvoudige, transparante prijzen voor Europese metaalbedrijven",
     "monthly": "Maandelijks",
     "annually": "Jaarlijks",
     "save20": "20% besparen",
     "currentPlan": "Huidig abonnement",
     "choosePlan": "Abonnement kiezen",
-    "upgrade": "Upgraden",
+    "upgrade": "Upgrade aanvragen",
     "downgrade": "Downgraden",
-    "contactSales": "Contact verkoop",
+    "contactSales": "Neem contact op",
+    "comingSoon": "Binnenkort beschikbaar",
     "free": {
       "name": "Gratis",
-      "price": "€ 0",
-      "description": "Perfect om te beginnen",
+      "price": "€0",
+      "description": "Begin",
       "features": [
         "Alle functies inbegrepen",
-        "Tot 100 opdrachten per maand",
+        "Tot 100 opdrachten",
         "Tot 1.000 onderdelen per maand",
-        "5GB opslag",
-        "10GB datagebruik per maand",
-        "Self-service aanmelding",
-        "Community-ondersteuning"
+        "5 GB opslag",
+        "Volledige API-toegang",
+        "Gehost op EU-servers"
       ]
     },
     "pro": {
       "name": "Pro",
-      "price": "€ 49",
-      "description": "Ideaal voor kleine tot middelgrote bedrijven",
+      "price": "€149",
+      "description": "Voor groeiende bedrijven",
       "features": [
-        "Alle functies inbegrepen",
-        "Volledig gebruik met hogere limieten",
-        "Gelaagde opslaglimieten",
-        "Upgrades beschikbaar voor intensief opslaggebruik",
-        "Self-service beheer",
-        "API-toegang",
-        "Prioriteitsondersteuning"
+        "Alles uit Gratis",
+        "Hogere gebruikslimieten",
+        "Standaard integraties",
+        "Prioriteitsondersteuning",
+        "Binnenkort beschikbaar"
       ]
     },
     "premium": {
       "name": "Premium",
-      "price": "Neem contact op met verkoop",
-      "description": "Voor grote productiebedrijven",
+      "price": "Op maat",
+      "description": "Voor ondernemingsbehoeften",
       "features": [
-        "Alle functies inbegrepen",
-        "Enterprise-functies",
-        "SSO-authenticatie",
-        "Self-hosted deployment optie",
-        "Single-tenant architectuur",
-        "Onbeperkte opslag",
-        "Toegewezen accountmanager",
-        "24/7 premium ondersteuning"
+        "Self-hosted installatie",
+        "Onbeperkt gebruik",
+        "Aangepaste integraties",
+        "Toegewezen ondersteuning",
+        "Binnenkort beschikbaar"
       ]
     },
-    "perMonth": "/maand",
+    "perMonth": "/maand per tenant",
     "perYear": "/jaar",
     "billedMonthly": "Maandelijks gefactureerd",
-    "billedAnnually": "Jaarlijks gefactureerd"
+    "billedAnnually": "Jaarlijks gefactureerd",
+    "howItWorks": {
+      "title": "Hoe het werkt",
+      "payments": {
+        "title": "Betalingen via Stripe",
+        "description": "Alle betalingen worden veilig verwerkt via Stripe met ondersteuning voor SEPA-incasso en creditcards. Prijzen in Euro's. Volledig geautomatiseerde facturering."
+      },
+      "selfService": {
+        "title": "Self-Service Setup",
+        "description": "Meld u aan, configureer uw fasen en materialen, en begin met het volgen van uw productie. Geen verkoopgesprekken, geen complex onboarding. Alleen documentatie en e-mail ondersteuning."
+      },
+      "upgrade": {
+        "title": "Geïnteresseerd in Pro of On-Premise?",
+        "description": "Neem contact op via"
+      }
+    }
   },
   "myPlan": {
     "title": "Mijn abonnement",
