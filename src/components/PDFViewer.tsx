@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   ZoomIn,
@@ -6,7 +6,8 @@ import {
   Download,
   Loader2,
   FileText,
-  Maximize2
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 
 interface PDFViewerProps {
@@ -18,6 +19,8 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [zoom, setZoom] = useState(100);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleLoad = () => {
     setLoading(false);
@@ -48,6 +51,22 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
     link.click();
   };
 
+  const toggleFullscreen = async () => {
+    if (!containerRef.current) return;
+
+    try {
+      if (!isFullscreen) {
+        await containerRef.current.requestFullscreen();
+        setIsFullscreen(true);
+      } else {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    } catch (error) {
+      console.error('Fullscreen error:', error);
+    }
+  };
+
   if (!url) {
     return (
       <div className="flex flex-col h-full w-full bg-surface-elevated/50 backdrop-blur-sm items-center justify-center text-muted-foreground">
@@ -60,7 +79,7 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
   }
 
   return (
-    <div className="flex flex-col h-full w-full bg-surface-elevated/50 backdrop-blur-sm">
+    <div ref={containerRef} className="flex flex-col h-full w-full bg-surface-elevated/50 backdrop-blur-sm">
       {/* Toolbar */}
       <div className="flex items-center gap-2 p-3 bg-surface-elevated/80 backdrop-blur-sm border-b border-border/50 shadow-sm">
         <Button
@@ -77,12 +96,21 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
         <Button
           variant="outline"
           size="sm"
-          onClick={handleFitToView}
+          onClick={toggleFullscreen}
           disabled={loading}
           className="bg-card/50 backdrop-blur-sm border-border/50 text-foreground hover:bg-primary/10 font-medium transition-all"
         >
-          <Maximize2 className="h-4 w-4 mr-1" />
-          Fit to View
+          {isFullscreen ? (
+            <>
+              <Minimize2 className="h-4 w-4 mr-1" />
+              Exit Fullscreen
+            </>
+          ) : (
+            <>
+              <Maximize2 className="h-4 w-4 mr-1" />
+              Fullscreen
+            </>
+          )}
         </Button>
 
         <Button

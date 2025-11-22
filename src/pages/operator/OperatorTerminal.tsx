@@ -13,6 +13,7 @@ import { DetailPanel } from "@/components/terminal/DetailPanel";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTranslation } from "react-i18next";
+import { Info } from "lucide-react";
 
 // Define the interface locally if not exported, matching the one in JobRow
 import { TerminalJob } from '@/types/terminal';
@@ -122,6 +123,11 @@ export default function OperatorTerminal() {
         const actual = op.actual_time || 0;
         const remaining = Math.max(0, estimated - actual);
 
+        // Find next operation in sequence for this part
+        const partOperations = operations.filter(o => o.part.id === op.part.id).sort((a, b) => a.sequence - b.sequence);
+        const currentIndex = partOperations.findIndex(o => o.id === op.id);
+        const nextOp = currentIndex !== -1 && currentIndex < partOperations.length - 1 ? partOperations[currentIndex + 1] : null;
+
         return {
             id: op.id, // Use operation ID as the unique key
             operationId: op.id,
@@ -134,6 +140,8 @@ export default function OperatorTerminal() {
             currentOp: op.operation_name,
             totalOps: 0, // Placeholder
             hours: Number(remaining.toFixed(1)), // Format to 1 decimal place
+            estimatedHours: Number(estimated.toFixed(1)),
+            actualHours: Number(actual.toFixed(1)),
             dueDate: op.part.job.due_date || new Date().toISOString(),
             status: status,
             hasPdf,
@@ -144,6 +152,9 @@ export default function OperatorTerminal() {
             cellName: op.cell.name,
             cellColor: op.cell.color || "#3b82f6",
             cellId: op.cell_id,
+            nextCellName: nextOp?.cell?.name,
+            nextCellColor: nextOp?.cell?.color || undefined,
+            nextCellId: nextOp?.cell_id,
             currentSequence: op.sequence,
         };
     };
@@ -288,7 +299,13 @@ export default function OperatorTerminal() {
                 {/* 1. IN PROCESS */}
                 <div className="flex-1 flex flex-col min-h-0 border-b border-border/50 overflow-hidden">
                     <div className="px-6 py-3 bg-status-active/20 backdrop-blur-sm border-l-4 border-status-active flex items-center justify-between shrink-0">
-                        <h2 className="text-sm font-bold text-status-active uppercase tracking-wide">{t("terminal.inProcess")} ({inProcessJobs.length})</h2>
+                        <div className="flex items-center gap-2">
+                            <h2 className="text-sm font-bold text-status-active uppercase tracking-wide">{t("terminal.inProcess")} ({inProcessJobs.length})</h2>
+                            <Info
+                                className="h-4 w-4 text-status-active/70 cursor-help"
+                                title="Jobs currently being worked on by operators"
+                            />
+                        </div>
                     </div>
                     <div className="flex-1 overflow-auto">
                         <table className="w-full text-left border-collapse">
@@ -331,7 +348,13 @@ export default function OperatorTerminal() {
                 {/* 2. IN BUFFER */}
                 <div className="flex-1 flex flex-col min-h-0 border-b border-border/50 overflow-hidden">
                     <div className="px-6 py-3 bg-info/20 backdrop-blur-sm border-l-4 border-info flex items-center justify-between shrink-0">
-                        <h2 className="text-sm font-bold text-info uppercase tracking-wide">{t("terminal.inBuffer")} ({inBufferJobs.length})</h2>
+                        <div className="flex items-center gap-2">
+                            <h2 className="text-sm font-bold text-info uppercase tracking-wide">{t("terminal.inBuffer")} ({inBufferJobs.length})</h2>
+                            <Info
+                                className="h-4 w-4 text-info/70 cursor-help"
+                                title="Jobs ready to start, waiting in queue for this cell"
+                            />
+                        </div>
                     </div>
                     <div className="flex-1 overflow-auto">
                         <table className="w-full text-left border-collapse">
@@ -366,7 +389,13 @@ export default function OperatorTerminal() {
                 {/* 3. EXPECTED */}
                 <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
                     <div className="px-6 py-3 bg-status-pending/20 backdrop-blur-sm border-l-4 border-status-pending flex items-center justify-between shrink-0">
-                        <h2 className="text-sm font-bold text-status-pending uppercase tracking-wide">{t("terminal.expected")} ({expectedJobs.length})</h2>
+                        <div className="flex items-center gap-2">
+                            <h2 className="text-sm font-bold text-status-pending uppercase tracking-wide">{t("terminal.expected")} ({expectedJobs.length})</h2>
+                            <Info
+                                className="h-4 w-4 text-status-pending/70 cursor-help"
+                                title="Jobs scheduled to arrive at this cell soon, currently in previous operations"
+                            />
+                        </div>
                     </div>
                     <div className="flex-1 overflow-auto">
                         <table className="w-full text-left border-collapse">

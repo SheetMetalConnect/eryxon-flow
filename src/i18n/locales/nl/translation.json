@@ -1175,7 +1175,7 @@
       "jobNumber": "Opdrachtnr.",
       "partNumber": "Onderdeelnr.",
       "operation": "Bewerking",
-      "cell": "Cel",
+      "cell": "Volgende cel",
       "material": "Materiaal",
       "quantity": "Aantal",
       "hours": "Uren",

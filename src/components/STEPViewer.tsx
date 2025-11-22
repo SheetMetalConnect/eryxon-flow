@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import {
   Maximize2,
+  Minimize2,
   Grid3x3,
   Boxes,
   Loader2,
@@ -34,9 +35,11 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
   const [explosionFactor, setExplosionFactor] = useState(1);
   const [gridVisible, setGridVisible] = useState(true);
   const [edgesVisible, setEdgesVisible] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Three.js refs
   const containerRef = useRef<HTMLDivElement>(null);
+  const viewerContainerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -510,19 +513,45 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
     setEdgesVisible(!edgesVisible);
   };
 
+  // Toggle fullscreen
+  const toggleFullscreen = async () => {
+    if (!viewerContainerRef.current) return;
+
+    try {
+      if (!isFullscreen) {
+        await viewerContainerRef.current.requestFullscreen();
+        setIsFullscreen(true);
+      } else {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    } catch (error) {
+      console.error('Fullscreen error:', error);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full w-full bg-surface-elevated/50 backdrop-blur-sm">
+    <div ref={viewerContainerRef} className="flex flex-col h-full w-full bg-surface-elevated/50 backdrop-blur-sm">
       {/* Toolbar */}
       <div className="flex items-center gap-2 p-3 bg-surface-elevated/80 backdrop-blur-sm border-b border-border/50 shadow-sm">
         <Button
           variant="outline"
           size="sm"
-          onClick={fitCameraToMeshes}
-          disabled={stepLoading || meshesRef.current.length === 0}
+          onClick={toggleFullscreen}
+          disabled={stepLoading}
           className="bg-card/50 backdrop-blur-sm border-border/50 text-foreground hover:bg-primary/10 font-medium transition-all"
         >
-          <Maximize2 className="h-4 w-4 mr-1" />
-          Fit View
+          {isFullscreen ? (
+            <>
+              <Minimize2 className="h-4 w-4 mr-1" />
+              Exit Fullscreen
+            </>
+          ) : (
+            <>
+              <Maximize2 className="h-4 w-4 mr-1" />
+              Fullscreen
+            </>
+          )}
         </Button>
 
         <Button

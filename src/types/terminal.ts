@@ -7,6 +7,8 @@ export interface TerminalJob {
     currentOp: string;
     totalOps: number; // We might not have this easily, default to 0 or sequence
     hours: number;
+    estimatedHours: number; // Total estimated time
+    actualHours: number; // Time actually used
     dueDate: string;
     status: "in_progress" | "in_buffer" | "expected" | "completed" | "on_hold";
     warnings?: string[];
@@ -20,8 +22,11 @@ export interface TerminalJob {
     filePaths: string[];
     activeTimeEntryId?: string;
     notes?: string | null;
-    cellName?: string;
-    cellColor?: string;
-    cellId: string;
+    cellName?: string; // Current cell
+    cellColor?: string; // Current cell color
+    cellId: string; // Current cell ID
+    nextCellName?: string; // Next cell in routing
+    nextCellColor?: string; // Next cell color
+    nextCellId?: string; // Next cell ID
     currentSequence?: number; // Added for next operation detection
 }

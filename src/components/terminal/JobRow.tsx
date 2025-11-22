@@ -54,18 +54,22 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
                 </Badge>
             </td>
 
-            {/* Cell (Next Cell) */}
+            {/* Next Cell */}
             <td className="px-3 py-3 text-sm text-foreground whitespace-nowrap">
-                <span
-                    className="inline-block px-2.5 py-1 rounded-md text-xs font-bold shadow-sm backdrop-blur-sm"
-                    style={{
-                        backgroundColor: job.cellColor ? `${job.cellColor}30` : 'hsl(var(--muted))',
-                        color: job.cellColor || 'hsl(var(--foreground))',
-                        border: `1px solid ${job.cellColor ? `${job.cellColor}50` : 'hsl(var(--border))'}`
-                    }}
-                >
-                    {job.cellName || '-'}
-                </span>
+                {job.nextCellName ? (
+                    <span
+                        className="inline-block px-2.5 py-1 rounded-md text-xs font-bold shadow-sm backdrop-blur-sm"
+                        style={{
+                            backgroundColor: job.nextCellColor ? `${job.nextCellColor}30` : 'hsl(var(--muted))',
+                            color: job.nextCellColor || 'hsl(var(--foreground))',
+                            border: `1px solid ${job.nextCellColor ? `${job.nextCellColor}50` : 'hsl(var(--border))'}`
+                        }}
+                    >
+                        {job.nextCellName}
+                    </span>
+                ) : (
+                    <span className="text-xs text-muted-foreground italic">Final Step</span>
+                )}
             </td>
 
             {/* Material */}
@@ -78,9 +82,42 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
                 <span className="inline-block px-2 py-0.5 rounded bg-muted/50">{job.quantity}</span>
             </td>
 
-            {/* Remaining Hours */}
-            <td className="px-3 py-3 text-sm font-mono font-bold text-primary text-right whitespace-nowrap">
-                {job.hours}h
+            {/* Hours Progress */}
+            <td className="px-3 py-3 text-sm whitespace-nowrap">
+                <div className="flex flex-col gap-1 min-w-[120px]">
+                    {/* Progress Bar */}
+                    <div className="relative w-full h-2 bg-muted/50 rounded-full overflow-hidden">
+                        <div
+                            className={cn(
+                                "h-full transition-all duration-300",
+                                job.actualHours > job.estimatedHours
+                                    ? "bg-destructive"
+                                    : "bg-primary"
+                            )}
+                            style={{
+                                width: `${Math.min(100, (job.actualHours / job.estimatedHours) * 100)}%`
+                            }}
+                        />
+                        {job.actualHours > job.estimatedHours && (
+                            <div
+                                className="absolute top-0 left-0 h-full bg-destructive/30"
+                                style={{ width: '100%' }}
+                            />
+                        )}
+                    </div>
+                    {/* Time Display */}
+                    <div className={cn(
+                        "flex items-center justify-between text-xs font-mono font-semibold",
+                        job.actualHours > job.estimatedHours && "text-destructive"
+                    )}>
+                        <span>{job.actualHours}h / {job.estimatedHours}h</span>
+                        {job.actualHours > job.estimatedHours && (
+                            <span className="text-destructive text-[10px] font-bold">
+                                +{(job.actualHours - job.estimatedHours).toFixed(1)}h
+                            </span>
+                        )}
+                    </div>
+                </div>
             </td>
 
             {/* Due Date */}
