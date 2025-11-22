@@ -31,6 +31,7 @@ export const ROUTES = {
       STEPS_TEMPLATES: "/admin/config/steps-templates",
       API_KEYS: "/admin/config/api-keys",
       WEBHOOKS: "/admin/config/webhooks",
+      MCP_SERVER: "/admin/config/mcp-server",
     }
   },
 

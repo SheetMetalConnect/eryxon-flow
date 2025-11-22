@@ -24,6 +24,7 @@ import ConfigApiKeys from "./pages/admin/ConfigApiKeys";
 import ConfigWebhooks from "./pages/admin/ConfigWebhooks";
 import DataExport from "./pages/admin/DataExport";
 import Jobs from "./pages/admin/Jobs";
+import McpServerSettings from "./pages/admin/McpServerSettings";
 import JobCreate from "./pages/admin/JobCreate";
 import Parts from "./pages/admin/Parts";
 import { ActivityMonitor } from "./pages/admin/ActivityMonitor";
@@ -281,6 +282,17 @@ function AppRoutes() {
           <ProtectedRoute adminOnly>
             <Layout>
               <ConfigWebhooks />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/config/mcp-server"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <McpServerSettings />
             </Layout>
           </ProtectedRoute>
         }

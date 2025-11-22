@@ -46,6 +46,7 @@ import { cn } from "@/lib/utils";
 import { usePendingIssuesCount } from "@/hooks/usePendingIssuesCount";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import AnimatedBackground from "@/components/AnimatedBackground";
+import { McpServerStatus } from "@/components/admin/McpServerStatus";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -182,6 +183,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       path: "/admin/config/webhooks",
       label: "Webhooks",
       icon: Webhook,
+      exact: true,
+    },
+    {
+      path: "/admin/config/mcp-server",
+      label: "MCP Server",
+      icon: Activity,
       exact: true,
     },
   ];
@@ -489,6 +496,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* User Profile & Sign Out */}
       <div className="border-t p-3">
+        {/* MCP Server Status */}
+        {!collapsed && (
+          <div className="mb-2">
+            <McpServerStatus />
+          </div>
+        )}
+
         {!collapsed && tenant && (
           <div className="mb-2 rounded-lg bg-primary/10 border border-primary/20 p-3">
             <div className="text-xs text-muted-foreground mb-1">Tenant</div>
