@@ -1,7 +1,7 @@
 # How Eryxon Flow Works: Complete Functional Guide
 
-**Version:** 1.0
-**Last Updated:** November 17, 2025
+**Version:** 1.2
+**Last Updated:** November 22, 2025
 **Status:** Active
 
 ---
@@ -18,13 +18,17 @@
 8. [Issue Management](#issue-management)
 9. [Assembly Management](#assembly-management)
 10. [Resource Management](#resource-management)
-11. [System Configuration](#system-configuration)
-12. [API Integration](#api-integration)
-13. [Data Export](#data-export)
-14. [3D CAD Viewer](#3d-cad-viewer)
-15. [Real-Time Features](#real-time-features)
-16. [Subscription Plans](#subscription-plans)
-17. [Technical Architecture](#technical-architecture)
+11. [QRM Capacity Management](#qrm-capacity-management) **NEW**
+12. [Production Quantity & Scrap Tracking](#production-quantity--scrap-tracking) **NEW**
+13. [Substeps & Templates](#substeps--templates) **NEW**
+14. [Operator Terminal](#operator-terminal) **NEW**
+15. [System Configuration](#system-configuration)
+16. [API Integration](#api-integration)
+17. [Data Export](#data-export)
+18. [3D CAD Viewer](#3d-cad-viewer)
+19. [Real-Time Features](#real-time-features)
+20. [Subscription Plans](#subscription-plans)
+21. [Technical Architecture](#technical-architecture)
 
 ---
 
@@ -706,6 +710,597 @@ Assembly Level 1
 - Monitor maintenance status
 - See which operations use which resources
 - Resource utilization reports (future)
+
+---
+
+## QRM Capacity Management
+
+**Quick Response Manufacturing (QRM)** capacity management helps prevent bottlenecks and maintain production flow by limiting work-in-progress (WIP) at each cell/stage.
+
+### Purpose
+
+Traditional manufacturing often suffers from:
+- **Bottlenecks** - Work piles up at certain stages
+- **Long lead times** - Parts wait in queues
+- **Hidden capacity issues** - Problems aren't visible until too late
+
+QRM capacity management solves this by:
+- Setting WIP limits per cell
+- Providing real-time capacity visibility
+- Preventing overcapacity (optionally enforced)
+
+### Configuration
+
+**Location:** `/admin/config/stages`
+
+Each cell/stage has QRM settings:
+
+**WIP Limit**
+- Maximum number of jobs allowed in the cell
+- Example: Laser cell can handle 5 jobs at once
+- Setting: `wip_limit` field
+
+**WIP Warning Threshold**
+- Percentage of limit at which to show warnings
+- Default: 80% (4 out of 5 jobs)
+- Setting: `wip_warning_threshold` field
+
+**Enforce Limit**
+- Whether to block operations when next cell is at capacity
+- If enabled: Operators cannot complete operation if next cell is full
+- If disabled: Shows warning but allows completion
+- Setting: `enforce_limit` boolean
+
+**Show Warning**
+- Whether to display capacity warnings to operators
+- Setting: `show_warning` boolean
+
+### How It Works
+
+**1. WIP Calculation**
+```
+Current WIP = Count of operations in cell with status 'in_progress' or 'pending'
+Capacity % = (Current WIP / WIP Limit) × 100
+```
+
+**2. Visual Indicators**
+
+Operators see capacity status:
+- 🟢 **Green** - Available capacity (< warning threshold)
+- 🟡 **Yellow** - Warning (>= warning threshold, < limit)
+- 🔴 **Red** - At capacity (>= limit)
+
+**3. Completion Blocking**
+
+When operator tries to complete an operation:
+1. System checks next cell in routing
+2. If next cell has `enforce_limit` enabled:
+   - Calculate next cell's current WIP
+   - If next cell is at capacity (WIP >= limit):
+     - Block completion
+     - Show message: "Cannot complete - next cell at capacity"
+   - If next cell has space:
+     - Allow completion
+3. Part moves to next cell
+
+### Operator Terminal Integration
+
+The **Operator Terminal** (`/operator/terminal`) shows:
+
+**Next Cell Info**
+- Name of next cell in routing
+- Current WIP / Limit (e.g., "3/5 jobs")
+- Color-coded capacity indicator
+- Warning/blocking messages
+
+**Routing Visualization**
+- Visual flow showing all cells
+- Each cell shows current capacity
+- Next cell is highlighted
+- Color-coded capacity status
+
+**Capacity Blocking**
+- Complete button disabled if blocked
+- Clear message explaining why
+- Updates in real-time as capacity changes
+
+### Benefits
+
+✅ **Prevent Bottlenecks** - Can't push work to overloaded cells
+✅ **Maintain Flow** - Work moves smoothly through production
+✅ **Visibility** - Everyone sees capacity status in real-time
+✅ **Coordination** - Operators know when to hold vs. push
+✅ **Data-Driven** - Adjust WIP limits based on actual capacity
+
+### Example Scenario
+
+**Setup:**
+- Laser cell: WIP limit = 5, enforce = true
+- Bend cell: WIP limit = 8, enforce = true
+- Weld cell: WIP limit = 3, enforce = true
+
+**Situation:**
+- Operator finishes laser cutting operation
+- Next cell (Bend) currently has 8 jobs (at capacity)
+- Enforcement is enabled
+
+**Result:**
+- System blocks completion
+- Shows: "Cannot complete - Bend cell at capacity (8/8 jobs)"
+- Operator waits or coordinates with supervisor
+- When Bend cell WIP drops to 7, completion is allowed
+
+---
+
+## Production Quantity & Scrap Tracking
+
+Track actual production quantities vs. planned, including scrap/defect tracking with categorized reasons.
+
+### Purpose
+
+- Know exactly how many parts were produced (good vs. scrap)
+- Track scrap reasons for quality improvement
+- Calculate true production costs
+- Identify recurring quality issues
+- Audit trail for production quantities
+
+### Scrap Reasons Configuration
+
+**Location:** `/admin/config/scrap-reasons`
+
+**Categories:**
+1. **Material** (`material`) - Material defects, wrong material, contamination
+2. **Process** (`process`) - Incorrect process parameters, sequence errors
+3. **Equipment** (`equipment`) - Machine malfunction, tooling failure
+4. **Operator** (`operator`) - Operator error, incorrect setup
+5. **Design** (`design`) - Design flaws, impossible tolerances
+6. **Other** (`other`) - Miscellaneous reasons
+
+**Scrap Reason Fields:**
+- **Code** - Short identifier (e.g., "MAT-001", "PROC-05")
+- **Description** - Full explanation
+- **Category** - One of the categories above
+- **Active** - Whether currently in use
+
+**Seeding Default Reasons:**
+- Click "Seed Default Reasons" button
+- Creates common scrap reasons for all categories
+- Examples: "Material damaged", "Wrong program run", "Tool breakage", etc.
+
+### Production Quantity Tracking Flow
+
+**When Operator Completes Operation:**
+
+1. Operator clicks "Complete Operation"
+2. **Production Quantity Modal** appears
+3. Operator enters:
+   - **Good Quantity**: Parts that passed quality check
+   - **Scrap Quantity**: Parts that failed
+   - **Scrap Reason** (if scrap > 0): Select from dropdown
+4. System validates:
+   - Good + Scrap should match planned quantity (warning if mismatch)
+5. System records to database:
+   - `operations.good_quantity`
+   - `operations.scrap_quantity`
+   - `operations.scrap_reason_id` (foreign key)
+6. Operation marked as complete
+
+### Database Schema
+
+**operations table additions:**
+```sql
+good_quantity: integer (default: 0)
+scrap_quantity: integer (default: 0)
+scrap_reason_id: uuid (foreign key to scrap_reasons)
+```
+
+**scrap_reasons table:**
+```sql
+id: uuid (primary key)
+tenant_id: uuid (foreign key)
+code: text (unique within tenant)
+description: text
+category: text (material, process, equipment, operator, design, other)
+active: boolean (default: true)
+created_at: timestamp
+```
+
+### Reporting & Analysis
+
+**Available Data:**
+- Total good quantity by job/part/operation
+- Total scrap quantity by job/part/operation
+- Scrap rate percentage
+- Scrap reasons breakdown by category
+- Scrap trends over time
+- Cost impact (scrap quantity × material cost)
+
+**Future Enhancements:**
+- Scrap reason reports dashboard
+- Pareto charts of scrap reasons
+- Trend analysis
+- Quality improvement initiatives tracking
+
+### Example Scenario
+
+**Operation:** Laser cut 50 brackets
+
+**Actual Results:**
+- Good quantity: 47
+- Scrap quantity: 3
+- Scrap reason: "MAT-001 - Material damaged"
+
+**Recording:**
+1. Operator completes operation
+2. Modal appears
+3. Enters: Good = 47, Scrap = 3
+4. Warning shows: "Total (50) matches planned quantity ✓"
+5. Selects scrap reason: "MAT-001 - Material damaged"
+6. Submits
+7. Database records quantities and reason
+8. Operation completes
+
+**Analysis Later:**
+- Admin sees 3 parts scrapped due to material damage
+- Can investigate material supplier or handling
+- Track if this reason is recurring
+- Calculate cost impact
+
+---
+
+## Substeps & Templates
+
+Break operations into smaller, checkable tasks using substeps. Create reusable templates for standardized procedures.
+
+### Purpose
+
+**Substeps:**
+- Guide operators through complex procedures
+- Ensure all steps are completed
+- Training aid for new operators
+- Quality assurance
+- Audit trail of what was done
+
+**Templates:**
+- Standardize procedures across similar operations
+- Reduce setup time for new jobs
+- Ensure consistency
+- Easy updates (change template, affects all uses)
+
+### Substep Templates System
+
+**Location:** `/admin/config/steps-templates`
+
+**Creating a Template:**
+1. Navigate to Steps Templates page
+2. Click "Create New Template"
+3. Enter template name (e.g., "Laser Cutting Checklist")
+4. Add steps:
+   - Step description (e.g., "Verify material thickness")
+   - Order/sequence
+5. Save template
+
+**Template Fields:**
+- **Name**: Template identifier
+- **Steps**: Array of step descriptions
+- **Created/Updated timestamps**
+- **Tenant ID**: Multi-tenant isolation
+
+**Managing Templates:**
+- Edit existing templates (updates all future uses)
+- Delete unused templates
+- View all templates in list
+- Search/filter templates
+
+### Applying Templates to Operations
+
+**During Job Creation:**
+1. Admin creates job and adds parts
+2. For each operation, can select:
+   - "Apply Template" dropdown
+   - Choose from available templates
+3. Template substeps are copied to operation
+4. Can customize substeps for this specific operation
+
+**Manual Substep Creation:**
+- Add substeps individually without template
+- Mix template substeps with custom ones
+- Edit substep descriptions
+
+### Operator Substep Workflow
+
+**Location:** Operation Detail Modal (Work Queue or Terminal)
+
+**Substeps Checklist:**
+1. Operator opens operation
+2. Sees list of substeps with checkboxes
+3. Completes each substep in order
+4. Checks off substep when done
+5. System records:
+   - Which substep completed
+   - Who completed it
+   - When completed
+6. All substeps must be checked before operation can be completed
+
+**Substep States:**
+- ☐ **Pending** - Not yet completed
+- ✅ **Completed** - Checked off by operator
+
+**Completion Requirement:**
+- If operation has substeps, ALL must be completed
+- "Complete Operation" button disabled until all substeps checked
+- Clear message: "Complete all substeps first"
+
+### Database Schema
+
+**substep_templates table:**
+```sql
+id: uuid
+tenant_id: uuid
+name: text
+steps: text[] (array of step descriptions)
+created_at: timestamp
+updated_at: timestamp
+```
+
+**substeps table:**
+```sql
+id: uuid
+operation_id: uuid (foreign key)
+description: text
+sequence: integer (order)
+completed: boolean
+completed_at: timestamp
+completed_by: uuid (user who completed)
+tenant_id: uuid
+```
+
+### Example Templates
+
+**"Laser Cutting Checklist"**
+1. Verify material type matches drawing
+2. Check material thickness with caliper
+3. Load correct program (verify program number)
+4. Set focal length for material thickness
+5. Check gas pressure (oxygen/nitrogen)
+6. Verify nest orientation
+7. Start cutting cycle
+8. Inspect first part before continuing
+9. Monitor cutting quality throughout run
+10. Deburr edges after cutting
+
+**"Quality Inspection"**
+1. Visual inspection for defects
+2. Measure critical dimensions with calipers
+3. Check hole locations with template
+4. Verify bend angles with protractor
+5. Inspect surface finish
+6. Check quantity matches traveler
+7. Sign off on traveler
+8. Move to next operation
+
+**"Welding Procedure"**
+1. Clean joint surfaces
+2. Verify weld symbols on drawing
+3. Select correct filler material
+4. Set machine parameters per WPS
+5. Tack weld in sequence
+6. Complete weld passes
+7. Visual inspection of weld
+8. Grind/finish weld if required
+9. Mark part as welded
+
+### Benefits
+
+✅ **Consistency** - Every operator follows same procedure
+✅ **Quality** - Nothing skipped or forgotten
+✅ **Training** - New operators have clear guidance
+✅ **Compliance** - Audit trail of completed steps
+✅ **Efficiency** - Templates save setup time
+✅ **Improvement** - Refine templates based on experience
+
+---
+
+## Operator Terminal
+
+Streamlined, real-time production interface optimized for shop floor use with QRM capacity integration.
+
+### Purpose
+
+**Goals:**
+- Simpler interface than Work Queue
+- Real-time production status at a glance
+- QRM capacity visibility before completing operations
+- Visual routing to understand workflow
+- Quick access to CAD files and drawings
+- Mobile-optimized for tablets
+
+**Use Case:**
+- Operator works at terminal/tablet mounted near work area
+- Selects their current job
+- Sees all relevant info on one screen
+- Monitors next cell capacity
+- Completes operation when ready (if capacity allows)
+
+### Location & Access
+
+**Route:** `/operator/terminal`
+
+**Access:** Operator role
+
+**Layout:** Two-panel interface
+
+### Left Panel: Job List
+
+Shows all operations assigned to operator, sorted by status:
+
+**🟢 In Process (Green)**
+- Currently active operations
+- Operator has started timing
+- Highest priority
+
+**🔵 In Buffer (Blue)**
+- Next 5 operations ready to start
+- Pending status
+- Sorted by priority/due date
+
+**🟡 Expected (Amber)**
+- Upcoming work in queue
+- Further out operations
+- For planning ahead
+
+**Job Card Info:**
+- Job number
+- Part number
+- Operation name
+- Customer name (if available)
+- Due date
+- Priority indicator
+
+**Cell Filter:**
+- Dropdown to filter by cell/stage
+- Shows only operations for selected cell
+- "All Cells" to see everything
+- Selection persists in localStorage
+
+### Right Panel: Detail View
+
+Selected job details with tabs/sections:
+
+**Job Information**
+- Job number and name
+- Customer name
+- Part number and description
+- Quantity ordered
+- Due date
+- Current status
+
+**Operation Controls**
+- Start/Pause/Stop timing buttons
+- Complete operation button
+- Current timer display
+- Pause time display
+
+**Next Cell Info** (QRM Integration)
+- Name of next cell in routing
+- Current WIP count / Limit
+- Color-coded capacity indicator:
+  - 🟢 Green: Capacity available
+  - 🟡 Yellow: Warning (approaching limit)
+  - 🔴 Red: At capacity
+- Warning message if capacity issue
+- Blocking message if enforcement prevents completion
+
+**Routing Visualization**
+- Visual flowchart of all cells in job routing
+- Current cell highlighted
+- Next cell emphasized
+- Each cell shows capacity status
+- Arrows show flow direction
+- Sequence numbers on cells
+
+**3D Model Viewer** (if STEP file attached)
+- Three.js viewer
+- Orbit, zoom, pan controls
+- Wireframe toggle
+- Exploded view
+- Fit to view button
+- Full screen option
+
+**PDF Drawing Viewer** (if drawing attached)
+- Inline PDF viewer
+- Zoom controls
+- Page navigation
+- Download link
+
+**Operations List**
+- All operations for this part
+- Sequence order
+- Status of each operation
+- Current operation highlighted
+- Shows which are complete/pending
+
+**Substeps Checklist** (if substeps exist)
+- List of all substeps
+- Checkboxes to mark complete
+- Sequence order
+- Completion requirement indicator
+
+### Real-Time Updates
+
+**Supabase Realtime subscriptions:**
+- Operations table changes
+- Time entries updates
+- Cell capacity changes
+- Job status updates
+
+**Auto-refresh:**
+- Job list refreshes when data changes
+- Capacity indicators update live
+- No manual refresh needed
+
+**Visual feedback:**
+- Loading states while fetching data
+- Success/error toasts for actions
+- Optimistic UI updates
+
+### QRM Capacity Integration
+
+**Before Completing Operation:**
+
+1. System checks next cell in routing
+2. Fetches current WIP for next cell
+3. Calculates capacity status
+4. Shows capacity info with color coding
+5. If `enforce_limit` enabled and at capacity:
+   - Disable "Complete" button
+   - Show blocking message
+   - Update in real-time as capacity changes
+6. When capacity available:
+   - Enable "Complete" button
+   - Show green indicator
+
+**During Operation:**
+- Capacity info always visible
+- Real-time updates
+- Operator can see capacity before finishing
+- Plan accordingly (slow down if next cell full)
+
+### Mobile Optimization
+
+**Responsive Design:**
+- Works on tablets (iPad, Android tablets)
+- Touch-friendly buttons and controls
+- Swipe gestures (future)
+- Larger hit areas for shop floor use
+
+**Tablet Mounting:**
+- Can be mounted near work station
+- Glanceable status info
+- Quick operation completion
+- No need to walk to office computer
+
+### Comparison: Terminal vs. Work Queue
+
+**Operator Terminal** (`/operator/terminal`):
+- Simpler, cleaner interface
+- Focus on one job at a time
+- QRM capacity prominent
+- Visual routing
+- Optimized for tablets
+- Real-time status view
+
+**Work Queue** (`/operator/work-queue`):
+- Full list of all operations
+- More filtering options
+- Table view with sorting
+- Better for planning day's work
+- More detail per operation
+- Desktop-optimized
+
+**When to Use Each:**
+- **Terminal**: Active production, one job focus, capacity-sensitive operations
+- **Work Queue**: Planning, reviewing all work, detailed filtering
 
 ---
 

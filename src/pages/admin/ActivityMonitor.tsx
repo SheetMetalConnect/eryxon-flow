@@ -243,7 +243,7 @@ export const ActivityMonitor: React.FC = () => {
   };
 
   // Get user initials
-  const getUserInitials = (name: string | null, email: string) => {
+  const getUserInitials = (name: string | null, email: string | null) => {
     if (name) {
       const parts = name.split(" ");
       if (parts.length >= 2) {
@@ -251,7 +251,10 @@ export const ActivityMonitor: React.FC = () => {
       }
       return name.slice(0, 2).toUpperCase();
     }
-    return email.slice(0, 2).toUpperCase();
+    if (email) {
+      return email.slice(0, 2).toUpperCase();
+    }
+    return "??";
   };
 
   // Export activity log

@@ -36,6 +36,8 @@ import Pricing from "./pages/Pricing";
 import { MyPlan } from "./pages/MyPlan";
 import Help from "./pages/Help";
 import About from "./pages/About";
+import PrivacyPolicy from "./pages/common/PrivacyPolicy";
+import TermsOfService from "./pages/common/TermsOfService";
 import NotFound from "./pages/NotFound";
 import { OnboardingWizard } from "./components/onboarding";
 import Layout from "./components/Layout";
@@ -437,6 +439,25 @@ function AppRoutes() {
               <About />
             </Layout>
           </ProtectedRoute>
+        }
+      />
+
+      {/* Public legal pages - must be accessible without authentication */}
+      <Route
+        path="/privacy-policy"
+        element={
+          <Layout>
+            <PrivacyPolicy />
+          </Layout>
+        }
+      />
+
+      <Route
+        path="/terms-of-service"
+        element={
+          <Layout>
+            <TermsOfService />
+          </Layout>
         }
       />
 

@@ -6,14 +6,31 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Activity, Clock, Loader2, AlertTriangle, LucideIcon, ArrowRight } from "lucide-react";
+import {
+  Users,
+  Activity,
+  Clock,
+  Loader2,
+  AlertTriangle,
+  LucideIcon,
+  ArrowRight,
+  Trash2,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { seedDemoData } from "@/lib/seed";
+import { clearMockData } from "@/lib/mockDataGenerator";
 import { QRMDashboard } from "@/components/qrm/QRMDashboard";
 import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface ActiveWork {
   id: string;
@@ -45,7 +62,13 @@ interface StatCardProps {
   onClick: () => void;
 }
 
-function StatCard({ title, value, description, icon: Icon, onClick }: StatCardProps) {
+function StatCard({
+  title,
+  value,
+  description,
+  icon: Icon,
+  onClick,
+}: StatCardProps) {
   return (
     <Card
       className="glass-card cursor-pointer transition-all hover:shadow-xl hover:scale-105 active:scale-100 hover:border-white/20"
@@ -85,6 +108,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [needsSetup, setNeedsSetup] = useState(false);
   const [seeding, setSeeding] = useState(false);
+  const [wiping, setWiping] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -114,7 +138,7 @@ export default function Dashboard() {
             ),
             cell:cells!inner(name, color)
           )
-        `
+        `,
         )
         .eq("tenant_id", profile.tenant_id)
         .is("end_time", null)
@@ -147,7 +171,7 @@ export default function Dashboard() {
           .gte("due_date", new Date().toISOString())
           .lte(
             "due_date",
-            new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+            new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
           ),
         supabase
           .from("cells")
@@ -209,7 +233,7 @@ export default function Dashboard() {
         },
         () => {
           loadData();
-        }
+        },
       )
       .subscribe();
 
@@ -218,64 +242,77 @@ export default function Dashboard() {
     };
   };
 
-  const columns: ColumnDef<ActiveWork>[] = useMemo(() => [
-    {
-      accessorKey: "operator.full_name",
-      id: "operator",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("dashboard.operator")} />
-      ),
-      cell: ({ row }) => (
-        <span className="font-medium">{row.original.operator.full_name}</span>
-      ),
-    },
-    {
-      accessorKey: "operation.operation_name",
-      id: "operation",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("dashboard.operation")} />
-      ),
-      cell: ({ row }) => row.original.operation.operation_name,
-    },
-    {
-      id: "job",
-      header: t("dashboard.job"),
-      cell: ({ row }) => (
-        <div>
-          <div>{row.original.operation.part.job.job_number}</div>
-          {row.original.operation.part.job.customer && (
-            <div className="text-xs text-muted-foreground">
-              {row.original.operation.part.job.customer}
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "operation.part.part_number",
-      id: "part",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("dashboard.part")} />
-      ),
-      cell: ({ row }) => row.original.operation.part.part_number,
-    },
-    {
-      id: "cell",
-      header: t("dashboard.cell"),
-      cell: ({ row }) => (
-        <Badge className="bg-accent text-white">
-          {row.original.operation.cell.name}
-        </Badge>
-      ),
-    },
-    {
-      accessorKey: "start_time",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("dashboard.elapsedTime")} />
-      ),
-      cell: ({ row }) => formatDistanceToNow(new Date(row.getValue("start_time"))),
-    },
-  ], [t]);
+  const columns: ColumnDef<ActiveWork>[] = useMemo(
+    () => [
+      {
+        accessorKey: "operator.full_name",
+        id: "operator",
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title={t("dashboard.operator")}
+          />
+        ),
+        cell: ({ row }) => (
+          <span className="font-medium">{row.original.operator.full_name}</span>
+        ),
+      },
+      {
+        accessorKey: "operation.operation_name",
+        id: "operation",
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title={t("dashboard.operation")}
+          />
+        ),
+        cell: ({ row }) => row.original.operation.operation_name,
+      },
+      {
+        id: "job",
+        header: t("dashboard.job"),
+        cell: ({ row }) => (
+          <div>
+            <div>{row.original.operation.part.job.job_number}</div>
+            {row.original.operation.part.job.customer && (
+              <div className="text-xs text-muted-foreground">
+                {row.original.operation.part.job.customer}
+              </div>
+            )}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "operation.part.part_number",
+        id: "part",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title={t("dashboard.part")} />
+        ),
+        cell: ({ row }) => row.original.operation.part.part_number,
+      },
+      {
+        id: "cell",
+        header: t("dashboard.cell"),
+        cell: ({ row }) => (
+          <Badge className="bg-accent text-white">
+            {row.original.operation.cell.name}
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: "start_time",
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title={t("dashboard.elapsedTime")}
+          />
+        ),
+        cell: ({ row }) =>
+          formatDistanceToNow(new Date(row.getValue("start_time"))),
+      },
+    ],
+    [t],
+  );
 
   if (loading) {
     return (
@@ -292,21 +329,88 @@ export default function Dashboard() {
       await seedDemoData(profile.tenant_id);
       await loadData();
       setNeedsSetup(false);
-      toast({ title: t("dashboard.demoDataAdded"), description: t("dashboard.demoDataDescription") });
+      toast({
+        title: t("dashboard.demoDataAdded"),
+        description: t("dashboard.demoDataDescription"),
+      });
     } catch (e: any) {
-      toast({ variant: "destructive", title: t("dashboard.seedingFailed"), description: e?.message || String(e) });
+      toast({
+        variant: "destructive",
+        title: t("dashboard.seedingFailed"),
+        description: e?.message || String(e),
+      });
     } finally {
       setSeeding(false);
     }
   };
 
+  const handleWipeDemo = async () => {
+    if (!profile?.tenant_id) return;
+
+    // Confirm before wiping
+    if (
+      !confirm(
+        "Are you sure you want to wipe all demo data? This cannot be undone.",
+      )
+    ) {
+      return;
+    }
+
+    setWiping(true);
+    try {
+      const result = await clearMockData(profile.tenant_id);
+
+      if (result.success) {
+        await loadData();
+        setNeedsSetup(true);
+        toast({
+          title: "Demo Data Wiped",
+          description: "All demo data has been cleared successfully.",
+        });
+      } else {
+        throw new Error(result.error || "Failed to clear demo data");
+      }
+    } catch (e: any) {
+      toast({
+        variant: "destructive",
+        title: "Wipe Failed",
+        description: e?.message || String(e),
+      });
+    } finally {
+      setWiping(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
-          {t("dashboard.title")}
-        </h1>
-        <p className="text-muted-foreground text-lg">{t("dashboard.description")}</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+            {t("dashboard.title")}
+          </h1>
+          <p className="text-muted-foreground text-lg">{t("dashboard.description")}</p>
+        </div>
+        {!needsSetup &&
+          profile?.tenant_id === "11111111-1111-1111-1111-111111111111" && (
+            <Button
+              variant="destructive"
+              onClick={handleWipeDemo}
+              disabled={wiping}
+              size="sm"
+            >
+              {wiping ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Wiping...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Wipe Demo Data
+                </>
+              )}
+            </Button>
+          )}
       </div>
 
       <hr className="title-divider" />
