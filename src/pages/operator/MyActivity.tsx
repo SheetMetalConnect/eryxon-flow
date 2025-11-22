@@ -37,6 +37,16 @@ interface DayGroup {
   completedCount: number;
 }
 
+const getStageClass = (cellName: string) => {
+  const name = cellName.toLowerCase();
+  if (name.includes('cut')) return 'stage-cutting';
+  if (name.includes('bend')) return 'stage-bending';
+  if (name.includes('weld')) return 'stage-welding';
+  if (name.includes('assembl')) return 'stage-assembly';
+  if (name.includes('finish')) return 'stage-finishing';
+  return 'muted';
+};
+
 export default function MyActivity() {
   const { t } = useTranslation();
   const { profile } = useAuth();
@@ -189,12 +199,7 @@ export default function MyActivity() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <Badge
-                              style={
-                                {
-                                  "--cell-color": entry.operation.cell.color || "hsl(var(--brand-primary))",
-                                } as React.CSSProperties
-                              }
-                              className="bg-[var(--cell-color)] text-primary-foreground"
+                              className={`bg-${getStageClass(entry.operation.cell.name)} text-primary-foreground`}
                             >
                               {entry.operation.cell.name}
                             </Badge>

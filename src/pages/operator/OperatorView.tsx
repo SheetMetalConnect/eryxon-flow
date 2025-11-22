@@ -794,7 +794,7 @@ export default function OperatorView() {
                         bgcolor: isSelected
                           ? "var(--neutral-800)"
                           : isCompleted
-                            ? "rgba(var(--color-success), 0.08)"
+                            ? "hsl(var(--success) / 0.08)"
                             : "transparent",
                         border: isSelected ? 2 : 1,
                         borderColor: isSelected

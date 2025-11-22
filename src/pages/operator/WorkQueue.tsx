@@ -22,6 +22,16 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { isAfter, isBefore, addDays, startOfToday, endOfToday } from "date-fns";
 
+const getStageClass = (cellName: string) => {
+  const name = cellName.toLowerCase();
+  if (name.includes('cut')) return 'stage-cutting';
+  if (name.includes('bend')) return 'stage-bending';
+  if (name.includes('weld')) return 'stage-welding';
+  if (name.includes('assembl')) return 'stage-assembly';
+  if (name.includes('finish')) return 'stage-finishing';
+  return 'muted';
+};
+
 export default function WorkQueue() {
   const { profile } = useAuth();
   const [operations, setOperations] = useState<OperationWithDetails[]>([]);
@@ -365,14 +375,9 @@ export default function WorkQueue() {
                 variant={hiddenCells.has(cell.id) ? "outline" : "default"}
                 size="sm"
                 onClick={() => toggleCellVisibility(cell.id)}
-                style={
-                  {
-                    "--cell-color": cell.color,
-                  } as React.CSSProperties
-                }
                 className={`
-                  ${hiddenCells.has(cell.id) ? "bg-transparent" : "bg-[var(--cell-color)]"}
-                  border-[var(--cell-color)]
+                  ${hiddenCells.has(cell.id) ? "bg-transparent" : `bg-${getStageClass(cell.name)}`}
+                  border-${getStageClass(cell.name)}
                 `}
               >
                 {hiddenCells.has(cell.id) ? (
@@ -396,14 +401,7 @@ export default function WorkQueue() {
                   } bg-card rounded-lg border`}
               >
                 <div
-                  className="p-4 border-b"
-                  style={
-                    {
-                      "--cell-color": cell.color || "hsl(var(--stage-default))",
-                      borderTopColor: "var(--cell-color)",
-                      borderTopWidth: "4px",
-                    } as React.CSSProperties
-                  }
+                  className={`p-4 border-b border-t-4 border-t-${getStageClass(cell.name)}`}
                 >
                   <h3 className="font-semibold text-lg">{cell.name}</h3>
                   <p className="text-sm text-muted-foreground">
