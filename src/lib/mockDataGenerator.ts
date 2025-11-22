@@ -582,7 +582,7 @@ export async function generateMockData(
             notes: op.description, // Map description to notes field
             sequence: op.seq,
             status: op.status,
-            estimated_time: op.estimated_hours,
+            estimated_time: Math.round(op.estimated_hours * 60), // Convert hours to minutes
             metadata: op.metadata || {},
           });
         });
