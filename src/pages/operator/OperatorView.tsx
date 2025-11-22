@@ -443,7 +443,7 @@ export default function OperatorView() {
             >
               {jobs.map((job) => (
                 <MenuItem key={job.id} value={job.id}>
-                  <strong>{job.job_number}</strong>&nbsp;- {job.customer || "N/A"}
+                  <strong>{job.job_number}</strong>&nbsp;- {job.customer || t("common.notAvailable")}
                 </MenuItem>
               ))}
             </Select>
@@ -459,7 +459,7 @@ export default function OperatorView() {
                 size="small"
               />
               <Chip
-                label={`${completedOps}/${totalOps} ops`}
+                label={`${completedOps}/${totalOps} ${t("common.ops")}`}
                 size="small"
                 color="primary"
                 variant="outlined"
@@ -560,7 +560,7 @@ export default function OperatorView() {
           <Paper sx={{ p: 6, textAlign: "center" }}>
             <Build sx={{ fontSize: 80, color: "text.secondary", mb: 2 }} />
             <Typography variant="h5" color="text.secondary">
-              {t("Select a job to get started")}
+              {t("common.selectJobToStart")}
             </Typography>
           </Paper>
         </Box>
@@ -597,7 +597,7 @@ export default function OperatorView() {
                         <Tab
                           icon={<Description fontSize="small" />}
                           iconPosition="start"
-                          label={t("PDF Drawing")}
+                          label={t("common.pdfDrawing")}
                           sx={{ minHeight: 40, py: 0 }}
                         />
                       )}
@@ -605,7 +605,7 @@ export default function OperatorView() {
                         <Tab
                           icon={<ViewInAr fontSize="small" />}
                           iconPosition="start"
-                          label={t("3D Model")}
+                          label={t("common.3dModel")}
                           sx={{ minHeight: 40, py: 0 }}
                         />
                       )}
@@ -646,7 +646,7 @@ export default function OperatorView() {
                 <Stack alignItems="center" spacing={1}>
                   <ViewInAr sx={{ fontSize: 60, opacity: 0.3 }} />
                   <Typography variant="body1">
-                    {t("No files available for this part")}
+                    {t("common.noFilesForPart")}
                   </Typography>
                 </Stack>
               </Box>
@@ -667,7 +667,7 @@ export default function OperatorView() {
             {selectedOperation && (
               <Paper sx={{ p: 2, flexShrink: 0 }}>
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  {t("Current Operation")}
+                  {t("common.currentOperation")}
                 </Typography>
                 <Typography variant="h6" fontWeight="bold" gutterBottom>
                   {selectedOperation.operation_name}
@@ -748,7 +748,7 @@ export default function OperatorView() {
                 {isOverdue && (
                   <Alert severity="error" sx={{ mt: 1, py: 0.5 }}>
                     <Typography variant="caption">
-                      {t("Job overdue!")} Due: {format(dueDate!, "MMM dd")}
+                      {t("common.jobOverdue")} {t("operations.due")}: {format(dueDate!, "MMM dd")}
                     </Typography>
                   </Alert>
                 )}
@@ -766,7 +766,7 @@ export default function OperatorView() {
             >
               <Box sx={{ p: 1.5, borderBottom: 1, borderColor: "divider" }}>
                 <Typography variant="subtitle2" fontWeight="bold">
-                  {t("All Operations")} ({operations.length})
+                  {t("common.allOperations")} ({operations.length})
                 </Typography>
               </Box>
 
@@ -923,14 +923,14 @@ export default function OperatorView() {
                 <Tab
                   icon={<Description fontSize="small" />}
                   iconPosition="start"
-                  label={t("PDF Drawing")}
+                  label={t("common.pdfDrawing")}
                 />
               )}
               {stepUrl && (
                 <Tab
                   icon={<ViewInAr fontSize="small" />}
                   iconPosition="start"
-                  label={t("3D Model")}
+                  label={t("common.3dModel")}
                 />
               )}
             </Tabs>
