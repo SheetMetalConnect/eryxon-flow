@@ -161,48 +161,60 @@ export async function generateMockData(
     if (options.includeOperators) {
       const operators = [
         {
+          id: crypto.randomUUID(),
           tenant_id: tenantId,
           role: "operator" as const,
+          username: "jan_devries",
           full_name: "Jan de Vries",
           email: "jan.devries@sheetmetalconnect.nl",
           active: true,
           pin: "1234",
         },
         {
+          id: crypto.randomUUID(),
           tenant_id: tenantId,
           role: "operator" as const,
+          username: "emma_bakker",
           full_name: "Emma Bakker",
           email: "emma.bakker@sheetmetalconnect.nl",
           active: true,
           pin: "2345",
         },
         {
+          id: crypto.randomUUID(),
           tenant_id: tenantId,
           role: "operator" as const,
+          username: "luuk_vandenberg",
           full_name: "Luuk van der Berg",
           email: "luuk.vandenberg@sheetmetalconnect.nl",
           active: true,
           pin: "3456",
         },
         {
+          id: crypto.randomUUID(),
           tenant_id: tenantId,
           role: "operator" as const,
+          username: "sophie_jansen",
           full_name: "Sophie Jansen",
           email: "sophie.jansen@sheetmetalconnect.nl",
           active: true,
           pin: "4567",
         },
         {
+          id: crypto.randomUUID(),
           tenant_id: tenantId,
           role: "operator" as const,
+          username: "daan_mulder",
           full_name: "Daan Mulder",
           email: "daan.mulder@sheetmetalconnect.nl",
           active: true,
           pin: "5678",
         },
         {
+          id: crypto.randomUUID(),
           tenant_id: tenantId,
           role: "operator" as const,
+          username: "lisa_visser",
           full_name: "Lisa Visser",
           email: "lisa.visser@sheetmetalconnect.nl",
           active: true,
@@ -460,7 +472,7 @@ export async function generateMockData(
           material: "AlMg3",
           notes: "Zijpaneel behuizing (links/rechts identiek)",
           quantity: 50,
-          status: "queued" as const,
+          status: "not_started" as const,
           metadata: {
             dimensions: "400x350x3mm",
             weight: "1.4kg",
@@ -476,7 +488,7 @@ export async function generateMockData(
           material: "RVS 304",
           notes: "Precisie framewerk - CMM inspectie verplicht",
           quantity: 4,
-          status: "queued" as const,
+          status: "not_started" as const,
           metadata: {
             dimensions: "800x600x100mm",
             weight: "18.5kg",
@@ -493,7 +505,7 @@ export async function generateMockData(
           material: "RVS 304",
           notes: "Montageplaat precisie bewerkingen",
           quantity: 8,
-          status: "queued" as const,
+          status: "not_started" as const,
           metadata: {
             dimensions: "300x200x15mm",
             weight: "6.8kg",
@@ -522,7 +534,6 @@ export async function generateMockData(
       cell_id: string;
       part_id: string;
       status: string;
-      operation_number: string;
     }> = [];
 
     if (
@@ -1063,7 +1074,7 @@ export async function generateMockData(
         await supabase
           .from("operations")
           .insert(operations)
-          .select("id, cell_id, part_id, status, operation_number");
+          .select("id, cell_id, part_id, status");
 
       if (operationsError) throw operationsError;
 
