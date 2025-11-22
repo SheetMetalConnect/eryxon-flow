@@ -21,7 +21,9 @@ import ConfigScrapReasons from "./pages/admin/ConfigScrapReasons";
 import OrganizationSettings from "./pages/admin/OrganizationSettings";
 import Assignments from "./pages/admin/Assignments";
 import ConfigApiKeys from "./pages/admin/ConfigApiKeys";
+import ConfigMcpKeys from "./pages/admin/ConfigMcpKeys";
 import ConfigWebhooks from "./pages/admin/ConfigWebhooks";
+import McpServerSettings from "./pages/admin/McpServerSettings";
 import DataExport from "./pages/admin/DataExport";
 import Jobs from "./pages/admin/Jobs";
 import JobCreate from "./pages/admin/JobCreate";
@@ -283,6 +285,28 @@ function AppRoutes() {
           <ProtectedRoute adminOnly>
             <Layout>
               <ConfigWebhooks />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/config/mcp-keys"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <ConfigMcpKeys />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/config/mcp-server"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <McpServerSettings />
             </Layout>
           </ProtectedRoute>
         }

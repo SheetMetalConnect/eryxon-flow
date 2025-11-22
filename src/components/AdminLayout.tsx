@@ -46,6 +46,8 @@ import { cn } from "@/lib/utils";
 import { usePendingIssuesCount } from "@/hooks/usePendingIssuesCount";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import AnimatedBackground from "@/components/AnimatedBackground";
+import { McpServerStatus } from "@/components/admin/McpServerStatus";
+import { McpActivityToasts } from "@/components/admin/McpActivityToasts";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -179,9 +181,21 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       exact: true,
     },
     {
+      path: "/admin/config/mcp-keys",
+      label: "MCP Keys",
+      icon: Key,
+      exact: true,
+    },
+    {
       path: "/admin/config/webhooks",
       label: "Webhooks",
       icon: Webhook,
+      exact: true,
+    },
+    {
+      path: "/admin/config/mcp-server",
+      label: "MCP Server",
+      icon: Code,
       exact: true,
     },
   ];
@@ -515,6 +529,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         )}
         <div className={cn("mb-2 flex", collapsed ? "justify-center" : "justify-start")}>
+          <McpServerStatus />
+        </div>
+        <div className={cn("mb-2 flex", collapsed ? "justify-center" : "justify-start")}>
           <LanguageSwitcher />
         </div>
         <Button
@@ -552,6 +569,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <>
       <AnimatedBackground />
+      <McpActivityToasts />
       <div className="relative flex h-screen overflow-hidden bg-background">
       {/* Mobile Menu Button */}
       <Button

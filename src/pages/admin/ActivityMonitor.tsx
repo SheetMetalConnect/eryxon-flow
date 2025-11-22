@@ -40,6 +40,9 @@ import {
   Wrench,
   Circle,
   Loader2,
+  Zap,
+  AlertTriangle,
+  Server,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -190,6 +193,10 @@ export const ActivityMonitor: React.FC = () => {
         return <CloudDownload className={iconClass} />;
       case "import":
         return <CloudUpload className={iconClass} />;
+      case "mcp_execute":
+        return <Zap className={iconClass} />;
+      case "mcp_error":
+        return <AlertTriangle className={iconClass} />;
       default:
         return <Circle className={iconClass} />;
     }
@@ -215,6 +222,10 @@ export const ActivityMonitor: React.FC = () => {
       case "export":
       case "import":
         return "bg-[hsl(var(--color-warning))]/10 text-[hsl(var(--color-warning))] border-[hsl(var(--color-warning))]/20";
+      case "mcp_execute":
+        return "bg-purple-500/10 text-purple-400 border-purple-500/20";
+      case "mcp_error":
+        return "bg-red-500/10 text-red-400 border-red-500/20";
       default:
         return "bg-[hsl(var(--foreground))]/10 text-[hsl(var(--foreground))]/60 border-[hsl(var(--foreground))]/20";
     }
@@ -237,6 +248,8 @@ export const ActivityMonitor: React.FC = () => {
       case "material":
       case "resource":
         return <Wrench className={iconClass} />;
+      case "mcp_tool":
+        return <Server className={iconClass} />;
       default:
         return <Activity className={iconClass} />;
     }
