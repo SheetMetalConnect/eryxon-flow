@@ -102,7 +102,12 @@ export function MockDataImport({ onComplete, onSkip }: MockDataImportProps) {
     {
       icon: ClipboardList,
       title: '30+ Operations',
-      description: 'Complete workflow from cutting through quality control',
+      description: 'Complete workflow with resources allocated (molds, tooling, fixtures)',
+    },
+    {
+      icon: Wrench,
+      title: '9 Resources & 4 Operators',
+      description: 'Sample tooling, molds, materials, and demo operator accounts',
     },
   ];
 
