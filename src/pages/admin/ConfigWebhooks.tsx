@@ -344,12 +344,17 @@ export default function ConfigWebhooks() {
   ], []);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">{t('webhooks.title')}</h1>
-          <p className="text-muted-foreground">{t('webhooks.description')}</p>
-        </div>
+    <div className="p-6 space-y-8">
+      <div>
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+          {t('webhooks.title')}
+        </h1>
+        <p className="text-muted-foreground text-lg">{t('webhooks.description')}</p>
+      </div>
+
+      <hr className="title-divider" />
+
+      <div className="flex justify-end">
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={fetchWebhookLogs}>
             <RefreshCw className="mr-2 h-4 w-4" />
@@ -357,12 +362,12 @@ export default function ConfigWebhooks() {
           </Button>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="cta-button">
                 <Plus className="mr-2 h-4 w-4" />
                 {t('webhooks.addWebhook')}
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="glass-card">
               <DialogHeader>
                 <DialogTitle>{t('webhooks.createWebhook')}</DialogTitle>
                 <DialogDescription>
@@ -408,10 +413,10 @@ export default function ConfigWebhooks() {
                 </div>
               </DialogContent>
             </Dialog>
-          </div>
         </div>
+      </div>
 
-        <Tabs defaultValue="webhooks" className="w-full">
+      <Tabs defaultValue="webhooks" className="w-full">
           <TabsList>
             <TabsTrigger value="webhooks">{t('webhooks.webhooks')}</TabsTrigger>
             <TabsTrigger value="logs">{t('webhooks.deliveryLogs')}</TabsTrigger>
@@ -419,7 +424,7 @@ export default function ConfigWebhooks() {
           </TabsList>
 
           <TabsContent value="webhooks" className="space-y-6">
-            <Card>
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle>{t('webhooks.configuredWebhooks')}</CardTitle>
                 <CardDescription>
@@ -439,7 +444,7 @@ export default function ConfigWebhooks() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle>Webhook Payload Format</CardTitle>
                 <CardDescription>Example of webhook POST request</CardDescription>
@@ -468,7 +473,7 @@ export default function ConfigWebhooks() {
           </TabsContent>
 
           <TabsContent value="logs" className="space-y-4">
-            <Card>
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle>{t('webhooks.webhookDeliveryLogs')}</CardTitle>
                 <CardDescription>{t('webhooks.recentAttempts')}</CardDescription>
@@ -487,7 +492,7 @@ export default function ConfigWebhooks() {
           </TabsContent>
 
           <TabsContent value="docs" className="space-y-4">
-            <Card>
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle>Webhook Documentation</CardTitle>
                 <CardDescription>How to set up and verify webhooks</CardDescription>

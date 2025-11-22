@@ -297,26 +297,34 @@ export default function JobCreate() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="mb-6">
-        <Button variant="outline" onClick={() => navigate("/admin/jobs")}>
+    <div className="max-w-6xl mx-auto p-6 space-y-8">
+      <div>
+        <Button variant="outline" onClick={() => navigate("/admin/jobs")} className="mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("jobs.backToJobs")}
         </Button>
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+          {t("jobs.createNewJob")}
+        </h1>
+        <p className="text-muted-foreground text-lg">
+          Build your job step-by-step: define details, add parts, configure operations, and review
+        </p>
       </div>
 
+      <hr className="title-divider" />
+
       {/* Progress Indicator */}
-      <div className="flex justify-between mb-8">
+      <div className="flex justify-between">
         {[1, 2, 3, 4].map((s) => (
           <div key={s} className="flex items-center">
             <div
-              className={`flex items-center justify-center w-10 h-10 rounded-full ${s <= step ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"
+              className={`flex items-center justify-center w-10 h-10 rounded-full transition-all ${s <= step ? "bg-primary text-primary-foreground shadow-lg" : "bg-muted text-muted-foreground"
                 }`}
             >
               {s < step ? <Check className="h-5 w-5" /> : s}
             </div>
             {s < 4 && (
               <div
-                className={`w-20 h-1 mx-2 ${s < step ? "bg-blue-600" : "bg-gray-200"
+                className={`w-20 h-1 mx-2 transition-all ${s < step ? "bg-primary" : "bg-border"
                   }`}
               />
             )}
@@ -326,7 +334,7 @@ export default function JobCreate() {
 
       {/* Step 1: Job Details */}
       {step === 1 && (
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle>{t("jobs.step1JobDetails")}</CardTitle>
           </CardHeader>
@@ -404,7 +412,7 @@ export default function JobCreate() {
 
       {/* Step 2: Parts */}
       {step === 2 && (
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
             <div className="flex justify-between items-center">
               <CardTitle>{t("jobs.step2AddParts")}</CardTitle>
@@ -572,7 +580,7 @@ export default function JobCreate() {
 
       {/* Step 3: Operations */}
       {step === 3 && (
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle>{t("jobs.step3AddOperations")}</CardTitle>
           </CardHeader>
@@ -720,7 +728,7 @@ export default function JobCreate() {
 
       {/* Step 4: Summary */}
       {step === 4 && (
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle>{t("jobs.step4ReviewCreate")}</CardTitle>
           </CardHeader>
@@ -763,7 +771,7 @@ export default function JobCreate() {
       )}
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between mt-6">
+      <div className="flex justify-between">
         <Button
           variant="outline"
           onClick={() => setStep(step - 1)}
@@ -780,6 +788,7 @@ export default function JobCreate() {
           <Button
             onClick={() => createJobMutation.mutate()}
             disabled={createJobMutation.isPending}
+            className="cta-button"
           >
             <Check className="mr-2 h-4 w-4" />
             {createJobMutation.isPending ? t("jobs.creating") : t("jobs.createJob")}

@@ -215,20 +215,25 @@ export default function ConfigApiKeys() {
   ], [t]);
 
   return (
-    <div className="p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">{t('apiKeys.title')}</h1>
-            <p className="text-muted-foreground">{t('apiKeys.description')}</p>
-          </div>
+    <div className="p-6 space-y-8">
+        <div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+            {t('apiKeys.title')}
+          </h1>
+          <p className="text-muted-foreground text-lg">{t('apiKeys.description')}</p>
+        </div>
+
+        <hr className="title-divider" />
+
+        <div className="flex justify-end">
           <Dialog open={newKeyDialog} onOpenChange={setNewKeyDialog}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="cta-button">
                 <Plus className="mr-2 h-4 w-4" />
                 {t('apiKeys.generateNewKey')}
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="glass-card sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>{t('apiKeys.generateApiKey')}</DialogTitle>
                 <DialogDescription>
@@ -275,7 +280,7 @@ export default function ConfigApiKeys() {
           </Dialog>
         </div>
 
-        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+        <Card className="glass-card border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BookOpen className="h-5 w-5" />
@@ -301,7 +306,7 @@ export default function ConfigApiKeys() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle>{t('apiKeys.activeKeys')}</CardTitle>
             <CardDescription>
@@ -321,7 +326,7 @@ export default function ConfigApiKeys() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle>Quick Reference</CardTitle>
             <CardDescription>
