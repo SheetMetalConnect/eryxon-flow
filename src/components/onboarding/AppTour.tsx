@@ -257,24 +257,30 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
       callback={handleJoyrideCallback}
       styles={{
         options: {
-          primaryColor: '#3b82f6', // blue-500
+          primaryColor: '#1e90ff', // Brand primary (Dodger Blue)
           zIndex: 10000,
         },
         tooltip: {
-          borderRadius: 8,
-          padding: 20,
+          backgroundColor: 'hsl(0 0% 8% / 0.95)', // Glass background
+          borderRadius: 12,
+          padding: 24,
+          border: '1px solid hsl(0 0% 100% / 0.1)', // Glass border
+        },
+        tooltipContent: {
+          padding: 0,
         },
         buttonNext: {
-          backgroundColor: '#3b82f6',
-          borderRadius: 6,
-          padding: '8px 16px',
+          backgroundColor: '#1e90ff', // Brand primary
+          borderRadius: 8,
+          padding: '10px 20px',
+          fontWeight: 500,
         },
         buttonBack: {
-          color: '#6b7280',
-          marginRight: 8,
+          color: 'hsl(0 0% 60%)',
+          marginRight: 12,
         },
         buttonSkip: {
-          color: '#6b7280',
+          color: 'hsl(0 0% 60%)',
         },
       }}
       locale={{

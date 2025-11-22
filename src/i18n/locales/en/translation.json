@@ -187,8 +187,140 @@
     "instructions": "Instructions"
   },
   "onboarding": {
-    "welcome": "Welcome to Eryxon MES",
+    "languageSelection": {
+      "title": "Choose Your Language",
+      "subtitle": "Select your preferred language to continue. You can change this later in settings.",
+      "helpText": "This helps us personalize your experience",
+      "continue": "Continue",
+      "saving": "Saving...",
+      "english": "English",
+      "dutch": "Dutch",
+      "german": "German",
+      "englishNative": "English",
+      "dutchNative": "Nederlands",
+      "germanNative": "Deutsch",
+      "englishDesc": "International business language",
+      "dutchDesc": "Voor Nederlandse gebruikers",
+      "germanDesc": "Für deutsche Benutzer"
+    },
+    "gettingStarted": "Getting Started",
+    "welcome": "Welcome to Eryxon Flow",
+    "tagline": "The simple MES you love to use",
     "subtitle": "The simple, elegant manufacturing execution system for metals fabrication",
+    "stepBuildTeam": "Build Team",
+    "stepBuildTeamDesc": "Invite your team",
+    "stepChoosePlan": "Choose Plan",
+    "stepChoosePlanDesc": "Select your subscription",
+    "stepSampleData": "Sample Data",
+    "stepSampleDataDesc": "Import demo content",
+    "stepComplete": "Complete",
+    "stepCompleteDesc": "Start using Eryxon",
+    "teamSetup": {
+      "title": "Build Your Team",
+      "description": "Add team members to get started",
+      "inviteTab": "Invite via Email",
+      "createOperatorsTab": "Create Operators",
+      "emailPlaceholder": "colleague@company.com",
+      "addInvitation": "Add Invitation",
+      "role": "Role",
+      "admin": "Admin",
+      "operator": "Operator",
+      "pendingInvitations": "Pending Invitations",
+      "noPendingInvitations": "No pending invitations",
+      "cancelInvitation": "Cancel",
+      "invitationSent": "Invitation sent successfully",
+      "invitationCancelled": "Invitation cancelled",
+      "operatorName": "Operator Name",
+      "operatorNamePlaceholder": "Enter operator name",
+      "pinCode": "PIN Code",
+      "pinCodePlaceholder": "4-6 digit PIN",
+      "pinCodeHelp": "Operators use this to sign in on shop floor terminals",
+      "employeeId": "Employee ID",
+      "employeeIdPlaceholder": "Auto-generated",
+      "createOperator": "Create Operator",
+      "creatingOperator": "Creating...",
+      "operatorCreated": "Operator created successfully",
+      "skipThisStep": "Skip this step",
+      "continueToNextStep": "Continue",
+      "inviteTeamMembers": "Invite team members to collaborate",
+      "createShopFloorOperators": "Create shop floor operators without email"
+    },
+    "planSelection": {
+      "title": "Choose Your Plan",
+      "description": "Start with our free plan and upgrade anytime as your shop grows",
+      "free": {
+        "name": "Free",
+        "price": "$0",
+        "period": "forever",
+        "description": "Perfect for getting started",
+        "features": [
+          "All features included",
+          "Up to 100 jobs per month",
+          "Up to 1,000 parts per month",
+          "5GB storage",
+          "Community support"
+        ],
+        "cta": "Start Free"
+      },
+      "pro": {
+        "name": "Pro",
+        "badge": "Contact Us",
+        "description": "For growing fabrication shops",
+        "comingSoon": "Coming Later",
+        "features": [
+          "Everything in Free, plus:",
+          "Unlimited jobs and parts",
+          "Advanced analytics",
+          "Priority support",
+          "API access"
+        ],
+        "cta": "Contact Us"
+      },
+      "premium": {
+        "name": "Premium",
+        "badge": "Contact Us",
+        "description": "Enterprise-grade manufacturing",
+        "comingSoon": "Coming Later",
+        "features": [
+          "Everything in Pro, plus:",
+          "Single-tenant deployment",
+          "Air-gapped option",
+          "Dedicated support",
+          "Custom integrations"
+        ],
+        "cta": "Contact Us"
+      },
+      "contactEmail": "sales@eryxon.com",
+      "selectPlan": "Select {{plan}}",
+      "currentPlan": "Current Plan"
+    },
+    "mockData": {
+      "title": "Import Sample Data",
+      "description": "Start exploring Eryxon MES with realistic metal fabrication shop data",
+      "explanation": "We'll create sample jobs, parts, and operations that represent a typical sheet metal fabrication workflow.",
+      "whatWeWillCreate": "What we'll create:",
+      "manufacturingCells": "Manufacturing Cells",
+      "cellsCount": "6 cells",
+      "cellsDescription": "Laser cutting, bending, welding, assembly, finishing, and QC",
+      "sampleJobs": "Sample Jobs",
+      "jobsCount": "3 jobs",
+      "jobsDescription": "Real-world examples from different customers with priorities",
+      "sampleParts": "Parts",
+      "partsCount": "5 parts",
+      "partsDescription": "Various metal components including enclosures, brackets, and panels",
+      "sampleOperations": "Operations",
+      "operationsCount": "30+ operations",
+      "operationsDescription": "Complete workflow from cutting through quality control",
+      "importButton": "Import Sample Data",
+      "skipButton": "Skip for Now",
+      "importing": "Importing...",
+      "success": "Sample data has been imported successfully!",
+      "continueToApp": "Continue to App",
+      "resetButton": "Reset & Reimport",
+      "resetting": "Resetting...",
+      "note": "You can clear this sample data later from the admin settings, or reimport it anytime to reset your test environment."
+    },
+    "continue": "Continue",
     "choosePlan": "Choose Your Plan",
     "planDescription": "Start with our free plan and upgrade anytime as your shop grows",
     "freePlan": "Free Plan",
@@ -200,7 +332,6 @@
     "perMonth": "/month",
     "freePlanDescription": "Perfect for getting started with Eryxon MES",
     "proPlanDescription": "Advanced features for growing metal fabrication shops",
-    "continue": "Continue",
     "continueWithPlan": "Continue with {{plan}} Plan",
     "noCardRequired": "No credit card required for Free plan",
     "cancelAnytime": "Cancel anytime",
@@ -225,7 +356,82 @@
     "resetting": "Resetting...",
     "sampleDataNote": "You can clear this sample data later from the admin settings, or reimport it anytime to reset your test environment.",
     "tourComplete": "Tour completed! You can restart it anytime from settings.",
-    "onboardingComplete": "Onboarding complete! Welcome to Eryxon MES 🎉"
+    "onboardingComplete": "Onboarding complete! Welcome to Eryxon MES 🎉",
+    "needHelp": "Need help? Check out our",
+    "documentation": "documentation",
+    "orContactSupport": "or contact support",
+    "tour": {
+      "buttons": {
+        "back": "Back",
+        "close": "Close",
+        "last": "Finish",
+        "next": "Next",
+        "skip": "Skip Tour"
+      },
+      "admin": {
+        "welcome": {
+          "title": "Welcome to Eryxon MES! 👋",
+          "description": "This is your Admin Dashboard for managing your metal fabrication shop. Let's take a quick tour of the key features."
+        },
+        "sidebar": {
+          "title": "Navigation Sidebar",
+          "description": "Access all admin functions from here: Dashboard, Jobs, Parts, Issues, Assignments, and Configuration."
+        },
+        "stats": {
+          "title": "Real-time Metrics",
+          "description": "Monitor active jobs, parts in progress, ongoing operations, and reported issues at a glance."
+        },
+        "operations": {
+          "title": "Active Operations",
+          "description": "See what operators are currently working on in real-time. Track progress by cell/stage."
+        },
+        "jobs": {
+          "title": "Jobs Management",
+          "description": "Create and manage customer jobs. Each job contains parts that flow through your manufacturing cells."
+        },
+        "config": {
+          "title": "Configuration",
+          "description": "Set up your shop: add operators, define manufacturing cells/stages, configure API integrations, and customize workflows."
+        },
+        "complete": {
+          "title": "You're All Set! 🎉",
+          "description": "Eryxon MES organizes work by manufacturing stages (cutting, bending, welding, etc.) using Quick Response Manufacturing (QRM) principles.",
+          "description2": "Operators pull work when ready, and you get real-time visibility into the shop floor without walking around.",
+          "cta": "Explore the sample data or start creating your own jobs!"
+        }
+      },
+      "operator": {
+        "welcome": {
+          "title": "Welcome to Eryxon MES! 👋",
+          "description": "This is your Work Queue - your mobile-first interface for tracking manufacturing tasks. Let's show you around!"
+        },
+        "queue": {
+          "title": "Your Work Queue",
+          "description": "All operations assigned to you appear here, organized by manufacturing stage (cutting, bending, welding, etc.)."
+        },
+        "card": {
+          "title": "Operation Cards",
+          "description": "Each card shows the part, operation details, and status. Tap a card to see drawings, STEP files, and custom instructions."
+        },
+        "timer": {
+          "title": "Time Tracking",
+          "description": "Tap Start when you begin work and Stop when done. Simple, visual, and accurate time tracking."
+        },
+        "nav": {
+          "title": "Bottom Navigation",
+          "description": "Quickly switch between your Work Queue, My Activity (time entries), and Issues you've reported."
+        },
+        "complete": {
+          "title": "Ready to Work! 🔧",
+          "description": "Eryxon shows you what to work on, grouped by materials and stages - organized the way your shop runs.",
+          "description2": "Visual indicators (colors, images) make tasks instantly recognizable. Everything you need, nothing extra.",
+          "cta": "Start by selecting an operation from your queue!"
+        }
+      },
+      "completed": "Tour completed! You can restart it anytime from settings.",
+      "resetSuccess": "Tour reset! Refresh the page to start the tour again.",
+      "resetFailed": "Failed to restart tour"
+    }
   },
   "jobs": {
     "title": "Job Management",
