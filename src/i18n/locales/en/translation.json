@@ -1140,63 +1140,78 @@
     }
   },
   "pricing": {
-    "title": "Pricing Plans",
-    "subtitle": "Choose the perfect plan for your metal fabrication shop",
+    "title": "Pricing",
+    "subtitle": "Simple, transparent pricing for European metal fabrication shops",
     "monthly": "Monthly",
     "annually": "Annually",
     "save20": "Save 20%",
     "currentPlan": "Current Plan",
     "choosePlan": "Choose Plan",
-    "upgrade": "Upgrade",
+    "upgrade": "Request Upgrade",
     "downgrade": "Downgrade",
-    "contactSales": "Contact Sales",
+    "contactSales": "Contact Us",
+    "comingSoon": "Coming Soon",
     "free": {
       "name": "Free",
-      "price": "$0",
-      "description": "Perfect for getting started",
+      "price": "€0",
+      "description": "Get started with the basics",
       "features": [
-        "All features included",
-        "Up to 100 jobs per month",
+        "Core MES features",
+        "Up to 100 jobs",
         "Up to 1,000 parts per month",
-        "5GB storage",
-        "10GB data usage per month",
-        "Self-service signup",
-        "Community support"
+        "5 GB file storage",
+        "Multi-tenant cloud hosting",
+        "As-is (no support)",
+        "Documentation only"
       ]
     },
     "pro": {
       "name": "Pro",
-      "price": "$49",
-      "description": "Best for small to medium shops",
+      "price": "€149",
+      "description": "Higher limits for growing shops",
       "features": [
-        "All features included",
-        "Full usage with higher limits",
-        "Tiered storage limits",
-        "Upgrades available for heavy storage use",
-        "Self-service management",
-        "API access",
-        "Priority support"
+        "Everything in Free",
+        "Job-based limits (higher quotas)",
+        "Increased parts per month",
+        "Increased storage",
+        "Full API access",
+        "Chat & ticket support (~1 day response)",
+        "Coming soon"
       ]
     },
     "premium": {
-      "name": "Premium",
-      "price": "Contact Sales",
-      "description": "For large fabrication operations",
+      "name": "On-Premise",
+      "price": "Custom",
+      "description": "Self-hosted for maximum control",
       "features": [
-        "All features included",
-        "Enterprise-grade features",
-        "SSO authentication",
-        "Self-hosted deployment option",
-        "Single-tenant architecture",
-        "Unlimited storage",
-        "Dedicated account manager",
-        "24/7 premium support"
+        "Self-hosted on your infrastructure",
+        "No usage limits",
+        "Complete data ownership",
+        "Air-gapped deployment option",
+        "Custom integrations & onboarding",
+        "Dedicated support",
+        "Contact us for details"
       ]
     },
-    "perMonth": "/month",
+    "perMonth": "/month per tenant",
     "perYear": "/year",
     "billedMonthly": "Billed monthly",
-    "billedAnnually": "Billed annually"
+    "billedAnnually": "Billed annually",
+    "howItWorks": {
+      "title": "How It Works",
+      "payments": {
+        "title": "Payments via Stripe",
+        "description": "All payments are processed securely via Stripe with support for SEPA Direct Debit and credit cards. Pricing is in Euros. Fully automated billing and invoicing."
+      },
+      "selfService": {
+        "title": "Self-Service Setup",
+        "description": "Sign up, configure your stages and materials, and start tracking production. No sales calls, no complex onboarding. Documentation and email support only."
+      },
+      "upgrade": {
+        "title": "Interested in Pro or On-Premise?",
+        "description": "Contact us at"
+      }
+    }
   },
   "myPlan": {
     "title": "My Plan",

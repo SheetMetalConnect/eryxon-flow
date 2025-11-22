@@ -1068,63 +1068,78 @@
     }
   },
   "pricing": {
-    "title": "Preispläne",
-    "subtitle": "Wählen Sie den perfekten Plan für Ihren Metallbaubetrieb",
+    "title": "Preise",
+    "subtitle": "Einfache, transparente Preise für europäische Metallbaubetriebe",
     "monthly": "Monatlich",
     "annually": "Jährlich",
     "save20": "20% sparen",
     "currentPlan": "Aktueller Plan",
     "choosePlan": "Plan wählen",
-    "upgrade": "Upgrade",
+    "upgrade": "Upgrade anfragen",
     "downgrade": "Downgrade",
-    "contactSales": "Vertrieb kontaktieren",
+    "contactSales": "Kontaktieren Sie uns",
+    "comingSoon": "Demnächst",
     "free": {
       "name": "Kostenlos",
-      "price": "0 €",
-      "description": "Perfekt für den Einstieg",
+      "price": "€0",
+      "description": "Einstieg mit den Grundlagen",
       "features": [
-        "Alle Funktionen enthalten",
-        "Bis zu 100 Aufträge pro Monat",
+        "Kern-MES-Funktionen",
+        "Bis zu 100 Aufträge",
         "Bis zu 1.000 Teile pro Monat",
-        "5 GB Speicher",
-        "10 GB Datennutzung pro Monat",
-        "Self-Service-Anmeldung",
-        "Community-Support"
+        "5 GB Dateispeicher",
+        "Multi-Tenant Cloud-Hosting",
+        "Keine Unterstützung (as-is)",
+        "Nur Dokumentation"
       ]
     },
     "pro": {
       "name": "Pro",
-      "price": "49 €",
-      "description": "Optimal für kleine bis mittlere Betriebe",
+      "price": "€149",
+      "description": "Höhere Limits für wachsende Betriebe",
       "features": [
-        "Alle Funktionen enthalten",
-        "Vollständige Nutzung mit höheren Limits",
-        "Gestaffelte Speicherlimits",
-        "Upgrades für hohe Speichernutzung verfügbar",
-        "Self-Service-Verwaltung",
-        "API-Zugriff",
-        "Prioritäts-Support"
+        "Alles aus Kostenlos",
+        "Auftragsbasierte Limits (höhere Kontingente)",
+        "Mehr Teile pro Monat",
+        "Mehr Speicher",
+        "Voller API-Zugriff",
+        "Chat & Ticket-Support (~1 Tag Reaktionszeit)",
+        "Demnächst verfügbar"
       ]
     },
     "premium": {
-      "name": "Premium",
-      "price": "Vertrieb kontaktieren",
-      "description": "Für große Fertigungsbetriebe",
+      "name": "On-Premise",
+      "price": "Individuell",
+      "description": "Self-Hosted für maximale Kontrolle",
       "features": [
-        "Alle Funktionen enthalten",
-        "Enterprise-Funktionen",
-        "SSO-Authentifizierung",
-        "Self-Hosted-Deployment-Option",
-        "Single-Tenant-Architektur",
-        "Unbegrenzter Speicher",
-        "Dedizierter Account Manager",
-        "24/7 Premium-Support"
+        "Self-Hosted auf Ihrer Infrastruktur",
+        "Keine Nutzungslimits",
+        "Vollständige Datenkontrolle",
+        "Air-Gapped-Deployment möglich",
+        "Individuelle Integrationen & Onboarding",
+        "Dedizierte Unterstützung",
+        "Kontaktieren Sie uns für Details"
       ]
     },
-    "perMonth": "/Monat",
+    "perMonth": "/Monat pro Mandant",
     "perYear": "/Jahr",
     "billedMonthly": "Monatlich abgerechnet",
-    "billedAnnually": "Jährlich abgerechnet"
+    "billedAnnually": "Jährlich abgerechnet",
+    "howItWorks": {
+      "title": "So funktioniert es",
+      "payments": {
+        "title": "Zahlungen über Stripe",
+        "description": "Alle Zahlungen werden sicher über Stripe mit Unterstützung für SEPA-Lastschrift und Kreditkarten abgewickelt. Preise in Euro. Vollautomatische Abrechnung und Rechnungsstellung."
+      },
+      "selfService": {
+        "title": "Self-Service-Einrichtung",
+        "description": "Registrieren Sie sich, konfigurieren Sie Ihre Stufen und Materialien und beginnen Sie mit der Produktionsverfolgung. Keine Verkaufsgespräche, kein komplexes Onboarding. Nur Dokumentation und E-Mail-Support."
+      },
+      "upgrade": {
+        "title": "Interesse an Pro oder On-Premise?",
+        "description": "Kontaktieren Sie uns unter"
+      }
+    }
   },
   "myPlan": {
     "title": "Mein Plan",

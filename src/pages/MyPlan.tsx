@@ -39,52 +39,46 @@ const pricingTiers = [
     id: 'free',
     name: 'Free',
     price: 0,
-    description: 'Perfect for small shops getting started',
+    description: 'Get started with the basics',
     features: [
-      '100 jobs per month',
-      '1,000 parts per month',
+      'Core MES features',
+      'Up to 100 jobs',
+      'Up to 1,000 parts per month',
       '5 GB file storage',
-      'Limited API access',
-      'Multi-tenant architecture',
-      'Community support (docs only)',
-      'Basic workflow tracking',
+      'Multi-tenant cloud hosting',
+      'As-is (no support)',
+      'Documentation only',
     ],
   },
   {
     id: 'pro',
     name: 'Pro',
-    price: 97,
+    price: 149,
     popular: true,
-    description: 'For growing shops with higher volume',
+    description: 'Higher limits for growing shops',
     features: [
-      'Unlimited users',
-      '1,000 jobs per month',
-      '10,000 parts per month',
-      '50 GB file storage',
+      'Everything in Free',
+      'Job-based limits (higher quotas)',
+      'Increased parts per month',
+      'Increased storage',
       'Full API access',
-      'Multi-tenant architecture',
-      'Priority email support',
-      'Advanced analytics',
-      'Webhook integrations',
+      'Chat & ticket support (~1 day response)',
+      'Coming soon',
     ],
   },
   {
     id: 'premium',
-    name: 'Enterprise',
-    price: 497,
-    description: 'Custom, bespoke solution',
+    name: 'On-Premise',
+    price: null,
+    description: 'Self-hosted for maximum control',
     features: [
-      'Everything in Pro',
-      'Unlimited jobs & parts',
-      'Unlimited storage',
-      'Unlimited usage',
-      'Self-hosted (on-premises)',
-      'Single-tenant architecture',
-      'SSO/SAML authentication',
-      'Dedicated support channel',
-      'Custom SLA',
-      'White-label options',
-      'Advanced security controls',
+      'Self-hosted on your infrastructure',
+      'No usage limits',
+      'Complete data ownership',
+      'Air-gapped deployment option',
+      'Custom integrations & onboarding',
+      'Dedicated support',
+      'Contact us for details',
     ],
   },
 ];
@@ -175,9 +169,9 @@ export const MyPlan: React.FC = () => {
                   {currentTier?.description}
                 </Typography>
                 <Typography variant="h3" fontWeight={700}>
-                  ${currentTier?.price || 0}
+                  {currentTier?.price !== null ? `€${currentTier?.price}` : t('pricing.premium.price')}
                   <Typography component="span" variant="h6" sx={{ opacity: 0.8, ml: 1 }}>
-                    {t('myPlan.perMonth')}
+                    {currentTier?.price !== null ? t('myPlan.perMonth') : ''}
                   </Typography>
                 </Typography>
               </Grid>
