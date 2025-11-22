@@ -130,10 +130,8 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess }
           created_by: profile.id,
           operator_name: profile.full_name || 'Unknown',
           severity,
-          title: title.trim(),
           description: description.trim(),
           created_at: createdAt,
-          issue_type: issueType,
         }).catch(error => {
           console.error('Failed to trigger webhook:', error);
           // Don't fail the operation if webhook fails

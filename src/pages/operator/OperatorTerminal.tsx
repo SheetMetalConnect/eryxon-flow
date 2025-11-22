@@ -321,7 +321,6 @@ export default function OperatorTerminal() {
                             <h2 className="text-xs font-bold text-status-active uppercase tracking-wide">{t("terminal.inProcess")} ({inProcessJobs.length})</h2>
                             <Info
                                 className="h-3.5 w-3.5 text-status-active/70 cursor-help"
-                                title="Jobs currently being worked on by operators"
                             />
                         </div>
                     </div>
@@ -371,7 +370,6 @@ export default function OperatorTerminal() {
                             <h2 className="text-sm font-bold text-info uppercase tracking-wide">{t("terminal.inBuffer")} ({inBufferJobs.length})</h2>
                             <Info
                                 className="h-4 w-4 text-info/70 cursor-help"
-                                title="Jobs ready to start, waiting in queue for this cell"
                             />
                         </div>
                     </div>
@@ -412,7 +410,6 @@ export default function OperatorTerminal() {
                             <h2 className="text-sm font-bold text-status-pending uppercase tracking-wide">{t("terminal.expected")} ({expectedJobs.length})</h2>
                             <Info
                                 className="h-4 w-4 text-status-pending/70 cursor-help"
-                                title="Jobs scheduled to arrive at this cell soon, currently in previous operations"
                             />
                         </div>
                     </div>
