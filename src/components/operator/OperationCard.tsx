@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useOperationIssues } from "@/hooks/useOperationIssues";
 import OperationDetailModal from "./OperationDetailModal";
 import { useTranslation } from "react-i18next";
+import { ResourceCountBadge } from "@/components/ui/ResourceUsageDisplay";
 
 interface OperationCardProps {
   operation: OperationWithDetails;
@@ -70,6 +71,7 @@ export default function OperationCard({ operation, onUpdate, compact = false }: 
                   <AlertTriangle className="h-3 w-3" />
                 </Badge>
               )}
+              <ResourceCountBadge operationId={operation.id} />
             </div>
           </div>
 
@@ -136,6 +138,7 @@ export default function OperationCard({ operation, onUpdate, compact = false }: 
                 {pendingCount}
               </Badge>
             )}
+            <ResourceCountBadge operationId={operation.id} />
           </div>
         </div>
 
