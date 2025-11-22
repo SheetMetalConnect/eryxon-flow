@@ -22,16 +22,53 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Get request body
-    const { tenantId } = await req.json();
-
-    if (!tenantId) {
-      throw new Error('Missing required field: tenantId');
+    // Authenticate the request
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // Get tenant details
+    // Create authenticated Supabase client
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      global: {
+        headers: { Authorization: authHeader },
+      },
+    });
+
+    // Verify user is authenticated
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Get user's profile to find their tenant
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('tenant_id, role')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !profile) {
+      throw new Error('Profile not found');
+    }
+
+    // Verify user is an admin
+    if (profile.role !== 'admin') {
+      return new Response(
+        JSON.stringify({ error: 'Only admins can manage billing' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const tenantId = profile.tenant_id;
+
+    // Get tenant details (now using authenticated user's tenant)
     const { data: tenant, error: tenantError } = await supabase
       .from('tenants')
       .select('id, stripe_customer_id, billing_enabled')

@@ -49,7 +49,7 @@ export const StripeBillingSection: React.FC<StripeBillingSectionProps> = ({
       const { data, error } = await supabase.functions.invoke('stripe-create-checkout', {
         body: {
           priceId: STRIPE_PRICE_IDS[targetPlan],
-          tenantId,
+          // tenantId is no longer needed - server gets it from auth
         },
       });
 
@@ -74,7 +74,7 @@ export const StripeBillingSection: React.FC<StripeBillingSectionProps> = ({
     setLoading('portal');
     try {
       const { data, error } = await supabase.functions.invoke('stripe-portal', {
-        body: { tenantId },
+        body: {}, // tenantId no longer needed - server gets it from auth
       });
 
       if (error) throw error;
