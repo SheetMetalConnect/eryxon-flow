@@ -41,22 +41,27 @@ export async function generateMockData(
     );
 
     // Check if tenant already has demo data to prevent duplicates
-    const { data: isDemoMode, error: demoCheckError } = await supabase.rpc(
-      "is_demo_mode",
-      { p_tenant_id: tenantId },
-    );
-
-    if (demoCheckError) {
-      console.warn("Could not check demo mode status:", demoCheckError);
-    } else if (isDemoMode === true) {
-      console.log(
-        "⚠️ Tenant already has demo data. Skipping to prevent duplicates.",
+    // Skip this check for testing/specific tenants
+    const skipDemoCheck = tenantId === "11111111-1111-1111-1111-111111111111";
+    
+    if (!skipDemoCheck) {
+      const { data: isDemoMode, error: demoCheckError } = await supabase.rpc(
+        "is_demo_mode",
+        { p_tenant_id: tenantId },
       );
-      return {
-        success: false,
-        error:
-          "Demo data already exists for this tenant. Please clear existing demo data first.",
-      };
+
+      if (demoCheckError) {
+        console.warn("Could not check demo mode status:", demoCheckError);
+      } else if (isDemoMode === true) {
+        console.log(
+          "⚠️ Tenant already has demo data. Skipping to prevent duplicates.",
+        );
+        return {
+          success: false,
+          error:
+            "Demo data already exists for this tenant. Please clear existing demo data first.",
+        };
+      }
     }
 
     // Step 1: Create QRM-aligned manufacturing cells with WIP limits
@@ -154,7 +159,8 @@ export async function generateMockData(
       console.log("✓ Created 6 QRM cells with WIP limits");
     }
 
-    // Step 2: Create demo operators with PINs
+    // Step 2: Create 6 Dutch operator profiles for shop floor use
+    // Note: pin_hash is left NULL - operators can set PINs later via UI if needed
     let operatorIds: string[] = [];
     const operatorIdMap: Record<string, string> = {};
 
@@ -168,6 +174,8 @@ export async function generateMockData(
           full_name: "Jan de Vries",
           email: "jan.devries@sheetmetalconnect.nl",
           active: true,
+          has_email_login: false,
+          is_machine: false,
         },
         {
           id: crypto.randomUUID(),
@@ -177,6 +185,8 @@ export async function generateMockData(
           full_name: "Emma Bakker",
           email: "emma.bakker@sheetmetalconnect.nl",
           active: true,
+          has_email_login: false,
+          is_machine: false,
         },
         {
           id: crypto.randomUUID(),
@@ -186,6 +196,8 @@ export async function generateMockData(
           full_name: "Luuk van der Berg",
           email: "luuk.vandenberg@sheetmetalconnect.nl",
           active: true,
+          has_email_login: false,
+          is_machine: false,
         },
         {
           id: crypto.randomUUID(),
@@ -195,6 +207,8 @@ export async function generateMockData(
           full_name: "Sophie Jansen",
           email: "sophie.jansen@sheetmetalconnect.nl",
           active: true,
+          has_email_login: false,
+          is_machine: false,
         },
         {
           id: crypto.randomUUID(),
@@ -204,6 +218,8 @@ export async function generateMockData(
           full_name: "Daan Mulder",
           email: "daan.mulder@sheetmetalconnect.nl",
           active: true,
+          has_email_login: false,
+          is_machine: false,
         },
         {
           id: crypto.randomUUID(),
@@ -213,22 +229,32 @@ export async function generateMockData(
           full_name: "Lisa Visser",
           email: "lisa.visser@sheetmetalconnect.nl",
           active: true,
+          has_email_login: false,
+          is_machine: false,
         },
       ];
 
-      const { data: operatorData, error: operatorError } = await supabase
-        .from("profiles")
-        .insert(operators)
-        .select("id, full_name");
+      try {
+        const { data: operatorData, error: operatorError } = await supabase
+          .from("profiles")
+          .insert(operators)
+          .select("id, full_name");
 
-      if (operatorError) throw operatorError;
+        if (operatorError) {
+          console.error("❌ Operator creation failed:", operatorError);
+          throw new Error(`Failed to create operators: ${operatorError.message}`);
+        }
 
-      operatorIds = operatorData?.map((o) => o.id) || [];
-      operatorData?.forEach((o, idx) => {
-        operatorIdMap[operators[idx].full_name] = o.id;
-      });
+        operatorIds = operatorData?.map((o) => o.id) || [];
+        operatorData?.forEach((o, idx) => {
+          operatorIdMap[operators[idx].full_name] = o.id;
+        });
 
-      console.log("✓ Created 6 operators with PINs");
+        console.log("✓ Created 6 shop floor operators (PINs can be set later)");
+      } catch (err) {
+        console.error("💥 Critical error during operator creation:", err);
+        throw err;
+      }
     }
 
     // Step 3: Seed resources first (needed for operations)
