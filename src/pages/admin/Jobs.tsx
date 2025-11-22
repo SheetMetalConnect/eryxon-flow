@@ -207,9 +207,9 @@ export default function Jobs() {
     const weekFromNow = addDays(today, 7);
 
     if (isBefore(dueDate, today)) {
-      return "text-red-600 font-semibold";
+      return "text-destructive font-semibold";
     } else if (isBefore(dueDate, weekFromNow)) {
-      return "text-yellow-600 font-semibold";
+      return "text-warning font-semibold";
     }
     return "";
   };
@@ -319,7 +319,7 @@ export default function Jobs() {
                 }}
                 title={`${job.stepFiles.length} STEP file(s)`}
               >
-                <Box className="h-4 w-4 text-blue-600" />
+                <Box className="h-4 w-4 text-primary" />
               </Button>
             )}
             {job.hasPDF && (
@@ -333,7 +333,7 @@ export default function Jobs() {
                 }}
                 title={`${job.pdfFiles.length} PDF file(s)`}
               >
-                <FileText className="h-4 w-4 text-red-600" />
+                <FileText className="h-4 w-4 text-destructive" />
               </Button>
             )}
             {!job.hasSTEP && !job.hasPDF && (

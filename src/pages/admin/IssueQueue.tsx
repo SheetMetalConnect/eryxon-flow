@@ -176,10 +176,10 @@ export default function IssueQueue() {
   };
 
   const severityColors = {
-    low: "bg-gray-500",
-    medium: "bg-yellow-500",
-    high: "bg-orange-500",
-    critical: "bg-red-500",
+    low: "bg-severity-low",
+    medium: "bg-severity-medium",
+    high: "bg-severity-high",
+    critical: "bg-severity-critical",
   };
 
   const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
@@ -254,7 +254,7 @@ export default function IssueQueue() {
 
       {issues.length === 0 ? (
         <Card className="p-12 text-center">
-          <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500" />
+          <CheckCircle className="h-12 w-12 mx-auto mb-4 text-success" />
           <h3 className="text-lg font-medium mb-2">
             {t("issues.noPendingIssues")}
           </h3>
@@ -279,7 +279,7 @@ export default function IssueQueue() {
                     <Badge
                       className={
                         severityColors[
-                          issue.severity as keyof typeof severityColors
+                        issue.severity as keyof typeof severityColors
                         ]
                       }
                     >
@@ -324,7 +324,7 @@ export default function IssueQueue() {
                 <Badge
                   className={
                     severityColors[
-                      selectedIssue.severity as keyof typeof severityColors
+                    selectedIssue.severity as keyof typeof severityColors
                     ]
                   }
                 >
@@ -410,7 +410,7 @@ export default function IssueQueue() {
                 <Button
                   onClick={() => handleReview("approved")}
                   disabled={actionLoading || !resolutionNotes.trim()}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  className="flex-1 bg-success hover:bg-success/90"
                 >
                   <CheckCircle className="h-4 w-4 mr-2" />
                   {t("issues.approve")}

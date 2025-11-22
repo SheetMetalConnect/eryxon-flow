@@ -259,12 +259,7 @@ export default function Dashboard() {
       id: "cell",
       header: t("dashboard.cell"),
       cell: ({ row }) => (
-        <Badge
-          style={{
-            backgroundColor: row.original.operation.cell.color || "hsl(var(--accent))",
-            color: "white",
-          }}
-        >
+        <Badge className="bg-accent text-white">
           {row.original.operation.cell.name}
         </Badge>
       ),
@@ -430,13 +425,7 @@ export default function Dashboard() {
                     </TableCell>
                     <TableCell>{work.operation.part.part_number}</TableCell>
                     <TableCell>
-                      <Badge
-                        style={{
-                          backgroundColor:
-                            work.operation.cell.color || "hsl(var(--accent))",
-                          color: "white",
-                        }}
-                      >
+                      <Badge className="bg-accent text-white">
                         {work.operation.cell.name}
                       </Badge>
                     </TableCell>
