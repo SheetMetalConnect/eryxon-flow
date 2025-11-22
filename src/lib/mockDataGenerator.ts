@@ -61,7 +61,7 @@ export async function generateMockData(
 
     // Step 1: Create QRM-aligned manufacturing cells with WIP limits
     let cellIds: string[] = [];
-    let cellIdMap: Record<string, string> = {};
+    const cellIdMap: Record<string, string> = {};
 
     if (options.includeCells) {
       const cells = [
@@ -156,7 +156,7 @@ export async function generateMockData(
 
     // Step 2: Create demo operators with PINs
     let operatorIds: string[] = [];
-    let operatorIdMap: Record<string, string> = {};
+    const operatorIdMap: Record<string, string> = {};
 
     if (options.includeOperators) {
       const operators = [
@@ -288,7 +288,7 @@ export async function generateMockData(
 
     // Step 5: Create realistic Dutch customer jobs
     let jobIds: string[] = [];
-    let jobIdMap: Record<string, string> = {};
+    const jobIdMap: Record<string, string> = {};
 
     if (options.includeJobs) {
       // Dates: Past in Oct/Nov 2025, Future in Jan 2026
