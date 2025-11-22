@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ThemeProvider } from "./theme/ThemeProvider";
 import { ToastProvider } from "./components/mui/ToastNotification";
 import { NotificationToastProvider } from "./components/NotificationToastProvider";
+import AnimatedBackground from "./components/AnimatedBackground";
 import Auth from "./pages/Auth";
 import WorkQueue from "./pages/operator/WorkQueue";
 import MyActivity from "./pages/operator/MyActivity";
@@ -434,6 +435,7 @@ function AppRoutes() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
+      <AnimatedBackground />
       <ToastProvider>
         <TooltipProvider>
           <Toaster />

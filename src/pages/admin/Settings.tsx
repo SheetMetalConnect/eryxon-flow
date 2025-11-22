@@ -1,18 +1,14 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useThemeMode } from "@/theme/ThemeProvider";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Moon,
-  Sun,
   Globe,
-  Bell,
   Shield,
   User,
   Building,
@@ -22,7 +18,6 @@ import { Link } from "react-router-dom";
 
 export const Settings: React.FC = () => {
   const { t } = useTranslation();
-  const { mode, toggleTheme } = useThemeMode();
   const { profile, tenant } = useAuth();
 
   return (
@@ -39,26 +34,25 @@ export const Settings: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              {mode === "dark" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+              <Moon className="h-5 w-5" />
               Appearance
             </CardTitle>
             <CardDescription>
-              Customize the look and feel of the application
+              Eryxon MES uses a beautiful dark mode interface optimized for operators and admins
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="dark-mode">Dark Mode</Label>
+                <Label>Dark Mode</Label>
                 <p className="text-sm text-muted-foreground">
-                  Toggle dark mode for better visibility in low light
+                  Always enabled for optimal visibility and reduced eye strain
                 </p>
               </div>
-              <Switch
-                id="dark-mode"
-                checked={mode === "dark"}
-                onCheckedChange={toggleTheme}
-              />
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Moon className="h-4 w-4" />
+                <span className="font-medium">Enabled</span>
+              </div>
             </div>
           </CardContent>
         </Card>
