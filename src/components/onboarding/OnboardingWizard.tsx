@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PlanSelection, PlanType } from './PlanSelection';
@@ -11,20 +12,21 @@ import { toast } from 'sonner';
 import { useSubscription } from '@/hooks/useSubscription';
 import AnimatedBackground from '@/components/AnimatedBackground';
 
-const steps = [
-  { id: 1, name: 'Build Team', description: 'Invite your team' },
-  { id: 2, name: 'Choose Plan', description: 'Select your subscription' },
-  { id: 3, name: 'Sample Data', description: 'Import demo content' },
-  { id: 4, name: 'Complete', description: 'Start using Eryxon' },
-];
-
 export function OnboardingWizard() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const { subscription } = useSubscription();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedPlan, setSelectedPlan] = useState<PlanType>('free');
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const steps = [
+    { id: 1, name: t('onboarding.stepBuildTeam'), description: t('onboarding.stepBuildTeamDesc') },
+    { id: 2, name: t('onboarding.stepChoosePlan'), description: t('onboarding.stepChoosePlanDesc') },
+    { id: 3, name: t('onboarding.stepSampleData'), description: t('onboarding.stepSampleDataDesc') },
+    { id: 4, name: t('onboarding.stepComplete'), description: t('onboarding.stepCompleteDesc') },
+  ];
 
   // Load existing onboarding state
   useEffect(() => {
@@ -114,7 +116,7 @@ export function OnboardingWizard() {
   };
 
   const completeOnboarding = () => {
-    toast.success('Onboarding complete! Welcome to Eryxon MES 🎉');
+    toast.success(t('onboarding.onboardingComplete'));
 
     // Navigate based on user role
     if (profile?.role === 'admin') {
@@ -133,13 +135,13 @@ export function OnboardingWizard() {
           {/* Header */}
           <div className="text-center mb-8">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">
-              Getting Started
+              {t('onboarding.gettingStarted')}
             </p>
             <h1 className="hero-title text-4xl mb-3">
-              Welcome to Eryxon Flow
+              {t('onboarding.welcome')}
             </h1>
             <p className="text-lg text-foreground/80">
-              The simple MES you love to use
+              {t('onboarding.tagline')}
             </p>
           </div>
 
@@ -227,11 +229,11 @@ export function OnboardingWizard() {
         {/* Footer */}
         <div className="text-center mt-8 text-sm text-muted-foreground">
           <p>
-            Need help? Check out our{' '}
+            {t('onboarding.needHelp')}{' '}
             <a href="/api-docs" className="text-primary hover:underline">
-              documentation
+              {t('onboarding.documentation')}
             </a>{' '}
-            or contact support.
+            {t('onboarding.orContactSupport')}.
           </p>
         </div>
       </div>
