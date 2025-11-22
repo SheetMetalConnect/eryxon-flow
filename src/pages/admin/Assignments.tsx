@@ -12,7 +12,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, UserCheck, X } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Loader2, UserCheck, X, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -27,7 +37,7 @@ interface Part {
   job: {
     job_number: string;
     customer: string | null;
-  };
+  } | null;
   _operationCount?: number;
 }
 
@@ -68,6 +78,14 @@ export default function Assignments() {
   const [selectedOperator, setSelectedOperator] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [assigning, setAssigning] = useState(false);
+  const [createOperatorOpen, setCreateOperatorOpen] = useState(false);
+  const [creatingOperator, setCreatingOperator] = useState(false);
+  const [operatorForm, setOperatorForm] = useState({
+    full_name: "",
+    employee_id: "",
+    pin: "",
+    no_email_login: true,
+  });
 
   useEffect(() => {
     if (profile?.tenant_id) {
@@ -90,7 +108,7 @@ export default function Assignments() {
           material,
           status,
           current_cell_id,
-          job:jobs!inner(job_number, customer)
+          job:jobs(job_number, customer)
         `,
         )
         .eq("tenant_id", profile.tenant_id)
@@ -271,6 +289,55 @@ export default function Assignments() {
     }
   };
 
+  const handleCreateOperator = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!operatorForm.full_name.trim()) {
+      toast.error("Please enter operator name");
+      return;
+    }
+
+    if (!operatorForm.pin || operatorForm.pin.length < 4 || operatorForm.pin.length > 6) {
+      toast.error("PIN must be 4-6 digits");
+      return;
+    }
+
+    if (!/^\d+$/.test(operatorForm.pin)) {
+      toast.error("PIN must contain only numbers");
+      return;
+    }
+
+    setCreatingOperator(true);
+
+    try {
+      const employeeId = operatorForm.employee_id.trim() || `OPR-${Date.now().toString().slice(-6)}`;
+
+      const { error } = await supabase.rpc('create_operator_with_pin' as any, {
+        p_full_name: operatorForm.full_name,
+        p_employee_id: employeeId,
+        p_pin: operatorForm.pin,
+        p_role: 'operator',
+      });
+
+      if (error) throw error;
+
+      toast.success(`Operator created: ${employeeId}`);
+      setCreateOperatorOpen(false);
+      setOperatorForm({
+        full_name: "",
+        employee_id: "",
+        pin: "",
+        no_email_login: true,
+      });
+      loadData();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create operator");
+      console.error("Error creating operator:", error);
+    } finally {
+      setCreatingOperator(false);
+    }
+  };
+
   const columns: ColumnDef<Assignment>[] = useMemo(() => [
     {
       accessorKey: "part.part_number",
@@ -373,11 +440,17 @@ export default function Assignments() {
                 <SelectValue placeholder={t("assignments.selectPart")} />
               </SelectTrigger>
               <SelectContent>
-                {parts.map((part) => (
-                  <SelectItem key={part.id} value={part.id}>
-                    {part.part_number} • {part.job.job_number} • {part._operationCount} {t("assignments.operations")}
-                  </SelectItem>
-                ))}
+                {parts.length === 0 ? (
+                  <div className="p-2 text-sm text-muted-foreground text-center">
+                    No available parts found
+                  </div>
+                ) : (
+                  parts.map((part) => (
+                    <SelectItem key={part.id} value={part.id}>
+                      {part.part_number} • {part.job?.job_number || "No Job"} • {part._operationCount} {t("assignments.operations")}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
             {selectedPart && (
@@ -388,7 +461,7 @@ export default function Assignments() {
                       {parts.find((p) => p.id === selectedPart)?.part_number}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {t("assignments.job")}: {parts.find((p) => p.id === selectedPart)?.job.job_number}
+                      {t("assignments.job")}: {parts.find((p) => p.id === selectedPart)?.job?.job_number || "No Job Assigned"}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {t("assignments.material")}: {parts.find((p) => p.id === selectedPart)?.material}
@@ -403,7 +476,70 @@ export default function Assignments() {
         {/* Operators */}
         <Card className="glass-card">
           <CardHeader>
-            <CardTitle className="text-lg">{t("assignments.assignToOperator")}</CardTitle>
+            <CardTitle className="text-lg flex items-center justify-between">
+              <span>{t("assignments.assignToOperator")}</span>
+              <Dialog open={createOperatorOpen} onOpenChange={setCreateOperatorOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <UserPlus className="h-4 w-4" />
+                    Create Operator
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="glass-card">
+                  <DialogHeader>
+                    <DialogTitle>Create New Operator</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleCreateOperator} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="op_full_name">Full Name *</Label>
+                      <Input
+                        id="op_full_name"
+                        value={operatorForm.full_name}
+                        onChange={(e) => setOperatorForm({ ...operatorForm, full_name: e.target.value })}
+                        placeholder="John Smith"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="op_employee_id">
+                        Employee ID{' '}
+                        <span className="text-muted-foreground text-xs">(auto-generated if empty)</span>
+                      </Label>
+                      <Input
+                        id="op_employee_id"
+                        value={operatorForm.employee_id}
+                        onChange={(e) => setOperatorForm({ ...operatorForm, employee_id: e.target.value })}
+                        placeholder="OPR-123456"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="op_pin">PIN (4-6 digits) *</Label>
+                      <Input
+                        id="op_pin"
+                        type="password"
+                        value={operatorForm.pin}
+                        onChange={(e) => setOperatorForm({ ...operatorForm, pin: e.target.value })}
+                        placeholder="1234"
+                        required
+                        minLength={4}
+                        maxLength={6}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Operators will use Employee ID + PIN to login
+                      </p>
+                    </div>
+
+                    <Button type="submit" className="w-full gap-2" disabled={creatingOperator}>
+                      {creatingOperator && <Loader2 className="h-4 w-4 animate-spin" />}
+                      <UserPlus className="h-4 w-4" />
+                      Create Operator
+                    </Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <Select value={selectedOperator} onValueChange={setSelectedOperator}>
@@ -411,11 +547,17 @@ export default function Assignments() {
                 <SelectValue placeholder={t("assignments.selectOperator")} />
               </SelectTrigger>
               <SelectContent>
-                {operators.map((op) => (
-                  <SelectItem key={op.id} value={op.id}>
-                    {op.full_name} • {op._assignmentCount} {t("assignments.assigned")} • {op._activeEntryCount} {t("assignments.active")}
-                  </SelectItem>
-                ))}
+                {operators.length === 0 ? (
+                  <div className="p-2 text-sm text-muted-foreground text-center">
+                    No active operators found
+                  </div>
+                ) : (
+                  operators.map((op) => (
+                    <SelectItem key={op.id} value={op.id}>
+                      {op.full_name} • {op._assignmentCount} {t("assignments.assigned")} • {op._activeEntryCount} {t("assignments.active")}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
             <Button
