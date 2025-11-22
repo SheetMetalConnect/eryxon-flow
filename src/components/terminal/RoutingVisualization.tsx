@@ -1,6 +1,6 @@
 import React from 'react';
 import { useJobRouting } from '@/hooks/useQRMMetrics';
-import { ArrowRight, CheckCircle2, Circle, Loader2 } from 'lucide-react';
+import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { RoutingStep } from '@/types/qrm';
 
@@ -11,10 +11,10 @@ interface RoutingVisualizationProps {
 }
 
 /**
- * Visualizes the routing flow for a job, showing:
- * - All cells in the routing sequence
+ * Visualizes the routing flow for a job with stylish arrow boxes, showing:
+ * - All cells in the routing sequence as connected arrow boxes
  * - Progress through each cell
- * - Current cell indicator
+ * - Current cell indicator with enhanced styling
  */
 export function RoutingVisualization({ jobId, currentCellId, className }: RoutingVisualizationProps) {
     const { routing, loading, error } = useJobRouting(jobId);
@@ -39,98 +39,127 @@ export function RoutingVisualization({ jobId, currentCellId, className }: Routin
     const currentCellIndex = routing.findIndex(step => step.cell_id === currentCellId);
 
     return (
-        <div className={cn("space-y-3", className)}>
+        <div className={cn("space-y-4", className)}>
             <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
-                Job Routing
+                Job Routing Flow
             </div>
 
-            <div className="flex items-center gap-2 overflow-x-auto pb-2">
+            {/* Arrow Box Flow */}
+            <div className="flex items-center overflow-x-auto pb-2">
                 {routing.map((step, index) => {
                     const isCompleted = step.completed_operations === step.operation_count && step.operation_count > 0;
                     const isCurrent = step.cell_id === currentCellId;
                     const isFuture = currentCellIndex !== -1 && index > currentCellIndex;
+                    const isFirst = index === 0;
+                    const isLast = index === routing.length - 1;
                     const progressPercent = step.operation_count > 0
                         ? Math.round((step.completed_operations / step.operation_count) * 100)
                         : 0;
 
+                    // Color scheme based on status
+                    let bgColor: string;
+                    let borderColor: string;
+                    let textColor: string;
+
+                    if (isCurrent) {
+                        bgColor = 'hsl(var(--primary))';
+                        borderColor = 'hsl(var(--primary))';
+                        textColor = 'hsl(var(--primary-foreground))';
+                    } else if (isCompleted) {
+                        bgColor = '#10B981'; // Emerald green
+                        borderColor = '#059669';
+                        textColor = '#FFFFFF';
+                    } else if (isFuture) {
+                        bgColor = 'hsl(var(--muted))';
+                        borderColor = 'hsl(var(--border))';
+                        textColor = 'hsl(var(--muted-foreground))';
+                    } else {
+                        // In progress but not current
+                        bgColor = '#F59E0B'; // Amber
+                        borderColor = '#D97706';
+                        textColor = '#FFFFFF';
+                    }
+
+                    // Arrow shape using clip-path
+                    const clipPath = isFirst && isLast
+                        ? 'none' // Single element - no arrows
+                        : isFirst
+                            ? 'polygon(0% 0%, calc(100% - 16px) 0%, 100% 50%, calc(100% - 16px) 100%, 0% 100%)'
+                            : isLast
+                                ? 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 16px 50%)'
+                                : 'polygon(0% 0%, calc(100% - 16px) 0%, 100% 50%, calc(100% - 16px) 100%, 0% 100%, 16px 50%)';
+
                     return (
-                        <React.Fragment key={step.cell_id}>
-                            {/* Cell Step */}
-                            <div
-                                className={cn(
-                                    "flex flex-col items-center min-w-[100px] p-2 rounded-lg border-2 transition-all",
-                                    isCurrent && "border-primary bg-primary/10 ring-2 ring-primary/20",
-                                    isCompleted && !isCurrent && "border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20",
-                                    !isCompleted && !isCurrent && !isFuture && "border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20",
-                                    isFuture && "border-border bg-muted/30"
-                                )}
-                            >
-                                {/* Status Icon */}
-                                <div className="mb-1">
+                        <div
+                            key={step.cell_id}
+                            className={cn(
+                                "relative flex flex-col justify-center min-w-[140px] p-3 transition-all duration-300",
+                                isCurrent && "shadow-lg ring-2 ring-primary/40 ring-offset-0 z-10 scale-105",
+                                !isCurrent && "shadow-md",
+                                !isFirst && "-ml-4"
+                            )}
+                            style={{
+                                backgroundColor: bgColor,
+                                borderWidth: '2px',
+                                borderStyle: 'solid',
+                                borderColor: borderColor,
+                                color: textColor,
+                                clipPath: clipPath,
+                            }}
+                        >
+                            {/* Status Icon & Cell Name */}
+                            <div className="flex items-center gap-2 mb-1">
+                                <div className="flex-shrink-0">
                                     {isCompleted ? (
-                                        <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                        <CheckCircle2 className="w-4 h-4" />
                                     ) : isCurrent ? (
-                                        <div className="w-5 h-5 rounded-full bg-primary animate-pulse" />
+                                        <div className="w-4 h-4 rounded-full bg-white/30 animate-pulse" />
                                     ) : (
-                                        <Circle className="w-5 h-5 text-muted-foreground" />
+                                        <Circle className="w-4 h-4" />
                                     )}
                                 </div>
-
-                                {/* Cell Name */}
-                                <div
-                                    className={cn(
-                                        "text-xs font-bold text-center mb-1 whitespace-nowrap",
-                                        isCurrent && "text-primary",
-                                        isCompleted && !isCurrent && "text-emerald-700 dark:text-emerald-300",
-                                        !isCompleted && !isCurrent && !isFuture && "text-amber-700 dark:text-amber-300",
-                                        isFuture && "text-muted-foreground"
-                                    )}
-                                >
+                                <div className="text-sm font-bold truncate">
                                     {step.cell_name}
                                 </div>
-
-                                {/* Progress */}
-                                <div className="text-[10px] text-muted-foreground font-mono">
-                                    {step.completed_operations}/{step.operation_count} ops
-                                </div>
-
-                                {/* Progress Bar */}
-                                {step.operation_count > 0 && (
-                                    <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden mt-1">
-                                        <div
-                                            className={cn(
-                                                "h-full transition-all rounded-full",
-                                                isCompleted && "bg-emerald-500",
-                                                !isCompleted && isCurrent && "bg-primary",
-                                                !isCompleted && !isCurrent && !isFuture && "bg-amber-500",
-                                                isFuture && "bg-muted-foreground"
-                                            )}
-                                            style={{ width: `${progressPercent}%` }}
-                                        />
-                                    </div>
-                                )}
                             </div>
 
-                            {/* Arrow Separator */}
-                            {index < routing.length - 1 && (
-                                <ArrowRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                            {/* Progress Info */}
+                            <div className="text-xs opacity-90 font-mono">
+                                {step.completed_operations}/{step.operation_count} ops
+                            </div>
+
+                            {/* Progress Bar */}
+                            {step.operation_count > 0 && (
+                                <div className="w-full h-1.5 bg-black/20 rounded-full overflow-hidden mt-1.5">
+                                    <div
+                                        className="h-full rounded-full transition-all bg-white/80"
+                                        style={{ width: `${progressPercent}%` }}
+                                    />
+                                </div>
                             )}
-                        </React.Fragment>
+                        </div>
                     );
                 })}
             </div>
 
             {/* Current Cell Indicator */}
             {currentCellIndex !== -1 && (
-                <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <div className="flex items-center gap-3 p-3 bg-primary/10 border border-primary/20 rounded-lg">
                     <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    <span>
-                        Currently in: <span className="font-semibold text-foreground">{routing[currentCellIndex]?.cell_name}</span>
-                    </span>
+                    <div className="text-sm">
+                        <span className="text-muted-foreground">Currently in:</span>
+                        {' '}
+                        <span className="font-bold text-foreground">{routing[currentCellIndex]?.cell_name}</span>
+                    </div>
                     {currentCellIndex < routing.length - 1 && (
-                        <span className="ml-2">
-                            Next: <span className="font-semibold text-foreground">{routing[currentCellIndex + 1]?.cell_name}</span>
-                        </span>
+                        <>
+                            <div className="w-px h-4 bg-border" />
+                            <div className="text-sm">
+                                <span className="text-muted-foreground">Next:</span>
+                                {' '}
+                                <span className="font-bold text-foreground">{routing[currentCellIndex + 1]?.cell_name}</span>
+                            </div>
+                        </>
                     )}
                 </div>
             )}
