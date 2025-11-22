@@ -113,10 +113,16 @@ export default function OperatorTerminal() {
         const hasPdf = op.part.file_paths?.some(p => p.toLowerCase().endsWith('.pdf')) || false;
         const hasModel = op.part.file_paths?.some(p => p.toLowerCase().endsWith('.step') || p.toLowerCase().endsWith('.stp')) || false;
 
+        // Determine status based on active time entry (someone actively working)
         let status: TerminalJob['status'] = 'expected';
-        if (op.status === 'in_progress') status = 'in_progress';
-        else if (op.status === 'on_hold') status = 'on_hold'; // Map on_hold to something visible?
-        else if (op.status === 'not_started') status = 'in_buffer'; // Default to buffer for now
+        if (op.active_time_entry) {
+            status = 'in_progress'; // Currently being worked on
+        } else if (op.status === 'in_progress' || op.status === 'not_started') {
+            // Ready to start or paused
+            status = 'in_buffer';
+        } else if (op.status === 'on_hold') {
+            status = 'on_hold';
+        }
 
         // Calculate remaining hours
         const estimated = op.estimated_time || 0;
@@ -156,6 +162,7 @@ export default function OperatorTerminal() {
             nextCellColor: nextOp?.cell?.color || undefined,
             nextCellId: nextOp?.cell_id,
             currentSequence: op.sequence,
+            operatorName: op.active_time_entry?.operator?.full_name,
         };
     };
 
@@ -276,11 +283,11 @@ export default function OperatorTerminal() {
             <div className="w-[70%] flex flex-col border-r border-border/50">
 
                 {/* HEADER / CELL SELECTOR */}
-                <div className="h-16 border-b border-border/50 bg-surface-elevated/80 backdrop-blur-sm flex items-center px-6 justify-between shrink-0">
-                    <div className="flex items-center gap-4">
+                <div className="h-14 border-b border-border/50 bg-surface-elevated/80 backdrop-blur-sm flex items-center px-4 justify-between shrink-0">
+                    <div className="flex items-center gap-3">
                         <span className="text-foreground font-semibold text-sm">{t("terminal.terminalView")}</span>
                         <Select value={selectedCellId} onValueChange={handleCellChange}>
-                            <SelectTrigger className="w-[220px] bg-card/50 backdrop-blur-sm border-border/50 text-foreground hover:bg-card/70 transition-colors">
+                            <SelectTrigger className="w-[200px] h-9 bg-card/50 backdrop-blur-sm border-border/50 text-foreground hover:bg-card/70 transition-colors">
                                 <SelectValue placeholder={t("terminal.selectCell")} />
                             </SelectTrigger>
                             <SelectContent className="glass-card border-border/50">
@@ -291,35 +298,47 @@ export default function OperatorTerminal() {
                             </SelectContent>
                         </Select>
                     </div>
-                    <div className="text-xs text-muted-foreground font-medium">
-                        {filteredJobs.length} {t("terminal.jobsFound")}
+                    <div className="flex items-center gap-4">
+                        {/* Active Time Tracking Display */}
+                        {operations.filter(op => op.active_time_entry).length > 0 && (
+                            <div className="flex items-center gap-2 px-3 py-1 bg-active-work/10 border border-active-work/30 rounded-md">
+                                <div className="w-2 h-2 rounded-full bg-active-work animate-pulse" />
+                                <span className="text-xs font-medium text-active-work">
+                                    {operations.filter(op => op.active_time_entry).length} active
+                                </span>
+                            </div>
+                        )}
+                        <div className="text-xs text-muted-foreground font-medium">
+                            {filteredJobs.length} {t("terminal.jobsFound")}
+                        </div>
                     </div>
                 </div>
 
                 {/* 1. IN PROCESS */}
-                <div className="flex-1 flex flex-col min-h-0 border-b border-border/50 overflow-hidden">
-                    <div className="px-6 py-3 bg-status-active/20 backdrop-blur-sm border-l-4 border-status-active flex items-center justify-between shrink-0">
+                <div className="flex-1 flex flex-col min-h-0 border-b border-border/50">
+                    <div className="px-4 py-2 bg-status-active/20 backdrop-blur-sm border-l-4 border-status-active flex items-center justify-between shrink-0">
                         <div className="flex items-center gap-2">
-                            <h2 className="text-sm font-bold text-status-active uppercase tracking-wide">{t("terminal.inProcess")} ({inProcessJobs.length})</h2>
+                            <h2 className="text-xs font-bold text-status-active uppercase tracking-wide">{t("terminal.inProcess")} ({inProcessJobs.length})</h2>
                             <Info
-                                className="h-4 w-4 text-status-active/70 cursor-help"
+                                className="h-3.5 w-3.5 text-status-active/70 cursor-help"
                                 title="Jobs currently being worked on by operators"
                             />
                         </div>
                     </div>
-                    <div className="flex-1 overflow-auto">
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden"  style={{ maxHeight: '100%' }}>
                         <table className="w-full text-left border-collapse">
                             <thead className="bg-surface-elevated/90 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
                                 <tr className="border-b border-border/50">
-                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.jobNumber")}</th>
-                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.partNumber")}</th>
-                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.operation")}</th>
-                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.cell")}</th>
-                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.material")}</th>
-                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-center">{t("terminal.columns.quantity")}</th>
-                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">{t("terminal.columns.hours")}</th>
-                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.dueDate")}</th>
-                                    <th className="px-3 py-2.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-center">{t("terminal.columns.files")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.jobNumber")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.partNumber")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.operation")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.operator")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.cell")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.material")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-center">{t("terminal.columns.quantity")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">{t("terminal.columns.hours")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">{t("terminal.columns.dueDate")}</th>
+                                    <th className="px-2 py-1.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-center">{t("terminal.columns.files")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -346,7 +365,7 @@ export default function OperatorTerminal() {
                 </div>
 
                 {/* 2. IN BUFFER */}
-                <div className="flex-1 flex flex-col min-h-0 border-b border-border/50 overflow-hidden">
+                <div className="flex-1 flex flex-col min-h-0 border-b border-border/50">
                     <div className="px-6 py-3 bg-info/20 backdrop-blur-sm border-l-4 border-info flex items-center justify-between shrink-0">
                         <div className="flex items-center gap-2">
                             <h2 className="text-sm font-bold text-info uppercase tracking-wide">{t("terminal.inBuffer")} ({inBufferJobs.length})</h2>
@@ -356,7 +375,7 @@ export default function OperatorTerminal() {
                             />
                         </div>
                     </div>
-                    <div className="flex-1 overflow-auto">
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ maxHeight: '100%' }}>
                         <table className="w-full text-left border-collapse">
                             <thead className="bg-surface-elevated/90 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
                                 <tr className="border-b border-border/50">
@@ -387,7 +406,7 @@ export default function OperatorTerminal() {
                 </div>
 
                 {/* 3. EXPECTED */}
-                <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                <div className="flex-1 flex flex-col min-h-0">
                     <div className="px-6 py-3 bg-status-pending/20 backdrop-blur-sm border-l-4 border-status-pending flex items-center justify-between shrink-0">
                         <div className="flex items-center gap-2">
                             <h2 className="text-sm font-bold text-status-pending uppercase tracking-wide">{t("terminal.expected")} ({expectedJobs.length})</h2>
@@ -397,7 +416,7 @@ export default function OperatorTerminal() {
                             />
                         </div>
                     </div>
-                    <div className="flex-1 overflow-auto">
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ maxHeight: '100%' }}>
                         <table className="w-full text-left border-collapse">
                             <thead className="bg-surface-elevated/90 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
                                 <tr className="border-b border-border/50">
