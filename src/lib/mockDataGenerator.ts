@@ -165,95 +165,58 @@ export async function generateMockData(
     const operatorIdMap: Record<string, string> = {};
 
     if (options.includeOperators) {
-      const operators = [
-        {
-          id: crypto.randomUUID(),
-          tenant_id: tenantId,
-          role: "operator" as const,
-          username: "jan_devries",
-          full_name: "Jan de Vries",
-          email: "jan.devries@sheetmetalconnect.nl",
-          active: true,
-          has_email_login: false,
-          is_machine: false,
-        },
-        {
-          id: crypto.randomUUID(),
-          tenant_id: tenantId,
-          role: "operator" as const,
-          username: "emma_bakker",
-          full_name: "Emma Bakker",
-          email: "emma.bakker@sheetmetalconnect.nl",
-          active: true,
-          has_email_login: false,
-          is_machine: false,
-        },
-        {
-          id: crypto.randomUUID(),
-          tenant_id: tenantId,
-          role: "operator" as const,
-          username: "luuk_vandenberg",
-          full_name: "Luuk van der Berg",
-          email: "luuk.vandenberg@sheetmetalconnect.nl",
-          active: true,
-          has_email_login: false,
-          is_machine: false,
-        },
-        {
-          id: crypto.randomUUID(),
-          tenant_id: tenantId,
-          role: "operator" as const,
-          username: "sophie_jansen",
-          full_name: "Sophie Jansen",
-          email: "sophie.jansen@sheetmetalconnect.nl",
-          active: true,
-          has_email_login: false,
-          is_machine: false,
-        },
-        {
-          id: crypto.randomUUID(),
-          tenant_id: tenantId,
-          role: "operator" as const,
-          username: "daan_mulder",
-          full_name: "Daan Mulder",
-          email: "daan.mulder@sheetmetalconnect.nl",
-          active: true,
-          has_email_login: false,
-          is_machine: false,
-        },
-        {
-          id: crypto.randomUUID(),
-          tenant_id: tenantId,
-          role: "operator" as const,
-          username: "lisa_visser",
-          full_name: "Lisa Visser",
-          email: "lisa.visser@sheetmetalconnect.nl",
-          active: true,
-          has_email_login: false,
-          is_machine: false,
-        },
-      ];
-
       try {
-        const { data: operatorData, error: operatorError } = await supabase
+        // First check if operators already exist
+        const { data: existingOps } = await supabase
           .from("profiles")
-          .insert(operators)
-          .select("id, full_name");
+          .select("id, full_name")
+          .eq("tenant_id", tenantId)
+          .eq("role", "operator")
+          .like("email", "%@sheetmetalconnect.nl");
 
-        if (operatorError) {
-          console.error("❌ Operator creation failed:", operatorError);
-          throw new Error(`Failed to create operators: ${operatorError.message}`);
+        if (existingOps && existingOps.length > 0) {
+          console.log(`✓ ${existingOps.length} demo operators already exist`);
+          operatorIds = existingOps.map((o) => o.id);
+          existingOps.forEach((o) => {
+            operatorIdMap[o.full_name] = o.id;
+          });
+        } else {
+          // Use RPC function that handles auth.users constraint
+          const { error: rpcError } = await supabase.rpc(
+            "seed_demo_operators",
+            {
+              p_tenant_id: tenantId,
+            },
+          );
+
+          if (rpcError) {
+            console.warn(
+              "⚠️ Operator seeding skipped (requires auth setup):",
+              rpcError.message,
+            );
+            console.log(
+              "  → Demo will continue without operators (operations will be unassigned)",
+            );
+          } else {
+            // Fetch the created operators
+            const { data: createdOps } = await supabase
+              .from("profiles")
+              .select("id, full_name")
+              .eq("tenant_id", tenantId)
+              .eq("role", "operator")
+              .like("email", "%@sheetmetalconnect.nl");
+
+            if (createdOps && createdOps.length > 0) {
+              operatorIds = createdOps.map((o) => o.id);
+              createdOps.forEach((o) => {
+                operatorIdMap[o.full_name] = o.id;
+              });
+              console.log(`✓ Created ${createdOps.length} shop floor operators`);
+            }
+          }
         }
-
-        operatorIds = operatorData?.map((o) => o.id) || [];
-        operatorData?.forEach((o, idx) => {
-          operatorIdMap[operators[idx].full_name] = o.id;
-        });
-
-        console.log("✓ Created 6 shop floor operators (PINs can be set later)");
       } catch (err) {
-        console.error("💥 Critical error during operator creation:", err);
-        throw err;
+        console.warn("⚠️ Operator setup failed, continuing without:", err);
       }
     }
 
