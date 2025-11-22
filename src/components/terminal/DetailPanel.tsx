@@ -55,37 +55,37 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
     }, [nextOperation, nextCellMetrics]);
 
     return (
-        <div className="flex flex-col h-full bg-card text-card-foreground">
+        <div className="flex flex-col h-full bg-transparent text-card-foreground">
 
             {/* Header Card */}
-            <div className="p-4 border-b border-border bg-card">
-                <div className="flex justify-between items-start mb-2">
+            <div className="p-6 border-b border-border/50 bg-card/30 backdrop-blur-sm">
+                <div className="flex justify-between items-start mb-3">
                     <div>
-                        <h2 className="text-2xl font-bold text-foreground">{job.jobCode}</h2>
-                        <p className="text-muted-foreground text-sm">{job.description}</p>
+                        <h2 className="text-2xl font-bold text-foreground mb-1">{job.jobCode}</h2>
+                        <p className="text-muted-foreground text-sm font-medium">{job.description}</p>
                     </div>
                     <div className="text-right">
-                        <div className="text-xl font-mono font-bold text-primary">{job.quantity} <span className="text-sm text-muted-foreground">pcs</span></div>
-                        <div className="text-xs text-muted-foreground">Due: {new Date(job.dueDate).toLocaleDateString()}</div>
+                        <div className="text-2xl font-mono font-bold text-primary">{job.quantity} <span className="text-sm text-muted-foreground font-normal">pcs</span></div>
+                        <div className="text-xs text-muted-foreground font-medium">Due: {new Date(job.dueDate).toLocaleDateString()}</div>
                     </div>
                 </div>
 
                 {/* Current Operation Highlight */}
-                <div className="my-4 p-3 bg-accent/10 border border-accent/20 rounded-lg">
-                    <div className="text-xs text-muted-foreground uppercase tracking-wider font-bold mb-1">Ready to Start</div>
-                    <div className="text-lg font-semibold text-foreground flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <div className="my-4 p-4 glass-card">
+                    <div className="text-xs text-primary uppercase tracking-widest font-bold mb-2">Ready to Start</div>
+                    <div className="text-lg font-bold text-foreground flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-lg shadow-primary/50" />
                         {job.currentOp}
                     </div>
                 </div>
 
                 <div className="flex gap-2">
                     {job.status !== 'in_progress' ? (
-                        <Button onClick={onStart} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white">
+                        <Button onClick={onStart} className="flex-1 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/40 transition-all">
                             <Play className="w-4 h-4 mr-2" /> Start Operation
                         </Button>
                     ) : (
-                        <Button onClick={onPause} variant="outline" className="flex-1 border-border text-foreground hover:bg-accent">
+                        <Button onClick={onPause} variant="outline" className="flex-1 border-border/50 text-foreground hover:bg-primary/10 backdrop-blur-sm font-semibold">
                             <Pause className="w-4 h-4 mr-2" /> Pause
                         </Button>
                     )}
@@ -93,7 +93,7 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                         <Button
                             onClick={onComplete}
                             variant="outline"
-                            className="flex-1 border-border text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                            className="flex-1 border-emerald-600/50 text-emerald-600 hover:bg-emerald-600/20 backdrop-blur-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={isBlockedByCapacity}
                             title={isBlockedByCapacity ? "Cannot complete - next cell at capacity" : "Complete operation"}
                         >
@@ -105,7 +105,7 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                         size="icon"
                         onClick={() => setIsIssueModalOpen(true)}
                         title="Report Issue"
-                        className="border-amber-200 text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:border-amber-800 dark:text-amber-400 dark:hover:bg-amber-950/30"
+                        className="border-warning/50 text-warning hover:bg-warning/20 backdrop-blur-sm"
                     >
                         <AlertTriangle className="w-4 h-4" />
                     </Button>
@@ -113,7 +113,7 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
             </div>
 
             {/* QRM Section - Next Cell and Routing */}
-            <div className="p-4 border-b border-border bg-muted/20 space-y-3">
+            <div className="p-4 border-b border-border/50 bg-surface-elevated/50 backdrop-blur-sm space-y-3">
                 {/* Next Cell Capacity */}
                 {nextOperation && (
                     <NextCellInfo
@@ -134,19 +134,19 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
             {/* Main Content Tabs */}
             <div className="flex-1 min-h-0">
                 <Tabs defaultValue={job.hasModel ? "3d" : job.hasPdf ? "pdf" : "ops"} className="h-full flex flex-col">
-                    <div className="px-4 pt-2">
-                        <TabsList className="w-full bg-muted text-muted-foreground">
+                    <div className="px-4 pt-3">
+                        <TabsList className="w-full bg-surface-elevated/70 backdrop-blur-sm text-muted-foreground border border-border/50">
                             {job.hasModel && (
-                                <TabsTrigger value="3d" className="flex-1 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+                                <TabsTrigger value="3d" className="flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-md data-[state=active]:font-semibold transition-all">
                                     <Box className="w-4 h-4 mr-2" /> 3D View
                                 </TabsTrigger>
                             )}
                             {job.hasPdf && (
-                                <TabsTrigger value="pdf" className="flex-1 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+                                <TabsTrigger value="pdf" className="flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-md data-[state=active]:font-semibold transition-all">
                                     <FileText className="w-4 h-4 mr-2" /> Drawing
                                 </TabsTrigger>
                             )}
-                            <TabsTrigger value="ops" className="flex-1 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+                            <TabsTrigger value="ops" className="flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-md data-[state=active]:font-semibold transition-all">
                                 Ops
                             </TabsTrigger>
                         </TabsList>
@@ -154,13 +154,13 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
 
                     <div className="flex-1 p-4 min-h-0 overflow-hidden">
                         {job.hasModel && (
-                            <TabsContent value="3d" className="h-full m-0 rounded-md overflow-hidden border border-border bg-background">
+                            <TabsContent value="3d" className="h-full m-0 rounded-lg overflow-hidden border border-border/50 bg-background/50 backdrop-blur-sm shadow-lg">
                                 <STEPViewer url={stepUrl || ""} title={job.jobCode} />
                             </TabsContent>
                         )}
 
                         {job.hasPdf && (
-                            <TabsContent value="pdf" className="h-full m-0 rounded-md overflow-hidden border border-border bg-background">
+                            <TabsContent value="pdf" className="h-full m-0 rounded-lg overflow-hidden border border-border/50 bg-background/50 backdrop-blur-sm shadow-lg">
                                 <PDFViewer url={pdfUrl || ""} title={job.jobCode} />
                             </TabsContent>
                         )}
@@ -168,17 +168,17 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                         <TabsContent value="ops" className="h-full m-0 overflow-auto">
                             <div className="space-y-2">
                                 {operations.length === 0 && (
-                                    <div className="text-center text-muted-foreground py-8">No operations found</div>
+                                    <div className="text-center text-muted-foreground py-8 font-medium">No operations found</div>
                                 )}
                                 {operations.map((op) => (
                                     <div
                                         key={op.id}
                                         className={cn(
-                                            "p-3 rounded border flex items-center justify-between transition-colors",
+                                            "p-3 rounded-lg border flex items-center justify-between transition-all duration-200 backdrop-blur-sm",
                                             op.status === 'in_progress'
-                                                ? "bg-accent/10 border-primary/50 ring-1 ring-primary/20"
-                                                : "bg-card border-border",
-                                            op.status === 'completed' && "opacity-60 bg-muted/50"
+                                                ? "bg-primary/20 border-primary/50 ring-2 ring-primary/30 shadow-md"
+                                                : "bg-card/50 border-border/50 hover:bg-card/70",
+                                            op.status === 'completed' && "opacity-60 bg-muted/30"
                                         )}
                                     >
                                         <div className="flex items-center gap-3">
@@ -220,8 +220,8 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
 
             {/* Footer Warnings */}
             {job.warnings && job.warnings.length > 0 && (
-                <div className="p-2 bg-amber-950/20 border-t border-amber-900/50">
-                    <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 text-sm font-medium">
+                <div className="p-3 bg-warning/20 backdrop-blur-sm border-t border-warning/50">
+                    <div className="flex items-center gap-2 text-warning text-sm font-semibold">
                         <AlertTriangle className="w-4 h-4" />
                         {job.warnings.join(', ')}
                     </div>

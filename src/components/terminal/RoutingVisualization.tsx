@@ -40,7 +40,7 @@ export function RoutingVisualization({ jobId, currentCellId, className }: Routin
 
     return (
         <div className={cn("space-y-3", className)}>
-            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+            <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
                 Job Routing
             </div>
 
@@ -58,31 +58,31 @@ export function RoutingVisualization({ jobId, currentCellId, className }: Routin
                             {/* Cell Step */}
                             <div
                                 className={cn(
-                                    "flex flex-col items-center min-w-[100px] p-2 rounded-lg border-2 transition-all",
-                                    isCurrent && "border-primary bg-primary/10 ring-2 ring-primary/20",
-                                    isCompleted && !isCurrent && "border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20",
-                                    !isCompleted && !isCurrent && !isFuture && "border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20",
-                                    isFuture && "border-border bg-muted/30"
+                                    "flex flex-col items-center min-w-[100px] p-3 rounded-lg border-2 transition-all duration-300 backdrop-blur-sm shadow-sm",
+                                    isCurrent && "border-primary/70 bg-primary/20 ring-2 ring-primary/30 shadow-md shadow-primary/20",
+                                    isCompleted && !isCurrent && "border-success/50 bg-success/10",
+                                    !isCompleted && !isCurrent && !isFuture && "border-warning/50 bg-warning/10",
+                                    isFuture && "border-border/50 bg-muted/20"
                                 )}
                             >
                                 {/* Status Icon */}
-                                <div className="mb-1">
+                                <div className="mb-2">
                                     {isCompleted ? (
-                                        <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                        <CheckCircle2 className="w-6 h-6 text-success" />
                                     ) : isCurrent ? (
-                                        <div className="w-5 h-5 rounded-full bg-primary animate-pulse" />
+                                        <div className="w-6 h-6 rounded-full bg-primary animate-pulse shadow-lg shadow-primary/50" />
                                     ) : (
-                                        <Circle className="w-5 h-5 text-muted-foreground" />
+                                        <Circle className="w-6 h-6 text-muted-foreground" />
                                     )}
                                 </div>
 
                                 {/* Cell Name */}
                                 <div
                                     className={cn(
-                                        "text-xs font-bold text-center mb-1 whitespace-nowrap",
+                                        "text-xs font-bold text-center mb-1.5 whitespace-nowrap",
                                         isCurrent && "text-primary",
-                                        isCompleted && !isCurrent && "text-emerald-700 dark:text-emerald-300",
-                                        !isCompleted && !isCurrent && !isFuture && "text-amber-700 dark:text-amber-300",
+                                        isCompleted && !isCurrent && "text-success",
+                                        !isCompleted && !isCurrent && !isFuture && "text-warning",
                                         isFuture && "text-muted-foreground"
                                     )}
                                 >
@@ -90,20 +90,20 @@ export function RoutingVisualization({ jobId, currentCellId, className }: Routin
                                 </div>
 
                                 {/* Progress */}
-                                <div className="text-[10px] text-muted-foreground font-mono">
+                                <div className="text-[10px] text-muted-foreground font-mono font-semibold">
                                     {step.completed_operations}/{step.operation_count} ops
                                 </div>
 
                                 {/* Progress Bar */}
                                 {step.operation_count > 0 && (
-                                    <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden mt-1">
+                                    <div className="w-full h-2 bg-muted/50 rounded-full overflow-hidden mt-2 shadow-inner">
                                         <div
                                             className={cn(
-                                                "h-full transition-all rounded-full",
-                                                isCompleted && "bg-emerald-500",
+                                                "h-full transition-all duration-500 rounded-full shadow-sm",
+                                                isCompleted && "bg-success",
                                                 !isCompleted && isCurrent && "bg-primary",
-                                                !isCompleted && !isCurrent && !isFuture && "bg-amber-500",
-                                                isFuture && "bg-muted-foreground"
+                                                !isCompleted && !isCurrent && !isFuture && "bg-warning",
+                                                isFuture && "bg-muted-foreground/50"
                                             )}
                                             style={{ width: `${progressPercent}%` }}
                                         />
@@ -113,7 +113,7 @@ export function RoutingVisualization({ jobId, currentCellId, className }: Routin
 
                             {/* Arrow Separator */}
                             {index < routing.length - 1 && (
-                                <ArrowRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                                <ArrowRight className="w-5 h-5 text-primary/50 flex-shrink-0" />
                             )}
                         </React.Fragment>
                     );
@@ -122,14 +122,14 @@ export function RoutingVisualization({ jobId, currentCellId, className }: Routin
 
             {/* Current Cell Indicator */}
             {currentCellIndex !== -1 && (
-                <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    <span>
-                        Currently in: <span className="font-semibold text-foreground">{routing[currentCellIndex]?.cell_name}</span>
+                <div className="text-xs text-muted-foreground flex items-center gap-2 bg-card/30 backdrop-blur-sm px-3 py-2 rounded-md border border-border/50">
+                    <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-lg shadow-primary/50" />
+                    <span className="font-medium">
+                        Currently in: <span className="font-bold text-primary">{routing[currentCellIndex]?.cell_name}</span>
                     </span>
                     {currentCellIndex < routing.length - 1 && (
-                        <span className="ml-2">
-                            Next: <span className="font-semibold text-foreground">{routing[currentCellIndex + 1]?.cell_name}</span>
+                        <span className="ml-2 font-medium">
+                            Next: <span className="font-bold text-foreground">{routing[currentCellIndex + 1]?.cell_name}</span>
                         </span>
                     )}
                 </div>

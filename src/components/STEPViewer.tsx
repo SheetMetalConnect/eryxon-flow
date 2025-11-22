@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import {
   Maximize2,
+  Minimize2,
   Grid3x3,
   Boxes,
   Loader2,
@@ -34,9 +35,11 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
   const [explosionFactor, setExplosionFactor] = useState(1);
   const [gridVisible, setGridVisible] = useState(true);
   const [edgesVisible, setEdgesVisible] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Three.js refs
   const containerRef = useRef<HTMLDivElement>(null);
+  const viewerContainerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -510,19 +513,45 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
     setEdgesVisible(!edgesVisible);
   };
 
+  // Toggle fullscreen
+  const toggleFullscreen = async () => {
+    if (!viewerContainerRef.current) return;
+
+    try {
+      if (!isFullscreen) {
+        await viewerContainerRef.current.requestFullscreen();
+        setIsFullscreen(true);
+      } else {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    } catch (error) {
+      console.error('Fullscreen error:', error);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full w-full bg-background">
+    <div ref={viewerContainerRef} className="flex flex-col h-full w-full bg-surface-elevated/50 backdrop-blur-sm">
       {/* Toolbar */}
-      <div className="flex items-center gap-2 p-2 bg-card border-b border-border">
+      <div className="flex items-center gap-2 p-3 bg-surface-elevated/80 backdrop-blur-sm border-b border-border/50 shadow-sm">
         <Button
           variant="outline"
           size="sm"
-          onClick={fitCameraToMeshes}
-          disabled={stepLoading || meshesRef.current.length === 0}
-          className="bg-card text-foreground hover:bg-accent"
+          onClick={toggleFullscreen}
+          disabled={stepLoading}
+          className="bg-card/50 backdrop-blur-sm border-border/50 text-foreground hover:bg-primary/10 font-medium transition-all"
         >
-          <Maximize2 className="h-4 w-4 mr-1" />
-          Fit View
+          {isFullscreen ? (
+            <>
+              <Minimize2 className="h-4 w-4 mr-1" />
+              Exit Fullscreen
+            </>
+          ) : (
+            <>
+              <Maximize2 className="h-4 w-4 mr-1" />
+              Fullscreen
+            </>
+          )}
         </Button>
 
         <Button
@@ -530,7 +559,7 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
           size="sm"
           onClick={toggleGrid}
           disabled={stepLoading}
-          className={gridVisible ? "" : "bg-card text-foreground hover:bg-accent"}
+          className={gridVisible ? "bg-primary hover:bg-primary/90 font-semibold shadow-md" : "bg-card/50 backdrop-blur-sm border-border/50 text-foreground hover:bg-primary/10 font-medium transition-all"}
         >
           <Grid3x3 className="h-4 w-4 mr-1" />
           Grid
@@ -541,7 +570,7 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
           size="sm"
           onClick={toggleWireframe}
           disabled={stepLoading || meshesRef.current.length === 0}
-          className={wireframeMode ? "" : "bg-card text-foreground hover:bg-accent"}
+          className={wireframeMode ? "bg-primary hover:bg-primary/90 font-semibold shadow-md" : "bg-card/50 backdrop-blur-sm border-border/50 text-foreground hover:bg-primary/10 font-medium transition-all"}
         >
           <Box className="h-4 w-4 mr-1" />
           Wireframe
@@ -553,7 +582,7 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
           onClick={toggleEdges}
           disabled={stepLoading || meshesRef.current.length === 0}
           title="Toggle edge/contour visibility"
-          className={edgesVisible ? "" : "bg-card text-foreground hover:bg-accent"}
+          className={edgesVisible ? "bg-primary hover:bg-primary/90 font-semibold shadow-md" : "bg-card/50 backdrop-blur-sm border-border/50 text-foreground hover:bg-primary/10 font-medium transition-all"}
         >
           <Hexagon className="h-4 w-4 mr-1" />
           Edges
@@ -564,15 +593,15 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
           size="sm"
           onClick={toggleExplodedView}
           disabled={stepLoading || meshesRef.current.length === 0}
-          className={explodedView ? "" : "bg-card text-foreground hover:bg-accent"}
+          className={explodedView ? "bg-primary hover:bg-primary/90 font-semibold shadow-md" : "bg-card/50 backdrop-blur-sm border-border/50 text-foreground hover:bg-primary/10 font-medium transition-all"}
         >
           <Boxes className="h-4 w-4 mr-1" />
           Explode
         </Button>
 
         {explodedView && (
-          <div className="flex items-center gap-2 ml-4">
-            <span className="text-sm text-muted-foreground">Explosion:</span>
+          <div className="flex items-center gap-2 ml-4 px-3 py-1.5 bg-primary/10 backdrop-blur-sm rounded-md border border-primary/20">
+            <span className="text-sm text-foreground font-semibold">Explosion:</span>
             <Slider
               value={[explosionFactor]}
               onValueChange={handleExplosionFactorChange}
@@ -585,7 +614,7 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
         )}
 
         {title && (
-          <div className="ml-auto text-sm font-medium text-muted-foreground">
+          <div className="ml-auto text-sm font-semibold text-foreground px-3 py-1 bg-primary/10 backdrop-blur-sm rounded-md border border-primary/20">
             {title}
           </div>
         )}
@@ -597,20 +626,20 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
 
         {/* Loading Overlay */}
         {stepLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-            <div className="flex flex-col items-center gap-2">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">Loading 3D model...</p>
+          <div className="absolute inset-0 flex items-center justify-center bg-background/90 backdrop-blur-md">
+            <div className="glass-card p-8 flex flex-col items-center gap-4">
+              <Loader2 className="h-10 w-10 animate-spin text-primary" />
+              <p className="text-sm font-medium text-foreground">Loading 3D model...</p>
             </div>
           </div>
         )}
 
         {/* Error Display */}
         {loadingError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background">
-            <div className="text-center p-6 max-w-md">
+          <div className="absolute inset-0 flex items-center justify-center bg-surface-elevated/90 backdrop-blur-md">
+            <div className="glass-card text-center p-8 max-w-md">
               <div className="text-destructive text-5xl mb-4">⚠️</div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
+              <h3 className="text-lg font-bold text-foreground mb-3">
                 Failed to Load 3D Model
               </h3>
               <p className="text-sm text-muted-foreground">{loadingError}</p>

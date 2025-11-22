@@ -1379,7 +1379,7 @@
       "jobNumber": "Job #",
       "partNumber": "Part #",
       "operation": "Operation",
-      "cell": "Cell",
+      "cell": "Next Cell",
       "material": "Material",
       "quantity": "Qty",
       "hours": "Hours",

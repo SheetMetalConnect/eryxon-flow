@@ -1307,7 +1307,7 @@
       "jobNumber": "Auftragsnr.",
       "partNumber": "Teilenr.",
       "operation": "Bearbeitung",
-      "cell": "Zelle",
+      "cell": "Nächste Zelle",
       "material": "Material",
       "quantity": "Menge",
       "hours": "Stunden",
