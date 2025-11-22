@@ -4,7 +4,35 @@
 
 This project stores migrations in the `archive/` subdirectory for organizational purposes.
 
-### Latest Migration: Seed Functions (2025-11-22)
+### Latest Migration: MCP Server Configuration (2025-11-22)
+
+**File:** `20251122195800_mcp_server_configuration.sql`
+
+This migration adds MCP (Model Context Protocol) server infrastructure:
+
+**Tables:**
+- `mcp_server_config` - Server configuration per tenant (name, version, features, enabled status)
+- `mcp_server_health` - Health monitoring (status, response time, tools count, error tracking)
+- `mcp_server_logs` - Activity logs (tool calls, duration, success/failure)
+
+**Functions:**
+- `get_mcp_server_config()` - Retrieves config with latest health status
+- `update_mcp_server_health()` - Updates health metrics and consecutive failure tracking
+- `log_mcp_server_activity()` - Logs MCP server operations for debugging
+
+**Security:**
+- RLS policies for multi-tenant isolation
+- Admin-only configuration updates
+- Service role access for health monitoring
+
+**UI Integration:**
+- Settings page at `/admin/config/mcp-server`
+- Real-time connection status indicator in admin sidebar
+- Health monitoring with automatic refresh
+
+---
+
+### Previous Migration: Seed Functions (2025-11-22)
 
 **File:** `20251122000000_add_seed_functions.sql`
 
