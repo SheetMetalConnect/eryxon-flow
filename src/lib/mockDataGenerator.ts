@@ -1447,9 +1447,13 @@ export async function generateMockData(
  * Clears all mock data for a tenant
  * CRITICAL: All deletions MUST be scoped to tenant_id to prevent cross-tenant contamination
  * Useful for resetting during onboarding
+ *
+ * @param tenantId - The UUID of the tenant to clear data for
+ * @param useDatabaseFunction - If true, uses the database function clear_demo_data() (recommended)
  */
 export async function clearMockData(
   tenantId: string,
+  useDatabaseFunction: boolean = true,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     if (!tenantId) {
@@ -1458,31 +1462,90 @@ export async function clearMockData(
 
     console.log(`Clearing all mock data for tenant: ${tenantId}...`);
 
+    // Try using the database function first (more reliable)
+    if (useDatabaseFunction) {
+      console.log("Using database function clear_demo_data()...");
+      const { data, error } = await supabase.rpc("clear_demo_data", {
+        p_tenant_id: tenantId,
+      });
+
+      if (error) {
+        console.warn("Database function failed, falling back to client-side deletion:", error);
+        // Fall through to client-side deletion
+      } else {
+        console.log("✅ Database function completed successfully");
+        if (data && Array.isArray(data)) {
+          data.forEach((row: any) => {
+            console.log(`  ${row.table_name}: ${row.message}`);
+          });
+        }
+        return { success: true };
+      }
+    }
+
     // CRITICAL: Delete in reverse order of dependencies
     // All deletions MUST include tenant_id filter to prevent cross-tenant contamination
 
-    // 1. Delete issues (has tenant_id)
+    // 1. Delete notifications (has tenant_id)
+    const { error: notifErr } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (notifErr) console.warn("Notifications deletion warning:", notifErr);
+
+    // 2. Delete issues (has tenant_id)
     const { error: issuesErr } = await supabase
       .from("issues")
       .delete()
       .eq("tenant_id", tenantId);
     if (issuesErr) console.warn("Issues deletion warning:", issuesErr);
 
-    // 2. Delete operation_quantities (has tenant_id)
+    // 3. Delete operation_quantities (has tenant_id)
     const { error: qtyErr } = await supabase
       .from("operation_quantities")
       .delete()
       .eq("tenant_id", tenantId);
     if (qtyErr) console.warn("Quantity records deletion warning:", qtyErr);
 
-    // 3. Delete time_entries (has tenant_id)
+    // 4. Delete time_entry_pauses (NO tenant_id - must filter through time_entries)
+    const { data: tenantTimeEntries, error: teFetchErr } = await supabase
+      .from("time_entries")
+      .select("id")
+      .eq("tenant_id", tenantId);
+
+    if (teFetchErr) {
+      console.warn("Time entries fetch warning:", teFetchErr);
+    } else if (tenantTimeEntries && tenantTimeEntries.length > 0) {
+      const timeEntryIds = tenantTimeEntries.map((te) => te.id);
+      const { error: tepErr } = await supabase
+        .from("time_entry_pauses")
+        .delete()
+        .in("time_entry_id", timeEntryIds);
+      if (tepErr) console.warn("Time entry pauses deletion warning:", tepErr);
+    }
+
+    // 5. Delete time_entries (has tenant_id)
     const { error: timeErr } = await supabase
       .from("time_entries")
       .delete()
       .eq("tenant_id", tenantId);
     if (timeErr) console.warn("Time entries deletion warning:", timeErr);
 
-    // 4. Delete operation_resources (NO tenant_id - must filter through operations)
+    // 6. Delete assignments (has tenant_id)
+    const { error: assignErr } = await supabase
+      .from("assignments")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (assignErr) console.warn("Assignments deletion warning:", assignErr);
+
+    // 7. Delete substeps (has tenant_id)
+    const { error: substepsErr } = await supabase
+      .from("substeps")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (substepsErr) console.warn("Substeps deletion warning:", substepsErr);
+
+    // 8. Delete operation_resources (NO tenant_id - must filter through operations)
     // CRITICAL: We must get operation IDs first to ensure tenant isolation
     const { data: tenantOperations, error: opFetchErr } = await supabase
       .from("operations")
@@ -1501,62 +1564,68 @@ export async function clearMockData(
         console.warn("Operation resources deletion warning:", opResErr);
     }
 
-    // 5. Delete operations (has tenant_id)
+    // 9. Delete operations (has tenant_id)
     const { error: opsErr } = await supabase
       .from("operations")
       .delete()
       .eq("tenant_id", tenantId);
     if (opsErr) console.warn("Operations deletion warning:", opsErr);
 
-    // 6. Delete parts (has tenant_id)
+    // 10. Delete parts (has tenant_id)
     const { error: partsErr } = await supabase
       .from("parts")
       .delete()
       .eq("tenant_id", tenantId);
     if (partsErr) console.warn("Parts deletion warning:", partsErr);
 
-    // 7. Delete jobs (has tenant_id)
+    // 11. Delete jobs (has tenant_id)
     const { error: jobsErr } = await supabase
       .from("jobs")
       .delete()
       .eq("tenant_id", tenantId);
     if (jobsErr) console.warn("Jobs deletion warning:", jobsErr);
 
-    // 8. Delete cells (has tenant_id)
+    // 12. Delete cells (has tenant_id)
     const { error: cellsErr } = await supabase
       .from("cells")
       .delete()
       .eq("tenant_id", tenantId);
     if (cellsErr) console.warn("Cells deletion warning:", cellsErr);
 
-    // 9. Delete resources (has tenant_id)
+    // 13. Delete resources (has tenant_id)
     const { error: resourcesErr } = await supabase
       .from("resources")
       .delete()
       .eq("tenant_id", tenantId);
     if (resourcesErr) console.warn("Resources deletion warning:", resourcesErr);
 
-    // 10. Delete scrap_reasons (has tenant_id)
+    // 14. Delete materials (has tenant_id, if any exist)
+    const { error: materialsErr } = await supabase
+      .from("materials")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (materialsErr) console.warn("Materials deletion warning:", materialsErr);
+
+    // 15. Delete scrap_reasons (has tenant_id)
     const { error: scrapErr } = await supabase
       .from("scrap_reasons")
       .delete()
       .eq("tenant_id", tenantId);
     if (scrapErr) console.warn("Scrap reasons deletion warning:", scrapErr);
 
-    // 11. Delete demo operators (has tenant_id + email filter for safety)
-    // CRITICAL: Double filter by both tenant_id AND email to ensure only demo operators are deleted
+    // 16. Delete demo operators (has tenant_id + email filter for safety)
+    // CRITICAL: Use correct email addresses that match seed_demo_operators function
+    // The SQL function creates: demo.operator1@example.com, demo.operator2@example.com, etc.
     const { error: profilesErr } = await supabase
       .from("profiles")
       .delete()
       .eq("tenant_id", tenantId)
       .eq("role", "operator")
       .in("email", [
-        "jan.devries@sheetmetalconnect.nl",
-        "emma.bakker@sheetmetalconnect.nl",
-        "luuk.vandenberg@sheetmetalconnect.nl",
-        "sophie.jansen@sheetmetalconnect.nl",
-        "daan.mulder@sheetmetalconnect.nl",
-        "lisa.visser@sheetmetalconnect.nl",
+        "demo.operator1@example.com",
+        "demo.operator2@example.com",
+        "demo.operator3@example.com",
+        "demo.operator4@example.com",
       ]);
     if (profilesErr)
       console.warn("Demo operators deletion warning:", profilesErr);
