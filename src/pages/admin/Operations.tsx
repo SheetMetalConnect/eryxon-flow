@@ -347,27 +347,39 @@ export const Operations: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <p className="text-sm text-muted-foreground">
-            Showing {operations.length} operations
-          </p>
+    <div className="p-6 space-y-8">
+      <div>
+        <div className="flex justify-between items-center mb-2">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+            Operations
+          </h1>
+          <Button onClick={handleExport} className="cta-button">
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
         </div>
-        <Button variant="outline" size="sm" onClick={handleExport}>
-          <Download className="h-4 w-4 mr-2" />
-          Export
-        </Button>
+        <p className="text-muted-foreground text-lg">
+          Monitor all manufacturing operations across cells and jobs
+        </p>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={operations}
-        filterableColumns={filterableColumns}
-        searchPlaceholder="Search by part, operation, operator..."
-        pageSize={20}
-        emptyMessage="No operations match the current filters"
-      />
+      <hr className="title-divider" />
+
+      <div className="informational-text">
+        <Wrench className="inline h-5 w-5 mr-2 text-primary" />
+        <strong>{operations.length} operations</strong> across all work centers and manufacturing cells
+      </div>
+
+      <div className="glass-card p-6">
+        <DataTable
+          columns={columns}
+          data={operations}
+          filterableColumns={filterableColumns}
+          searchPlaceholder="Search by part, operation, operator..."
+          pageSize={20}
+          emptyMessage="No operations match the current filters"
+        />
+      </div>
     </div>
   );
 };

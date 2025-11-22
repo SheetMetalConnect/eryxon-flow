@@ -311,11 +311,13 @@ export default function ConfigUsers() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">{t("users.title")}</h1>
-            <p className="text-muted-foreground">{t("users.manageUsers")}</p>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+              {t("users.title")}
+            </h1>
+            <p className="text-muted-foreground text-lg">{t("users.manageUsers")}</p>
           </div>
 
           <div className="flex gap-2">
@@ -327,7 +329,7 @@ export default function ConfigUsers() {
                   Invite User
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="glass-card">
                 <DialogHeader>
                   <DialogTitle>Invite Team Member</DialogTitle>
                 </DialogHeader>
@@ -373,7 +375,7 @@ export default function ConfigUsers() {
               if (!open) resetForm();
             }}>
               <DialogTrigger asChild>
-                <Button className="gap-2">
+                <Button className="cta-button gap-2">
                   <Plus className="h-4 w-4" />
                   {t("users.createUser")}
                 </Button>
@@ -519,10 +521,15 @@ export default function ConfigUsers() {
           </Dialog>
         </div>
 
+        <hr className="title-divider" />
+
         {/* Users Table */}
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
-            <CardTitle>{t("users.title")}</CardTitle>
+            <CardTitle className="text-xl flex items-center gap-2">
+              <UserPlus className="h-5 w-5 text-primary" />
+              {t("users.title")}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <DataTable

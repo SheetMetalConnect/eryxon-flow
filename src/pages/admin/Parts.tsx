@@ -396,20 +396,29 @@ export default function Parts() {
   ], [t, materials, jobs]);
 
   return (
-    <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">{t("parts.title")}</h1>
+    <div className="p-6 space-y-8">
+        <div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+            {t("parts.title")}
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            Track parts, assemblies, and components across all jobs
+          </p>
         </div>
 
-        <DataTable
-          columns={columns}
-          data={parts || []}
-          filterableColumns={filterableColumns}
-          searchPlaceholder={t("parts.searchByPartNumber")}
-          loading={isLoading}
-          pageSize={20}
-          emptyMessage={t("parts.noPartsFound")}
-        />
+        <hr className="title-divider" />
+
+        <div className="glass-card p-6">
+          <DataTable
+            columns={columns}
+            data={parts || []}
+            filterableColumns={filterableColumns}
+            searchPlaceholder={t("parts.searchByPartNumber")}
+            loading={isLoading}
+            pageSize={20}
+            emptyMessage={t("parts.noPartsFound")}
+          />
+        </div>
 
         {selectedPartId && (
           <PartDetailModal
@@ -421,11 +430,15 @@ export default function Parts() {
 
         {/* File Viewer Dialog */}
         <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
-          <DialogContent className="max-w-7xl max-h-[90vh]">
+          <DialogContent className="glass-card max-w-7xl max-h-[90vh]">
             <DialogHeader>
-              <DialogTitle>{currentFileTitle}</DialogTitle>
+              <DialogTitle className="text-xl flex items-center gap-2">
+                {currentFileType === "step" && <Box className="h-5 w-5 text-primary" />}
+                {currentFileType === "pdf" && <FileText className="h-5 w-5 text-destructive" />}
+                {currentFileTitle}
+              </DialogTitle>
             </DialogHeader>
-            <div className="w-full h-[75vh]">
+            <div className="w-full h-[75vh] rounded-lg overflow-hidden border border-white/10">
               {currentFileType === "step" && currentFileUrl && (
                 <STEPViewer url={currentFileUrl} />
               )}
