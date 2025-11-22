@@ -181,7 +181,7 @@ export default function OperatorFooterBar() {
     : new Date(activeEntry.start_time);
 
   return (
-    <div className="fixed left-0 right-0 z-40 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg border-t-4 border-blue-400" style={{ bottom: 'max(0px, env(safe-area-inset-bottom))' }}>
+    <div className="fixed left-0 right-0 z-40 bg-operator-complete text-white shadow-lg border-t-4 border-primary" style={{ bottom: 'max(0px, env(safe-area-inset-bottom))' }}>
       <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-3">
         <div className="flex items-center justify-between gap-2 sm:gap-4">
           {/* Left: Operation Info */}
@@ -214,7 +214,7 @@ export default function OperatorFooterBar() {
               disabled={loading}
               variant="outline"
               size="sm"
-              className="gap-1 sm:gap-2 bg-orange-500 hover:bg-orange-600 text-white border-orange-400 hidden lg:flex"
+              className="gap-1 sm:gap-2 bg-operator-pause hover:bg-operator-pause/90 text-white border-operator-pause hidden lg:flex"
             >
               <AlertTriangle className="h-4 w-4" />
               <span>Report Issue</span>
@@ -226,7 +226,7 @@ export default function OperatorFooterBar() {
               disabled={loading}
               variant="outline"
               size="sm"
-              className="bg-orange-500 hover:bg-orange-600 text-white border-orange-400 lg:hidden p-2"
+              className="bg-operator-pause hover:bg-operator-pause/90 text-white border-operator-pause lg:hidden p-2"
               title="Report Issue"
             >
               <AlertTriangle className="h-4 w-4" />
@@ -238,7 +238,7 @@ export default function OperatorFooterBar() {
                 onClick={handleResume}
                 disabled={loading}
                 size="sm"
-                className="gap-1 sm:gap-2 bg-green-500 hover:bg-green-600 text-white border-green-400"
+                className="gap-1 sm:gap-2 bg-operator-start hover:bg-operator-start/90 text-white border-operator-start"
                 title="Resume timing"
               >
                 <Play className="h-4 w-4" />
@@ -250,7 +250,7 @@ export default function OperatorFooterBar() {
                 disabled={loading}
                 variant="outline"
                 size="sm"
-                className="gap-1 sm:gap-2 bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-400"
+                className="gap-1 sm:gap-2 bg-operator-resume hover:bg-operator-resume/90 text-white border-operator-resume"
                 title="Pause timing"
               >
                 <Pause className="h-4 w-4" />
@@ -264,7 +264,7 @@ export default function OperatorFooterBar() {
               disabled={loading}
               variant="outline"
               size="sm"
-              className="gap-1 sm:gap-2 bg-red-500 hover:bg-red-600 text-white border-red-400"
+              className="gap-1 sm:gap-2 bg-operator-issue hover:bg-operator-issue/90 text-white border-operator-issue"
               title="Stop timing"
             >
               <Square className="h-4 w-4" />

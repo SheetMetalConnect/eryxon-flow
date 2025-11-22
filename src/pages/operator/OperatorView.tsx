@@ -477,8 +477,8 @@ export default function OperatorView() {
                 display: "flex",
                 alignItems: "center",
                 gap: 2,
-                bgcolor: activeTimeEntry ? "primary.main" : "grey.200",
-                color: activeTimeEntry ? "white" : "text.primary",
+                bgcolor: activeTimeEntry ? "var(--brand-primary)" : "var(--neutral-800)",
+                color: activeTimeEntry ? "var(--primary-foreground)" : "var(--foreground)",
                 px: 2,
                 py: 0.5,
                 borderRadius: 2,
@@ -792,18 +792,18 @@ export default function OperatorView() {
                         borderRadius: 1,
                         cursor: "pointer",
                         bgcolor: isSelected
-                          ? "rgba(58, 70, 86, 0.12)"
+                          ? "var(--neutral-800)"
                           : isCompleted
-                            ? "rgba(20, 136, 83, 0.08)"
+                            ? "rgba(var(--color-success), 0.08)"
                             : "transparent",
                         border: isSelected ? 2 : 1,
                         borderColor: isSelected
-                          ? "primary.main"
+                          ? "var(--brand-primary)"
                           : "transparent",
                         "&:hover": {
                           bgcolor: isSelected
-                            ? "rgba(58, 70, 86, 0.12)"
-                            : "action.hover",
+                            ? "var(--neutral-800)"
+                            : "var(--surface-hover)",
                         },
                       }}
                     >

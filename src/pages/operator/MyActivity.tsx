@@ -71,7 +71,7 @@ export default function MyActivity() {
       `)
       .eq("operator_id", profile.id)
       .gte("start_time", startDate.toISOString())
-      .order("start_time", { ascending: false});
+      .order("start_time", { ascending: false });
 
     if (error) {
       console.error("Error loading activity:", error);
@@ -127,7 +127,7 @@ export default function MyActivity() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary" />
       </div>
     );
   }
@@ -186,28 +186,30 @@ export default function MyActivity() {
                   {group.entries.map((entry) => (
                     <Card key={entry.id} className="p-4">
                       <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge
-                                style={{
-                                  backgroundColor: entry.operation.cell.color || "hsl(var(--primary))",
-                                  color: "white",
-                                }}
-                              >
-                                {entry.operation.cell.name}
-                              </Badge>
-                              {entry.operation.status === "completed" && (
-                                <CheckCircle className="h-4 w-4 text-green-600" />
-                              )}
-                            </div>
-                            <div className="font-medium mb-1">{entry.operation.operation_name}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {entry.operation.part.job.job_number} • {entry.operation.part.part_number}
-                            </div>
-                            {entry.notes && (
-                              <div className="text-sm text-muted-foreground mt-2 italic">{entry.notes}</div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge
+                              style={
+                                {
+                                  "--cell-color": entry.operation.cell.color || "hsl(var(--brand-primary))",
+                                } as React.CSSProperties
+                              }
+                              className="bg-[var(--cell-color)] text-primary-foreground"
+                            >
+                              {entry.operation.cell.name}
+                            </Badge>
+                            {entry.operation.status === "completed" && (
+                              <CheckCircle className="h-4 w-4 text-status-completed" />
                             )}
                           </div>
+                          <div className="font-medium mb-1">{entry.operation.operation_name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {entry.operation.part.job.job_number} • {entry.operation.part.part_number}
+                          </div>
+                          {entry.notes && (
+                            <div className="text-sm text-muted-foreground mt-2 italic">{entry.notes}</div>
+                          )}
+                        </div>
                         <div className="text-right shrink-0">
                           <div className="text-sm font-medium flex items-center gap-1">
                             <Clock className="h-3 w-3" />

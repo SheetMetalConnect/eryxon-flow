@@ -210,7 +210,7 @@ export default function WorkQueue() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
       </div>
     );
   }
@@ -230,15 +230,15 @@ export default function WorkQueue() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">In Progress</p>
-              <p className="text-2xl font-bold text-blue-600">{inProgressOperations}</p>
+              <p className="text-2xl font-bold text-brand-primary">{inProgressOperations}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Completed</p>
-              <p className="text-2xl font-bold text-green-600">{completedOperations}</p>
+              <p className="text-2xl font-bold text-status-completed">{completedOperations}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Not Started</p>
-              <p className="text-2xl font-bold text-gray-600">
+              <p className="text-2xl font-bold text-muted-foreground">
                 {totalOperations - inProgressOperations - completedOperations}
               </p>
             </div>
@@ -365,12 +365,15 @@ export default function WorkQueue() {
                 variant={hiddenCells.has(cell.id) ? "outline" : "default"}
                 size="sm"
                 onClick={() => toggleCellVisibility(cell.id)}
-                style={{
-                  backgroundColor: hiddenCells.has(cell.id)
-                    ? "transparent"
-                    : cell.color,
-                  borderColor: cell.color,
-                }}
+                style={
+                  {
+                    "--cell-color": cell.color,
+                  } as React.CSSProperties
+                }
+                className={`
+                  ${hiddenCells.has(cell.id) ? "bg-transparent" : "bg-[var(--cell-color)]"}
+                  border-[var(--cell-color)]
+                `}
               >
                 {hiddenCells.has(cell.id) ? (
                   <EyeOff className="h-3 w-3 mr-1" />
@@ -389,16 +392,18 @@ export default function WorkQueue() {
             {operationsByCell.map(({ cell, operations }) => (
               <div
                 key={cell.id}
-                className={`flex-shrink-0 ${
-                  viewMode === "detailed" ? "w-80" : "w-64"
-                } bg-card rounded-lg border`}
+                className={`flex-shrink-0 ${viewMode === "detailed" ? "w-80" : "w-64"
+                  } bg-card rounded-lg border`}
               >
                 <div
                   className="p-4 border-b"
-                  style={{
-                    borderTopColor: cell.color || "hsl(var(--cell-default))",
-                    borderTopWidth: "4px",
-                  }}
+                  style={
+                    {
+                      "--cell-color": cell.color || "hsl(var(--stage-default))",
+                      borderTopColor: "var(--cell-color)",
+                      borderTopWidth: "4px",
+                    } as React.CSSProperties
+                  }
                 >
                   <h3 className="font-semibold text-lg">{cell.name}</h3>
                   <p className="text-sm text-muted-foreground">

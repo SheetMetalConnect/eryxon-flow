@@ -493,7 +493,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                       {cell.name}
                     </Badge>
                   ) : (
-                    <span className="text-gray-400 text-sm">{t("parts.notStarted")}</span>
+                    <span className="text-muted-foreground text-sm">{t("parts.notStarted")}</span>
                   );
                 })()}
               </div>
@@ -503,7 +503,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           {/* Routing Visualization */}
           <div>
             <Label className="text-lg">{t("qrm.routing", "Routing")}</Label>
-            <div className="mt-3 border rounded-lg p-4 bg-gray-50">
+            <div className="mt-3 border rounded-lg p-4 bg-muted">
               <RoutingVisualization routing={routing} loading={routingLoading} compact />
             </div>
           </div>
@@ -512,7 +512,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           {part?.notes && (
             <div>
               <Label>{t("parts.notes")}</Label>
-              <p className="mt-1 text-sm text-gray-600">{part.notes}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{part.notes}</p>
             </div>
           )}
 
@@ -546,14 +546,14 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               {/* Parent Part */}
               {parentPart && (
                 <div className="mb-4">
-                  <Label className="text-sm text-gray-600">{t("parts.parentAssembly")}</Label>
-                  <div className="mt-2 border rounded-lg p-3 bg-blue-50">
+                  <Label className="text-sm text-muted-foreground">{t("parts.parentAssembly")}</Label>
+                  <div className="mt-2 border rounded-lg p-3 bg-alert-info-bg border-alert-info-border">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <ChevronRight className="h-4 w-4 text-gray-400 rotate-180" />
+                        <ChevronRight className="h-4 w-4 text-muted-foreground rotate-180" />
                         <div>
                           <p className="font-medium">{parentPart.part_number}</p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-muted-foreground">
                             {parentPart.material} | {t("jobs.job")}: {parentPart.job?.job_number}
                           </p>
                         </div>
@@ -567,7 +567,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               {/* Child Parts */}
               {childParts && childParts.length > 0 && (
                 <div>
-                  <Label className="text-sm text-gray-600">
+                  <Label className="text-sm text-muted-foreground">
                     {t("parts.childComponents")} ({childParts.length})
                   </Label>
 
@@ -591,16 +591,15 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                       return (
                         <div
                           key={child.id}
-                          className={`border rounded-lg p-3 ${
-                            isComplete ? "bg-green-50" : "bg-white"
-                          }`}
+                          className={`border rounded-lg p-3 ${isComplete ? "bg-alert-success-bg" : "bg-card"
+                            }`}
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <ChevronRight className="h-4 w-4 text-gray-400" />
+                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
                               <div>
                                 <p className="font-medium">{child.part_number}</p>
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs text-muted-foreground">
                                   {child.material} | {totalOps} {t("operations.operation", { count: totalOps })}
                                   {totalOps > 0 && ` (${completedOps}/${totalOps} ${t("parts.done")})`}
                                 </p>
@@ -609,7 +608,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                             <div className="flex items-center gap-2">
                               <Badge
                                 variant={isComplete ? "default" : "secondary"}
-                                className={isComplete ? "bg-green-600" : ""}
+                                className={isComplete ? "bg-success text-success-foreground" : ""}
                               >
                                 {child.status?.replace("_", " ")}
                               </Badge>
@@ -621,8 +620,8 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   </div>
 
                   {dependencies && dependencies.dependenciesMet && (
-                    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <p className="text-sm text-green-800 flex items-center gap-2">
+                    <div className="mt-3 p-3 bg-alert-success-bg border border-alert-success-border rounded-lg">
+                      <p className="text-sm text-success flex items-center gap-2">
                         <Package className="h-4 w-4" />
                         {t("parts.readyForAssembly")}
                       </p>
@@ -646,11 +645,11 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
             <StorageQuotaDisplay quota={storageQuota} className="mb-4" />
 
             {/* File Upload */}
-            <div className="border rounded-lg p-4 mb-3 bg-gray-50">
+            <div className="border rounded-lg p-4 mb-3 bg-muted">
               <div className="flex items-center gap-3">
                 <label
                   htmlFor="cad-upload"
-                  className="flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed rounded-lg cursor-pointer hover:bg-white transition flex-1"
+                  className="flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed rounded-lg cursor-pointer hover:bg-card transition flex-1"
                 >
                   <Upload className="h-4 w-4" />
                   <span className="text-sm">
@@ -696,17 +695,17 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                 return (
                   <div
                     key={index}
-                    className="flex items-center justify-between border rounded-md p-3 bg-white"
+                    className="flex items-center justify-between border rounded-md p-3 bg-card"
                   >
                     <div className="flex items-center gap-3">
                       {isSTEP ? (
-                        <Box className="h-5 w-5 text-blue-600" />
+                        <Box className="h-5 w-5 text-brand-primary" />
                       ) : (
-                        <FileText className="h-5 w-5 text-red-600" />
+                        <FileText className="h-5 w-5 text-destructive" />
                       )}
                       <div>
                         <p className="font-medium text-sm">{fileName}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                           {isSTEP ? t("parts.3dModel") : t("parts.drawing")}
                         </p>
                       </div>
@@ -725,14 +724,14 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                         variant="outline"
                         onClick={() => handleDeleteCADFile(filePath)}
                       >
-                        <Trash2 className="h-4 w-4 text-red-600" />
+                        <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
                   </div>
                 );
               })}
               {(!part?.file_paths || part.file_paths.length === 0) && (
-                <p className="text-sm text-gray-500 text-center py-4">
+                <p className="text-sm text-muted-foreground text-center py-4">
                   {t("parts.noFilesYet")}
                 </p>
               )}
@@ -753,7 +752,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
             {/* Add Operation Form */}
             {addingOperation && (
-              <div className="border rounded-lg p-4 mb-4 bg-blue-50">
+              <div className="border rounded-lg p-4 mb-4 bg-alert-info-bg border-alert-info-border">
                 <h4 className="font-semibold mb-3">{t("operations.newOperation")}</h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div>

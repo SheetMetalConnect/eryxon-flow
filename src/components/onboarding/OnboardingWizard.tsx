@@ -142,9 +142,8 @@ export function OnboardingWizard() {
             {steps.map((step, stepIdx) => (
               <li
                 key={step.id}
-                className={`relative ${
-                  stepIdx !== steps.length - 1 ? 'pr-8 sm:pr-20 flex-1' : ''
-                }`}
+                className={`relative ${stepIdx !== steps.length - 1 ? 'pr-8 sm:pr-20 flex-1' : ''
+                  }`}
               >
                 {/* Connector Line */}
                 {stepIdx !== steps.length - 1 && (
@@ -153,11 +152,10 @@ export function OnboardingWizard() {
                     aria-hidden="true"
                   >
                     <div
-                      className={`h-full ${
-                        currentStep > step.id
+                      className={`h-full ${currentStep > step.id
                           ? 'bg-primary'
-                          : 'bg-gray-300 dark:bg-gray-600'
-                      }`}
+                          : 'bg-muted'
+                        }`}
                     />
                   </div>
                 )}
@@ -166,34 +164,31 @@ export function OnboardingWizard() {
                 <div className="group relative flex items-center">
                   <span className="flex h-9 items-center">
                     <span
-                      className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full ${
-                        currentStep > step.id
+                      className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full ${currentStep > step.id
                           ? 'bg-primary'
                           : currentStep === step.id
-                          ? 'bg-primary border-2 border-primary'
-                          : 'bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600'
-                      }`}
+                            ? 'bg-primary border-2 border-primary'
+                            : 'bg-card border-2 border-border'
+                        }`}
                     >
                       {currentStep > step.id ? (
                         <Check className="h-5 w-5 text-white" />
                       ) : (
                         <span
-                          className={`h-2.5 w-2.5 rounded-full ${
-                            currentStep === step.id
-                              ? 'bg-white'
-                              : 'bg-transparent group-hover:bg-gray-300 dark:group-hover:bg-gray-500'
-                          }`}
+                          className={`h-2.5 w-2.5 rounded-full ${currentStep === step.id
+                              ? 'bg-card'
+                              : 'bg-transparent group-hover:bg-muted'
+                            }`}
                         />
                       )}
                     </span>
                   </span>
                   <span className="ml-4 flex min-w-0 flex-col">
                     <span
-                      className={`text-sm font-medium ${
-                        currentStep >= step.id
+                      className={`text-sm font-medium ${currentStep >= step.id
                           ? 'text-primary'
-                          : 'text-gray-500 dark:text-gray-400'
-                      }`}
+                          : 'text-muted-foreground'
+                        }`}
                     >
                       {step.name}
                     </span>

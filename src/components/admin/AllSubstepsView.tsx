@@ -215,13 +215,13 @@ export function AllSubstepsView() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-500/10 text-green-500 border-green-500/20';
+        return 'bg-alert-success-bg text-success border-alert-success-border';
       case 'in_progress':
-        return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+        return 'bg-alert-info-bg text-brand-primary border-alert-info-border';
       case 'blocked':
-        return 'bg-red-500/10 text-red-500 border-red-500/20';
+        return 'bg-alert-error-bg text-destructive border-alert-error-border';
       default:
-        return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 

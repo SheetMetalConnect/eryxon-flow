@@ -116,14 +116,12 @@ Thank you!`;
           return (
             <Card
               key={tier.id}
-              className={`relative flex flex-col ${
-                isCurrent ? 'border-green-500 shadow-xl ring-2 ring-green-500/20' : ''
-              } ${tier.popular && !isCurrent ? 'border-primary shadow-lg' : ''} ${
-                tier.gradient ? 'border-purple-500' : ''
-              }`}
+              className={`relative flex flex-col ${isCurrent ? 'border-success shadow-xl ring-2 ring-success/20' : ''
+                } ${tier.popular && !isCurrent ? 'border-primary shadow-lg' : ''} ${tier.gradient ? 'border-primary' : ''
+                }`}
             >
               {isCurrent && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-600">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-success text-success-foreground">
                   {t("pricing.currentPlan")}
                 </Badge>
               )}
@@ -135,16 +133,14 @@ Thank you!`;
 
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${
-                    tier.gradient
-                      ? 'bg-gradient-to-br from-purple-500 to-blue-500'
+                  <div className={`p-2 rounded-lg ${tier.gradient
+                      ? 'bg-gradient-to-br from-primary to-accent'
                       : isCurrent
-                      ? 'bg-green-500/10'
-                      : 'bg-primary/10'
-                  }`}>
-                    <Icon className={`h-6 w-6 ${
-                      tier.gradient ? 'text-white' : isCurrent ? 'text-green-600' : 'text-primary'
-                    }`} />
+                        ? 'bg-alert-success-bg'
+                        : 'bg-primary/10'
+                    }`}>
+                    <Icon className={`h-6 w-6 ${tier.gradient ? 'text-primary-foreground' : isCurrent ? 'text-success' : 'text-primary'
+                      }`} />
                   </div>
                   <div>
                     <CardTitle className="text-2xl">{t(tier.nameKey)}</CardTitle>
@@ -164,9 +160,8 @@ Thank you!`;
                 <ul className="space-y-3">
                   {(t(tier.featuresKey, { returnObjects: true }) as string[]).map((feature, index) => (
                     <li key={index} className="flex items-start gap-2">
-                      <Check className={`h-5 w-5 flex-shrink-0 mt-0.5 ${
-                        isCurrent ? 'text-green-600' : 'text-primary'
-                      }`} />
+                      <Check className={`h-5 w-5 flex-shrink-0 mt-0.5 ${isCurrent ? 'text-success' : 'text-primary'
+                        }`} />
                       <span className="text-sm">{feature}</span>
                     </li>
                   ))}

@@ -224,6 +224,7 @@
     --operator-resume: 45 100% 51%;              /* Yellow - resume */
     --operator-complete: var(--brand-primary);   /* Blue - complete */
     --operator-issue: var(--color-error);        /* Red - report issue */
+    --operator-gradient: linear-gradient(135deg, hsl(var(--neutral-700)) 0%, hsl(var(--brand-primary)) 100%);
 
     /* ========================================================================
        SIDEBAR

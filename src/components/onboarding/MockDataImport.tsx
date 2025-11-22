@@ -143,9 +143,9 @@ export function MockDataImport({ onComplete, onSkip }: MockDataImportProps) {
       </div>
 
       {importComplete && (
-        <Alert className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
-          <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-          <AlertDescription className="text-green-900 dark:text-green-100">
+        <Alert className="bg-alert-success-bg border-alert-success-border">
+          <CheckCircle2 className="h-4 w-4 text-success" />
+          <AlertDescription className="text-success">
             Sample data has been imported successfully! You can now explore the app with real-world
             examples.
           </AlertDescription>
