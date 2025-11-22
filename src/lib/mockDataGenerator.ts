@@ -458,23 +458,83 @@ export async function generateMockData(
 }
 
 /**
- * Clears all mock data for a tenant
- * Useful for resetting during onboarding
+ * Clears ONLY demo/mock data for a tenant
+ * Selectively deletes only demo operators, demo resources, and jobs with "JOB-2024-" prefix
+ * CRITICAL: This should NOT delete all tenant data
  */
 export async function clearMockData(tenantId: string): Promise<{ success: boolean; error?: string }> {
   try {
     // Cast to any to avoid TypeScript deep instantiation issues
     const db = supabase as any;
     
-    // Delete in reverse order of dependencies
-    await db.from('time_entries').delete().eq('tenant_id', tenantId);
-    await db.from('operation_resources').delete().eq('tenant_id', tenantId);
-    await db.from('operations').delete().eq('tenant_id', tenantId);
-    await db.from('parts').delete().eq('tenant_id', tenantId);
-    await db.from('jobs').delete().eq('tenant_id', tenantId);
-    await db.from('cells').delete().eq('tenant_id', tenantId);
-    await db.from('resources').delete().eq('tenant_id', tenantId);
-    await db.from('scrap_reasons').delete().eq('tenant_id', tenantId);
+    // Get demo job IDs (jobs with demo prefix)
+    const { data: demoJobs } = await db
+      .from('jobs')
+      .select('id')
+      .eq('tenant_id', tenantId)
+      .like('job_number', 'JOB-2024-%');
+    
+    const demoJobIds = demoJobs?.map((j: any) => j.id) || [];
+
+    if (demoJobIds.length > 0) {
+      // Get demo part IDs
+      const { data: demoParts } = await db
+        .from('parts')
+        .select('id')
+        .in('job_id', demoJobIds);
+      
+      const demoPartIds = demoParts?.map((p: any) => p.id) || [];
+
+      if (demoPartIds.length > 0) {
+        // Get demo operation IDs
+        const { data: demoOperations } = await db
+          .from('operations')
+          .select('id')
+          .in('part_id', demoPartIds);
+        
+        const demoOperationIds = demoOperations?.map((o: any) => o.id) || [];
+
+        if (demoOperationIds.length > 0) {
+          // Delete time entries for demo operations
+          await db.from('time_entries').delete().in('operation_id', demoOperationIds);
+          
+          // Delete operation resources for demo operations
+          await db.from('operation_resources').delete().in('operation_id', demoOperationIds);
+          
+          // Delete operation quantities for demo operations
+          await db.from('operation_quantities').delete().in('operation_id', demoOperationIds);
+        }
+
+        // Delete demo operations
+        await db.from('operations').delete().in('part_id', demoPartIds);
+      }
+
+      // Delete demo parts
+      await db.from('parts').delete().in('job_id', demoJobIds);
+      
+      // Delete demo jobs
+      await db.from('jobs').delete().in('id', demoJobIds);
+    }
+
+    // Delete demo cells (those created by seed with specific names)
+    await db
+      .from('cells')
+      .delete()
+      .eq('tenant_id', tenantId)
+      .in('name', ['Laser Cutting', 'CNC Bending', 'Welding', 'Assembly', 'Finishing', 'Quality Control']);
+
+    // Delete demo resources (those created by seed_demo_resources)
+    await db
+      .from('resources')
+      .delete()
+      .eq('tenant_id', tenantId)
+      .or('name.ilike.%Enclosure Mold%,name.ilike.%Bracket Forming Die%,name.ilike.%Laser Cutting Head%,name.ilike.%V-Die Set%,name.ilike.%Spot Welding Gun%,name.ilike.%Welding Fixture%,name.ilike.%QC Inspection Gauge%,name.ilike.%SS304 Sheet Stock%,name.ilike.%AL6061 Sheet Stock%');
+
+    // Delete demo scrap reasons (those created by seed_default_scrap_reasons)
+    await db
+      .from('scrap_reasons')
+      .delete()
+      .eq('tenant_id', tenantId);
 
     // Delete demo operators (only those with names starting with "Demo Operator")
     await db
