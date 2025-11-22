@@ -107,7 +107,7 @@
     --surface-hover: var(--neutral-900);
 
     /* Card - Glass morphism ready */
-    --card: var(--color-dark-surface);
+    --card: 0 0% 8% / 0.85;              /* Semi-transparent for glass effect */
     --card-foreground: var(--neutral-50);
     --card-border: 0 0% 100% / 0.1;      /* rgba(255,255,255,0.1) */
 
@@ -229,7 +229,7 @@
     /* ========================================================================
        SIDEBAR
        ======================================================================== */
-    --sidebar-background: var(--color-dark-surface);
+    --sidebar-background: 0 0% 8% / 0.7;            /* Semi-transparent for glass effect */
     --sidebar-foreground: var(--neutral-50);
     --sidebar-primary: var(--brand-accent);
     --sidebar-primary-foreground: 0 0% 100%;
@@ -237,6 +237,11 @@
     --sidebar-accent-foreground: var(--neutral-50);
     --sidebar-border: var(--neutral-700);
     --sidebar-ring: var(--brand-accent);
+
+    /* Navigation - Premium white/transparent */
+    --nav-active-bg: 0 0% 100% / 0.12;              /* White 12% opacity */
+    --nav-active-fg: 0 0% 100%;                     /* Pure white */
+    --nav-hover-bg: 0 0% 100% / 0.06;               /* White 6% opacity */
 
     /* ========================================================================
        GLASS MORPHISM EFFECTS
@@ -671,6 +676,46 @@
 
   .btn-primary:active {
     transform: scale(0.98);
+  }
+
+  /* Premium Navigation Styles - Transparent white with glow */
+  .nav-item-active {
+    position: relative;
+    background: hsl(var(--nav-active-bg)) !important;
+    color: hsl(var(--nav-active-fg)) !important;
+    border: none;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  .nav-item-active::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0) 100%);
+    pointer-events: none;
+  }
+
+  .nav-item-hover {
+    background: hsl(var(--nav-hover-bg));
+    transition: var(--transition-smooth);
+  }
+
+  .nav-item-hover:hover {
+    background: hsl(var(--nav-active-bg));
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.08);
+  }
+
+  /* Transparent sidebar with glass effect */
+  .sidebar-glass {
+    background: hsl(var(--sidebar-background)) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid hsl(var(--glass-border));
+    box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.03);
   }
 }
 
