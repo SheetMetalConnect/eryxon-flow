@@ -209,11 +209,11 @@ export default function IssueQueue() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label htmlFor="search" className="mb-2 block">
-            Search (Job/Part/Operation)
+            {t('Search')}
           </Label>
           <Input
             id="search"
-            placeholder="Search by job, part, or operation..."
+            placeholder={t('issues.searchByJobPartOperation')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -221,36 +221,36 @@ export default function IssueQueue() {
 
         <div>
           <Label htmlFor="status-filter" className="mb-2 block">
-            Status
+            {t('Status')}
           </Label>
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
             <SelectTrigger id="status-filter">
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder={t('issues.filterByStatus')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-              <SelectItem value="closed">Closed</SelectItem>
+              <SelectItem value="all">{t('issues.allStatuses')}</SelectItem>
+              <SelectItem value="pending">{t('issues.status.pending')}</SelectItem>
+              <SelectItem value="approved">{t('issues.status.approved')}</SelectItem>
+              <SelectItem value="rejected">{t('issues.status.rejected')}</SelectItem>
+              <SelectItem value="closed">{t('issues.status.closed')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div>
           <Label htmlFor="severity-filter" className="mb-2 block">
-            Severity
+            {t('issues.severityLabel')}
           </Label>
           <Select value={severityFilter} onValueChange={(v) => setSeverityFilter(v as any)}>
             <SelectTrigger id="severity-filter">
-              <SelectValue placeholder="Filter by severity" />
+              <SelectValue placeholder={t('issues.filterBySeverity')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Severities</SelectItem>
-              <SelectItem value="critical">Critical</SelectItem>
-              <SelectItem value="high">High</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="low">Low</SelectItem>
+              <SelectItem value="all">{t('issues.allSeverities')}</SelectItem>
+              <SelectItem value="critical">{t('issues.severity.critical')}</SelectItem>
+              <SelectItem value="high">{t('issues.severity.high')}</SelectItem>
+              <SelectItem value="medium">{t('issues.severity.medium')}</SelectItem>
+              <SelectItem value="low">{t('issues.severity.low')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
