@@ -430,6 +430,76 @@ export type Database = {
         }
         Relationships: []
       }
+      invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          metadata: Json | null
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+          tenant_id: string
+          token: string
+          updated_at: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string | null
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          metadata?: Json | null
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          tenant_id: string
+          token: string
+          updated_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          metadata?: Json | null
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          tenant_id?: string
+          token?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_accepted_by_fkey"
+            columns: ["accepted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       issues: {
         Row: {
           created_at: string | null
@@ -701,6 +771,95 @@ export type Database = {
           },
         ]
       }
+      operation_quantities: {
+        Row: {
+          created_at: string
+          id: string
+          material_cert_number: string | null
+          material_lot: string | null
+          material_supplier: string | null
+          metadata: Json | null
+          notes: string | null
+          operation_id: string
+          quantity_good: number
+          quantity_produced: number
+          quantity_rework: number
+          quantity_scrap: number
+          recorded_at: string
+          recorded_by: string | null
+          scrap_reason_id: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          material_cert_number?: string | null
+          material_lot?: string | null
+          material_supplier?: string | null
+          metadata?: Json | null
+          notes?: string | null
+          operation_id: string
+          quantity_good?: number
+          quantity_produced?: number
+          quantity_rework?: number
+          quantity_scrap?: number
+          recorded_at?: string
+          recorded_by?: string | null
+          scrap_reason_id?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          material_cert_number?: string | null
+          material_lot?: string | null
+          material_supplier?: string | null
+          metadata?: Json | null
+          notes?: string | null
+          operation_id?: string
+          quantity_good?: number
+          quantity_produced?: number
+          quantity_rework?: number
+          quantity_scrap?: number
+          recorded_at?: string
+          recorded_by?: string | null
+          scrap_reason_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operation_quantities_operation_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: false
+            referencedRelation: "operations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_quantities_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_quantities_scrap_reason_id_fkey"
+            columns: ["scrap_reason_id"]
+            isOneToOne: false
+            referencedRelation: "scrap_reasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_quantities_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operation_resources: {
         Row: {
           created_at: string | null
@@ -828,95 +987,6 @@ export type Database = {
           },
         ]
       }
-      operation_quantities: {
-        Row: {
-          created_at: string
-          id: string
-          material_cert_number: string | null
-          material_lot: string | null
-          material_supplier: string | null
-          metadata: Json | null
-          notes: string | null
-          operation_id: string
-          quantity_good: number
-          quantity_produced: number
-          quantity_rework: number
-          quantity_scrap: number
-          recorded_at: string
-          recorded_by: string | null
-          scrap_reason_id: string | null
-          tenant_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          material_cert_number?: string | null
-          material_lot?: string | null
-          material_supplier?: string | null
-          metadata?: Json | null
-          notes?: string | null
-          operation_id: string
-          quantity_good?: number
-          quantity_produced?: number
-          quantity_rework?: number
-          quantity_scrap?: number
-          recorded_at?: string
-          recorded_by?: string | null
-          scrap_reason_id?: string | null
-          tenant_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          material_cert_number?: string | null
-          material_lot?: string | null
-          material_supplier?: string | null
-          metadata?: Json | null
-          notes?: string | null
-          operation_id?: string
-          quantity_good?: number
-          quantity_produced?: number
-          quantity_rework?: number
-          quantity_scrap?: number
-          recorded_at?: string
-          recorded_by?: string | null
-          scrap_reason_id?: string | null
-          tenant_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "operation_quantities_operation_id_fkey"
-            columns: ["operation_id"]
-            isOneToOne: false
-            referencedRelation: "operations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "operation_quantities_recorded_by_fkey"
-            columns: ["recorded_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "operation_quantities_scrap_reason_id_fkey"
-            columns: ["scrap_reason_id"]
-            isOneToOne: false
-            referencedRelation: "scrap_reasons"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "operation_quantities_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       parts: {
         Row: {
           created_at: string | null
@@ -1010,13 +1080,16 @@ export type Database = {
           active: boolean | null
           created_at: string | null
           email: string
+          employee_id: string | null
           full_name: string
+          has_email_login: boolean | null
           id: string
           is_machine: boolean | null
           is_root_admin: boolean | null
           mock_data_imported: boolean | null
           onboarding_completed: boolean | null
           onboarding_step: number | null
+          pin_hash: string | null
           role: Database["public"]["Enums"]["app_role"]
           search_vector: unknown
           tenant_id: string
@@ -1028,13 +1101,16 @@ export type Database = {
           active?: boolean | null
           created_at?: string | null
           email: string
+          employee_id?: string | null
           full_name: string
+          has_email_login?: boolean | null
           id: string
           is_machine?: boolean | null
           is_root_admin?: boolean | null
           mock_data_imported?: boolean | null
           onboarding_completed?: boolean | null
           onboarding_step?: number | null
+          pin_hash?: string | null
           role: Database["public"]["Enums"]["app_role"]
           search_vector?: unknown
           tenant_id: string
@@ -1046,13 +1122,16 @@ export type Database = {
           active?: boolean | null
           created_at?: string | null
           email?: string
+          employee_id?: string | null
           full_name?: string
+          has_email_login?: boolean | null
           id?: string
           is_machine?: boolean | null
           is_root_admin?: boolean | null
           mock_data_imported?: boolean | null
           onboarding_completed?: boolean | null
           onboarding_step?: number | null
+          pin_hash?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           search_vector?: unknown
           tenant_id?: string
@@ -1299,10 +1378,12 @@ export type Database = {
           max_parts_per_month: number | null
           max_storage_gb: number | null
           name: string
+          onboarding_completed_at: string | null
           plan: Database["public"]["Enums"]["subscription_plan"]
           status: Database["public"]["Enums"]["subscription_status"]
           subscription_started_at: string | null
           subscription_updated_at: string | null
+          timezone: string | null
           trial_ends_at: string | null
           updated_at: string | null
         }
@@ -1319,10 +1400,12 @@ export type Database = {
           max_parts_per_month?: number | null
           max_storage_gb?: number | null
           name: string
+          onboarding_completed_at?: string | null
           plan?: Database["public"]["Enums"]["subscription_plan"]
           status?: Database["public"]["Enums"]["subscription_status"]
           subscription_started_at?: string | null
           subscription_updated_at?: string | null
+          timezone?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
         }
@@ -1339,10 +1422,12 @@ export type Database = {
           max_parts_per_month?: number | null
           max_storage_gb?: number | null
           name?: string
+          onboarding_completed_at?: string | null
           plan?: Database["public"]["Enums"]["subscription_plan"]
           status?: Database["public"]["Enums"]["subscription_status"]
           subscription_started_at?: string | null
           subscription_updated_at?: string | null
+          timezone?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
         }
@@ -1615,6 +1700,15 @@ export type Database = {
         Args: { current_cell_id: string; tenant_id_param: string }
         Returns: Json
       }
+      cleanup_expired_invitations: { Args: never; Returns: number }
+      create_invitation: {
+        Args: {
+          p_email: string
+          p_role?: Database["public"]["Enums"]["app_role"]
+          p_tenant_id?: string
+        }
+        Returns: string
+      }
       create_notification: {
         Args: {
           p_link?: string
@@ -1673,6 +1767,19 @@ export type Database = {
         Args: { cell_id_param: string; tenant_id_param: string }
         Returns: number
       }
+      get_invitation_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          email: string
+          expires_at: string
+          id: string
+          invited_by_name: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+          tenant_id: string
+          tenant_name: string
+        }[]
+      }
       get_job_issue_summary: {
         Args: { job_id_param: string }
         Returns: {
@@ -1693,6 +1800,16 @@ export type Database = {
           plan: Database["public"]["Enums"]["subscription_plan"]
           status: Database["public"]["Enums"]["subscription_status"]
           tenant_id: string
+        }[]
+      }
+      get_operation_total_quantities: {
+        Args: { p_operation_id: string }
+        Returns: {
+          total_good: number
+          total_produced: number
+          total_rework: number
+          total_scrap: number
+          yield_percentage: number
         }[]
       }
       get_part_issue_summary: {
