@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { TerminalJob } from '@/types/terminal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,10 @@ import { PDFViewer } from '@/components/PDFViewer';
 import { OperationWithDetails } from '@/lib/database';
 import { cn } from '@/lib/utils';
 import IssueForm from '@/components/operator/IssueForm';
+import { NextCellInfo } from './NextCellInfo';
+import { RoutingVisualization } from './RoutingVisualization';
+import { useCellQRMMetrics } from '@/hooks/useQRMMetrics';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface DetailPanelProps {
     job: TerminalJob;
@@ -23,6 +27,33 @@ interface DetailPanelProps {
 
 export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl, operations = [] }: DetailPanelProps) {
     const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
+    const { profile } = useAuth();
+
+    // Compute next operation in the sequence FIRST
+    const nextOperation = useMemo(() => {
+        if (!job.currentSequence) return null;
+        // Find the next operation in sequence order
+        const sorted = [...operations].sort((a, b) => a.sequence - b.sequence);
+        const currentIndex = sorted.findIndex(op => op.id === job.operationId);
+        if (currentIndex === -1 || currentIndex === sorted.length - 1) return null;
+        return sorted[currentIndex + 1];
+    }, [operations, job.currentSequence, job.operationId]);
+
+    // Get QRM metrics for the ACTUAL next cell in the job routing
+    const { metrics: nextCellMetrics } = useCellQRMMetrics(
+        nextOperation?.cell_id || null,
+        profile?.tenant_id || null
+    );
+
+    // Check if we can complete (blocked by next cell capacity)
+    const isBlockedByCapacity = useMemo(() => {
+        if (!nextOperation || !nextCellMetrics) return false;
+        // Check if capacity is enforced and if we're at or over the limit
+        if (!nextCellMetrics.enforce_limit) return false;
+        if (nextCellMetrics.wip_limit === null) return false;
+        return nextCellMetrics.current_wip >= nextCellMetrics.wip_limit;
+    }, [nextOperation, nextCellMetrics]);
+
     return (
         <div className="flex flex-col h-full bg-card text-card-foreground">
 
@@ -59,7 +90,13 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                         </Button>
                     )}
                     {job.status === 'in_progress' && (
-                        <Button onClick={onComplete} variant="outline" className="flex-1 border-border text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30">
+                        <Button
+                            onClick={onComplete}
+                            variant="outline"
+                            className="flex-1 border-border text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                            disabled={isBlockedByCapacity}
+                            title={isBlockedByCapacity ? "Cannot complete - next cell at capacity" : "Complete operation"}
+                        >
                             <Square className="w-4 h-4 mr-2" /> Complete
                         </Button>
                     )}
@@ -73,6 +110,25 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                         <AlertTriangle className="w-4 h-4" />
                     </Button>
                 </div>
+            </div>
+
+            {/* QRM Section - Next Cell and Routing */}
+            <div className="p-4 border-b border-border bg-muted/20 space-y-3">
+                {/* Next Cell Capacity */}
+                {nextOperation && (
+                    <NextCellInfo
+                        nextCellName={nextOperation.cell?.name || 'Unknown Cell'}
+                        metrics={nextCellMetrics}
+                    />
+                )}
+
+                {/* Routing Visualization */}
+                {job.jobId && (
+                    <RoutingVisualization
+                        jobId={job.jobId}
+                        currentCellId={job.cellId}
+                    />
+                )}
             </div>
 
             {/* Main Content Tabs */}

@@ -16,10 +16,12 @@ export interface TerminalJob {
     // Extra fields for logic
     operationId: string;
     partId: string;
+    jobId: string; // Added for QRM routing
     filePaths: string[];
     activeTimeEntryId?: string;
     notes?: string | null;
     cellName?: string;
     cellColor?: string;
     cellId: string;
+    currentSequence?: number; // Added for next operation detection
 }

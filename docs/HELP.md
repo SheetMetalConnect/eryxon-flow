@@ -1,7 +1,7 @@
 # Eryxon Flow - Help & FAQ
 
-**Version:** 1.0
-**Last Updated:** November 17, 2025
+**Version:** 1.1
+**Last Updated:** November 22, 2025
 
 ---
 
@@ -55,15 +55,49 @@ Eryxon Flow is a manufacturing execution system (MES) for sheet metal fabricatio
 ### Key Pages
 
 - **Work Queue** (`/work-queue`) - Your main page, see assigned operations
+- **Operator Terminal** (`/operator/terminal`) - Real-time production terminal with QRM capacity management
 - **My Activity** (`/my-activity`) - Your time tracking history (last 7 days)
 - **My Issues** (`/my-issues`) - Issues you've reported
+
+### Operator Terminal View
+
+The **Operator Terminal** provides a clean, real-time interface for production work:
+
+**Left Panel (Job List):**
+- **In Process** (Green) - Currently active operations
+- **In Buffer** (Blue) - Next 5 operations ready to start
+- **Expected** (Amber) - Upcoming work in queue
+
+**Right Panel (Detail View):**
+- Job details (customer, quantity, due date)
+- Current operation and controls (Start/Pause/Complete)
+- **QRM Features:**
+  - **Next Cell** - Shows which cell the part moves to after current operation
+  - **Capacity Status** - Real-time WIP (Work-In-Progress) for next cell
+    - 🟢 Green: Available capacity
+    - 🟡 Yellow: Warning (80%+ full)
+    - 🔴 Red: At capacity (blocked)
+  - **Routing Visualization** - Visual flow showing all cells in the job routing
+  - **Capacity Blocking** - Complete button disabled if next cell is at capacity (when enforced)
+- 3D model viewer (if STEP file attached)
+- PDF drawing viewer (if drawing attached)
+- Operations list showing full routing sequence
+
+**QRM Capacity Management:**
+The terminal uses QRM (Quick Response Manufacturing) methodology to prevent bottlenecks:
+- You can see if the next cell has capacity before completing your operation
+- If the next cell is at capacity and has enforcement enabled, you'll be blocked from completing
+- This prevents work-in-progress buildup and maintains flow
+- Capacity is shown as: `Current WIP / Limit` (e.g., "3/5 jobs")
 
 ### Tips
 
 - Always start timing before you begin work
 - Pause during breaks (pause time doesn't count)
 - Report issues immediately with photos
-- Mark operations complete as soon as finished
+- **Check next cell capacity** before completing - if blocked, coordinate with supervisors
+- Use the routing visualization to understand where the part goes next
+- Mark operations complete as soon as finished (unless blocked by capacity)
 
 ---
 
@@ -98,6 +132,11 @@ Eryxon Flow is a manufacturing execution system (MES) for sheet metal fabricatio
 
 Go to **Settings** menu:
 - **Stages/Cells** - Define workflow stages (Cutting, Bending, etc.)
+  - **QRM Settings** - Configure WIP limits and capacity enforcement for each cell:
+    - `WIP Limit` - Maximum jobs allowed in the cell
+    - `WIP Warning Threshold` - Warning level (default: 80% of limit)
+    - `Enforce Limit` - If enabled, blocks operations from completing when next cell is at capacity
+    - `Show Warning` - Display warnings in operator terminal when approaching capacity
 - **Materials** - Create material catalog
 - **Resources** - Track tools, fixtures, molds
 - **Users** - Manage operator and admin accounts
@@ -121,6 +160,17 @@ A:
 **Q: Can I time multiple operations at once?**
 
 A: No, only one operation at a time per operator. Starting a new timer stops the previous one.
+
+**Q: What does "Next cell at capacity" mean?**
+
+A: This is part of QRM (Quick Response Manufacturing) capacity management. Each cell has a WIP (Work-In-Progress) limit set by admins. When the next cell in your routing reaches its limit, you'll see a warning and may be blocked from completing your operation (if enforcement is enabled). This prevents bottlenecks and maintains production flow. Coordinate with supervisors if blocked.
+
+**Q: Why can't I complete my operation even though I'm done?**
+
+A: If you see "Cannot complete - next cell at capacity", the next cell in the routing is full. This is intentional to prevent work piling up. Options:
+1. Wait for capacity to free up (check the WIP count)
+2. Contact your supervisor to adjust the routing or WIP limits
+3. Pause your timer while waiting so time isn't wasted
 
 **Q: What happens to pause time?**
 
@@ -380,6 +430,7 @@ Limits enforced:
 
 ---
 
-**Last Updated:** November 17, 2025
-**Version:** 1.0
+**Last Updated:** November 22, 2025
+**Version:** 1.1
 **Status:** Active
+**Changelog:** Added Operator Terminal documentation and QRM capacity management features
