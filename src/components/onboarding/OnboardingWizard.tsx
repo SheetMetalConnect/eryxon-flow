@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSubscription } from '@/hooks/useSubscription';
+import AnimatedBackground from '@/components/AnimatedBackground';
 
 const steps = [
   { id: 1, name: 'Build Team', description: 'Invite your team' },
@@ -124,17 +125,23 @@ export function OnboardingWizard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold tracking-tight mb-2">
-            Welcome to Eryxon MES
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            The simple, elegant manufacturing execution system for metals fabrication
-          </p>
-        </div>
+    <>
+      <AnimatedBackground />
+
+      <div className="relative min-h-screen">
+        <div className="container mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">
+              Getting Started
+            </p>
+            <h1 className="hero-title text-4xl mb-3">
+              Welcome to Eryxon Flow
+            </h1>
+            <p className="text-lg text-foreground/80">
+              The simple MES you love to use
+            </p>
+          </div>
 
         {/* Progress Stepper */}
         <nav aria-label="Progress" className="mb-12">
@@ -203,7 +210,7 @@ export function OnboardingWizard() {
         </nav>
 
         {/* Content Area */}
-        <Card className="max-w-6xl mx-auto border-2">
+        <Card className="max-w-6xl mx-auto glass-card">
           <CardContent className="p-8 sm:p-12">
             {currentStep === 1 && (
               <TeamSetup onComplete={handleTeamSetupComplete} onSkip={handleTeamSetupSkip} />
@@ -228,6 +235,7 @@ export function OnboardingWizard() {
           </p>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

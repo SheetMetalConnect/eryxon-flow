@@ -1,60 +1,115 @@
-# Eryxon MES Design System
+# Eryxon Flow Design System
 
-**Modern, professional design system for manufacturing execution**
+**Modern dark-first design system for manufacturing execution**
 
-Version: 2.0
-Last Updated: November 17, 2025
-Status: ✅ Implemented
+Version: 3.0
+Last Updated: November 22, 2025
+Status: ✅ Active
 
 ---
 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Design Philosophy](#design-philosophy)
+- [Getting Started](#getting-started)
 - [Typography](#typography)
 - [Color Palette](#color-palette)
-- [Component Styling Guidelines](#component-styling-guidelines)
-- [Design Tokens Reference](#design-tokens-reference)
-- [Migration Guide](#migration-guide)
+- [Components](#components)
+- [Animations](#animations)
 - [Best Practices](#best-practices)
+- [Migration Guide](#migration-guide)
 
 ---
 
 ## Overview
 
-### Philosophy
+The Eryxon Flow design system is a **modern, dark-first** UI framework built for manufacturing professionals. Inspired by industry-leading design systems (VSCode, Linear, Vercel), it combines:
 
-The Eryxon MES design system is built for **manufacturing professionals**. It prioritizes:
-
-- **Clarity**: Easy to read technical data (part numbers, measurements, serial codes)
-- **Efficiency**: Touch-friendly for tablet use on the shop floor
-- **Professionalism**: Enterprise-grade appearance for business software
-- **Consistency**: Centralized design tokens prevent style drift
+- **Glass Morphism**: Beautiful depth with backdrop blur effects
+- **Animated Backgrounds**: Floating gradient orbs for visual interest
+- **Dark Mode Only**: Optimized for reduced eye strain in manufacturing environments
+- **Touch-Optimized**: 44px+ touch targets for tablet use on the shop floor
+- **Consistent Styling**: No hardcoded values - everything uses design tokens
 
 ### Technology Stack
 
-- **Typography**: Inter font family (optimized for UI)
-- **Colors**: HSL-based for easy theming
-- **Styling**: Hybrid approach
-  - Tailwind CSS for simple components and layouts
-  - Material-UI (MUI) for complex components (DataGrid, forms)
-  - shadcn/ui for base UI primitives
-- **Design Tokens**: CSS custom properties (CSS variables)
+- **CSS Framework**: Tailwind CSS + CSS Custom Properties
+- **UI Components**: shadcn/ui (base primitives)
+- **Complex Components**: Material-UI v7 (DataGrid, DatePickers)
+- **Typography**: Inter font family
+- **Styling Approach**: Dark mode only, glass morphism, animated backgrounds
 
-### Architecture
+---
+
+## Design Philosophy
+
+### "The Simple MES You Love to Use"
+
+Our tagline drives every design decision:
+
+1. **Simple**: Clean interfaces without unnecessary complexity
+2. **Beautiful**: Modern aesthetics that delight users
+3. **Functional**: Touch-optimized for real manufacturing workflows
+4. **Professional**: Enterprise-grade appearance and reliability
+
+### Dark Mode Only
+
+We've removed light mode support to focus on the best possible dark theme experience:
+
+- **Reduced Eye Strain**: Deep blacks (#0a0a0a) for comfortable all-day use
+- **Better Contrast**: Carefully calibrated for WCAG AA compliance
+- **Modern Aesthetic**: Professional appearance matching industry standards
+- **Manufacturing Focus**: Optimized for dimly-lit shop floor environments
+
+### Key Principles
+
+- **No Hardcoded Values**: All colors, spacing, and sizing use design tokens
+- **Glass Morphism**: Backdrop blur and transparency create depth
+- **Smooth Animations**: GPU-accelerated transforms for 60fps performance
+- **Consistent Roundings**: Modern rounded corners throughout (8px-24px)
+
+---
+
+## Getting Started
+
+### Design System Files
 
 ```
-src/styles/design-system.css  ← All design tokens defined here
-├── Typography (Inter font)
-├── Color palette (HSL values)
-├── Spacing & sizing
-├── Shadows & effects
-├── Transitions
-└── Manufacturing-specific tokens
+src/styles/design-system.css  ← All design tokens and base styles
+src/theme/theme.ts            ← Material-UI theme configuration
+tailwind.config.ts            ← Tailwind CSS configuration
+src/components/AnimatedBackground.tsx  ← Background animation
+```
 
-src/index.css  ← Imports design-system.css
-src/theme/theme.ts  ← MUI theme (maps to design tokens)
-tailwind.config.ts  ← Tailwind config (extends design tokens)
+### Using Design Tokens
+
+**In CSS:**
+```css
+.my-component {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border-radius: var(--radius-xl);
+  padding: var(--space-md);
+}
+```
+
+**In Tailwind:**
+```jsx
+<div className="bg-background text-foreground rounded-xl p-6">
+  Content
+</div>
+```
+
+**In Material-UI:**
+```jsx
+<Box sx={{
+  bgcolor: 'background.default',
+  color: 'text.primary',
+  borderRadius: 2
+}}>
+  Content
+</Box>
 ```
 
 ---
@@ -65,39 +120,21 @@ tailwind.config.ts  ← Tailwind config (extends design tokens)
 
 **Why Inter?**
 - Superior on-screen legibility
-- Excellent character distinction (1, l, I are clearly different)
+- Excellent character distinction (1, l, I clearly different)
 - Optimized for small sizes
-- Industry standard for modern SaaS (GitHub, Linear, Stripe, Vercel)
-
-### Usage
-
-**CSS:**
-```css
-font-family: var(--font-family-base);
-/* Expands to: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif */
-```
-
-**Tailwind:**
-```jsx
-<p className="font-sans">Body text uses Inter</p>
-```
-
-**MUI:**
-Inter is automatically applied to all MUI components via theme.
+- Industry standard for modern SaaS applications
 
 ### Type Scale
 
-| Level | Size | Weight | Use Case |
-|-------|------|--------|----------|
-| `h1` | 2.25rem (36px) | 700 | Page titles |
-| `h2` | 1.875rem (30px) | 700 | Section headings |
-| `h3` | 1.5rem (24px) | 600 | Card titles, subsections |
-| `h4` | 1.25rem (20px) | 600 | Component headings |
-| `h5` | 1.125rem (18px) | 600 | Small headings |
-| `h6` | 1rem (16px) | 600 | Emphasized labels |
-| `body1` | 1rem (16px) | 400 | Standard body text |
-| `body2` | 0.875rem (14px) | 400 | Secondary text, labels |
-| `caption` | 0.75rem (12px) | 400 | Timestamps, metadata |
+| Level | Size | Weight | Line Height | Use Case |
+|-------|------|--------|-------------|----------|
+| **H1** | 2.25rem (36px) | 700 | 1.25 | Page titles |
+| **H2** | 1.875rem (30px) | 700 | 1.3 | Section headings |
+| **H3** | 1.5rem (24px) | 600 | 1.3 | Card titles |
+| **H4** | 1.25rem (20px) | 600 | 1.4 | Component headings |
+| **Body1** | 1rem (16px) | 400 | 1.5 | Standard text |
+| **Body2** | 0.875rem (14px) | 400 | 1.5 | Secondary text |
+| **Caption** | 0.75rem (12px) | 400 | 1.4 | Metadata |
 
 ### Font Weights
 
@@ -111,647 +148,549 @@ Inter is automatically applied to all MUI components via theme.
 
 ## Color Palette
 
-### Industrial Modern Theme
-
-Our color palette is inspired by **metal fabrication** - professional, trustworthy, industrial.
-
 ### Brand Colors
 
-#### Primary: Deep Slate Blue
+#### Primary: Dodger Blue
 ```css
---brand-primary: 215 25% 27%  /* #3a4656 */
+--brand-primary: 211 100% 56%  /* #1e90ff */
 ```
-- **Use**: Primary buttons, navigation, emphasis
-- **Character**: Professional, industrial strength, trustworthy
-- **Contrast**: High contrast with white text (WCAG AAA)
-
-#### Accent: Electric Blue
-```css
---brand-accent: 211 100% 50%  /* #0080ff */
-```
-- **Use**: Links, hover states, active elements, accents
+- **Use**: Primary buttons, links, interactive elements
 - **Character**: Modern, tech-forward, energetic
-- **Contrast**: Excellent on white and dark backgrounds
+- **Contrast**: Excellent on dark backgrounds
+
+#### Accent: Light Blue
+```css
+--brand-primary-light: 211 100% 64%  /* #4a9eff */
+```
+- **Use**: Hover states, active elements, gradients
+- **Character**: Vibrant, approachable
+- **Contrast**: High visibility on dark surfaces
+
+### Background Colors
+
+```css
+--color-black: 0 0% 4%           /* #0a0a0a - Deep black */
+--color-dark-surface: 0 0% 8%    /* #141414 - Card surface */
+--color-dark-elevated: 0 0% 12%  /* #1f1f1f - Elevated surface */
+```
 
 ### Semantic Colors
 
-#### Success (Emerald)
 ```css
---success: 152 69% 42%  /* #148853 */
+--color-success: 140 60% 52%     /* #34a853 - Green */
+--color-warning: 45 100% 51%     /* #fbbc05 - Yellow */
+--color-error: 4 90% 58%         /* #ea4335 - Red */
+--color-info: 199 89% 48%        /* #0891b2 - Cyan */
 ```
-- **Use**: Completed work, success messages, positive indicators
-- **MES Context**: Completed operations, finished jobs
-
-#### Warning (Amber)
-```css
---warning: 38 100% 50%  /* #ff9900 */
-```
-- **Use**: Caution states, needs attention, active timing
-- **MES Context**: Active time entries, pending approvals
-
-#### Error (Crimson)
-```css
---error: 4 90% 58%  /* #eb4034 */
-```
-- **Use**: Error states, critical issues, destructive actions
-- **MES Context**: Blocked operations, critical issues
-
-#### Info (Cyan)
-```css
---info: 199 89% 48%  /* #0d9fc9 */
-```
-- **Use**: Informational messages, helpful hints
-- **MES Context**: General information, process guidance
-
-### Neutral Scale (Cool Grays)
-
-Steel-inspired grays that match the metals fabrication context:
-
-| Shade | HSL | Hex | Use Case |
-|-------|-----|-----|----------|
-| 50 | `220 20% 98%` | `#f5f7fa` | Backgrounds |
-| 100 | `220 18% 96%` | `#f0f2f5` | Hover backgrounds |
-| 200 | `220 16% 92%` | `#e8ebee` | Borders, dividers |
-| 300 | `220 14% 86%` | `#d5dade` | Disabled backgrounds |
-| 400 | `220 12% 72%` | `#abb4bd` | Placeholder text |
-| 500 | `220 10% 54%` | `#7d8894` | Secondary text |
-| 600 | `220 14% 40%` | `#57606a` | Body text (dark mode) |
-| 700 | `220 18% 30%` | `#3f4954` | Headings (dark mode) |
-| 800 | `220 24% 20%` | `#272e38` | Surfaces (dark mode) |
-| 900 | `220 30% 12%` | `#1a1f29` | Foreground text |
-| 950 | `220 35% 8%` | `#0f1419` | Backgrounds (dark mode) |
 
 ### MES-Specific Status Colors
 
-Manufacturing workflow states:
-
+**Work Status:**
 ```css
---status-active: 38 100% 50%       /* Amber - timing in progress */
---status-completed: 152 69% 42%    /* Emerald - finished */
---status-on-hold: 25 95% 53%       /* Orange - paused */
---status-blocked: 4 90% 58%        /* Crimson - cannot proceed */
---status-pending: 220 12% 72%      /* Gray - not started */
+--status-active: 45 100% 51%     /* Yellow - timing active */
+--status-completed: 140 60% 52%  /* Green - finished */
+--status-on-hold: 25 95% 53%     /* Orange - paused */
+--status-blocked: 4 90% 58%      /* Red - cannot proceed */
+--status-pending: 220 12% 72%    /* Gray - not started */
 ```
 
 **Usage:**
 ```jsx
-<Badge className="bg-status-active">Active</Badge>
-<div className="text-status-completed">Completed: 45 parts</div>
-```
-
-### Issue Severity Colors
-
-Issue priority levels:
-
-```css
---severity-critical: 4 90% 58%     /* Crimson */
---severity-high: 25 95% 53%        /* Orange */
---severity-medium: 38 100% 50%     /* Amber */
---severity-low: 220 10% 54%        /* Gray */
-```
-
-**Usage:**
-```jsx
-<Badge className="bg-severity-critical">Critical Issue</Badge>
+<Badge className="bg-status-active text-black">Active</Badge>
+<Badge className="bg-status-completed text-white">Completed</Badge>
 ```
 
 ### Manufacturing Stage Colors
 
-Visual identification for manufacturing zones:
+```css
+--stage-cutting: 199 89% 48%     /* Cyan - precision */
+--stage-bending: 271 91% 65%     /* Purple - formation */
+--stage-welding: 25 95% 53%      /* Orange - heat */
+--stage-assembly: 140 60% 52%    /* Green - completion */
+--stage-finishing: 45 100% 51%   /* Yellow - final touch */
+```
+
+### Glass Morphism Colors
 
 ```css
---stage-cutting: 199 89% 48%       /* Cyan - precision */
---stage-bending: 271 91% 65%       /* Purple - formation */
---stage-welding: 25 95% 53%        /* Orange - heat */
---stage-assembly: 152 69% 42%      /* Emerald - completion */
---stage-finishing: 38 100% 50%     /* Amber - final touch */
+--glass-background: 0 0% 8% / 0.7      /* Semi-transparent dark */
+--glass-border: 0 0% 100% / 0.1        /* Translucent white */
+--glass-blur: 20px
+--glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4)
 ```
 
-**Usage:**
-```jsx
-<Badge className="bg-stage-cutting">Cutting</Badge>
-<div className="border-l-4 border-stage-welding">Welding operation</div>
-```
+### Gradient Orbs (Animated Backgrounds)
 
-### Dark Mode
-
-All colors automatically adapt for dark mode. Dark mode uses:
-- Brighter accent colors for better visibility
-- Deeper shadows for better separation
-- Adjusted contrast ratios to maintain WCAG AA compliance
-
-**Toggle dark mode:**
-```jsx
-import { useThemeMode } from '@/theme/ThemeProvider';
-
-const { mode, toggleTheme } = useThemeMode();
-// mode is 'light' or 'dark'
+```css
+--gradient-blue: 211 100% 56% / 0.4    /* Blue orb */
+--gradient-yellow: 45 100% 51% / 0.3   /* Yellow orb */
+--gradient-green: 140 60% 52% / 0.3    /* Green orb */
 ```
 
 ---
 
-## Component Styling Guidelines
+## Components
 
-### When to Use Tailwind
+### Glass Morphism Card
 
-**Use Tailwind for:**
-- Simple, static components
-- Layout (flex, grid, spacing)
-- Responsive utilities
-- Text styling
-- Borders, shadows, backgrounds
+The signature component of the design system - used for all auth screens and modals.
 
-**Example:**
-```jsx
-<Card className="p-6 rounded-lg border border-border shadow-md hover:shadow-lg transition-smooth">
-  <h3 className="text-lg font-semibold mb-2">Part #12345</h3>
-  <p className="text-sm text-muted-foreground">Status: Active</p>
-</Card>
-```
-
-### When to Use Material-UI
-
-**Use MUI for:**
-- Complex data tables (DataGrid)
-- Date/time pickers
-- Advanced form controls
-- Charts and visualizations
-- Complex navigation (menus, drawers)
-
-**Example:**
-```jsx
-<DataGrid
-  rows={parts}
-  columns={columns}
-  pageSize={25}
-  sx={{
-    '& .MuiDataGrid-cell': {
-      fontSize: '0.875rem',
-    },
-  }}
-/>
-```
-
-### When to Use shadcn/ui
-
-**Use shadcn/ui for:**
-- Base UI primitives (Button, Card, Badge, Dialog)
-- Accessible components (Accordion, Tabs, Dropdown)
-- Form components (Input, Select, Checkbox)
-
-**Example:**
-```jsx
-import { Button } from '@/components/ui/button';
-
-<Button variant="default" size="lg">
-  Start Operation
-</Button>
-```
-
-### Don'ts
-
-❌ **Don't:**
-- Mix Tailwind and MUI styles on the same element
-- Use inline styles for design tokens (use CSS variables)
-- Hardcode colors, spacing, or font sizes
-- Create custom CSS classes for one-off components
-- Use arbitrary values without good reason (`w-[237px]`)
-
-✅ **Do:**
-- Use design tokens via CSS variables or Tailwind classes
-- Use semantic color names (`bg-success` not `bg-green-500`)
-- Use spacing scale (`p-4` not `p-[17px]`)
-- Use component variants (`<Button variant="outline">`)
-
----
-
-## Design Tokens Reference
-
-### Using CSS Variables
-
-**In CSS:**
+**CSS Class:**
 ```css
-.custom-component {
-  color: hsl(var(--foreground));
-  background-color: hsl(var(--background));
-  border-color: hsl(var(--border));
-  border-radius: var(--radius-base);
-  padding: var(--space-md);
-  font-family: var(--font-family-base);
+.glass-card {
+  background: hsl(var(--glass-background));
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid hsl(var(--glass-border));
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-glass);
 }
 ```
 
-**In Tailwind (automatic):**
+**Usage:**
 ```jsx
-<div className="text-foreground bg-background border-border rounded-lg p-6">
-  Content
+<div className="glass-card p-8">
+  <h2>Beautiful Card</h2>
+  <p>Content with backdrop blur</p>
 </div>
 ```
 
-**In MUI (via theme):**
-```jsx
-<Box sx={{
-  color: 'text.primary',
-  bgcolor: 'background.default',
-  borderRadius: 2
-}}>
-  Content
-</Box>
-```
+### Onboarding Card
 
-### Spacing Scale
+Special glass card for auth and onboarding flows.
 
-| Token | Value | Pixels | Use Case |
-|-------|-------|--------|----------|
-| `--space-xs` | 0.25rem | 4px | Tight spacing, fine adjustments |
-| `--space-sm` | 0.5rem | 8px | Small gaps between related items |
-| `--space-base` | 1rem | 16px | Default spacing |
-| `--space-md` | 1.5rem | 24px | Medium spacing, card padding |
-| `--space-lg` | 2rem | 32px | Large spacing, section gaps |
-| `--space-xl` | 3rem | 48px | Extra large spacing |
-| `--space-2xl` | 4rem | 64px | Section spacing |
-
-**Usage:**
+**CSS Class:**
 ```css
-padding: var(--space-md);  /* 24px */
-gap: var(--space-sm);      /* 8px */
-```
-
-```jsx
-<div className="p-6 gap-2">  {/* p-6 = 24px, gap-2 = 8px */}
-```
-
-### Border Radius
-
-| Token | Value | Use Case |
-|-------|-------|----------|
-| `--radius-sm` | 6px | Badges, small buttons |
-| `--radius-base` | 8px | Default - buttons, inputs |
-| `--radius-md` | 12px | Cards, panels |
-| `--radius-lg` | 16px | Large cards, modals |
-| `--radius-xl` | 24px | Hero sections |
-| `--radius-full` | 9999px | Pills, avatars |
-
-### Touch Targets
-
-Minimum sizes for touch interaction (tablet/mobile):
-
-```css
---touch-target-min: 44px;          /* iOS/Android minimum */
---touch-target-comfortable: 48px;   /* Recommended */
+.onboarding-card {
+  background: hsl(var(--glass-background));
+  backdrop-filter: blur(20px);
+  border: 1px solid hsl(var(--glass-border));
+  border-radius: 24px;
+  padding: 1rem 2.5rem 2rem;
+  max-width: 520px;
+  box-shadow: var(--shadow-glass);
+  animation: fadeInUp 0.8s ease-out;
+}
 ```
 
 **Usage:**
 ```jsx
-<Button className="min-h-[44px] min-w-[44px]">
-  <Icon />
+<div className="onboarding-card">
+  <h1 className="hero-title">Eryxon Flow</h1>
+  <p>The simple MES you love to use</p>
+  {/* Form content */}
+</div>
+```
+
+### Hero Title with Gradient
+
+Gradient text used for main headings.
+
+**CSS Class:**
+```css
+.hero-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  background: linear-gradient(135deg,
+    hsl(var(--brand-primary)),
+    hsl(var(--brand-primary-light)),
+    hsl(var(--color-warning))
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+```
+
+**Usage:**
+```jsx
+<h1 className="hero-title">Welcome to Eryxon Flow</h1>
+```
+
+### CTA Button
+
+Primary call-to-action button with gradient and animation.
+
+**CSS Class:**
+```css
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  background: linear-gradient(135deg,
+    hsl(var(--brand-primary)),
+    hsl(var(--brand-primary-light))
+  );
+  border-radius: var(--radius-base);
+  box-shadow: 0 2px 8px hsl(var(--brand-primary) / 0.3);
+  transition: all 0.2s ease;
+}
+
+.cta-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px hsl(var(--brand-primary) / 0.4);
+}
+```
+
+**Usage:**
+```jsx
+<Button className="cta-button">
+  Sign In
+  <ArrowRight className="ml-2 h-4 w-4" />
 </Button>
 ```
 
-### Shadows
+### Animated Background
 
-| Level | CSS Variable | Use Case |
-|-------|--------------|----------|
-| sm | `var(--shadow-sm)` | Subtle hint of depth |
-| base | `var(--shadow-base)` | Standard card elevation |
-| md | `var(--shadow-md)` | Dropdowns, popovers |
-| lg | `var(--shadow-lg)` | Modals, dialogs |
-| xl | `var(--shadow-xl)` | Hero cards |
-| 2xl | `var(--shadow-2xl)` | Maximum elevation |
+Floating gradient orbs that create depth and visual interest.
 
-**Usage:**
+**Component:**
 ```jsx
-<Card className="shadow-md hover:shadow-lg transition-shadow">
-  Content
-</Card>
+import AnimatedBackground from '@/components/AnimatedBackground';
+
+// Use at root of page/layout
+<>
+  <AnimatedBackground />
+  <div className="relative">
+    {/* Your content */}
+  </div>
+</>
 ```
 
-### Transitions
+**Features:**
+- Three floating orbs (blue, yellow, green)
+- 20-second smooth animation with scale and position changes
+- 80px blur for soft, dreamy appearance
+- GPU-accelerated (transform only, no layout shifts)
+- Zero performance impact
 
-| Token | Duration | Easing | Use Case |
-|-------|----------|--------|----------|
-| `--transition-base` | 150ms | ease-in-out | Quick interactions |
-| `--transition-smooth` | 200ms | ease-in-out | Standard animations |
-| `--transition-slow` | 300ms | ease-in-out | Complex transitions |
+### Title Divider
 
-**Usage:**
+Gradient horizontal rule for section breaks.
+
+**CSS Class:**
 ```css
-transition: var(--transition-smooth);
+.title-divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    hsl(var(--brand-primary) / 0.3) 50%,
+    transparent 100%
+  );
+}
 ```
 
+**Usage:**
 ```jsx
-<div className="transition-smooth hover:scale-105">
-  Hover me
-</div>
+<hr className="title-divider" />
 ```
 
 ---
 
-## Migration Guide
+## Animations
 
-### Migrating from Old Design System
+### Keyframes
 
-#### Color Variable Names
+#### Fade In Up
+Smooth entrance animation for cards and modals.
 
-The design system includes backward compatibility aliases:
+```css
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+```
 
-| Old Variable | New Variable | Aliased? |
-|--------------|--------------|----------|
-| `--active-work` | `--status-active` | ✅ Yes |
-| `--completed` | `--status-completed` | ✅ Yes |
-| `--on-hold` | `--status-on-hold` | ✅ Yes |
-| `--issue-critical` | `--severity-critical` | ✅ Yes |
-| `--issue-high` | `--severity-high` | ✅ Yes |
-| `--issue-medium` | `--severity-medium` | ✅ Yes |
-| `--issue-low` | `--severity-low` | ✅ Yes |
-
-**This means existing code continues to work!**
-
+**Usage:**
 ```jsx
-// Old code (still works):
-<div className="bg-active-work">Active</div>
-
-// New code (preferred):
-<div className="bg-status-active">Active</div>
+<div className="animate-fade-in-up">
+  Content appears smoothly
+</div>
 ```
 
-#### Font Migration
+#### Float
+Smooth floating animation for gradient orbs.
 
-**Before (Montserrat):**
 ```css
-font-family: 'Montserrat', sans-serif;
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+}
 ```
 
-**After (Inter):**
+**Usage:**
 ```css
-font-family: var(--font-family-base);
-/* or */
-font-family: 'Inter', sans-serif;
+.gradient-orb {
+  animation: float 20s infinite ease-in-out;
+}
 ```
 
-Tailwind automatically uses Inter for all `font-sans` classes.
+### Transition Utilities
 
-#### Component Migration Checklist
+```css
+.transition-base    /* 150ms cubic-bezier(0.4, 0, 0.2, 1) */
+.transition-smooth  /* 200ms cubic-bezier(0.4, 0, 0.2, 1) */
+.transition-slow    /* 300ms cubic-bezier(0.4, 0, 0.2, 1) */
+```
 
-When migrating a component:
-
-1. **Remove hardcoded colors**
-   ```jsx
-   // ❌ Before
-   <Box sx={{ color: '#47B5E2' }}>
-
-   // ✅ After
-   <Box sx={{ color: 'primary.main' }}>
-   ```
-
-2. **Replace hardcoded spacing**
-   ```jsx
-   // ❌ Before
-   <div style={{ padding: '24px' }}>
-
-   // ✅ After
-   <div className="p-6">  {/* or: style={{ padding: 'var(--space-md)' }} */}
-   ```
-
-3. **Use semantic color names**
-   ```jsx
-   // ❌ Before
-   <Badge className="bg-green-500">
-
-   // ✅ After
-   <Badge className="bg-success">
-   ```
-
-4. **Use design tokens for fonts**
-   ```jsx
-   // ❌ Before
-   <p style={{ fontFamily: 'Montserrat', fontSize: '14px' }}>
-
-   // ✅ After
-   <p className="text-sm">  {/* or: Typography variant="body2" */}
-   ```
+**Usage:**
+```jsx
+<button className="transition-smooth hover:scale-105">
+  Hover me
+</button>
+```
 
 ---
 
 ## Best Practices
 
+### ✅ Do
+
+1. **Use Design Tokens**
+   ```jsx
+   // Good
+   <div className="bg-background text-foreground rounded-xl p-6">
+
+   // Bad
+   <div style={{ background: '#0a0a0a', padding: '24px' }}>
+   ```
+
+2. **Use Semantic Color Names**
+   ```jsx
+   // Good
+   <Badge className="bg-status-active">Active</Badge>
+
+   // Bad
+   <Badge className="bg-yellow-500">Active</Badge>
+   ```
+
+3. **Use Glass Morphism for Modals**
+   ```jsx
+   // Good
+   <div className="glass-card">
+
+   // Bad
+   <Card className="bg-gray-900">
+   ```
+
+4. **Include Animated Background**
+   ```jsx
+   // Good - Auth/onboarding pages
+   <>
+     <AnimatedBackground />
+     <div className="relative">...</div>
+   </>
+   ```
+
+5. **Use Gradient Text for Heroes**
+   ```jsx
+   // Good
+   <h1 className="hero-title">Eryxon Flow</h1>
+
+   // Bad
+   <h1 className="text-4xl text-blue-500">Eryxon Flow</h1>
+   ```
+
+### ❌ Don't
+
+1. **Don't Hardcode Colors**
+   ```jsx
+   // Wrong
+   style={{ color: '#1e90ff' }}
+
+   // Right
+   className="text-primary"
+   ```
+
+2. **Don't Mix Light Mode Classes**
+   ```jsx
+   // Wrong
+   className="bg-white dark:bg-black"
+
+   // Right (dark mode only)
+   className="bg-background"
+   ```
+
+3. **Don't Use Arbitrary Values**
+   ```jsx
+   // Wrong
+   className="p-[23px] rounded-[13px]"
+
+   // Right
+   className="p-6 rounded-xl"
+   ```
+
+4. **Don't Skip Animations**
+   ```jsx
+   // Wrong
+   <div>Static card</div>
+
+   // Right
+   <div className="animate-fade-in-up">Smooth entrance</div>
+   ```
+
 ### Accessibility
 
 ✅ **Color Contrast**
 - All text meets WCAG AA minimum (4.5:1 for normal, 3:1 for large)
-- Status colors are distinguishable for colorblind users
-- Use semantic HTML and ARIA labels where appropriate
+- Status colors distinguishable for colorblind users
 
 ✅ **Touch Targets**
-- All interactive elements minimum 44x44px (iOS/Android standard)
-- 8px minimum spacing between touch targets
-- Comfortable target size: 48x48px
+- Minimum 44x44px for all interactive elements
+- 48x48px recommended for comfortable use
 
 ✅ **Keyboard Navigation**
 - All interactive elements keyboard accessible
-- Visible focus indicators (ring classes)
+- Visible focus indicators
 - Logical tab order
-
-### Performance
-
-✅ **Font Loading**
-- Inter font loaded via @fontsource with automatic subsetting
-- Only required weights loaded (300, 400, 500, 600, 700)
-- Font-display: swap for no layout shift
-
-✅ **CSS Bundle**
-- Design tokens generate minimal CSS (~255KB uncompressed)
-- Tailwind purges unused classes in production
-- Critical CSS inlined in HTML
-
-### Naming Conventions
-
-✅ **CSS Variables**
-```css
---component-property-variant-state
-
-Examples:
---button-bg-primary-hover
---card-border-elevated
---text-color-muted
-```
-
-✅ **Tailwind Classes**
-```
-{property}-{semantic-name}-{variant}
-
-Examples:
-bg-primary
-text-success
-border-warning
-```
-
-✅ **MUI Theme**
-```
-category.variant.state
-
-Examples:
-palette.primary.main
-typography.body1
-spacing(2)
-```
-
-### Code Organization
-
-✅ **File Structure**
-```
-src/
-├── styles/
-│   └── design-system.css         ← All design tokens
-├── theme/
-│   ├── theme.ts                  ← MUI theme (maps to tokens)
-│   └── ThemeProvider.tsx         ← Theme context
-├── components/
-│   ├── ui/                       ← shadcn/ui primitives
-│   ├── mui/                      ← MUI wrapper components
-│   ├── operator/                 ← Operator-specific
-│   └── admin/                    ← Admin-specific
-└── index.css                     ← Imports design-system.css
-```
-
-✅ **Import Order**
-```jsx
-// 1. React and core libraries
-import React from 'react';
-import { useState } from 'react';
-
-// 2. Third-party UI libraries
-import { Box, Button } from '@mui/material';
-
-// 3. Local components
-import { Card } from '@/components/ui/card';
-import { StatusBadge } from '@/components/mui/StatusBadge';
-
-// 4. Utilities and hooks
-import { cn } from '@/lib/utils';
-import { useAuth } from '@/contexts/AuthContext';
-
-// 5. Types
-import type { Operation } from '@/lib/database';
-```
-
-### Testing
-
-When migrating components, test:
-
-- ✅ Light mode appearance
-- ✅ Dark mode appearance
-- ✅ Hover/focus states
-- ✅ Active/pressed states
-- ✅ Disabled states
-- ✅ Responsive behavior (desktop, tablet, mobile)
-- ✅ Keyboard navigation
-- ✅ Screen reader compatibility
 
 ---
 
-## Examples
+## Migration Guide
 
-### Complete Component Example
+### From Old Design System
+
+#### Remove Light Mode References
+
+**Before:**
+```jsx
+<div className="bg-white dark:bg-black">
+```
+
+**After:**
+```jsx
+<div className="bg-background">
+```
+
+#### Update Card Styling
+
+**Before:**
+```jsx
+<Card className="max-w-md bg-card">
+```
+
+**After:**
+```jsx
+<div className="onboarding-card">
+```
+
+#### Add Animated Backgrounds
+
+**Before:**
+```jsx
+<div className="min-h-screen bg-background">
+```
+
+**After:**
+```jsx
+<>
+  <AnimatedBackground />
+  <div className="relative min-h-screen">
+</>
+```
+
+#### Use Gradient Titles
+
+**Before:**
+```jsx
+<h1 className="text-4xl font-bold text-primary">
+  Welcome to Eryxon
+</h1>
+```
+
+**After:**
+```jsx
+<h1 className="hero-title">
+  Welcome to Eryxon Flow
+</h1>
+```
+
+#### Update Button Styling
+
+**Before:**
+```jsx
+<Button className="w-full" variant="default">
+  Sign In
+</Button>
+```
+
+**After:**
+```jsx
+<Button className="w-full cta-button">
+  Sign In
+  <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />
+</Button>
+```
+
+---
+
+## Component Examples
+
+### Complete Auth Screen
 
 ```tsx
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Clock, AlertTriangle } from 'lucide-react';
+import AnimatedBackground from '@/components/AnimatedBackground';
+import { Factory, ArrowRight } from 'lucide-react';
 
-interface OperationCardProps {
-  operation: Operation;
-  onStart: () => void;
-}
-
-export function OperationCard({ operation, onStart }: OperationCardProps) {
+export default function Auth() {
   return (
-    <Card className="p-6 hover:shadow-lg transition-smooth">
-      {/* Status bar using design tokens */}
-      <div className={`h-1 -mx-6 -mt-6 mb-4 rounded-t bg-status-${operation.status}`} />
+    <>
+      <AnimatedBackground />
 
-      {/* Header with proper typography */}
-      <h3 className="text-lg font-semibold mb-2">
-        {operation.name}
-      </h3>
-      <p className="text-sm text-muted-foreground mb-4">
-        Job #{operation.jobNumber}
-      </p>
+      <div className="relative min-h-screen flex items-start justify-center p-8 pt-20">
+        <div className="onboarding-card">
+          {/* Icon */}
+          <div className="inline-flex items-center justify-center mb-4">
+            <Factory className="w-12 h-12 text-primary" strokeWidth={1.5} />
+          </div>
 
-      {/* Status badge using semantic colors */}
-      <Badge className="mb-4" variant="outline">
-        {operation.status}
-      </Badge>
+          {/* Welcome Text */}
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">
+            Welcome to
+          </p>
 
-      {/* Time info using design tokens */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-        <Clock className="h-4 w-4" />
-        <span>{operation.actualTime}/{operation.estimatedTime}m</span>
-      </div>
+          {/* Hero Title */}
+          <h1 className="hero-title">
+            Eryxon Flow
+          </h1>
 
-      {/* Issues indicator */}
-      {operation.hasIssues && (
-        <div className="flex items-center gap-2 p-3 rounded-md bg-severity-critical/10 text-severity-critical mb-4">
-          <AlertTriangle className="h-4 w-4" />
-          <span className="text-sm font-medium">Critical Issue</span>
+          {/* Tagline */}
+          <p className="text-base text-foreground/80 mb-6">
+            The simple MES you love to use
+          </p>
+
+          {/* Divider */}
+          <hr className="title-divider" />
+
+          {/* Form */}
+          <form className="space-y-4">
+            <Input placeholder="Email" />
+            <Input type="password" placeholder="Password" />
+
+            <Button className="w-full cta-button">
+              Sign In
+              <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />
+            </Button>
+          </form>
         </div>
-      )}
-
-      {/* Action button with touch target */}
-      <Button
-        onClick={onStart}
-        className="w-full touch-target-comfortable"
-        variant="default"
-      >
-        Start Operation
-      </Button>
-    </Card>
+      </div>
+    </>
   );
 }
-```
-
-### AppHeader Gradient Example
-
-```tsx
-<AppBar
-  position="sticky"
-  sx={{
-    background: 'linear-gradient(90deg, #3a4656 0%, #0080ff 100%)',
-    boxShadow: trigger ? 4 : 0,
-    transition: 'box-shadow 0.3s ease',
-  }}
->
-  {/* Header content */}
-</AppBar>
-```
-
-### Status Color Example
-
-```tsx
-// Using CSS variables directly
-<div
-  style={{
-    color: `hsl(var(--severity-${issue.severity}))`,
-    borderColor: `hsl(var(--severity-${issue.severity}))`,
-  }}
->
-  {issue.title}
-</div>
-
-// Using Tailwind classes
-<Badge className="bg-severity-critical text-white">
-  Critical
-</Badge>
-
-// Using MUI theme
-<Chip
-  sx={{
-    color: 'error.main',
-    backgroundColor: alpha(theme.palette.error.main, 0.12),
-  }}
-/>
 ```
 
 ---
@@ -760,30 +699,29 @@ export function OperationCard({ operation, onStart }: OperationCardProps) {
 
 ### Design System Files
 
-- **Main CSS**: `src/styles/design-system.css`
-- **MUI Theme**: `src/theme/theme.ts`
-- **Tailwind Config**: `tailwind.config.ts`
-- **Theme Provider**: `src/theme/ThemeProvider.tsx`
+- **Main CSS**: `/src/styles/design-system.css`
+- **MUI Theme**: `/src/theme/theme.ts`
+- **Tailwind Config**: `/tailwind.config.ts`
+- **Animated Background**: `/src/components/AnimatedBackground.tsx`
 
-### External Resources
+### Inspiration
 
-- [Inter Font](https://rsms.me/inter/) - Official Inter website
-- [Tailwind CSS Docs](https://tailwindcss.com) - Tailwind documentation
-- [Material-UI](https://mui.com) - MUI documentation
-- [shadcn/ui](https://ui.shadcn.com) - shadcn/ui components
-- [WCAG Contrast Checker](https://webaim.org/resources/contrastchecker/) - Accessibility testing
+- **VSCode Onboarding**: Modern glass morphism and gradients
+- **Linear**: Clean typography and spacing
+- **Vercel**: Smooth animations and dark aesthetics
+- **Stripe**: Professional color usage and consistency
 
 ### Support
 
-For questions or issues with the design system:
+For questions about the design system:
 1. Check this documentation first
-2. Review the migration plan: `MIGRATION_PLAN.md`
-3. See design comparison: `DESIGN_COMPARISON.md`
+2. Review component examples in auth screens
+3. Check `/src/styles/design-system.css` for all tokens
 4. Ask in team chat or create an issue
 
 ---
 
-**Document Version:** 2.0
-**Last Updated:** November 17, 2025
+**Document Version:** 3.0
+**Last Updated:** November 22, 2025
 **Author:** Eryxon Development Team
-**Status:** ✅ Active
+**Status:** ✅ Active - Dark Mode Only
