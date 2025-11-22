@@ -190,6 +190,78 @@ export type Database = {
           },
         ]
       }
+      billing_waitlist: {
+        Row: {
+          company_name: string
+          company_registration_number: string | null
+          company_size: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          country_code: string
+          created_at: string | null
+          id: string
+          industry: string | null
+          interested_plan:
+            | Database["public"]["Enums"]["subscription_plan"]
+            | null
+          notes: string | null
+          preferred_payment_method:
+            | Database["public"]["Enums"]["payment_provider"]
+            | null
+          status: Database["public"]["Enums"]["waitlist_status"] | null
+          vat_number: string
+          vat_valid: boolean | null
+          vat_validated_at: string | null
+        }
+        Insert: {
+          company_name: string
+          company_registration_number?: string | null
+          company_size?: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          country_code: string
+          created_at?: string | null
+          id?: string
+          industry?: string | null
+          interested_plan?:
+            | Database["public"]["Enums"]["subscription_plan"]
+            | null
+          notes?: string | null
+          preferred_payment_method?:
+            | Database["public"]["Enums"]["payment_provider"]
+            | null
+          status?: Database["public"]["Enums"]["waitlist_status"] | null
+          vat_number: string
+          vat_valid?: boolean | null
+          vat_validated_at?: string | null
+        }
+        Update: {
+          company_name?: string
+          company_registration_number?: string | null
+          company_size?: string | null
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          country_code?: string
+          created_at?: string | null
+          id?: string
+          industry?: string | null
+          interested_plan?:
+            | Database["public"]["Enums"]["subscription_plan"]
+            | null
+          notes?: string | null
+          preferred_payment_method?:
+            | Database["public"]["Enums"]["payment_provider"]
+            | null
+          status?: Database["public"]["Enums"]["waitlist_status"] | null
+          vat_number?: string
+          vat_valid?: boolean | null
+          vat_validated_at?: string | null
+        }
+        Relationships: []
+      }
       cells: {
         Row: {
           active: boolean | null
@@ -1267,6 +1339,53 @@ export type Database = {
           },
         ]
       }
+      subscription_events: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          new_plan: Database["public"]["Enums"]["subscription_plan"] | null
+          new_status: Database["public"]["Enums"]["subscription_status"] | null
+          old_plan: Database["public"]["Enums"]["subscription_plan"] | null
+          old_status: Database["public"]["Enums"]["subscription_status"] | null
+          stripe_event_id: string | null
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          new_plan?: Database["public"]["Enums"]["subscription_plan"] | null
+          new_status?: Database["public"]["Enums"]["subscription_status"] | null
+          old_plan?: Database["public"]["Enums"]["subscription_plan"] | null
+          old_status?: Database["public"]["Enums"]["subscription_status"] | null
+          stripe_event_id?: string | null
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          new_plan?: Database["public"]["Enums"]["subscription_plan"] | null
+          new_status?: Database["public"]["Enums"]["subscription_status"] | null
+          old_plan?: Database["public"]["Enums"]["subscription_plan"] | null
+          old_status?: Database["public"]["Enums"]["subscription_status"] | null
+          stripe_event_id?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       substep_template_items: {
         Row: {
           created_at: string | null
@@ -1403,7 +1522,9 @@ export type Database = {
       }
       tenants: {
         Row: {
+          billing_country_code: string | null
           billing_email: string | null
+          billing_enabled: boolean | null
           company_name: string | null
           created_at: string | null
           current_jobs: number | null
@@ -1413,6 +1534,7 @@ export type Database = {
           demo_data_seeded_by: string | null
           demo_mode_acknowledged: boolean | null
           demo_mode_enabled: boolean | null
+          grace_period_ends_at: string | null
           id: string
           last_parts_reset_date: string | null
           max_jobs: number | null
@@ -1420,16 +1542,26 @@ export type Database = {
           max_storage_gb: number | null
           name: string
           onboarding_completed_at: string | null
+          payment_failed_at: string | null
           plan: Database["public"]["Enums"]["subscription_plan"]
+          preferred_payment_method:
+            | Database["public"]["Enums"]["payment_provider"]
+            | null
           status: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
           subscription_started_at: string | null
           subscription_updated_at: string | null
           timezone: string | null
+          trial_end: string | null
           trial_ends_at: string | null
           updated_at: string | null
+          vat_number: string | null
         }
         Insert: {
+          billing_country_code?: string | null
           billing_email?: string | null
+          billing_enabled?: boolean | null
           company_name?: string | null
           created_at?: string | null
           current_jobs?: number | null
@@ -1439,6 +1571,7 @@ export type Database = {
           demo_data_seeded_by?: string | null
           demo_mode_acknowledged?: boolean | null
           demo_mode_enabled?: boolean | null
+          grace_period_ends_at?: string | null
           id?: string
           last_parts_reset_date?: string | null
           max_jobs?: number | null
@@ -1446,16 +1579,26 @@ export type Database = {
           max_storage_gb?: number | null
           name: string
           onboarding_completed_at?: string | null
+          payment_failed_at?: string | null
           plan?: Database["public"]["Enums"]["subscription_plan"]
+          preferred_payment_method?:
+            | Database["public"]["Enums"]["payment_provider"]
+            | null
           status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           subscription_started_at?: string | null
           subscription_updated_at?: string | null
           timezone?: string | null
+          trial_end?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
+          vat_number?: string | null
         }
         Update: {
+          billing_country_code?: string | null
           billing_email?: string | null
+          billing_enabled?: boolean | null
           company_name?: string | null
           created_at?: string | null
           current_jobs?: number | null
@@ -1465,6 +1608,7 @@ export type Database = {
           demo_data_seeded_by?: string | null
           demo_mode_acknowledged?: boolean | null
           demo_mode_enabled?: boolean | null
+          grace_period_ends_at?: string | null
           id?: string
           last_parts_reset_date?: string | null
           max_jobs?: number | null
@@ -1472,13 +1616,21 @@ export type Database = {
           max_storage_gb?: number | null
           name?: string
           onboarding_completed_at?: string | null
+          payment_failed_at?: string | null
           plan?: Database["public"]["Enums"]["subscription_plan"]
+          preferred_payment_method?:
+            | Database["public"]["Enums"]["payment_provider"]
+            | null
           status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           subscription_started_at?: string | null
           subscription_updated_at?: string | null
           timezone?: string | null
+          trial_end?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
+          vat_number?: string | null
         }
         Relationships: []
       }
@@ -1754,6 +1906,14 @@ export type Database = {
         Returns: Json
       }
       cleanup_expired_invitations: { Args: never; Returns: number }
+      clear_demo_data: {
+        Args: { p_tenant_id: string }
+        Returns: {
+          deleted_count: number
+          message: string
+          table_name: string
+        }[]
+      }
       create_invitation: {
         Args: {
           p_email: string
@@ -2029,6 +2189,14 @@ export type Database = {
         | "analytics"
         | "other"
       integration_status: "draft" | "published" | "deprecated" | "archived"
+      invoice_payment_status:
+        | "pending"
+        | "sent"
+        | "viewed"
+        | "paid"
+        | "overdue"
+        | "cancelled"
+        | "refunded"
       issue_severity: "low" | "medium" | "high" | "critical"
       issue_status: "pending" | "approved" | "rejected" | "closed"
       issue_type: "general" | "ncr"
@@ -2040,9 +2208,18 @@ export type Database = {
         | "process_error"
         | "other"
       ncr_disposition: "scrap" | "rework" | "use_as_is" | "return_to_supplier"
+      payment_provider: "invoice" | "stripe" | "sumup"
+      payment_transaction_status:
+        | "pending"
+        | "processing"
+        | "succeeded"
+        | "failed"
+        | "cancelled"
+      payment_transaction_type: "charge" | "refund" | "chargeback" | "dispute"
       subscription_plan: "free" | "pro" | "premium"
       subscription_status: "active" | "cancelled" | "suspended" | "trial"
       task_status: "not_started" | "in_progress" | "completed" | "on_hold"
+      waitlist_status: "pending" | "approved" | "rejected" | "converted"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2182,6 +2359,15 @@ export const Constants = {
         "other",
       ],
       integration_status: ["draft", "published", "deprecated", "archived"],
+      invoice_payment_status: [
+        "pending",
+        "sent",
+        "viewed",
+        "paid",
+        "overdue",
+        "cancelled",
+        "refunded",
+      ],
       issue_severity: ["low", "medium", "high", "critical"],
       issue_status: ["pending", "approved", "rejected", "closed"],
       issue_type: ["general", "ncr"],
@@ -2194,9 +2380,19 @@ export const Constants = {
         "other",
       ],
       ncr_disposition: ["scrap", "rework", "use_as_is", "return_to_supplier"],
+      payment_provider: ["invoice", "stripe", "sumup"],
+      payment_transaction_status: [
+        "pending",
+        "processing",
+        "succeeded",
+        "failed",
+        "cancelled",
+      ],
+      payment_transaction_type: ["charge", "refund", "chargeback", "dispute"],
       subscription_plan: ["free", "pro", "premium"],
       subscription_status: ["active", "cancelled", "suspended", "trial"],
       task_status: ["not_started", "in_progress", "completed", "on_hold"],
+      waitlist_status: ["pending", "approved", "rejected", "converted"],
     },
   },
 } as const

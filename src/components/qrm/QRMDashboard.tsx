@@ -68,22 +68,46 @@ export function QRMDashboard() {
           estimated_time,
           actual_time,
           cell_id,
-          part:parts!inner(
+          parts!inner(
             id,
             part_number,
             material,
             quantity,
-            job:jobs!inner(
+            jobs!inner(
               job_number,
               due_date
             )
           )
         `)
         .eq("tenant_id", profile.tenant_id)
-        .in("status", ["not_started", "in_progress"])
-        .order("part(job(due_date))", { ascending: true });
-      if (error) throw error;
-      return data as unknown as Operation[];
+        .in("status", ["not_started", "in_progress"]);
+      
+      if (error) {
+        console.error("Error fetching operations:", error);
+        throw error;
+      }
+      
+      // Transform the data to match the Operation interface
+      const transformedData = (data || []).map((op: any) => ({
+        id: op.id,
+        operation_name: op.operation_name,
+        status: op.status,
+        estimated_time: op.estimated_time,
+        actual_time: op.actual_time,
+        cell_id: op.cell_id,
+        part: {
+          id: op.parts.id,
+          part_number: op.parts.part_number,
+          material: op.parts.material,
+          quantity: op.parts.quantity,
+          job: {
+            job_number: op.parts.jobs.job_number,
+            due_date: op.parts.jobs.due_date,
+          },
+        },
+      }));
+      
+      return transformedData as Operation[];
     },
     enabled: !!profile?.tenant_id,
   });
