@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -13,12 +13,67 @@ import {
   User,
   Building,
   ExternalLink,
+  Database,
+  Trash2,
+  Download,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { generateMockData, clearMockData } from "@/lib/mockDataGenerator";
+import { toast } from "sonner";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 export const Settings: React.FC = () => {
   const { t } = useTranslation();
   const { profile, tenant } = useAuth();
+  const [isSeeding, setIsSeeding] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
+  const [showClearDialog, setShowClearDialog] = useState(false);
+
+  const handleSeedData = async () => {
+    if (!tenant?.id) return;
+    
+    setIsSeeding(true);
+    try {
+      const result = await generateMockData(tenant.id, {
+        includeCells: true,
+        includeJobs: true,
+        includeParts: true,
+        includeOperations: true,
+        includeResources: true,
+        includeOperators: true,
+      });
+
+      if (result.success) {
+        toast.success("Demo data seeded successfully! Includes 3 jobs, 5 parts, operations, 4 operators, and 9 resources.");
+      } else {
+        toast.error(result.error || "Failed to seed demo data");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to seed demo data");
+    } finally {
+      setIsSeeding(false);
+    }
+  };
+
+  const handleClearData = async () => {
+    if (!tenant?.id) return;
+    
+    setIsClearing(true);
+    try {
+      const result = await clearMockData(tenant.id);
+
+      if (result.success) {
+        toast.success("Demo data cleared successfully!");
+        setShowClearDialog(false);
+      } else {
+        toast.error(result.error || "Failed to clear demo data");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to clear demo data");
+    } finally {
+      setIsClearing(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -148,6 +203,43 @@ export const Settings: React.FC = () => {
         )}
       </div>
 
+      {/* Demo Data Management */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Demo Data
+          </CardTitle>
+          <CardDescription>
+            Seed or clear demo data for testing
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button 
+              onClick={handleSeedData} 
+              disabled={isSeeding}
+              className="flex-1"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              {isSeeding ? "Seeding..." : "Seed Demo Data"}
+            </Button>
+            <Button 
+              onClick={() => setShowClearDialog(true)} 
+              disabled={isClearing}
+              variant="destructive"
+              className="flex-1"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Clear Demo Data
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Seed creates 6 cells, 3 jobs, 5 parts with operations, 4 demo operators, and 9 resources. Clear removes all demo data.
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Quick Links to Configuration */}
       <Card>
         <CardHeader>
@@ -205,6 +297,24 @@ export const Settings: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Clear Data Confirmation Dialog */}
+      <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete all demo data including jobs, parts, operations, cells, resources, and demo operators. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleClearData} disabled={isClearing}>
+              {isClearing ? "Clearing..." : "Clear All Demo Data"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -1728,6 +1728,10 @@ export type Database = {
         Args: { p_notification_id: string }
         Returns: undefined
       }
+      dispatch_webhook: {
+        Args: { p_data: Json; p_event_type: string; p_tenant_id: string }
+        Returns: undefined
+      }
       get_activity_logs: {
         Args: {
           p_action?: string
@@ -1901,6 +1905,20 @@ export type Database = {
           status: Database["public"]["Enums"]["subscription_status"]
           user_count: number
         }[]
+      }
+      log_activity_and_webhook: {
+        Args: {
+          p_action: string
+          p_changes?: Json
+          p_description: string
+          p_entity_id: string
+          p_entity_name: string
+          p_entity_type: string
+          p_metadata?: Json
+          p_tenant_id: string
+          p_user_id: string
+        }
+        Returns: undefined
       }
       mark_all_notifications_read: { Args: never; Returns: number }
       mark_notification_read: {
