@@ -25,6 +25,21 @@ export async function generateMockData(
   }
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // Check if demo data already exists for this tenant
+    const { data: existingJobs } = await supabase
+      .from('jobs')
+      .select('id')
+      .eq('tenant_id', tenantId)
+      .like('job_number', 'JOB-2024-%')
+      .limit(1);
+
+    if (existingJobs && existingJobs.length > 0) {
+      return {
+        success: false,
+        error: 'Demo data already exists. Please clear existing demo data first.',
+      };
+    }
+
     // Step 1: Create manufacturing cells/stages
     let cellIds: string[] = [];
     if (options.includeCells) {
