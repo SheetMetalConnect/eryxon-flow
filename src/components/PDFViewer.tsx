@@ -50,23 +50,25 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
 
   if (!url) {
     return (
-      <div className="flex flex-col h-full w-full bg-background items-center justify-center text-muted-foreground">
-        <FileText className="h-16 w-16 mb-4 opacity-20" />
-        <p>No drawing available for this job</p>
+      <div className="flex flex-col h-full w-full bg-surface-elevated/50 backdrop-blur-sm items-center justify-center text-muted-foreground">
+        <div className="glass-card p-8 flex flex-col items-center">
+          <FileText className="h-16 w-16 mb-4 opacity-30 text-primary" />
+          <p className="font-medium">No drawing available for this job</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full w-full bg-background">
+    <div className="flex flex-col h-full w-full bg-surface-elevated/50 backdrop-blur-sm">
       {/* Toolbar */}
-      <div className="flex items-center gap-2 p-2 bg-card border-b border-border">
+      <div className="flex items-center gap-2 p-3 bg-surface-elevated/80 backdrop-blur-sm border-b border-border/50 shadow-sm">
         <Button
           variant="outline"
           size="sm"
           onClick={handleZoomOut}
           disabled={loading || zoom <= 50}
-          className="bg-card text-foreground hover:bg-accent"
+          className="bg-card/50 backdrop-blur-sm border-border/50 text-foreground hover:bg-primary/10 font-medium transition-all"
         >
           <ZoomOut className="h-4 w-4 mr-1" />
           Zoom Out
@@ -77,7 +79,7 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
           size="sm"
           onClick={handleFitToView}
           disabled={loading}
-          className="bg-card text-foreground hover:bg-accent"
+          className="bg-card/50 backdrop-blur-sm border-border/50 text-foreground hover:bg-primary/10 font-medium transition-all"
         >
           <Maximize2 className="h-4 w-4 mr-1" />
           Fit to View
@@ -88,13 +90,13 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
           size="sm"
           onClick={handleZoomIn}
           disabled={loading || zoom >= 200}
-          className="bg-card text-foreground hover:bg-accent"
+          className="bg-card/50 backdrop-blur-sm border-border/50 text-foreground hover:bg-primary/10 font-medium transition-all"
         >
           <ZoomIn className="h-4 w-4 mr-1" />
           Zoom In
         </Button>
 
-        <span className="text-sm text-muted-foreground ml-2">{zoom}%</span>
+        <span className="text-sm text-foreground font-mono font-semibold ml-2 px-2 py-1 bg-muted/50 rounded">{zoom}%</span>
 
         <div className="flex-1" />
 
@@ -103,14 +105,14 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
           size="sm"
           onClick={handleDownload}
           disabled={loading}
-          className="bg-card text-foreground hover:bg-accent"
+          className="bg-card/50 backdrop-blur-sm border-border/50 text-foreground hover:bg-primary/10 font-medium transition-all"
         >
           <Download className="h-4 w-4 mr-1" />
           Download
         </Button>
 
         {title && (
-          <div className="ml-2 text-sm font-medium text-muted-foreground">
+          <div className="ml-2 text-sm font-semibold text-foreground px-3 py-1 bg-primary/10 backdrop-blur-sm rounded-md border border-primary/20">
             {title}
           </div>
         )}
@@ -120,28 +122,28 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
       <div className="flex-1 relative overflow-hidden bg-accent/5 flex items-center justify-center">
         {/* Loading Overlay */}
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10 backdrop-blur-sm">
-            <div className="flex flex-col items-center gap-2">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">Loading PDF...</p>
+          <div className="absolute inset-0 flex items-center justify-center bg-background/90 z-10 backdrop-blur-md">
+            <div className="glass-card p-8 flex flex-col items-center gap-4">
+              <Loader2 className="h-10 w-10 animate-spin text-primary" />
+              <p className="text-sm font-medium text-foreground">Loading PDF...</p>
             </div>
           </div>
         )}
 
         {/* Error Display */}
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background z-10">
-            <div className="text-center p-6 max-w-md">
+          <div className="absolute inset-0 flex items-center justify-center bg-surface-elevated/90 backdrop-blur-md z-10">
+            <div className="glass-card text-center p-8 max-w-md">
               <FileText className="h-12 w-12 mx-auto text-destructive mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">
+              <h3 className="text-lg font-bold text-foreground mb-3">
                 Failed to Load PDF
               </h3>
-              <p className="text-sm text-muted-foreground">{error}</p>
+              <p className="text-sm text-muted-foreground mb-6">{error}</p>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => window.open(url, '_blank')}
-                className="mt-4"
+                className="bg-card/50 backdrop-blur-sm border-border/50 hover:bg-primary/10 font-medium"
               >
                 Open in New Tab
               </Button>
