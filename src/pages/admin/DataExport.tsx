@@ -158,18 +158,19 @@ export default function DataExport() {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-5xl">
-        <div className="flex items-center gap-3 mb-6">
-          <Archive className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-3xl font-bold">{t('dataExport.title')}</h1>
-            <p className="text-muted-foreground">{t('dataExport.description')}</p>
-          </div>
+    <div className="container mx-auto p-6 max-w-5xl space-y-8">
+        <div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+            {t('dataExport.title')}
+          </h1>
+          <p className="text-muted-foreground text-lg">{t('dataExport.description')}</p>
         </div>
+
+        <hr className="title-divider" />
 
         <div className="grid gap-6">
           {/* Export Format Selection */}
-          <Card>
+          <Card className="glass-card">
             <CardHeader>
               <CardTitle>{t('dataExport.exportFormat')}</CardTitle>
               <CardDescription>{t('dataExport.chooseFormat')}</CardDescription>
@@ -202,7 +203,7 @@ export default function DataExport() {
           </Card>
 
           {/* Entity Selection */}
-          <Card>
+          <Card className="glass-card">
             <CardHeader>
               <CardTitle>{t('dataExport.selectData')}</CardTitle>
               <CardDescription>
@@ -244,7 +245,7 @@ export default function DataExport() {
           </Card>
 
           {/* Export Action */}
-          <Card>
+          <Card className="glass-card">
             <CardHeader>
               <CardTitle>{t('dataExport.exportYourData')}</CardTitle>
               <CardDescription>
@@ -266,7 +267,7 @@ export default function DataExport() {
                 onClick={exportData}
                 disabled={isExporting || selectedEntities.length === 0}
                 size="lg"
-                className="w-full"
+                className="w-full cta-button"
               >
                 {isExporting ? (
                   <>
@@ -287,7 +288,7 @@ export default function DataExport() {
           </Card>
 
           {/* Important Notes */}
-          <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
+          <Card className="glass-card border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
             <CardHeader>
               <CardTitle className="text-amber-900 dark:text-amber-100">{t('dataExport.importantNotes')}</CardTitle>
             </CardHeader>

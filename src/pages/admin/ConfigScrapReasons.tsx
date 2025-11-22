@@ -129,11 +129,21 @@ export default function ConfigScrapReasons() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Scrap Reasons Configuration</h1>
+    <div className="p-6 space-y-8">
+      <div>
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+          Scrap Reasons Configuration
+        </h1>
+        <p className="text-muted-foreground text-lg">
+          Manage scrap reason codes for quality tracking and root cause analysis
+        </p>
+      </div>
+
+      <hr className="title-divider" />
+
+      <div className="flex justify-end">
         <div className="flex gap-2">
-          <Button onClick={() => { setEditingReason({}); setDialogOpen(true); }}>
+          <Button onClick={() => { setEditingReason({}); setDialogOpen(true); }} className="cta-button">
             <Plus className="h-4 w-4 mr-2" /> Add Scrap Reason
           </Button>
           <Button variant="outline" onClick={handleSeedDefaults} disabled={seedDefaultMutation.isPending}>
@@ -142,7 +152,7 @@ export default function ConfigScrapReasons() {
           </Button>
         </div>
       </div>
-      <Card>
+      <Card className="glass-card">
         <CardContent className="pt-6">
           <div className="flex gap-4 items-end">
             <div className="flex-1">
@@ -166,7 +176,7 @@ export default function ConfigScrapReasons() {
           </div>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="glass-card">
         <CardContent className="pt-6">
           <Table>
             <TableHeader>
@@ -214,7 +224,7 @@ export default function ConfigScrapReasons() {
         </CardContent>
       </Card>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="glass-card">
           <DialogHeader>
             <DialogTitle>{editingReason?.id ? "Edit Scrap Reason" : "Add Scrap Reason"}</DialogTitle>
           </DialogHeader>
