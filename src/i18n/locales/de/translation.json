@@ -130,6 +130,7 @@
     "inProgress": "In Bearbeitung",
     "completed": "Abgeschlossen",
     "notStarted": "Nicht gestartet",
+    "totalOperations": "Gesamte Arbeitsgänge",
     "materials": "Materialien",
     "allMaterials": "Alle Materialien",
     "status": "Status",
@@ -149,6 +150,7 @@
     "assignedToMe": "Mir zugewiesen",
     "showCompleted": "Abgeschlossene anzeigen",
     "cellVisibility": "Zellsichtbarkeit",
+    "cells": "Zellen",
     "searchPlaceholder": "Suche nach Auftrag, Teil, Arbeitsgang oder Kunde...",
     "switchToCompact": "Zur kompakten Ansicht wechseln",
     "switchToDetailed": "Zur detaillierten Ansicht wechseln",
@@ -169,7 +171,20 @@
     "next": "Weiter",
     "save": "Speichern",
     "success": "Erfolg",
-    "validationError": "Validierungsfehler"
+    "validationError": "Validierungsfehler",
+    "notAvailable": "N/V",
+    "start": "Starten",
+    "ops": "Arb.",
+    "selectJobToStart": "Wählen Sie einen Auftrag aus, um zu beginnen",
+    "pdfDrawing": "PDF-Zeichnung",
+    "3dModel": "3D-Modell",
+    "noFilesForPart": "Keine Dateien für dieses Teil verfügbar",
+    "currentOperation": "Aktueller Arbeitsgang",
+    "allOperations": "Alle Arbeitsgänge",
+    "jobOverdue": "Auftrag überfällig!",
+    "processSettings": "Prozesseinstellungen",
+    "partSpecifications": "Teilspezifikationen",
+    "instructions": "Anweisungen"
   },
   "onboarding": {
     "welcome": "Willkommen bei Eryxon MES",
@@ -453,6 +468,9 @@
     "min": "Min.",
     "assigned": "Zugewiesen",
     "noOperationsYet": "Noch keine Arbeitsgänge",
+    "operationPaused": "Arbeitsgang pausiert",
+    "failedToPause": "Pausieren fehlgeschlagen",
+    "failedToStart": "Starten fehlgeschlagen",
     "status": {
       "notStarted": "Nicht gestartet",
       "inProgress": "In Bearbeitung",
@@ -1166,6 +1184,13 @@
     "inBuffer": "Im Puffer",
     "expected": "Erwartet",
     "noActiveJobs": "Keine aktiven Aufträge",
-    "jobsFound": "Aufträge gefunden"
+    "jobsFound": "Aufträge gefunden",
+    "loadingTerminalData": "Terminaldaten werden geladen...",
+    "terminalView": "Terminalansicht:",
+    "selectCell": "Zelle auswählen",
+    "allCells": "Alle Zellen",
+    "noJobSelected": "Kein Auftrag ausgewählt",
+    "selectJobPrompt": "Wählen Sie einen Auftrag aus der Liste aus, um Details und Steuerelemente anzuzeigen.",
+    "failedToLoadData": "Daten konnten nicht geladen werden"
   }
 }

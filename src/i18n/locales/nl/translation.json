@@ -130,6 +130,7 @@
     "inProgress": "Bezig",
     "completed": "Voltooid",
     "notStarted": "Niet gestart",
+    "totalOperations": "Totale bewerkingen",
     "materials": "Materialen",
     "allMaterials": "Alle materialen",
     "status": "Status",
@@ -149,6 +150,7 @@
     "assignedToMe": "Aan mij toegewezen",
     "showCompleted": "Voltooide tonen",
     "cellVisibility": "Celzichtbaarheid",
+    "cells": "Cellen",
     "searchPlaceholder": "Zoeken op opdracht, onderdeel, bewerking of klant...",
     "switchToCompact": "Overschakelen naar compacte weergave",
     "switchToDetailed": "Overschakelen naar gedetailleerde weergave",
@@ -169,7 +171,20 @@
     "next": "Volgende",
     "save": "Opslaan",
     "success": "Succes",
-    "validationError": "Validatiefout"
+    "validationError": "Validatiefout",
+    "notAvailable": "N/B",
+    "start": "Starten",
+    "ops": "bew.",
+    "selectJobToStart": "Selecteer een opdracht om te beginnen",
+    "pdfDrawing": "PDF-tekening",
+    "3dModel": "3D-model",
+    "noFilesForPart": "Geen bestanden beschikbaar voor dit onderdeel",
+    "currentOperation": "Huidige bewerking",
+    "allOperations": "Alle bewerkingen",
+    "jobOverdue": "Opdracht te laat!",
+    "processSettings": "Procesinstellingen",
+    "partSpecifications": "Onderdeelspecificaties",
+    "instructions": "Instructies"
   },
   "onboarding": {
     "welcome": "Welkom bij Eryxon MES",
@@ -453,6 +468,9 @@
     "min": "min.",
     "assigned": "Toegewezen",
     "noOperationsYet": "Nog geen operaties",
+    "operationPaused": "Bewerking gepauzeerd",
+    "failedToPause": "Pauzeren mislukt",
+    "failedToStart": "Starten mislukt",
     "status": {
       "notStarted": "Niet gestart",
       "inProgress": "Bezig",
@@ -1168,6 +1186,13 @@
     "inBuffer": "In buffer",
     "expected": "Verwacht",
     "noActiveJobs": "Geen actieve opdrachten",
-    "jobsFound": "opdrachten gevonden"
+    "jobsFound": "opdrachten gevonden",
+    "loadingTerminalData": "Terminalgegevens laden...",
+    "terminalView": "Terminalweergave:",
+    "selectCell": "Selecteer cel",
+    "allCells": "Alle cellen",
+    "noJobSelected": "Geen opdracht geselecteerd",
+    "selectJobPrompt": "Selecteer een opdracht uit de lijst om details en besturingselementen te bekijken.",
+    "failedToLoadData": "Gegevens laden mislukt"
   }
 }

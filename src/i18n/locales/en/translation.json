@@ -130,6 +130,7 @@
     "inProgress": "In Progress",
     "completed": "Completed",
     "notStarted": "Not Started",
+    "totalOperations": "Total Operations",
     "materials": "Materials",
     "allMaterials": "All Materials",
     "status": "Status",
@@ -149,6 +150,7 @@
     "assignedToMe": "Assigned to Me",
     "showCompleted": "Show Completed",
     "cellVisibility": "Cell Visibility",
+    "cells": "Cells",
     "searchPlaceholder": "Search by job, part, operation, or customer...",
     "switchToCompact": "Switch to compact view",
     "switchToDetailed": "Switch to detailed view",
@@ -169,7 +171,20 @@
     "next": "Next",
     "save": "Save",
     "success": "Success",
-    "validationError": "Validation Error"
+    "validationError": "Validation Error",
+    "notAvailable": "N/A",
+    "start": "Start",
+    "ops": "ops",
+    "selectJobToStart": "Select a job to get started",
+    "pdfDrawing": "PDF Drawing",
+    "3dModel": "3D Model",
+    "noFilesForPart": "No files available for this part",
+    "currentOperation": "Current Operation",
+    "allOperations": "All Operations",
+    "jobOverdue": "Job overdue!",
+    "processSettings": "Process Settings",
+    "partSpecifications": "Part Specifications",
+    "instructions": "Instructions"
   },
   "onboarding": {
     "welcome": "Welcome to Eryxon MES",
@@ -453,6 +468,9 @@
     "min": "min",
     "assigned": "Assigned",
     "noOperationsYet": "No operations yet",
+    "operationPaused": "Operation paused",
+    "failedToPause": "Failed to pause",
+    "failedToStart": "Failed to start",
     "status": {
       "notStarted": "Not Started",
       "inProgress": "In Progress",
@@ -1166,6 +1184,13 @@
     "inBuffer": "In Buffer",
     "expected": "Expected",
     "noActiveJobs": "No active jobs",
-    "jobsFound": "jobs found"
+    "jobsFound": "jobs found",
+    "loadingTerminalData": "Loading Terminal Data...",
+    "terminalView": "Terminal View:",
+    "selectCell": "Select Cell",
+    "allCells": "All Cells",
+    "noJobSelected": "No Job Selected",
+    "selectJobPrompt": "Select a job from the list to view details and controls.",
+    "failedToLoadData": "Failed to load data"
   }
 }
