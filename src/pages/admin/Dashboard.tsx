@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Activity, Clock, Loader2, AlertTriangle, LucideIcon } from "lucide-react";
+import { Users, Activity, Clock, Loader2, AlertTriangle, LucideIcon, ArrowRight } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -48,16 +48,20 @@ interface StatCardProps {
 function StatCard({ title, value, description, icon: Icon, onClick }: StatCardProps) {
   return (
     <Card
-      className="cursor-pointer transition-all hover:shadow-lg hover:scale-105 active:scale-100"
+      className="glass-card cursor-pointer transition-all hover:shadow-xl hover:scale-105 active:scale-100 hover:border-white/20"
       onClick={onClick}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <div className="p-2 rounded-lg bg-primary/10">
+          <Icon className="h-5 w-5 text-primary" />
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <div className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+          {value}
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">{description}</p>
       </CardContent>
     </Card>
   );
@@ -297,24 +301,32 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold mb-2">{t("dashboard.title")}</h1>
-        <p className="text-muted-foreground">{t("dashboard.description")}</p>
+        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+          {t("dashboard.title")}
+        </h1>
+        <p className="text-muted-foreground text-lg">{t("dashboard.description")}</p>
       </div>
 
+      <hr className="title-divider" />
+
       {needsSetup && (
-        <Card>
+        <Card className="glass-card border-warning/20">
           <CardHeader>
-            <CardTitle>{t("dashboard.initialSetup")}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-warning" />
+              {t("dashboard.initialSetup")}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between gap-4">
               <p className="text-muted-foreground">
                 {t("dashboard.noStagesFound")}
               </p>
-              <Button onClick={handleSeed} disabled={seeding}>
+              <Button onClick={handleSeed} disabled={seeding} className="cta-button">
                 {seeding ? t("dashboard.seeding") : t("dashboard.seedDemoData")}
+                {!seeding && <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />}
               </Button>
             </div>
           </CardContent>
@@ -357,27 +369,35 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Stats Panel */}
-      <Card>
+      <Card className="glass-card">
         <CardHeader>
-          <CardTitle>{t("dashboard.quickStats")}</CardTitle>
+          <CardTitle className="text-xl">{t("dashboard.quickStats")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-4">
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">{t("dashboard.totalJobs")}</p>
-              <p className="text-2xl font-bold">{stats.totalJobs}</p>
+              <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                {stats.totalJobs}
+              </p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">{t("dashboard.totalParts")}</p>
-              <p className="text-2xl font-bold">{stats.totalParts}</p>
+              <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                {stats.totalParts}
+              </p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">{t("dashboard.activeCells")}</p>
-              <p className="text-2xl font-bold">{stats.activeCells}</p>
+              <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                {stats.activeCells}
+              </p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">{t("dashboard.completedToday")}</p>
-              <p className="text-2xl font-bold">{stats.completedToday}</p>
+              <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                {stats.completedToday}
+              </p>
             </div>
           </div>
         </CardContent>
@@ -387,55 +407,62 @@ export default function Dashboard() {
       <QRMDashboard />
 
       {/* Active Work Table */}
-      <Card data-tour="active-operations">
+      <Card className="glass-card" data-tour="active-operations">
         <CardHeader>
-          <CardTitle>{t("dashboard.activeWork")}</CardTitle>
+          <CardTitle className="text-xl flex items-center gap-2">
+            <Activity className="h-5 w-5 text-primary" />
+            {t("dashboard.activeWork")}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {activeWork.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              {t("dashboard.noActiveWork")}
+            <div className="text-center py-12">
+              <div className="informational-text max-w-md mx-auto">
+                {t("dashboard.noActiveWork")}
+              </div>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("dashboard.operator")}</TableHead>
-                  <TableHead>{t("dashboard.operation")}</TableHead>
-                  <TableHead>{t("dashboard.job")}</TableHead>
-                  <TableHead>{t("dashboard.part")}</TableHead>
-                  <TableHead>{t("dashboard.cell")}</TableHead>
-                  <TableHead>{t("dashboard.elapsedTime")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {activeWork.map((work) => (
-                  <TableRow key={work.id}>
-                    <TableCell className="font-medium">
-                      {work.operator.full_name}
-                    </TableCell>
-                    <TableCell>{work.operation.operation_name}</TableCell>
-                    <TableCell>
-                      <div>{work.operation.part.job.job_number}</div>
-                      {work.operation.part.job.customer && (
-                        <div className="text-xs text-muted-foreground">
-                          {work.operation.part.job.customer}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>{work.operation.part.part_number}</TableCell>
-                    <TableCell>
-                      <Badge className="bg-accent text-white">
-                        {work.operation.cell.name}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {formatDistanceToNow(new Date(work.start_time))}
-                    </TableCell>
+            <div className="rounded-lg border border-white/10 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-white/10 hover:bg-white/5">
+                    <TableHead>{t("dashboard.operator")}</TableHead>
+                    <TableHead>{t("dashboard.operation")}</TableHead>
+                    <TableHead>{t("dashboard.job")}</TableHead>
+                    <TableHead>{t("dashboard.part")}</TableHead>
+                    <TableHead>{t("dashboard.cell")}</TableHead>
+                    <TableHead>{t("dashboard.elapsedTime")}</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {activeWork.map((work) => (
+                    <TableRow key={work.id} className="border-white/10 hover:bg-white/5">
+                      <TableCell className="font-medium">
+                        {work.operator.full_name}
+                      </TableCell>
+                      <TableCell>{work.operation.operation_name}</TableCell>
+                      <TableCell>
+                        <div>{work.operation.part.job.job_number}</div>
+                        {work.operation.part.job.customer && (
+                          <div className="text-xs text-muted-foreground">
+                            {work.operation.part.job.customer}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>{work.operation.part.part_number}</TableCell>
+                      <TableCell>
+                        <Badge className="bg-primary/20 text-primary border-primary/30">
+                          {work.operation.cell.name}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {formatDistanceToNow(new Date(work.start_time))}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

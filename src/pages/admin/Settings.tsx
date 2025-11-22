@@ -89,14 +89,18 @@ export const Settings: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">{t("settings.title")}</h1>
-        <p className="text-muted-foreground">{t("settings.subtitle")}</p>
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+          {t("settings.title")}
+        </h1>
+        <p className="text-muted-foreground text-lg">{t("settings.subtitle")}</p>
       </div>
 
+      <hr className="title-divider" />
+
       {/* Demo Data Card */}
-      <Card>
+      <Card className="glass-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
