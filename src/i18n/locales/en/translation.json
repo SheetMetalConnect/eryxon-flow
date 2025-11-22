@@ -1154,43 +1154,38 @@
     "free": {
       "name": "Free",
       "price": "€0",
-      "description": "Get started with the basics",
+      "description": "Get started",
       "features": [
-        "Core MES features",
+        "All features included",
         "Up to 100 jobs",
         "Up to 1,000 parts per month",
-        "5 GB file storage",
-        "Multi-tenant cloud hosting",
-        "As-is (no support)",
-        "Documentation only"
+        "5 GB storage",
+        "Full API access",
+        "Hosted on EU servers"
       ]
     },
     "pro": {
       "name": "Pro",
       "price": "€149",
-      "description": "Higher limits for growing shops",
+      "description": "For growing shops",
       "features": [
         "Everything in Free",
-        "Job-based limits (higher quotas)",
-        "Increased parts per month",
-        "Increased storage",
-        "Full API access",
-        "Chat & ticket support (~1 day response)",
+        "Higher usage limits",
+        "Standard integrations",
+        "Priority support",
         "Coming soon"
       ]
     },
     "premium": {
-      "name": "On-Premise",
+      "name": "Premium",
       "price": "Custom",
-      "description": "Self-hosted for maximum control",
+      "description": "For enterprise needs",
       "features": [
-        "Self-hosted on your infrastructure",
-        "No usage limits",
-        "Complete data ownership",
-        "Air-gapped deployment option",
-        "Custom integrations & onboarding",
+        "Self-hosted deployment",
+        "Unlimited usage",
+        "Custom integrations",
         "Dedicated support",
-        "Contact us for details"
+        "Coming soon"
       ]
     },
     "perMonth": "/month per tenant",

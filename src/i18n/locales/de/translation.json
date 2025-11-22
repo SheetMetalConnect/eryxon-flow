@@ -1082,43 +1082,38 @@
     "free": {
       "name": "Kostenlos",
       "price": "€0",
-      "description": "Einstieg mit den Grundlagen",
+      "description": "Einstieg",
       "features": [
-        "Kern-MES-Funktionen",
+        "Alle Funktionen enthalten",
         "Bis zu 100 Aufträge",
         "Bis zu 1.000 Teile pro Monat",
-        "5 GB Dateispeicher",
-        "Multi-Tenant Cloud-Hosting",
-        "Keine Unterstützung (as-is)",
-        "Nur Dokumentation"
+        "5 GB Speicher",
+        "Voller API-Zugriff",
+        "Gehostet auf EU-Servern"
       ]
     },
     "pro": {
       "name": "Pro",
       "price": "€149",
-      "description": "Höhere Limits für wachsende Betriebe",
+      "description": "Für wachsende Betriebe",
       "features": [
         "Alles aus Kostenlos",
-        "Auftragsbasierte Limits (höhere Kontingente)",
-        "Mehr Teile pro Monat",
-        "Mehr Speicher",
-        "Voller API-Zugriff",
-        "Chat & Ticket-Support (~1 Tag Reaktionszeit)",
+        "Höhere Nutzungslimits",
+        "Standard-Integrationen",
+        "Prioritäts-Support",
         "Demnächst verfügbar"
       ]
     },
     "premium": {
-      "name": "On-Premise",
+      "name": "Premium",
       "price": "Individuell",
-      "description": "Self-Hosted für maximale Kontrolle",
+      "description": "Für Unternehmensanforderungen",
       "features": [
-        "Self-Hosted auf Ihrer Infrastruktur",
-        "Keine Nutzungslimits",
-        "Vollständige Datenkontrolle",
-        "Air-Gapped-Deployment möglich",
-        "Individuelle Integrationen & Onboarding",
-        "Dedizierte Unterstützung",
-        "Kontaktieren Sie uns für Details"
+        "Self-Hosted Installation",
+        "Unbegrenzte Nutzung",
+        "Individuelle Integrationen",
+        "Dedizierter Support",
+        "Demnächst verfügbar"
       ]
     },
     "perMonth": "/Monat pro Mandant",

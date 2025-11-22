@@ -1084,43 +1084,38 @@
     "free": {
       "name": "Gratis",
       "price": "€0",
-      "description": "Begin met de basis",
+      "description": "Begin",
       "features": [
-        "Kern-MES functies",
+        "Alle functies inbegrepen",
         "Tot 100 opdrachten",
         "Tot 1.000 onderdelen per maand",
-        "5 GB bestandsopslag",
-        "Multi-tenant cloud hosting",
-        "Geen ondersteuning (as-is)",
-        "Alleen documentatie"
+        "5 GB opslag",
+        "Volledige API-toegang",
+        "Gehost op EU-servers"
       ]
     },
     "pro": {
       "name": "Pro",
       "price": "€149",
-      "description": "Hogere limieten voor groeiende bedrijven",
+      "description": "Voor groeiende bedrijven",
       "features": [
         "Alles uit Gratis",
-        "Opdracht-gebaseerde limieten (hogere quota)",
-        "Meer onderdelen per maand",
-        "Meer opslag",
-        "Volledige API-toegang",
-        "Chat & ticket ondersteuning (~1 dag reactietijd)",
+        "Hogere gebruikslimieten",
+        "Standaard integraties",
+        "Prioriteitsondersteuning",
         "Binnenkort beschikbaar"
       ]
     },
     "premium": {
-      "name": "On-Premise",
+      "name": "Premium",
       "price": "Op maat",
-      "description": "Self-hosted voor maximale controle",
+      "description": "Voor ondernemingsbehoeften",
       "features": [
-        "Self-hosted op uw infrastructuur",
-        "Geen gebruikslimieten",
-        "Volledige data-eigendom",
-        "Air-gapped deployment mogelijk",
-        "Aangepaste integraties & onboarding",
+        "Self-hosted installatie",
+        "Onbeperkt gebruik",
+        "Aangepaste integraties",
         "Toegewezen ondersteuning",
-        "Neem contact op voor details"
+        "Binnenkort beschikbaar"
       ]
     },
     "perMonth": "/maand per tenant",
