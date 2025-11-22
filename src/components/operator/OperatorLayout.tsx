@@ -1,368 +1,196 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
-  Box,
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  Avatar,
-  Menu,
-  MenuItem,
-  BottomNavigation,
-  BottomNavigationAction,
-  Paper,
-  alpha,
-  useTheme,
-  useMediaQuery,
-} from '@mui/material';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
-  ListAlt as ListAltIcon,
-  Schedule as ScheduleIcon,
-  ReportProblem as ReportProblemIcon,
-  Logout as LogoutIcon,
-  Brightness4 as Brightness4Icon,
-  Brightness7 as Brightness7Icon,
-  Help as HelpIcon,
-  Business as BusinessIcon,
-  Speed as SpeedIcon,
-} from '@mui/icons-material';
+  ListChecks,
+  Clock,
+  Flag,
+  LogOut,
+  HelpCircle,
+  Building2,
+  Gauge,
+  Factory,
+} from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useThemeMode } from '@/theme/ThemeProvider';
 import CurrentlyTimingWidget from './CurrentlyTimingWidget';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { AppTour } from '@/components/onboarding';
+import AnimatedBackground from '@/components/AnimatedBackground';
+import { cn } from '@/lib/utils';
 
 interface OperatorLayoutProps {
   children: React.ReactNode;
 }
 
-export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
+export const OperatorLayout = ({ children }: OperatorLayoutProps) => {
   const { t } = useTranslation();
   const { profile, tenant, signOut } = useAuth();
-  const { mode, toggleTheme } = useThemeMode();
-  const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleSignOut = () => {
-    handleMenuClose();
-    signOut();
-  };
 
   const navItems = [
-    { path: '/operator/work-queue', label: t('navigation.workQueue'), icon: <ListAltIcon /> },
-    { path: '/operator/view', label: 'Operator View', icon: <SpeedIcon /> },
-    { path: '/operator/my-activity', label: t('navigation.myActivity'), icon: <ScheduleIcon /> },
-    { path: '/operator/my-issues', label: t('navigation.myIssues'), icon: <ReportProblemIcon /> },
+    { path: '/operator/work-queue', label: t('navigation.workQueue'), icon: ListChecks },
+    { path: '/operator/view', label: 'Operator View', icon: Gauge },
+    { path: '/operator/my-activity', label: t('navigation.myActivity'), icon: Clock },
+    { path: '/operator/my-issues', label: t('navigation.myIssues'), icon: Flag },
   ];
 
-  const getCurrentNavValue = () => {
-    const currentItem = navItems.find((item) => location.pathname === item.path);
-    return currentItem?.path || '/operator/work-queue';
-  };
-
-  const handleNavigationChange = (_event: React.SyntheticEvent, newValue: string) => {
-    navigate(newValue);
-  };
+  const isActive = (path: string) => location.pathname === path;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      {/* Top App Bar */}
-      <AppBar
-        position="sticky"
-        elevation={0}
-        sx={{
-          backgroundColor: theme.palette.background.paper,
-          color: theme.palette.text.primary,
-          borderBottom: `1px solid ${theme.palette.divider}`,
-        }}
-      >
-        <Toolbar
-          sx={{
-            justifyContent: 'space-between',
-            minHeight: { xs: 56, sm: 64 },
-            px: { xs: 2, sm: 3 },
-          }}
-        >
-          {/* Logo/Brand */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box
-              sx={{
-                width: 36,
-                height: 36,
-                borderRadius: 1,
-                background: 'linear-gradient(135deg, #3a4656 0%, #0080ff 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 700,
-                fontSize: '1rem',
-                color: '#ffffff',
-              }}
-            >
-              SM
-            </Box>
-            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem' }}>
+    <>
+      <AnimatedBackground />
+      <div className="relative flex flex-col min-h-screen bg-background">
+        {/* Top Header - Glass Morphism */}
+        <header className="sticky top-0 z-50 w-full glass-card border-b border-border-subtle">
+          <div className="flex items-center justify-between h-16 px-4 sm:px-6">
+            {/* Logo/Brand */}
+            <div className="flex items-center gap-3">
+              <Factory className="h-8 w-8 text-primary" strokeWidth={1.5} />
+              <span className="hidden sm:block text-lg font-bold hero-title">
                 {t('app.name')}
-              </Typography>
-            </Box>
-          </Box>
+              </span>
+            </div>
 
-          {/* Right Side Actions */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {/* Language Switcher */}
-            <LanguageSwitcher />
+            {/* Right Side Actions */}
+            <div className="flex items-center gap-2">
+              {/* Language Switcher */}
+              <LanguageSwitcher />
 
-            {/* Theme Toggle */}
-            <IconButton onClick={toggleTheme} color="inherit">
-              {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-            </IconButton>
+              {/* User Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-9 w-9 rounded-full p-0">
+                    <Avatar className="h-9 w-9 border-2 border-primary/20">
+                      <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-primary-foreground font-semibold">
+                        {profile?.full_name?.charAt(0).toUpperCase() || 'O'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-64 glass-card" align="end">
+                  {/* Tenant Info */}
+                  {tenant && (
+                    <>
+                      <div className="px-3 py-2 bg-primary/5 border-b border-border-subtle">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-bold text-primary truncate">
+                            {tenant.company_name || tenant.name}
+                          </span>
+                        </div>
+                      </div>
+                      <DropdownMenuSeparator className="bg-border-subtle" />
+                    </>
+                  )}
 
-            {/* User Avatar and Menu */}
-            <IconButton onClick={handleMenuOpen} sx={{ p: 0.5 }}>
-              <Avatar
-                sx={{
-                  width: 36,
-                  height: 36,
-                  background: 'linear-gradient(135deg, #3a4656 0%, #0080ff 100%)',
-                  fontWeight: 600,
-                  fontSize: '0.95rem',
-                }}
+                  {/* User Info */}
+                  <div className="px-3 py-2">
+                    <div className="text-sm font-semibold">{profile?.full_name}</div>
+                    <div className="text-xs text-muted-foreground">{profile?.email}</div>
+                    <div className="inline-block mt-1.5 px-2 py-0.5 rounded text-xs font-semibold uppercase bg-gradient-to-r from-primary to-primary/60 text-primary-foreground">
+                      {t('app.operator')}
+                    </div>
+                  </div>
+
+                  <DropdownMenuSeparator className="bg-border-subtle" />
+
+                  <DropdownMenuItem
+                    onClick={() => navigate('/help')}
+                    className="gap-2 cursor-pointer focus:bg-white/5"
+                  >
+                    <HelpCircle className="h-4 w-4" />
+                    Help & Docs
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={signOut}
+                    className="gap-2 cursor-pointer focus:bg-white/5 text-destructive focus:text-destructive"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    {t('auth.signOut')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </header>
+
+        {/* Currently Timing Widget - Sticky */}
+        <div className="sticky top-16 z-40 border-b border-border-subtle glass-card">
+          <div className="px-4 sm:px-6 py-3">
+            <CurrentlyTimingWidget />
+          </div>
+        </div>
+
+        {/* Desktop Navigation Tabs - Hidden on mobile */}
+        <div className="hidden sm:block sticky top-[calc(4rem+theme(spacing.16))] z-30 border-b border-border-subtle glass-card">
+          <div className="flex gap-1 px-6 py-2">
+            {navItems.map((item) => (
+              <Button
+                key={item.path}
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(item.path)}
+                className={cn(
+                  "gap-2 transition-base",
+                  isActive(item.path)
+                    ? "nav-item-active"
+                    : "nav-item-hover"
+                )}
               >
-                {profile?.full_name?.charAt(0).toUpperCase() || 'O'}
-              </Avatar>
-            </IconButton>
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </Button>
+            ))}
+          </div>
+        </div>
 
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-              PaperProps={{
-                elevation: 3,
-                sx: {
-                  mt: 1.5,
-                  minWidth: 200,
-                  borderRadius: 2,
-                },
-              }}
-            >
-              {/* Company/Tenant Section */}
-              {tenant && (
-                <Box
-                  sx={{
-                    px: 2,
-                    py: 1.5,
-                    borderBottom: 1,
-                    borderColor: 'divider',
-                    backgroundColor: alpha(theme.palette.primary.main, 0.03),
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <BusinessIcon
-                      sx={{
-                        fontSize: '1rem',
-                        color: theme.palette.primary.main,
-                      }}
-                    />
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography
-                        variant="body2"
-                        fontWeight={700}
-                        sx={{
-                          color: theme.palette.primary.main,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {tenant.company_name || tenant.name}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-              )}
+        {/* Main Content */}
+        <main className="flex-1 px-4 sm:px-6 py-4 sm:py-6 pb-20 sm:pb-6">
+          {children}
+        </main>
 
-              <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
-                <Typography variant="body2" fontWeight={600}>
-                  {profile?.full_name}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {profile?.email}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    display: 'block',
-                    mt: 0.5,
-                    px: 1,
-                    py: 0.25,
-                    borderRadius: 0.5,
-                    background: 'linear-gradient(135deg, #3a4656 0%, #0080ff 100%)',
-                    color: '#ffffff',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    fontSize: '0.65rem',
-                    width: 'fit-content',
-                  }}
-                >
-                  {t('app.operator')}
-                </Typography>
-              </Box>
-              <MenuItem onClick={() => { handleMenuClose(); navigate('/help'); }} sx={{ gap: 1.5, py: 1.5 }}>
-                <HelpIcon fontSize="small" />
-                Help & Docs
-              </MenuItem>
-              <MenuItem onClick={handleSignOut} sx={{ gap: 1.5, py: 1.5 }}>
-                <LogoutIcon fontSize="small" />
-                {t('auth.signOut')}
-              </MenuItem>
-            </Menu>
-          </Box>
-        </Toolbar>
-      </AppBar>
+        {/* Mobile Bottom Navigation - Fixed */}
+        <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border-subtle glass-card">
+          <div className="grid grid-cols-4 h-16">
+            {navItems.map((item) => (
+              <button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-1 transition-base",
+                  isActive(item.path)
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <item.icon className={cn("h-5 w-5", isActive(item.path) && "text-primary")} />
+                <span className={cn(
+                  "text-xs",
+                  isActive(item.path) ? "font-semibold" : "font-medium"
+                )}>
+                  {item.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </nav>
 
-      {/* Currently Timing Widget - Sticky below header */}
-      <Box
-        sx={{
-          position: 'sticky',
-          top: { xs: 56, sm: 64 },
-          zIndex: theme.zIndex.appBar - 1,
-          backgroundColor: theme.palette.background.default,
-          borderBottom: `1px solid ${theme.palette.divider}`,
-        }}
-      >
-        <Box sx={{ px: { xs: 2, sm: 3 }, py: 1.5 }}>
-          <CurrentlyTimingWidget />
-        </Box>
-      </Box>
-
-      {/* Main Content */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          px: { xs: 2, sm: 3 },
-          py: { xs: 2, sm: 3 },
-          pb: { xs: 10, sm: 3 }, // Extra padding for mobile bottom nav
-        }}
-      >
-        {children}
-      </Box>
-
-      {/* Bottom Navigation - Mobile Only */}
-      <Paper
-        sx={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          display: { xs: 'block', sm: 'none' },
-          zIndex: theme.zIndex.appBar,
-          borderTop: `1px solid ${theme.palette.divider}`,
-        }}
-        elevation={3}
-        data-tour="bottom-nav"
-      >
-        <BottomNavigation
-          value={getCurrentNavValue()}
-          onChange={handleNavigationChange}
-          showLabels
-          sx={{
-            height: 64,
-            '& .MuiBottomNavigationAction-root': {
-              minWidth: 'auto',
-              padding: '6px 12px',
-              '&.Mui-selected': {
-                color: theme.palette.primary.main,
-              },
-            },
-          }}
-        >
-          {navItems.map((item) => (
-            <BottomNavigationAction
-              key={item.path}
-              label={item.label}
-              value={item.path}
-              icon={item.icon}
-            />
-          ))}
-        </BottomNavigation>
-      </Paper>
-
-      {/* Desktop Navigation Tabs - Hidden on mobile */}
-      <Box
-        sx={{
-          display: { xs: 'none', sm: 'block' },
-          position: 'sticky',
-          top: { sm: 64 },
-          zIndex: theme.zIndex.appBar - 2,
-          backgroundColor: theme.palette.background.paper,
-          borderBottom: `1px solid ${theme.palette.divider}`,
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            gap: 1,
-            px: 3,
-            py: 1,
-          }}
-        >
-          {navItems.map((item) => (
-            <Box
-              key={item.path}
-              onClick={() => navigate(item.path)}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                px: 2.5,
-                py: 1.25,
-                borderRadius: 1.5,
-                cursor: 'pointer',
-                backgroundColor:
-                  location.pathname === item.path
-                    ? alpha(theme.palette.primary.main, 0.12)
-                    : 'transparent',
-                color:
-                  location.pathname === item.path
-                    ? theme.palette.primary.main
-                    : theme.palette.text.primary,
-                fontWeight: location.pathname === item.path ? 600 : 500,
-                fontSize: '0.95rem',
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  backgroundColor:
-                    location.pathname === item.path
-                      ? alpha(theme.palette.primary.main, 0.18)
-                      : alpha(theme.palette.action.hover, 0.08),
-                },
-              }}
-            >
-              {React.cloneElement(item.icon, { fontSize: 'small' })}
-              {item.label}
-            </Box>
-          ))}
-        </Box>
-      </Box>
-
-      {/* Onboarding Tour - only show if not completed */}
-      {profile && !(profile as any).tour_completed && <AppTour userRole="operator" />}
-    </Box>
+        {/* Onboarding Tour - only show if not completed */}
+        {profile && !(profile as any).tour_completed && <AppTour userRole="operator" />}
+      </div>
+    </>
   );
 };

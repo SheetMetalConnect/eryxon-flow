@@ -4,10 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import { ThemeProvider } from "./theme/ThemeProvider";
-import { ToastProvider } from "./components/mui/ToastNotification";
 import { NotificationToastProvider } from "./components/NotificationToastProvider";
-import AnimatedBackground from "./components/AnimatedBackground";
 import Auth from "./pages/Auth";
 import AcceptInvitation from "./pages/AcceptInvitation";
 import WorkQueue from "./pages/operator/WorkQueue";
@@ -460,22 +457,17 @@ function AppRoutes() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <AnimatedBackground />
-      <ToastProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AuthProvider>
-              <NotificationToastProvider>
-                <AppRoutes />
-              </NotificationToastProvider>
-            </AuthProvider>
-          </BrowserRouter>
-        </TooltipProvider>
-      </ToastProvider>
-    </ThemeProvider>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AuthProvider>
+          <NotificationToastProvider>
+            <AppRoutes />
+          </NotificationToastProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 
