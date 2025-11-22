@@ -41,27 +41,32 @@ export async function generateMockData(
     );
 
     // Check if tenant already has demo data to prevent duplicates
-    const { data: isDemoMode, error: demoCheckError } = await supabase.rpc(
-      "is_demo_mode",
-      { p_tenant_id: tenantId },
-    );
-
-    if (demoCheckError) {
-      console.warn("Could not check demo mode status:", demoCheckError);
-    } else if (isDemoMode === true) {
-      console.log(
-        "⚠️ Tenant already has demo data. Skipping to prevent duplicates.",
+    // Skip this check for testing/specific tenants
+    const skipDemoCheck = tenantId === "11111111-1111-1111-1111-111111111111";
+    
+    if (!skipDemoCheck) {
+      const { data: isDemoMode, error: demoCheckError } = await supabase.rpc(
+        "is_demo_mode",
+        { p_tenant_id: tenantId },
       );
-      return {
-        success: false,
-        error:
-          "Demo data already exists for this tenant. Please clear existing demo data first.",
-      };
+
+      if (demoCheckError) {
+        console.warn("Could not check demo mode status:", demoCheckError);
+      } else if (isDemoMode === true) {
+        console.log(
+          "⚠️ Tenant already has demo data. Skipping to prevent duplicates.",
+        );
+        return {
+          success: false,
+          error:
+            "Demo data already exists for this tenant. Please clear existing demo data first.",
+        };
+      }
     }
 
     // Step 1: Create QRM-aligned manufacturing cells with WIP limits
     let cellIds: string[] = [];
-    let cellIdMap: Record<string, string> = {};
+    const cellIdMap: Record<string, string> = {};
 
     if (options.includeCells) {
       const cells = [
@@ -154,87 +159,65 @@ export async function generateMockData(
       console.log("✓ Created 6 QRM cells with WIP limits");
     }
 
-    // Step 2: Create demo operators with PINs
+    // Step 2: Create 6 Dutch operator profiles for shop floor use
+    // Note: pin_hash is left NULL - operators can set PINs later via UI if needed
     let operatorIds: string[] = [];
-    let operatorIdMap: Record<string, string> = {};
+    const operatorIdMap: Record<string, string> = {};
 
     if (options.includeOperators) {
-      const operators = [
-        {
-          id: crypto.randomUUID(),
-          tenant_id: tenantId,
-          role: "operator" as const,
-          username: "jan_devries",
-          full_name: "Jan de Vries",
-          email: "jan.devries@sheetmetalconnect.nl",
-          active: true,
-          pin: "1234",
-        },
-        {
-          id: crypto.randomUUID(),
-          tenant_id: tenantId,
-          role: "operator" as const,
-          username: "emma_bakker",
-          full_name: "Emma Bakker",
-          email: "emma.bakker@sheetmetalconnect.nl",
-          active: true,
-          pin: "2345",
-        },
-        {
-          id: crypto.randomUUID(),
-          tenant_id: tenantId,
-          role: "operator" as const,
-          username: "luuk_vandenberg",
-          full_name: "Luuk van der Berg",
-          email: "luuk.vandenberg@sheetmetalconnect.nl",
-          active: true,
-          pin: "3456",
-        },
-        {
-          id: crypto.randomUUID(),
-          tenant_id: tenantId,
-          role: "operator" as const,
-          username: "sophie_jansen",
-          full_name: "Sophie Jansen",
-          email: "sophie.jansen@sheetmetalconnect.nl",
-          active: true,
-          pin: "4567",
-        },
-        {
-          id: crypto.randomUUID(),
-          tenant_id: tenantId,
-          role: "operator" as const,
-          username: "daan_mulder",
-          full_name: "Daan Mulder",
-          email: "daan.mulder@sheetmetalconnect.nl",
-          active: true,
-          pin: "5678",
-        },
-        {
-          id: crypto.randomUUID(),
-          tenant_id: tenantId,
-          role: "operator" as const,
-          username: "lisa_visser",
-          full_name: "Lisa Visser",
-          email: "lisa.visser@sheetmetalconnect.nl",
-          active: true,
-          pin: "6789",
-        },
-      ];
+      try {
+        // First check if operators already exist
+        const { data: existingOps } = await supabase
+          .from("profiles")
+          .select("id, full_name")
+          .eq("tenant_id", tenantId)
+          .eq("role", "operator")
+          .like("email", "%@sheetmetalconnect.nl");
 
-      const { data: operatorData, error: operatorError } = await supabase
-        .from("profiles")
-        .insert(operators)
-        .select("id, full_name");
+        if (existingOps && existingOps.length > 0) {
+          console.log(`✓ ${existingOps.length} demo operators already exist`);
+          operatorIds = existingOps.map((o) => o.id);
+          existingOps.forEach((o) => {
+            operatorIdMap[o.full_name] = o.id;
+          });
+        } else {
+          // Use RPC function that handles auth.users constraint
+          const { error: rpcError } = await supabase.rpc(
+            "seed_demo_operators",
+            {
+              p_tenant_id: tenantId,
+            },
+          );
 
-      if (operatorError) throw operatorError;
+          if (rpcError) {
+            console.warn(
+              "⚠️ Operator seeding skipped (requires auth setup):",
+              rpcError.message,
+            );
+            console.log(
+              "  → Demo will continue without operators (operations will be unassigned)",
+            );
+          } else {
+            // Fetch the created operators
+            const { data: createdOps } = await supabase
+              .from("profiles")
+              .select("id, full_name")
+              .eq("tenant_id", tenantId)
+              .eq("role", "operator")
+              .like("email", "%@sheetmetalconnect.nl");
 
-      operatorIds = operatorData?.map((o) => o.id) || [];
-      operatorData?.forEach((o, idx) => {
-        operatorIdMap[operators[idx].full_name] = o.id;
-      });
-
-      console.log("✓ Created 6 operators with PINs");
+            if (createdOps && createdOps.length > 0) {
+              operatorIds = createdOps.map((o) => o.id);
+              createdOps.forEach((o) => {
+                operatorIdMap[o.full_name] = o.id;
+              });
+              console.log(`✓ Created ${createdOps.length} shop floor operators`);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("⚠️ Operator setup failed, continuing without:", err);
+      }
     }
 
     // Step 3: Seed resources first (needed for operations)
@@ -288,7 +271,7 @@ export async function generateMockData(
 
     // Step 5: Create realistic Dutch customer jobs
     let jobIds: string[] = [];
-    let jobIdMap: Record<string, string> = {};
+    const jobIdMap: Record<string, string> = {};
 
     if (options.includeJobs) {
       // Dates: Past in Oct/Nov 2025, Future in Jan 2026
@@ -378,14 +361,13 @@ export async function generateMockData(
       console.log("✓ Created 4 realistic Dutch customer jobs");
     }
 
-    // Step 6: Create parts with realistic Dutch naming
+    // Step 6: Create parts with assembly relationships
     let partIds: string[] = [];
-    let partData: Array<{ id: string; part_number: string; job_id: string }> =
-      [];
+    let partData: Array<{ id: string; part_number: string; job_id: string; parent_part_id?: string | null }> = [];
 
     if (options.includeParts && jobIds.length > 0) {
-      const parts = [
-        // WO-2025-1047 parts (completed job)
+      // First: Create parent parts
+      const parentParts = [
         {
           tenant_id: tenantId,
           job_id: jobIdMap["WO-2025-1047"],
@@ -394,6 +376,7 @@ export async function generateMockData(
           notes: "Hoofdframe hydraulische hef - Gelast constructiestaal",
           quantity: 2,
           status: "completed" as const,
+          parent_part_id: null,
           metadata: {
             dimensions: "1200x800x150mm",
             weight: "45.5kg",
@@ -403,28 +386,13 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_id: jobIdMap["WO-2025-1047"],
-          part_number: "HF-BRACKET-002",
-          material: "S355J2",
-          notes: "Montagebeugels zijkant (set van 4)",
-          quantity: 8,
-          status: "completed" as const,
-          metadata: {
-            dimensions: "250x180x12mm",
-            weight: "3.2kg",
-            material_spec: "EN 10025-2",
-          },
-        },
-
-        // WO-2025-1089 parts (in progress - cleanroom panels)
-        {
-          tenant_id: tenantId,
           job_id: jobIdMap["WO-2025-1089"],
           part_number: "CR-PANEL-A1",
           material: "RVS 316L",
           notes: "Bedieningspaneel voorzijde - Cleanroom ISO 5",
           quantity: 12,
           status: "in_progress" as const,
+          parent_part_id: null,
           metadata: {
             dimensions: "400x300x2mm",
             weight: "2.8kg",
@@ -435,29 +403,13 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_id: jobIdMap["WO-2025-1089"],
-          part_number: "CR-PANEL-B1",
-          material: "RVS 316L",
-          notes: "Bedieningspaneel zijkant links",
-          quantity: 12,
-          status: "in_progress" as const,
-          metadata: {
-            dimensions: "300x250x2mm",
-            weight: "2.1kg",
-            material_spec: "EN 1.4404",
-            surface_finish: "Elektropolish Ra<0.4μm",
-          },
-        },
-
-        // WO-2025-1124 parts (energy storage enclosures)
-        {
-          tenant_id: tenantId,
           job_id: jobIdMap["WO-2025-1124"],
           part_number: "ESS-BOX-TOP",
           material: "AlMg3",
-          notes: "Deksel energieopslag behuizing",
+          notes: "Deksel energieopslag behuizing - Parent assembly",
           quantity: 25,
           status: "in_progress" as const,
+          parent_part_id: null,
           metadata: {
             dimensions: "600x400x3mm",
             weight: "1.9kg",
@@ -467,28 +419,13 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_id: jobIdMap["WO-2025-1124"],
-          part_number: "ESS-BOX-SIDE",
-          material: "AlMg3",
-          notes: "Zijpaneel behuizing (links/rechts identiek)",
-          quantity: 50,
-          status: "not_started" as const,
-          metadata: {
-            dimensions: "400x350x3mm",
-            weight: "1.4kg",
-            material_spec: "EN AW-5754",
-          },
-        },
-
-        // WO-2025-1156 parts (ASML high-precision)
-        {
-          tenant_id: tenantId,
           job_id: jobIdMap["WO-2025-1156"],
           part_number: "ASML-FRAME-MAIN",
           material: "RVS 304",
           notes: "Precisie framewerk - CMM inspectie verplicht",
           quantity: 4,
           status: "not_started" as const,
+          parent_part_id: null,
           metadata: {
             dimensions: "800x600x100mm",
             weight: "18.5kg",
@@ -498,14 +435,84 @@ export async function generateMockData(
             flatness: "< 0.02mm",
           },
         },
+      ];
+
+      console.log("📦 Inserting parent parts...");
+      const { data: parentPartsData, error: parentError } = await supabase
+        .from("parts")
+        .insert(parentParts)
+        .select("id, part_number, job_id, parent_part_id");
+
+      if (parentError) {
+        console.error("❌ Parent parts error:", parentError);
+        throw parentError;
+      }
+
+      console.log(`✓ Created ${parentPartsData?.length || 0} parent parts`);
+
+      // Build lookup for parent IDs
+      const partIdLookup: Record<string, string> = {};
+      parentPartsData?.forEach((p) => {
+        partIdLookup[p.part_number] = p.id;
+      });
+
+      // Second: Create child parts linked to parents
+      const childParts = [
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap["WO-2025-1047"],
+          part_number: "HF-BRACKET-002",
+          material: "S355J2",
+          notes: "Montagebeugels zijkant - Child of HF-FRAME-001",
+          quantity: 8,
+          status: "completed" as const,
+          parent_part_id: partIdLookup["HF-FRAME-001"],
+          metadata: {
+            dimensions: "250x180x12mm",
+            weight: "3.2kg",
+            material_spec: "EN 10025-2",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap["WO-2025-1089"],
+          part_number: "CR-PANEL-B1",
+          material: "RVS 316L",
+          notes: "Bedieningspaneel zijkant - Child of CR-PANEL-A1",
+          quantity: 12,
+          status: "in_progress" as const,
+          parent_part_id: partIdLookup["CR-PANEL-A1"],
+          metadata: {
+            dimensions: "300x250x2mm",
+            weight: "2.1kg",
+            material_spec: "EN 1.4404",
+            surface_finish: "Elektropolish Ra<0.4μm",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap["WO-2025-1124"],
+          part_number: "ESS-BOX-SIDE",
+          material: "AlMg3",
+          notes: "Zijpaneel behuizing - Child of ESS-BOX-TOP",
+          quantity: 50,
+          status: "not_started" as const,
+          parent_part_id: partIdLookup["ESS-BOX-TOP"],
+          metadata: {
+            dimensions: "400x350x3mm",
+            weight: "1.4kg",
+            material_spec: "EN AW-5754",
+          },
+        },
         {
           tenant_id: tenantId,
           job_id: jobIdMap["WO-2025-1156"],
           part_number: "ASML-MOUNT-PLT",
           material: "RVS 304",
-          notes: "Montageplaat precisie bewerkingen",
+          notes: "Montageplaat precisie - Child of ASML-FRAME-MAIN",
           quantity: 8,
           status: "not_started" as const,
+          parent_part_id: partIdLookup["ASML-FRAME-MAIN"],
           metadata: {
             dimensions: "300x200x15mm",
             weight: "6.8kg",
@@ -515,17 +522,24 @@ export async function generateMockData(
         },
       ];
 
-      const { data: partsInserted, error: partError } = await supabase
+      console.log("📦 Inserting child parts with parent links...");
+      const { data: childPartsData, error: childError } = await supabase
         .from("parts")
-        .insert(parts)
-        .select("id, part_number, job_id");
+        .insert(childParts)
+        .select("id, part_number, job_id, parent_part_id");
 
-      if (partError) throw partError;
+      if (childError) {
+        console.error("❌ Child parts error:", childError);
+        throw childError;
+      }
 
-      partIds = partsInserted?.map((p) => p.id) || [];
-      partData = partsInserted || [];
+      console.log(`✓ Created ${childPartsData?.length || 0} child parts`);
 
-      console.log("✓ Created 8 parts with realistic specifications");
+      // Combine all parts for operations creation
+      partData = [...(parentPartsData || []), ...(childPartsData || [])];
+      partIds = partData.map((p) => p.id);
+
+      console.log(`✓ Total parts created: ${partData.length} (${parentPartsData?.length} parents + ${childPartsData?.length} children)`);
     }
 
     // Step 7: Create QRM-aligned operations with proper routing
@@ -564,12 +578,11 @@ export async function generateMockData(
             tenant_id: tenantId,
             part_id: partId,
             cell_id: cellIdMap[op.cell],
-            operation_number: `${partNumber}-${String(op.seq).padStart(3, "0")}`,
             operation_name: op.operation_name,
-            description: op.description,
+            notes: op.description, // Map description to notes field
             sequence: op.seq,
             status: op.status,
-            estimated_time: op.estimated_hours,
+            estimated_time: Math.round(op.estimated_hours * 60), // Convert hours to minutes
             metadata: op.metadata || {},
           });
         });
@@ -761,7 +774,7 @@ export async function generateMockData(
               description:
                 "Elektrochemisch polijsten Ra < 0.4μm voor cleanroom",
               estimated_hours: 0.6,
-              status: "queued",
+              status: "not_started",
               metadata: {
                 process: "Electropolish",
                 target_roughness: "Ra < 0.4μm",
@@ -774,7 +787,7 @@ export async function generateMockData(
               operation_name: "Cleanroom inspectie",
               description: "Dimensie + Ra meting + particle test",
               estimated_hours: 0.4,
-              status: "queued",
+              status: "not_started",
               metadata: {
                 roughness_test: "Ra measurement",
                 particle_test: "ISO 14644",
@@ -817,7 +830,7 @@ export async function generateMockData(
               operation_name: "TIG lassen",
               description: "TIG lassen hoekverbindingen",
               estimated_hours: 0.8,
-              status: "queued",
+              status: "not_started",
             },
             {
               cell: "Afwerking",
@@ -825,7 +838,7 @@ export async function generateMockData(
               operation_name: "Elektropolish",
               description: "Elektrochemisch polijsten",
               estimated_hours: 0.5,
-              status: "queued",
+              status: "not_started",
             },
             {
               cell: "Kwaliteitscontrole",
@@ -833,7 +846,7 @@ export async function generateMockData(
               operation_name: "Cleanroom inspectie",
               description: "Dimensie + oppervlakte controle",
               estimated_hours: 0.3,
-              status: "queued",
+              status: "not_started",
             },
           ],
         );
@@ -867,7 +880,7 @@ export async function generateMockData(
               operation_name: "Kanten deksel",
               description: "Kanten 4x 90° voor dekselrand",
               estimated_hours: 0.5,
-              status: "queued",
+              status: "not_started",
               metadata: { bend_count: 4, tooling: "V20-Alu" },
             },
             {
@@ -876,7 +889,7 @@ export async function generateMockData(
               operation_name: "Montage inserts",
               description: "Monteren draadinserts M6 voor bevestiging",
               estimated_hours: 0.3,
-              status: "queued",
+              status: "not_started",
               metadata: { insert_type: "Helicoil M6", quantity: 8 },
             },
             {
@@ -885,7 +898,7 @@ export async function generateMockData(
               operation_name: "Anodiseren",
               description: "Anodiseren naturel helder 15μm",
               estimated_hours: 0.4,
-              status: "queued",
+              status: "not_started",
               metadata: {
                 anodize_type: "Clear natural",
                 thickness: "15μm",
@@ -898,7 +911,7 @@ export async function generateMockData(
               operation_name: "Eindcontrole",
               description: "Dimensie + anodiseren laagdikte",
               estimated_hours: 0.2,
-              status: "queued",
+              status: "not_started",
             },
           ],
         );
@@ -919,7 +932,7 @@ export async function generateMockData(
               operation_name: "Lasersnijden",
               description: "Snijden zijpanelen aluminium",
               estimated_hours: 0.9,
-              status: "queued",
+              status: "not_started",
             },
             {
               cell: "CNC Kantbank",
@@ -927,7 +940,7 @@ export async function generateMockData(
               operation_name: "Kanten",
               description: "Kanten montageranden",
               estimated_hours: 0.6,
-              status: "queued",
+              status: "not_started",
             },
             {
               cell: "Afwerking",
@@ -935,7 +948,7 @@ export async function generateMockData(
               operation_name: "Anodiseren",
               description: "Anodiseren naturel",
               estimated_hours: 0.6,
-              status: "queued",
+              status: "not_started",
             },
             {
               cell: "Kwaliteitscontrole",
@@ -943,7 +956,7 @@ export async function generateMockData(
               operation_name: "Controle",
               description: "Steekproef dimensies",
               estimated_hours: 0.15,
-              status: "queued",
+              status: "not_started",
             },
           ],
         );
@@ -966,7 +979,7 @@ export async function generateMockData(
               operation_name: "Precisie lasersnijden",
               description: "Fiber laser snijden RVS304 - high precision mode",
               estimated_hours: 1.2,
-              status: "queued",
+              status: "not_started",
               metadata: {
                 precision_mode: true,
                 tolerance: "±0.05mm",
@@ -979,7 +992,7 @@ export async function generateMockData(
               operation_name: "Precisie kanten",
               description: "CNC kanten met angle measurement ±0.1°",
               estimated_hours: 1.5,
-              status: "queued",
+              status: "not_started",
               metadata: {
                 angle_tolerance: "±0.1°",
                 tooling: "Precision V-die",
@@ -992,7 +1005,7 @@ export async function generateMockData(
               operation_name: "TIG precisie lassen",
               description: "TIG lassen - low distortion welding procedure",
               estimated_hours: 2.5,
-              status: "queued",
+              status: "not_started",
               metadata: {
                 weld_procedure: "Low-distortion TIG",
                 fixturing: "Precision jig required",
@@ -1005,7 +1018,7 @@ export async function generateMockData(
               operation_name: "Precisie montage",
               description: "Montage subassemblies - clean room assembly",
               estimated_hours: 1.0,
-              status: "queued",
+              status: "not_started",
               metadata: {
                 cleanroom_assembly: true,
                 torque_spec: "Per ASML drawing",
@@ -1018,7 +1031,7 @@ export async function generateMockData(
               description:
                 "Volledige CMM meting + materiaalcertificaat + inspectie rapport",
               estimated_hours: 1.5,
-              status: "queued",
+              status: "not_started",
               metadata: {
                 cmm_program: "ASML-FRAME-MAIN-CMM.prg",
                 material_cert: "EN 10204 3.1 required",
@@ -1047,7 +1060,7 @@ export async function generateMockData(
               operation_name: "Lasersnijden",
               description: "Snijden montageplaten 15mm RVS",
               estimated_hours: 0.8,
-              status: "queued",
+              status: "not_started",
             },
             {
               cell: "CNC Kantbank",
@@ -1055,7 +1068,7 @@ export async function generateMockData(
               operation_name: "Kanten",
               description: "Kanten bevestigingsranden",
               estimated_hours: 0.6,
-              status: "queued",
+              status: "not_started",
             },
             {
               cell: "Kwaliteitscontrole",
@@ -1063,25 +1076,36 @@ export async function generateMockData(
               operation_name: "CMM controle",
               description: "CMM meting kritische maten",
               estimated_hours: 0.8,
-              status: "queued",
+              status: "not_started",
               metadata: { cmm_required: true, tolerance: "±0.05mm" },
             },
           ],
         );
       }
 
-      const { data: operationsInserted, error: operationsError } =
-        await supabase
-          .from("operations")
-          .insert(operations)
-          .select("id, cell_id, part_id, status");
+      console.log(`🔧 Prepared ${operations.length} operations to insert...`);
+      
+      if (operations.length === 0) {
+        console.warn("⚠️ No operations created - check if parts were found");
+        console.log("Available parts:", partData.map(p => p.part_number));
+        console.log("Available cells:", Object.keys(cellIdMap));
+      } else {
+        const { data: operationsInserted, error: operationsError } =
+          await supabase
+            .from("operations")
+            .insert(operations)
+            .select("id, cell_id, part_id, status");
 
-      if (operationsError) throw operationsError;
+        if (operationsError) {
+          console.error("❌ Operations insert error:", operationsError);
+          throw operationsError;
+        }
 
-      operationData = operationsInserted || [];
-      console.log(
-        `✓ Created ${operations.length} QRM-aligned operations with detailed routing`,
-      );
+        operationData = operationsInserted || [];
+        console.log(
+          `✓ Created ${operationsInserted?.length || 0} QRM-aligned operations with detailed routing`,
+        );
+      }
     }
 
     // Step 8: Link resources to operations

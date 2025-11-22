@@ -1,8 +1,8 @@
 import type { Config } from "tailwindcss";
 
 export default {
-  // Dark mode only - no class toggle needed
-  darkMode: ["class"],
+  // Dark mode only - always on
+  darkMode: "selector",
   content: [
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",

@@ -30,10 +30,10 @@ export default function About() {
 
       <Box>
         <Typography variant="body2" color="text.secondary">
-          <Link href="/admin/help">Help</Link> · <Link href="/admin/api-docs">API Docs</Link> · <Link href="https://github.com/SheetMetalConnect/eryxon-flow" target="_blank">GitHub</Link>
+          <Link href="/help">Help</Link> · <Link href="/api-docs">API Docs</Link> · <Link href="https://github.com/SheetMetalConnect/eryxon-flow" target="_blank">GitHub</Link>
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          Privacy Policy · Terms of Service
+          <Link href="/privacy-policy">Privacy Policy</Link> · <Link href="/terms-of-service">Terms of Service</Link>
         </Typography>
       </Box>
     </Container>

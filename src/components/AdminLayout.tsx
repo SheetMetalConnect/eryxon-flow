@@ -38,12 +38,14 @@ import {
   Activity,
   Flag,
   Info,
+  Factory,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { usePendingIssuesCount } from "@/hooks/usePendingIssuesCount";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import AnimatedBackground from "@/components/AnimatedBackground";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -243,10 +245,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
       {/* Logo/Brand */}
-      <div className="flex h-16 items-center border-b px-6">
+      <div className="flex h-16 items-center border-b border-border-subtle px-6">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded bg-primary" />
-          {!collapsed && <span className="text-lg font-bold">Eryxon MES</span>}
+          <Factory className="h-8 w-8 text-foreground/80" strokeWidth={1.5} />
+          {!collapsed && (
+            <span className="text-lg font-bold text-foreground">
+              Eryxon Flow
+            </span>
+          )}
         </div>
       </div>
 
@@ -264,10 +270,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             return (
               <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}>
                 <Button
-                  variant={isItemActive ? "default" : "ghost"}
+                  variant="ghost"
                   className={cn(
-                    "w-full justify-start gap-3",
-                    collapsed && "justify-center px-2"
+                    "w-full justify-start gap-3 nav-item-hover",
+                    collapsed && "justify-center px-2",
+                    isItemActive && "nav-item-active"
                   )}
                   size="sm"
                 >
@@ -321,8 +328,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 return (
                   <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}>
                     <Button
-                      variant={isItemActive ? "default" : "ghost"}
-                      className="w-full justify-start gap-3"
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start gap-3 nav-item-hover",
+                        isItemActive && "nav-item-active"
+                      )}
                       size="sm"
                     >
                       <item.icon className="h-4 w-4 shrink-0" />
@@ -365,8 +375,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 return (
                   <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}>
                     <Button
-                      variant={isItemActive ? "default" : "ghost"}
-                      className="w-full justify-start gap-3"
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start gap-3 nav-item-hover",
+                        isItemActive && "nav-item-active"
+                      )}
                       size="sm"
                     >
                       <item.icon className="h-4 w-4 shrink-0" />
@@ -409,8 +422,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 return (
                   <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}>
                     <Button
-                      variant={isItemActive ? "default" : "ghost"}
-                      className="w-full justify-start gap-3"
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start gap-3 nav-item-hover",
+                        isItemActive && "nav-item-active"
+                      )}
                       size="sm"
                     >
                       <item.icon className="h-4 w-4 shrink-0" />
@@ -453,8 +469,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 return (
                   <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}>
                     <Button
-                      variant={isItemActive ? "default" : "ghost"}
-                      className="w-full justify-start gap-3"
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start gap-3 nav-item-hover",
+                        isItemActive && "nav-item-active"
+                      )}
                       size="sm"
                     >
                       <item.icon className="h-4 w-4 shrink-0" />
@@ -469,9 +488,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </ScrollArea>
 
       {/* User Profile & Sign Out */}
-      <div className="border-t p-3">
+      <div className="border-t border-border-subtle p-3">
         {!collapsed && tenant && (
-          <div className="mb-2 rounded-lg bg-primary/10 border border-primary/20 p-3">
+          <div className="mb-2 rounded-lg bg-white/5 border border-border-subtle p-3">
             <div className="text-xs text-muted-foreground mb-1">Tenant</div>
             <div className="text-sm font-medium truncate">{tenant.company_name || tenant.name}</div>
             <div className="flex items-center gap-2 mt-1">
@@ -531,7 +550,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <>
+      <AnimatedBackground />
+      <div className="relative flex h-screen overflow-hidden bg-background">
       {/* Mobile Menu Button */}
       <Button
         variant="ghost"
@@ -553,7 +574,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Sidebar - Mobile */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 border-r bg-card transition-transform lg:hidden",
+          "fixed inset-y-0 left-0 z-50 w-64 border-r sidebar-glass transition-transform lg:hidden",
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -563,7 +584,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Sidebar - Desktop */}
       <aside
         className={cn(
-          "hidden border-r bg-card transition-all lg:block",
+          "hidden border-r sidebar-glass transition-all lg:block",
           collapsed ? "w-16" : "w-64"
         )}
       >
@@ -578,6 +599,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           {children}
         </div>
       </main>
-    </div>
+      </div>
+    </>
   );
 }

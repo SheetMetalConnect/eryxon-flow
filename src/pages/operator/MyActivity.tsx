@@ -136,8 +136,11 @@ export default function MyActivity() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary" />
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[hsl(var(--brand-primary))]" />
+          <p className="text-sm text-muted-foreground">Loading activity...</p>
+        </div>
       </div>
     );
   }
@@ -151,29 +154,57 @@ export default function MyActivity() {
         </div>
 
         {/* Summary Stats */}
-        <div className="grid grid-cols-4 gap-4">
-          <Card className="p-4">
-            <div className="text-sm text-muted-foreground mb-1">{t("myActivity.todayTime")}</div>
-            <div className="text-2xl font-bold">{formatDuration(todayTotal)}</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="glass-card p-6 transition-smooth hover:scale-[1.02]">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-xl bg-[hsl(var(--brand-primary))]/10">
+                <Clock className="h-6 w-6 text-[hsl(var(--brand-primary))]" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold">{formatDuration(todayTotal)}</div>
+                <div className="text-sm text-muted-foreground">{t("myActivity.todayTime")}</div>
+              </div>
+            </div>
           </Card>
-          <Card className="p-4">
-            <div className="text-sm text-muted-foreground mb-1">{t("myActivity.weekTime")}</div>
-            <div className="text-2xl font-bold">{formatDuration(weekTotal)}</div>
+          <Card className="glass-card p-6 transition-smooth hover:scale-[1.02]">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-xl bg-[hsl(var(--color-info))]/10">
+                <Clock className="h-6 w-6 text-[hsl(var(--color-info))]" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold">{formatDuration(weekTotal)}</div>
+                <div className="text-sm text-muted-foreground">{t("myActivity.weekTime")}</div>
+              </div>
+            </div>
           </Card>
-          <Card className="p-4">
-            <div className="text-sm text-muted-foreground mb-1">{t("myActivity.todayCompleted")}</div>
-            <div className="text-2xl font-bold">{todayCompleted}</div>
+          <Card className="glass-card p-6 transition-smooth hover:scale-[1.02]">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-xl bg-[hsl(var(--color-success))]/10">
+                <CheckCircle className="h-6 w-6 text-[hsl(var(--color-success))]" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold">{todayCompleted}</div>
+                <div className="text-sm text-muted-foreground">{t("myActivity.todayCompleted")}</div>
+              </div>
+            </div>
           </Card>
-          <Card className="p-4">
-            <div className="text-sm text-muted-foreground mb-1">{t("myActivity.weekCompleted")}</div>
-            <div className="text-2xl font-bold">{weekCompleted}</div>
+          <Card className="glass-card p-6 transition-smooth hover:scale-[1.02]">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-xl bg-[hsl(var(--color-warning))]/10">
+                <CheckCircle className="h-6 w-6 text-[hsl(var(--color-warning))]" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold">{weekCompleted}</div>
+                <div className="text-sm text-muted-foreground">{t("myActivity.weekCompleted")}</div>
+              </div>
+            </div>
           </Card>
         </div>
 
         {/* Activity List */}
         {dayGroups.length === 0 ? (
-          <Card className="p-12 text-center">
-            <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <Card className="glass-card p-12 text-center">
+            <Clock className="h-12 w-12 mx-auto mb-4 text-[hsl(var(--foreground))]/40" />
             <h3 className="text-lg font-medium mb-2">{t("myActivity.noActivity")}</h3>
             <p className="text-sm text-muted-foreground">{t("myActivity.noActivityDescription")}</p>
           </Card>
@@ -194,17 +225,17 @@ export default function MyActivity() {
 
                 <div className="grid gap-3">
                   {group.entries.map((entry) => (
-                    <Card key={entry.id} className="p-4">
+                    <Card key={entry.id} className="glass-card p-4 transition-smooth hover:bg-[hsl(var(--surface-elevated))]">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <Badge
-                              className={`bg-${getStageClass(entry.operation.cell.name)} text-primary-foreground`}
+                              className="bg-[hsl(var(--stage-cutting))]/10 text-[hsl(var(--stage-cutting))] border-[hsl(var(--stage-cutting))]/20"
                             >
                               {entry.operation.cell.name}
                             </Badge>
                             {entry.operation.status === "completed" && (
-                              <CheckCircle className="h-4 w-4 text-status-completed" />
+                              <CheckCircle className="h-4 w-4 text-[hsl(var(--status-completed))]" />
                             )}
                           </div>
                           <div className="font-medium mb-1">{entry.operation.operation_name}</div>
@@ -217,7 +248,7 @@ export default function MyActivity() {
                         </div>
                         <div className="text-right shrink-0">
                           <div className="text-sm font-medium flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
+                            <Clock className="h-3 w-3 text-[hsl(var(--brand-primary))]" />
                             {entry.duration ? formatDuration(entry.duration) : t("myActivity.inProgress")}
                           </div>
                           <div className="text-xs text-muted-foreground">

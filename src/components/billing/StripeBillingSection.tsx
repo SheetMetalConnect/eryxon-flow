@@ -1,21 +1,14 @@
 import React, { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Typography,
-  Alert,
-  CircularProgress,
-  Chip,
-  Stack,
-} from '@mui/material';
-import {
-  CreditCard as CreditCardIcon,
-  Upgrade as UpgradeIcon,
-  Settings as SettingsIcon,
-  Lock as LockIcon,
-} from '@mui/icons-material';
+  Lock,
+  ArrowUp,
+  Settings,
+  Loader2,
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -97,33 +90,25 @@ export const StripeBillingSection: React.FC<StripeBillingSectionProps> = ({
   // Coming Soon Mode for non-admins or when billing is not enabled
   if (!canSeeBilling) {
     return (
-      <Card
-        sx={{
-          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
-          border: '1px solid',
-          borderColor: 'primary.main',
-        }}
-      >
-        <CardContent sx={{ p: 4, textAlign: 'center' }}>
-          <LockIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-          <Typography variant="h5" fontWeight={600} gutterBottom>
-            Professional Billing Coming Soon
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+      <Card className="glass-card bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-blue-500/20">
+        <CardContent className="p-6 text-center">
+          <Lock className="h-16 w-16 mx-auto mb-4 text-blue-500" />
+          <h3 className="text-xl font-semibold mb-3">Professional Billing Coming Soon</h3>
+          <p className="text-sm text-muted-foreground mb-4">
             We're preparing a professional billing system with multiple payment options including
             Stripe with iDEAL, SEPA Direct Debit, and invoice-based billing.
-          </Typography>
-          <Stack spacing={1} alignItems="center">
-            <Chip label="🇪🇺 EU Only" variant="outlined" />
-            <Chip label="💶 Euro Currency" variant="outlined" />
-            <Chip label="🏢 Business Accounts" variant="outlined" />
-          </Stack>
+          </p>
+          <div className="flex flex-wrap gap-2 justify-center">
+            <Badge variant="outline">🇪🇺 EU Only</Badge>
+            <Badge variant="outline">💶 Euro Currency</Badge>
+            <Badge variant="outline">🏢 Business Accounts</Badge>
+          </div>
           {isAdmin && (
-            <Alert severity="info" sx={{ mt: 3 }}>
-              <Typography variant="body2">
+            <Alert className="mt-4 bg-blue-500/10 border-blue-500/20">
+              <AlertDescription className="text-sm">
                 <strong>Admin Note:</strong> Billing features will be enabled by super admin for testing.
                 Contact support to enable billing for your account.
-              </Typography>
+              </AlertDescription>
             </Alert>
           )}
         </CardContent>
@@ -133,44 +118,59 @@ export const StripeBillingSection: React.FC<StripeBillingSectionProps> = ({
 
   // Full Billing Features (Admin with billing_enabled = true)
   return (
-    <Box>
-      <Alert severity="success" sx={{ mb: 3 }}>
-        <Typography variant="body2" fontWeight={600}>
-          ✅ Billing Enabled (Testing Mode)
-        </Typography>
-        <Typography variant="caption">
-          You have early access to the billing system. All features are functional.
-        </Typography>
+    <div className="space-y-4">
+      <Alert className="bg-green-500/10 border-green-500/20">
+        <AlertDescription>
+          <div className="font-semibold text-sm">✅ Billing Enabled (Testing Mode)</div>
+          <div className="text-xs text-muted-foreground mt-1">
+            You have early access to the billing system. All features are functional.
+          </div>
+        </AlertDescription>
       </Alert>
 
-      <Card sx={{ mb: 3 }}>
-        <CardContent sx={{ p: 3 }}>
-          <Typography variant="h6" fontWeight={600} gutterBottom>
-            Subscription Management
-          </Typography>
+      <Card className="glass-card">
+        <CardContent className="p-6">
+          <h3 className="text-lg font-semibold mb-4">Subscription Management</h3>
 
-          <Stack spacing={2}>
+          <div className="space-y-3">
             {currentPlan === 'free' && (
               <>
                 <Button
-                  variant="contained"
-                  size="large"
-                  startIcon={loading === 'upgrade-pro' ? <CircularProgress size={20} /> : <UpgradeIcon />}
+                  size="lg"
                   onClick={() => handleUpgrade('pro')}
                   disabled={!!loading}
-                  fullWidth
+                  className="w-full"
                 >
-                  {loading === 'upgrade-pro' ? 'Redirecting to Stripe...' : 'Upgrade to Pro (€97/month)'}
+                  {loading === 'upgrade-pro' ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Redirecting to Stripe...
+                    </>
+                  ) : (
+                    <>
+                      <ArrowUp className="h-4 w-4 mr-2" />
+                      Upgrade to Pro (€97/month)
+                    </>
+                  )}
                 </Button>
                 <Button
-                  variant="outlined"
-                  size="large"
-                  startIcon={loading === 'upgrade-premium' ? <CircularProgress size={20} /> : <UpgradeIcon />}
+                  variant="outline"
+                  size="lg"
                   onClick={() => handleUpgrade('premium')}
                   disabled={!!loading}
-                  fullWidth
+                  className="w-full"
                 >
-                  {loading === 'upgrade-premium' ? 'Redirecting to Stripe...' : 'Upgrade to Premium (€497/month)'}
+                  {loading === 'upgrade-premium' ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Redirecting to Stripe...
+                    </>
+                  ) : (
+                    <>
+                      <ArrowUp className="h-4 w-4 mr-2" />
+                      Upgrade to Premium (€497/month)
+                    </>
+                  )}
                 </Button>
               </>
             )}
@@ -178,54 +178,80 @@ export const StripeBillingSection: React.FC<StripeBillingSectionProps> = ({
             {currentPlan === 'pro' && (
               <>
                 <Button
-                  variant="contained"
-                  size="large"
-                  startIcon={loading === 'upgrade-premium' ? <CircularProgress size={20} /> : <UpgradeIcon />}
+                  size="lg"
                   onClick={() => handleUpgrade('premium')}
                   disabled={!!loading}
-                  fullWidth
+                  className="w-full"
                 >
-                  {loading === 'upgrade-premium' ? 'Redirecting to Stripe...' : 'Upgrade to Premium (€497/month)'}
+                  {loading === 'upgrade-premium' ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Redirecting to Stripe...
+                    </>
+                  ) : (
+                    <>
+                      <ArrowUp className="h-4 w-4 mr-2" />
+                      Upgrade to Premium (€497/month)
+                    </>
+                  )}
                 </Button>
                 <Button
-                  variant="outlined"
-                  size="large"
-                  startIcon={loading === 'portal' ? <CircularProgress size={20} /> : <SettingsIcon />}
+                  variant="outline"
+                  size="lg"
                   onClick={handleManageBilling}
                   disabled={!!loading}
-                  fullWidth
+                  className="w-full"
                 >
-                  {loading === 'portal' ? 'Opening Portal...' : 'Manage Billing'}
+                  {loading === 'portal' ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Opening Portal...
+                    </>
+                  ) : (
+                    <>
+                      <Settings className="h-4 w-4 mr-2" />
+                      Manage Billing
+                    </>
+                  )}
                 </Button>
               </>
             )}
 
             {currentPlan === 'premium' && (
               <Button
-                variant="outlined"
-                size="large"
-                startIcon={loading === 'portal' ? <CircularProgress size={20} /> : <SettingsIcon />}
+                variant="outline"
+                size="lg"
                 onClick={handleManageBilling}
                 disabled={!!loading}
-                fullWidth
+                className="w-full"
               >
-                {loading === 'portal' ? 'Opening Portal...' : 'Manage Billing'}
+                {loading === 'portal' ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Opening Portal...
+                  </>
+                ) : (
+                  <>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Manage Billing
+                  </>
+                )}
               </Button>
             )}
-          </Stack>
+          </div>
 
-          <Alert severity="info" sx={{ mt: 3 }}>
-            <Typography variant="body2">
-              <strong>Payment Methods:</strong>
-            </Typography>
-            <Typography variant="caption" component="div">
-              • iDEAL (Netherlands)<br />
-              • SEPA Direct Debit (EU-wide)<br />
-              • Credit/Debit Cards<br />
-            </Typography>
+          <Alert className="mt-4 bg-blue-500/10 border-blue-500/20">
+            <AlertDescription>
+              <div className="font-semibold text-sm mb-1">Payment Methods:</div>
+              <div className="text-xs text-muted-foreground">
+                • iDEAL (Netherlands)<br />
+                • SEPA Direct Debit (EU-wide)<br />
+                • Credit/Debit Cards
+              </div>
+            </AlertDescription>
           </Alert>
         </CardContent>
       </Card>
-    </Box>
+    </div>
   );
 };

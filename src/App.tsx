@@ -4,10 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import { ThemeProvider } from "./theme/ThemeProvider";
-import { ToastProvider } from "./components/mui/ToastNotification";
 import { NotificationToastProvider } from "./components/NotificationToastProvider";
-import AnimatedBackground from "./components/AnimatedBackground";
 import Auth from "./pages/Auth";
 import AcceptInvitation from "./pages/AcceptInvitation";
 import WorkQueue from "./pages/operator/WorkQueue";
@@ -40,6 +37,8 @@ import { MyPlan } from "./pages/MyPlan";
 import BillingComingSoon from "./pages/BillingComingSoon";
 import Help from "./pages/Help";
 import About from "./pages/About";
+import PrivacyPolicy from "./pages/common/PrivacyPolicy";
+import TermsOfService from "./pages/common/TermsOfService";
 import NotFound from "./pages/NotFound";
 import { OnboardingWizard } from "./components/onboarding";
 import Layout from "./components/Layout";
@@ -445,6 +444,25 @@ function AppRoutes() {
         }
       />
 
+      {/* Public legal pages - must be accessible without authentication */}
+      <Route
+        path="/privacy-policy"
+        element={
+          <Layout>
+            <PrivacyPolicy />
+          </Layout>
+        }
+      />
+
+      <Route
+        path="/terms-of-service"
+        element={
+          <Layout>
+            <TermsOfService />
+          </Layout>
+        }
+      />
+
       {/* Legacy redirects */}
       <Route path="/admin/stages" element={<Navigate to="/admin/config/stages" replace />} />
       <Route path="/admin/materials" element={<Navigate to="/admin/config/materials" replace />} />
@@ -462,22 +480,17 @@ function AppRoutes() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <AnimatedBackground />
-      <ToastProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AuthProvider>
-              <NotificationToastProvider>
-                <AppRoutes />
-              </NotificationToastProvider>
-            </AuthProvider>
-          </BrowserRouter>
-        </TooltipProvider>
-      </ToastProvider>
-    </ThemeProvider>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AuthProvider>
+          <NotificationToastProvider>
+            <AppRoutes />
+          </NotificationToastProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 
