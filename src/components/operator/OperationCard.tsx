@@ -27,10 +27,17 @@ export default function OperationCard({ operation, onUpdate, compact = false }: 
   const isAssignedToMe = operation.assigned_operator_id === profile?.id;
 
   const statusColors = {
-    not_started: "bg-muted",
-    in_progress: "bg-accent",
-    completed: "bg-completed",
-    on_hold: "bg-on-hold",
+    not_started: "bg-status-pending",
+    in_progress: "bg-status-active",
+    completed: "bg-status-completed",
+    on_hold: "bg-status-on-hold",
+  };
+
+  const severityColors = {
+    low: { border: 'border-severity-low', text: 'text-severity-low' },
+    medium: { border: 'border-severity-medium', text: 'text-severity-medium' },
+    high: { border: 'border-severity-high', text: 'text-severity-high' },
+    critical: { border: 'border-severity-critical', text: 'text-severity-critical' },
   };
 
   if (compact) {
@@ -125,11 +132,7 @@ export default function OperationCard({ operation, onUpdate, compact = false }: 
             {pendingCount > 0 && highestSeverity && (
               <Badge
                 variant="outline"
-                className="text-xs border-issue-critical"
-                style={{
-                  borderColor: `hsl(var(--issue-${highestSeverity}))`,
-                  color: `hsl(var(--issue-${highestSeverity}))`,
-                }}
+                className={`text-xs ${severityColors[highestSeverity as keyof typeof severityColors]?.border} ${severityColors[highestSeverity as keyof typeof severityColors]?.text}`}
               >
                 <AlertTriangle className="h-3 w-3 mr-1" />
                 {pendingCount}
