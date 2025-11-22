@@ -14,11 +14,11 @@ interface JobRowProps {
 // Helper to get status badge colors based on operation/cell type
 const getOperationBadgeColor = (opName: string) => {
     const name = opName.toLowerCase();
-    if (name.includes('frezen') || name.includes('mill')) return 'bg-blue-500';
+    if (name.includes('frezen') || name.includes('mill')) return 'bg-operation-milling';
     if (name.includes('afbramen') || name.includes('deburr')) return 'bg-emerald-500';
     if (name.includes('assemblage') || name.includes('assembly')) return 'bg-amber-500';
-    if (name.includes('lassen') || name.includes('weld')) return 'bg-red-500';
-    if (name.includes('autorisatie') || name.includes('auth')) return 'bg-gray-400';
+    if (name.includes('lassen') || name.includes('weld')) return 'bg-operation-welding';
+    if (name.includes('autorisatie') || name.includes('auth')) return 'bg-operation-default';
     return 'bg-primary';
 };
 
@@ -46,7 +46,7 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
             <td className="px-2 py-1.5">
                 <Badge
                     className={cn(
-                        "text-white text-xs font-semibold px-2 py-0.5 whitespace-nowrap",
+                        "text-primary-foreground text-xs font-semibold px-2 py-0.5 whitespace-nowrap",
                         getOperationBadgeColor(job.currentOp)
                     )}
                 >
@@ -92,12 +92,12 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
                 <div className="flex items-center gap-1.5 justify-center">
                     {job.hasPdf && (
                         <div title="PDF Available">
-                            <FileText className="w-3.5 h-3.5 text-blue-500" />
+                            <FileText className="w-3.5 h-3.5 text-brand-primary" />
                         </div>
                     )}
                     {job.hasModel && (
                         <div title="3D Model">
-                            <Box className="w-3.5 h-3.5 text-purple-500" />
+                            <Box className="w-3.5 h-3.5 text-accent" />
                         </div>
                     )}
                     {job.warnings && job.warnings.length > 0 && (

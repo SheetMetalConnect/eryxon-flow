@@ -111,7 +111,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
     return (
       <Dialog open onOpenChange={onClose}>
         <DialogContent>
-          <div className="text-center py-8 text-red-600">
+          <div className="text-center py-8 text-destructive">
             {error ? `Error loading job: ${(error as Error).message}` : "Job not found"}
           </div>
         </DialogContent>
@@ -187,7 +187,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
           {/* Routing Visualization */}
           <div>
             <Label className="text-lg">{t("qrm.operationsFlow", "Operations Flow")}</Label>
-            <div className="mt-3 border rounded-lg p-4 bg-gradient-to-br from-gray-50 to-white">
+            <div className="mt-3 border rounded-lg p-4 bg-muted">
               <OperationsFlowVisualization routing={routing} loading={routingLoading} />
             </div>
           </div>
@@ -210,7 +210,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
           {job?.metadata && Object.keys(job.metadata).length > 0 && (
             <div>
               <Label>{t("jobs.customMetadata")}</Label>
-              <div className="mt-2 border rounded-md p-3">
+              <div className="mt-2 border rounded-md p-3 bg-muted">
                 <table className="w-full text-sm">
                   <tbody>
                     {Object.entries(job.metadata).map(([key, value]) => (
@@ -280,9 +280,9 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                             <div className="flex items-center gap-3">
                               {/* Status icon */}
                               {isCompleted ? (
-                                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                <CheckCircle2 className="h-4 w-4 text-success" />
                               ) : isInProgress ? (
-                                <Clock className="h-4 w-4 text-blue-600 animate-pulse" />
+                                <Clock className="h-4 w-4 text-brand-primary animate-pulse" />
                               ) : (
                                 <Circle className="h-4 w-4 text-gray-400" />
                               )}
@@ -308,8 +308,8 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                             <Badge
                               variant={isCompleted ? "outline" : isInProgress ? "default" : "secondary"}
                               className={`
-                                ${isCompleted ? 'text-green-600 border-green-300' : ''}
-                                ${isInProgress ? 'bg-blue-600' : ''}
+                                ${isCompleted ? 'text-success border-alert-success-border' : ''}
+                                ${isInProgress ? 'bg-brand-primary' : ''}
                               `}
                             >
                               {operation.status?.replace("_", " ")}

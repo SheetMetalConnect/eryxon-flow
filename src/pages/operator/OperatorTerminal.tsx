@@ -330,7 +330,7 @@ export default function OperatorTerminal() {
 
                 {/* 2. IN BUFFER */}
                 <div className="flex-1 flex flex-col min-h-0 border-b border-border overflow-hidden">
-                    <div className="px-4 py-2 bg-blue-950/10 border-l-4 border-blue-500 flex items-center justify-between dark:bg-blue-950/30 shrink-0">
+                    <div className="px-4 py-2 bg-alert-info-bg border-l-4 border-alert-info-border flex items-center justify-between shrink-0">
                         <h2 className="text-base font-bold text-blue-600 dark:text-blue-400">{t("terminal.inBuffer")} ({inBufferJobs.length})</h2>
                     </div>
                     <div className="flex-1 overflow-auto">
