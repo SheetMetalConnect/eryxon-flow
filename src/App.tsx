@@ -36,6 +36,8 @@ import Pricing from "./pages/Pricing";
 import { MyPlan } from "./pages/MyPlan";
 import Help from "./pages/Help";
 import About from "./pages/About";
+import PrivacyPolicy from "./pages/common/PrivacyPolicy";
+import TermsOfService from "./pages/common/TermsOfService";
 import NotFound from "./pages/NotFound";
 import { OnboardingWizard } from "./components/onboarding";
 import Layout from "./components/Layout";
@@ -435,6 +437,28 @@ function AppRoutes() {
           <ProtectedRoute>
             <Layout>
               <About />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/privacy-policy"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <PrivacyPolicy />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/terms-of-service"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <TermsOfService />
             </Layout>
           </ProtectedRoute>
         }

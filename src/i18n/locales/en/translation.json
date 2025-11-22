@@ -48,6 +48,13 @@
     "noAccount": "Don't have an account? Sign up",
     "haveAccount": "Already have an account? Sign in",
     "fillAllFields": "Please fill in all fields",
+    "agreeToTerms": "I agree to the",
+    "privacyPolicy": "Privacy Policy",
+    "and": "and",
+    "termsOfService": "Terms of Service",
+    "emailConsent": ", and consent to receive service-related emails (account notifications, updates, and important announcements).",
+    "gdprNotice": "By creating an account, you acknowledge that your data will be processed in accordance with GDPR regulations. You can export or delete your data at any time from your account settings.",
+    "mustAgreeToTerms": "You must agree to the Privacy Policy and Terms of Service to create an account.",
     "checkEmail": "Check your email to confirm your account",
     "unexpectedError": "An unexpected error occurred"
   },
@@ -109,10 +116,61 @@
       "confirmWarning": "This action cannot be undone",
       "confirmCancel": "Cancel",
       "confirmYes": "Yes, Clear Demo Data",
+      "confirmClearing": "Clearing...",
+      "confirmButton": "Clear Demo Data",
       "successCreated": "Demo data created successfully",
       "successCleared": "Demo data cleared successfully",
       "errorCreate": "Failed to create demo data",
       "errorClear": "Failed to clear demo data"
+    },
+    "gdpr": {
+      "title": "Data Deletion (GDPR)",
+      "description": "Permanently delete your account or entire organization data",
+      "deleteAccount": {
+        "title": "Delete My Account",
+        "description": "Permanently delete your user account and all associated personal data.",
+        "warning": "Warning",
+        "warningMessage": "This action cannot be undone. Your account, time entries, assignments, and issues will be permanently deleted.",
+        "button": "Delete My Account",
+        "confirmTitle": "Delete Your Account?",
+        "confirmMessage": "This will permanently delete your account and all associated data:",
+        "confirmItems": {
+          "profile": "Your user profile",
+          "timeEntries": "All time entries you created",
+          "assignments": "All assignments to you",
+          "issues": "All issues you created"
+        },
+        "confirmWarning": "This action cannot be undone",
+        "confirmDescription": "You will be immediately signed out and will not be able to recover your account.",
+        "confirmButton": "Delete My Account",
+        "deleting": "Deleting..."
+      },
+      "deleteTenant": {
+        "title": "Delete Entire Organization",
+        "description": "Permanently delete your organization and ALL data for all users.",
+        "warningTitle": "Critical Warning",
+        "warningMessage": "This will delete ALL jobs, parts, operations, users, and data for your entire organization. This action affects ALL users in your organization and CANNOT be undone.",
+        "button": "Delete Entire Organization",
+        "confirmTitle": "Delete Entire Organization?",
+        "confirmMessage": "This will permanently delete your organization and ALL data:",
+        "confirmItems": {
+          "users": "All user accounts and profiles",
+          "jobs": "All jobs, parts, and operations",
+          "timeEntries": "All time entries and assignments",
+          "issues": "All issues and production data",
+          "config": "All cells, materials, and resources",
+          "api": "All API keys and webhooks",
+          "all": "Everything else in your organization"
+        },
+        "confirmWarningTitle": "CRITICAL: This affects ALL users",
+        "confirmWarningMessage": "This will delete data for ALL users in your organization. Everyone will lose access. This action is PERMANENT and CANNOT be undone.",
+        "confirmButton": "Delete Organization",
+        "deleting": "Deleting..."
+      },
+      "exportFirst": "Before deleting, you can export your data using the",
+      "dataExportLink": "Data Export feature",
+      "privacyPolicyLink": "Privacy Policy",
+      "seePolicy": "For questions about data deletion, see our"
     }
   },
   "subscription": {
