@@ -18,11 +18,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Loader2, UserCheck, X, UserPlus } from "lucide-react";
+import { Loader2, UserCheck, X, UserPlus, ArrowRight, Users } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -84,7 +84,6 @@ export default function Assignments() {
     full_name: "",
     employee_id: "",
     pin: "",
-    no_email_login: true,
   });
 
   useEffect(() => {
@@ -327,7 +326,6 @@ export default function Assignments() {
         full_name: "",
         employee_id: "",
         pin: "",
-        no_email_login: true,
       });
       loadData();
     } catch (error: any) {
@@ -355,7 +353,9 @@ export default function Assignments() {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t("assignments.job")} />
       ),
-      cell: ({ row }) => row.original.part.job.job_number,
+      cell: ({ row }) => (
+        <span className="text-sm">{row.original.part.job.job_number}</span>
+      ),
     },
     {
       accessorKey: "operator.full_name",
@@ -364,7 +364,7 @@ export default function Assignments() {
         <DataTableColumnHeader column={column} title={t("assignments.assignedTo")} />
       ),
       cell: ({ row }) => (
-        <Badge variant="secondary">{row.original.operator.full_name}</Badge>
+        <Badge variant="secondary" className="text-xs">{row.original.operator.full_name}</Badge>
       ),
     },
     {
@@ -374,7 +374,7 @@ export default function Assignments() {
         <DataTableColumnHeader column={column} title={t("assignments.assignedBy")} />
       ),
       cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">
+        <span className="text-xs text-muted-foreground">
           {row.original.assigned_by_user.full_name}
         </span>
       ),
@@ -385,7 +385,7 @@ export default function Assignments() {
         <DataTableColumnHeader column={column} title={t("assignments.date")} />
       ),
       cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">
+        <span className="text-xs text-muted-foreground">
           {format(new Date(row.getValue("created_at")), "MMM d, yyyy")}
         </span>
       ),
@@ -400,8 +400,9 @@ export default function Assignments() {
             onClick={() => handleRemoveAssignment(assignment.id, assignment.part_id)}
             variant="ghost"
             size="sm"
+            className="h-8 w-8 p-0"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5" />
           </Button>
         );
       },
@@ -416,27 +417,31 @@ export default function Assignments() {
     );
   }
 
+  const selectedPartData = parts.find((p) => p.id === selectedPart);
+  const selectedOperatorData = operators.find((o) => o.id === selectedOperator);
+
   return (
-    <div className="space-y-8 p-6">
+    <div className="container max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
+      {/* Header */}
       <div>
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+        <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
           {t("assignments.title")}
         </h1>
-        <p className="text-muted-foreground text-lg">{t("assignments.description")}</p>
+        <p className="text-muted-foreground text-base sm:text-lg">{t("assignments.description")}</p>
       </div>
 
       <hr className="title-divider" />
 
       {/* Assignment Interface */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Available Parts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        {/* Select Part Card */}
         <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="text-lg">{t("assignments.availableParts")}</CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base sm:text-lg">1. {t("assignments.selectPart")}</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <Select value={selectedPart} onValueChange={setSelectedPart}>
-              <SelectTrigger>
+              <SelectTrigger className="bg-[rgba(17,25,40,0.75)] border-white/10">
                 <SelectValue placeholder={t("assignments.selectPart")} />
               </SelectTrigger>
               <SelectContent>
@@ -447,47 +452,52 @@ export default function Assignments() {
                 ) : (
                   parts.map((part) => (
                     <SelectItem key={part.id} value={part.id}>
-                      {part.part_number} • {part.job?.job_number || "No Job"} • {part._operationCount} {t("assignments.operations")}
+                      <div className="flex flex-col">
+                        <span className="font-medium">{part.part_number}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {part.job?.job_number || "No Job"} • {part._operationCount} ops
+                        </span>
+                      </div>
                     </SelectItem>
                   ))
                 )}
               </SelectContent>
             </Select>
-            {selectedPart && (
-              <div className="mt-4 p-3 border rounded-lg bg-muted/30">
-                {parts.find((p) => p.id === selectedPart) && (
-                  <>
-                    <div className="text-sm font-medium">
-                      {parts.find((p) => p.id === selectedPart)?.part_number}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {t("assignments.job")}: {parts.find((p) => p.id === selectedPart)?.job?.job_number || "No Job Assigned"}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {t("assignments.material")}: {parts.find((p) => p.id === selectedPart)?.material}
-                    </div>
-                  </>
-                )}
+            {selectedPartData && (
+              <div className="p-3 border rounded-lg bg-muted/10 space-y-1">
+                <div className="text-sm font-medium">{selectedPartData.part_number}</div>
+                <div className="text-xs text-muted-foreground">
+                  Job: {selectedPartData.job?.job_number || "None"}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Material: {selectedPartData.material}
+                </div>
+                <Badge variant="outline" className="text-xs mt-1">
+                  {selectedPartData._operationCount} {t("assignments.operations")}
+                </Badge>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Operators */}
+        {/* Select Operator Card */}
         <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center justify-between">
-              <span>{t("assignments.assignToOperator")}</span>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base sm:text-lg">2. {t("assignments.selectOperator")}</CardTitle>
               <Dialog open={createOperatorOpen} onOpenChange={setCreateOperatorOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <UserPlus className="h-4 w-4" />
-                    Create Operator
+                  <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
+                    <UserPlus className="h-3 w-3" />
+                    New
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="glass-card">
+                <DialogContent className="glass-card max-w-md">
                   <DialogHeader>
                     <DialogTitle>Create New Operator</DialogTitle>
+                    <DialogDescription>
+                      Quickly create an operator with PIN login.
+                    </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleCreateOperator} className="space-y-4">
                     <div className="space-y-2">
@@ -498,19 +508,21 @@ export default function Assignments() {
                         onChange={(e) => setOperatorForm({ ...operatorForm, full_name: e.target.value })}
                         placeholder="John Smith"
                         required
+                        className="bg-[rgba(17,25,40,0.75)] border-white/10"
                       />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="op_employee_id">
                         Employee ID{' '}
-                        <span className="text-muted-foreground text-xs">(auto-generated if empty)</span>
+                        <span className="text-muted-foreground text-xs">(optional)</span>
                       </Label>
                       <Input
                         id="op_employee_id"
                         value={operatorForm.employee_id}
                         onChange={(e) => setOperatorForm({ ...operatorForm, employee_id: e.target.value })}
-                        placeholder="OPR-123456"
+                        placeholder="Auto-generated if empty"
+                        className="bg-[rgba(17,25,40,0.75)] border-white/10"
                       />
                     </div>
 
@@ -525,25 +537,34 @@ export default function Assignments() {
                         required
                         minLength={4}
                         maxLength={6}
+                        className="bg-[rgba(17,25,40,0.75)] border-white/10"
                       />
                       <p className="text-xs text-muted-foreground">
                         Operators will use Employee ID + PIN to login
                       </p>
                     </div>
 
-                    <Button type="submit" className="w-full gap-2" disabled={creatingOperator}>
-                      {creatingOperator && <Loader2 className="h-4 w-4 animate-spin" />}
-                      <UserPlus className="h-4 w-4" />
-                      Create Operator
+                    <Button type="submit" className="w-full cta-button gap-2" disabled={creatingOperator}>
+                      {creatingOperator ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Creating...
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="h-4 w-4" />
+                          Create Operator
+                        </>
+                      )}
                     </Button>
                   </form>
                 </DialogContent>
               </Dialog>
-            </CardTitle>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <Select value={selectedOperator} onValueChange={setSelectedOperator}>
-              <SelectTrigger>
+              <SelectTrigger className="bg-[rgba(17,25,40,0.75)] border-white/10">
                 <SelectValue placeholder={t("assignments.selectOperator")} />
               </SelectTrigger>
               <SelectContent>
@@ -554,20 +575,65 @@ export default function Assignments() {
                 ) : (
                   operators.map((op) => (
                     <SelectItem key={op.id} value={op.id}>
-                      {op.full_name} • {op._assignmentCount} {t("assignments.assigned")} • {op._activeEntryCount} {t("assignments.active")}
+                      <div className="flex flex-col">
+                        <span className="font-medium">{op.full_name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {op._assignmentCount} assigned • {op._activeEntryCount} active
+                        </span>
+                      </div>
                     </SelectItem>
                   ))
                 )}
               </SelectContent>
             </Select>
+            {selectedOperatorData && (
+              <div className="p-3 border rounded-lg bg-muted/10 space-y-1">
+                <div className="text-sm font-medium">{selectedOperatorData.full_name}</div>
+                <div className="text-xs text-muted-foreground">
+                  ID: {selectedOperatorData.username}
+                </div>
+                <div className="flex gap-2 mt-2">
+                  <Badge variant="outline" className="text-xs">
+                    {selectedOperatorData._assignmentCount} {t("assignments.assigned")}
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    {selectedOperatorData._activeEntryCount} {t("assignments.active")}
+                  </Badge>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Assign Action Card */}
+        <Card className="glass-card border-primary/20">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base sm:text-lg">3. {t("assignments.assignWork")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>✓ Select a part from available work</p>
+              <p>✓ Choose an operator to assign</p>
+              <p>✓ All operations will be assigned</p>
+            </div>
             <Button
               onClick={handleAssign}
               disabled={!selectedPart || !selectedOperator || assigning}
-              className="w-full mt-4 cta-button"
+              className="w-full cta-button gap-2"
               size="lg"
             >
-              <UserCheck className="h-4 w-4 mr-2" />
-              {assigning ? t("assignments.assigning") : t("assignments.assignWork")}
+              {assigning ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t("assignments.assigning")}
+                </>
+              ) : (
+                <>
+                  <UserCheck className="h-4 w-4" />
+                  {t("assignments.assignWork")}
+                  <ArrowRight className="h-4 w-4 ml-auto" />
+                </>
+              )}
             </Button>
           </CardContent>
         </Card>
@@ -576,12 +642,12 @@ export default function Assignments() {
       {/* Current Assignments Table */}
       <Card className="glass-card">
         <CardHeader>
-          <CardTitle className="text-xl flex items-center gap-2">
-            <UserCheck className="h-5 w-5 text-primary" />
-            {t("assignments.currentAssignments")}
+          <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
+            <Users className="h-5 w-5 text-primary" />
+            {t("assignments.currentAssignments")} ({assignments.length})
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 sm:p-6">
           {assignments.length === 0 ? (
             <div className="text-center py-12">
               <div className="informational-text max-w-md mx-auto">
