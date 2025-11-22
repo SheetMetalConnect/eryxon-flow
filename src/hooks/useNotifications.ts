@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Database } from '@/integrations/supabase/types';
-import { useToast } from '@/components/mui/ToastNotification';
+import { useToast } from '@/components/ui/use-toast';
 
 type Notification = Database['public']['Tables']['notifications']['Row'];
 type NotificationType = Notification['type'];
@@ -20,7 +20,7 @@ export const useNotifications = (filters?: NotificationFilters) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { profile } = useAuth();
-  const { showError, showSuccess } = useToast();
+  const { toast } = useToast();
 
   // Fetch notifications
   const fetchNotifications = useCallback(async () => {
@@ -90,10 +90,14 @@ export const useNotifications = (filters?: NotificationFilters) => {
         );
       } catch (err) {
         console.error('Error marking notification as read:', err);
-        showError('Failed to mark notification as read');
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to mark notification as read',
+        });
       }
     },
-    [showError]
+    [toast]
   );
 
   // Toggle pin
@@ -115,13 +119,20 @@ export const useNotifications = (filters?: NotificationFilters) => {
           )
         );
 
-        showSuccess(pinned ? 'Notification pinned' : 'Notification unpinned');
+        toast({
+          title: 'Success',
+          description: pinned ? 'Notification pinned' : 'Notification unpinned',
+        });
       } catch (err) {
         console.error('Error toggling notification pin:', err);
-        showError('Failed to pin/unpin notification');
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to pin/unpin notification',
+        });
       }
     },
-    [showError, showSuccess]
+    [toast]
   );
 
   // Dismiss notification
@@ -137,13 +148,20 @@ export const useNotifications = (filters?: NotificationFilters) => {
         // Update local state - remove from list
         setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
 
-        showSuccess('Notification dismissed');
+        toast({
+          title: 'Success',
+          description: 'Notification dismissed',
+        });
       } catch (err) {
         console.error('Error dismissing notification:', err);
-        showError('Failed to dismiss notification');
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to dismiss notification',
+        });
       }
     },
-    [showError, showSuccess]
+    [toast]
   );
 
   // Mark all as read
@@ -159,13 +177,20 @@ export const useNotifications = (filters?: NotificationFilters) => {
       );
 
       if (count && count > 0) {
-        showSuccess(`Marked ${count} notification(s) as read`);
+        toast({
+          title: 'Success',
+          description: `Marked ${count} notification(s) as read`,
+        });
       }
     } catch (err) {
       console.error('Error marking all notifications as read:', err);
-      showError('Failed to mark all notifications as read');
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to mark all notifications as read',
+      });
     }
-  }, [showError, showSuccess]);
+  }, [toast]);
 
   // Get unread count
   const unreadCount = notifications.filter((n) => !n.read && !n.dismissed).length;

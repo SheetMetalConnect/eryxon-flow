@@ -1,9 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { useToast } from '@/components/mui/ToastNotification';
+import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Database } from '@/integrations/supabase/types';
 import { useNotifications } from '@/hooks/useNotifications';
+import { Button } from '@/components/ui/button';
+import { Pin } from 'lucide-react';
 
 type Notification = Database['public']['Tables']['notifications']['Row'];
 
@@ -12,7 +14,7 @@ type Notification = Database['public']['Tables']['notifications']['Row'];
  * for new notifications that arrive while the user is active in the app.
  */
 export const NotificationToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { showNotificationToast } = useToast();
+  const { toast } = useToast();
   const { profile } = useAuth();
   const { togglePin } = useNotifications();
   const lastNotificationIdRef = useRef<string | null>(null);
@@ -44,17 +46,29 @@ export const NotificationToastProvider: React.FC<{ children: React.ReactNode }> 
             lastNotificationIdRef.current = notification.id;
 
             // Show toast with pin action
-            const severity = notification.severity === 'high'
-              ? 'error'
+            const variant = notification.severity === 'high'
+              ? 'destructive'
               : notification.severity === 'medium'
-              ? 'warning'
-              : 'info';
+              ? 'default'
+              : 'default';
 
-            showNotificationToast(
-              `${notification.title}: ${notification.message}`,
-              severity as any,
-              () => togglePin(notification.id)
-            );
+            toast({
+              title: notification.title,
+              description: notification.message,
+              variant,
+              duration: 6000,
+              action: (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => togglePin(notification.id)}
+                  className="gap-2"
+                >
+                  <Pin className="h-4 w-4" />
+                  Pin
+                </Button>
+              ),
+            });
           }
         }
       )
@@ -63,7 +77,7 @@ export const NotificationToastProvider: React.FC<{ children: React.ReactNode }> 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile, showNotificationToast, togglePin]);
+  }, [profile, toast, togglePin]);
 
   return <>{children}</>;
 };
