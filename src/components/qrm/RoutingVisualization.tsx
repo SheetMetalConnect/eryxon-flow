@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, Circle, Clock, MinusCircle } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, MinusCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { RoutingStep } from '@/types/qrm';
 import { getRoutingProgress } from '@/types/qrm';
@@ -18,11 +18,14 @@ export function RoutingVisualization({
 }: RoutingVisualizationProps) {
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-gray-500">
-        <div className="animate-pulse flex items-center gap-2">
-          <div className="h-7 w-20 bg-gray-200 rounded-lg"></div>
-          <ArrowRight className="h-4 w-4 text-gray-300" />
-          <div className="h-7 w-20 bg-gray-200 rounded-lg"></div>
+      <div className="flex items-center text-sm text-gray-500">
+        <div className="animate-pulse flex items-center">
+          <div className="h-12 w-32 bg-gray-200 rounded-lg" style={{
+            clipPath: 'polygon(0% 0%, calc(100% - 16px) 0%, 100% 50%, calc(100% - 16px) 100%, 0% 100%, 16px 50%)'
+          }}></div>
+          <div className="h-12 w-32 bg-gray-200 rounded-lg -ml-4" style={{
+            clipPath: 'polygon(0% 0%, calc(100% - 16px) 0%, 100% 50%, calc(100% - 16px) 100%, 0% 100%, 16px 50%)'
+          }}></div>
         </div>
       </div>
     );
@@ -41,7 +44,7 @@ export function RoutingVisualization({
 
   return (
     <TooltipProvider>
-      <div className="space-y-3">
+      <div className="space-y-4">
         {/* Progress bar */}
         {showProgress && (
           <div className="flex items-center gap-3">
@@ -63,14 +66,16 @@ export function RoutingVisualization({
           </div>
         )}
 
-        {/* Routing steps */}
-        <div className={compact ? 'flex items-center gap-2 flex-wrap' : 'flex items-center gap-2 flex-wrap'}>
+        {/* Routing steps - Arrow Boxes */}
+        <div className="flex items-center overflow-x-auto pb-2">
           {routing.map((step, index) => {
             const isCompleted = step.completed_operations === step.operation_count;
             const isInProgress =
               step.completed_operations > 0 && step.completed_operations < step.operation_count;
             const isNotStarted = step.completed_operations === 0;
             const cellColor = step.cell_color || '#6B7280';
+            const isFirst = index === 0;
+            const isLast = index === routing.length - 1;
 
             // Calculate colors based on status
             const bgColor = isCompleted
@@ -83,76 +88,83 @@ export function RoutingVisualization({
               ? '#FFFFFF'
               : cellColor;
 
-            return (
-              <div key={step.cell_id} className="flex items-center gap-2">
-                {/* Cell step */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div
-                      className={`
-                        flex items-center gap-2 px-3 py-1.5 rounded-lg border-2
-                        transition-all duration-300 cursor-default shadow-sm
-                        ${isInProgress ? 'shadow-md ring-2 ring-offset-1' : ''}
-                        ${isNotStarted ? 'opacity-80' : ''}
-                        ${compact ? 'text-xs px-2 py-1' : 'text-sm'}
-                      `}
-                      style={{
-                        backgroundColor: bgColor,
-                        borderColor: cellColor,
-                        color: textColor,
-                        '--tw-ring-color': isInProgress ? `${cellColor}40` : undefined,
-                      } as React.CSSProperties}
-                    >
-                      {/* Status icon */}
-                      {isCompleted ? (
-                        <CheckCircle2 className={`${compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
-                      ) : isInProgress ? (
-                        <Clock className={`${compact ? 'h-3 w-3' : 'h-4 w-4'} animate-pulse`} />
-                      ) : (
-                        <Circle className={`${compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
-                      )}
+            // Arrow shape using clip-path
+            // First element: flat left side, arrow right
+            // Middle elements: arrow left, arrow right
+            // Last element: arrow left, flat right
+            const clipPath = isFirst && isLast
+              ? 'none' // Single element - no arrows
+              : isFirst
+                ? 'polygon(0% 0%, calc(100% - 16px) 0%, 100% 50%, calc(100% - 16px) 100%, 0% 100%)'
+                : isLast
+                  ? 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 16px 50%)'
+                  : 'polygon(0% 0%, calc(100% - 16px) 0%, 100% 50%, calc(100% - 16px) 100%, 0% 100%, 16px 50%)';
 
+            return (
+              <Tooltip key={step.cell_id}>
+                <TooltipTrigger asChild>
+                  <div
+                    className={`
+                      relative flex items-center gap-2 transition-all duration-300 cursor-default
+                      ${compact ? 'px-6 py-2 min-w-[120px]' : 'px-8 py-3 min-w-[160px]'}
+                      ${isInProgress ? 'shadow-lg ring-2 ring-offset-0 z-10' : 'shadow-md'}
+                      ${isNotStarted ? 'opacity-80' : 'opacity-100'}
+                      ${!isFirst ? '-ml-4' : ''}
+                      ${compact ? 'text-xs' : 'text-sm'}
+                    `}
+                    style={{
+                      backgroundColor: bgColor,
+                      color: textColor,
+                      clipPath: clipPath,
+                      border: `2px solid ${cellColor}`,
+                      '--tw-ring-color': isInProgress ? `${cellColor}60` : undefined,
+                    } as React.CSSProperties}
+                  >
+                    {/* Status icon */}
+                    <div className="flex-shrink-0">
+                      {isCompleted ? (
+                        <CheckCircle2 className={`${compact ? 'h-3.5 w-3.5' : 'h-5 w-5'}`} />
+                      ) : isInProgress ? (
+                        <Clock className={`${compact ? 'h-3.5 w-3.5' : 'h-5 w-5'} animate-pulse`} />
+                      ) : (
+                        <Circle className={`${compact ? 'h-3.5 w-3.5' : 'h-5 w-5'}`} />
+                      )}
+                    </div>
+
+                    {/* Cell info */}
+                    <div className="flex-1 min-w-0">
                       {/* Cell name */}
-                      <span className="font-medium">{step.cell_name}</span>
+                      <div className="font-bold truncate">{step.cell_name}</div>
 
                       {/* Operation count */}
                       {!compact && (
-                        <span className={`text-xs font-semibold ${isCompleted || isInProgress ? 'bg-white/20 px-1.5 py-0.5 rounded' : 'opacity-75'
+                        <div className={`text-xs font-semibold mt-0.5 ${isCompleted || isInProgress ? 'opacity-90' : 'opacity-60'
                           }`}>
-                          {step.completed_operations}/{step.operation_count}
-                        </span>
-                      )}
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="text-sm">
-                    <div className="space-y-1">
-                      <div className="font-semibold">{step.cell_name}</div>
-                      <div className="text-xs text-gray-500">
-                        {step.completed_operations} of {step.operation_count} operations completed
-                      </div>
-                      {step.parts_in_cell !== undefined && step.parts_in_cell > 0 && (
-                        <div className="text-xs text-gray-500">
-                          {step.parts_in_cell} part{step.parts_in_cell !== 1 ? 's' : ''} in cell
+                          {step.completed_operations}/{step.operation_count} ops
                         </div>
                       )}
-                      <div className="text-xs">
-                        {isCompleted && <span className="text-status-completed font-medium">Completed</span>}
-                        {isInProgress && <span className="text-brand-primary font-medium">In Progress</span>}
-                        {isNotStarted && <span className="text-gray-500">Not Started</span>}
-                      </div>
                     </div>
-                  </TooltipContent>
-                </Tooltip>
-
-                {/* Arrow separator */}
-                {index < routing.length - 1 && (
-                  <ArrowRight
-                    className={`${compact ? 'h-3 w-3' : 'h-4 w-4'
-                      } ${isCompleted ? 'text-status-completed' : 'text-muted-foreground'
-                      } flex-shrink-0 transition-colors duration-300`}
-                  />
-                )}
-              </div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-sm">
+                  <div className="space-y-1">
+                    <div className="font-semibold">{step.cell_name}</div>
+                    <div className="text-xs text-gray-500">
+                      {step.completed_operations} of {step.operation_count} operations completed
+                    </div>
+                    {step.parts_in_cell !== undefined && step.parts_in_cell > 0 && (
+                      <div className="text-xs text-gray-500">
+                        {step.parts_in_cell} part{step.parts_in_cell !== 1 ? 's' : ''} in cell
+                      </div>
+                    )}
+                    <div className="text-xs">
+                      {isCompleted && <span className="text-status-completed font-medium">Completed</span>}
+                      {isInProgress && <span className="text-brand-primary font-medium">In Progress</span>}
+                      {isNotStarted && <span className="text-gray-500">Not Started</span>}
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
             );
           })}
         </div>
