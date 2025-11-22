@@ -114,6 +114,33 @@ export default {
         "stage-welding": "hsl(var(--stage-welding))",
         "stage-assembly": "hsl(var(--stage-assembly))",
         "stage-finishing": "hsl(var(--stage-finishing))",
+        // Issue Status Colors
+        "issue-pending": "hsl(var(--issue-pending))",
+        "issue-approved": "hsl(var(--issue-approved))",
+        "issue-rejected": "hsl(var(--issue-rejected))",
+        "issue-closed": "hsl(var(--issue-closed))",
+        // Alert Backgrounds
+        "alert-info-bg": "hsl(var(--alert-info-bg))",
+        "alert-info-border": "hsl(var(--alert-info-border))",
+        "alert-success-bg": "hsl(var(--alert-success-bg))",
+        "alert-success-border": "hsl(var(--alert-success-border))",
+        "alert-warning-bg": "hsl(var(--alert-warning-bg))",
+        "alert-warning-border": "hsl(var(--alert-warning-border))",
+        "alert-error-bg": "hsl(var(--alert-error-bg))",
+        "alert-error-border": "hsl(var(--alert-error-border))",
+        // Code Blocks
+        "code-bg": "hsl(var(--code-background))",
+        "code-fg": "hsl(var(--code-foreground))",
+        // Operation Types
+        "operation-milling": "hsl(var(--operation-milling))",
+        "operation-welding": "hsl(var(--operation-welding))",
+        "operation-default": "hsl(var(--operation-default))",
+        // Operator Actions
+        "operator-start": "hsl(var(--operator-start))",
+        "operator-pause": "hsl(var(--operator-pause))",
+        "operator-resume": "hsl(var(--operator-resume))",
+        "operator-complete": "hsl(var(--operator-complete))",
+        "operator-issue": "hsl(var(--operator-issue))",
         // Semantic Colors
         success: {
           DEFAULT: "hsl(var(--success))",

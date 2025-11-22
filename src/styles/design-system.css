@@ -193,6 +193,38 @@
     --stage-assembly: var(--color-success);      /* Green */
     --stage-finishing: var(--color-warning);     /* Yellow */
 
+    /* Issue Status Colors */
+    --issue-pending: var(--brand-primary);       /* Blue - awaiting review */
+    --issue-approved: var(--color-success);      /* Green - approved */
+    --issue-rejected: var(--color-error);        /* Red - rejected */
+    --issue-closed: var(--neutral-500);          /* Gray - closed */
+
+    /* Alert Backgrounds (with transparency) */
+    --alert-info-bg: 199 89% 48% / 0.1;          /* Cyan / 10% */
+    --alert-info-border: 199 89% 48% / 0.2;      /* Cyan / 20% */
+    --alert-success-bg: 140 60% 52% / 0.1;       /* Green / 10% */
+    --alert-success-border: 140 60% 52% / 0.2;   /* Green / 20% */
+    --alert-warning-bg: 45 100% 51% / 0.1;       /* Yellow / 10% */
+    --alert-warning-border: 45 100% 51% / 0.2;   /* Yellow / 20% */
+    --alert-error-bg: 4 90% 58% / 0.1;           /* Red / 10% */
+    --alert-error-border: 4 90% 58% / 0.2;       /* Red / 20% */
+
+    /* Code Block Colors */
+    --code-background: 220 30% 8%;               /* Very dark blue-gray */
+    --code-foreground: 140 60% 52%;              /* Green text */
+
+    /* Operation Type Colors */
+    --operation-milling: var(--brand-primary);   /* Blue */
+    --operation-welding: var(--color-error);     /* Red */
+    --operation-default: var(--neutral-500);     /* Gray */
+
+    /* Operator Action Colors */
+    --operator-start: var(--color-success);      /* Green - start work */
+    --operator-pause: 25 95% 53%;                /* Orange - pause */
+    --operator-resume: 45 100% 51%;              /* Yellow - resume */
+    --operator-complete: var(--brand-primary);   /* Blue - complete */
+    --operator-issue: var(--color-error);        /* Red - report issue */
+
     /* ========================================================================
        SIDEBAR
        ======================================================================== */
