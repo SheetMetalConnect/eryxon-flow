@@ -21,6 +21,19 @@ DECLARE
   operation_ids UUID[];
   time_entry_ids UUID[];
 BEGIN
+  -- =====================================================
+  -- SECURITY CHECK: Verify caller has permission
+  -- =====================================================
+  -- Only tenant admins can clear demo data for their own tenant
+  IF NOT EXISTS (
+    SELECT 1 FROM profiles
+    WHERE id = auth.uid()
+      AND tenant_id = p_tenant_id
+      AND role = 'admin'
+  ) THEN
+    RAISE EXCEPTION 'Permission denied: Only tenant admins can clear demo data for their own tenant';
+  END IF;
+
   RAISE NOTICE 'Starting demo data cleanup for tenant: %', p_tenant_id;
 
   -- =====================================================
@@ -156,4 +169,4 @@ GRANT EXECUTE ON FUNCTION public.clear_demo_data(UUID) TO authenticated;
 
 -- Add comment
 COMMENT ON FUNCTION public.clear_demo_data IS
-'Safely clears all demo data for a tenant including jobs, parts, operations, resources, and demo operators. Returns detailed deletion summary.';
+'Safely clears all demo data for a tenant including jobs, parts, operations, resources, and demo operators. Only callable by tenant admins for their own tenant. Returns detailed deletion summary.';

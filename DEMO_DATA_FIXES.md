@@ -53,6 +53,7 @@ Fixed critical bugs preventing demo data from being properly cleared and re-impo
 ### Database Function for Reliable Cleanup
 Created a new SQL function `clear_demo_data(p_tenant_id UUID)` that:
 - Runs entirely in the database for better reliability
+- **Security**: Only callable by tenant admins for their own tenant
 - Handles all foreign key constraints properly
 - Returns detailed deletion summary
 - Resets tenant counters and demo mode flags
@@ -72,6 +73,15 @@ export async function clearMockData(
   useDatabaseFunction: boolean = true
 ): Promise<{ success: boolean; error?: string }>
 ```
+
+## Security
+
+The `clear_demo_data()` database function includes strict authorization checks:
+- **Tenant Isolation**: Users can only clear data for their own tenant
+- **Role Requirement**: Only users with `admin` role can clear demo data
+- **Permission Denied**: Throws an error if unauthorized user attempts to call the function
+
+This prevents any authenticated user from clearing another tenant's data.
 
 ## How to Use
 
