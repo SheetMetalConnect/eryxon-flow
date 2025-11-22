@@ -16,20 +16,20 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
+import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import theme from '@/theme/theme';
 import {
   ListAlt as ListAltIcon,
   Schedule as ScheduleIcon,
   ReportProblem as ReportProblemIcon,
   Logout as LogoutIcon,
-  Brightness4 as Brightness4Icon,
-  Brightness7 as Brightness7Icon,
   Help as HelpIcon,
   Business as BusinessIcon,
   Speed as SpeedIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useThemeMode } from '@/theme/ThemeProvider';
 import CurrentlyTimingWidget from './CurrentlyTimingWidget';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { AppTour } from '@/components/onboarding';
@@ -41,7 +41,6 @@ interface OperatorLayoutProps {
 export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
   const { t } = useTranslation();
   const { profile, tenant, signOut } = useAuth();
-  const { mode, toggleTheme } = useThemeMode();
   const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
@@ -78,7 +77,9 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <MuiThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       {/* Top App Bar */}
       <AppBar
         position="sticky"
@@ -125,11 +126,6 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {/* Language Switcher */}
             <LanguageSwitcher />
-
-            {/* Theme Toggle */}
-            <IconButton onClick={toggleTheme} color="inherit">
-              {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-            </IconButton>
 
             {/* User Avatar and Menu */}
             <IconButton onClick={handleMenuOpen} sx={{ p: 0.5 }}>
@@ -363,6 +359,7 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
 
       {/* Onboarding Tour - only show if not completed */}
       {profile && !(profile as any).tour_completed && <AppTour userRole="operator" />}
-    </Box>
+      </Box>
+    </MuiThemeProvider>
   );
 };
