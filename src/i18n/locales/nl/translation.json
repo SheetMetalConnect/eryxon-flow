@@ -1139,6 +1139,19 @@
     "lastMonth": "Vorige maand",
     "custom": "Aangepast bereik"
   },
+  "qrm": {
+    "dashboard": "QRM Dashboard",
+    "totalWIP": "Totaal WIP",
+    "atCapacity": "Op capaciteit",
+    "nearCapacity": "Bijna vol",
+    "warning": "Waarschuwing",
+    "active": "Actief",
+    "buffer": "Buffer",
+    "expected": "Verwacht",
+    "more": "meer",
+    "noOperations": "Geen bewerkingen in deze cel",
+    "noCells": "Nog geen cellen geconfigureerd."
+  },
   "terminal": {
     "columns": {
       "jobNumber": "Opdrachtnr.",

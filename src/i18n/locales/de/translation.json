@@ -1137,6 +1137,19 @@
     "lastMonth": "Letzter Monat",
     "custom": "Benutzerdefinierter Bereich"
   },
+  "qrm": {
+    "dashboard": "QRM Dashboard",
+    "totalWIP": "Gesamt WIP",
+    "atCapacity": "Bei Kapazität",
+    "nearCapacity": "Nahe Kapazität",
+    "warning": "Warnung",
+    "active": "Aktiv",
+    "buffer": "Puffer",
+    "expected": "Erwartet",
+    "more": "mehr",
+    "noOperations": "Keine Vorgänge in dieser Zelle",
+    "noCells": "Noch keine Zellen konfiguriert."
+  },
   "terminal": {
     "columns": {
       "jobNumber": "Auftragsnr.",

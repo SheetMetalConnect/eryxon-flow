@@ -1137,6 +1137,19 @@
     "lastMonth": "Last Month",
     "custom": "Custom Range"
   },
+  "qrm": {
+    "dashboard": "QRM Dashboard",
+    "totalWIP": "Total WIP",
+    "atCapacity": "At Capacity",
+    "nearCapacity": "Near Capacity",
+    "warning": "Warning",
+    "active": "Active",
+    "buffer": "Buffer",
+    "expected": "Expected",
+    "more": "more",
+    "noOperations": "No operations in this cell",
+    "noCells": "No cells configured yet."
+  },
   "terminal": {
     "columns": {
       "jobNumber": "Job #",

@@ -1,7 +1,7 @@
 import React from 'react';
 import { TerminalJob } from '@/types/terminal';
 import { Badge } from '@/components/ui/badge';
-import { Play, Pause, FileText, Box, AlertTriangle } from 'lucide-react';
+import { FileText, Box, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface JobRowProps {
