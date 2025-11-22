@@ -246,7 +246,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       <div className="flex h-16 items-center border-b px-6">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded bg-primary" />
-          {!collapsed && <span className="text-lg font-bold">Eryxon MES</span>}
+          {!collapsed && <span className="text-lg font-bold">Eryxon Flow</span>}
         </div>
       </div>
 
