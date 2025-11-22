@@ -959,7 +959,7 @@
     "contactSales": "Vertrieb kontaktieren",
     "free": {
       "name": "Kostenlos",
-      "price": "0 €",
+      "price": "€0",
       "description": "Perfekt für den Einstieg",
       "features": [
         "Alle Funktionen enthalten",
@@ -967,43 +967,61 @@
         "Bis zu 1.000 Teile pro Monat",
         "5 GB Speicher",
         "10 GB Datennutzung pro Monat",
-        "Self-Service-Anmeldung",
+        "Dokumentation verfügbar",
         "Community-Support"
       ]
     },
     "pro": {
       "name": "Pro",
-      "price": "49 €",
-      "description": "Optimal für kleine bis mittlere Betriebe",
+      "price": "€97",
+      "description": "Optimal für wachsende Betriebe",
       "features": [
-        "Alle Funktionen enthalten",
-        "Vollständige Nutzung mit höheren Limits",
-        "Gestaffelte Speicherlimits",
-        "Upgrades für hohe Speichernutzung verfügbar",
-        "Self-Service-Verwaltung",
-        "API-Zugriff",
-        "Prioritäts-Support"
+        "Unbegrenzte Benutzer",
+        "1.000 Aufträge pro Monat",
+        "10.000 Teile pro Monat",
+        "50 GB Speicher",
+        "Vollständiger API-Zugriff",
+        "Multi-Tenant-Architektur",
+        "Prioritäts-E-Mail-Support",
+        "Erweiterte Analysen",
+        "Webhook-Integrationen"
       ]
     },
     "premium": {
-      "name": "Premium",
-      "price": "Vertrieb kontaktieren",
-      "description": "Für große Fertigungsbetriebe",
+      "name": "Enterprise",
+      "price": "€497",
+      "description": "Maßgeschneiderte Lösung",
       "features": [
-        "Alle Funktionen enthalten",
-        "Enterprise-Funktionen",
-        "SSO-Authentifizierung",
-        "Self-Hosted-Deployment-Option",
-        "Single-Tenant-Architektur",
+        "Alles in Pro",
+        "Unbegrenzte Aufträge und Teile",
         "Unbegrenzter Speicher",
-        "Dedizierter Account Manager",
-        "24/7 Premium-Support"
+        "Unbegrenzte Nutzung",
+        "Self-Hosted (On-Premises)",
+        "Single-Tenant-Architektur",
+        "SSO/SAML-Authentifizierung",
+        "Dedizierter Support-Kanal",
+        "Individuelles SLA",
+        "White-Label-Optionen",
+        "Erweiterte Sicherheitskontrollen"
       ]
     },
     "perMonth": "/Monat",
     "perYear": "/Jahr",
     "billedMonthly": "Monatlich abgerechnet",
-    "billedAnnually": "Jährlich abgerechnet"
+    "billedAnnually": "Jährlich abgerechnet",
+    "howItWorks": {
+      "title": "Wie es funktioniert",
+      "selfServiceTitle": "Ein MES, das Sie lieben werden",
+      "selfServiceDescription": "Eryxon Flow ist für Einfachheit konzipiert. Starten Sie kostenlos und richten Sie alles selbst ein, oder upgraden Sie auf Pro für höhere Limits und zusätzlichen Support. Vollständig auf Supabase gehostet, speziell für den europäischen Markt entwickelt.",
+      "upgradeTitle": "Wie Sie upgraden",
+      "upgradeDescription": "Bereit für ein Upgrade? Klicken Sie auf die Schaltfläche 'Upgrade anfordern' oder 'Vertrieb kontaktieren' oben, um eine E-Mail an office@sheetmetalconnect.com zu senden. Wir werden uns mit den nächsten Schritten bei Ihnen melden.",
+      "usageTitle": "Nutzungsverfolgung & Plan-Verwaltung",
+      "usageDescription": "Überwachen Sie Ihre Nutzung, verfolgen Sie die Anzahl der Aufträge und Teile und verwalten Sie Ihr Abonnement auf Ihrer Mein Plan-Seite. Sie sehen Echtzeit-Nutzungsstatistiken und erhalten Warnungen, wenn Sie sich den Limits nähern."
+    },
+    "securityBanner": {
+      "title": "Enterprise-Sicherheit",
+      "description": "Kostenlos & Pro: Multi-Tenant-Architektur mit vollständiger Datenisolierung pro Mandant. Row-Level-Security erzwingt Trennung auf Datenbankebene. Premium: Single-Tenant-Deployment mit dedizierter Infrastruktur, vollständig isoliert. Alle Stufen umfassen nur HTTPS-Verkehr, gehashte Passwörter, verschlüsselte API-Schlüssel und zeitlich begrenzte Dateizugriffe über signierte URLs."
+    }
   },
   "myPlan": {
     "title": "Mein Plan",

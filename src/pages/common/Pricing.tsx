@@ -93,14 +93,9 @@ Thank you!`;
           <div className="flex items-start gap-4">
             <Shield className="h-8 w-8 text-primary flex-shrink-0" />
             <div className="space-y-2">
-              <h3 className="font-semibold">Enterprise-Grade Security</h3>
+              <h3 className="font-semibold">{t("pricing.securityBanner.title")}</h3>
               <p className="text-sm text-muted-foreground">
-                <strong>Free & Pro:</strong> Multi-tenant architecture with complete data isolation per tenant.
-                Row-level security enforces separation at the database level.
-                {" "}
-                <strong>Premium:</strong> Single-tenant deployment with dedicated infrastructure, completely air-gapped.
-                {" "}
-                All tiers include HTTPS traffic only, hashed passwords, encrypted API keys, and time-limited file access via signed URLs.
+                {t("pricing.securityBanner.description")}
               </p>
             </div>
           </div>
@@ -198,33 +193,27 @@ Thank you!`;
       {/* FAQ / Additional Info */}
       <Card>
         <CardHeader>
-          <CardTitle>How It Works</CardTitle>
+          <CardTitle>{t("pricing.howItWorks.title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <h4 className="font-semibold mb-2">Self-Service Only</h4>
+            <h4 className="font-semibold mb-2">{t("pricing.howItWorks.selfServiceTitle")}</h4>
             <p className="text-sm text-muted-foreground">
-              No onboarding calls. No consultants. No phone support. Sign up, configure your stages
-              and materials, connect your API, and go. Documentation and email support only.
+              {t("pricing.howItWorks.selfServiceDescription")}
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-2">How to Upgrade</h4>
+            <h4 className="font-semibold mb-2">{t("pricing.howItWorks.upgradeTitle")}</h4>
             <p className="text-sm text-muted-foreground">
-              Ready to upgrade? Click the "Request Upgrade" or "Contact Sales" button above to send
-              an email to <a href="mailto:office@sheetmetalconnect.com" className="text-primary hover:underline">
-                office@sheetmetalconnect.com
-              </a>. We'll get back to you with next steps.
+              {t("pricing.howItWorks.upgradeDescription")}
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-2">Usage Tracking & Plan Management</h4>
+            <h4 className="font-semibold mb-2">{t("pricing.howItWorks.usageTitle")}</h4>
             <p className="text-sm text-muted-foreground">
-              Monitor your usage, track jobs and parts count, and manage your subscription from your{' '}
-              <Link to="/my-plan" className="text-primary hover:underline">My Plan</Link> page.
-              You'll see real-time usage statistics and receive alerts when approaching tier limits.
+              {t("pricing.howItWorks.usageDescription")}
             </p>
           </div>
         </CardContent>

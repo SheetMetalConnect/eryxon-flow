@@ -1033,7 +1033,7 @@
     "contactSales": "Contact Sales",
     "free": {
       "name": "Free",
-      "price": "$0",
+      "price": "€0",
       "description": "Perfect for getting started",
       "features": [
         "All features included",
@@ -1041,43 +1041,61 @@
         "Up to 1,000 parts per month",
         "5GB storage",
         "10GB data usage per month",
-        "Self-service signup",
+        "Documentation available",
         "Community support"
       ]
     },
     "pro": {
       "name": "Pro",
-      "price": "$49",
-      "description": "Best for small to medium shops",
+      "price": "€97",
+      "description": "Best for growing shops",
       "features": [
-        "All features included",
-        "Full usage with higher limits",
-        "Tiered storage limits",
-        "Upgrades available for heavy storage use",
-        "Self-service management",
-        "API access",
-        "Priority support"
+        "Unlimited users",
+        "1,000 jobs per month",
+        "10,000 parts per month",
+        "50GB storage",
+        "Full API access",
+        "Multi-tenant architecture",
+        "Priority email support",
+        "Advanced analytics",
+        "Webhook integrations"
       ]
     },
     "premium": {
-      "name": "Premium",
-      "price": "Contact Sales",
-      "description": "For large fabrication operations",
+      "name": "Enterprise",
+      "price": "€497",
+      "description": "Custom, bespoke solution",
       "features": [
-        "All features included",
-        "Enterprise-grade features",
-        "SSO authentication",
-        "Self-hosted deployment option",
-        "Single-tenant architecture",
+        "Everything in Pro",
+        "Unlimited jobs & parts",
         "Unlimited storage",
-        "Dedicated account manager",
-        "24/7 premium support"
+        "Unlimited usage",
+        "Self-hosted (on-premises)",
+        "Single-tenant architecture",
+        "SSO/SAML authentication",
+        "Dedicated support channel",
+        "Custom SLA",
+        "White-label options",
+        "Advanced security controls"
       ]
     },
     "perMonth": "/month",
     "perYear": "/year",
     "billedMonthly": "Billed monthly",
-    "billedAnnually": "Billed annually"
+    "billedAnnually": "Billed annually",
+    "howItWorks": {
+      "title": "How It Works",
+      "selfServiceTitle": "A MES You'll Love to Use",
+      "selfServiceDescription": "Eryxon Flow is designed for simplicity. Start free and set everything up yourself, or upgrade to Pro for higher tiers and additional support. Fully hosted on Supabase, built specifically for the European market.",
+      "upgradeTitle": "How to Upgrade",
+      "upgradeDescription": "Ready to upgrade? Click the 'Request Upgrade' or 'Contact Sales' button above to send an email to office@sheetmetalconnect.com. We'll get back to you with next steps.",
+      "usageTitle": "Usage Tracking & Plan Management",
+      "usageDescription": "Monitor your usage, track jobs and parts count, and manage your subscription from your My Plan page. You'll see real-time usage statistics and receive alerts when approaching tier limits."
+    },
+    "securityBanner": {
+      "title": "Enterprise-Grade Security",
+      "description": "Free & Pro: Multi-tenant architecture with complete data isolation per tenant. Row-level security enforces separation at the database level. Premium: Single-tenant deployment with dedicated infrastructure, completely air-gapped. All tiers include HTTPS traffic only, hashed passwords, encrypted API keys, and time-limited file access via signed URLs."
+    }
   },
   "myPlan": {
     "title": "My Plan",

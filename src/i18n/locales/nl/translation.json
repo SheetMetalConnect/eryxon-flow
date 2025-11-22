@@ -961,7 +961,7 @@
     "contactSales": "Contact verkoop",
     "free": {
       "name": "Gratis",
-      "price": "€ 0",
+      "price": "€0",
       "description": "Perfect om te beginnen",
       "features": [
         "Alle functies inbegrepen",
@@ -969,43 +969,61 @@
         "Tot 1.000 onderdelen per maand",
         "5GB opslag",
         "10GB datagebruik per maand",
-        "Self-service aanmelding",
+        "Documentatie beschikbaar",
         "Community-ondersteuning"
       ]
     },
     "pro": {
       "name": "Pro",
-      "price": "€ 49",
-      "description": "Ideaal voor kleine tot middelgrote bedrijven",
+      "price": "€97",
+      "description": "Ideaal voor groeiende bedrijven",
       "features": [
-        "Alle functies inbegrepen",
-        "Volledig gebruik met hogere limieten",
-        "Gelaagde opslaglimieten",
-        "Upgrades beschikbaar voor intensief opslaggebruik",
-        "Self-service beheer",
-        "API-toegang",
-        "Prioriteitsondersteuning"
+        "Onbeperkt aantal gebruikers",
+        "1.000 opdrachten per maand",
+        "10.000 onderdelen per maand",
+        "50GB opslag",
+        "Volledige API-toegang",
+        "Multi-tenant architectuur",
+        "Prioriteit e-mailondersteuning",
+        "Geavanceerde analyses",
+        "Webhook-integraties"
       ]
     },
     "premium": {
-      "name": "Premium",
-      "price": "Neem contact op met verkoop",
-      "description": "Voor grote productiebedrijven",
+      "name": "Enterprise",
+      "price": "€497",
+      "description": "Op maat gemaakte oplossing",
       "features": [
-        "Alle functies inbegrepen",
-        "Enterprise-functies",
-        "SSO-authenticatie",
-        "Self-hosted deployment optie",
-        "Single-tenant architectuur",
+        "Alles in Pro",
+        "Onbeperkte opdrachten en onderdelen",
         "Onbeperkte opslag",
-        "Toegewezen accountmanager",
-        "24/7 premium ondersteuning"
+        "Onbeperkt gebruik",
+        "Self-hosted (on-premises)",
+        "Single-tenant architectuur",
+        "SSO/SAML authenticatie",
+        "Toegewijd ondersteuningskanaal",
+        "Aangepaste SLA",
+        "White-label opties",
+        "Geavanceerde beveiligingscontroles"
       ]
     },
     "perMonth": "/maand",
     "perYear": "/jaar",
     "billedMonthly": "Maandelijks gefactureerd",
-    "billedAnnually": "Jaarlijks gefactureerd"
+    "billedAnnually": "Jaarlijks gefactureerd",
+    "howItWorks": {
+      "title": "Hoe het werkt",
+      "selfServiceTitle": "Een MES waar u van houdt",
+      "selfServiceDescription": "Eryxon Flow is ontworpen voor eenvoud. Begin gratis en stel alles zelf in, of upgrade naar Pro voor hogere limieten en extra ondersteuning. Volledig gehost op Supabase, speciaal gemaakt voor de Europese markt.",
+      "upgradeTitle": "Hoe upgraden",
+      "upgradeDescription": "Klaar om te upgraden? Klik op de 'Upgrade aanvragen' of 'Contact verkoop' knop hierboven om een e-mail te sturen naar office@sheetmetalconnect.com. We nemen zo snel mogelijk contact met u op met de volgende stappen.",
+      "usageTitle": "Gebruik bijhouden en abonnementsbeheer",
+      "usageDescription": "Monitor uw gebruik, houd het aantal opdrachten en onderdelen bij, en beheer uw abonnement vanaf uw Mijn abonnement-pagina. U ziet realtime gebruiksstatistieken en ontvangt waarschuwingen wanneer u de limieten nadert."
+    },
+    "securityBanner": {
+      "title": "Beveiliging op Enterprise-niveau",
+      "description": "Gratis en Pro: Multi-tenant architectuur met volledige gegevensisolatie per tenant. Beveiliging op rijniveau zorgt voor scheiding op databaseniveau. Premium: Single-tenant implementatie met toegewijde infrastructuur, volledig afgeschermd. Alle niveaus omvatten alleen HTTPS-verkeer, gehashte wachtwoorden, versleutelde API-sleutels en tijdelijk beperkte bestandstoegang via ondertekende URL's."
+    }
   },
   "myPlan": {
     "title": "Mijn abonnement",
