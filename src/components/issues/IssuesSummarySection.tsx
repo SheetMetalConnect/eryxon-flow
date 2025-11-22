@@ -58,7 +58,7 @@ export function IssuesSummarySection({ partId, jobId }: IssuesSummarySectionProp
           <AlertTriangle className="h-5 w-5" />
           NCRs
         </Label>
-        <p className="text-sm text-gray-500">Loading...</p>
+        <p className="text-sm text-muted-foreground">Loading...</p>
       </div>
     );
   }
@@ -70,7 +70,7 @@ export function IssuesSummarySection({ partId, jobId }: IssuesSummarySectionProp
           <AlertTriangle className="h-5 w-5" />
           NCRs (0)
         </Label>
-        <p className="text-sm text-gray-500">No NCRs reported for this {partId ? 'part' : 'job'}.</p>
+        <p className="text-sm text-muted-foreground">No NCRs reported for this {partId ? 'part' : 'job'}.</p>
       </div>
     );
   }
@@ -86,7 +86,7 @@ export function IssuesSummarySection({ partId, jobId }: IssuesSummarySectionProp
         {issues.map((issue: any) => (
           <div
             key={issue.id}
-            className="border rounded-md p-3 bg-white"
+            className="border rounded-md p-3 bg-card"
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex gap-2">
@@ -101,14 +101,14 @@ export function IssuesSummarySection({ partId, jobId }: IssuesSummarySectionProp
                   {issue.status}
                 </Badge>
               </div>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 {format(new Date(issue.created_at), 'MMM dd, yyyy HH:mm')}
               </span>
             </div>
 
             <p className="text-sm mb-2">{issue.description}</p>
 
-            <div className="text-xs text-gray-600 space-y-1">
+            <div className="text-xs text-muted-foreground space-y-1">
               <div>
                 <span className="font-medium">Operation:</span> {issue.operation_name}
               </div>

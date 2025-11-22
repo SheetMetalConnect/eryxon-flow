@@ -20,7 +20,7 @@ export default function OperationCard({ operation, onUpdate, compact = false }: 
   const [showDetail, setShowDetail] = useState(false);
   const { profile } = useAuth();
   const { pendingCount, highestSeverity } = useOperationIssues(operation.id, profile?.tenant_id);
-  
+
   const dueDate = operation.part.job.due_date_override || operation.part.job.due_date;
   const remainingTime = operation.estimated_time - (operation.actual_time || 0);
   const isOvertime = remainingTime < 0;
@@ -44,9 +44,8 @@ export default function OperationCard({ operation, onUpdate, compact = false }: 
     return (
       <>
         <Card
-          className={`p-3 cursor-pointer transition-all hover:shadow-md ${
-            operation.active_time_entry ? "ring-2 ring-active-work" : ""
-          }`}
+          className={`p-3 cursor-pointer transition-all hover:shadow-md ${operation.active_time_entry ? "ring-2 ring-status-active" : ""
+            }`}
           onClick={() => setShowDetail(true)}
         >
           {/* Status Bar */}
@@ -82,7 +81,7 @@ export default function OperationCard({ operation, onUpdate, compact = false }: 
             </div>
             {operation.active_time_entry && (
               <div className="flex items-center gap-1">
-                <div className="h-2 w-2 rounded-full bg-active-work animate-pulse" />
+                <div className="h-2 w-2 rounded-full bg-status-active animate-pulse" />
                 <span className="text-xs font-medium truncate max-w-20">
                   {operation.active_time_entry.operator.full_name.split(' ')[0]}
                 </span>
@@ -104,9 +103,8 @@ export default function OperationCard({ operation, onUpdate, compact = false }: 
   return (
     <>
       <Card
-        className={`p-4 cursor-pointer transition-all hover:shadow-md ${
-          operation.active_time_entry ? "ring-2 ring-active-work" : ""
-        }`}
+        className={`p-4 cursor-pointer transition-all hover:shadow-md ${operation.active_time_entry ? "ring-2 ring-status-active" : ""
+          }`}
         onClick={() => setShowDetail(true)}
       >
         {/* Status Bar */}
@@ -177,7 +175,7 @@ export default function OperationCard({ operation, onUpdate, compact = false }: 
         {/* Active Operator */}
         {operation.active_time_entry && (
           <div className="flex items-center gap-2 mt-3 pt-3 border-t">
-            <div className="h-2 w-2 rounded-full bg-active-work animate-pulse" />
+            <div className="h-2 w-2 rounded-full bg-status-active animate-pulse" />
             <User className="h-3 w-3 text-muted-foreground" />
             <span className="text-xs font-medium">
               {operation.active_time_entry.operator.full_name}
