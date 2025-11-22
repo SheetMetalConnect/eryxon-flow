@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
 import { Button } from '@/components/ui/button';
 import {
   ZoomIn,
@@ -6,8 +7,13 @@ import {
   Download,
   Loader2,
   FileText,
-  Maximize2
+  Maximize2,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
+
+// Configure PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface PDFViewerProps {
   url: string;
@@ -15,30 +21,44 @@ interface PDFViewerProps {
 }
 
 export function PDFViewer({ url, title }: PDFViewerProps) {
+  const [numPages, setNumPages] = useState<number | null>(null);
+  const [pageNumber, setPageNumber] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(100);
+  const [scale, setScale] = useState(1.0);
+  const [pageWidth, setPageWidth] = useState<number | undefined>(undefined);
 
-  const handleLoad = () => {
+  const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
+    setNumPages(numPages);
     setLoading(false);
     setError(null);
-  };
+  }, []);
 
-  const handleError = () => {
+  const onDocumentLoadError = useCallback((error: Error) => {
+    console.error('Error loading PDF:', error);
     setLoading(false);
     setError('Failed to load PDF file. The file may be corrupted or unavailable.');
-  };
+  }, []);
+
+  const onPageLoadSuccess = useCallback(() => {
+    // Page loaded successfully
+  }, []);
+
+  const onPageLoadError = useCallback((error: Error) => {
+    console.error('Error loading PDF page:', error);
+  }, []);
 
   const handleZoomIn = () => {
-    setZoom((prev) => Math.min(prev + 25, 200));
+    setScale((prev) => Math.min(prev + 0.25, 3.0));
   };
 
   const handleZoomOut = () => {
-    setZoom((prev) => Math.max(prev - 25, 50));
+    setScale((prev) => Math.max(prev - 0.25, 0.5));
   };
 
   const handleFitToView = () => {
-    setZoom(100);
+    setScale(1.0);
+    setPageWidth(undefined);
   };
 
   const handleDownload = () => {
@@ -46,6 +66,14 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
     link.href = url;
     link.download = title || 'drawing.pdf';
     link.click();
+  };
+
+  const goToPrevPage = () => {
+    setPageNumber((prev) => Math.max(prev - 1, 1));
+  };
+
+  const goToNextPage = () => {
+    setPageNumber((prev) => Math.min(prev + 1, numPages || 1));
   };
 
   if (!url) {
@@ -60,12 +88,12 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
   return (
     <div className="flex flex-col h-full w-full bg-background">
       {/* Toolbar */}
-      <div className="flex items-center gap-2 p-2 bg-card border-b border-border">
+      <div className="flex items-center gap-2 p-2 bg-card border-b border-border flex-wrap">
         <Button
           variant="outline"
           size="sm"
           onClick={handleZoomOut}
-          disabled={loading || zoom <= 50}
+          disabled={loading || scale <= 0.5}
           className="bg-card text-foreground hover:bg-accent"
         >
           <ZoomOut className="h-4 w-4 mr-1" />
@@ -87,16 +115,45 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
           variant="outline"
           size="sm"
           onClick={handleZoomIn}
-          disabled={loading || zoom >= 200}
+          disabled={loading || scale >= 3.0}
           className="bg-card text-foreground hover:bg-accent"
         >
           <ZoomIn className="h-4 w-4 mr-1" />
           Zoom In
         </Button>
 
-        <span className="text-sm text-muted-foreground ml-2">{zoom}%</span>
+        <span className="text-sm text-muted-foreground ml-2">
+          {Math.round(scale * 100)}%
+        </span>
 
         <div className="flex-1" />
+
+        {/* Page Navigation */}
+        {numPages && numPages > 1 && (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToPrevPage}
+              disabled={pageNumber <= 1}
+              className="bg-card text-foreground hover:bg-accent"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              Page {pageNumber} of {numPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToNextPage}
+              disabled={pageNumber >= numPages}
+              className="bg-card text-foreground hover:bg-accent"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
 
         <Button
           variant="outline"
@@ -117,7 +174,7 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
       </div>
 
       {/* PDF Viewer Container */}
-      <div className="flex-1 relative overflow-hidden bg-accent/5 flex items-center justify-center">
+      <div className="flex-1 relative overflow-auto bg-accent/5 flex items-start justify-center p-4">
         {/* Loading Overlay */}
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10 backdrop-blur-sm">
@@ -149,31 +206,39 @@ export function PDFViewer({ url, title }: PDFViewerProps) {
           </div>
         )}
 
-        {/* PDF Embed */}
+        {/* PDF Document */}
         {!error && (
-          <div
-            className="shadow-lg transition-all duration-200"
-            style={{
-              width: `${zoom}%`,
-              height: '100%',
-              maxWidth: '100%',
-              overflow: 'auto'
-            }}
-          >
-            <object
-              data={`${url}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`}
-              type="application/pdf"
-              className="w-full h-full block"
-              onLoad={handleLoad}
-              onError={handleError}
+          <div className="shadow-lg bg-white">
+            <Document
+              file={url}
+              onLoadSuccess={onDocumentLoadSuccess}
+              onLoadError={onDocumentLoadError}
+              loading={
+                <div className="flex items-center justify-center p-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              }
+              options={{
+                cMapUrl: `//unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
+                cMapPacked: true,
+                standardFontDataUrl: `//unpkg.com/pdfjs-dist@${pdfjs.version}/standard_fonts/`,
+              }}
             >
-              <div className="flex flex-col items-center justify-center h-full bg-background text-muted-foreground p-4">
-                <p className="mb-4">Unable to display PDF directly.</p>
-                <Button onClick={() => window.open(url, '_blank')}>
-                  Download / Open PDF
-                </Button>
-              </div>
-            </object>
+              <Page
+                pageNumber={pageNumber}
+                scale={scale}
+                width={pageWidth}
+                onLoadSuccess={onPageLoadSuccess}
+                onLoadError={onPageLoadError}
+                loading={
+                  <div className="flex items-center justify-center p-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  </div>
+                }
+                renderTextLayer={true}
+                renderAnnotationLayer={true}
+              />
+            </Document>
           </div>
         )}
       </div>
