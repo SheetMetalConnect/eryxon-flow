@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import AnimatedBackground from "@/components/AnimatedBackground";
 import {
   LogOut,
   LayoutDashboard,
@@ -243,7 +244,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
       {/* Logo/Brand */}
-      <div className="flex h-16 items-center border-b px-6">
+      <div className="flex h-16 items-center border-b border-sidebar-border px-6">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded bg-primary" />
           {!collapsed && <span className="text-lg font-bold">Eryxon MES</span>}
@@ -264,10 +265,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             return (
               <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}>
                 <Button
-                  variant={isItemActive ? "default" : "ghost"}
+                  variant="ghost"
                   className={cn(
-                    "w-full justify-start gap-3",
-                    collapsed && "justify-center px-2"
+                    "w-full justify-start gap-3 nav-hover",
+                    collapsed && "justify-center px-2",
+                    isItemActive && "nav-active"
                   )}
                   size="sm"
                 >
@@ -291,7 +293,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           })}
         </div>
 
-        {!collapsed && <Separator className="my-4" />}
+        {!collapsed && <Separator className="my-4 bg-sidebar-border" />}
 
         {/* Operator Views Section - Collapsible */}
         {!collapsed && (
@@ -321,8 +323,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 return (
                   <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}>
                     <Button
-                      variant={isItemActive ? "default" : "ghost"}
-                      className="w-full justify-start gap-3"
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start gap-3 nav-hover",
+                        isItemActive && "nav-active"
+                      )}
                       size="sm"
                     >
                       <item.icon className="h-4 w-4 shrink-0" />
@@ -335,7 +340,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </Collapsible>
         )}
 
-        {!collapsed && <Separator className="my-4" />}
+        {!collapsed && <Separator className="my-4 bg-sidebar-border" />}
 
         {/* Configuration Section - Collapsible */}
         {!collapsed && (
@@ -365,8 +370,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 return (
                   <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}>
                     <Button
-                      variant={isItemActive ? "default" : "ghost"}
-                      className="w-full justify-start gap-3"
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start gap-3 nav-hover",
+                        isItemActive && "nav-active"
+                      )}
                       size="sm"
                     >
                       <item.icon className="h-4 w-4 shrink-0" />
@@ -379,7 +387,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </Collapsible>
         )}
 
-        {!collapsed && <Separator className="my-4" />}
+        {!collapsed && <Separator className="my-4 bg-sidebar-border" />}
 
         {/* Integrations Section - Collapsible */}
         {!collapsed && (
@@ -409,8 +417,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 return (
                   <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}>
                     <Button
-                      variant={isItemActive ? "default" : "ghost"}
-                      className="w-full justify-start gap-3"
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start gap-3 nav-hover",
+                        isItemActive && "nav-active"
+                      )}
                       size="sm"
                     >
                       <item.icon className="h-4 w-4 shrink-0" />
@@ -423,7 +434,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </Collapsible>
         )}
 
-        {!collapsed && <Separator className="my-4" />}
+        {!collapsed && <Separator className="my-4 bg-sidebar-border" />}
 
         {/* Account & Support Section - Collapsible */}
         {!collapsed && (
@@ -453,8 +464,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 return (
                   <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}>
                     <Button
-                      variant={isItemActive ? "default" : "ghost"}
-                      className="w-full justify-start gap-3"
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start gap-3 nav-hover",
+                        isItemActive && "nav-active"
+                      )}
                       size="sm"
                     >
                       <item.icon className="h-4 w-4 shrink-0" />
@@ -469,9 +483,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </ScrollArea>
 
       {/* User Profile & Sign Out */}
-      <div className="border-t p-3">
+      <div className="border-t border-sidebar-border p-3">
         {!collapsed && tenant && (
-          <div className="mb-2 rounded-lg bg-primary/10 border border-primary/20 p-3">
+          <div className="mb-2 rounded-lg glass border border-primary/20 p-3">
             <div className="text-xs text-muted-foreground mb-1">Tenant</div>
             <div className="text-sm font-medium truncate">{tenant.company_name || tenant.name}</div>
             <div className="flex items-center gap-2 mt-1">
@@ -488,7 +502,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         )}
         {!collapsed && profile && (
-          <div className="mb-2 rounded-lg bg-muted p-3">
+          <div className="mb-2 rounded-lg glass p-3">
             <div className="text-sm font-medium truncate">{profile.full_name}</div>
             <div className="text-xs text-muted-foreground capitalize">
               {profile.role}
@@ -531,53 +545,58 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      {/* Mobile Menu Button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="fixed left-4 top-4 z-50 lg:hidden"
-        onClick={() => setMobileOpen(!mobileOpen)}
-      >
-        <Menu className="h-5 w-5" />
-      </Button>
+    <>
+      {/* Animated Background */}
+      <AnimatedBackground />
 
-      {/* Mobile Sidebar Overlay */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
+      <div className="relative flex h-screen overflow-hidden">
+        {/* Mobile Menu Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="fixed left-4 top-4 z-50 lg:hidden"
+          onClick={() => setMobileOpen(!mobileOpen)}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
 
-      {/* Sidebar - Mobile */}
-      <aside
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 border-r bg-card transition-transform lg:hidden",
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        {/* Mobile Sidebar Overlay */}
+        {mobileOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
+            onClick={() => setMobileOpen(false)}
+          />
         )}
-      >
-        <SidebarContent />
-      </aside>
 
-      {/* Sidebar - Desktop */}
-      <aside
-        className={cn(
-          "hidden border-r bg-card transition-all lg:block",
-          collapsed ? "w-16" : "w-64"
-        )}
-      >
-        <div className="relative h-full">
+        {/* Sidebar - Mobile */}
+        <aside
+          className={cn(
+            "fixed inset-y-0 left-0 z-50 w-64 sidebar-glass border-r transition-transform lg:hidden",
+            mobileOpen ? "translate-x-0" : "-translate-x-full"
+          )}
+        >
           <SidebarContent />
-        </div>
-      </aside>
+        </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="container mx-auto p-4 pt-16 lg:p-6 lg:pt-6">
-          {children}
-        </div>
-      </main>
-    </div>
+        {/* Sidebar - Desktop */}
+        <aside
+          className={cn(
+            "hidden sidebar-glass border-r transition-all lg:block",
+            collapsed ? "w-16" : "w-64"
+          )}
+        >
+          <div className="relative h-full">
+            <SidebarContent />
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="container mx-auto p-4 pt-16 lg:p-6 lg:pt-6">
+            {children}
+          </div>
+        </main>
+      </div>
+    </>
   );
 }
