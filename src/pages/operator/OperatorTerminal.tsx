@@ -126,6 +126,7 @@ export default function OperatorTerminal() {
             id: op.id, // Use operation ID as the unique key
             operationId: op.id,
             partId: op.part.id,
+            jobId: op.part.job.id,
             jobCode: op.part.job.job_number,
             description: op.part.part_number, // Or op.operation_name? Design showed Part Name as description
             material: op.part.material,
@@ -143,6 +144,7 @@ export default function OperatorTerminal() {
             cellName: op.cell.name,
             cellColor: op.cell.color || "#3b82f6",
             cellId: op.cell_id,
+            currentSequence: op.sequence,
         };
     };
 
