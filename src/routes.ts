@@ -38,6 +38,7 @@ export const ROUTES = {
     API_DOCS: "/api-docs",
     PRICING: "/pricing",
     MY_PLAN: "/my-plan",
+    BILLING_COMING_SOON: "/billing/coming-soon",
     HELP: "/help",
     ABOUT: "/about",
   },

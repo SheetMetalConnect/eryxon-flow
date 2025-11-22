@@ -34,6 +34,7 @@ import StepsTemplatesView from "./pages/admin/StepsTemplatesView";
 import ApiDocs from "./pages/ApiDocs";
 import Pricing from "./pages/Pricing";
 import { MyPlan } from "./pages/MyPlan";
+import BillingComingSoon from "./pages/BillingComingSoon";
 import Help from "./pages/Help";
 import About from "./pages/About";
 import PrivacyPolicy from "./pages/common/PrivacyPolicy";
@@ -86,6 +87,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/auth" element={<Auth />} />
       <Route path="/accept-invitation/:token" element={<AcceptInvitation />} />
+      <Route path="/billing/coming-soon" element={<BillingComingSoon />} />
 
       <Route
         path="/onboarding"

@@ -20,6 +20,7 @@ import {
 import { useSubscription } from '../hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { StripeBillingSection } from '../components/billing/StripeBillingSection';
 
 const pricingTiers = [
   {
@@ -287,6 +288,13 @@ export const MyPlan: React.FC = () => {
               </ul>
             </CardContent>
           </Card>
+
+          {/* Stripe Billing Section (Coming Soon / Admin Only) */}
+          <StripeBillingSection
+            currentPlan={currentPlan}
+            tenantId={subscription?.tenant_id || ''}
+            billingEnabled={subscription?.billing_enabled || false}
+          />
 
           {/* Upgrade Info */}
           {currentPlan !== 'premium' && (
