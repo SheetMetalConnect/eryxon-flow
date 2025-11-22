@@ -547,9 +547,8 @@ export async function generateMockData(
             tenant_id: tenantId,
             part_id: partId,
             cell_id: cellIdMap[op.cell],
-            operation_number: `${partNumber}-${String(op.seq).padStart(3, "0")}`,
             operation_name: op.operation_name,
-            description: op.description,
+            notes: op.description, // Map description to notes field
             sequence: op.seq,
             status: op.status,
             estimated_time: op.estimated_hours,
@@ -744,7 +743,7 @@ export async function generateMockData(
               description:
                 "Elektrochemisch polijsten Ra < 0.4μm voor cleanroom",
               estimated_hours: 0.6,
-              status: "queued",
+              status: "not_started",
               metadata: {
                 process: "Electropolish",
                 target_roughness: "Ra < 0.4μm",
@@ -757,7 +756,7 @@ export async function generateMockData(
               operation_name: "Cleanroom inspectie",
               description: "Dimensie + Ra meting + particle test",
               estimated_hours: 0.4,
-              status: "queued",
+              status: "not_started",
               metadata: {
                 roughness_test: "Ra measurement",
                 particle_test: "ISO 14644",
@@ -800,7 +799,7 @@ export async function generateMockData(
               operation_name: "TIG lassen",
               description: "TIG lassen hoekverbindingen",
               estimated_hours: 0.8,
-              status: "queued",
+              status: "not_started",
             },
             {
               cell: "Afwerking",
@@ -808,7 +807,7 @@ export async function generateMockData(
               operation_name: "Elektropolish",
               description: "Elektrochemisch polijsten",
               estimated_hours: 0.5,
-              status: "queued",
+              status: "not_started",
             },
             {
               cell: "Kwaliteitscontrole",
@@ -816,7 +815,7 @@ export async function generateMockData(
               operation_name: "Cleanroom inspectie",
               description: "Dimensie + oppervlakte controle",
               estimated_hours: 0.3,
-              status: "queued",
+              status: "not_started",
             },
           ],
         );
@@ -850,7 +849,7 @@ export async function generateMockData(
               operation_name: "Kanten deksel",
               description: "Kanten 4x 90° voor dekselrand",
               estimated_hours: 0.5,
-              status: "queued",
+              status: "not_started",
               metadata: { bend_count: 4, tooling: "V20-Alu" },
             },
             {
@@ -859,7 +858,7 @@ export async function generateMockData(
               operation_name: "Montage inserts",
               description: "Monteren draadinserts M6 voor bevestiging",
               estimated_hours: 0.3,
-              status: "queued",
+              status: "not_started",
               metadata: { insert_type: "Helicoil M6", quantity: 8 },
             },
             {
@@ -868,7 +867,7 @@ export async function generateMockData(
               operation_name: "Anodiseren",
               description: "Anodiseren naturel helder 15μm",
               estimated_hours: 0.4,
-              status: "queued",
+              status: "not_started",
               metadata: {
                 anodize_type: "Clear natural",
                 thickness: "15μm",
@@ -881,7 +880,7 @@ export async function generateMockData(
               operation_name: "Eindcontrole",
               description: "Dimensie + anodiseren laagdikte",
               estimated_hours: 0.2,
-              status: "queued",
+              status: "not_started",
             },
           ],
         );
@@ -902,7 +901,7 @@ export async function generateMockData(
               operation_name: "Lasersnijden",
               description: "Snijden zijpanelen aluminium",
               estimated_hours: 0.9,
-              status: "queued",
+              status: "not_started",
             },
             {
               cell: "CNC Kantbank",
@@ -910,7 +909,7 @@ export async function generateMockData(
               operation_name: "Kanten",
               description: "Kanten montageranden",
               estimated_hours: 0.6,
-              status: "queued",
+              status: "not_started",
             },
             {
               cell: "Afwerking",
@@ -918,7 +917,7 @@ export async function generateMockData(
               operation_name: "Anodiseren",
               description: "Anodiseren naturel",
               estimated_hours: 0.6,
-              status: "queued",
+              status: "not_started",
             },
             {
               cell: "Kwaliteitscontrole",
@@ -926,7 +925,7 @@ export async function generateMockData(
               operation_name: "Controle",
               description: "Steekproef dimensies",
               estimated_hours: 0.15,
-              status: "queued",
+              status: "not_started",
             },
           ],
         );
@@ -949,7 +948,7 @@ export async function generateMockData(
               operation_name: "Precisie lasersnijden",
               description: "Fiber laser snijden RVS304 - high precision mode",
               estimated_hours: 1.2,
-              status: "queued",
+              status: "not_started",
               metadata: {
                 precision_mode: true,
                 tolerance: "±0.05mm",
@@ -962,7 +961,7 @@ export async function generateMockData(
               operation_name: "Precisie kanten",
               description: "CNC kanten met angle measurement ±0.1°",
               estimated_hours: 1.5,
-              status: "queued",
+              status: "not_started",
               metadata: {
                 angle_tolerance: "±0.1°",
                 tooling: "Precision V-die",
@@ -975,7 +974,7 @@ export async function generateMockData(
               operation_name: "TIG precisie lassen",
               description: "TIG lassen - low distortion welding procedure",
               estimated_hours: 2.5,
-              status: "queued",
+              status: "not_started",
               metadata: {
                 weld_procedure: "Low-distortion TIG",
                 fixturing: "Precision jig required",
@@ -988,7 +987,7 @@ export async function generateMockData(
               operation_name: "Precisie montage",
               description: "Montage subassemblies - clean room assembly",
               estimated_hours: 1.0,
-              status: "queued",
+              status: "not_started",
               metadata: {
                 cleanroom_assembly: true,
                 torque_spec: "Per ASML drawing",
@@ -1001,7 +1000,7 @@ export async function generateMockData(
               description:
                 "Volledige CMM meting + materiaalcertificaat + inspectie rapport",
               estimated_hours: 1.5,
-              status: "queued",
+              status: "not_started",
               metadata: {
                 cmm_program: "ASML-FRAME-MAIN-CMM.prg",
                 material_cert: "EN 10204 3.1 required",
@@ -1030,7 +1029,7 @@ export async function generateMockData(
               operation_name: "Lasersnijden",
               description: "Snijden montageplaten 15mm RVS",
               estimated_hours: 0.8,
-              status: "queued",
+              status: "not_started",
             },
             {
               cell: "CNC Kantbank",
@@ -1038,7 +1037,7 @@ export async function generateMockData(
               operation_name: "Kanten",
               description: "Kanten bevestigingsranden",
               estimated_hours: 0.6,
-              status: "queued",
+              status: "not_started",
             },
             {
               cell: "Kwaliteitscontrole",
@@ -1046,7 +1045,7 @@ export async function generateMockData(
               operation_name: "CMM controle",
               description: "CMM meting kritische maten",
               estimated_hours: 0.8,
-              status: "queued",
+              status: "not_started",
               metadata: { cmm_required: true, tolerance: "±0.05mm" },
             },
           ],
