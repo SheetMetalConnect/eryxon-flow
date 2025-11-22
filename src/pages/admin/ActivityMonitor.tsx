@@ -1,61 +1,47 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Grid,
-  Avatar,
-  Chip,
-  FormControl,
-  Select,
-  MenuItem,
-  TextField,
-  InputAdornment,
-  Paper,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Divider,
-  Button,
-  IconButton,
-  alpha,
-  useTheme,
-  CircularProgress,
-  Tooltip,
-  Stack,
-  Badge,
-  Switch,
-  FormControlLabel,
-} from "@mui/material";
-import {
-  Timeline as TimelineIcon,
-  Person as PersonIcon,
-  Search as SearchIcon,
-  Refresh as RefreshIcon,
-  GetApp as GetAppIcon,
-  FiberManualRecord as FiberManualRecordIcon,
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Login as LoginIcon,
-  Logout as LogoutIcon,
-  Visibility as VisibilityIcon,
-  Settings as SettingsIcon,
-  CloudDownload as CloudDownloadIcon,
-  CloudUpload as CloudUploadIcon,
-  Work as WorkIcon,
-  Inventory as InventoryIcon,
-  CheckCircle as CheckCircleIcon,
-  People as PeopleIcon,
-  ViewInAr as ViewInArIcon,
-  Build as BuildIcon,
-  Filter1 as FilterIcon,
-} from "@mui/icons-material";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatDistanceToNow } from "date-fns";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Timeline,
+  User,
+  Search,
+  RefreshCw,
+  Download,
+  Plus,
+  Edit,
+  Trash2,
+  LogIn,
+  LogOut,
+  Eye,
+  Settings,
+  CloudDownload,
+  CloudUpload,
+  Briefcase,
+  Package,
+  CheckCircle,
+  Users,
+  Layers,
+  Wrench,
+  Circle,
+  Loader2,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ActivityLog {
   id: string;
@@ -88,7 +74,6 @@ export const ActivityMonitor: React.FC = () => {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [limit, setLimit] = useState(50);
-  const theme = useTheme();
   const { profile } = useAuth();
 
   // Load activity data
@@ -185,27 +170,28 @@ export const ActivityMonitor: React.FC = () => {
 
   // Get action icon
   const getActionIcon = (action: string) => {
+    const iconClass = "h-3.5 w-3.5";
     switch (action) {
       case "create":
-        return <AddIcon fontSize="small" />;
+        return <Plus className={iconClass} />;
       case "update":
-        return <EditIcon fontSize="small" />;
+        return <Edit className={iconClass} />;
       case "delete":
-        return <DeleteIcon fontSize="small" />;
+        return <Trash2 className={iconClass} />;
       case "login":
-        return <LoginIcon fontSize="small" />;
+        return <LogIn className={iconClass} />;
       case "logout":
-        return <LogoutIcon fontSize="small" />;
+        return <LogOut className={iconClass} />;
       case "view":
-        return <VisibilityIcon fontSize="small" />;
+        return <Eye className={iconClass} />;
       case "configure":
-        return <SettingsIcon fontSize="small" />;
+        return <Settings className={iconClass} />;
       case "export":
-        return <CloudDownloadIcon fontSize="small" />;
+        return <CloudDownload className={iconClass} />;
       case "import":
-        return <CloudUploadIcon fontSize="small" />;
+        return <CloudUpload className={iconClass} />;
       default:
-        return <FiberManualRecordIcon fontSize="small" />;
+        return <Circle className={iconClass} />;
     }
   };
 
@@ -213,45 +199,46 @@ export const ActivityMonitor: React.FC = () => {
   const getActionColor = (action: string) => {
     switch (action) {
       case "create":
-        return "#10B981"; // Green
+        return "bg-green-500/10 text-green-500 border-green-500/20";
       case "update":
-        return "#3B82F6"; // Blue
+        return "bg-blue-500/10 text-blue-500 border-blue-500/20";
       case "delete":
-        return "#EF4444"; // Red
+        return "bg-red-500/10 text-red-500 border-red-500/20";
       case "login":
-        return "#8B5CF6"; // Purple
+        return "bg-purple-500/10 text-purple-500 border-purple-500/20";
       case "logout":
-        return "#6B7280"; // Gray
+        return "bg-gray-500/10 text-gray-500 border-gray-500/20";
       case "view":
-        return "#06B6D4"; // Cyan
+        return "bg-cyan-500/10 text-cyan-500 border-cyan-500/20";
       case "configure":
-        return "#F59E0B"; // Orange
+        return "bg-orange-500/10 text-orange-500 border-orange-500/20";
       case "export":
       case "import":
-        return "#EC4899"; // Pink
+        return "bg-pink-500/10 text-pink-500 border-pink-500/20";
       default:
-        return "#9CA3AF"; // Light Gray
+        return "bg-gray-400/10 text-gray-400 border-gray-400/20";
     }
   };
 
   // Get entity icon
   const getEntityIcon = (entityType: string | null) => {
+    const iconClass = "h-4 w-4";
     switch (entityType) {
       case "job":
-        return <WorkIcon fontSize="small" />;
+        return <Briefcase className={iconClass} />;
       case "part":
-        return <InventoryIcon fontSize="small" />;
+        return <Package className={iconClass} />;
       case "operation":
-        return <CheckCircleIcon fontSize="small" />;
+        return <CheckCircle className={iconClass} />;
       case "user":
-        return <PeopleIcon fontSize="small" />;
+        return <Users className={iconClass} />;
       case "stage":
-        return <ViewInArIcon fontSize="small" />;
+        return <Layers className={iconClass} />;
       case "material":
       case "resource":
-        return <BuildIcon fontSize="small" />;
+        return <Wrench className={iconClass} />;
       default:
-        return <TimelineIcon fontSize="small" />;
+        return <Timeline className={iconClass} />;
     }
   };
 
@@ -309,403 +296,294 @@ export const ActivityMonitor: React.FC = () => {
 
   if (loading) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: 400,
-        }}
-      >
-        <CircularProgress />
-      </Box>
+      <div className="flex justify-center items-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
     );
   }
 
   return (
-    <Box>
+    <div className="space-y-6">
       {/* Header Section */}
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-          <TimelineIcon
-            sx={{ fontSize: 40, color: theme.palette.primary.main }}
-          />
-          <Box>
-            <Typography variant="h4" fontWeight={700}>
-              Activity Monitor
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
+      <div>
+        <div className="flex items-center gap-3 mb-2">
+          <Timeline className="h-10 w-10 text-foreground/80" />
+          <div>
+            <h1 className="text-3xl font-bold">Activity Monitor</h1>
+            <p className="text-sm text-muted-foreground">
               Real-time platform activity feed with comprehensive audit trail
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Statistics Cards */}
       {stats && (
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <Avatar
-                    sx={{
-                      bgcolor: alpha(theme.palette.primary.main, 0.1),
-                      color: theme.palette.primary.main,
-                    }}
-                  >
-                    <TimelineIcon />
-                  </Avatar>
-                  <Box>
-                    <Typography variant="h4" fontWeight={700}>
-                      {stats.total_activities || 0}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Total Activities (24h)
-                    </Typography>
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="glass-card">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-lg bg-white/10">
+                  <Timeline className="h-6 w-6 text-foreground" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">
+                    {stats.total_activities || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Total Activities (24h)
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <Avatar
-                    sx={{ bgcolor: alpha("#10B981", 0.1), color: "#10B981" }}
-                  >
-                    <PeopleIcon />
-                  </Avatar>
-                  <Box>
-                    <Typography variant="h4" fontWeight={700}>
-                      {stats.unique_users || 0}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Active Users (24h)
-                    </Typography>
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
+          <Card className="glass-card">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-lg bg-green-500/10">
+                  <Users className="h-6 w-6 text-green-500" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">
+                    {stats.unique_users || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Active Users (24h)
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <Avatar
-                    sx={{ bgcolor: alpha("#3B82F6", 0.1), color: "#3B82F6" }}
-                  >
-                    <AddIcon />
-                  </Avatar>
-                  <Box>
-                    <Typography variant="h4" fontWeight={700}>
-                      {stats.activities_by_action?.create || 0}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Created (24h)
-                    </Typography>
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
+          <Card className="glass-card">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-lg bg-blue-500/10">
+                  <Plus className="h-6 w-6 text-blue-500" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">
+                    {stats.activities_by_action?.create || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Created (24h)
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <Avatar
-                    sx={{ bgcolor: alpha("#F59E0B", 0.1), color: "#F59E0B" }}
-                  >
-                    <EditIcon />
-                  </Avatar>
-                  <Box>
-                    <Typography variant="h4" fontWeight={700}>
-                      {stats.activities_by_action?.update || 0}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Updated (24h)
-                    </Typography>
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+          <Card className="glass-card">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-lg bg-orange-500/10">
+                  <Edit className="h-6 w-6 text-orange-500" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">
+                    {stats.activities_by_action?.update || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Updated (24h)
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Filters and Controls */}
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid size={{ xs: 12, md: 3 }}>
-            <TextField
-              fullWidth
-              size="small"
-              placeholder="Search activities..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
+      <Card className="glass-card">
+        <CardContent className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+            <div className="md:col-span-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search activities..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
 
-          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-            <FormControl fullWidth size="small">
-              <Select
-                value={filterAction}
-                onChange={(e) => setFilterAction(e.target.value)}
-              >
-                <MenuItem value="all">All Actions</MenuItem>
-                {uniqueActions.map((action) => (
-                  <MenuItem key={action} value={action}>
-                    {action.charAt(0).toUpperCase() + action.slice(1)}
-                  </MenuItem>
-                ))}
+            <div className="md:col-span-2">
+              <Select value={filterAction} onValueChange={setFilterAction}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All Actions" />
+                </SelectTrigger>
+                <SelectContent className="glass-card">
+                  <SelectItem value="all">All Actions</SelectItem>
+                  {uniqueActions.map((action) => (
+                    <SelectItem key={action} value={action}>
+                      {action.charAt(0).toUpperCase() + action.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
-            </FormControl>
-          </Grid>
+            </div>
 
-          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-            <FormControl fullWidth size="small">
-              <Select
-                value={filterEntityType}
-                onChange={(e) => setFilterEntityType(e.target.value)}
-              >
-                <MenuItem value="all">All Entities</MenuItem>
-                {uniqueEntityTypes.map((type) => (
-                  <MenuItem key={type} value={type}>
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                  </MenuItem>
-                ))}
+            <div className="md:col-span-2">
+              <Select value={filterEntityType} onValueChange={setFilterEntityType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All Entities" />
+                </SelectTrigger>
+                <SelectContent className="glass-card">
+                  <SelectItem value="all">All Entities</SelectItem>
+                  {uniqueEntityTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
-            </FormControl>
-          </Grid>
+            </div>
 
-          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-            <FormControl fullWidth size="small">
-              <Select
-                value={limit}
-                onChange={(e) => setLimit(Number(e.target.value))}
-              >
-                <MenuItem value={25}>Last 25</MenuItem>
-                <MenuItem value={50}>Last 50</MenuItem>
-                <MenuItem value={100}>Last 100</MenuItem>
-                <MenuItem value={200}>Last 200</MenuItem>
+            <div className="md:col-span-2">
+              <Select value={limit.toString()} onValueChange={(val) => setLimit(Number(val))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="glass-card">
+                  <SelectItem value="25">Last 25</SelectItem>
+                  <SelectItem value="50">Last 50</SelectItem>
+                  <SelectItem value="100">Last 100</SelectItem>
+                  <SelectItem value="200">Last 200</SelectItem>
+                </SelectContent>
               </Select>
-            </FormControl>
-          </Grid>
+            </div>
 
-          <Grid size={{ xs: 12, md: 3 }}>
-            <Stack direction="row" spacing={1} justifyContent="flex-end">
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={autoRefresh}
-                    onChange={(e) => setAutoRefresh(e.target.checked)}
-                  />
-                }
-                label="Auto-refresh"
-              />
-              <IconButton onClick={loadData} color="primary" size="small">
-                <RefreshIcon />
-              </IconButton>
-              <IconButton onClick={handleExport} color="primary" size="small">
-                <GetAppIcon />
-              </IconButton>
-            </Stack>
-          </Grid>
-        </Grid>
-      </Paper>
+            <div className="md:col-span-3 flex items-center justify-end gap-3">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="auto-refresh"
+                  checked={autoRefresh}
+                  onCheckedChange={setAutoRefresh}
+                />
+                <Label htmlFor="auto-refresh" className="text-sm">
+                  Auto-refresh
+                </Label>
+              </div>
+              <Button onClick={loadData} variant="ghost" size="icon">
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+              <Button onClick={handleExport} variant="ghost" size="icon">
+                <Download className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Activity Feed */}
-      <Paper sx={{ p: 0 }}>
-        <Box sx={{ p: 2, borderBottom: 1, borderColor: "divider" }}>
-          <Typography variant="h6" fontWeight={600}>
-            Recent Activity
-            <Chip
-              label={`${activities.length} events`}
-              size="small"
-              sx={{ ml: 2 }}
-              color="primary"
-              variant="outlined"
-            />
-          </Typography>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            display="block"
-            sx={{ mt: 0.5 }}
-          >
+      <Card className="glass-card">
+        <div className="p-4 border-b border-border-subtle">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold">Recent Activity</h2>
+            <Badge variant="outline" className="bg-white/5">
+              {activities.length} events
+            </Badge>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
             Last updated: {lastUpdate.toLocaleTimeString()}
             {autoRefresh && " (auto-refreshing every 10s)"}
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
-        <List sx={{ p: 0 }}>
+        <div className="divide-y divide-border-subtle">
           {activities.length === 0 ? (
-            <ListItem sx={{ py: 8 }}>
-              <ListItemText
-                primary={
-                  <Typography
-                    variant="body1"
-                    color="text.secondary"
-                    align="center"
-                  >
-                    No activities found
-                  </Typography>
-                }
-                secondary={
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    align="center"
-                    sx={{ mt: 1 }}
-                  >
-                    Try adjusting your filters or search query
-                  </Typography>
-                }
-              />
-            </ListItem>
+            <div className="py-16 text-center">
+              <p className="text-muted-foreground mb-2">No activities found</p>
+              <p className="text-sm text-muted-foreground">
+                Try adjusting your filters or search query
+              </p>
+            </div>
           ) : (
-            activities.map((activity, index) => (
-              <React.Fragment key={activity.id}>
-                <ListItem
-                  sx={{
-                    py: 2,
-                    px: 3,
-                    "&:hover": {
-                      backgroundColor: alpha(theme.palette.action.hover, 0.04),
-                    },
-                  }}
-                >
-                  <ListItemAvatar>
-                    <Badge
-                      overlap="circular"
-                      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                      badgeContent={
-                        <Avatar
-                          sx={{
-                            width: 20,
-                            height: 20,
-                            bgcolor: getActionColor(activity.action),
-                            border: `2px solid ${theme.palette.background.paper}`,
-                          }}
-                        >
-                          {getActionIcon(activity.action)}
-                        </Avatar>
-                      }
-                    >
-                      <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
+            activities.map((activity) => (
+              <div
+                key={activity.id}
+                className="p-4 hover:bg-white/5 transition-base"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="relative">
+                    <Avatar className="h-10 w-10 bg-white/10">
+                      <AvatarFallback className="bg-white/10 text-foreground font-semibold">
                         {getUserInitials(
                           activity.user_name,
                           activity.user_email,
                         )}
-                      </Avatar>
-                    </Badge>
-                  </ListItemAvatar>
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute -bottom-1 -right-1">
+                      <div className={cn(
+                        "h-5 w-5 rounded-full flex items-center justify-center border-2 border-background",
+                        getActionColor(activity.action).split(' ').slice(0, 2).join(' ')
+                      )}>
+                        {getActionIcon(activity.action)}
+                      </div>
+                    </div>
+                  </div>
 
-                  <ListItemText
-                    primary={
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                          mb: 0.5,
-                        }}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-sm font-semibold">
+                        {activity.user_name || activity.user_email}
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "h-5 text-xs font-semibold uppercase",
+                          getActionColor(activity.action)
+                        )}
                       >
-                        <Typography variant="body2" fontWeight={600}>
-                          {activity.user_name || activity.user_email}
-                        </Typography>
-                        <Chip
-                          label={activity.action}
-                          size="small"
-                          sx={{
-                            height: 20,
-                            fontSize: "0.7rem",
-                            fontWeight: 600,
-                            textTransform: "uppercase",
-                            bgcolor: alpha(
-                              getActionColor(activity.action),
-                              0.1,
-                            ),
-                            color: getActionColor(activity.action),
-                          }}
-                        />
-                        {activity.entity_type && (
-                          <Chip
-                            icon={getEntityIcon(activity.entity_type)}
-                            label={activity.entity_type}
-                            size="small"
-                            sx={{
-                              height: 20,
-                              fontSize: "0.7rem",
-                            }}
-                            variant="outlined"
-                          />
-                        )}
-                      </Box>
-                    }
-                    secondary={
-                      <Box>
-                        <Typography
-                          variant="body2"
-                          color="text.primary"
-                          sx={{ mb: 0.5 }}
+                        {activity.action}
+                      </Badge>
+                      {activity.entity_type && (
+                        <Badge
+                          variant="outline"
+                          className="h-5 text-xs gap-1 bg-white/5"
                         >
-                          {activity.description}
-                        </Typography>
-                        {activity.entity_name && (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            display="block"
-                          >
-                            {activity.entity_type}:{" "}
-                            <strong>{activity.entity_name}</strong>
-                          </Typography>
-                        )}
-                        <Typography variant="caption" color="text.secondary">
-                          {formatDistanceToNow(new Date(activity.created_at), {
-                            addSuffix: true,
-                          })}
-                        </Typography>
-                      </Box>
-                    }
-                  />
-                </ListItem>
-                {index < activities.length - 1 && (
-                  <Divider variant="inset" component="li" />
-                )}
-              </React.Fragment>
+                          {getEntityIcon(activity.entity_type)}
+                          {activity.entity_type}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <p className="text-sm text-foreground mb-1">
+                      {activity.description}
+                    </p>
+
+                    {activity.entity_name && (
+                      <p className="text-xs text-muted-foreground mb-1">
+                        {activity.entity_type}:{" "}
+                        <span className="font-medium">{activity.entity_name}</span>
+                      </p>
+                    )}
+
+                    <p className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(activity.created_at), {
+                        addSuffix: true,
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
             ))
           )}
-        </List>
+        </div>
 
         {/* Load More */}
         {activities.length >= limit && (
-          <Box
-            sx={{
-              p: 2,
-              borderTop: 1,
-              borderColor: "divider",
-              textAlign: "center",
-            }}
-          >
-            <Button onClick={() => setLimit(limit + 50)} variant="outlined">
+          <div className="p-4 border-t border-border-subtle text-center">
+            <Button onClick={() => setLimit(limit + 50)} variant="outline">
               Load More
             </Button>
-          </Box>
+          </div>
         )}
-      </Paper>
-    </Box>
+      </Card>
+    </div>
   );
 };
