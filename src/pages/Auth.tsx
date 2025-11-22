@@ -5,10 +5,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowRight, Factory } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import AnimatedBackground from "@/components/AnimatedBackground";
 
 export default function Auth() {
   const { t } = useTranslation();
@@ -70,28 +70,55 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="absolute top-4 right-4">
-        <LanguageSwitcher />
-      </div>
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="h-8 w-8 rounded bg-primary" />
-            <CardTitle className="text-2xl font-bold">{t("auth.title")}</CardTitle>
+    <>
+      <AnimatedBackground />
+
+      <div className="relative min-h-screen flex items-start justify-center p-8 pt-20">
+        {/* Language Switcher - Top Right */}
+        <div className="absolute top-4 right-4 z-10">
+          <LanguageSwitcher />
+        </div>
+
+        {/* Main Auth Card */}
+        <div className="onboarding-card">
+          {/* Icon/Logo */}
+          <div className="inline-flex items-center justify-center mb-4">
+            <Factory className="w-12 h-12 text-primary" strokeWidth={1.5} />
           </div>
-          <CardDescription>
+
+          {/* Welcome Text */}
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">
+            Welcome to
+          </p>
+
+          {/* Hero Title */}
+          <h1 className="hero-title">
+            Eryxon Flow
+          </h1>
+
+          {/* Tagline */}
+          <p className="text-base text-foreground/80 mb-6">
+            The simple MES you love to use
+          </p>
+
+          {/* Divider */}
+          <hr className="title-divider" />
+
+          {/* Description */}
+          <p className="text-sm text-muted-foreground mb-6">
             {isLogin
               ? t("auth.signInDescription")
               : t("auth.signUpDescription")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          </p>
+
+          {/* Auth Form */}
+          <form onSubmit={handleSubmit} className="space-y-4 text-left">
             {!isLogin && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">{t("auth.fullName")}</Label>
+                  <Label htmlFor="fullName" className="text-sm font-medium">
+                    {t("auth.fullName")}
+                  </Label>
                   <Input
                     id="fullName"
                     type="text"
@@ -99,11 +126,14 @@ export default function Auth() {
                     onChange={(e) => setFullName(e.target.value)}
                     required={!isLogin}
                     placeholder={t("auth.fullNamePlaceholder")}
+                    className="bg-input-background border-input"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="companyName">Company Name</Label>
+                  <Label htmlFor="companyName" className="text-sm font-medium">
+                    Company Name
+                  </Label>
                   <Input
                     id="companyName"
                     type="text"
@@ -111,13 +141,16 @@ export default function Auth() {
                     onChange={(e) => setCompanyName(e.target.value)}
                     required={!isLogin}
                     placeholder="Acme Manufacturing"
+                    className="bg-input-background border-input"
                   />
                 </div>
               </>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">{t("auth.email")}</Label>
+              <Label htmlFor="email" className="text-sm font-medium">
+                {t("auth.email")}
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -125,11 +158,14 @@ export default function Auth() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder={t("auth.emailPlaceholder")}
+                className="bg-input-background border-input"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">{t("auth.password")}</Label>
+              <Label htmlFor="password" className="text-sm font-medium">
+                {t("auth.password")}
+              </Label>
               <Input
                 id="password"
                 type="password"
@@ -138,6 +174,7 @@ export default function Auth() {
                 required
                 minLength={6}
                 placeholder={t("auth.passwordPlaceholder")}
+                className="bg-input-background border-input"
               />
             </div>
 
@@ -147,27 +184,36 @@ export default function Auth() {
               </Alert>
             )}
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isLogin ? t("auth.signIn") : t("auth.signUp")}
-            </Button>
+            <div className="pt-2">
+              <Button
+                type="submit"
+                className="w-full cta-button"
+                disabled={loading}
+              >
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLogin ? t("auth.signIn") : t("auth.signUp")}
+                <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />
+              </Button>
+            </div>
 
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full"
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setError(null);
-              }}
-            >
-              {isLogin
-                ? t("auth.noAccount")
-                : t("auth.haveAccount")}
-            </Button>
+            {/* Toggle Login/Signup */}
+            <div className="pt-4 border-t border-border-subtle">
+              <button
+                type="button"
+                className="w-full text-sm text-muted-foreground hover:text-foreground transition-base"
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setError(null);
+                }}
+              >
+                {isLogin
+                  ? t("auth.noAccount")
+                  : t("auth.haveAccount")}
+              </button>
+            </div>
           </form>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </div>
+    </>
   );
 }
