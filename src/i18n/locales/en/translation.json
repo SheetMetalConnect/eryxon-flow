@@ -84,6 +84,37 @@
       "data": "DATA"
     }
   },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your application preferences and account settings",
+    "demoData": {
+      "title": "Demo Data",
+      "description": "Create or clear demo data for testing and exploration",
+      "active": "Active",
+      "activeDescription": "Demo data is currently active. Includes 6 operators, 4 jobs, 8 parts, and complete production workflows.",
+      "createDescription": "Create realistic manufacturing demo data to explore all features. Includes Dutch companies, QRM workflows, and complete data relationships.",
+      "createButton": "Create Demo Data",
+      "clearButton": "Clear Demo Data",
+      "creating": "Creating...",
+      "clearing": "Clearing...",
+      "confirmTitle": "Clear Demo Data?",
+      "confirmDescription": "This will permanently delete all demo data including:",
+      "confirmItems": {
+        "operators": "6 Demo operators",
+        "jobs": "4 Sample jobs",
+        "parts": "8 Parts",
+        "operations": "45+ Operations",
+        "records": "Time entries and quality records"
+      },
+      "confirmWarning": "This action cannot be undone",
+      "confirmCancel": "Cancel",
+      "confirmYes": "Yes, Clear Demo Data",
+      "successCreated": "Demo data created successfully",
+      "successCleared": "Demo data cleared successfully",
+      "errorCreate": "Failed to create demo data",
+      "errorClear": "Failed to clear demo data"
+    }
+  },
   "subscription": {
     "currentPlan": "Current Plan",
     "upgradePlan": "Upgrade Plan",

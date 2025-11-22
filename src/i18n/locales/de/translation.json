@@ -51,6 +51,37 @@
     "checkEmail": "Überprüfen Sie Ihre E-Mail, um Ihr Konto zu bestätigen",
     "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten"
   },
+  "settings": {
+    "title": "Einstellungen",
+    "subtitle": "Verwalten Sie Ihre Anwendungseinstellungen und Kontoeinstellungen",
+    "demoData": {
+      "title": "Demodaten",
+      "description": "Demodaten erstellen oder löschen zum Testen und Erkunden",
+      "active": "Aktiv",
+      "activeDescription": "Demodaten sind derzeit aktiv. Enthält 6 Bediener, 4 Aufträge, 8 Teile und vollständige Produktionsabläufe.",
+      "createDescription": "Erstellen Sie realistische Produktions-Demodaten, um alle Funktionen zu erkunden. Enthält niederländische Unternehmen, QRM-Workflows und vollständige Datenbeziehungen.",
+      "createButton": "Demodaten Erstellen",
+      "clearButton": "Demodaten Löschen",
+      "creating": "Wird erstellt...",
+      "clearing": "Wird gelöscht...",
+      "confirmTitle": "Demodaten Löschen?",
+      "confirmDescription": "Dies löscht dauerhaft alle Demodaten einschließlich:",
+      "confirmItems": {
+        "operators": "6 Demo-Bediener",
+        "jobs": "4 Beispielaufträge",
+        "parts": "8 Teile",
+        "operations": "45+ Arbeitsgänge",
+        "records": "Zeiterfassungen und Qualitätsdaten"
+      },
+      "confirmWarning": "Diese Aktion kann nicht rückgängig gemacht werden",
+      "confirmCancel": "Abbrechen",
+      "confirmYes": "Ja, Demodaten Löschen",
+      "successCreated": "Demodaten erfolgreich erstellt",
+      "successCleared": "Demodaten erfolgreich gelöscht",
+      "errorCreate": "Erstellen der Demodaten fehlgeschlagen",
+      "errorClear": "Löschen der Demodaten fehlgeschlagen"
+    }
+  },
   "navigation": {
     "dashboard": "Dashboard",
     "workQueue": "Arbeitswarteschlange",

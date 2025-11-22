@@ -51,6 +51,37 @@
     "checkEmail": "Controleer uw e-mail om uw account te bevestigen",
     "unexpectedError": "Er is een onverwachte fout opgetreden"
   },
+  "settings": {
+    "title": "Instellingen",
+    "subtitle": "Beheer uw applicatievoorkeuren en accountinstellingen",
+    "demoData": {
+      "title": "Demonstratiedata",
+      "description": "Demonstratiedata aanmaken of verwijderen voor testen en verkenning",
+      "active": "Actief",
+      "activeDescription": "Demonstratiedata is momenteel actief. Bevat 6 operators, 4 werkorders, 8 onderdelen en complete productiestromen.",
+      "createDescription": "Maak realistische productiedemonstratie data aan om alle functies te verkennen. Bevat Nederlandse bedrijven, QRM-workflows en complete data relaties.",
+      "createButton": "Demonstratiedata Aanmaken",
+      "clearButton": "Demonstratiedata Verwijderen",
+      "creating": "Aanmaken...",
+      "clearing": "Verwijderen...",
+      "confirmTitle": "Demonstratiedata Verwijderen?",
+      "confirmDescription": "Dit verwijdert permanent alle demonstratiedata waaronder:",
+      "confirmItems": {
+        "operators": "6 Demo operators",
+        "jobs": "4 Voorbeeldwerkorders",
+        "parts": "8 Onderdelen",
+        "operations": "45+ Bewerkingen",
+        "records": "Tijdregistraties en kwaliteitsgegevens"
+      },
+      "confirmWarning": "Deze actie kan niet ongedaan worden gemaakt",
+      "confirmCancel": "Annuleren",
+      "confirmYes": "Ja, Demonstratiedata Verwijderen",
+      "successCreated": "Demonstratiedata succesvol aangemaakt",
+      "successCleared": "Demonstratiedata succesvol verwijderd",
+      "errorCreate": "Aanmaken demonstratiedata mislukt",
+      "errorClear": "Verwijderen demonstratiedata mislukt"
+    }
+  },
   "navigation": {
     "dashboard": "Dashboard",
     "workQueue": "Werkwachtrij",

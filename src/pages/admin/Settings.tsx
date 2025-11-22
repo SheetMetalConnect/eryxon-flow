@@ -1,11 +1,20 @@
-import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useAuth } from "@/contexts/AuthContext";
+import { generateMockData, clearMockData } from "@/lib/mockDataGenerator";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   Moon,
   Globe,
@@ -13,21 +22,142 @@ import {
   User,
   Building,
   ExternalLink,
+  TestTube,
+  Loader2,
+  AlertTriangle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export const Settings: React.FC = () => {
   const { t } = useTranslation();
   const { profile, tenant } = useAuth();
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showExitDialog, setShowExitDialog] = useState(false);
+
+  useEffect(() => {
+    if (!profile?.tenant_id) return;
+
+    supabase
+      .rpc("is_demo_mode", { p_tenant_id: profile.tenant_id })
+      .then(({ data }) => setIsDemoMode(data === true));
+  }, [profile?.tenant_id]);
+
+  const handleCreateDemoData = async () => {
+    if (!profile?.tenant_id) return;
+
+    setIsLoading(true);
+    const result = await generateMockData(profile.tenant_id);
+
+    if (result.success) {
+      toast.success("Demo data created successfully");
+      setIsDemoMode(true);
+      window.location.reload();
+    } else {
+      toast.error(result.error || "Failed to create demo data");
+    }
+    setIsLoading(false);
+  };
+
+  const handleClearDemoData = async () => {
+    if (!profile?.tenant_id) return;
+
+    setIsLoading(true);
+    const result = await clearMockData(profile.tenant_id);
+
+    if (result.success) {
+      toast.success("Demo data cleared successfully");
+      setIsDemoMode(false);
+      setShowExitDialog(false);
+      window.location.reload();
+    } else {
+      toast.error(result.error || "Failed to clear demo data");
+    }
+    setIsLoading(false);
+  };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">{t("navigation.settings")}</h1>
-        <p className="text-muted-foreground">
-          Manage your application preferences and account settings
-        </p>
+        <h1 className="text-3xl font-bold">{t("settings.title")}</h1>
+        <p className="text-muted-foreground">{t("settings.subtitle")}</p>
       </div>
+
+      {/* Demo Data Card */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <TestTube className="h-5 w-5" />
+              {t("settings.demoData.title")}
+            </CardTitle>
+            {isDemoMode && (
+              <Badge variant="warning">{t("settings.demoData.active")}</Badge>
+            )}
+          </div>
+          <CardDescription>
+            {t("settings.demoData.description")}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {isDemoMode ? (
+            <>
+              <Alert>
+                <AlertDescription>
+                  {t("settings.demoData.activeDescription")}
+                </AlertDescription>
+              </Alert>
+              <Button
+                variant="destructive"
+                onClick={() => setShowExitDialog(true)}
+                disabled={isLoading}
+                className="w-full"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    {t("settings.demoData.clearing")}
+                  </>
+                ) : (
+                  t("settings.demoData.clearButton")
+                )}
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">
+                {t("settings.demoData.createDescription")}
+              </p>
+              <Button
+                onClick={handleCreateDemoData}
+                disabled={isLoading}
+                className="w-full"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    {t("settings.demoData.creating")}
+                  </>
+                ) : (
+                  t("settings.demoData.createButton")
+                )}
+              </Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Appearance Settings */}
@@ -38,7 +168,8 @@ export const Settings: React.FC = () => {
               Appearance
             </CardTitle>
             <CardDescription>
-              Eryxon MES uses a beautiful dark mode interface optimized for operators and admins
+              Eryxon MES uses a beautiful dark mode interface optimized for
+              operators and admins
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -88,9 +219,7 @@ export const Settings: React.FC = () => {
               <User className="h-5 w-5" />
               Account
             </CardTitle>
-            <CardDescription>
-              Your account information
-            </CardDescription>
+            <CardDescription>Your account information</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -105,7 +234,9 @@ export const Settings: React.FC = () => {
             <Separator />
             <div className="space-y-2">
               <Label className="text-muted-foreground text-xs">Role</Label>
-              <p className="font-medium capitalize">{profile?.role || "Not set"}</p>
+              <p className="font-medium capitalize">
+                {profile?.role || "Not set"}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -118,14 +249,16 @@ export const Settings: React.FC = () => {
                 <Building className="h-5 w-5" />
                 Organization
               </CardTitle>
-              <CardDescription>
-                Your organization details
-              </CardDescription>
+              <CardDescription>Your organization details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-muted-foreground text-xs">Company Name</Label>
-                <p className="font-medium">{tenant.company_name || tenant.name}</p>
+                <Label className="text-muted-foreground text-xs">
+                  Company Name
+                </Label>
+                <p className="font-medium">
+                  {tenant.company_name || tenant.name}
+                </p>
               </div>
               <Separator />
               <div className="space-y-2">
@@ -155,9 +288,7 @@ export const Settings: React.FC = () => {
             <Shield className="h-5 w-5" />
             Configuration
           </CardTitle>
-          <CardDescription>
-            Quick access to configuration pages
-          </CardDescription>
+          <CardDescription>Quick access to configuration pages</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
@@ -205,6 +336,45 @@ export const Settings: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Exit Demo Mode Confirmation Dialog */}
+      <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("settings.demoData.confirmTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("settings.demoData.confirmDescription")}
+              <ul className="mt-3 space-y-1 text-sm list-disc list-inside">
+                <li>{t("settings.demoData.confirmItems.operators")}</li>
+                <li>{t("settings.demoData.confirmItems.jobs")}</li>
+                <li>{t("settings.demoData.confirmItems.parts")}</li>
+                <li>{t("settings.demoData.confirmItems.operations")}</li>
+                <li>{t("settings.demoData.confirmItems.records")}</li>
+              </ul>
+              <Alert className="mt-4" variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>{t("settings.demoData.confirmWarning")}</AlertTitle>
+              </Alert>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLoading}>
+              {t("settings.demoData.confirmCancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={handleClearDemoData}
+              disabled={isLoading}
+            >
+              {isLoading
+                ? t("settings.demoData.confirmClearing")
+                : t("settings.demoData.confirmButton")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
