@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, ArrowRight, Factory } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import AnimatedBackground from "@/components/AnimatedBackground";
+import { Link } from "react-router-dom";
 
 export default function Auth() {
   const { t } = useTranslation();
@@ -19,6 +21,7 @@ export default function Auth() {
   const [companyName, setCompanyName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const { signIn, signUp, profile } = useAuth();
   const navigate = useNavigate();
 
@@ -46,6 +49,12 @@ export default function Auth() {
       } else {
         if (!fullName || !companyName) {
           setError(t("auth.fillAllFields"));
+          setLoading(false);
+          return;
+        }
+
+        if (!agreedToTerms) {
+          setError(t("auth.mustAgreeToTerms"));
           setLoading(false);
           return;
         }
@@ -178,6 +187,48 @@ export default function Auth() {
               />
             </div>
 
+            {!isLogin && (
+              <div className="space-y-3 p-4 bg-muted/30 border border-border rounded-lg">
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    id="terms"
+                    checked={agreedToTerms}
+                    onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+                    required={!isLogin}
+                  />
+                  <div className="flex-1">
+                    <Label
+                      htmlFor="terms"
+                      className="text-sm font-normal leading-relaxed cursor-pointer"
+                    >
+                      {t("auth.agreeToTerms")}{" "}
+                      <a
+                        href="/privacy-policy"
+                        target="_blank"
+                        className="text-primary underline hover:text-primary/80"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {t("auth.privacyPolicy")}
+                      </a>{" "}
+                      {t("auth.and")}{" "}
+                      <a
+                        href="/terms-of-service"
+                        target="_blank"
+                        className="text-primary underline hover:text-primary/80"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {t("auth.termsOfService")}
+                      </a>
+                      {t("auth.emailConsent")}
+                    </Label>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground pl-7">
+                  {t("auth.gdprNotice")}
+                </p>
+              </div>
+            )}
+
             {error && (
               <Alert variant={error.includes(t("auth.checkEmail")) ? "default" : "destructive"}>
                 <AlertDescription>{error}</AlertDescription>
@@ -188,7 +239,7 @@ export default function Auth() {
               <Button
                 type="submit"
                 className="w-full cta-button"
-                disabled={loading}
+                disabled={loading || (!isLogin && !agreedToTerms)}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isLogin ? t("auth.signIn") : t("auth.signUp")}
