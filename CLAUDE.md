@@ -1,5 +1,7 @@
 # CLAUDE.md - AI Assistant Guide for Eryxon Flow
 
+**Internal/Proprietary Project**
+
 This document provides comprehensive guidance for AI assistants working with the Eryxon Flow MES (Manufacturing Execution System) codebase.
 
 ## Project Overview
@@ -19,34 +21,39 @@ This document provides comprehensive guidance for AI assistants working with the
 - MCP Server for AI assistant integration
 - RESTful API with webhooks
 - Multi-tenancy with tenant isolation
-- Quick Response Manufacturing (QRM) dashboard
+- Quick Response Manufacturing (QRM) capacity management
+- Operator terminal with real-time capacity indicators
+- Production quantity tracking with scrap reasons
+- Substeps management for operations
 - 3D STEP file viewer
 - Data export system
+- Organization settings (timezone, billing, etc.)
 
 ## Directory Structure
 
 ```
-/home/user/eryxon-flow/
+/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/
 ├── src/
 │   ├── App.tsx                      # Main app with routing
 │   ├── main.tsx                     # Entry point
 │   ├── routes.ts                    # Route constants
 │   ├── components/
-│   │   ├── ui/                      # shadcn/ui components (58 files)
-│   │   ├── admin/                   # Admin-specific components
-│   │   ├── operator/                # Operator-specific components
-│   │   ├── issues/                  # Issue tracking components
-│   │   ├── terminal/                # Work center components
-│   │   ├── qrm/                     # QRM components
-│   │   ├── mui/                     # Material-UI wrappers
-│   │   └── onboarding/              # Onboarding wizard
+│   │   ├── ui/                      # shadcn/ui components (54 files)
+│   │   ├── admin/                   # Admin-specific components (7 files)
+│   │   ├── operator/                # Operator-specific components (11 files)
+│   │   ├── issues/                  # Issue tracking components (6 files)
+│   │   ├── terminal/                # Terminal view components (6 files)
+│   │   ├── qrm/                     # QRM capacity components (7 files)
+│   │   ├── mui/                     # Material-UI wrappers (11 files)
+│   │   └── onboarding/              # Onboarding wizard (10 files)
 │   ├── pages/
 │   │   ├── admin/                   # Admin pages (20 pages)
-│   │   └── operator/                # Operator pages (4 pages)
+│   │   ├── operator/                # Operator pages (5 pages)
+│   │   └── common/                  # Common pages (5 pages)
 │   ├── contexts/
 │   │   └── AuthContext.tsx          # Auth + tenant management
 │   ├── hooks/                       # Custom React hooks (12 hooks)
-│   ├── lib/                         # Utilities (8 files)
+│   ├── lib/                         # Utilities (9 files)
 │   ├── integrations/supabase/       # Supabase client + types
 │   ├── i18n/                        # Internationalization
 │   ├── layouts/                     # Layout components
@@ -57,7 +64,7 @@ This document provides comprehensive guidance for AI assistants working with the
 │   ├── functions/                   # Edge Functions (23 functions)
 │   └── migrations/                  # Database migrations
 ├── mcp-server/                      # MCP server for AI integration
-├── docs/                            # Documentation (22 MD files)
+├── docs/                            # Documentation (14 MD files)
 ├── public/                          # Static assets
 └── scripts/                         # Utility scripts
 ```
@@ -72,10 +79,11 @@ This document provides comprehensive guidance for AI assistants working with the
 - **Tailwind CSS** 3.4.17 - Utility-first CSS
 
 ### UI Components
-- **shadcn/ui** - 58 Radix UI components (accessible, unstyled primitives)
-- **Material-UI** 7.3.5 - Additional component library
+- **shadcn/ui** - 54 Radix UI components (accessible, unstyled primitives)
+- **Material-UI** 7.3.5 - Additional component library (data grids, date pickers)
 - **Lucide React** - Icon library
 - **next-themes** - Dark mode management
+- **three.js** - 3D CAD viewer for STEP files
 
 ### Data & State
 - **@tanstack/react-query** 5.83.0 - Server state management
@@ -598,38 +606,205 @@ serve(async (req) => {
 ## Important Files Reference
 
 ### Configuration Files
-- `/home/user/eryxon-flow/vite.config.ts` - Vite build config
-- `/home/user/eryxon-flow/tailwind.config.ts` - Tailwind/design tokens
-- `/home/user/eryxon-flow/tsconfig.json` - TypeScript config
-- `/home/user/eryxon-flow/package.json` - Dependencies
-- `/home/user/eryxon-flow/components.json` - shadcn/ui config
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/vite.config.ts` - Vite build config
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/tailwind.config.ts` - Tailwind/design tokens
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/tsconfig.json` - TypeScript config
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/package.json` - Dependencies
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/components.json` - shadcn/ui config
 
 ### Core Application Files
-- `/home/user/eryxon-flow/src/App.tsx` - Main app with routing
-- `/home/user/eryxon-flow/src/main.tsx` - Entry point
-- `/home/user/eryxon-flow/src/routes.ts` - Route constants
-- `/home/user/eryxon-flow/src/contexts/AuthContext.tsx` - Auth + tenant
-- `/home/user/eryxon-flow/src/integrations/supabase/client.ts` - Supabase client
-- `/home/user/eryxon-flow/src/integrations/supabase/types.ts` - DB types
-- `/home/user/eryxon-flow/src/i18n/index.ts` - i18n config
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/App.tsx` - Main app with routing
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/main.tsx` - Entry point
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/routes.ts` - Route constants
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/contexts/AuthContext.tsx` - Auth + tenant
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/integrations/supabase/client.ts` - Supabase client
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/integrations/supabase/types.ts` - DB types
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/i18n/index.ts` - i18n config
 
 ### Key Utilities
-- `/home/user/eryxon-flow/src/lib/utils.ts` - `cn()` utility
-- `/home/user/eryxon-flow/src/lib/database.ts` - DB query helpers
-- `/home/user/eryxon-flow/src/lib/searchService.ts` - Global search
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/lib/utils.ts` - `cn()` utility
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/lib/database.ts` - DB query helpers
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/lib/searchService.ts` - Global search
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/lib/substepTemplates.ts` - Substep template management
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/lib/mockDataGenerator.ts` - Mock data generation
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/lib/webhooks.ts` - Webhook utilities
 
 ### Styling
-- `/home/user/eryxon-flow/src/styles/design-system.css` - Design tokens
-- `/home/user/eryxon-flow/src/theme/theme.ts` - MUI theme
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/styles/design-system.css` - Design tokens
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/theme/theme.ts` - MUI theme
 
 ### Documentation
-- `/home/user/eryxon-flow/docs/HOW-THE-APP-WORKS.md` - Comprehensive guide
-- `/home/user/eryxon-flow/docs/DESIGN_SYSTEM.md` - Design system docs
-- `/home/user/eryxon-flow/docs/API_DOCUMENTATION.md` - API reference
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/docs/HOW-THE-APP-WORKS.md` - Comprehensive guide
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/docs/DESIGN_SYSTEM.md` - Design system docs
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/docs/API_DOCUMENTATION.md` - API reference
+- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/docs/HELP.md` - User help and FAQs
+
+## New Features & Systems (2025 Updates)
+
+### 1. QRM Capacity Management
+
+**Purpose**: Prevent bottlenecks using Quick Response Manufacturing principles
+
+**Components**:
+- `src/components/qrm/` - 7 QRM-specific components
+- `src/components/terminal/NextCellInfo.tsx` - Shows next cell capacity
+- `src/components/qrm/WIPIndicator.tsx` - Work-in-progress visual indicator
+- `src/components/qrm/CapacityWarning.tsx` - Warning when approaching capacity
+- `src/components/qrm/RoutingVisualization.tsx` - Visual flow through cells
+
+**Database Fields** (in `cells` table):
+- `wip_limit` - Maximum jobs allowed in cell
+- `wip_warning_threshold` - Warning level (default 80%)
+- `enforce_limit` - Block operations if next cell at capacity
+- `show_warning` - Display warnings in operator terminal
+
+**How It Works**:
+1. Each cell/stage has configurable WIP limit
+2. System tracks current WIP count per cell
+3. Operator terminal shows next cell capacity before completing operation
+4. If `enforce_limit` is true, operators cannot complete if next cell is full
+5. Visual indicators: 🟢 Green (available), 🟡 Yellow (warning), 🔴 Red (at capacity)
+
+**Configuration**: `/admin/config/stages`
+
+### 2. Scrap Reasons System
+
+**Purpose**: Categorize and track scrap/defects systematically
+
+**Location**: 
+- Page: `src/pages/admin/ConfigScrapReasons.tsx`
+- Route: `/admin/config/scrap-reasons`
+- Database: `scrap_reasons` table
+
+**Categories**:
+- `material` - Material defects
+- `process` - Process errors
+- `equipment` - Equipment failures
+- `operator` - Operator errors
+- `design` - Design issues
+- `other` - Other reasons
+
+**Fields**:
+- `code` - Short code (e.g., "MAT-001")
+- `description` - Full description
+- `category` - One of the categories above
+- `active` - Whether reason is currently in use
+
+**Usage**: When reporting production quantities with scrap, operators select a scrap reason code
+
+### 3. Production Quantity Tracking
+
+**Component**: `src/components/operator/ProductionQuantityModal.tsx`
+
+**Purpose**: Track actual production vs planned, including scrap
+
+**Flow**:
+1. Operator completes operation
+2. Modal appears asking for quantities
+3. Operator enters:
+   - **Good Quantity**: Parts that passed
+   - **Scrap Quantity**: Parts that failed
+   - **Scrap Reason**: Why parts were scrapped (from scrap_reasons)
+4. System records to database
+
+**Database Fields**:
+- `operations.good_quantity` - Count of good parts
+- `operations.scrap_quantity` - Count of scrapped parts
+- `operations.scrap_reason_id` - Foreign key to scrap_reasons
+
+### 4. Substeps Management
+
+**Purpose**: Break operations into smaller checkable tasks
+
+**Components**:
+- `src/components/operator/SubstepsManager.tsx` - Operator checklist
+- `src/components/admin/AllSubstepsView.tsx` - Admin view of all substeps
+- `src/components/admin/TemplatesManager.tsx` - Manage reusable templates
+- `src/lib/substepTemplates.ts` - Template utilities
+
+**Database Tables**:
+- `substeps` - Individual substeps for operations
+- `substep_templates` - Reusable templates
+
+**Flow**:
+1. Admin creates substep templates (e.g., "Laser Cutting Checklist")
+2. When creating operations, admin can apply template
+3. Operator sees substeps as checklist
+4. Operator checks off each substep as completed
+5. All substeps must be complete before operation can be completed
+
+**Benefits**:
+- Standardized procedures
+- Training aid for new operators
+- Quality assurance
+- Audit trail of completed steps
+
+### 5. Operator Terminal
+
+**Location**: `src/pages/operator/OperatorTerminal.tsx`
+
+**Purpose**: Streamlined, real-time production interface
+
+**Layout**:
+- **Left Panel**: Job list sorted by status
+  - 🟢 In Process - Currently active operations
+  - 🔵 In Buffer - Next 5 operations ready to start
+  - 🟡 Expected - Upcoming work in queue
+- **Right Panel**: Detailed job view
+  - Job details (customer, quantity, due date)
+  - Current operation controls
+  - **Next Cell Info** with capacity status
+  - **Routing Visualization** showing full workflow
+  - 3D model viewer (if STEP file attached)
+  - PDF drawing viewer (if drawing attached)
+  - Operations list
+
+**QRM Integration**:
+- Real-time next cell capacity display
+- Visual routing with capacity indicators
+- Blocked completion if next cell at capacity (when enforced)
+- Warning messages for capacity issues
+
+**Route**: `/operator/terminal`
+
+### 6. Organization Settings
+
+**Location**: `src/pages/admin/OrganizationSettings.tsx`
+
+**Purpose**: Configure tenant-level settings
+
+**Route**: `/admin/settings`
+
+**Settings**:
+- **Organization Name**: Display name for tenant
+- **Company Name**: Legal company name
+- **Timezone**: Default timezone for all timestamps
+- **Billing Email**: Email for subscription/billing notifications
+
+**Database**: `tenants` table
+
+### 7. Steps Templates System
+
+**Location**: 
+- Page: `src/pages/admin/StepsTemplatesView.tsx`
+- Route: `/admin/config/steps-templates`
+
+**Purpose**: Create reusable substep templates for common operations
+
+**Features**:
+- Create templates with multiple steps
+- Edit existing templates
+- Delete unused templates
+- Apply templates when creating operations
+- Each template can have unlimited substeps
+
+**Use Case**: 
+- "Laser Cutting Checklist" - Check material, load program, verify settings, etc.
+- "Quality Inspection" - Measure dimensions, check finish, verify quantity, etc.
 
 ## MCP Server Integration
 
-**Location**: `/home/user/eryxon-flow/mcp-server/`
+**Location**: `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/mcp-server/`
 
 The MCP (Model Context Protocol) server enables AI assistants like Claude to directly interact with manufacturing data.
 
