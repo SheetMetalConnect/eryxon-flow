@@ -1,23 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  Box,
-  Paper,
-  TextField,
-  IconButton,
-  Typography,
-  Fab,
-  Collapse,
-  CircularProgress,
-  Chip,
-} from '@mui/material';
-import {
-  Send as SendIcon,
-  Chat as ChatIcon,
-  Close as CloseIcon,
-  SmartToy as BotIcon,
-  Person as PersonIcon,
-} from '@mui/icons-material';
 import { supabase } from '@/integrations/supabase/client';
+import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -40,9 +25,9 @@ export const ChatAssistant: React.FC = () => {
   }, [messages]);
 
   const quickQuestions = [
-    "What should I work on next?",
-    "Show me my tasks",
-    "What's my highest priority job?",
+    "What should I work on?",
+    "Show my tasks",
+    "Any issues?",
   ];
 
   const sendMessage = async (text: string) => {
@@ -54,14 +39,12 @@ export const ChatAssistant: React.FC = () => {
     setLoading(true);
 
     try {
-      // Get current session
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!session) {
         throw new Error('Not authenticated');
       }
 
-      // Call chat API
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/api-chat`,
         {
@@ -92,7 +75,7 @@ export const ChatAssistant: React.FC = () => {
       console.error('Chat error:', error);
       const errorMessage: Message = {
         role: 'assistant',
-        content: `Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`,
+        content: `Error: ${error instanceof Error ? error.message : 'Please try again'}`,
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
@@ -100,231 +83,124 @@ export const ChatAssistant: React.FC = () => {
     }
   };
 
-  const handleQuickQuestion = (question: string) => {
-    sendMessage(question);
-  };
-
   return (
     <>
-      {/* Floating Action Button */}
-      <Fab
-        color="primary"
-        aria-label="chat"
-        sx={{
-          position: 'fixed',
-          bottom: 24,
-          right: 24,
-          zIndex: 1000,
-        }}
+      {/* Floating Chat Button */}
+      <button
         onClick={() => setOpen(!open)}
+        className="fixed bottom-6 right-6 z-[1000] w-12 h-12 rounded-full bg-primary hover:bg-primary/90 text-white shadow-lg transition-all hover:scale-105 flex items-center justify-center"
+        aria-label="Chat Assistant"
       >
-        {open ? <CloseIcon /> : <ChatIcon />}
-      </Fab>
+        {open ? <X className="w-5 h-5" /> : <MessageCircle className="w-5 h-5" />}
+      </button>
 
       {/* Chat Window */}
-      <Collapse in={open} unmountOnExit>
-        <Paper
-          elevation={8}
-          sx={{
-            position: 'fixed',
-            bottom: 96,
-            right: 24,
-            width: { xs: 'calc(100vw - 48px)', sm: 400 },
-            height: 600,
-            maxHeight: 'calc(100vh - 150px)',
-            zIndex: 999,
-            display: 'flex',
-            flexDirection: 'column',
-            borderRadius: 2,
-            overflow: 'hidden',
-            background: 'linear-gradient(145deg, rgba(30,30,30,0.98) 0%, rgba(20,20,40,0.98) 100%)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(139, 92, 246, 0.2)',
-          }}
-        >
+      {open && (
+        <div className="fixed bottom-24 right-6 z-[999] w-[90vw] sm:w-96 h-[500px] flex flex-col glass-card overflow-hidden animate-fade-in-up">
           {/* Header */}
-          <Box
-            sx={{
-              p: 2,
-              borderBottom: '1px solid rgba(139, 92, 246, 0.2)',
-              background: 'linear-gradient(90deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)',
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <BotIcon sx={{ color: 'primary.main' }} />
-              <Typography variant="h6" sx={{ flex: 1, color: 'white' }}>
-                Eryxon Assistant
-              </Typography>
-              <IconButton size="small" onClick={() => setOpen(false)} sx={{ color: 'white' }}>
-                <CloseIcon />
-              </IconButton>
-            </Box>
-          </Box>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <div className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-primary" />
+              <h3 className="text-sm font-semibold">Assistant</h3>
+            </div>
+            <button
+              onClick={() => setOpen(false)}
+              className="text-muted-foreground hover:text-foreground transition-base"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
 
           {/* Messages */}
-          <Box
-            sx={{
-              flex: 1,
-              overflowY: 'auto',
-              p: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2,
-            }}
-          >
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.length === 0 && (
-              <Box sx={{ textAlign: 'center', mt: 4 }}>
-                <BotIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Hi! I'm your Eryxon assistant. Ask me about your work queue, jobs, or issues.
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
-                  Try asking:
-                </Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
+              <div className="text-center pt-8 space-y-4">
+                <MessageCircle className="w-12 h-12 text-primary mx-auto" />
+                <p className="text-sm text-muted-foreground">
+                  Ask about your work, jobs, or issues
+                </p>
+                <div className="flex flex-wrap gap-2 justify-center pt-2">
                   {quickQuestions.map((question, idx) => (
-                    <Chip
+                    <button
                       key={idx}
-                      label={question}
-                      onClick={() => handleQuickQuestion(question)}
-                      sx={{
-                        cursor: 'pointer',
-                        '&:hover': { bgcolor: 'primary.dark' },
-                      }}
-                    />
+                      onClick={() => sendMessage(question)}
+                      className="px-3 py-1.5 text-xs bg-background/50 hover:bg-background border border-border rounded-lg transition-base"
+                    >
+                      {question}
+                    </button>
                   ))}
-                </Box>
-              </Box>
+                </div>
+              </div>
             )}
 
             {messages.map((message, idx) => (
-              <Box
+              <div
                 key={idx}
-                sx={{
-                  display: 'flex',
-                  gap: 1,
-                  alignItems: 'flex-start',
-                  flexDirection: message.role === 'user' ? 'row-reverse' : 'row',
-                }}
+                className={`flex gap-2 ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
               >
-                <Box
-                  sx={{
-                    minWidth: 32,
-                    height: 32,
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    bgcolor: message.role === 'user' ? 'primary.main' : 'secondary.main',
-                  }}
+                <div
+                  className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                    message.role === 'user'
+                      ? 'bg-primary text-white'
+                      : 'bg-background border border-border'
+                  }`}
                 >
-                  {message.role === 'user' ? (
-                    <PersonIcon sx={{ fontSize: 20, color: 'white' }} />
-                  ) : (
-                    <BotIcon sx={{ fontSize: 20, color: 'white' }} />
-                  )}
-                </Box>
-                <Paper
-                  sx={{
-                    p: 1.5,
-                    maxWidth: '75%',
-                    bgcolor: message.role === 'user'
-                      ? 'rgba(139, 92, 246, 0.2)'
-                      : 'rgba(59, 130, 246, 0.1)',
-                    border: message.role === 'user'
-                      ? '1px solid rgba(139, 92, 246, 0.3)'
-                      : '1px solid rgba(59, 130, 246, 0.2)',
-                  }}
+                  {message.role === 'user' ? 'You' : 'AI'}
+                </div>
+                <div
+                  className={`max-w-[80%] px-3 py-2 rounded-lg text-sm ${
+                    message.role === 'user'
+                      ? 'bg-primary/10 border border-primary/20'
+                      : 'bg-background/50 border border-border'
+                  }`}
                 >
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                      color: 'white',
-                    }}
-                  >
-                    {message.content}
-                  </Typography>
-                </Paper>
-              </Box>
+                  <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                </div>
+              </div>
             ))}
 
             {loading && (
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                <Box
-                  sx={{
-                    minWidth: 32,
-                    height: 32,
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    bgcolor: 'secondary.main',
-                  }}
-                >
-                  <BotIcon sx={{ fontSize: 20, color: 'white' }} />
-                </Box>
-                <Paper
-                  sx={{
-                    p: 1.5,
-                    bgcolor: 'rgba(59, 130, 246, 0.1)',
-                    border: '1px solid rgba(59, 130, 246, 0.2)',
-                  }}
-                >
-                  <CircularProgress size={20} />
-                </Paper>
-              </Box>
+              <div className="flex gap-2">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-background border border-border">
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                </div>
+                <div className="px-3 py-2 bg-background/50 border border-border rounded-lg">
+                  <p className="text-sm text-muted-foreground">Thinking...</p>
+                </div>
+              </div>
             )}
 
             <div ref={messagesEndRef} />
-          </Box>
+          </div>
 
           {/* Input */}
-          <Box
-            sx={{
-              p: 2,
-              borderTop: '1px solid rgba(139, 92, 246, 0.2)',
-              background: 'rgba(30,30,30,0.5)',
-            }}
-          >
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Type your question..."
+          <div className="border-t border-border p-3 bg-background/30">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                sendMessage(input);
+              }}
+              className="flex gap-2"
+            >
+              <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage(input);
-                  }
-                }}
+                placeholder="Ask a question..."
                 disabled={loading}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    bgcolor: 'rgba(255, 255, 255, 0.05)',
-                    '& fieldset': {
-                      borderColor: 'rgba(139, 92, 246, 0.3)',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'rgba(139, 92, 246, 0.5)',
-                    },
-                  },
-                }}
+                className="flex-1 text-sm bg-background border-border"
               />
-              <IconButton
-                color="primary"
-                onClick={() => sendMessage(input)}
+              <Button
+                type="submit"
+                size="sm"
                 disabled={loading || !input.trim()}
+                className="bg-primary hover:bg-primary/90"
               >
-                <SendIcon />
-              </IconButton>
-            </Box>
-          </Box>
-        </Paper>
-      </Collapse>
+                <Send className="w-4 h-4" />
+              </Button>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 };
