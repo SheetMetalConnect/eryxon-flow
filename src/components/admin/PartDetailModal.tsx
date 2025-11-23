@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
-import { Plus, Save, X, Upload, Eye, Trash2, Box, FileText, AlertTriangle, Package, ChevronRight, Wrench } from "lucide-react";
+import { Plus, Save, X, Upload, Eye, Trash2, Box, FileText, AlertTriangle, Package, ChevronRight, Wrench, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
@@ -32,6 +32,8 @@ import { useTranslation } from "react-i18next";
 import { IssuesSummarySection } from "@/components/issues/IssuesSummarySection";
 import { RoutingVisualization } from "@/components/qrm/RoutingVisualization";
 import { usePartRouting } from "@/hooks/useQRMMetrics";
+import { ImageUpload } from "@/components/parts/ImageUpload";
+import { ImageGallery } from "@/components/parts/ImageGallery";
 
 interface PartDetailModalProps {
   partId: string;
@@ -736,6 +738,44 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                 </p>
               )}
             </div>
+          </div>
+
+          {/* Images Section */}
+          <div>
+            <div className="flex justify-between items-center mb-3">
+              <Label className="text-lg flex items-center gap-2">
+                <ImageIcon className="h-5 w-5" />
+                {t("parts.images.title")} ({part?.image_paths?.length || 0})
+              </Label>
+            </div>
+
+            {/* Image Gallery */}
+            {part?.image_paths && part.image_paths.length > 0 && (
+              <div className="mb-4">
+                <ImageGallery
+                  partId={partId}
+                  imagePaths={part.image_paths}
+                  onImageDeleted={() => {
+                    // Refetch part data after image deletion
+                    onUpdate();
+                  }}
+                  editable={true}
+                />
+              </div>
+            )}
+
+            {/* Image Upload */}
+            <ImageUpload
+              partId={partId}
+              onUploadComplete={() => {
+                // Refetch part data after upload
+                onUpdate();
+                toast({
+                  title: t("parts.images.uploadSuccess"),
+                  description: t("parts.images.imagesUploaded"),
+                });
+              }}
+            />
           </div>
 
           {/* NCRs / Issues Summary */}
