@@ -1,4 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 import { Button } from '@/components/ui/button';
 import {
   ZoomIn,
@@ -7,9 +10,14 @@ import {
   Loader2,
   FileText,
   RotateCcw,
-  ExternalLink
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// Configure PDF.js worker from CDN
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface PDFViewerProps {
   url: string;
@@ -18,58 +26,42 @@ interface PDFViewerProps {
 }
 
 export function PDFViewer({ url, title, compact = false }: PDFViewerProps) {
+  const [numPages, setNumPages] = useState<number>(0);
+  const [pageNumber, setPageNumber] = useState<number>(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(100);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const loadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [scale, setScale] = useState(1.0);
 
-  // Reset loading state when URL changes
-  useEffect(() => {
-    if (url) {
-      setLoading(true);
-      setError(null);
-
-      // Fallback: Consider loaded after 3 seconds if no event fires
-      // This handles cases where iframe load event doesn't fire for PDFs
-      loadTimeoutRef.current = setTimeout(() => {
-        setLoading(false);
-      }, 3000);
-    }
-
-    return () => {
-      if (loadTimeoutRef.current) {
-        clearTimeout(loadTimeoutRef.current);
-      }
-    };
-  }, [url]);
-
-  const handleLoad = () => {
-    if (loadTimeoutRef.current) {
-      clearTimeout(loadTimeoutRef.current);
-    }
+  const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
+    setNumPages(numPages);
     setLoading(false);
     setError(null);
-  };
+  }, []);
 
-  const handleError = () => {
-    if (loadTimeoutRef.current) {
-      clearTimeout(loadTimeoutRef.current);
-    }
+  const onDocumentLoadError = useCallback((error: Error) => {
+    console.error('PDF load error:', error);
     setLoading(false);
     setError('Failed to load PDF file. The file may be corrupted or unavailable.');
-  };
+  }, []);
 
   const handleZoomIn = () => {
-    setZoom((prev) => Math.min(prev + 25, 200));
+    setScale((prev) => Math.min(prev + 0.25, 3.0));
   };
 
   const handleZoomOut = () => {
-    setZoom((prev) => Math.max(prev - 25, 50));
+    setScale((prev) => Math.max(prev - 0.25, 0.5));
   };
 
   const handleReset = () => {
-    setZoom(100);
+    setScale(1.0);
+  };
+
+  const handlePrevPage = () => {
+    setPageNumber((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setPageNumber((prev) => Math.min(prev + 1, numPages));
   };
 
   const handleDownload = () => {
@@ -94,31 +86,61 @@ export function PDFViewer({ url, title, compact = false }: PDFViewerProps) {
 
   return (
     <div className="flex flex-col h-full w-full bg-background">
-      {/* Compact Toolbar */}
+      {/* Toolbar */}
       <div className={cn(
         "flex items-center gap-1 bg-card/80 backdrop-blur-sm border-b border-border",
         compact ? "p-1" : "p-1.5"
       )}>
+        {/* Page Navigation */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handlePrevPage}
+          disabled={pageNumber <= 1 || loading}
+          className="h-7 w-7 p-0"
+          title="Previous page"
+        >
+          <ChevronLeft className="h-3.5 w-3.5" />
+        </Button>
+
+        <span className="text-xs text-muted-foreground min-w-[48px] text-center tabular-nums">
+          {loading ? '-' : `${pageNumber}/${numPages}`}
+        </span>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleNextPage}
+          disabled={pageNumber >= numPages || loading}
+          className="h-7 w-7 p-0"
+          title="Next page"
+        >
+          <ChevronRight className="h-3.5 w-3.5" />
+        </Button>
+
+        <div className="w-px h-4 bg-border mx-1" />
+
+        {/* Zoom Controls */}
         <Button
           variant="ghost"
           size="sm"
           onClick={handleZoomOut}
-          disabled={zoom <= 50}
+          disabled={scale <= 0.5}
           className="h-7 w-7 p-0"
           title="Zoom out"
         >
           <ZoomOut className="h-3.5 w-3.5" />
         </Button>
 
-        <span className="text-xs text-muted-foreground min-w-[32px] text-center tabular-nums">
-          {zoom}%
+        <span className="text-xs text-muted-foreground min-w-[36px] text-center tabular-nums">
+          {Math.round(scale * 100)}%
         </span>
 
         <Button
           variant="ghost"
           size="sm"
           onClick={handleZoomIn}
-          disabled={zoom >= 200}
+          disabled={scale >= 3.0}
           className="h-7 w-7 p-0"
           title="Zoom in"
         >
@@ -131,7 +153,7 @@ export function PDFViewer({ url, title, compact = false }: PDFViewerProps) {
           variant="ghost"
           size="sm"
           onClick={handleReset}
-          disabled={zoom === 100}
+          disabled={scale === 1.0}
           className="h-7 w-7 p-0"
           title="Reset zoom"
         >
@@ -162,7 +184,7 @@ export function PDFViewer({ url, title, compact = false }: PDFViewerProps) {
       </div>
 
       {/* PDF Viewer Container */}
-      <div className="flex-1 relative overflow-hidden bg-[#1a1a2e]">
+      <div className="flex-1 relative overflow-auto bg-[#525659]">
         {/* Loading Overlay */}
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/90 z-10 backdrop-blur-sm">
@@ -192,26 +214,29 @@ export function PDFViewer({ url, title, compact = false }: PDFViewerProps) {
           </div>
         )}
 
-        {/* PDF iframe - more reliable than object tag */}
+        {/* PDF Document */}
         {!error && (
-          <div
-            className="h-full w-full overflow-auto"
-            style={{
-              transform: `scale(${zoom / 100})`,
-              transformOrigin: 'top left',
-              width: `${10000 / zoom}%`,
-              height: `${10000 / zoom}%`,
-            }}
-          >
-            <iframe
-              ref={iframeRef}
-              src={`${url}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`}
-              className="w-full h-full border-0"
-              onLoad={handleLoad}
-              onError={handleError}
-              title={title || 'PDF Viewer'}
-              sandbox="allow-same-origin allow-scripts allow-popups"
-            />
+          <div className="min-h-full flex justify-center p-4">
+            <Document
+              file={url}
+              onLoadSuccess={onDocumentLoadSuccess}
+              onLoadError={onDocumentLoadError}
+              loading={null}
+              className="flex flex-col items-center"
+            >
+              <Page
+                pageNumber={pageNumber}
+                scale={scale}
+                renderTextLayer={true}
+                renderAnnotationLayer={true}
+                className="shadow-lg"
+                loading={
+                  <div className="flex items-center justify-center p-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  </div>
+                }
+              />
+            </Document>
           </div>
         )}
       </div>
