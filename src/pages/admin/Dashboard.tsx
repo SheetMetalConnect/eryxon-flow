@@ -15,8 +15,10 @@ import {
   LucideIcon,
   ArrowRight,
   Trash2,
+  Square,
+  User,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { seedDemoData } from "@/lib/seed";
@@ -31,6 +33,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { adminStopTimeTracking, stopAllActiveTimeEntries } from "@/lib/database";
 
 interface ActiveWork {
   id: string;
@@ -109,6 +120,12 @@ export default function Dashboard() {
   const [needsSetup, setNeedsSetup] = useState(false);
   const [seeding, setSeeding] = useState(false);
   const [wiping, setWiping] = useState(false);
+  const [selectedWork, setSelectedWork] = useState<ActiveWork | null>(null);
+  const [stopDialogOpen, setStopDialogOpen] = useState(false);
+  const [stopping, setStopping] = useState(false);
+  const [stoppingAll, setStoppingAll] = useState(false);
+  const [isPastClosingTime, setIsPastClosingTime] = useState(false);
+  const [factoryClosingTime, setFactoryClosingTime] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -217,6 +234,43 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
+
+  // Check factory hours and set warning if past closing time
+  const checkFactoryHours = async () => {
+    if (!profile?.tenant_id) return;
+
+    try {
+      const { data: tenant } = await supabase
+        .from("tenants")
+        .select("factory_closing_time, auto_stop_tracking")
+        .eq("id", profile.tenant_id)
+        .single();
+
+      if (tenant?.factory_closing_time) {
+        setFactoryClosingTime(tenant.factory_closing_time.substring(0, 5));
+
+        // Parse closing time and compare with current time
+        const now = new Date();
+        const [hours, minutes] = tenant.factory_closing_time.split(":").map(Number);
+        const closingTime = new Date();
+        closingTime.setHours(hours, minutes, 0, 0);
+
+        setIsPastClosingTime(now > closingTime);
+      }
+    } catch (error) {
+      console.error("Error checking factory hours:", error);
+    }
+  };
+
+  // Check factory hours on load and every minute
+  useEffect(() => {
+    if (!profile?.tenant_id) return;
+
+    checkFactoryHours();
+    const interval = setInterval(checkFactoryHours, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, [profile?.tenant_id]);
 
   const setupRealtimeSubscription = () => {
     if (!profile?.tenant_id) return;
@@ -381,6 +435,60 @@ export default function Dashboard() {
     }
   };
 
+  const handleRowClick = (work: ActiveWork) => {
+    setSelectedWork(work);
+    setStopDialogOpen(true);
+  };
+
+  const handleStopClocking = async () => {
+    if (!selectedWork) return;
+
+    setStopping(true);
+    try {
+      await adminStopTimeTracking(selectedWork.id);
+      toast({
+        title: t("dashboard.clockingStopped"),
+        description: t("dashboard.clockingStoppedDescription", {
+          operator: selectedWork.operator.full_name,
+          operation: selectedWork.operation.operation_name,
+        }),
+      });
+      setStopDialogOpen(false);
+      setSelectedWork(null);
+      loadData();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: t("dashboard.stopFailed"),
+        description: error?.message || String(error),
+      });
+    } finally {
+      setStopping(false);
+    }
+  };
+
+  const handleStopAllClockings = async () => {
+    if (!profile?.tenant_id) return;
+
+    setStoppingAll(true);
+    try {
+      const stoppedCount = await stopAllActiveTimeEntries(profile.tenant_id);
+      toast({
+        title: t("dashboard.allClockingsStopped"),
+        description: t("dashboard.allClockingsStoppedDescription", { count: stoppedCount }),
+      });
+      loadData();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: t("dashboard.stopAllFailed"),
+        description: error?.message || String(error),
+      });
+    } finally {
+      setStoppingAll(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -510,13 +618,78 @@ export default function Dashboard() {
       {/* QRM Dashboard */}
       <QRMDashboard />
 
+      {/* Past Closing Time Warning */}
+      {isPastClosingTime && activeWork.length > 0 && (
+        <Card className="glass-card border-warning/50 bg-warning/5">
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-warning/20">
+                  <Clock className="h-5 w-5 text-warning" />
+                </div>
+                <div>
+                  <p className="font-medium text-warning">
+                    {t("dashboard.pastClosingTimeWarning")}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("dashboard.pastClosingTimeDescription", {
+                      time: factoryClosingTime,
+                      count: activeWork.length,
+                    })}
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                className="border-warning text-warning hover:bg-warning hover:text-warning-foreground gap-2"
+                onClick={handleStopAllClockings}
+                disabled={stoppingAll}
+              >
+                {stoppingAll ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t("common.stopping")}
+                  </>
+                ) : (
+                  <>
+                    <Square className="h-4 w-4" />
+                    {t("dashboard.stopAllClockings")}
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Active Work Table */}
       <Card className="glass-card" data-tour="active-operations">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-xl flex items-center gap-2">
             <Activity className="h-5 w-5 text-primary" />
             {t("dashboard.activeWork")}
           </CardTitle>
+          {activeWork.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleStopAllClockings}
+              disabled={stoppingAll}
+              className="gap-2"
+            >
+              {stoppingAll ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t("common.stopping")}
+                </>
+              ) : (
+                <>
+                  <Square className="h-4 w-4" />
+                  {t("dashboard.stopAll")}
+                </>
+              )}
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {activeWork.length === 0 ? (
@@ -540,7 +713,11 @@ export default function Dashboard() {
                 </TableHeader>
                 <TableBody>
                   {activeWork.map((work) => (
-                    <TableRow key={work.id} className="border-white/10 hover:bg-white/5">
+                    <TableRow
+                      key={work.id}
+                      className="border-white/10 hover:bg-white/5 cursor-pointer transition-colors"
+                      onClick={() => handleRowClick(work)}
+                    >
                       <TableCell className="font-medium">
                         {work.operator.full_name}
                       </TableCell>
@@ -570,6 +747,94 @@ export default function Dashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Stop Clocking Dialog */}
+      <Dialog open={stopDialogOpen} onOpenChange={setStopDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary" />
+              {t("dashboard.stopClockingTitle")}
+            </DialogTitle>
+            <DialogDescription>
+              {t("dashboard.stopClockingDescription")}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedWork && (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.operator")}</p>
+                  <p className="font-medium flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    {selectedWork.operator.full_name}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.operation")}</p>
+                  <p className="font-medium">{selectedWork.operation.operation_name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.job")}</p>
+                  <p className="font-medium">{selectedWork.operation.part.job.job_number}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.part")}</p>
+                  <p className="font-medium">{selectedWork.operation.part.part_number}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.cell")}</p>
+                  <Badge className="bg-primary/20 text-primary border-primary/30">
+                    {selectedWork.operation.cell.name}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.startedAt")}</p>
+                  <p className="font-medium">
+                    {format(new Date(selectedWork.start_time), "PPp")}
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
+                <p className="text-sm text-warning flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  {t("dashboard.elapsedTime")}: {formatDistanceToNow(new Date(selectedWork.start_time))}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setStopDialogOpen(false)}
+              disabled={stopping}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleStopClocking}
+              disabled={stopping}
+              className="gap-2"
+            >
+              {stopping ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t("common.stopping")}
+                </>
+              ) : (
+                <>
+                  <Square className="h-4 w-4" />
+                  {t("dashboard.stopClocking")}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

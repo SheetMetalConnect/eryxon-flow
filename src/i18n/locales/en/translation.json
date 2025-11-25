@@ -107,6 +107,28 @@
       "data": "DATA"
     }
   },
+  "organizationSettings": {
+    "title": "Organization Settings",
+    "subtitle": "Manage your organization profile and preferences",
+    "companyInformation": "Company Information",
+    "updateOrgDetails": "Update your organization details",
+    "organizationName": "Organization Name",
+    "companyName": "Company Name",
+    "timezone": "Timezone",
+    "timezoneDescription": "Used for scheduling and due dates",
+    "billingEmail": "Billing Email",
+    "saveChanges": "Save Changes",
+    "settingsUpdated": "Organization settings updated",
+    "factoryHours": {
+      "title": "Factory Hours",
+      "description": "Configure your factory operating hours and automatic time tracking settings",
+      "openingTime": "Opening Time",
+      "closingTime": "Closing Time",
+      "autoStopTracking": "Auto-stop Time Tracking",
+      "autoStopDescription": "Automatically stop all active time entries at factory closing time",
+      "autoStopWarning": "Active time entries will be automatically stopped at {{time}} each day"
+    }
+  },
   "settings": {
     "title": "Settings",
     "subtitle": "Manage your application preferences and account settings",
@@ -226,7 +248,21 @@
     "totalJobs": "Total Jobs",
     "totalParts": "Total Parts",
     "activeCells": "Active Cells",
-    "completedToday": "Completed Today"
+    "completedToday": "Completed Today",
+    "startedAt": "Started At",
+    "stopClockingTitle": "Stop Time Tracking",
+    "stopClockingDescription": "Review the active time entry and stop the clocking if needed.",
+    "stopClocking": "Stop Clocking",
+    "clockingStopped": "Clocking Stopped",
+    "clockingStoppedDescription": "Time tracking for {{operator}} on {{operation}} has been stopped.",
+    "stopFailed": "Failed to Stop Clocking",
+    "stopAll": "Stop All",
+    "stopAllClockings": "Stop All Clockings",
+    "allClockingsStopped": "All Clockings Stopped",
+    "allClockingsStoppedDescription": "{{count}} time entries have been stopped.",
+    "stopAllFailed": "Failed to Stop All Clockings",
+    "pastClosingTimeWarning": "Factory closing time has passed",
+    "pastClosingTimeDescription": "There are {{count}} active time entries after closing time ({{time}}). Consider stopping them."
   },
   "workQueue": {
     "filtersAndControls": "Filters & Controls",
@@ -274,7 +310,8 @@
     "next": "Next",
     "save": "Save",
     "success": "Success",
-    "validationError": "Validation Error"
+    "validationError": "Validation Error",
+    "stopping": "Stopping..."
   },
   "onboarding": {
     "welcome": "Welcome to Eryxon MES",
@@ -1337,7 +1374,10 @@
     "inBuffer": "In Buffer",
     "expected": "Expected",
     "noActiveJobs": "No active jobs",
-    "jobsFound": "jobs found"
+    "jobsFound": "jobs found",
+    "you": "YOU",
+    "other": "Other",
+    "youAreClockedOn": "You are currently clocked on this operation"
   },
   "activityMonitor": {
     "title": "Activity Monitor",

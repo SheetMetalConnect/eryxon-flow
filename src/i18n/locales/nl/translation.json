@@ -74,6 +74,28 @@
       "impressumText": "Impressum pagina"
     }
   },
+  "organizationSettings": {
+    "title": "Organisatie-instellingen",
+    "subtitle": "Beheer uw organisatieprofiel en voorkeuren",
+    "companyInformation": "Bedrijfsinformatie",
+    "updateOrgDetails": "Uw organisatiegegevens bijwerken",
+    "organizationName": "Organisatienaam",
+    "companyName": "Bedrijfsnaam",
+    "timezone": "Tijdzone",
+    "timezoneDescription": "Gebruikt voor planning en vervaldatums",
+    "billingEmail": "Factuur e-mail",
+    "saveChanges": "Wijzigingen opslaan",
+    "settingsUpdated": "Organisatie-instellingen bijgewerkt",
+    "factoryHours": {
+      "title": "Fabriekstijden",
+      "description": "Configureer uw fabriekswerktijden en automatische tijdregistratie-instellingen",
+      "openingTime": "Openingstijd",
+      "closingTime": "Sluitingstijd",
+      "autoStopTracking": "Automatisch stoppen tijdregistratie",
+      "autoStopDescription": "Automatisch alle actieve tijdregistraties stoppen bij sluitingstijd",
+      "autoStopWarning": "Actieve tijdregistraties worden automatisch gestopt om {{time}} elke dag"
+    }
+  },
   "settings": {
     "title": "Instellingen",
     "subtitle": "Beheer uw applicatievoorkeuren en accountinstellingen",
@@ -393,7 +415,21 @@
     "totalJobs": "Totaal opdrachten",
     "totalParts": "Totaal onderdelen",
     "activeCells": "Actieve productiecellen",
-    "completedToday": "Vandaag voltooid"
+    "completedToday": "Vandaag voltooid",
+    "startedAt": "Gestart om",
+    "stopClockingTitle": "Tijdregistratie stoppen",
+    "stopClockingDescription": "Bekijk de actieve tijdregistratie en stop de klokking indien nodig.",
+    "stopClocking": "Klokking stoppen",
+    "clockingStopped": "Klokking gestopt",
+    "clockingStoppedDescription": "Tijdregistratie voor {{operator}} op {{operation}} is gestopt.",
+    "stopFailed": "Klokking stoppen mislukt",
+    "stopAll": "Alles stoppen",
+    "stopAllClockings": "Alle klokkingen stoppen",
+    "allClockingsStopped": "Alle klokkingen gestopt",
+    "allClockingsStoppedDescription": "{{count}} tijdregistraties zijn gestopt.",
+    "stopAllFailed": "Alle klokkingen stoppen mislukt",
+    "pastClosingTimeWarning": "Fabriek sluitingstijd is verstreken",
+    "pastClosingTimeDescription": "Er zijn {{count}} actieve tijdregistraties na sluitingstijd ({{time}}). Overweeg deze te stoppen."
   },
   "workQueue": {
     "filtersAndControls": "Filters & besturing",
@@ -441,7 +477,8 @@
     "next": "Volgende",
     "save": "Opslaan",
     "success": "Succes",
-    "validationError": "Validatiefout"
+    "validationError": "Validatiefout",
+    "stopping": "Stoppen..."
   },
   "onboarding": {
     "welcome": "Welkom bij Eryxon MES",
@@ -1504,7 +1541,10 @@
     "inBuffer": "In buffer",
     "expected": "Verwacht",
     "noActiveJobs": "Geen actieve opdrachten",
-    "jobsFound": "opdrachten gevonden"
+    "jobsFound": "opdrachten gevonden",
+    "you": "JIJ",
+    "other": "Ander",
+    "youAreClockedOn": "Je bent momenteel ingeklokt op deze bewerking"
   },
   "activityMonitor": {
     "title": "Activiteitenmonitor",

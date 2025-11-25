@@ -681,30 +681,52 @@ export default function OperatorView() {
 
           {/* Timer Display */}
           {selectedOperation && (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 0.75,
-                bgcolor: activeTimeEntry ? "primary.main" : "rgba(255, 255, 255, 0.08)",
-                color: activeTimeEntry ? "primary.contrastText" : "text.primary",
-                px: 1.25,
-                py: 0.375,
-                borderRadius: 1.5,
-                border: activeTimeEntry ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
-              }}
-            >
-              <Timer sx={{ fontSize: 16 }} />
-              <Typography
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              {/* Active clocking indicator */}
+              {activeTimeEntry && (
+                <Chip
+                  label={t("terminal.youAreClockedOn")}
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                  sx={{
+                    height: 22,
+                    fontSize: "0.6rem",
+                    fontWeight: "bold",
+                    borderWidth: 2,
+                    animation: "pulse 2s ease-in-out infinite",
+                    "@keyframes pulse": {
+                      "0%, 100%": { opacity: 1 },
+                      "50%": { opacity: 0.7 },
+                    },
+                  }}
+                />
+              )}
+              <Box
                 sx={{
-                  fontFamily: "monospace",
-                  fontWeight: "bold",
-                  fontSize: "0.9rem",
-                  minWidth: 72,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.75,
+                  bgcolor: activeTimeEntry ? "primary.main" : "rgba(255, 255, 255, 0.08)",
+                  color: activeTimeEntry ? "primary.contrastText" : "text.primary",
+                  px: 1.25,
+                  py: 0.375,
+                  borderRadius: 1.5,
+                  border: activeTimeEntry ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
                 }}
               >
-                {formatElapsedTime(elapsedSeconds)}
-              </Typography>
+                <Timer sx={{ fontSize: 16 }} />
+                <Typography
+                  sx={{
+                    fontFamily: "monospace",
+                    fontWeight: "bold",
+                    fontSize: "0.9rem",
+                    minWidth: 72,
+                  }}
+                >
+                  {formatElapsedTime(elapsedSeconds)}
+                </Typography>
+              </Box>
             </Box>
           )}
 
@@ -1207,8 +1229,28 @@ export default function OperatorView() {
                             <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.55rem" }}>
                               {op.actual_time || 0}/{op.estimated_time}m
                             </Typography>
-                            {op.active_time_entry && (
-                              <Timer sx={{ fontSize: 10, color: "primary.main" }} />
+                            {op.active_time_entry && op.active_time_entry.operator_id === profile?.id && (
+                              <Chip
+                                icon={<Timer sx={{ fontSize: "10px !important" }} />}
+                                label={t("terminal.you")}
+                                size="small"
+                                color="primary"
+                                sx={{
+                                  height: 16,
+                                  fontSize: "0.5rem",
+                                  fontWeight: "bold",
+                                  "& .MuiChip-label": { px: 0.5 },
+                                  "& .MuiChip-icon": { ml: 0.25 },
+                                  animation: "pulse 2s ease-in-out infinite",
+                                  "@keyframes pulse": {
+                                    "0%, 100%": { opacity: 1 },
+                                    "50%": { opacity: 0.7 },
+                                  },
+                                }}
+                              />
+                            )}
+                            {op.active_time_entry && op.active_time_entry.operator_id !== profile?.id && (
+                              <Timer sx={{ fontSize: 10, color: "warning.main" }} />
                             )}
                           </Box>
                         </Box>

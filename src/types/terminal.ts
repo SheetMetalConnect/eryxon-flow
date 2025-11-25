@@ -19,6 +19,9 @@ export interface TerminalJob {
     jobId: string; // Added for QRM routing
     filePaths: string[];
     activeTimeEntryId?: string;
+    activeOperatorId?: string; // ID of the operator currently clocked on
+    activeOperatorName?: string; // Name of the operator currently clocked on
+    isCurrentUserClocked?: boolean; // True if current user is clocked on this operation
     notes?: string | null;
     cellName?: string;
     cellColor?: string;
