@@ -413,24 +413,24 @@ export default function Jobs() {
   ], [t]);
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-4 space-y-4">
       <div>
-        <div className="flex justify-between items-center mb-2">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+        <div className="flex justify-between items-center mb-1">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
             {t("jobs.title")}
           </h1>
           <Button onClick={() => navigate("/admin/jobs/new")} className="cta-button">
             <Plus className="mr-2 h-4 w-4" /> {t("jobs.createJob")}
           </Button>
         </div>
-        <p className="text-muted-foreground text-lg">
+        <p className="text-muted-foreground text-sm">
           Manage all jobs, track progress, and monitor deadlines
         </p>
       </div>
 
       <hr className="title-divider" />
 
-      <div className="glass-card p-6">
+      <div className="glass-card p-4">
         <DataTable
           columns={columns}
           data={jobs || []}

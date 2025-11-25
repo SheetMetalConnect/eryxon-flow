@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Eye, UserPlus, Download, Wrench } from "lucide-react";
+import { Loader2, Eye, Download, Wrench } from "lucide-react";
 import { VirtualizedDataTable, DataTableColumnHeader, DataTableFilterableColumn } from "@/components/ui/data-table";
 import {
   Tooltip,
@@ -13,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import OperationDetailModal from "@/components/admin/OperationDetailModal";
 
 interface Operation {
   id: string;
@@ -39,6 +40,7 @@ export const Operations: React.FC = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
+  const [selectedOperationId, setSelectedOperationId] = useState<string | null>(null);
   const { profile } = useAuth();
   const navigate = useNavigate();
 
@@ -333,18 +335,21 @@ export const Operations: React.FC = () => {
       header: "Actions",
       cell: ({ row }) => {
         return (
-          <div className="flex gap-1">
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <Eye className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <UserPlus className="h-4 w-4" />
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedOperationId(row.original.id);
+            }}
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
         );
       },
     },
-  ], [navigate]);
+  ], []);
 
   const uniqueCells = useMemo(() =>
     [...new Set(operations.map((op) => op.cell))],
@@ -386,10 +391,10 @@ export const Operations: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-4 space-y-4">
       <div>
-        <div className="flex justify-between items-center mb-2">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+        <div className="flex justify-between items-center mb-1">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
             Operations
           </h1>
           <Button onClick={handleExport} className="cta-button">
@@ -397,26 +402,26 @@ export const Operations: React.FC = () => {
             Export
           </Button>
         </div>
-        <p className="text-muted-foreground text-lg">
+        <p className="text-muted-foreground text-sm">
           Monitor all manufacturing operations across cells and jobs
         </p>
       </div>
 
       <hr className="title-divider" />
 
-      <div className="informational-text">
-        <Wrench className="inline h-5 w-5 mr-2 text-primary" />
+      <div className="informational-text text-sm py-2">
+        <Wrench className="inline h-4 w-4 mr-1.5 text-primary" />
         <strong>{operations.length} operations</strong> across all work centers and manufacturing cells
       </div>
 
-      <div className="glass-card p-6">
+      <div className="glass-card p-4">
         <VirtualizedDataTable
           columns={columns}
           data={operations}
           filterableColumns={filterableColumns}
           searchPlaceholder="Search by part, operation, operator..."
           emptyMessage="No operations match the current filters"
-          height="calc(100vh - 320px)"
+          height="calc(100vh - 300px)"
           rowHeight={36}
           overscan={15}
           onLoadMore={handleLoadMore}
@@ -426,6 +431,15 @@ export const Operations: React.FC = () => {
           searchDebounce={250}
         />
       </div>
+
+      {/* Operation Detail Modal */}
+      {selectedOperationId && (
+        <OperationDetailModal
+          operationId={selectedOperationId}
+          onClose={() => setSelectedOperationId(null)}
+          onUpdate={() => loadOperations(true)}
+        />
+      )}
     </div>
   );
 };

@@ -334,17 +334,17 @@
     --color-dark-surface: 0 0% 98%;        /* #fafafa - Card surface */
     --color-dark-elevated: 0 0% 96%;       /* #f5f5f5 - Elevated surface */
 
-    /* Neutral Grays - Refined for light mode */
-    --neutral-50: 0 0% 15%;                /* #262626 - Primary text */
-    --neutral-100: 0 0% 20%;               /* #333333 */
-    --neutral-200: 0 0% 28%;               /* #474747 */
-    --neutral-300: 0 0% 37%;               /* #5e5e5e - Muted text */
-    --neutral-400: 0 0% 47%;               /* #787878 */
-    --neutral-500: 0 0% 58%;               /* #949494 */
-    --neutral-600: 0 0% 80%;               /* #cccccc - Borders */
-    --neutral-700: 0 0% 85%;               /* #d9d9d9 */
-    --neutral-800: 0 0% 92%;               /* #ebebeb */
-    --neutral-900: 0 0% 96%;               /* #f5f5f5 */
+    /* Neutral Grays - Improved contrast for light mode */
+    --neutral-50: 0 0% 10%;                /* #1a1a1a - Primary text (darker) */
+    --neutral-100: 0 0% 15%;               /* #262626 */
+    --neutral-200: 0 0% 22%;               /* #383838 */
+    --neutral-300: 0 0% 30%;               /* #4d4d4d - Muted text (much darker for contrast) */
+    --neutral-400: 0 0% 40%;               /* #666666 */
+    --neutral-500: 0 0% 50%;               /* #808080 */
+    --neutral-600: 0 0% 70%;               /* #b3b3b3 - Borders (darker for visibility) */
+    --neutral-700: 0 0% 80%;               /* #cccccc */
+    --neutral-800: 0 0% 90%;               /* #e6e6e6 */
+    --neutral-900: 0 0% 95%;               /* #f2f2f2 */
     --neutral-950: 0 0% 98%;               /* #fafafa */
 
     /* Brand Colors - Slightly deeper for light mode contrast */
@@ -736,16 +736,16 @@
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
   }
 
-  /* Light mode glass card */
+  /* Light mode glass card - improved contrast */
   :root.light .glass-card {
-    background-color: rgba(255, 255, 255, 0.75);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.08);
   }
 
   :root.light .glass-card:hover {
-    border-color: rgba(0, 0, 0, 0.12);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    border-color: rgba(0, 0, 0, 0.18);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08);
   }
 
   /* Onboarding card - Premium auth experience - Antigravity spec (v3.2 compact) */
@@ -765,9 +765,64 @@
 
   /* Light mode onboarding card */
   :root.light .onboarding-card {
-    background-color: rgba(255, 255, 255, 0.85);
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    background-color: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(0, 0, 0, 0.12);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Light mode text contrast improvements */
+  :root.light .welcome-text {
+    color: #555555;
+  }
+
+  :root.light .main-title {
+    color: #1a1a1a;
+  }
+
+  :root.light .preview-pill {
+    background-color: rgba(0, 0, 0, 0.08);
+    color: #404040;
+  }
+
+  :root.light .section-heading {
+    color: #1a1a1a;
+  }
+
+  :root.light .informational-text {
+    color: #333333;
+    border-color: rgba(0, 102, 204, 0.25);
+    background: linear-gradient(135deg, rgba(0, 102, 204, 0.08), rgba(34, 139, 34, 0.05));
+  }
+
+  :root.light .workflow-section {
+    border-left-color: rgba(0, 102, 204, 0.5);
+  }
+
+  :root.light .workflow-description {
+    color: #505050;
+  }
+
+  :root.light .use-case-card {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+
+  :root.light .use-case-card:hover {
+    background: rgba(0, 0, 0, 0.06);
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+
+  :root.light .use-case-text {
+    color: #333333;
+  }
+
+  :root.light .description {
+    color: #555555;
+  }
+
+  /* Light mode title divider - more visible */
+  :root.light .title-divider {
+    background: linear-gradient(90deg, transparent 0%, rgba(0, 102, 204, 0.4) 50%, transparent 100%);
   }
 
   /* Hero title with gradient (v3.2 compact) */
