@@ -4,13 +4,14 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import {
-  Maximize2,
+  Focus,
   Grid3x3,
   Boxes,
   Loader2,
   Box,
   Hexagon
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 // Extend Window interface for occt-import-js
 declare global {
@@ -22,9 +23,10 @@ declare global {
 interface STEPViewerProps {
   url: string;
   title?: string;
+  compact?: boolean;
 }
 
-export function STEPViewer({ url, title }: STEPViewerProps) {
+export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
   // State
   const [stepLoading, setStepLoading] = useState(false);
   const [loadingError, setLoadingError] = useState<string | null>(null);
@@ -512,95 +514,97 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
 
   return (
     <div className="flex flex-col h-full w-full bg-background">
-      {/* Toolbar */}
-      <div className="flex items-center gap-2 p-2 bg-card border-b border-border">
+      {/* Compact Toolbar */}
+      <div className={cn(
+        "flex items-center gap-1 bg-card/80 backdrop-blur-sm border-b border-border flex-wrap",
+        compact ? "p-1" : "p-1.5"
+      )}>
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           onClick={fitCameraToMeshes}
           disabled={stepLoading || meshesRef.current.length === 0}
-          className="bg-card text-foreground hover:bg-accent"
+          className="h-7 w-7 p-0"
+          title="Focus / Fit to view"
         >
-          <Maximize2 className="h-4 w-4 mr-1" />
-          Fit View
+          <Focus className="h-3.5 w-3.5" />
         </Button>
 
+        <div className="w-px h-4 bg-border mx-0.5" />
+
         <Button
-          variant={gridVisible ? 'default' : 'outline'}
+          variant="ghost"
           size="sm"
           onClick={toggleGrid}
           disabled={stepLoading}
-          className={gridVisible ? "" : "bg-card text-foreground hover:bg-accent"}
+          className={cn("h-7 w-7 p-0", gridVisible && "bg-primary/20 text-primary")}
+          title="Toggle grid"
         >
-          <Grid3x3 className="h-4 w-4 mr-1" />
-          Grid
+          <Grid3x3 className="h-3.5 w-3.5" />
         </Button>
 
         <Button
-          variant={wireframeMode ? 'default' : 'outline'}
+          variant="ghost"
           size="sm"
           onClick={toggleWireframe}
           disabled={stepLoading || meshesRef.current.length === 0}
-          className={wireframeMode ? "" : "bg-card text-foreground hover:bg-accent"}
+          className={cn("h-7 w-7 p-0", wireframeMode && "bg-primary/20 text-primary")}
+          title="Wireframe mode"
         >
-          <Box className="h-4 w-4 mr-1" />
-          Wireframe
+          <Box className="h-3.5 w-3.5" />
         </Button>
 
         <Button
-          variant={edgesVisible ? 'default' : 'outline'}
+          variant="ghost"
           size="sm"
           onClick={toggleEdges}
           disabled={stepLoading || meshesRef.current.length === 0}
-          title="Toggle edge/contour visibility"
-          className={edgesVisible ? "" : "bg-card text-foreground hover:bg-accent"}
+          className={cn("h-7 w-7 p-0", edgesVisible && "bg-primary/20 text-primary")}
+          title="Show edges"
         >
-          <Hexagon className="h-4 w-4 mr-1" />
-          Edges
+          <Hexagon className="h-3.5 w-3.5" />
         </Button>
 
+        <div className="w-px h-4 bg-border mx-0.5" />
+
         <Button
-          variant={explodedView ? 'default' : 'outline'}
+          variant="ghost"
           size="sm"
           onClick={toggleExplodedView}
           disabled={stepLoading || meshesRef.current.length === 0}
-          className={explodedView ? "" : "bg-card text-foreground hover:bg-accent"}
+          className={cn("h-7 w-7 p-0", explodedView && "bg-primary/20 text-primary")}
+          title="Exploded view"
         >
-          <Boxes className="h-4 w-4 mr-1" />
-          Explode
+          <Boxes className="h-3.5 w-3.5" />
         </Button>
 
         {explodedView && (
-          <div className="flex items-center gap-2 ml-4">
-            <span className="text-sm text-muted-foreground">Explosion:</span>
+          <div className="flex items-center gap-1.5 ml-1">
             <Slider
               value={[explosionFactor]}
               onValueChange={handleExplosionFactorChange}
               min={0}
               max={2}
               step={0.1}
-              className="w-32"
+              className="w-20"
             />
-          </div>
-        )}
-
-        {title && (
-          <div className="ml-auto text-sm font-medium text-muted-foreground">
-            {title}
+            <span className="text-[10px] text-muted-foreground tabular-nums w-6">
+              {explosionFactor.toFixed(1)}
+            </span>
           </div>
         )}
       </div>
 
       {/* 3D Viewer Container */}
-      <div className="flex-1 relative bg-accent/5">
+      <div className="flex-1 relative bg-[#1e1e2e]">
         <div ref={containerRef} className="absolute inset-0" />
 
         {/* Loading Overlay */}
         {stepLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="absolute inset-0 flex items-center justify-center bg-background/90 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-2">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">Loading 3D model...</p>
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <p className="text-xs text-muted-foreground">Loading 3D model...</p>
             </div>
           </div>
         )}
@@ -608,12 +612,9 @@ export function STEPViewer({ url, title }: STEPViewerProps) {
         {/* Error Display */}
         {loadingError && (
           <div className="absolute inset-0 flex items-center justify-center bg-background">
-            <div className="text-center p-6 max-w-md">
-              <div className="text-destructive text-5xl mb-4">⚠️</div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                Failed to Load 3D Model
-              </h3>
-              <p className="text-sm text-muted-foreground">{loadingError}</p>
+            <div className="text-center p-4 max-w-xs">
+              <div className="text-destructive text-3xl mb-2 opacity-50">⚠️</div>
+              <p className="text-xs text-muted-foreground">{loadingError}</p>
             </div>
           </div>
         )}

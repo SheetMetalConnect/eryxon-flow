@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
   Box,
-  Paper,
   Typography,
   Select,
   MenuItem,
@@ -35,6 +34,7 @@ import {
   Close,
   ChevronLeft,
   ChevronRight,
+  DragHandle,
 } from "@mui/icons-material";
 import { useAuth } from "../../contexts/AuthContext";
 import { supabase } from "../../integrations/supabase/client";
@@ -48,7 +48,7 @@ import { PDFViewer } from "../../components/PDFViewer";
 import { STEPViewer } from "../../components/STEPViewer";
 import SubstepsManager from "../../components/operator/SubstepsManager";
 import { useTranslation } from "react-i18next";
-import { cn } from "../../lib/utils";
+import { createPortal } from "react-dom";
 
 interface Job {
   id: string;
@@ -111,14 +111,14 @@ export default function OperatorView() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [stepUrl, setStepUrl] = useState<string | null>(null);
   const [viewerTab, setViewerTab] = useState<number>(0);
-  const [fullscreenViewer, setFullscreenViewer] = useState<boolean>(false);
+  const [fullscreenViewer, setFullscreenViewer] = useState<'pdf' | '3d' | null>(null);
 
   // Panel collapse states
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState<boolean>(false);
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState<boolean>(false);
 
   // Resizable panel state
-  const [leftPanelWidth, setLeftPanelWidth] = useState<number>(60); // percentage
+  const [leftPanelWidth, setLeftPanelWidth] = useState<number>(55); // percentage
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -206,8 +206,8 @@ export default function OperatorView() {
     if (!isDragging || !containerRef.current) return;
     const containerRect = containerRef.current.getBoundingClientRect();
     const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
-    // Constrain between 30% and 80%
-    setLeftPanelWidth(Math.min(80, Math.max(30, newWidth)));
+    // Constrain between 25% and 75%
+    setLeftPanelWidth(Math.min(75, Math.max(25, newWidth)));
   }, [isDragging]);
 
   const handleMouseUp = useCallback(() => {
@@ -243,7 +243,7 @@ export default function OperatorView() {
     const touch = e.touches[0];
     const containerRect = containerRef.current.getBoundingClientRect();
     const newWidth = ((touch.clientX - containerRect.left) / containerRect.width) * 100;
-    setLeftPanelWidth(Math.min(80, Math.max(30, newWidth)));
+    setLeftPanelWidth(Math.min(75, Math.max(25, newWidth)));
   }, [isDragging]);
 
   const handleTouchEnd = useCallback(() => {
@@ -442,19 +442,6 @@ export default function OperatorView() {
     return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "success";
-      case "in_progress":
-        return "primary";
-      case "on_hold":
-        return "warning";
-      default:
-        return "default";
-    }
-  };
-
   const selectedJob = useMemo(() => {
     return jobs.find((j) => j.id === selectedJobId);
   }, [jobs, selectedJobId]);
@@ -469,6 +456,15 @@ export default function OperatorView() {
   const totalOps = operations.length;
   const progressPercent = totalOps > 0 ? (completedOps / totalOps) * 100 : 0;
 
+  // Handle viewer tap/click for fullscreen
+  const handleViewerClick = useCallback(() => {
+    if (viewerTab === 0 && pdfUrl) {
+      setFullscreenViewer('pdf');
+    } else if (stepUrl) {
+      setFullscreenViewer('3d');
+    }
+  }, [viewerTab, pdfUrl, stepUrl]);
+
   if (loading) {
     return (
       <Box
@@ -482,6 +478,143 @@ export default function OperatorView() {
     );
   }
 
+  // Fullscreen Viewer Overlay Portal
+  const FullscreenOverlay = fullscreenViewer && createPortal(
+    <Box
+      sx={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
+        bgcolor: "rgba(0, 0, 0, 0.98)",
+        display: "flex",
+        flexDirection: "column",
+      }}
+      onClick={(e) => {
+        // Close on backdrop click
+        if (e.target === e.currentTarget) {
+          setFullscreenViewer(null);
+        }
+      }}
+    >
+      {/* Overlay Header */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          px: 1.5,
+          py: 0.75,
+          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+          bgcolor: "rgba(17, 25, 40, 0.95)",
+          backdropFilter: "blur(12px)",
+          flexShrink: 0,
+        }}
+      >
+        <Tabs
+          value={fullscreenViewer === 'pdf' ? 0 : 1}
+          onChange={(_, v) => {
+            if (v === 0 && pdfUrl) setFullscreenViewer('pdf');
+            else if (v === 1 && stepUrl) setFullscreenViewer('3d');
+          }}
+          sx={{
+            minHeight: 32,
+            "& .MuiTab-root": {
+              minHeight: 32,
+              py: 0,
+              px: 1.5,
+              fontSize: "0.75rem",
+            }
+          }}
+        >
+          {pdfUrl && (
+            <Tab
+              icon={<Description sx={{ fontSize: 16 }} />}
+              iconPosition="start"
+              label={t("PDF")}
+            />
+          )}
+          {stepUrl && (
+            <Tab
+              icon={<ViewInAr sx={{ fontSize: 16 }} />}
+              iconPosition="start"
+              label={t("3D")}
+            />
+          )}
+        </Tabs>
+
+        <Stack direction="row" spacing={1} alignItems="center">
+          {selectedOperation && (
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.7rem" }}>
+              {selectedOperation.part.part_number} • {selectedOperation.operation_name}
+            </Typography>
+          )}
+          <IconButton
+            onClick={() => setFullscreenViewer(null)}
+            sx={{
+              bgcolor: "rgba(255, 255, 255, 0.1)",
+              "&:hover": { bgcolor: "rgba(255, 255, 255, 0.2)" },
+              width: 36,
+              height: 36,
+            }}
+          >
+            <Close sx={{ fontSize: 20 }} />
+          </IconButton>
+        </Stack>
+      </Box>
+
+      {/* Fullscreen Viewer Content */}
+      <Box
+        sx={{
+          flex: 1,
+          overflow: "hidden",
+          position: "relative",
+        }}
+      >
+        {fullscreenViewer === 'pdf' && pdfUrl && (
+          <PDFViewer url={pdfUrl} title="Drawing" />
+        )}
+        {fullscreenViewer === '3d' && stepUrl && (
+          <STEPViewer url={stepUrl} title="3D Model" />
+        )}
+      </Box>
+
+      {/* Close hint */}
+      <Box
+        sx={{
+          position: "absolute",
+          bottom: 20,
+          left: "50%",
+          transform: "translateX(-50%)",
+          bgcolor: "rgba(0, 0, 0, 0.8)",
+          color: "rgba(255, 255, 255, 0.6)",
+          px: 2,
+          py: 0.75,
+          borderRadius: 2,
+          fontSize: "0.7rem",
+          display: "flex",
+          alignItems: "center",
+          gap: 0.75,
+          pointerEvents: "none",
+        }}
+      >
+        <Close sx={{ fontSize: 12 }} />
+        {t("Tap X or press ESC to close")}
+      </Box>
+    </Box>,
+    document.body
+  );
+
+  // Handle ESC key to close fullscreen
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && fullscreenViewer) {
+        setFullscreenViewer(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [fullscreenViewer]);
+
   return (
     <Box
       sx={{
@@ -492,83 +625,82 @@ export default function OperatorView() {
         bgcolor: "background.default",
       }}
     >
-      {/* HEADER BAR - Job Selection, Timer, Actions - Compact Glass Style */}
+      {/* HEADER BAR - Compact Glass Style */}
       <Box
         sx={{
-          px: 1.5,
-          py: 1,
+          px: 1,
+          py: 0.75,
           flexShrink: 0,
           backdropFilter: "blur(16px) saturate(180%)",
-          background: "rgba(17, 25, 40, 0.85)",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+          background: "rgba(17, 25, 40, 0.9)",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
-          {/* Job Selector - Compact */}
-          <FormControl size="small" sx={{ minWidth: 220 }}>
-            <InputLabel sx={{ fontSize: "0.8rem" }}>{t("Job")}</InputLabel>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+          {/* Job Selector */}
+          <FormControl size="small" sx={{ minWidth: 180 }}>
+            <InputLabel sx={{ fontSize: "0.75rem" }}>{t("Job")}</InputLabel>
             <Select
               value={selectedJobId}
               onChange={(e: SelectChangeEvent) => setSelectedJobId(e.target.value)}
               label={t("Job")}
               sx={{
-                fontSize: "0.8rem",
-                "& .MuiSelect-select": { py: 0.75 }
+                fontSize: "0.75rem",
+                "& .MuiSelect-select": { py: 0.5 }
               }}
             >
               {jobs.map((job) => (
-                <MenuItem key={job.id} value={job.id} sx={{ fontSize: "0.8rem" }}>
+                <MenuItem key={job.id} value={job.id} sx={{ fontSize: "0.75rem" }}>
                   <strong>{job.job_number}</strong>&nbsp;- {job.customer || "N/A"}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          {/* Job Info Chips - More compact */}
+          {/* Job Info Chips */}
           {selectedJob && (
             <>
               <Chip
-                icon={<CalendarToday sx={{ fontSize: 14 }} />}
+                icon={<CalendarToday sx={{ fontSize: 12 }} />}
                 label={format(dueDate!, "MMM dd")}
                 color={isOverdue ? "error" : "default"}
                 size="small"
-                sx={{ height: 24, "& .MuiChip-label": { px: 1, fontSize: "0.7rem" } }}
+                sx={{ height: 22, "& .MuiChip-label": { px: 0.75, fontSize: "0.65rem" } }}
               />
               <Chip
                 label={`${completedOps}/${totalOps}`}
                 size="small"
                 color="primary"
                 variant="outlined"
-                sx={{ height: 24, "& .MuiChip-label": { px: 1, fontSize: "0.7rem" } }}
+                sx={{ height: 22, "& .MuiChip-label": { px: 0.75, fontSize: "0.65rem" } }}
               />
             </>
           )}
 
-          {/* Spacer */}
           <Box sx={{ flexGrow: 1 }} />
 
-          {/* Timer Display - Compact */}
+          {/* Timer Display */}
           {selectedOperation && (
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
-                gap: 1,
-                bgcolor: activeTimeEntry ? "primary.main" : "rgba(255, 255, 255, 0.1)",
+                gap: 0.75,
+                bgcolor: activeTimeEntry ? "primary.main" : "rgba(255, 255, 255, 0.08)",
                 color: activeTimeEntry ? "primary.contrastText" : "text.primary",
-                px: 1.5,
-                py: 0.5,
+                px: 1.25,
+                py: 0.375,
                 borderRadius: 1.5,
-                border: activeTimeEntry ? "none" : "1px solid rgba(255, 255, 255, 0.1)",
+                border: activeTimeEntry ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
               }}
             >
-              <Timer sx={{ fontSize: 18 }} />
+              <Timer sx={{ fontSize: 16 }} />
               <Typography
                 sx={{
                   fontFamily: "monospace",
                   fontWeight: "bold",
-                  fontSize: "1rem",
-                  minWidth: 80,
+                  fontSize: "0.9rem",
+                  minWidth: 72,
                 }}
               >
                 {formatElapsedTime(elapsedSeconds)}
@@ -576,17 +708,17 @@ export default function OperatorView() {
             </Box>
           )}
 
-          {/* Action Buttons - Compact */}
+          {/* Action Buttons */}
           {selectedOperation && (
-            <Stack direction="row" spacing={0.75}>
+            <Stack direction="row" spacing={0.5}>
               {activeTimeEntry ? (
                 <Button
                   variant="contained"
                   color="error"
-                  startIcon={<Stop sx={{ fontSize: 16 }} />}
+                  startIcon={<Stop sx={{ fontSize: 14 }} />}
                   onClick={handleStopTracking}
                   size="small"
-                  sx={{ fontSize: "0.75rem", py: 0.5, px: 1.5 }}
+                  sx={{ fontSize: "0.7rem", py: 0.375, px: 1.25, minWidth: 0 }}
                 >
                   {t("Stop")}
                 </Button>
@@ -594,11 +726,11 @@ export default function OperatorView() {
                 <Button
                   variant="contained"
                   color="success"
-                  startIcon={<PlayArrow sx={{ fontSize: 16 }} />}
+                  startIcon={<PlayArrow sx={{ fontSize: 14 }} />}
                   onClick={handleStartTracking}
                   disabled={selectedOperation.status === "completed"}
                   size="small"
-                  sx={{ fontSize: "0.75rem", py: 0.5, px: 1.5 }}
+                  sx={{ fontSize: "0.7rem", py: 0.375, px: 1.25, minWidth: 0 }}
                 >
                   {t("Start")}
                 </Button>
@@ -606,11 +738,11 @@ export default function OperatorView() {
               <Button
                 variant="outlined"
                 color="primary"
-                startIcon={<CheckCircle sx={{ fontSize: 16 }} />}
+                startIcon={<CheckCircle sx={{ fontSize: 14 }} />}
                 onClick={handleCompleteOperation}
                 disabled={!!activeTimeEntry || selectedOperation.status === "completed"}
                 size="small"
-                sx={{ fontSize: "0.75rem", py: 0.5, px: 1.5 }}
+                sx={{ fontSize: "0.7rem", py: 0.375, px: 1.25, minWidth: 0 }}
               >
                 {t("Done")}
               </Button>
@@ -618,12 +750,12 @@ export default function OperatorView() {
           )}
         </Box>
 
-        {/* Progress Bar - Thinner */}
+        {/* Progress Bar */}
         {selectedJobId && totalOps > 0 && (
           <LinearProgress
             variant="determinate"
             value={progressPercent}
-            sx={{ mt: 0.75, height: 3, borderRadius: 1.5, bgcolor: "rgba(255, 255, 255, 0.1)" }}
+            sx={{ mt: 0.5, height: 2, borderRadius: 1, bgcolor: "rgba(255, 255, 255, 0.08)" }}
           />
         )}
       </Box>
@@ -639,18 +771,17 @@ export default function OperatorView() {
           }}
         >
           <Box
-            className="glass-card"
             sx={{
-              p: 4,
+              p: 3,
               textAlign: "center",
               backdropFilter: "blur(16px) saturate(180%)",
               background: "rgba(17, 25, 40, 0.75)",
-              border: "1px solid rgba(255, 255, 255, 0.125)",
-              borderRadius: 3,
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: 2,
             }}
           >
-            <Build sx={{ fontSize: 64, color: "text.secondary", mb: 2, opacity: 0.5 }} />
-            <Typography variant="h6" color="text.secondary">
+            <Build sx={{ fontSize: 48, color: "text.secondary", mb: 1.5, opacity: 0.4 }} />
+            <Typography variant="body1" color="text.secondary">
               {t("Select a job to get started")}
             </Typography>
           </Box>
@@ -662,39 +793,38 @@ export default function OperatorView() {
             flex: 1,
             display: "flex",
             overflow: "hidden",
-            p: 1,
+            p: 0.5,
             gap: 0,
             position: "relative",
           }}
         >
           {/* LEFT PANE - File Viewers */}
           <Box
-            className="glass-card"
             sx={{
-              width: leftPanelCollapsed ? 48 : `${leftPanelWidth}%`,
-              minWidth: leftPanelCollapsed ? 48 : 200,
+              width: leftPanelCollapsed ? 40 : `${leftPanelWidth}%`,
+              minWidth: leftPanelCollapsed ? 40 : 180,
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
               transition: leftPanelCollapsed ? "width 0.2s ease" : "none",
               backdropFilter: "blur(16px) saturate(180%)",
               background: "rgba(17, 25, 40, 0.75)",
-              border: "1px solid rgba(255, 255, 255, 0.125)",
-              borderRadius: 2,
-              mr: 0.5,
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: 1.5,
+              mr: 0.25,
             }}
           >
-            {/* Panel Header with Collapse Toggle */}
+            {/* Panel Header */}
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "space-between",
+                justifyContent: leftPanelCollapsed ? "center" : "space-between",
                 borderBottom: leftPanelCollapsed ? "none" : 1,
-                borderColor: "rgba(255, 255, 255, 0.1)",
-                px: 0.5,
+                borderColor: "rgba(255, 255, 255, 0.08)",
+                px: leftPanelCollapsed ? 0 : 0.5,
                 py: 0.25,
-                minHeight: 36,
+                minHeight: 32,
               }}
             >
               {!leftPanelCollapsed && (pdfUrl || stepUrl) && (
@@ -703,102 +833,98 @@ export default function OperatorView() {
                     value={viewerTab}
                     onChange={(_, v) => setViewerTab(v)}
                     sx={{
-                      minHeight: 32,
+                      minHeight: 28,
                       "& .MuiTab-root": {
-                        minHeight: 32,
+                        minHeight: 28,
                         py: 0,
-                        px: 1,
-                        fontSize: "0.75rem",
+                        px: 0.75,
+                        fontSize: "0.65rem",
+                        minWidth: 0,
                       }
                     }}
                   >
                     {pdfUrl && (
                       <Tab
-                        icon={<Description sx={{ fontSize: 16 }} />}
+                        icon={<Description sx={{ fontSize: 14 }} />}
                         iconPosition="start"
                         label={t("PDF")}
                       />
                     )}
                     {stepUrl && (
                       <Tab
-                        icon={<ViewInAr sx={{ fontSize: 16 }} />}
+                        icon={<ViewInAr sx={{ fontSize: 14 }} />}
                         iconPosition="start"
                         label={t("3D")}
                       />
                     )}
                   </Tabs>
-                  <Stack direction="row" spacing={0.5}>
-                    <Tooltip title={t("Tap to view fullscreen")}>
-                      <IconButton
-                        size="small"
-                        onClick={() => setFullscreenViewer(true)}
-                        sx={{
-                          p: 0.5,
-                          "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" }
-                        }}
-                      >
-                        <Fullscreen sx={{ fontSize: 18 }} />
-                      </IconButton>
-                    </Tooltip>
-                  </Stack>
+                  <Tooltip title={t("Open fullscreen")}>
+                    <IconButton
+                      size="small"
+                      onClick={handleViewerClick}
+                      sx={{
+                        p: 0.375,
+                        "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" }
+                      }}
+                    >
+                      <Fullscreen sx={{ fontSize: 16 }} />
+                    </IconButton>
+                  </Tooltip>
                 </>
               )}
-              <Tooltip title={leftPanelCollapsed ? t("Expand viewer") : t("Collapse viewer")}>
+              <Tooltip title={leftPanelCollapsed ? t("Expand") : t("Collapse")}>
                 <IconButton
                   size="small"
                   onClick={() => setLeftPanelCollapsed(!leftPanelCollapsed)}
                   sx={{
-                    p: 0.5,
-                    ml: leftPanelCollapsed ? "auto" : 0,
-                    mr: leftPanelCollapsed ? "auto" : 0,
+                    p: 0.375,
                     "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" }
                   }}
                 >
-                  {leftPanelCollapsed ? <ChevronRight sx={{ fontSize: 18 }} /> : <ChevronLeft sx={{ fontSize: 18 }} />}
+                  {leftPanelCollapsed ? <ChevronRight sx={{ fontSize: 16 }} /> : <ChevronLeft sx={{ fontSize: 16 }} />}
                 </IconButton>
               </Tooltip>
             </Box>
 
-            {/* Viewer Content - Tap to fullscreen */}
+            {/* Viewer Content - Click/Tap to fullscreen */}
             {!leftPanelCollapsed && (
               <Box
                 sx={{
                   flex: 1,
                   overflow: "hidden",
-                  p: 0.5,
                   position: "relative",
                   cursor: (pdfUrl || stepUrl) ? "pointer" : "default",
                 }}
-                onClick={(pdfUrl || stepUrl) ? () => setFullscreenViewer(true) : undefined}
+                onClick={(pdfUrl || stepUrl) ? handleViewerClick : undefined}
               >
                 {(pdfUrl || stepUrl) && (
                   <>
                     {viewerTab === 0 && pdfUrl && (
-                      <PDFViewer url={pdfUrl} title="Drawing" />
+                      <PDFViewer url={pdfUrl} title="Drawing" compact />
                     )}
                     {((viewerTab === 1 && stepUrl) || (viewerTab === 0 && !pdfUrl && stepUrl)) && (
-                      <STEPViewer url={stepUrl} title="3D Model" />
+                      <STEPViewer url={stepUrl} title="3D Model" compact />
                     )}
-                    {/* Tap indicator overlay */}
+                    {/* Tap indicator */}
                     <Box
                       sx={{
                         position: "absolute",
-                        bottom: 8,
-                        right: 8,
-                        bgcolor: "rgba(0,0,0,0.6)",
+                        bottom: 6,
+                        right: 6,
+                        bgcolor: "rgba(0,0,0,0.7)",
                         color: "white",
-                        px: 1,
-                        py: 0.5,
-                        borderRadius: 1,
-                        fontSize: "0.65rem",
+                        px: 0.75,
+                        py: 0.375,
+                        borderRadius: 0.75,
+                        fontSize: "0.6rem",
                         display: "flex",
                         alignItems: "center",
-                        gap: 0.5,
+                        gap: 0.375,
                         pointerEvents: "none",
-                        opacity: 0.8,
+                        opacity: 0.75,
                       }}
                     >
-                      <Fullscreen sx={{ fontSize: 12 }} />
+                      <Fullscreen sx={{ fontSize: 10 }} />
                       {t("Tap to expand")}
                     </Box>
                   </>
@@ -814,8 +940,8 @@ export default function OperatorView() {
                     }}
                   >
                     <Stack alignItems="center" spacing={0.5}>
-                      <ViewInAr sx={{ fontSize: 40, opacity: 0.3 }} />
-                      <Typography variant="caption">
+                      <ViewInAr sx={{ fontSize: 32, opacity: 0.25 }} />
+                      <Typography variant="caption" sx={{ fontSize: "0.65rem" }}>
                         {t("No files")}
                       </Typography>
                     </Stack>
@@ -831,7 +957,7 @@ export default function OperatorView() {
               onMouseDown={handleMouseDown}
               onTouchStart={handleTouchStart}
               sx={{
-                width: 8,
+                width: 12,
                 cursor: "col-resize",
                 display: "flex",
                 alignItems: "center",
@@ -840,6 +966,7 @@ export default function OperatorView() {
                 "&:hover": {
                   "& .drag-indicator": {
                     opacity: 1,
+                    bgcolor: "primary.main",
                   }
                 },
                 touchAction: "none",
@@ -849,22 +976,26 @@ export default function OperatorView() {
                 className="drag-indicator"
                 sx={{
                   width: 4,
-                  height: 40,
+                  height: 48,
                   borderRadius: 2,
-                  bgcolor: isDragging ? "primary.main" : "rgba(255, 255, 255, 0.2)",
-                  opacity: isDragging ? 1 : 0.5,
-                  transition: "opacity 0.2s, background-color 0.2s",
+                  bgcolor: isDragging ? "primary.main" : "rgba(255, 255, 255, 0.15)",
+                  opacity: isDragging ? 1 : 0.6,
+                  transition: "opacity 0.15s, background-color 0.15s",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
-              />
+              >
+                <DragHandle sx={{ fontSize: 12, color: "rgba(255,255,255,0.5)", transform: "rotate(90deg)" }} />
+              </Box>
             </Box>
           )}
 
           {/* RIGHT PANE - Info & Operations */}
           <Box
-            className="glass-card"
             sx={{
-              width: rightPanelCollapsed ? 48 : `${100 - leftPanelWidth}%`,
-              minWidth: rightPanelCollapsed ? 48 : 200,
+              width: rightPanelCollapsed ? 40 : `${100 - leftPanelWidth}%`,
+              minWidth: rightPanelCollapsed ? 40 : 180,
               display: "flex",
               flexDirection: "column",
               gap: 0.5,
@@ -872,9 +1003,9 @@ export default function OperatorView() {
               transition: rightPanelCollapsed ? "width 0.2s ease" : "none",
               backdropFilter: "blur(16px) saturate(180%)",
               background: "rgba(17, 25, 40, 0.75)",
-              border: "1px solid rgba(255, 255, 255, 0.125)",
-              borderRadius: 2,
-              ml: 0.5,
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: 1.5,
+              ml: 0.25,
               p: rightPanelCollapsed ? 0 : 0.5,
             }}
           >
@@ -889,16 +1020,16 @@ export default function OperatorView() {
                 height: rightPanelCollapsed ? "100%" : "auto",
               }}
             >
-              <Tooltip title={rightPanelCollapsed ? t("Expand details") : t("Collapse details")}>
+              <Tooltip title={rightPanelCollapsed ? t("Expand") : t("Collapse")}>
                 <IconButton
                   size="small"
                   onClick={() => setRightPanelCollapsed(!rightPanelCollapsed)}
                   sx={{
-                    p: 0.5,
+                    p: 0.375,
                     "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" }
                   }}
                 >
-                  {rightPanelCollapsed ? <ChevronLeft sx={{ fontSize: 18 }} /> : <ChevronRight sx={{ fontSize: 18 }} />}
+                  {rightPanelCollapsed ? <ChevronLeft sx={{ fontSize: 16 }} /> : <ChevronRight sx={{ fontSize: 16 }} />}
                 </IconButton>
               </Tooltip>
             </Box>
@@ -910,14 +1041,14 @@ export default function OperatorView() {
                   <Box
                     sx={{
                       flexShrink: 0,
-                      p: 1,
-                      borderRadius: 1.5,
+                      p: 0.75,
+                      borderRadius: 1,
                       bgcolor: "rgba(255, 255, 255, 0.03)",
-                      border: "1px solid rgba(255, 255, 255, 0.06)",
+                      border: "1px solid rgba(255, 255, 255, 0.05)",
                     }}
                   >
-                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.5 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.375 }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: 0.5 }}>
                         {t("Current Operation")}
                       </Typography>
                       <Chip
@@ -926,12 +1057,13 @@ export default function OperatorView() {
                         sx={{
                           bgcolor: selectedOperation.cell.color,
                           color: "white",
-                          height: 18,
-                          fontSize: "0.65rem",
+                          height: 16,
+                          fontSize: "0.6rem",
+                          "& .MuiChip-label": { px: 0.5 }
                         }}
                       />
                     </Box>
-                    <Typography variant="body2" fontWeight="bold" sx={{ mb: 0.5, lineHeight: 1.2 }}>
+                    <Typography variant="body2" fontWeight="bold" sx={{ mb: 0.375, lineHeight: 1.2, fontSize: "0.8rem" }}>
                       {selectedOperation.operation_name}
                     </Typography>
 
@@ -940,62 +1072,46 @@ export default function OperatorView() {
                       sx={{
                         display: "grid",
                         gridTemplateColumns: "repeat(3, 1fr)",
-                        gap: 0.5,
+                        gap: 0.375,
                       }}
                     >
                       <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.6rem", display: "block" }}>
-                          {t("Job")}
-                        </Typography>
-                        <Typography variant="caption" fontWeight="medium" sx={{ fontSize: "0.7rem" }}>
-                          {selectedJob?.job_number}
-                        </Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.6rem", display: "block" }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.55rem", display: "block" }}>
                           {t("Part")}
                         </Typography>
-                        <Typography variant="caption" fontWeight="medium" sx={{ fontSize: "0.7rem" }}>
+                        <Typography variant="caption" fontWeight="medium" sx={{ fontSize: "0.65rem" }}>
                           {selectedOperation.part.part_number}
                         </Typography>
                       </Box>
                       <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.6rem", display: "block" }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.55rem", display: "block" }}>
                           {t("Qty")}
                         </Typography>
-                        <Typography variant="caption" fontWeight="bold" sx={{ fontSize: "0.7rem" }}>
+                        <Typography variant="caption" fontWeight="bold" sx={{ fontSize: "0.65rem" }}>
                           {selectedOperation.part.quantity}
                         </Typography>
                       </Box>
                       <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.6rem", display: "block" }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.55rem", display: "block" }}>
                           {t("Material")}
                         </Typography>
-                        <Typography variant="caption" sx={{ fontSize: "0.7rem" }}>
+                        <Typography variant="caption" sx={{ fontSize: "0.65rem" }}>
                           {selectedOperation.part.material}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ gridColumn: "span 2" }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.6rem", display: "block" }}>
-                          {t("Time")}
-                        </Typography>
-                        <Typography variant="caption" sx={{ fontSize: "0.7rem" }}>
-                          {selectedOperation.actual_time || 0}m / {selectedOperation.estimated_time}m est.
                         </Typography>
                       </Box>
                     </Box>
 
                     {selectedOperation.notes && (
-                      <Alert severity="info" sx={{ mt: 0.5, py: 0, px: 1, "& .MuiAlert-icon": { py: 0.5 } }}>
-                        <Typography variant="caption" sx={{ fontSize: "0.65rem" }}>
+                      <Alert severity="info" sx={{ mt: 0.5, py: 0, px: 0.75, "& .MuiAlert-icon": { py: 0.25, fontSize: 14 } }}>
+                        <Typography variant="caption" sx={{ fontSize: "0.6rem" }}>
                           {selectedOperation.notes}
                         </Typography>
                       </Alert>
                     )}
 
                     {isOverdue && (
-                      <Alert severity="error" sx={{ mt: 0.5, py: 0, px: 1, "& .MuiAlert-icon": { py: 0.5 } }}>
-                        <Typography variant="caption" sx={{ fontSize: "0.65rem" }}>
+                      <Alert severity="error" sx={{ mt: 0.5, py: 0, px: 0.75, "& .MuiAlert-icon": { py: 0.25, fontSize: 14 } }}>
+                        <Typography variant="caption" sx={{ fontSize: "0.6rem" }}>
                           {t("Overdue!")} {format(dueDate!, "MMM dd")}
                         </Typography>
                       </Alert>
@@ -1010,18 +1126,18 @@ export default function OperatorView() {
                     display: "flex",
                     flexDirection: "column",
                     overflow: "hidden",
-                    borderRadius: 1.5,
+                    borderRadius: 1,
                     bgcolor: "rgba(255, 255, 255, 0.03)",
-                    border: "1px solid rgba(255, 255, 255, 0.06)",
+                    border: "1px solid rgba(255, 255, 255, 0.05)",
                   }}
                 >
-                  <Box sx={{ px: 1, py: 0.5, borderBottom: 1, borderColor: "rgba(255, 255, 255, 0.06)" }}>
-                    <Typography variant="caption" fontWeight="bold" sx={{ fontSize: "0.7rem" }}>
+                  <Box sx={{ px: 0.75, py: 0.375, borderBottom: 1, borderColor: "rgba(255, 255, 255, 0.05)" }}>
+                    <Typography variant="caption" fontWeight="bold" sx={{ fontSize: "0.65rem" }}>
                       {t("Operations")} ({completedOps}/{totalOps})
                     </Typography>
                   </Box>
 
-                  <Box sx={{ flex: 1, overflow: "auto", p: 0.5 }}>
+                  <Box sx={{ flex: 1, overflow: "auto", p: 0.375 }}>
                     {operations.map((op, index) => {
                       const isSelected = selectedOperation?.id === op.id;
                       const isCompleted = op.status === "completed";
@@ -1037,16 +1153,16 @@ export default function OperatorView() {
                           sx={{
                             display: "flex",
                             alignItems: "center",
-                            gap: 0.5,
-                            py: 0.5,
-                            px: 0.75,
-                            mb: 0.25,
-                            borderRadius: 1,
+                            gap: 0.375,
+                            py: 0.375,
+                            px: 0.5,
+                            mb: 0.125,
+                            borderRadius: 0.75,
                             cursor: "pointer",
                             bgcolor: isSelected
                               ? "rgba(30, 144, 255, 0.15)"
                               : isCompleted
-                                ? "rgba(52, 168, 83, 0.08)"
+                                ? "rgba(52, 168, 83, 0.06)"
                                 : "transparent",
                             borderLeft: isSelected ? "2px solid" : "2px solid transparent",
                             borderColor: isSelected
@@ -1055,21 +1171,22 @@ export default function OperatorView() {
                             "&:hover": {
                               bgcolor: isSelected
                                 ? "rgba(30, 144, 255, 0.2)"
-                                : "rgba(255, 255, 255, 0.05)",
+                                : "rgba(255, 255, 255, 0.04)",
                             },
-                            transition: "background-color 0.15s",
+                            transition: "background-color 0.1s",
+                            minHeight: 28,
                           }}
                         >
-                          {/* Compact Status Icon */}
+                          {/* Status Icon */}
                           {isCompleted ? (
-                            <CheckCircleOutline sx={{ fontSize: 14, color: "success.main" }} />
+                            <CheckCircleOutline sx={{ fontSize: 12, color: "success.main" }} />
                           ) : isInProgress ? (
-                            <ArrowForward sx={{ fontSize: 14, color: "primary.main" }} />
+                            <ArrowForward sx={{ fontSize: 12, color: "primary.main" }} />
                           ) : (
-                            <RadioButtonUnchecked sx={{ fontSize: 14, color: "text.disabled" }} />
+                            <RadioButtonUnchecked sx={{ fontSize: 12, color: "text.disabled" }} />
                           )}
 
-                          {/* Operation Info - Single line */}
+                          {/* Operation Info */}
                           <Typography
                             variant="caption"
                             fontWeight={isSelected ? "bold" : "medium"}
@@ -1077,7 +1194,7 @@ export default function OperatorView() {
                             sx={{
                               flex: 1,
                               minWidth: 0,
-                              fontSize: "0.7rem",
+                              fontSize: "0.65rem",
                               textDecoration: isCompleted ? "line-through" : "none",
                               color: isCompleted ? "text.secondary" : "text.primary",
                             }}
@@ -1085,13 +1202,13 @@ export default function OperatorView() {
                             {index + 1}. {op.operation_name}
                           </Typography>
 
-                          {/* Compact Time + Active indicator */}
+                          {/* Time + Active indicator */}
                           <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.6rem" }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.55rem" }}>
                               {op.actual_time || 0}/{op.estimated_time}m
                             </Typography>
                             {op.active_time_entry && (
-                              <Timer sx={{ fontSize: 12, color: "primary.main" }} />
+                              <Timer sx={{ fontSize: 10, color: "primary.main" }} />
                             )}
                           </Box>
                         </Box>
@@ -1105,21 +1222,21 @@ export default function OperatorView() {
                   <Box
                     sx={{
                       flexShrink: 0,
-                      maxHeight: "25%",
+                      maxHeight: "22%",
                       display: "flex",
                       flexDirection: "column",
                       overflow: "hidden",
-                      borderRadius: 1.5,
+                      borderRadius: 1,
                       bgcolor: "rgba(255, 255, 255, 0.03)",
-                      border: "1px solid rgba(255, 255, 255, 0.06)",
+                      border: "1px solid rgba(255, 255, 255, 0.05)",
                     }}
                   >
-                    <Box sx={{ px: 1, py: 0.5, borderBottom: 1, borderColor: "rgba(255, 255, 255, 0.06)" }}>
-                      <Typography variant="caption" fontWeight="bold" sx={{ fontSize: "0.7rem" }}>
+                    <Box sx={{ px: 0.75, py: 0.375, borderBottom: 1, borderColor: "rgba(255, 255, 255, 0.05)" }}>
+                      <Typography variant="caption" fontWeight="bold" sx={{ fontSize: "0.65rem" }}>
                         {t("Substeps")}
                       </Typography>
                     </Box>
-                    <Box sx={{ flex: 1, overflow: "auto", p: 0.5 }}>
+                    <Box sx={{ flex: 1, overflow: "auto", p: 0.375 }}>
                       <SubstepsManager
                         operationId={selectedOperation.id}
                         operationName={selectedOperation.operation_name}
@@ -1133,122 +1250,8 @@ export default function OperatorView() {
         </Box>
       )}
 
-      {/* Fullscreen Viewer Overlay - Optimized for tablet tap-to-view */}
-      {fullscreenViewer && (
-        <Box
-          sx={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 1300,
-            bgcolor: "rgba(0, 0, 0, 0.95)",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          {/* Overlay Header - Compact */}
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              px: 1,
-              py: 0.5,
-              borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-              bgcolor: "rgba(17, 25, 40, 0.9)",
-              backdropFilter: "blur(8px)",
-            }}
-          >
-            <Tabs
-              value={viewerTab}
-              onChange={(_, v) => setViewerTab(v)}
-              sx={{
-                minHeight: 36,
-                "& .MuiTab-root": {
-                  minHeight: 36,
-                  py: 0,
-                  px: 1.5,
-                  fontSize: "0.8rem",
-                }
-              }}
-            >
-              {pdfUrl && (
-                <Tab
-                  icon={<Description sx={{ fontSize: 18 }} />}
-                  iconPosition="start"
-                  label={t("PDF Drawing")}
-                />
-              )}
-              {stepUrl && (
-                <Tab
-                  icon={<ViewInAr sx={{ fontSize: 18 }} />}
-                  iconPosition="start"
-                  label={t("3D Model")}
-                />
-              )}
-            </Tabs>
-
-            <Stack direction="row" spacing={1} alignItems="center">
-              {/* Part info in overlay */}
-              {selectedOperation && (
-                <Typography variant="caption" color="text.secondary" sx={{ mr: 2 }}>
-                  {selectedOperation.part.part_number}
-                </Typography>
-              )}
-              <Tooltip title={t("Close (tap anywhere)")}>
-                <IconButton
-                  onClick={() => setFullscreenViewer(false)}
-                  sx={{
-                    bgcolor: "rgba(255, 255, 255, 0.1)",
-                    "&:hover": { bgcolor: "rgba(255, 255, 255, 0.2)" },
-                  }}
-                >
-                  <Close />
-                </IconButton>
-              </Tooltip>
-            </Stack>
-          </Box>
-
-          {/* Fullscreen Viewer Content */}
-          <Box
-            sx={{
-              flex: 1,
-              overflow: "hidden",
-              p: 1,
-              position: "relative",
-            }}
-          >
-            {viewerTab === 0 && pdfUrl && (
-              <PDFViewer url={pdfUrl} title="Drawing" />
-            )}
-            {((viewerTab === 1 && stepUrl) || (viewerTab === 0 && !pdfUrl && stepUrl)) && (
-              <STEPViewer url={stepUrl} title="3D Model" />
-            )}
-          </Box>
-
-          {/* Bottom hint for closing */}
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: 16,
-              left: "50%",
-              transform: "translateX(-50%)",
-              bgcolor: "rgba(0, 0, 0, 0.7)",
-              color: "rgba(255, 255, 255, 0.7)",
-              px: 2,
-              py: 0.75,
-              borderRadius: 2,
-              fontSize: "0.75rem",
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              pointerEvents: "none",
-            }}
-          >
-            <Close sx={{ fontSize: 14 }} />
-            {t("Tap X or swipe down to close")}
-          </Box>
-        </Box>
-      )}
+      {/* Fullscreen Overlay */}
+      {FullscreenOverlay}
     </Box>
   );
 }
