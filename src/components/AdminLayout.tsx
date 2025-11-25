@@ -47,6 +47,7 @@ import { usePendingIssuesCount } from "@/hooks/usePendingIssuesCount";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { McpServerStatus } from "@/components/admin/McpServerStatus";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -526,10 +527,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </div>
           </div>
         )}
-        {/* MCP Status & Language - Inline */}
+        {/* MCP Status, Theme & Language - Inline */}
         <div className={cn("flex items-center gap-2", collapsed ? "justify-center flex-col" : "justify-between px-1")}>
           <McpServerStatus />
-          <LanguageSwitcher />
+          <div className="flex items-center gap-1">
+            <ThemeToggle variant="dropdown" />
+            <LanguageSwitcher />
+          </div>
         </div>
         <Button
           variant="outline"

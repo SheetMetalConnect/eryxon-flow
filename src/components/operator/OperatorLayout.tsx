@@ -25,6 +25,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import CurrentlyTimingWidget from './CurrentlyTimingWidget';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { AppTour } from '@/components/onboarding';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import { cn } from '@/lib/utils';
@@ -65,7 +66,8 @@ export const OperatorLayout = ({ children }: OperatorLayoutProps) => {
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-1.5">
-              {/* Language Switcher */}
+              {/* Theme & Language Switchers */}
+              <ThemeToggle variant="dropdown" />
               <LanguageSwitcher />
 
               {/* User Menu */}

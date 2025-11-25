@@ -1,9 +1,9 @@
 /**
- * ERYXON MES DESIGN SYSTEM - Dark Mode Modern
- * Beautiful dark-first design system for manufacturing execution
+ * ERYXON MES DESIGN SYSTEM - Dark/Light Mode
+ * Beautiful design system for manufacturing execution
  *
  * Inspired by modern UI/UX best practices with:
- * - Deep dark backgrounds for reduced eye strain
+ * - Support for dark, light, and auto (system) modes
  * - Glass morphism effects for depth
  * - Smooth animations and transitions
  * - Touch-optimized for operators
@@ -21,7 +21,7 @@
 @tailwind utilities;
 
 /* ============================================================================
-   DESIGN TOKENS - DARK MODE ONLY
+   DESIGN TOKENS - DARK MODE (Default)
    ============================================================================ */
 
 @layer base {
@@ -324,6 +324,173 @@
     --z-tooltip: 1600;
     --z-toast: 1700;
   }
+
+  /* ============================================================================
+     LIGHT MODE TOKENS
+     ============================================================================ */
+  :root.light {
+    /* Light Mode Backgrounds */
+    --color-black: 0 0% 100%;              /* White - Main background */
+    --color-dark-surface: 0 0% 98%;        /* #fafafa - Card surface */
+    --color-dark-elevated: 0 0% 96%;       /* #f5f5f5 - Elevated surface */
+
+    /* Neutral Grays - Refined for light mode */
+    --neutral-50: 0 0% 15%;                /* #262626 - Primary text */
+    --neutral-100: 0 0% 20%;               /* #333333 */
+    --neutral-200: 0 0% 28%;               /* #474747 */
+    --neutral-300: 0 0% 37%;               /* #5e5e5e - Muted text */
+    --neutral-400: 0 0% 47%;               /* #787878 */
+    --neutral-500: 0 0% 58%;               /* #949494 */
+    --neutral-600: 0 0% 80%;               /* #cccccc - Borders */
+    --neutral-700: 0 0% 85%;               /* #d9d9d9 */
+    --neutral-800: 0 0% 92%;               /* #ebebeb */
+    --neutral-900: 0 0% 96%;               /* #f5f5f5 */
+    --neutral-950: 0 0% 98%;               /* #fafafa */
+
+    /* Brand Colors - Slightly deeper for light mode contrast */
+    --brand-primary: 211 100% 45%;         /* #0066cc - Deeper Blue */
+    --brand-primary-light: 211 100% 56%;   /* #1e90ff - Original Blue */
+    --brand-accent: 211 100% 45%;          /* #0066cc */
+
+    /* Semantic Colors - Slightly deeper for light mode */
+    --color-success: 140 60% 40%;          /* Darker green */
+    --color-warning: 45 100% 40%;          /* Darker amber */
+    --color-error: 4 90% 50%;              /* Darker red */
+    --color-info: 199 89% 40%;             /* Darker cyan */
+
+    /* Base colors */
+    --background: var(--color-black);
+    --foreground: var(--neutral-50);
+
+    /* Surface colors */
+    --surface: var(--color-dark-surface);
+    --surface-elevated: var(--color-dark-elevated);
+    --surface-hover: var(--neutral-800);
+
+    /* Card - Light mode with subtle shadow */
+    --card: 0 0% 100%;                     /* White background */
+    --card-foreground: var(--neutral-50);
+    --card-border: 0 0% 0% / 0.1;          /* rgba(0,0,0,0.1) */
+
+    /* Popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: var(--neutral-50);
+
+    /* Primary */
+    --primary: var(--brand-primary);
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 211 100% 38%;
+
+    /* Secondary */
+    --secondary: var(--neutral-800);
+    --secondary-foreground: var(--neutral-50);
+    --secondary-hover: var(--neutral-700);
+
+    /* Accent */
+    --accent: var(--brand-accent);
+    --accent-foreground: 0 0% 100%;
+    --accent-hover: 211 100% 56%;
+
+    /* Muted */
+    --muted: var(--neutral-900);
+    --muted-foreground: var(--neutral-300);
+
+    /* Destructive */
+    --destructive: var(--color-error);
+    --destructive-foreground: 0 0% 100%;
+    --destructive-hover: 4 90% 45%;
+
+    /* Success */
+    --success: var(--color-success);
+    --success-foreground: 0 0% 100%;
+    --success-hover: 140 60% 35%;
+
+    /* Warning */
+    --warning: var(--color-warning);
+    --warning-foreground: 0 0% 100%;
+    --warning-hover: 45 100% 35%;
+
+    /* Info */
+    --info: var(--color-info);
+    --info-foreground: 0 0% 100%;
+    --info-hover: 199 89% 35%;
+
+    /* Borders - Darker for light mode */
+    --border: var(--neutral-600);
+    --border-strong: var(--neutral-500);
+    --border-subtle: 0 0% 0% / 0.06;       /* Translucent black */
+
+    /* Input */
+    --input: var(--neutral-600);
+    --input-background: 0 0% 100%;
+    --input-focus: var(--brand-accent);
+
+    /* Ring (focus) */
+    --ring: var(--brand-accent);
+    --ring-offset: 0 0% 100%;
+
+    /* Work Status - Slightly adjusted for light mode */
+    --status-active: 45 100% 45%;          /* Darker yellow */
+    --status-completed: 140 60% 40%;       /* Darker green */
+    --status-on-hold: 25 95% 45%;          /* Darker orange */
+    --status-blocked: 4 90% 50%;           /* Darker red */
+    --status-pending: var(--neutral-400);
+
+    /* Issue Severity */
+    --severity-critical: 4 90% 50%;
+    --severity-high: 25 95% 45%;
+    --severity-medium: 45 100% 45%;
+    --severity-low: var(--neutral-400);
+
+    /* Alert Backgrounds (with light transparency) */
+    --alert-info-bg: 199 89% 48% / 0.1;
+    --alert-info-border: 199 89% 48% / 0.25;
+    --alert-success-bg: 140 60% 52% / 0.1;
+    --alert-success-border: 140 60% 52% / 0.25;
+    --alert-warning-bg: 45 100% 51% / 0.1;
+    --alert-warning-border: 45 100% 51% / 0.25;
+    --alert-error-bg: 4 90% 58% / 0.1;
+    --alert-error-border: 4 90% 58% / 0.25;
+
+    /* Code Block Colors - Light mode */
+    --code-background: 220 30% 96%;        /* Very light blue-gray */
+    --code-foreground: 140 60% 35%;        /* Dark green text */
+
+    /* Sidebar - Light mode */
+    --sidebar-background: 0 0% 100% / 0.85;
+    --sidebar-foreground: var(--neutral-50);
+    --sidebar-primary: var(--brand-accent);
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: var(--neutral-900);
+    --sidebar-accent-foreground: var(--neutral-50);
+    --sidebar-border: var(--neutral-600);
+    --sidebar-ring: var(--brand-accent);
+
+    /* Navigation - Light mode */
+    --nav-active-bg: 211 100% 45% / 0.12;
+    --nav-active-fg: 211 100% 35%;
+    --nav-hover-bg: 0 0% 0% / 0.04;
+
+    /* Glass Morphism - Light mode */
+    --glass-background: 0 0% 100% / 0.7;
+    --glass-border: 0 0% 0% / 0.1;
+    --glass-blur: 20px;
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+    /* Gradient Orbs - Light mode (more subtle) */
+    --gradient-blue: 211 100% 56% / 0.2;
+    --gradient-yellow: 45 100% 51% / 0.15;
+    --gradient-green: 140 60% 52% / 0.15;
+
+    /* Shadows - Lighter for light mode */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.08);
+  }
 }
 
 /* ============================================================================
@@ -343,7 +510,7 @@
   }
 
   body {
-    /* Antigravity Ambient Field - Deep navy base with layered radial gradients */
+    /* Dark mode: Antigravity Ambient Field - Deep navy base with layered radial gradients */
     background-color: #111927;
     background-image:
       radial-gradient(at 47% 33%, hsl(205.47, 77%, 40%) 0, transparent 59%),
@@ -354,6 +521,16 @@
     padding: 0;
     overflow-x: hidden;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Light mode body styles */
+  .light body,
+  :root.light body {
+    background-color: #f8fafc;
+    background-image:
+      radial-gradient(at 47% 33%, hsl(211, 50%, 85%) 0, transparent 59%),
+      radial-gradient(at 82% 65%, hsl(220, 25%, 92%) 0, transparent 55%);
   }
 
   /* Typography scale */
@@ -559,6 +736,18 @@
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
   }
 
+  /* Light mode glass card */
+  :root.light .glass-card {
+    background-color: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  }
+
+  :root.light .glass-card:hover {
+    border-color: rgba(0, 0, 0, 0.12);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  }
+
   /* Onboarding card - Premium auth experience - Antigravity spec (v3.2 compact) */
   .onboarding-card {
     backdrop-filter: blur(16px) saturate(180%);
@@ -572,6 +761,13 @@
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     text-align: center;
     animation: fadeInUp 0.8s ease-out;
+  }
+
+  /* Light mode onboarding card */
+  :root.light .onboarding-card {
+    background-color: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   }
 
   /* Hero title with gradient (v3.2 compact) */
@@ -938,6 +1134,26 @@
     background-color: rgba(17, 25, 40, 0.75) !important;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.03);
+  }
+
+  /* Light mode sidebar glass */
+  :root.light .sidebar-glass {
+    background-color: rgba(255, 255, 255, 0.85) !important;
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.03);
+  }
+
+  /* Light mode nav item styles */
+  :root.light .nav-item-active {
+    background: hsl(var(--nav-active-bg)) !important;
+    color: hsl(var(--nav-active-fg)) !important;
+    box-shadow: 0 0 20px rgba(0, 102, 204, 0.1),
+                inset 0 1px 0 rgba(0, 102, 204, 0.1);
+  }
+
+  :root.light .nav-item-hover:hover {
+    background: hsl(var(--nav-hover-bg));
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.04);
   }
 }
 
