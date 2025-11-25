@@ -144,8 +144,8 @@ export function McpServerStatus() {
           }
         )
         .subscribe((status) => {
-          if (status === 'SUBSCRIPTION_ERROR') {
-            console.error('MCP health subscription error');
+          if (status === 'SUBSCRIBED') {
+            console.log('MCP health subscription active');
           } else if (status === 'CHANNEL_ERROR') {
             console.error('MCP health channel error');
           }

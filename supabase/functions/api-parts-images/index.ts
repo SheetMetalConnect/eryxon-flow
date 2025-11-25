@@ -204,14 +204,14 @@ async function handleUploadImage(
 
   // Validate file type
   if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-    throw new ValidationException(
+    throw new BadRequestError(
       `Invalid file type. Allowed types: ${ALLOWED_IMAGE_TYPES.join(", ")}`,
     );
   }
 
   // Validate file size
   if (file.size > MAX_FILE_SIZE) {
-    throw new ValidationException(
+    throw new BadRequestError(
       `File too large. Maximum size: ${MAX_FILE_SIZE / (1024 * 1024)}MB`,
     );
   }

@@ -102,7 +102,10 @@ export default function ConfigMcpKeys() {
 
       setMcpKeys((data || []).map((key) => ({
         ...key,
-        allowed_tools: Array.isArray(key.allowed_tools) ? key.allowed_tools : ["*"],
+        environment: key.environment as "live" | "test",
+        allowed_tools: Array.isArray(key.allowed_tools) 
+          ? key.allowed_tools.map(tool => String(tool))
+          : ["*"],
       })));
     } catch (error: any) {
       console.error("Error fetching MCP keys:", error);
