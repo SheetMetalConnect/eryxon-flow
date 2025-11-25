@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
   Box,
   Paper,
@@ -10,9 +10,7 @@ import {
   Button,
   Chip,
   Stack,
-  Divider,
   IconButton,
-  Dialog,
   Alert,
   CircularProgress,
   SelectChangeEvent,
@@ -30,16 +28,13 @@ import {
   Build,
   Description,
   ViewInAr,
-  ZoomIn,
-  ZoomOut,
   Fullscreen,
-  FitScreen,
-  Flag,
-  ReportProblem,
   CheckCircleOutline,
   RadioButtonUnchecked,
   ArrowForward,
   Close,
+  ChevronLeft,
+  ChevronRight,
 } from "@mui/icons-material";
 import { useAuth } from "../../contexts/AuthContext";
 import { supabase } from "../../integrations/supabase/client";
@@ -53,6 +48,7 @@ import { PDFViewer } from "../../components/PDFViewer";
 import { STEPViewer } from "../../components/STEPViewer";
 import SubstepsManager from "../../components/operator/SubstepsManager";
 import { useTranslation } from "react-i18next";
+import { cn } from "../../lib/utils";
 
 interface Job {
   id: string;
@@ -116,6 +112,15 @@ export default function OperatorView() {
   const [stepUrl, setStepUrl] = useState<string | null>(null);
   const [viewerTab, setViewerTab] = useState<number>(0);
   const [fullscreenViewer, setFullscreenViewer] = useState<boolean>(false);
+
+  // Panel collapse states
+  const [leftPanelCollapsed, setLeftPanelCollapsed] = useState<boolean>(false);
+  const [rightPanelCollapsed, setRightPanelCollapsed] = useState<boolean>(false);
+
+  // Resizable panel state
+  const [leftPanelWidth, setLeftPanelWidth] = useState<number>(60); // percentage
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Load jobs
   useEffect(() => {
@@ -190,6 +195,71 @@ export default function OperatorView() {
       supabase.removeChannel(channel);
     };
   }, [selectedOperation, selectedJobId]);
+
+  // Resizable panel handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging || !containerRef.current) return;
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+    // Constrain between 30% and 80%
+    setLeftPanelWidth(Math.min(80, Math.max(30, newWidth)));
+  }, [isDragging]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    } else {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isDragging, handleMouseMove, handleMouseUp]);
+
+  // Handle touch events for tablet
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (!isDragging || !containerRef.current) return;
+    const touch = e.touches[0];
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const newWidth = ((touch.clientX - containerRect.left) / containerRect.width) * 100;
+    setLeftPanelWidth(Math.min(80, Math.max(30, newWidth)));
+  }, [isDragging]);
+
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('touchmove', handleTouchMove);
+      document.addEventListener('touchend', handleTouchEnd);
+    }
+    return () => {
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isDragging, handleTouchMove, handleTouchEnd]);
 
   const loadJobs = async () => {
     try {
@@ -422,47 +492,54 @@ export default function OperatorView() {
         bgcolor: "background.default",
       }}
     >
-      {/* HEADER BAR - Job Selection, Timer, Actions */}
-      <Paper
-        elevation={3}
+      {/* HEADER BAR - Job Selection, Timer, Actions - Compact Glass Style */}
+      <Box
         sx={{
-          px: 2,
-          py: 1.5,
-          borderRadius: 0,
+          px: 1.5,
+          py: 1,
           flexShrink: 0,
+          backdropFilter: "blur(16px) saturate(180%)",
+          background: "rgba(17, 25, 40, 0.85)",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
-          {/* Job Selector */}
-          <FormControl size="small" sx={{ minWidth: 280 }}>
-            <InputLabel>{t("Job")}</InputLabel>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+          {/* Job Selector - Compact */}
+          <FormControl size="small" sx={{ minWidth: 220 }}>
+            <InputLabel sx={{ fontSize: "0.8rem" }}>{t("Job")}</InputLabel>
             <Select
               value={selectedJobId}
               onChange={(e: SelectChangeEvent) => setSelectedJobId(e.target.value)}
               label={t("Job")}
+              sx={{
+                fontSize: "0.8rem",
+                "& .MuiSelect-select": { py: 0.75 }
+              }}
             >
               {jobs.map((job) => (
-                <MenuItem key={job.id} value={job.id}>
+                <MenuItem key={job.id} value={job.id} sx={{ fontSize: "0.8rem" }}>
                   <strong>{job.job_number}</strong>&nbsp;- {job.customer || "N/A"}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          {/* Job Info Chips */}
+          {/* Job Info Chips - More compact */}
           {selectedJob && (
             <>
               <Chip
-                icon={<CalendarToday />}
+                icon={<CalendarToday sx={{ fontSize: 14 }} />}
                 label={format(dueDate!, "MMM dd")}
                 color={isOverdue ? "error" : "default"}
                 size="small"
+                sx={{ height: 24, "& .MuiChip-label": { px: 1, fontSize: "0.7rem" } }}
               />
               <Chip
-                label={`${completedOps}/${totalOps} ops`}
+                label={`${completedOps}/${totalOps}`}
                 size="small"
                 color="primary"
                 variant="outlined"
+                sx={{ height: 24, "& .MuiChip-label": { px: 1, fontSize: "0.7rem" } }}
               />
             </>
           )}
@@ -470,27 +547,28 @@ export default function OperatorView() {
           {/* Spacer */}
           <Box sx={{ flexGrow: 1 }} />
 
-          {/* Timer Display */}
+          {/* Timer Display - Compact */}
           {selectedOperation && (
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
-                gap: 2,
-                bgcolor: activeTimeEntry ? "var(--brand-primary)" : "var(--neutral-800)",
-                color: activeTimeEntry ? "var(--primary-foreground)" : "var(--foreground)",
-                px: 2,
+                gap: 1,
+                bgcolor: activeTimeEntry ? "primary.main" : "rgba(255, 255, 255, 0.1)",
+                color: activeTimeEntry ? "primary.contrastText" : "text.primary",
+                px: 1.5,
                 py: 0.5,
-                borderRadius: 2,
+                borderRadius: 1.5,
+                border: activeTimeEntry ? "none" : "1px solid rgba(255, 255, 255, 0.1)",
               }}
             >
-              <Timer />
+              <Timer sx={{ fontSize: 18 }} />
               <Typography
-                variant="h5"
                 sx={{
                   fontFamily: "monospace",
                   fontWeight: "bold",
-                  minWidth: 100,
+                  fontSize: "1rem",
+                  minWidth: 80,
                 }}
               >
                 {formatElapsedTime(elapsedSeconds)}
@@ -498,16 +576,17 @@ export default function OperatorView() {
             </Box>
           )}
 
-          {/* Action Buttons */}
+          {/* Action Buttons - Compact */}
           {selectedOperation && (
-            <Stack direction="row" spacing={1}>
+            <Stack direction="row" spacing={0.75}>
               {activeTimeEntry ? (
                 <Button
                   variant="contained"
                   color="error"
-                  startIcon={<Stop />}
+                  startIcon={<Stop sx={{ fontSize: 16 }} />}
                   onClick={handleStopTracking}
-                  size="medium"
+                  size="small"
+                  sx={{ fontSize: "0.75rem", py: 0.5, px: 1.5 }}
                 >
                   {t("Stop")}
                 </Button>
@@ -515,10 +594,11 @@ export default function OperatorView() {
                 <Button
                   variant="contained"
                   color="success"
-                  startIcon={<PlayArrow />}
+                  startIcon={<PlayArrow sx={{ fontSize: 16 }} />}
                   onClick={handleStartTracking}
                   disabled={selectedOperation.status === "completed"}
-                  size="medium"
+                  size="small"
+                  sx={{ fontSize: "0.75rem", py: 0.5, px: 1.5 }}
                 >
                   {t("Start")}
                 </Button>
@@ -526,26 +606,27 @@ export default function OperatorView() {
               <Button
                 variant="outlined"
                 color="primary"
-                startIcon={<CheckCircle />}
+                startIcon={<CheckCircle sx={{ fontSize: 16 }} />}
                 onClick={handleCompleteOperation}
                 disabled={!!activeTimeEntry || selectedOperation.status === "completed"}
-                size="medium"
+                size="small"
+                sx={{ fontSize: "0.75rem", py: 0.5, px: 1.5 }}
               >
-                {t("Complete")}
+                {t("Done")}
               </Button>
             </Stack>
           )}
         </Box>
 
-        {/* Progress Bar */}
+        {/* Progress Bar - Thinner */}
         {selectedJobId && totalOps > 0 && (
           <LinearProgress
             variant="determinate"
             value={progressPercent}
-            sx={{ mt: 1, height: 4, borderRadius: 2 }}
+            sx={{ mt: 0.75, height: 3, borderRadius: 1.5, bgcolor: "rgba(255, 255, 255, 0.1)" }}
           />
         )}
-      </Paper>
+      </Box>
 
       {/* MAIN CONTENT AREA */}
       {!selectedJobId ? (
@@ -557,390 +638,585 @@ export default function OperatorView() {
             justifyContent: "center"
           }}
         >
-          <Paper sx={{ p: 6, textAlign: "center" }}>
-            <Build sx={{ fontSize: 80, color: "text.secondary", mb: 2 }} />
-            <Typography variant="h5" color="text.secondary">
+          <Box
+            className="glass-card"
+            sx={{
+              p: 4,
+              textAlign: "center",
+              backdropFilter: "blur(16px) saturate(180%)",
+              background: "rgba(17, 25, 40, 0.75)",
+              border: "1px solid rgba(255, 255, 255, 0.125)",
+              borderRadius: 3,
+            }}
+          >
+            <Build sx={{ fontSize: 64, color: "text.secondary", mb: 2, opacity: 0.5 }} />
+            <Typography variant="h6" color="text.secondary">
               {t("Select a job to get started")}
             </Typography>
-          </Paper>
+          </Box>
         </Box>
       ) : (
         <Box
+          ref={containerRef}
           sx={{
             flex: 1,
             display: "flex",
             overflow: "hidden",
-            p: 1.5,
-            gap: 1.5,
+            p: 1,
+            gap: 0,
+            position: "relative",
           }}
         >
           {/* LEFT PANE - File Viewers */}
-          <Paper
+          <Box
+            className="glass-card"
             sx={{
-              flex: "0 0 60%",
+              width: leftPanelCollapsed ? 48 : `${leftPanelWidth}%`,
+              minWidth: leftPanelCollapsed ? 48 : 200,
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
+              transition: leftPanelCollapsed ? "width 0.2s ease" : "none",
+              backdropFilter: "blur(16px) saturate(180%)",
+              background: "rgba(17, 25, 40, 0.75)",
+              border: "1px solid rgba(255, 255, 255, 0.125)",
+              borderRadius: 2,
+              mr: 0.5,
             }}
           >
-            {/* Viewer Tabs */}
-            {(pdfUrl || stepUrl) && (
-              <>
-                <Box sx={{ borderBottom: 1, borderColor: "divider", px: 1 }}>
-                  <Stack direction="row" alignItems="center" justifyContent="space-between">
-                    <Tabs
-                      value={viewerTab}
-                      onChange={(_, v) => setViewerTab(v)}
-                      sx={{ minHeight: 40 }}
-                    >
-                      {pdfUrl && (
-                        <Tab
-                          icon={<Description fontSize="small" />}
-                          iconPosition="start"
-                          label={t("PDF Drawing")}
-                          sx={{ minHeight: 40, py: 0 }}
-                        />
-                      )}
-                      {stepUrl && (
-                        <Tab
-                          icon={<ViewInAr fontSize="small" />}
-                          iconPosition="start"
-                          label={t("3D Model")}
-                          sx={{ minHeight: 40, py: 0 }}
-                        />
-                      )}
-                    </Tabs>
-                    <Tooltip title={t("Fullscreen")}>
+            {/* Panel Header with Collapse Toggle */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                borderBottom: leftPanelCollapsed ? "none" : 1,
+                borderColor: "rgba(255, 255, 255, 0.1)",
+                px: 0.5,
+                py: 0.25,
+                minHeight: 36,
+              }}
+            >
+              {!leftPanelCollapsed && (pdfUrl || stepUrl) && (
+                <>
+                  <Tabs
+                    value={viewerTab}
+                    onChange={(_, v) => setViewerTab(v)}
+                    sx={{
+                      minHeight: 32,
+                      "& .MuiTab-root": {
+                        minHeight: 32,
+                        py: 0,
+                        px: 1,
+                        fontSize: "0.75rem",
+                      }
+                    }}
+                  >
+                    {pdfUrl && (
+                      <Tab
+                        icon={<Description sx={{ fontSize: 16 }} />}
+                        iconPosition="start"
+                        label={t("PDF")}
+                      />
+                    )}
+                    {stepUrl && (
+                      <Tab
+                        icon={<ViewInAr sx={{ fontSize: 16 }} />}
+                        iconPosition="start"
+                        label={t("3D")}
+                      />
+                    )}
+                  </Tabs>
+                  <Stack direction="row" spacing={0.5}>
+                    <Tooltip title={t("Tap to view fullscreen")}>
                       <IconButton
                         size="small"
                         onClick={() => setFullscreenViewer(true)}
+                        sx={{
+                          p: 0.5,
+                          "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" }
+                        }}
                       >
-                        <Fullscreen />
+                        <Fullscreen sx={{ fontSize: 18 }} />
                       </IconButton>
                     </Tooltip>
                   </Stack>
-                </Box>
+                </>
+              )}
+              <Tooltip title={leftPanelCollapsed ? t("Expand viewer") : t("Collapse viewer")}>
+                <IconButton
+                  size="small"
+                  onClick={() => setLeftPanelCollapsed(!leftPanelCollapsed)}
+                  sx={{
+                    p: 0.5,
+                    ml: leftPanelCollapsed ? "auto" : 0,
+                    mr: leftPanelCollapsed ? "auto" : 0,
+                    "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" }
+                  }}
+                >
+                  {leftPanelCollapsed ? <ChevronRight sx={{ fontSize: 18 }} /> : <ChevronLeft sx={{ fontSize: 18 }} />}
+                </IconButton>
+              </Tooltip>
+            </Box>
 
-                {/* Viewer Content */}
-                <Box sx={{ flex: 1, overflow: "hidden", p: 1 }}>
-                  {viewerTab === 0 && pdfUrl && (
-                    <PDFViewer url={pdfUrl} title="Drawing" />
-                  )}
-                  {((viewerTab === 1 && stepUrl) || (viewerTab === 0 && !pdfUrl && stepUrl)) && (
-                    <STEPViewer url={stepUrl} title="3D Model" />
-                  )}
-                </Box>
-              </>
-            )}
-
-            {!pdfUrl && !stepUrl && (
+            {/* Viewer Content - Tap to fullscreen */}
+            {!leftPanelCollapsed && (
               <Box
                 sx={{
                   flex: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "text.secondary",
+                  overflow: "hidden",
+                  p: 0.5,
+                  position: "relative",
+                  cursor: (pdfUrl || stepUrl) ? "pointer" : "default",
                 }}
+                onClick={(pdfUrl || stepUrl) ? () => setFullscreenViewer(true) : undefined}
               >
-                <Stack alignItems="center" spacing={1}>
-                  <ViewInAr sx={{ fontSize: 60, opacity: 0.3 }} />
-                  <Typography variant="body1">
-                    {t("No files available for this part")}
-                  </Typography>
-                </Stack>
+                {(pdfUrl || stepUrl) && (
+                  <>
+                    {viewerTab === 0 && pdfUrl && (
+                      <PDFViewer url={pdfUrl} title="Drawing" />
+                    )}
+                    {((viewerTab === 1 && stepUrl) || (viewerTab === 0 && !pdfUrl && stepUrl)) && (
+                      <STEPViewer url={stepUrl} title="3D Model" />
+                    )}
+                    {/* Tap indicator overlay */}
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        bottom: 8,
+                        right: 8,
+                        bgcolor: "rgba(0,0,0,0.6)",
+                        color: "white",
+                        px: 1,
+                        py: 0.5,
+                        borderRadius: 1,
+                        fontSize: "0.65rem",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.5,
+                        pointerEvents: "none",
+                        opacity: 0.8,
+                      }}
+                    >
+                      <Fullscreen sx={{ fontSize: 12 }} />
+                      {t("Tap to expand")}
+                    </Box>
+                  </>
+                )}
+                {!pdfUrl && !stepUrl && (
+                  <Box
+                    sx={{
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "text.secondary",
+                    }}
+                  >
+                    <Stack alignItems="center" spacing={0.5}>
+                      <ViewInAr sx={{ fontSize: 40, opacity: 0.3 }} />
+                      <Typography variant="caption">
+                        {t("No files")}
+                      </Typography>
+                    </Stack>
+                  </Box>
+                )}
               </Box>
             )}
-          </Paper>
+          </Box>
+
+          {/* Resizable Divider */}
+          {!leftPanelCollapsed && !rightPanelCollapsed && (
+            <Box
+              onMouseDown={handleMouseDown}
+              onTouchStart={handleTouchStart}
+              sx={{
+                width: 8,
+                cursor: "col-resize",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                "&:hover": {
+                  "& .drag-indicator": {
+                    opacity: 1,
+                  }
+                },
+                touchAction: "none",
+              }}
+            >
+              <Box
+                className="drag-indicator"
+                sx={{
+                  width: 4,
+                  height: 40,
+                  borderRadius: 2,
+                  bgcolor: isDragging ? "primary.main" : "rgba(255, 255, 255, 0.2)",
+                  opacity: isDragging ? 1 : 0.5,
+                  transition: "opacity 0.2s, background-color 0.2s",
+                }}
+              />
+            </Box>
+          )}
 
           {/* RIGHT PANE - Info & Operations */}
           <Box
+            className="glass-card"
             sx={{
-              flex: "0 0 40%",
+              width: rightPanelCollapsed ? 48 : `${100 - leftPanelWidth}%`,
+              minWidth: rightPanelCollapsed ? 48 : 200,
               display: "flex",
               flexDirection: "column",
-              gap: 1.5,
+              gap: 0.5,
               overflow: "hidden",
+              transition: rightPanelCollapsed ? "width 0.2s ease" : "none",
+              backdropFilter: "blur(16px) saturate(180%)",
+              background: "rgba(17, 25, 40, 0.75)",
+              border: "1px solid rgba(255, 255, 255, 0.125)",
+              borderRadius: 2,
+              ml: 0.5,
+              p: rightPanelCollapsed ? 0 : 0.5,
             }}
           >
-            {/* Job & Part Info */}
-            {selectedOperation && (
-              <Paper sx={{ p: 2, flexShrink: 0 }}>
-                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  {t("Current Operation")}
-                </Typography>
-                <Typography variant="h6" fontWeight="bold" gutterBottom>
-                  {selectedOperation.operation_name}
-                </Typography>
-
-                <Box
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: 1.5,
-                    mt: 1,
-                  }}
-                >
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      {t("Job")}
-                    </Typography>
-                    <Typography variant="body2" fontWeight="medium">
-                      {selectedJob?.job_number}
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      {t("Part")}
-                    </Typography>
-                    <Typography variant="body2" fontWeight="medium">
-                      {selectedOperation.part.part_number}
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      {t("Material")}
-                    </Typography>
-                    <Typography variant="body2">
-                      {selectedOperation.part.material}
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      {t("Quantity")}
-                    </Typography>
-                    <Typography variant="body2" fontWeight="bold">
-                      {selectedOperation.part.quantity}
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      {t("Cell")}
-                    </Typography>
-                    <Chip
-                      label={selectedOperation.cell.name}
-                      size="small"
-                      sx={{
-                        bgcolor: selectedOperation.cell.color,
-                        color: "white",
-                        mt: 0.5,
-                      }}
-                    />
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      {t("Time")}
-                    </Typography>
-                    <Typography variant="body2">
-                      {selectedOperation.actual_time || 0}m / {selectedOperation.estimated_time}m
-                    </Typography>
-                  </Box>
-                </Box>
-
-                {selectedOperation.notes && (
-                  <Alert severity="info" sx={{ mt: 1.5, py: 0.5 }}>
-                    <Typography variant="caption">
-                      {selectedOperation.notes}
-                    </Typography>
-                  </Alert>
-                )}
-
-                {isOverdue && (
-                  <Alert severity="error" sx={{ mt: 1, py: 0.5 }}>
-                    <Typography variant="caption">
-                      {t("Job overdue!")} Due: {format(dueDate!, "MMM dd")}
-                    </Typography>
-                  </Alert>
-                )}
-              </Paper>
-            )}
-
-            {/* All Operations List */}
-            <Paper
+            {/* Panel Collapse Toggle */}
+            <Box
               sx={{
-                flex: 1,
                 display: "flex",
-                flexDirection: "column",
-                overflow: "hidden",
+                alignItems: rightPanelCollapsed ? "center" : "flex-start",
+                justifyContent: rightPanelCollapsed ? "center" : "flex-end",
+                py: 0.25,
+                flexDirection: rightPanelCollapsed ? "column" : "row",
+                height: rightPanelCollapsed ? "100%" : "auto",
               }}
             >
-              <Box sx={{ p: 1.5, borderBottom: 1, borderColor: "divider" }}>
-                <Typography variant="subtitle2" fontWeight="bold">
-                  {t("All Operations")} ({operations.length})
-                </Typography>
-              </Box>
+              <Tooltip title={rightPanelCollapsed ? t("Expand details") : t("Collapse details")}>
+                <IconButton
+                  size="small"
+                  onClick={() => setRightPanelCollapsed(!rightPanelCollapsed)}
+                  sx={{
+                    p: 0.5,
+                    "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" }
+                  }}
+                >
+                  {rightPanelCollapsed ? <ChevronLeft sx={{ fontSize: 18 }} /> : <ChevronRight sx={{ fontSize: 18 }} />}
+                </IconButton>
+              </Tooltip>
+            </Box>
 
-              <Box sx={{ flex: 1, overflow: "auto", p: 1 }}>
-                {operations.map((op, index) => {
-                  const isSelected = selectedOperation?.id === op.id;
-                  const isCompleted = op.status === "completed";
-                  const isInProgress = op.status === "in_progress";
+            {!rightPanelCollapsed && (
+              <>
+                {/* Compact Job & Part Info */}
+                {selectedOperation && (
+                  <Box
+                    sx={{
+                      flexShrink: 0,
+                      p: 1,
+                      borderRadius: 1.5,
+                      bgcolor: "rgba(255, 255, 255, 0.03)",
+                      border: "1px solid rgba(255, 255, 255, 0.06)",
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.5 }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                        {t("Current Operation")}
+                      </Typography>
+                      <Chip
+                        label={selectedOperation.cell.name}
+                        size="small"
+                        sx={{
+                          bgcolor: selectedOperation.cell.color,
+                          color: "white",
+                          height: 18,
+                          fontSize: "0.65rem",
+                        }}
+                      />
+                    </Box>
+                    <Typography variant="body2" fontWeight="bold" sx={{ mb: 0.5, lineHeight: 1.2 }}>
+                      {selectedOperation.operation_name}
+                    </Typography>
 
-                  return (
+                    {/* Compact grid - 3 columns */}
                     <Box
-                      key={op.id}
-                      onClick={() => {
-                        setSelectedOperation(op);
-                        setActiveTimeEntry(op.active_time_entry || null);
-                      }}
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        p: 1,
-                        mb: 0.5,
-                        borderRadius: 1,
-                        cursor: "pointer",
-                        bgcolor: isSelected
-                          ? "var(--neutral-800)"
-                          : isCompleted
-                            ? "hsl(var(--success) / 0.08)"
-                            : "transparent",
-                        border: isSelected ? 2 : 1,
-                        borderColor: isSelected
-                          ? "var(--brand-primary)"
-                          : "transparent",
-                        "&:hover": {
-                          bgcolor: isSelected
-                            ? "var(--neutral-800)"
-                            : "var(--surface-hover)",
-                        },
+                        display: "grid",
+                        gridTemplateColumns: "repeat(3, 1fr)",
+                        gap: 0.5,
                       }}
                     >
-                      {/* Status Icon */}
-                      {isCompleted ? (
-                        <CheckCircleOutline
-                          fontSize="small"
-                          color="success"
-                        />
-                      ) : isInProgress ? (
-                        <ArrowForward
-                          fontSize="small"
-                          color="primary"
-                        />
-                      ) : (
-                        <RadioButtonUnchecked
-                          fontSize="small"
-                          color="disabled"
-                        />
-                      )}
-
-                      {/* Operation Info */}
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography
-                          variant="body2"
-                          fontWeight={isSelected ? "bold" : "medium"}
-                          noWrap
-                          sx={{
-                            textDecoration: isCompleted ? "line-through" : "none",
-                            color: isCompleted ? "text.secondary" : "text.primary",
-                          }}
-                        >
-                          {index + 1}. {op.operation_name}
+                      <Box>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.6rem", display: "block" }}>
+                          {t("Job")}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary" noWrap>
-                          {op.part.part_number}
+                        <Typography variant="caption" fontWeight="medium" sx={{ fontSize: "0.7rem" }}>
+                          {selectedJob?.job_number}
                         </Typography>
                       </Box>
-
-                      {/* Time */}
-                      <Box sx={{ textAlign: "right" }}>
-                        <Typography variant="caption" color="text.secondary">
-                          {op.actual_time || 0}/{op.estimated_time}m
+                      <Box>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.6rem", display: "block" }}>
+                          {t("Part")}
                         </Typography>
-                        {op.active_time_entry && (
-                          <Chip
-                            icon={<Timer />}
-                            label=""
-                            size="small"
-                            color="primary"
-                            sx={{ ml: 0.5, height: 20, "& .MuiChip-icon": { mr: -0.5 } }}
-                          />
-                        )}
+                        <Typography variant="caption" fontWeight="medium" sx={{ fontSize: "0.7rem" }}>
+                          {selectedOperation.part.part_number}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.6rem", display: "block" }}>
+                          {t("Qty")}
+                        </Typography>
+                        <Typography variant="caption" fontWeight="bold" sx={{ fontSize: "0.7rem" }}>
+                          {selectedOperation.part.quantity}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.6rem", display: "block" }}>
+                          {t("Material")}
+                        </Typography>
+                        <Typography variant="caption" sx={{ fontSize: "0.7rem" }}>
+                          {selectedOperation.part.material}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ gridColumn: "span 2" }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.6rem", display: "block" }}>
+                          {t("Time")}
+                        </Typography>
+                        <Typography variant="caption" sx={{ fontSize: "0.7rem" }}>
+                          {selectedOperation.actual_time || 0}m / {selectedOperation.estimated_time}m est.
+                        </Typography>
                       </Box>
                     </Box>
-                  );
-                })}
-              </Box>
-            </Paper>
 
-            {/* Substeps - Compact */}
-            {selectedOperation && (
-              <Paper
-                sx={{
-                  flexShrink: 0,
-                  maxHeight: "30%",
-                  display: "flex",
-                  flexDirection: "column",
-                  overflow: "hidden",
-                }}
-              >
-                <Box sx={{ p: 1.5, borderBottom: 1, borderColor: "divider" }}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    {t("Substeps")}
-                  </Typography>
+                    {selectedOperation.notes && (
+                      <Alert severity="info" sx={{ mt: 0.5, py: 0, px: 1, "& .MuiAlert-icon": { py: 0.5 } }}>
+                        <Typography variant="caption" sx={{ fontSize: "0.65rem" }}>
+                          {selectedOperation.notes}
+                        </Typography>
+                      </Alert>
+                    )}
+
+                    {isOverdue && (
+                      <Alert severity="error" sx={{ mt: 0.5, py: 0, px: 1, "& .MuiAlert-icon": { py: 0.5 } }}>
+                        <Typography variant="caption" sx={{ fontSize: "0.65rem" }}>
+                          {t("Overdue!")} {format(dueDate!, "MMM dd")}
+                        </Typography>
+                      </Alert>
+                    )}
+                  </Box>
+                )}
+
+                {/* Compact Operations List */}
+                <Box
+                  sx={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    overflow: "hidden",
+                    borderRadius: 1.5,
+                    bgcolor: "rgba(255, 255, 255, 0.03)",
+                    border: "1px solid rgba(255, 255, 255, 0.06)",
+                  }}
+                >
+                  <Box sx={{ px: 1, py: 0.5, borderBottom: 1, borderColor: "rgba(255, 255, 255, 0.06)" }}>
+                    <Typography variant="caption" fontWeight="bold" sx={{ fontSize: "0.7rem" }}>
+                      {t("Operations")} ({completedOps}/{totalOps})
+                    </Typography>
+                  </Box>
+
+                  <Box sx={{ flex: 1, overflow: "auto", p: 0.5 }}>
+                    {operations.map((op, index) => {
+                      const isSelected = selectedOperation?.id === op.id;
+                      const isCompleted = op.status === "completed";
+                      const isInProgress = op.status === "in_progress";
+
+                      return (
+                        <Box
+                          key={op.id}
+                          onClick={() => {
+                            setSelectedOperation(op);
+                            setActiveTimeEntry(op.active_time_entry || null);
+                          }}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                            py: 0.5,
+                            px: 0.75,
+                            mb: 0.25,
+                            borderRadius: 1,
+                            cursor: "pointer",
+                            bgcolor: isSelected
+                              ? "rgba(30, 144, 255, 0.15)"
+                              : isCompleted
+                                ? "rgba(52, 168, 83, 0.08)"
+                                : "transparent",
+                            borderLeft: isSelected ? "2px solid" : "2px solid transparent",
+                            borderColor: isSelected
+                              ? "primary.main"
+                              : "transparent",
+                            "&:hover": {
+                              bgcolor: isSelected
+                                ? "rgba(30, 144, 255, 0.2)"
+                                : "rgba(255, 255, 255, 0.05)",
+                            },
+                            transition: "background-color 0.15s",
+                          }}
+                        >
+                          {/* Compact Status Icon */}
+                          {isCompleted ? (
+                            <CheckCircleOutline sx={{ fontSize: 14, color: "success.main" }} />
+                          ) : isInProgress ? (
+                            <ArrowForward sx={{ fontSize: 14, color: "primary.main" }} />
+                          ) : (
+                            <RadioButtonUnchecked sx={{ fontSize: 14, color: "text.disabled" }} />
+                          )}
+
+                          {/* Operation Info - Single line */}
+                          <Typography
+                            variant="caption"
+                            fontWeight={isSelected ? "bold" : "medium"}
+                            noWrap
+                            sx={{
+                              flex: 1,
+                              minWidth: 0,
+                              fontSize: "0.7rem",
+                              textDecoration: isCompleted ? "line-through" : "none",
+                              color: isCompleted ? "text.secondary" : "text.primary",
+                            }}
+                          >
+                            {index + 1}. {op.operation_name}
+                          </Typography>
+
+                          {/* Compact Time + Active indicator */}
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.6rem" }}>
+                              {op.actual_time || 0}/{op.estimated_time}m
+                            </Typography>
+                            {op.active_time_entry && (
+                              <Timer sx={{ fontSize: 12, color: "primary.main" }} />
+                            )}
+                          </Box>
+                        </Box>
+                      );
+                    })}
+                  </Box>
                 </Box>
-                <Box sx={{ flex: 1, overflow: "auto", p: 1 }}>
-                  <SubstepsManager
-                    operationId={selectedOperation.id}
-                    operationName={selectedOperation.operation_name}
-                  />
-                </Box>
-              </Paper>
+
+                {/* Compact Substeps */}
+                {selectedOperation && (
+                  <Box
+                    sx={{
+                      flexShrink: 0,
+                      maxHeight: "25%",
+                      display: "flex",
+                      flexDirection: "column",
+                      overflow: "hidden",
+                      borderRadius: 1.5,
+                      bgcolor: "rgba(255, 255, 255, 0.03)",
+                      border: "1px solid rgba(255, 255, 255, 0.06)",
+                    }}
+                  >
+                    <Box sx={{ px: 1, py: 0.5, borderBottom: 1, borderColor: "rgba(255, 255, 255, 0.06)" }}>
+                      <Typography variant="caption" fontWeight="bold" sx={{ fontSize: "0.7rem" }}>
+                        {t("Substeps")}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ flex: 1, overflow: "auto", p: 0.5 }}>
+                      <SubstepsManager
+                        operationId={selectedOperation.id}
+                        operationName={selectedOperation.operation_name}
+                      />
+                    </Box>
+                  </Box>
+                )}
+              </>
             )}
           </Box>
         </Box>
       )}
 
-      {/* Fullscreen Viewer Dialog */}
-      <Dialog
-        open={fullscreenViewer}
-        onClose={() => setFullscreenViewer(false)}
-        maxWidth={false}
-        fullWidth
-        PaperProps={{
-          sx: {
-            width: "95vw",
-            height: "95vh",
-            maxWidth: "none",
-          },
-        }}
-      >
-        <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-          {/* Dialog Header */}
+      {/* Fullscreen Viewer Overlay - Optimized for tablet tap-to-view */}
+      {fullscreenViewer && (
+        <Box
+          sx={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1300,
+            bgcolor: "rgba(0, 0, 0, 0.95)",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {/* Overlay Header - Compact */}
           <Box
             sx={{
-              p: 1,
-              borderBottom: 1,
-              borderColor: "divider",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
+              px: 1,
+              py: 0.5,
+              borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+              bgcolor: "rgba(17, 25, 40, 0.9)",
+              backdropFilter: "blur(8px)",
             }}
           >
-            <Tabs value={viewerTab} onChange={(_, v) => setViewerTab(v)}>
+            <Tabs
+              value={viewerTab}
+              onChange={(_, v) => setViewerTab(v)}
+              sx={{
+                minHeight: 36,
+                "& .MuiTab-root": {
+                  minHeight: 36,
+                  py: 0,
+                  px: 1.5,
+                  fontSize: "0.8rem",
+                }
+              }}
+            >
               {pdfUrl && (
                 <Tab
-                  icon={<Description fontSize="small" />}
+                  icon={<Description sx={{ fontSize: 18 }} />}
                   iconPosition="start"
                   label={t("PDF Drawing")}
                 />
               )}
               {stepUrl && (
                 <Tab
-                  icon={<ViewInAr fontSize="small" />}
+                  icon={<ViewInAr sx={{ fontSize: 18 }} />}
                   iconPosition="start"
                   label={t("3D Model")}
                 />
               )}
             </Tabs>
-            <IconButton onClick={() => setFullscreenViewer(false)}>
-              <Close />
-            </IconButton>
+
+            <Stack direction="row" spacing={1} alignItems="center">
+              {/* Part info in overlay */}
+              {selectedOperation && (
+                <Typography variant="caption" color="text.secondary" sx={{ mr: 2 }}>
+                  {selectedOperation.part.part_number}
+                </Typography>
+              )}
+              <Tooltip title={t("Close (tap anywhere)")}>
+                <IconButton
+                  onClick={() => setFullscreenViewer(false)}
+                  sx={{
+                    bgcolor: "rgba(255, 255, 255, 0.1)",
+                    "&:hover": { bgcolor: "rgba(255, 255, 255, 0.2)" },
+                  }}
+                >
+                  <Close />
+                </IconButton>
+              </Tooltip>
+            </Stack>
           </Box>
 
-          {/* Dialog Content */}
-          <Box sx={{ flex: 1, overflow: "hidden", p: 1 }}>
+          {/* Fullscreen Viewer Content */}
+          <Box
+            sx={{
+              flex: 1,
+              overflow: "hidden",
+              p: 1,
+              position: "relative",
+            }}
+          >
             {viewerTab === 0 && pdfUrl && (
               <PDFViewer url={pdfUrl} title="Drawing" />
             )}
@@ -948,8 +1224,31 @@ export default function OperatorView() {
               <STEPViewer url={stepUrl} title="3D Model" />
             )}
           </Box>
+
+          {/* Bottom hint for closing */}
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: 16,
+              left: "50%",
+              transform: "translateX(-50%)",
+              bgcolor: "rgba(0, 0, 0, 0.7)",
+              color: "rgba(255, 255, 255, 0.7)",
+              px: 2,
+              py: 0.75,
+              borderRadius: 2,
+              fontSize: "0.75rem",
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              pointerEvents: "none",
+            }}
+          >
+            <Close sx={{ fontSize: 14 }} />
+            {t("Tap X or swipe down to close")}
+          </Box>
         </Box>
-      </Dialog>
+      )}
     </Box>
   );
 }

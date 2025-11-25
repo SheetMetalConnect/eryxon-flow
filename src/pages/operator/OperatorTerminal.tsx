@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -13,14 +13,12 @@ import { DetailPanel } from "@/components/terminal/DetailPanel";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTranslation } from "react-i18next";
+import { ChevronLeft, ChevronRight, GripVertical } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 // Define the interface locally if not exported, matching the one in JobRow
 import { TerminalJob } from '@/types/terminal';
-
-// ... imports ...
-
-// REMOVED local TerminalJob interface
-
 
 interface Cell {
     id: string;
@@ -40,6 +38,58 @@ export default function OperatorTerminal() {
     // File URLs
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
     const [stepUrl, setStepUrl] = useState<string | null>(null);
+
+    // Panel collapse/resize states
+    const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
+    const [leftPanelWidth, setLeftPanelWidth] = useState(70); // percentage
+    const [isDragging, setIsDragging] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    // Resizable panel handlers
+    const handleMouseDown = useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    }, []);
+
+    const handleMouseMove = useCallback((e: MouseEvent) => {
+        if (!isDragging || !containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const newWidth = ((e.clientX - rect.left) / rect.width) * 100;
+        setLeftPanelWidth(Math.min(Math.max(newWidth, 40), 85)); // Clamp between 40% and 85%
+    }, [isDragging]);
+
+    const handleMouseUp = useCallback(() => {
+        setIsDragging(false);
+    }, []);
+
+    // Touch support for tablets
+    const handleTouchStart = useCallback((e: React.TouchEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    }, []);
+
+    const handleTouchMove = useCallback((e: TouchEvent) => {
+        if (!isDragging || !containerRef.current) return;
+        const touch = e.touches[0];
+        const rect = containerRef.current.getBoundingClientRect();
+        const newWidth = ((touch.clientX - rect.left) / rect.width) * 100;
+        setLeftPanelWidth(Math.min(Math.max(newWidth, 40), 85));
+    }, [isDragging]);
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+            window.addEventListener('touchmove', handleTouchMove);
+            window.addEventListener('touchend', handleMouseUp);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+            window.removeEventListener('touchmove', handleTouchMove);
+            window.removeEventListener('touchend', handleMouseUp);
+        };
+    }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove]);
 
     // Load Data
     const loadData = async () => {
@@ -252,7 +302,13 @@ export default function OperatorTerminal() {
     };
 
     return (
-        <div className="flex h-screen w-full bg-background text-foreground overflow-hidden font-sans relative">
+        <div
+            ref={containerRef}
+            className={cn(
+                "flex h-screen w-full bg-background text-foreground overflow-hidden font-sans relative",
+                isDragging && "select-none cursor-col-resize"
+            )}
+        >
             {loading && (
                 <div className="absolute inset-0 bg-background/80 z-50 flex items-center justify-center backdrop-blur-sm">
                     <div className="flex flex-col items-center gap-4">
@@ -261,11 +317,13 @@ export default function OperatorTerminal() {
                     </div>
                 </div>
             )}
-            {/* LEFT PANEL - 70% */}
-            <div className="w-[70%] flex flex-col border-r border-border">
-
+            {/* LEFT PANEL - Resizable */}
+            <div
+                className="flex flex-col border-r border-border transition-all duration-200"
+                style={{ width: rightPanelCollapsed ? '100%' : `${leftPanelWidth}%` }}
+            >
                 {/* HEADER / CELL SELECTOR */}
-                <div className="h-14 border-b border-border bg-card/50 flex items-center px-4 justify-between shrink-0">
+                <div className="h-12 border-b border-border bg-card/80 backdrop-blur-sm flex items-center px-4 justify-between shrink-0">
                     <div className="flex items-center gap-4">
                         <span className="text-muted-foreground font-medium">Terminal View:</span>
                         <Select value={selectedCellId} onValueChange={handleCellChange}>
@@ -286,9 +344,9 @@ export default function OperatorTerminal() {
                 </div>
 
                 {/* 1. IN PROCESS */}
-                <div className="flex-1 flex flex-col min-h-0 border-b border-border bg-accent/5 overflow-hidden">
-                    <div className="px-4 py-2 bg-status-active/10 border-l-4 border-status-active flex items-center justify-between shrink-0">
-                        <h2 className="text-base font-bold text-status-active">{t("terminal.inProcess")} ({inProcessJobs.length})</h2>
+                <div className="flex-1 flex flex-col min-h-0 border-b border-border bg-gradient-to-b from-status-active/5 to-transparent overflow-hidden">
+                    <div className="px-3 py-1.5 bg-status-active/10 backdrop-blur-sm border-l-2 border-status-active flex items-center justify-between shrink-0">
+                        <h2 className="text-sm font-semibold text-status-active">{t("terminal.inProcess")} ({inProcessJobs.length})</h2>
                     </div>
                     <div className="flex-1 overflow-auto">
                         <table className="w-full text-left border-collapse">
@@ -329,9 +387,9 @@ export default function OperatorTerminal() {
                 </div>
 
                 {/* 2. IN BUFFER */}
-                <div className="flex-1 flex flex-col min-h-0 border-b border-border overflow-hidden">
-                    <div className="px-4 py-2 bg-alert-info-bg border-l-4 border-alert-info-border flex items-center justify-between shrink-0">
-                        <h2 className="text-base font-bold text-info">{t("terminal.inBuffer")} ({inBufferJobs.length})</h2>
+                <div className="flex-1 flex flex-col min-h-0 border-b border-border bg-gradient-to-b from-info/5 to-transparent overflow-hidden">
+                    <div className="px-3 py-1.5 bg-alert-info-bg/80 backdrop-blur-sm border-l-2 border-alert-info-border flex items-center justify-between shrink-0">
+                        <h2 className="text-sm font-semibold text-info">{t("terminal.inBuffer")} ({inBufferJobs.length})</h2>
                     </div>
                     <div className="flex-1 overflow-auto">
                         <table className="w-full text-left border-collapse">
@@ -364,9 +422,9 @@ export default function OperatorTerminal() {
                 </div>
 
                 {/* 3. EXPECTED */}
-                <div className="flex-1 flex flex-col min-h-0 bg-accent/5 overflow-hidden">
-                    <div className="px-4 py-2 bg-status-pending/10 border-l-4 border-status-pending flex items-center justify-between shrink-0">
-                        <h2 className="text-base font-bold text-status-pending">{t("terminal.expected")} ({expectedJobs.length})</h2>
+                <div className="flex-1 flex flex-col min-h-0 bg-gradient-to-b from-status-pending/5 to-transparent overflow-hidden">
+                    <div className="px-3 py-1.5 bg-status-pending/10 backdrop-blur-sm border-l-2 border-status-pending flex items-center justify-between shrink-0">
+                        <h2 className="text-sm font-semibold text-status-pending">{t("terminal.expected")} ({expectedJobs.length})</h2>
                     </div>
                     <div className="flex-1 overflow-auto">
                         <table className="w-full text-left border-collapse">
@@ -399,9 +457,48 @@ export default function OperatorTerminal() {
                 </div>
             </div>
 
-            {/* RIGHT PANEL - 30% */}
-            <div className="w-[30%] bg-card flex flex-col border-l border-border shadow-2xl z-10">
-                {selectedJob ? (
+            {/* RESIZABLE DIVIDER */}
+            {!rightPanelCollapsed && (
+                <div
+                    className={cn(
+                        "w-1 bg-border hover:bg-primary/50 cursor-col-resize flex items-center justify-center group transition-colors relative z-20",
+                        isDragging && "bg-primary/50"
+                    )}
+                    onMouseDown={handleMouseDown}
+                    onTouchStart={handleTouchStart}
+                >
+                    <div className="absolute inset-y-0 -left-1 -right-1" /> {/* Larger touch target */}
+                    <GripVertical className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+            )}
+
+            {/* RIGHT PANEL - Resizable/Collapsible */}
+            <div
+                className={cn(
+                    "bg-card flex flex-col border-l border-border shadow-2xl z-10 transition-all duration-200",
+                    "backdrop-blur-md bg-card/95", // Glass morphism
+                    rightPanelCollapsed ? "w-10" : ""
+                )}
+                style={{ width: rightPanelCollapsed ? '40px' : `${100 - leftPanelWidth}%` }}
+            >
+                {/* Collapse Toggle Button */}
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setRightPanelCollapsed(!rightPanelCollapsed)}
+                    className="absolute top-2 -left-3 z-30 h-6 w-6 p-0 rounded-full bg-card border border-border shadow-md hover:bg-accent"
+                    style={{ marginLeft: rightPanelCollapsed ? '7px' : '0' }}
+                >
+                    {rightPanelCollapsed ? <ChevronLeft className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                </Button>
+
+                {rightPanelCollapsed ? (
+                    <div className="flex-1 flex flex-col items-center justify-center py-4">
+                        <span className="text-muted-foreground text-[10px] [writing-mode:vertical-lr] rotate-180">
+                            Details Panel
+                        </span>
+                    </div>
+                ) : selectedJob ? (
                     <DetailPanel
                         job={selectedJob}
                         onStart={handleStart}
