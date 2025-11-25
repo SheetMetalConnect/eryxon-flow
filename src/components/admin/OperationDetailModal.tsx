@@ -135,7 +135,7 @@ export default function OperationDetailModal({
 
   // Mutation to update operation status
   const updateStatusMutation = useMutation({
-    mutationFn: async (newStatus: string) => {
+    mutationFn: async (newStatus: "not_started" | "in_progress" | "completed" | "on_hold") => {
       const { error } = await supabase
         .from("operations")
         .update({ status: newStatus })
