@@ -2,8 +2,8 @@
 
 **Antigravity-inspired dark-first design system for manufacturing execution**
 
-Version: 3.1 "Antigravity"
-Last Updated: November 22, 2025
+Version: 3.2 "Compact Antigravity"
+Last Updated: November 25, 2025
 Status: ✅ Active
 
 ---
@@ -12,6 +12,7 @@ Status: ✅ Active
 
 - [Overview](#overview)
 - [Design Philosophy](#design-philosophy)
+- [Responsive & Compact Design](#responsive--compact-design)
 - [Getting Started](#getting-started)
 - [Typography](#typography)
 - [Color Palette](#color-palette)
@@ -91,8 +92,238 @@ We've removed light mode support to focus on an Antigravity-grade dark shell:
 - **Token-First Values**: Gradients, pills, and icons reference shared CSS variables (no hex literals).
 - **Layered Glass Depth**: Always stack content over the animated background with a glass card or capsule.
 - **Smooth Animations**: Background orbs use 20s float cycles; cards fade in with `fadeInUp`.
-- **Consistent Roundings**: Use 10px, 12px, and 24px radii exactly as seen in the Antigravity card.
-- **Touch-Optimized Rhythm**: Vertical spacing uses full rem steps (1rem, 1.25rem, 1.5rem, 2rem).
+- **Compact Roundings**: Use 4px, 6px, 8px, and 12px radii for a tighter, more data-dense feel.
+- **Compact Spacing**: Reduced padding and gaps (0.5rem, 0.75rem, 1rem) to maximize data visibility.
+- **Touch-Optimized Rhythm**: Maintain 44px minimum touch targets while reducing visual padding.
+
+---
+
+## Responsive & Compact Design
+
+### Design Goals for v3.2
+
+Version 3.2 "Compact Antigravity" focuses on improved readability and data density across all device types:
+
+1. **Tablet-First for Operators**: Operators primarily use tablets on the shop floor
+2. **PC-First for Admin**: Admin users work on desktop with multi-column layouts
+3. **Mobile Support**: Essential features accessible on mobile devices
+4. **Data Density**: Maximize visible data without sacrificing readability
+
+### Breakpoints
+
+```css
+/* Breakpoint Scale */
+--breakpoint-sm: 640px;   /* Mobile landscape */
+--breakpoint-md: 768px;   /* Tablet portrait */
+--breakpoint-lg: 1024px;  /* Tablet landscape / Small laptop */
+--breakpoint-xl: 1280px;  /* Desktop */
+--breakpoint-2xl: 1536px; /* Large desktop */
+```
+
+**Usage:**
+```css
+/* Mobile-first approach */
+.component { padding: 0.5rem; }
+
+@media (min-width: 768px) {
+  .component { padding: 0.75rem; }
+}
+
+@media (min-width: 1024px) {
+  .component { padding: 1rem; }
+}
+```
+
+### Compact Spacing Scale
+
+Reduced spacing for better data density:
+
+| Token | Old Value | New Value | Use Case |
+|-------|-----------|-----------|----------|
+| `--space-xs` | 0.25rem (4px) | 0.125rem (2px) | Minimal gaps |
+| `--space-sm` | 0.5rem (8px) | 0.25rem (4px) | Tight spacing |
+| `--space-base` | 1rem (16px) | 0.5rem (8px) | Default gaps |
+| `--space-md` | 1.5rem (24px) | 0.75rem (12px) | Section spacing |
+| `--space-lg` | 2rem (32px) | 1rem (16px) | Large gaps |
+| `--space-xl` | 3rem (48px) | 1.5rem (24px) | Page sections |
+| `--space-2xl` | 4rem (64px) | 2rem (32px) | Hero sections |
+
+### Compact Border Radius Scale
+
+Tighter radii for a more professional, data-focused appearance:
+
+| Token | Old Value | New Value | Use Case |
+|-------|-----------|-----------|----------|
+| `--radius-sm` | 0.375rem (6px) | 0.25rem (4px) | Small elements |
+| `--radius-base` | 0.5rem (8px) | 0.375rem (6px) | Buttons, inputs |
+| `--radius-md` | 0.75rem (12px) | 0.5rem (8px) | Cards |
+| `--radius-lg` | 1rem (16px) | 0.625rem (10px) | Modals |
+| `--radius-xl` | 1.5rem (24px) | 0.75rem (12px) | Large cards |
+| `--radius-2xl` | 2rem (32px) | 1rem (16px) | Hero sections |
+
+### Collapsible Panels
+
+For responsive layouts, panels should collapse on smaller viewports:
+
+**Left Sidebar (Admin Layout):**
+- Desktop (≥1024px): Full sidebar with labels
+- Tablet (768px-1023px): Icon-only collapsed sidebar
+- Mobile (<768px): Hidden with hamburger menu overlay
+
+**Right Panel (Terminal View):**
+- Desktop (≥1280px): Full detail panel visible
+- Tablet (1024px-1279px): Collapsible drawer from right
+- Mobile (<1024px): Full-screen overlay modal
+
+**CSS Pattern:**
+```css
+/* Collapsible panel utility */
+.collapsible-panel {
+  transition: width 200ms ease, transform 200ms ease;
+}
+
+.collapsible-panel.collapsed {
+  width: 0;
+  transform: translateX(100%);
+  overflow: hidden;
+}
+
+@media (max-width: 1023px) {
+  .collapsible-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 50;
+    width: 100%;
+    max-width: 400px;
+  }
+}
+```
+
+### Compact Component Patterns
+
+**Compact Tenant Info:**
+```tsx
+{/* Collapsed: Just icon + status dot */}
+{/* Expanded: Company name + plan badge on single line */}
+<div className="flex items-center gap-2 p-2">
+  <Building2 className="h-4 w-4 shrink-0" />
+  {!collapsed && (
+    <div className="flex items-center gap-1.5 min-w-0">
+      <span className="text-xs font-medium truncate">{tenant.name}</span>
+      <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+        {tenant.plan}
+      </Badge>
+    </div>
+  )}
+</div>
+```
+
+**Compact MCP Status:**
+```tsx
+{/* Single icon with status color - tooltip for details */}
+<TooltipTrigger>
+  <div className="flex items-center gap-1">
+    <div className={cn(
+      "h-2 w-2 rounded-full",
+      status === "online" && "bg-green-500",
+      status === "offline" && "bg-red-500"
+    )} />
+    {!collapsed && <span className="text-xs">MCP</span>}
+  </div>
+</TooltipTrigger>
+```
+
+**Compact Cards:**
+```css
+.card-compact {
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+}
+
+.card-compact .card-header {
+  padding: 0.5rem;
+  padding-bottom: 0.25rem;
+}
+
+.card-compact .card-content {
+  padding: 0.5rem;
+  padding-top: 0.25rem;
+}
+```
+
+### Table Scroll Behavior
+
+All data tables must have proper scroll behavior:
+
+```css
+/* Table container with scroll */
+.table-container {
+  overflow: auto;
+  max-height: calc(100vh - 200px); /* Account for header + toolbar */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Sticky header */
+.table-container thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: hsl(var(--card));
+}
+
+/* Ensure scrollbar is always visible on desktop */
+@media (min-width: 1024px) {
+  .table-container {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .table-container::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .table-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .table-container::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 4px;
+  }
+}
+```
+
+### Viewport-Specific Layouts
+
+**Admin Dashboard (Grid):**
+```css
+/* Mobile: Stack everything */
+@media (max-width: 767px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+/* Desktop: 4 columns */
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+}
+```
 
 ---
 
@@ -1502,7 +1733,7 @@ For questions about the design system:
 
 ---
 
-**Document Version:** 3.1 "Antigravity"
-**Last Updated:** November 22, 2025
+**Document Version:** 3.2 "Compact Antigravity"
+**Last Updated:** November 25, 2025
 **Author:** Eryxon Development Team
-**Status:** ✅ Active - Dark Mode Only
+**Status:** ✅ Active - Dark Mode Only, Compact Responsive

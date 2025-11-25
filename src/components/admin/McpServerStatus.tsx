@@ -134,9 +134,9 @@ export function McpServerStatus() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <AlertCircle className="h-4 w-4 animate-pulse" />
-        <span className="text-sm">MCP</span>
+      <div className="flex items-center gap-1.5 text-muted-foreground">
+        <div className="h-2 w-2 rounded-full bg-muted-foreground/50 animate-pulse" />
+        <span className="text-xs">MCP</span>
       </div>
     );
   }
@@ -147,19 +147,25 @@ export function McpServerStatus() {
         <TooltipTrigger asChild>
           <button
             className={cn(
-              "flex items-center gap-2 text-sm transition-colors hover:text-foreground",
+              "flex items-center gap-1.5 text-xs transition-colors hover:text-foreground",
               health.status === "online" && "text-green-500",
               health.status === "offline" && "text-red-500",
               health.status === "degraded" && "text-yellow-500",
               health.status === "unknown" && "text-muted-foreground"
             )}
           >
-            {getStatusIcon()}
+            <div className={cn(
+              "h-2 w-2 rounded-full",
+              health.status === "online" && "bg-green-500",
+              health.status === "offline" && "bg-red-500",
+              health.status === "degraded" && "bg-yellow-500",
+              health.status === "unknown" && "bg-muted-foreground/50"
+            )} />
             <span>MCP</span>
           </button>
         </TooltipTrigger>
         <TooltipContent>
-          <div className="whitespace-pre-line">{getTooltipContent()}</div>
+          <div className="whitespace-pre-line text-xs">{getTooltipContent()}</div>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
