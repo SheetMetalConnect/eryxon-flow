@@ -12,7 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 
 interface McpServerHealth {
-  status: "online" | "offline" | "degraded" | "unknown";
+  status: "online" | "offline" | "degraded" | "unknown" | "not_configured";
   last_check?: string;
   response_time_ms?: number;
   error_message?: string;
@@ -22,7 +22,32 @@ export function McpServerStatus() {
   const { tenant } = useAuth();
   const [health, setHealth] = useState<McpServerHealth>({ status: "unknown" });
   const [isLoading, setIsLoading] = useState(true);
-  const [retryCount, setRetryCount] = useState(0);
+  const [mcpEnabled, setMcpEnabled] = useState<boolean | null>(null);
+
+  // Check if MCP is configured and enabled for this tenant
+  const checkMcpConfig = async (): Promise<boolean> => {
+    if (!tenant?.id) return false;
+
+    try {
+      const { data, error } = await supabase
+        .from("mcp_server_config")
+        .select("enabled")
+        .eq("tenant_id", tenant.id)
+        .maybeSingle();
+
+      if (error || !data) {
+        // No config means MCP is not set up - this is not an error
+        setMcpEnabled(false);
+        return false;
+      }
+
+      setMcpEnabled(data.enabled);
+      return data.enabled;
+    } catch {
+      setMcpEnabled(false);
+      return false;
+    }
+  };
 
   const fetchHealthWithRetry = async (attempt = 0, maxRetries = 3): Promise<boolean> => {
     if (!tenant?.id) return false;
@@ -47,11 +72,8 @@ export function McpServerStatus() {
           return fetchHealthWithRetry(attempt + 1, maxRetries);
         }
 
+        // Don't show error toast - just silently set to unknown
         setHealth({ status: "unknown" });
-        // Only show toast on first load after all retries exhausted
-        if (isLoading) {
-          toast.error("Failed to load MCP server status after retries");
-        }
         return false;
       }
 
@@ -62,7 +84,6 @@ export function McpServerStatus() {
           response_time_ms: data.response_time_ms,
           error_message: data.error_message,
         });
-        setRetryCount(0); // Reset retry count on success
         return true;
       } else {
         setHealth({ status: "unknown" });
@@ -79,50 +100,64 @@ export function McpServerStatus() {
         return fetchHealthWithRetry(attempt + 1, maxRetries);
       }
 
+      // Don't show error toast - just silently set to unknown
       setHealth({ status: "unknown" });
-      // Only show toast on first load after all retries exhausted
-      if (isLoading) {
-        toast.error("Failed to load MCP status: " + (err.message || "Unknown error"));
-      }
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const fetchHealth = () => fetchHealthWithRetry(0, 3);
-
   useEffect(() => {
     if (!tenant?.id) return;
 
-    fetchHealth();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
-    // Subscribe to real-time updates for immediate health status changes
-    const channel = supabase
-      .channel("mcp_health_changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "mcp_server_health",
-          filter: `tenant_id=eq.${tenant?.id}`,
-        },
-        () => {
-          // Fetch health without retries on real-time updates (subscription already handles reconnection)
-          fetchHealthWithRetry(0, 0);
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIPTION_ERROR') {
-          console.error('MCP health subscription error');
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('MCP health channel error');
-        }
-      });
+    const init = async () => {
+      // First check if MCP is configured
+      const isEnabled = await checkMcpConfig();
+
+      if (!isEnabled) {
+        // MCP not configured - set status and stop
+        setHealth({ status: "not_configured" });
+        setIsLoading(false);
+        return;
+      }
+
+      // MCP is enabled, fetch health status
+      await fetchHealthWithRetry(0, 3);
+
+      // Subscribe to real-time updates for immediate health status changes
+      channel = supabase
+        .channel("mcp_health_changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "mcp_server_health",
+            filter: `tenant_id=eq.${tenant?.id}`,
+          },
+          () => {
+            // Fetch health without retries on real-time updates (subscription already handles reconnection)
+            fetchHealthWithRetry(0, 0);
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIPTION_ERROR') {
+            console.error('MCP health subscription error');
+          } else if (status === 'CHANNEL_ERROR') {
+            console.error('MCP health channel error');
+          }
+        });
+    };
+
+    init();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [tenant?.id]);
 
@@ -147,6 +182,8 @@ export function McpServerStatus() {
         return "MCP Server Offline";
       case "degraded":
         return "MCP Server Degraded";
+      case "not_configured":
+        return "MCP Not Configured";
       default:
         return "MCP Server Status Unknown";
     }
@@ -190,7 +227,7 @@ export function McpServerStatus() {
               health.status === "online" && "text-green-500",
               health.status === "offline" && "text-red-500",
               health.status === "degraded" && "text-yellow-500",
-              health.status === "unknown" && "text-muted-foreground"
+              (health.status === "unknown" || health.status === "not_configured") && "text-muted-foreground"
             )}
           >
             <div className={cn(
@@ -198,7 +235,7 @@ export function McpServerStatus() {
               health.status === "online" && "bg-green-500",
               health.status === "offline" && "bg-red-500",
               health.status === "degraded" && "bg-yellow-500",
-              health.status === "unknown" && "bg-muted-foreground/50"
+              (health.status === "unknown" || health.status === "not_configured") && "bg-muted-foreground/50"
             )} />
             <span>MCP</span>
           </button>

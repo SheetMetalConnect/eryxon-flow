@@ -174,6 +174,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       icon: FileText,
       exact: true,
     },
+  ];
+
+  // Integrations - Developer tools, APIs, and external connections
+  const integrationsNavItems = [
+    {
+      path: "/admin/integrations",
+      label: "App Store",
+      icon: Store,
+      exact: true,
+    },
     {
       path: "/admin/config/api-keys",
       label: "API Keys",
@@ -187,25 +197,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       exact: true,
     },
     {
-      path: "/admin/config/webhooks",
-      label: "Webhooks",
-      icon: Webhook,
-      exact: true,
-    },
-    {
       path: "/admin/config/mcp-server",
       label: "MCP Server",
       icon: Code,
       exact: true,
     },
-  ];
-
-  // Integrations - Developer tools
-  const integrationsNavItems = [
     {
-      path: "/admin/integrations",
-      label: "App Store",
-      icon: Store,
+      path: "/admin/config/webhooks",
+      label: "Webhooks",
+      icon: Webhook,
       exact: true,
     },
     {

@@ -46,16 +46,42 @@ export default function ConfigMcpKeys() {
   const [allowAllTools, setAllowAllTools] = useState(true);
   const [selectedTools, setSelectedTools] = useState<string[]>([]);
 
-  // Available tools list
+  // Available tools with descriptions
   const availableTools = [
-    "fetch_jobs", "update_job", "create_job", "start_job", "stop_job", "complete_job", "resume_job",
-    "fetch_parts", "update_part",
-    "fetch_tasks", "update_task",
-    "fetch_issues",
-    "fetch_ncrs", "create_ncr",
-    "start_operation", "pause_operation", "complete_operation", "add_substep", "complete_substep",
-    "get_dashboard_stats",
+    // Jobs
+    { name: "fetch_jobs", description: "List jobs with optional status filter", category: "Jobs" },
+    { name: "create_job", description: "Create a new job with customer, job number, priority", category: "Jobs" },
+    { name: "update_job", description: "Update job status, priority, or due date", category: "Jobs" },
+    { name: "start_job", description: "Start a job (changes to in_progress)", category: "Jobs" },
+    { name: "stop_job", description: "Pause a job (changes to on_hold)", category: "Jobs" },
+    { name: "complete_job", description: "Mark a job as completed", category: "Jobs" },
+    { name: "resume_job", description: "Resume a paused job", category: "Jobs" },
+    // Parts
+    { name: "fetch_parts", description: "List parts with optional job/status filter", category: "Parts" },
+    { name: "update_part", description: "Update part status or current stage", category: "Parts" },
+    // Tasks
+    { name: "fetch_tasks", description: "List tasks with optional filters", category: "Tasks" },
+    { name: "update_task", description: "Update task status or assignment", category: "Tasks" },
+    // Operations
+    { name: "start_operation", description: "Start an operation (creates time entry)", category: "Operations" },
+    { name: "pause_operation", description: "Pause an operation", category: "Operations" },
+    { name: "complete_operation", description: "Complete an operation", category: "Operations" },
+    { name: "add_substep", description: "Add a substep to an operation", category: "Operations" },
+    { name: "complete_substep", description: "Mark a substep as complete", category: "Operations" },
+    // Quality & Issues
+    { name: "fetch_issues", description: "List quality issues with optional filters", category: "Quality" },
+    { name: "fetch_ncrs", description: "List Non-Conformance Reports", category: "Quality" },
+    { name: "create_ncr", description: "Create a Non-Conformance Report", category: "Quality" },
+    // Analytics
+    { name: "get_dashboard_stats", description: "Get dashboard statistics and metrics", category: "Analytics" },
   ];
+
+  // Group tools by category for display
+  const toolsByCategory = availableTools.reduce((acc, tool) => {
+    if (!acc[tool.category]) acc[tool.category] = [];
+    acc[tool.category].push(tool);
+    return acc;
+  }, {} as Record<string, typeof availableTools>);
 
   useEffect(() => {
     if (tenant?.id) {
@@ -414,24 +440,35 @@ export default function ConfigMcpKeys() {
                       </div>
 
                       {!allowAllTools && (
-                        <div className="border rounded-lg p-4 space-y-2 max-h-64 overflow-y-auto">
-                          {availableTools.map((tool) => (
-                            <div key={tool} className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                id={tool}
-                                checked={selectedTools.includes(tool)}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setSelectedTools([...selectedTools, tool]);
-                                  } else {
-                                    setSelectedTools(selectedTools.filter((t) => t !== tool));
-                                  }
-                                }}
-                              />
-                              <Label htmlFor={tool} className="text-sm font-mono">
-                                {tool}
-                              </Label>
+                        <div className="border rounded-lg p-4 space-y-4 max-h-80 overflow-y-auto">
+                          {Object.entries(toolsByCategory).map(([category, tools]) => (
+                            <div key={category}>
+                              <h4 className="text-sm font-medium text-muted-foreground mb-2">{category}</h4>
+                              <div className="space-y-2 pl-2">
+                                {tools.map((tool) => (
+                                  <div key={tool.name} className="flex items-start gap-2">
+                                    <input
+                                      type="checkbox"
+                                      id={tool.name}
+                                      checked={selectedTools.includes(tool.name)}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          setSelectedTools([...selectedTools, tool.name]);
+                                        } else {
+                                          setSelectedTools(selectedTools.filter((t) => t !== tool.name));
+                                        }
+                                      }}
+                                      className="mt-1"
+                                    />
+                                    <div>
+                                      <Label htmlFor={tool.name} className="text-sm font-mono cursor-pointer">
+                                        {tool.name}
+                                      </Label>
+                                      <p className="text-xs text-muted-foreground">{tool.description}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           ))}
                         </div>
