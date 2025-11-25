@@ -50,6 +50,8 @@ export default function McpServerSettings() {
   const [health, setHealth] = useState<McpServerHealth | null>(null);
   const [logs, setLogs] = useState<McpServerLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingHealth, setIsLoadingHealth] = useState(false);
+  const [isLoadingLogs, setIsLoadingLogs] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -102,6 +104,7 @@ export default function McpServerSettings() {
   const fetchHealth = async () => {
     if (!tenant?.id) return;
 
+    setIsLoadingHealth(true);
     try {
       const { data, error } = await supabase
         .from("mcp_server_health")
@@ -113,20 +116,25 @@ export default function McpServerSettings() {
 
       if (error && error.code !== "PGRST116") {
         console.error("Error fetching health:", error);
+        toast.error("Failed to load MCP server health status");
         return;
       }
 
       if (data) {
         setHealth(data as McpServerHealth);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching health:", error);
+      toast.error("Failed to load health data: " + (error.message || "Unknown error"));
+    } finally {
+      setIsLoadingHealth(false);
     }
   };
 
   const fetchLogs = async () => {
     if (!tenant?.id) return;
 
+    setIsLoadingLogs(true);
     try {
       const { data, error } = await supabase
         .from("mcp_server_logs")
@@ -137,12 +145,16 @@ export default function McpServerSettings() {
 
       if (error) {
         console.error("Error fetching logs:", error);
+        toast.error("Failed to load activity logs");
         return;
       }
 
       setLogs(data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching logs:", error);
+      toast.error("Failed to load logs: " + (error.message || "Unknown error"));
+    } finally {
+      setIsLoadingLogs(false);
     }
   };
 
@@ -179,21 +191,88 @@ export default function McpServerSettings() {
   };
 
   const handleTestConnection = async () => {
+    if (!config || !tenant?.id) {
+      toast.error("Configuration not loaded");
+      return;
+    }
+
     toast.info("Testing MCP server connection...");
+    const startTime = Date.now();
 
     try {
-      const { error } = await supabase.rpc("update_mcp_server_health", {
-        p_tenant_id: tenant?.id,
+      // Step 1: Validate configuration
+      if (!config.supabase_url) {
+        throw new Error("Supabase URL is not configured");
+      }
+
+      if (!config.enabled) {
+        throw new Error("MCP server is disabled. Enable it first to test connection.");
+      }
+
+      // Step 2: Test database connectivity by checking if we can query the config
+      const { data: configTest, error: configError } = await supabase
+        .from("mcp_server_config")
+        .select("id")
+        .eq("tenant_id", tenant.id)
+        .single();
+
+      if (configError) {
+        throw new Error(`Database connectivity test failed: ${configError.message}`);
+      }
+
+      if (!configTest) {
+        throw new Error("Configuration not found in database");
+      }
+
+      // Step 3: Verify we can write to the health table
+      const responseTime = Date.now() - startTime;
+      const { error: healthError } = await supabase.rpc("update_mcp_server_health", {
+        p_tenant_id: tenant.id,
         p_status: "online",
-        p_response_time_ms: 50,
+        p_response_time_ms: responseTime,
       });
 
-      if (error) throw error;
+      if (healthError) {
+        throw new Error(`Health check update failed: ${healthError.message}`);
+      }
 
-      toast.success("MCP server connection test successful");
+      // Step 4: Verify we can read the health record
+      const { data: healthData, error: healthReadError } = await supabase
+        .from("mcp_server_health")
+        .select("*")
+        .eq("tenant_id", tenant.id)
+        .order("last_check", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (healthReadError) {
+        throw new Error(`Health check read failed: ${healthReadError.message}`);
+      }
+
+      if (!healthData) {
+        throw new Error("Health record not created");
+      }
+
+      toast.success(
+        `MCP server connection test successful (${responseTime}ms response time)`
+      );
       fetchHealth();
     } catch (error: any) {
       console.error("Connection test failed:", error);
+
+      // Update health status to offline on failure
+      try {
+        await supabase.rpc("update_mcp_server_health", {
+          p_tenant_id: tenant.id,
+          p_status: "offline",
+          p_response_time_ms: null,
+          p_error_message: error.message || "Connection test failed",
+        });
+        fetchHealth();
+      } catch (updateError) {
+        console.error("Failed to update health status:", updateError);
+      }
+
       toast.error("Connection test failed: " + error.message);
     }
   };
@@ -454,7 +533,12 @@ export default function McpServerSettings() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {health ? (
+              {isLoadingHealth ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-brand-primary" />
+                  <span className="ml-2 text-sm text-muted-foreground">Loading health data...</span>
+                </div>
+              ) : health ? (
                 <div className="grid gap-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Status</span>
@@ -505,7 +589,12 @@ export default function McpServerSettings() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {logs.length > 0 ? (
+              {isLoadingLogs ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-brand-primary" />
+                  <span className="ml-2 text-sm text-muted-foreground">Loading activity logs...</span>
+                </div>
+              ) : logs.length > 0 ? (
                 <div className="space-y-2">
                   {logs.map((log) => (
                     <div
