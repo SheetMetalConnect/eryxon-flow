@@ -439,6 +439,7 @@ export default function Jobs() {
           loading={isLoading}
           pageSize={20}
           emptyMessage={t("jobs.noJobsFound") || "No jobs found."}
+          searchDebounce={200}
         />
       </div>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, Eye, UserPlus, Download, Wrench } from "lucide-react";
-import { DataTable, DataTableColumnHeader, DataTableFilterableColumn } from "@/components/ui/data-table";
+import { VirtualizedDataTable, DataTableColumnHeader, DataTableFilterableColumn } from "@/components/ui/data-table";
 import {
   Tooltip,
   TooltipContent,
@@ -31,22 +31,46 @@ interface Operation {
   resource_names: string[];
 }
 
+const PAGE_SIZE = 50;
+
 export const Operations: React.FC = () => {
   const [operations, setOperations] = useState<Operation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
   const { profile } = useAuth();
   const navigate = useNavigate();
 
-  // Load operations data
+  // Load initial operations data
   useEffect(() => {
-    loadOperations();
+    loadOperations(true);
   }, [profile]);
 
-  const loadOperations = async () => {
+  const loadOperations = useCallback(async (isInitial: boolean = false) => {
     if (!profile) return;
 
-    setLoading(true);
+    if (isInitial) {
+      setLoading(true);
+      setOperations([]);
+    } else {
+      setLoadingMore(true);
+    }
+
     try {
+      // Get total count first (only on initial load)
+      if (isInitial) {
+        const { count } = await supabase
+          .from("operations")
+          .select("*", { count: "exact", head: true })
+          .eq("tenant_id", profile.tenant_id);
+        setTotalCount(count || 0);
+      }
+
+      // Calculate range for pagination
+      const from = isInitial ? 0 : operations.length;
+      const to = from + PAGE_SIZE - 1;
+
       const { data } = await supabase
         .from("operations")
         .select(
@@ -76,7 +100,7 @@ export const Operations: React.FC = () => {
         )
         .eq("tenant_id", profile.tenant_id)
         .order("created_at", { ascending: false })
-        .limit(500);
+        .range(from, to);
 
       if (data) {
         // Fetch resource counts and names for all operations
@@ -125,15 +149,30 @@ export const Operations: React.FC = () => {
           };
         });
 
-        setOperations(mappedOps);
-      }
+        // Check if there's more data
+        const newTotal = isInitial ? mappedOps.length : operations.length + mappedOps.length;
+        setHasMore(data.length === PAGE_SIZE);
 
-      setLoading(false);
+        if (isInitial) {
+          setOperations(mappedOps);
+        } else {
+          setOperations(prev => [...prev, ...mappedOps]);
+        }
+      }
     } catch (error) {
       console.error("Error loading operations:", error);
+    } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  };
+  }, [profile, operations.length]);
+
+  // Handle infinite scroll load more
+  const handleLoadMore = useCallback(() => {
+    if (!loadingMore && hasMore) {
+      loadOperations(false);
+    }
+  }, [loadingMore, hasMore, loadOperations]);
 
   const handleExport = () => {
     const csv = [
@@ -371,13 +410,20 @@ export const Operations: React.FC = () => {
       </div>
 
       <div className="glass-card p-6">
-        <DataTable
+        <VirtualizedDataTable
           columns={columns}
           data={operations}
           filterableColumns={filterableColumns}
           searchPlaceholder="Search by part, operation, operator..."
-          pageSize={20}
           emptyMessage="No operations match the current filters"
+          height="calc(100vh - 320px)"
+          rowHeight={36}
+          overscan={15}
+          onLoadMore={handleLoadMore}
+          loadingMore={loadingMore}
+          hasMore={hasMore}
+          totalCount={totalCount}
+          searchDebounce={250}
         />
       </div>
     </div>

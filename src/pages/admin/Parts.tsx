@@ -417,6 +417,7 @@ export default function Parts() {
             loading={isLoading}
             pageSize={20}
             emptyMessage={t("parts.noPartsFound")}
+            searchDebounce={200}
           />
         </div>
 

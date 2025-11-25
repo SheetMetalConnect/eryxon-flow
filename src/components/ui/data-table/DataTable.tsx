@@ -27,6 +27,7 @@ import {
 import { DataTablePagination } from "./DataTablePagination";
 import { DataTableToolbar } from "./DataTableToolbar";
 import { cn } from "@/lib/utils";
+import { useDebounce } from "@/hooks/useDebounce";
 
 // Global filter function for searching across all columns
 const globalFilterFn: FilterFn<any> = (row, columnId, filterValue) => {
@@ -42,6 +43,57 @@ const globalFilterFn: FilterFn<any> = (row, columnId, filterValue) => {
 
   return rowValues.some(value => value.toLowerCase().includes(search));
 };
+
+// Memoized table row component for better performance
+interface MemoizedRowProps<TData> {
+  row: Row<TData>;
+  onRowClick?: (row: TData) => void;
+  rowClassName?: (row: TData) => string;
+  compact: boolean;
+  striped: boolean;
+  index: number;
+}
+
+const MemoizedRow = React.memo(
+  <TData,>({
+    row,
+    onRowClick,
+    rowClassName,
+    compact,
+    striped,
+    index,
+  }: MemoizedRowProps<TData>) => (
+    <TableRow
+      data-state={row.getIsSelected() && "selected"}
+      className={cn(
+        onRowClick && "cursor-pointer hover:bg-muted/50",
+        striped && index % 2 === 0 && "bg-muted/20",
+        rowClassName && rowClassName(row.original)
+      )}
+      onClick={() => onRowClick && onRowClick(row.original)}
+    >
+      {row.getVisibleCells().map((cell) => (
+        <TableCell
+          key={cell.id}
+          className={cn(compact ? "px-2 py-1.5 text-xs" : "px-3 py-2")}
+        >
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </TableCell>
+      ))}
+    </TableRow>
+  ),
+  (prevProps, nextProps) => {
+    return (
+      prevProps.row.id === nextProps.row.id &&
+      prevProps.row.getIsSelected() === nextProps.row.getIsSelected() &&
+      prevProps.index === nextProps.index &&
+      prevProps.compact === nextProps.compact &&
+      prevProps.striped === nextProps.striped
+    );
+  }
+) as <TData>(props: MemoizedRowProps<TData>) => React.ReactElement;
+
+(MemoizedRow as any).displayName = "MemoizedRow";
 
 export interface DataTableFilterOption {
   label: string;
@@ -79,6 +131,8 @@ interface DataTableProps<TData, TValue> {
   compact?: boolean;
   striped?: boolean;
   maxHeight?: string;
+  /** Debounce delay for search in ms (default: 200ms) */
+  searchDebounce?: number;
 }
 
 export function DataTable<TData, TValue>({
@@ -100,12 +154,16 @@ export function DataTable<TData, TValue>({
   compact = true, // Default to compact for data density
   striped = false,
   maxHeight = "calc(100vh - 280px)", // Default max height for viewport fitting
+  searchDebounce = 200, // Debounce search for performance
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState("");
+
+  // Debounce the global filter for better performance
+  const debouncedGlobalFilter = useDebounce(globalFilter, searchDebounce);
 
   const table = useReactTable({
     data,
@@ -115,7 +173,7 @@ export function DataTable<TData, TValue>({
       columnFilters,
       columnVisibility,
       rowSelection,
-      globalFilter,
+      globalFilter: debouncedGlobalFilter,
     },
     enableRowSelection: true,
     onSortingChange: setSorting,
@@ -196,28 +254,15 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row, index) => (
-                <TableRow
+                <MemoizedRow
                   key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className={cn(
-                    onRowClick && "cursor-pointer hover:bg-muted/50",
-                    striped && index % 2 === 0 && "bg-muted/20",
-                    rowClassName && rowClassName(row.original)
-                  )}
-                  onClick={() => onRowClick && onRowClick(row.original)}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className={cn(compact ? "px-2 py-1.5 text-xs" : "px-3 py-2")}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
+                  row={row}
+                  onRowClick={onRowClick}
+                  rowClassName={rowClassName}
+                  compact={compact}
+                  striped={striped}
+                  index={index}
+                />
               ))
             ) : (
               <TableRow>
