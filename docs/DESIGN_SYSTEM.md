@@ -2,7 +2,7 @@
 
 **Antigravity-inspired dark-first design system for manufacturing execution**
 
-Version: 3.2 "Compact Antigravity"
+Version: 3.3 "Compact Antigravity"
 Last Updated: November 25, 2025
 Status: ✅ Active
 
@@ -100,14 +100,47 @@ We've removed light mode support to focus on an Antigravity-grade dark shell:
 
 ## Responsive & Compact Design
 
-### Design Goals for v3.2
+### Design Goals for v3.3
 
-Version 3.2 "Compact Antigravity" focuses on improved readability and data density across all device types:
+Version 3.3 "Compact Antigravity" builds on v3.2 with improved light mode contrast and even tighter admin layouts:
 
 1. **Tablet-First for Operators**: Operators primarily use tablets on the shop floor
 2. **PC-First for Admin**: Admin users work on desktop with multi-column layouts
 3. **Mobile Support**: Essential features accessible on mobile devices
 4. **Data Density**: Maximize visible data without sacrificing readability
+5. **Light Mode Contrast**: Improved WCAG AA compliance with darker grays and better border visibility
+
+### Admin Page Layout Standards
+
+Admin pages follow a consistent compact layout pattern:
+
+```tsx
+<div className="p-4 space-y-4">
+  {/* Header: 2xl title, sm description */}
+  <div>
+    <div className="flex justify-between items-center mb-1">
+      <h1 className="text-2xl font-bold bg-gradient-to-r ...">Title</h1>
+      <Button className="cta-button">Action</Button>
+    </div>
+    <p className="text-muted-foreground text-sm">Description</p>
+  </div>
+
+  <hr className="title-divider" />
+
+  {/* Content in glass-card with p-4 */}
+  <div className="glass-card p-4">
+    <DataTable ... />
+  </div>
+</div>
+```
+
+Key spacing values:
+- **Page padding**: `p-4` (16px)
+- **Section gap**: `space-y-4` (16px)
+- **Card padding**: `p-4` (16px)
+- **Header margin**: `mb-1` (4px)
+- **Title size**: `text-2xl` (24px)
+- **Description size**: `text-sm` (14px)
 
 ### Breakpoints
 
@@ -1308,6 +1341,39 @@ Smooth floating animation for gradient orbs.
 - `copy-on-click` and CTA buttons receive focus rings.
 - Use logical DOM order: icon → microcopy → hero → sections → CTA.
 
+### Light Mode Contrast (v3.3)
+
+Light mode uses adjusted neutral grays for better contrast:
+
+| Token | Dark Mode | Light Mode | WCAG |
+|-------|-----------|------------|------|
+| `--neutral-50` (text) | 88% (light) | 10% (dark) | AA ✅ |
+| `--neutral-300` (muted) | 63% | 30% | AA ✅ |
+| `--neutral-600` (borders) | 33% | 70% | AA ✅ |
+
+**Light Mode Overrides in CSS:**
+```css
+:root.light .glass-card {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+:root.light .informational-text {
+  color: #333333;
+  border-color: rgba(0, 102, 204, 0.25);
+}
+
+:root.light .title-divider {
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 102, 204, 0.4) 50%, transparent 100%);
+}
+```
+
+Key light mode improvements:
+- **Primary text**: `#1a1a1a` (10% lightness vs 15% before)
+- **Muted text**: `#4d4d4d` (30% lightness vs 37% before)
+- **Borders**: `#b3b3b3` (70% lightness vs 80% before)
+- **Glass cards**: 90% opacity with stronger border
+
 ---
 
 ## Migration Guide
@@ -1733,7 +1799,7 @@ For questions about the design system:
 
 ---
 
-**Document Version:** 3.2 "Compact Antigravity"
+**Document Version:** 3.3 "Compact Antigravity"
 **Last Updated:** November 25, 2025
 **Author:** Eryxon Development Team
-**Status:** ✅ Active - Dark Mode Only, Compact Responsive
+**Status:** ✅ Active - Dark/Light Mode, Compact Responsive
