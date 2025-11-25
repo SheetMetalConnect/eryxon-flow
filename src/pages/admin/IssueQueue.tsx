@@ -54,6 +54,7 @@ export default function IssueQueue() {
   const [resolutionNotes, setResolutionNotes] = useState("");
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
 
   // Filters
   const [statusFilter, setStatusFilter] = useState<
@@ -70,6 +71,29 @@ export default function IssueQueue() {
       setupRealtime();
     }
   }, [profile?.tenant_id, statusFilter, severityFilter, searchQuery]);
+
+  // Load signed URLs for issue images
+  useEffect(() => {
+    const loadImageUrls = async () => {
+      if (!selectedIssue?.image_paths || selectedIssue.image_paths.length === 0) {
+        setImageUrls([]);
+        return;
+      }
+
+      const urls = await Promise.all(
+        selectedIssue.image_paths.map(async (path) => {
+          const { data } = await supabase.storage
+            .from("issues")
+            .createSignedUrl(path, 3600); // 1 hour expiry
+          return data?.signedUrl || "";
+        })
+      );
+
+      setImageUrls(urls.filter(url => url !== ""));
+    };
+
+    loadImageUrls();
+  }, [selectedIssue?.id]);
 
   const loadIssues = async () => {
     if (!profile?.tenant_id) return;
@@ -375,20 +399,16 @@ export default function IssueQueue() {
                 </div>
               </div>
 
-              {selectedIssue.image_paths &&
-                selectedIssue.image_paths.length > 0 && (
+              {imageUrls.length > 0 && (
                   <div>
                     <div className="text-sm text-muted-foreground mb-2">
                       {t("issues.attachedPhotos")}
                     </div>
                     <div className="grid grid-cols-2 gap-2">
-                      {selectedIssue.image_paths.map((path, index) => (
+                      {imageUrls.map((url, index) => (
                         <img
                           key={index}
-                          src={
-                            supabase.storage.from("issues").getPublicUrl(path)
-                              .data.publicUrl
-                          }
+                          src={url}
                           alt={t("issues.issuePhoto", { number: index + 1 })}
                           className="rounded border"
                         />
