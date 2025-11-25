@@ -34,6 +34,7 @@ export default function MyIssues() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [loading, setLoading] = useState(true);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
 
   useEffect(() => {
     if (profile?.id) {
@@ -41,6 +42,29 @@ export default function MyIssues() {
       setupRealtime();
     }
   }, [profile?.id]);
+
+  // Load signed URLs for issue images
+  useEffect(() => {
+    const loadImageUrls = async () => {
+      if (!selectedIssue?.image_paths || selectedIssue.image_paths.length === 0) {
+        setImageUrls([]);
+        return;
+      }
+
+      const urls = await Promise.all(
+        selectedIssue.image_paths.map(async (path) => {
+          const { data } = await supabase.storage
+            .from("issues")
+            .createSignedUrl(path, 3600); // 1 hour expiry
+          return data?.signedUrl || "";
+        })
+      );
+
+      setImageUrls(urls.filter(url => url !== ""));
+    };
+
+    loadImageUrls();
+  }, [selectedIssue?.id]);
 
   const loadIssues = async () => {
     if (!profile?.id) return;
@@ -216,14 +240,14 @@ export default function MyIssues() {
                 </div>
               )}
 
-              {selectedIssue.image_paths && selectedIssue.image_paths.length > 0 && (
+              {imageUrls.length > 0 && (
                 <div>
                   <div className="text-sm text-muted-foreground mb-2">{t("myIssues.attachedPhotos")}</div>
                   <div className="grid grid-cols-2 gap-2">
-                    {selectedIssue.image_paths.map((path, index) => (
+                    {imageUrls.map((url, index) => (
                       <img
                         key={index}
-                        src={supabase.storage.from("issues").getPublicUrl(path).data.publicUrl}
+                        src={url}
                         alt={`${t("myIssues.issuePhoto")} ${index + 1}`}
                         className="rounded border"
                       />
