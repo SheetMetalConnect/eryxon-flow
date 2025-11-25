@@ -82,7 +82,7 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                 </div>
 
                 <div className="flex gap-1.5">
-                    {job.status !== 'in_progress' ? (
+                    {!job.isCurrentUserClocked ? (
                         <Button onClick={onStart} size="sm" className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white h-8 text-xs">
                             <Play className="w-3.5 h-3.5 mr-1.5" /> Start
                         </Button>
@@ -91,7 +91,7 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                             <Pause className="w-3.5 h-3.5 mr-1.5" /> Pause
                         </Button>
                     )}
-                    {job.status === 'in_progress' && (
+                    {(job.status === 'in_progress' || job.isCurrentUserClocked) && !job.activeTimeEntryId && (
                         <Button
                             onClick={onComplete}
                             variant="outline"

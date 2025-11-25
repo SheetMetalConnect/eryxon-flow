@@ -73,6 +73,7 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
       )
     `)
     .eq("tenant_id", tenantId)
+    .neq("status", "completed")  // Exclude completed operations from terminal view
     .order("sequence");
 
   if (operationsError) {

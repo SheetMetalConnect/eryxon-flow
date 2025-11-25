@@ -162,10 +162,15 @@ export default function OperatorTerminal() {
         const hasPdf = op.part.file_paths?.some(p => p.toLowerCase().endsWith('.pdf')) || false;
         const hasModel = op.part.file_paths?.some(p => p.toLowerCase().endsWith('.step') || p.toLowerCase().endsWith('.stp')) || false;
 
+        // Map operation status - skip completed operations (handled by filter below)
         let status: TerminalJob['status'] = 'expected';
         if (op.status === 'in_progress') status = 'in_progress';
-        else if (op.status === 'on_hold') status = 'on_hold'; // Map on_hold to something visible?
-        else if (op.status === 'not_started') status = 'in_buffer'; // Default to buffer for now
+        else if (op.status === 'on_hold') status = 'on_hold';
+        else if (op.status === 'not_started') status = 'in_buffer';
+        else if (op.status === 'completed') status = 'expected'; // Will be filtered out
+
+        // If there's an active time entry, the operation should be considered in_progress
+        if (op.active_time_entry) status = 'in_progress';
 
         // Calculate remaining hours
         const estimated = op.estimated_time || 0;
