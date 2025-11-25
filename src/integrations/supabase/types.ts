@@ -1771,6 +1771,7 @@ export type Database = {
       }
       tenants: {
         Row: {
+          auto_stop_tracking: boolean | null
           billing_country_code: string | null
           billing_email: string | null
           billing_enabled: boolean | null
@@ -1783,6 +1784,8 @@ export type Database = {
           demo_data_seeded_by: string | null
           demo_mode_acknowledged: boolean | null
           demo_mode_enabled: boolean | null
+          factory_closing_time: string | null
+          factory_opening_time: string | null
           grace_period_ends_at: string | null
           id: string
           last_parts_reset_date: string | null
@@ -1808,6 +1811,7 @@ export type Database = {
           vat_number: string | null
         }
         Insert: {
+          auto_stop_tracking?: boolean | null
           billing_country_code?: string | null
           billing_email?: string | null
           billing_enabled?: boolean | null
@@ -1820,6 +1824,8 @@ export type Database = {
           demo_data_seeded_by?: string | null
           demo_mode_acknowledged?: boolean | null
           demo_mode_enabled?: boolean | null
+          factory_closing_time?: string | null
+          factory_opening_time?: string | null
           grace_period_ends_at?: string | null
           id?: string
           last_parts_reset_date?: string | null
@@ -1845,6 +1851,7 @@ export type Database = {
           vat_number?: string | null
         }
         Update: {
+          auto_stop_tracking?: boolean | null
           billing_country_code?: string | null
           billing_email?: string | null
           billing_enabled?: boolean | null
@@ -1857,6 +1864,8 @@ export type Database = {
           demo_data_seeded_by?: string | null
           demo_mode_acknowledged?: boolean | null
           demo_mode_enabled?: boolean | null
+          factory_closing_time?: string | null
+          factory_opening_time?: string | null
           grace_period_ends_at?: string | null
           id?: string
           last_parts_reset_date?: string | null
