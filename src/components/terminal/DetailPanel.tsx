@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Play, Pause, Square, FileText, Box, AlertTriangle, CheckCircle2, Clock, Circle } from 'lucide-react';
+import { Play, Pause, Square, FileText, Box, AlertTriangle, CheckCircle2, Clock, Circle, Maximize2, X } from 'lucide-react';
 import { STEPViewer } from '@/components/STEPViewer'; // Reusing existing viewer
 import { PDFViewer } from '@/components/PDFViewer';
 import { OperationWithDetails } from '@/lib/database';
@@ -14,6 +14,7 @@ import { NextCellInfo } from './NextCellInfo';
 import { RoutingVisualization } from './RoutingVisualization';
 import { useCellQRMMetrics } from '@/hooks/useQRMMetrics';
 import { useAuth } from '@/contexts/AuthContext';
+import { createPortal } from 'react-dom';
 
 interface DetailPanelProps {
     job: TerminalJob;
@@ -27,6 +28,7 @@ interface DetailPanelProps {
 
 export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl, operations = [] }: DetailPanelProps) {
     const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
+    const [fullscreenViewer, setFullscreenViewer] = useState<'3d' | 'pdf' | null>(null);
     const { profile } = useAuth();
 
     // Compute next operation in the sequence FIRST
@@ -155,61 +157,74 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
 
                     <div className="flex-1 p-2 min-h-0 overflow-hidden">
                         {job.hasModel && (
-                            <TabsContent value="3d" className="h-full m-0 rounded-md overflow-hidden border border-border bg-background">
+                            <TabsContent value="3d" className="h-full m-0 rounded-md overflow-hidden border border-border bg-background relative group">
                                 <STEPViewer url={stepUrl || ""} title={job.jobCode} />
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => setFullscreenViewer('3d')}
+                                    className="absolute top-2 right-2 h-7 px-2 opacity-70 hover:opacity-100 bg-background/80 backdrop-blur-sm shadow-md z-10"
+                                >
+                                    <Maximize2 className="w-3.5 h-3.5 mr-1" /> Expand
+                                </Button>
                             </TabsContent>
                         )}
 
                         {job.hasPdf && (
-                            <TabsContent value="pdf" className="h-full m-0 rounded-md overflow-hidden border border-border bg-background">
+                            <TabsContent value="pdf" className="h-full m-0 rounded-md overflow-hidden border border-border bg-background relative group">
                                 <PDFViewer url={pdfUrl || ""} title={job.jobCode} />
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => setFullscreenViewer('pdf')}
+                                    className="absolute top-2 right-2 h-7 px-2 opacity-70 hover:opacity-100 bg-background/80 backdrop-blur-sm shadow-md z-10"
+                                >
+                                    <Maximize2 className="w-3.5 h-3.5 mr-1" /> Expand
+                                </Button>
                             </TabsContent>
                         )}
 
                         <TabsContent value="ops" className="h-full m-0 overflow-auto">
-                            <div className="space-y-1.5">
+                            <div className="space-y-0.5">
                                 {operations.length === 0 && (
-                                    <div className="text-center text-muted-foreground py-4 text-sm">No operations found</div>
+                                    <div className="text-center text-muted-foreground py-4 text-xs">No operations found</div>
                                 )}
                                 {operations.map((op) => (
                                     <div
                                         key={op.id}
                                         className={cn(
-                                            "p-2 rounded-md border flex items-center justify-between transition-colors",
+                                            "px-2 py-1 rounded border-l-2 flex items-center justify-between transition-colors",
                                             op.status === 'in_progress'
-                                                ? "bg-accent/10 border-primary/50 ring-1 ring-primary/20"
-                                                : "bg-card border-border",
-                                            op.status === 'completed' && "opacity-60 bg-muted/50"
+                                                ? "bg-primary/5 border-l-primary"
+                                                : "bg-transparent border-l-transparent hover:bg-muted/30",
+                                            op.status === 'completed' && "opacity-50"
                                         )}
                                     >
-                                        <div className="flex items-center gap-2">
-                                            <div className={cn(
-                                                "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold",
-                                                op.status === 'completed' ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300" :
-                                                    op.status === 'in_progress' ? "bg-primary text-primary-foreground animate-pulse" :
-                                                        "bg-muted text-muted-foreground"
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                            <span className={cn(
+                                                "text-[9px] font-mono w-4 shrink-0",
+                                                op.status === 'completed' ? "text-emerald-500" :
+                                                    op.status === 'in_progress' ? "text-primary font-bold" :
+                                                        "text-muted-foreground"
                                             )}>
-                                                {op.sequence}
-                                            </div>
-                                            <div>
-                                                <div className={cn(
-                                                    "text-xs font-medium",
-                                                    op.status === 'completed' ? "text-muted-foreground line-through" : "text-foreground"
-                                                )}>
-                                                    {op.operation_name}
-                                                </div>
-                                                <div className="text-[10px] text-muted-foreground flex items-center gap-1.5">
-                                                    <span>{op.cell?.name || 'Unknown Cell'}</span>
-                                                    <span>•</span>
-                                                    <span>{op.estimated_time}h</span>
-                                                </div>
-                                            </div>
+                                                {op.sequence}.
+                                            </span>
+                                            <span className={cn(
+                                                "text-[11px] truncate",
+                                                op.status === 'completed' ? "text-muted-foreground line-through" : "text-foreground"
+                                            )}>
+                                                {op.operation_name}
+                                            </span>
+                                            <span className="text-[9px] text-muted-foreground shrink-0">
+                                                ({op.cell?.name?.slice(0, 8) || '?'})
+                                            </span>
                                         </div>
-                                        <div className="text-xs">
-                                            {op.status === 'completed' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
-                                            {op.status === 'in_progress' && <Clock className="w-3.5 h-3.5 text-primary animate-spin-slow" />}
-                                            {op.status === 'not_started' && <Circle className="w-3.5 h-3.5 text-muted-foreground" />}
-                                            {op.status === 'on_hold' && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
+                                        <div className="flex items-center gap-1 shrink-0">
+                                            <span className="text-[9px] text-muted-foreground">{op.estimated_time}h</span>
+                                            {op.status === 'completed' && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
+                                            {op.status === 'in_progress' && <Clock className="w-3 h-3 text-primary" />}
+                                            {op.status === 'not_started' && <Circle className="w-3 h-3 text-muted-foreground/50" />}
+                                            {op.status === 'on_hold' && <AlertTriangle className="w-3 h-3 text-amber-500" />}
                                         </div>
                                     </div>
                                 ))}
@@ -235,6 +250,59 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                 onOpenChange={setIsIssueModalOpen}
                 onSuccess={() => setIsIssueModalOpen(false)}
             />
+
+            {/* Fullscreen Viewer Overlay */}
+            {fullscreenViewer && createPortal(
+                <div
+                    className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-md flex flex-col"
+                    onClick={() => setFullscreenViewer(null)}
+                >
+                    {/* Header */}
+                    <div
+                        className="flex items-center justify-between p-3 border-b border-border bg-card/80 backdrop-blur-sm"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center gap-2">
+                            {fullscreenViewer === '3d' ? (
+                                <Box className="w-4 h-4 text-primary" />
+                            ) : (
+                                <FileText className="w-4 h-4 text-primary" />
+                            )}
+                            <span className="font-medium text-foreground">{job.jobCode}</span>
+                            <span className="text-muted-foreground text-sm">- {fullscreenViewer === '3d' ? '3D Model' : 'Drawing'}</span>
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setFullscreenViewer(null)}
+                            className="h-8 w-8 p-0 hover:bg-accent"
+                        >
+                            <X className="w-4 h-4" />
+                        </Button>
+                    </div>
+
+                    {/* Viewer */}
+                    <div
+                        className="flex-1 p-4 min-h-0"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="h-full rounded-lg overflow-hidden border border-border bg-background shadow-xl">
+                            {fullscreenViewer === '3d' && stepUrl && (
+                                <STEPViewer url={stepUrl} title={job.jobCode} />
+                            )}
+                            {fullscreenViewer === 'pdf' && pdfUrl && (
+                                <PDFViewer url={pdfUrl} title={job.jobCode} />
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Tap hint */}
+                    <div className="text-center pb-3 text-muted-foreground text-xs">
+                        Tap outside or press X to close
+                    </div>
+                </div>,
+                document.body
+            )}
         </div>
     );
 }
