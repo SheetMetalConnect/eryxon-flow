@@ -190,6 +190,9 @@ export default function OperatorTerminal() {
             hasModel,
             filePaths: op.part.file_paths || [],
             activeTimeEntryId: op.active_time_entry?.id,
+            activeOperatorId: op.active_time_entry?.operator_id,
+            activeOperatorName: op.active_time_entry?.operator?.full_name,
+            isCurrentUserClocked: op.active_time_entry?.operator_id === profile?.id,
             notes: op.notes,
             cellName: op.cell.name,
             cellColor: op.cell.color || "#3b82f6",
@@ -198,7 +201,7 @@ export default function OperatorTerminal() {
         };
     };
 
-    const allJobs = useMemo(() => operations.map(mapOperationToJob), [operations]);
+    const allJobs = useMemo(() => operations.map(mapOperationToJob), [operations, profile?.id]);
 
     // Filter by Cell
     const filteredJobs = useMemo(() => {

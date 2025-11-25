@@ -344,6 +344,116 @@ export async function stopTimeTracking(operationId: string, operatorId: string) 
   }
 }
 
+/**
+ * Admin function to stop time tracking by time entry ID
+ * Used when admins need to stop an operator's forgotten clocking
+ */
+export async function adminStopTimeTracking(timeEntryId: string) {
+  // Find time entry with operation details
+  const { data: entry } = await supabase
+    .from("time_entries")
+    .select("id, start_time, is_paused, operation_id, operator_id")
+    .eq("id", timeEntryId)
+    .is("end_time", null)
+    .single();
+
+  if (!entry) throw new Error("No active time entry found");
+
+  // If paused, close the current pause
+  if (entry.is_paused) {
+    const { data: activePause } = await supabase
+      .from("time_entry_pauses")
+      .select("id, paused_at")
+      .eq("time_entry_id", entry.id)
+      .is("resumed_at", null)
+      .maybeSingle();
+
+    if (activePause) {
+      const now = new Date();
+      const pausedAt = new Date(activePause.paused_at);
+      const pauseDuration = Math.round((now.getTime() - pausedAt.getTime()) / 1000);
+
+      await supabase
+        .from("time_entry_pauses")
+        .update({
+          resumed_at: now.toISOString(),
+          duration: pauseDuration,
+        })
+        .eq("id", activePause.id);
+    }
+  }
+
+  const endTime = new Date();
+  const startTime = new Date(entry.start_time);
+
+  // Calculate total pause time
+  const { data: pauses } = await supabase
+    .from("time_entry_pauses")
+    .select("duration")
+    .eq("time_entry_id", entry.id)
+    .not("duration", "is", null);
+
+  const totalPauseSeconds = pauses?.reduce((sum, p) => sum + (p.duration || 0), 0) || 0;
+
+  // Calculate effective duration
+  const totalSeconds = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
+  const effectiveSeconds = totalSeconds - totalPauseSeconds;
+  const duration = Math.round(effectiveSeconds / 60);
+
+  // Update time entry
+  await supabase
+    .from("time_entries")
+    .update({
+      end_time: endTime.toISOString(),
+      duration,
+      is_paused: false,
+    })
+    .eq("id", entry.id);
+
+  // Update operation actual time
+  const { data: operation } = await supabase
+    .from("operations")
+    .select("actual_time")
+    .eq("id", entry.operation_id)
+    .single();
+
+  if (operation) {
+    await supabase
+      .from("operations")
+      .update({ actual_time: (operation.actual_time || 0) + duration })
+      .eq("id", entry.operation_id);
+  }
+}
+
+/**
+ * Stop all active time entries for a tenant (admin function)
+ * Used for end-of-day cleanup or auto-stop at factory closing time
+ */
+export async function stopAllActiveTimeEntries(tenantId: string): Promise<number> {
+  // Get all active time entries for the tenant
+  const { data: activeEntries, error: fetchError } = await supabase
+    .from("time_entries")
+    .select("id")
+    .eq("tenant_id", tenantId)
+    .is("end_time", null);
+
+  if (fetchError) throw fetchError;
+  if (!activeEntries || activeEntries.length === 0) return 0;
+
+  // Stop each entry
+  let stoppedCount = 0;
+  for (const entry of activeEntries) {
+    try {
+      await adminStopTimeTracking(entry.id);
+      stoppedCount++;
+    } catch (error) {
+      console.error(`Failed to stop time entry ${entry.id}:`, error);
+    }
+  }
+
+  return stoppedCount;
+}
+
 export async function pauseTimeTracking(timeEntryId: string) {
   // Check if already paused
   const { data: entry } = await supabase
