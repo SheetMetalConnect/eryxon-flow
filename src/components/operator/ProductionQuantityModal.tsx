@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,13 +18,7 @@ interface ProductionQuantityModalProps {
   partNumber: string;
   plannedQuantity?: number;
   onSuccess: (quantityGood: number, shouldStopTime: boolean) => void;
-}
-
-interface ScrapReason {
-  id: string;
-  code: string;
-  description: string;
-  category: string;
+  onScrapWithIssue?: (scrapQty: number) => void;
 }
 
 type ShortfallChoice = "continuing" | "scrap" | "rework" | null;
@@ -38,14 +31,13 @@ export default function ProductionQuantityModal({
   partNumber,
   plannedQuantity,
   onSuccess,
+  onScrapWithIssue,
 }: ProductionQuantityModalProps) {
   const { t } = useTranslation();
   const { profile } = useAuth();
 
   const [quantityGood, setQuantityGood] = useState<number>(0);
   const [shortfallChoice, setShortfallChoice] = useState<ShortfallChoice>(null);
-  const [scrapReasonId, setScrapReasonId] = useState<string>("");
-  const [scrapReasons, setScrapReasons] = useState<ScrapReason[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [previouslyRecordedGood, setPreviouslyRecordedGood] = useState<number>(0);
@@ -58,7 +50,6 @@ export default function ProductionQuantityModal({
 
   useEffect(() => {
     if (isOpen) {
-      fetchScrapReasons();
       fetchPreviousQuantities();
     }
   }, [isOpen]);
@@ -66,7 +57,6 @@ export default function ProductionQuantityModal({
   // Reset shortfall choice when quantity changes
   useEffect(() => {
     setShortfallChoice(null);
-    setScrapReasonId("");
   }, [quantityGood]);
 
   const fetchPreviousQuantities = async () => {
@@ -83,20 +73,6 @@ export default function ProductionQuantityModal({
     }
   };
 
-  const fetchScrapReasons = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("scrap_reasons")
-        .select("*")
-        .eq("active", true)
-        .order("code");
-      if (error) throw error;
-      setScrapReasons(data || []);
-    } catch (error) {
-      console.error("Error fetching scrap reasons:", error);
-    }
-  };
-
   const validate = (): boolean => {
     if (quantityGood <= 0) {
       setValidationError(t("production.enterGoodParts", "Enter good parts made"));
@@ -104,10 +80,6 @@ export default function ProductionQuantityModal({
     }
     if (hasShortfall && !shortfallChoice) {
       setValidationError(t("production.selectShortfallChoice", "Select what happened to remaining parts"));
-      return false;
-    }
-    if (shortfallChoice === "scrap" && !scrapReasonId) {
-      setValidationError(t("production.selectScrapReason", "Select scrap reason"));
       return false;
     }
     setValidationError(null);
@@ -133,14 +105,17 @@ export default function ProductionQuantityModal({
         quantity_good: quantityGood,
         quantity_scrap: scrapQty,
         quantity_rework: reworkQty,
-        scrap_reason_id: scrapReasonId || null,
         recorded_at: new Date().toISOString(),
       }]);
       if (error) throw error;
 
-      // Simple success message
+      // Show success message
       if (scrapQty > 0) {
         toast.success(t("production.recordedWithScrap", "{{good}} good, {{scrap}} scrap", { good: quantityGood, scrap: scrapQty }));
+        // If there's scrap, trigger issue creation
+        if (onScrapWithIssue) {
+          onScrapWithIssue(scrapQty);
+        }
       } else if (reworkQty > 0) {
         toast.success(t("production.recordedWithRework", "{{good}} good, {{rework}} rework", { good: quantityGood, rework: reworkQty }));
       } else {
@@ -160,7 +135,6 @@ export default function ProductionQuantityModal({
   const handleClose = () => {
     setQuantityGood(0);
     setShortfallChoice(null);
-    setScrapReasonId("");
     setValidationError(null);
     onClose();
   };
@@ -226,10 +200,7 @@ export default function ProductionQuantityModal({
                   type="button"
                   variant={shortfallChoice === "continuing" ? "default" : "outline"}
                   className="h-12 px-2"
-                  onClick={() => {
-                    setShortfallChoice("continuing");
-                    setScrapReasonId("");
-                  }}
+                  onClick={() => setShortfallChoice("continuing")}
                 >
                   <Clock className="h-4 w-4 mr-1" />
                   {t("production.continuing", "Next shift")}
@@ -238,10 +209,7 @@ export default function ProductionQuantityModal({
                   type="button"
                   variant={shortfallChoice === "rework" ? "secondary" : "outline"}
                   className="h-12 px-2"
-                  onClick={() => {
-                    setShortfallChoice("rework");
-                    setScrapReasonId("");
-                  }}
+                  onClick={() => setShortfallChoice("rework")}
                 >
                   <Wrench className="h-4 w-4 mr-1" />
                   {t("production.rework", "Rework")}
@@ -257,23 +225,11 @@ export default function ProductionQuantityModal({
                 </Button>
               </div>
 
-              {/* Scrap reason - only if scrap selected */}
+              {/* Note about scrap creating issue */}
               {shortfallChoice === "scrap" && (
-                <div>
-                  <Label htmlFor="scrap-reason">{t("production.why", "Why?")}</Label>
-                  <Select value={scrapReasonId} onValueChange={setScrapReasonId}>
-                    <SelectTrigger id="scrap-reason" className="mt-1">
-                      <SelectValue placeholder={t("production.selectReason", "Select reason")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {scrapReasons.map((reason) => (
-                        <SelectItem key={reason.id} value={reason.id}>
-                          {reason.code}: {reason.description}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  {t("production.scrapCreatesIssue", "An issue will be created to document this scrap.")}
+                </p>
               )}
             </div>
           )}
