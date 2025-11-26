@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { AlertTriangle, Check, Clock } from "lucide-react";
+import { AlertTriangle, Check, Clock, Wrench } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface ProductionQuantityModalProps {
@@ -28,7 +28,7 @@ interface ScrapReason {
   category: string;
 }
 
-type ShortfallChoice = "continuing" | "scrap" | null;
+type ShortfallChoice = "continuing" | "scrap" | "rework" | null;
 
 export default function ProductionQuantityModal({
   isOpen,
@@ -123,7 +123,8 @@ export default function ProductionQuantityModal({
     setIsSubmitting(true);
     try {
       const scrapQty = shortfallChoice === "scrap" ? shortfall : 0;
-      const producedQty = quantityGood + scrapQty;
+      const reworkQty = shortfallChoice === "rework" ? shortfall : 0;
+      const producedQty = quantityGood + scrapQty + reworkQty;
 
       const { error } = await supabase.from("operation_quantities").insert([{
         tenant_id: profile.tenant_id,
@@ -131,7 +132,7 @@ export default function ProductionQuantityModal({
         quantity_produced: producedQty,
         quantity_good: quantityGood,
         quantity_scrap: scrapQty,
-        quantity_rework: 0,
+        quantity_rework: reworkQty,
         scrap_reason_id: scrapReasonId || null,
         recorded_at: new Date().toISOString(),
       }]);
@@ -140,6 +141,8 @@ export default function ProductionQuantityModal({
       // Simple success message
       if (scrapQty > 0) {
         toast.success(t("production.recordedWithScrap", "{{good}} good, {{scrap}} scrap", { good: quantityGood, scrap: scrapQty }));
+      } else if (reworkQty > 0) {
+        toast.success(t("production.recordedWithRework", "{{good}} good, {{rework}} rework", { good: quantityGood, rework: reworkQty }));
       } else {
         toast.success(t("production.recorded", "{{count}} good parts recorded", { count: quantityGood }));
       }
@@ -218,26 +221,38 @@ export default function ProductionQuantityModal({
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <Button
                   type="button"
                   variant={shortfallChoice === "continuing" ? "default" : "outline"}
-                  className="h-12"
+                  className="h-12 px-2"
                   onClick={() => {
                     setShortfallChoice("continuing");
                     setScrapReasonId("");
                   }}
                 >
-                  <Clock className="h-4 w-4 mr-2" />
+                  <Clock className="h-4 w-4 mr-1" />
                   {t("production.continuing", "Next shift")}
                 </Button>
                 <Button
                   type="button"
+                  variant={shortfallChoice === "rework" ? "secondary" : "outline"}
+                  className="h-12 px-2"
+                  onClick={() => {
+                    setShortfallChoice("rework");
+                    setScrapReasonId("");
+                  }}
+                >
+                  <Wrench className="h-4 w-4 mr-1" />
+                  {t("production.rework", "Rework")}
+                </Button>
+                <Button
+                  type="button"
                   variant={shortfallChoice === "scrap" ? "destructive" : "outline"}
-                  className="h-12"
+                  className="h-12 px-2"
                   onClick={() => setShortfallChoice("scrap")}
                 >
-                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  <AlertTriangle className="h-4 w-4 mr-1" />
                   {t("production.scrap", "Scrap")}
                 </Button>
               </div>
