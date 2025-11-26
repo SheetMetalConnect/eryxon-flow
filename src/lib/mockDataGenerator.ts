@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { SUBSTEP_TEMPLATES, type SubstepTemplate } from "./substepTemplates";
 
 export interface MockDataOptions {
   includeCells?: boolean;
@@ -1444,114 +1443,52 @@ export async function generateMockData(
       }
     }
 
-    // Step 7.5: Create substeps for operations using the standard template system
-    // Uses SUBSTEP_TEMPLATES from substepTemplates.ts for consistent, practical workflows
+    // Step 7.5: Create a few example substeps (only for 2-3 in_progress operations)
+    // Keep it minimal - users can add more via templates or manually
     if (operationData.length > 0) {
-      const substeps: Array<{
-        tenant_id: string;
-        operation_id: string;
-        name: string;
-        sequence: number;
-        status: string;
-        notes?: string;
-        completed_at?: string;
-        completed_by?: string;
-      }> = [];
+      const inProgressOps = operationData.filter(op => op.status === "in_progress").slice(0, 2);
 
-      // Map Dutch cell names to template categories
-      const cellToTemplateMap: Record<string, keyof typeof SUBSTEP_TEMPLATES> = {
-        "Lasersnijden": "cutting",
-        "CNC Kantbank": "bending",
-        "Lassen": "welding",
-        "Montage": "assembly",
-        "Afwerking": "finishing",
-        "Kwaliteitscontrole": "inspection",
-      };
+      if (inProgressOps.length > 0) {
+        const substeps: Array<{
+          tenant_id: string;
+          operation_id: string;
+          name: string;
+          sequence: number;
+          status: string;
+          notes?: string;
+        }> = [];
 
-      // Helper to determine operation cell name from cell_id
-      const getCellName = (cellId: string): string | undefined => {
-        return Object.entries(cellIdMap).find(([_, id]) => id === cellId)?.[0];
-      };
+        // Simple substeps - just a few per operation to demonstrate the feature
+        for (const op of inProgressOps) {
+          const simpleSteps = [
+            { name: "Review drawing and specs", status: "completed" },
+            { name: "Prepare materials", status: "completed" },
+            { name: "Execute operation", status: "in_progress" },
+            { name: "Quality check", status: "not_started" },
+            { name: "Sign off", status: "not_started" },
+          ];
 
-      // Create substeps for each operation using standard templates
-      for (const op of operationData) {
-        const cellName = getCellName(op.cell_id);
-        if (!cellName) continue;
+          simpleSteps.forEach((step, idx) => {
+            substeps.push({
+              tenant_id: tenantId,
+              operation_id: op.id,
+              name: step.name,
+              sequence: (idx + 1) * 10,
+              status: step.status,
+            });
+          });
+        }
 
-        const templateKey = cellToTemplateMap[cellName];
-        const templates: SubstepTemplate[] = templateKey
-          ? SUBSTEP_TEMPLATES[templateKey]
-          : SUBSTEP_TEMPLATES.general;
+        if (substeps.length > 0) {
+          const { error: substepsError } = await supabase
+            .from("substeps")
+            .insert(substeps);
 
-        // For completed operations, mark all substeps as completed
-        // For in_progress, mark first half as completed, one in_progress
-        // For not_started, all substeps are not_started
-        templates.forEach((template, idx) => {
-          let status = "not_started";
-          let completed_at: string | undefined;
-          let completed_by: string | undefined;
-
-          if (op.status === "completed") {
-            status = "completed";
-            const completionDate = new Date("2025-10-20T08:00:00Z");
-            completionDate.setDate(completionDate.getDate() + Math.floor(Math.random() * 40));
-            completed_at = completionDate.toISOString();
-            if (operatorIds.length > 0) {
-              completed_by = operatorIds[Math.floor(Math.random() * operatorIds.length)];
-            }
-          } else if (op.status === "in_progress") {
-            const halfPoint = Math.floor(templates.length / 2);
-            if (idx < halfPoint) {
-              status = "completed";
-              const completionDate = new Date("2025-11-15T08:00:00Z");
-              completed_at = completionDate.toISOString();
-              if (operatorIds.length > 0) {
-                completed_by = operatorIds[Math.floor(Math.random() * operatorIds.length)];
-              }
-            } else if (idx === halfPoint) {
-              status = "in_progress";
-            }
+          if (substepsError) {
+            console.warn("Substeps creation warning:", substepsError);
+          } else {
+            console.log(`✓ Created ${substeps.length} example substeps for ${inProgressOps.length} operations`);
           }
-
-          const substep: {
-            tenant_id: string;
-            operation_id: string;
-            name: string;
-            sequence: number;
-            status: string;
-            notes?: string;
-            completed_at?: string;
-            completed_by?: string;
-          } = {
-            tenant_id: tenantId,
-            operation_id: op.id,
-            name: template.name,
-            sequence: (idx + 1) * 10,
-            status,
-            notes: template.notes,
-          };
-
-          // Only add completed fields if they have values
-          if (completed_at) {
-            substep.completed_at = completed_at;
-          }
-          if (completed_by) {
-            substep.completed_by = completed_by;
-          }
-
-          substeps.push(substep);
-        });
-      }
-
-      if (substeps.length > 0) {
-        const { error: substepsError } = await supabase
-          .from("substeps")
-          .insert(substeps);
-
-        if (substepsError) {
-          console.warn("Substeps creation warning:", substepsError);
-        } else {
-          console.log(`✓ Created ${substeps.length} substeps for operations`);
         }
       }
     }
