@@ -311,7 +311,8 @@
     "save": "Save",
     "success": "Success",
     "validationError": "Validation Error",
-    "stopping": "Stopping..."
+    "stopping": "Stopping...",
+    "viewDetails": "View Details"
   },
   "onboarding": {
     "welcome": "Welcome to Eryxon MES",
@@ -422,7 +423,19 @@
     "low": "Low",
     "medium": "Medium",
     "high": "High",
-    "critical": "Critical"
+    "critical": "Critical",
+    "noJobsFound": "No jobs found",
+    "subtitle": "Manage all jobs, track progress, and monitor deadlines",
+    "total": "Total",
+    "overdue": "Overdue",
+    "dueThisWeek": "Due This Week",
+    "details": "Details",
+    "files": "Files",
+    "statusUpdated": "Status Updated",
+    "jobOnHold": "Job has been put on hold",
+    "jobResumed": "Job has been resumed",
+    "resumeJob": "Resume Job",
+    "putOnHold": "Put On Hold"
   },
   "parts": {
     "title": "Parts Management",
