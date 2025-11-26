@@ -515,6 +515,7 @@ export default function OperatorTerminal() {
                         stepUrl={stepUrl}
                         pdfUrl={pdfUrl}
                         operations={selectedPartOperations}
+                        onDataRefresh={loadData}
                     />
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8 text-center">
