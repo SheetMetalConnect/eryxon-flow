@@ -11,14 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Plus, Save, X, Upload, Eye, Trash2, Box, FileText, AlertTriangle, Package, ChevronRight, Wrench, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFileUpload } from "@/hooks/useFileUpload";
-import { UploadProgress, StorageQuotaDisplay } from "@/components/UploadProgress";
+import { UploadProgress } from "@/components/UploadProgress";
 import {
   Select,
   SelectContent,
@@ -67,17 +67,9 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
   const {
     progress: uploadProgress,
     isUploading,
-    storageQuota,
     uploadFiles,
-    deleteFile,
-    fetchStorageQuota,
     resetProgress,
   } = useFileUpload();
-
-  // Fetch storage quota on mount
-  useEffect(() => {
-    fetchStorageQuota();
-  }, [fetchStorageQuota]);
 
   const { data: part, isLoading } = useQuery({
     queryKey: ["part-detail", partId],
@@ -642,9 +634,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                 {t("parts.files")} ({part?.file_paths?.length || 0})
               </Label>
             </div>
-
-            {/* Storage Quota Display */}
-            <StorageQuotaDisplay quota={storageQuota} className="mb-4" />
 
             {/* File Upload */}
             <div className="border rounded-lg p-4 mb-3 bg-muted">

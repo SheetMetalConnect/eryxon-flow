@@ -26,7 +26,6 @@ export function ImageUpload({ partId, onUploadComplete, className }: ImageUpload
     uploadFiles,
     progress,
     isUploading,
-    storageQuota,
   } = useFileUpload();
 
   // Handle file selection
@@ -146,24 +145,6 @@ export function ImageUpload({ partId, onUploadComplete, className }: ImageUpload
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Storage Quota Display */}
-      {storageQuota && (
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">
-              {t("parts.images.storageUsed")}
-            </span>
-            <span className="font-medium">
-              {storageQuota.currentMB.toFixed(2)} MB
-              {!storageQuota.isUnlimited && ` / ${storageQuota.maxMB} MB`}
-            </span>
-          </div>
-          {!storageQuota.isUnlimited && (
-            <Progress value={storageQuota.usedPercentage} className="h-2" />
-          )}
-        </div>
-      )}
-
       {/* Drag and Drop Zone */}
       <Card
         className={cn(
