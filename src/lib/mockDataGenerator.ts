@@ -1493,6 +1493,111 @@ export async function generateMockData(
       }
     }
 
+    // Step 7.6: Create substep templates for reuse
+    const templateDefinitions = [
+      {
+        name: "Cutting",
+        description: "Standard cutting operation checklist",
+        operation_type: "cutting",
+        items: [
+          { name: "Review cutting plan", notes: "Check dimensions" },
+          { name: "Prepare material", notes: "Verify quantity and grade" },
+          { name: "First article check", notes: "Measure first piece" },
+          { name: "Execute cutting", notes: null },
+          { name: "Deburr and inspect", notes: "Remove sharp edges" },
+        ],
+      },
+      {
+        name: "Bending",
+        description: "Press brake bending checklist",
+        operation_type: "bending",
+        items: [
+          { name: "Select tooling", notes: "Check dies and punches" },
+          { name: "Set parameters", notes: "Tonnage, back gauge, angle" },
+          { name: "Test bend", notes: "Verify on scrap material" },
+          { name: "Execute bending", notes: null },
+          { name: "Inspect angles", notes: "Use protractor" },
+        ],
+      },
+      {
+        name: "Welding",
+        description: "Welding operation checklist",
+        operation_type: "welding",
+        items: [
+          { name: "Check equipment", notes: "Gas, wire, settings" },
+          { name: "Prepare joint", notes: "Clean and fit-up" },
+          { name: "Tack weld", notes: "Verify alignment" },
+          { name: "Execute welding", notes: null },
+          { name: "Visual inspection", notes: "Check for defects" },
+        ],
+      },
+      {
+        name: "Assembly",
+        description: "Assembly operation checklist",
+        operation_type: "assembly",
+        items: [
+          { name: "Verify components", notes: "Check all parts present" },
+          { name: "Review BOM", notes: "Confirm hardware" },
+          { name: "Fit and align", notes: null },
+          { name: "Fasten per spec", notes: "Use torque wrench if required" },
+          { name: "Function test", notes: null },
+        ],
+      },
+      {
+        name: "Quality Check",
+        description: "Final inspection checklist",
+        operation_type: "inspection",
+        items: [
+          { name: "Gather documents", notes: "Drawings, specs" },
+          { name: "Visual inspection", notes: null },
+          { name: "Measure dimensions", notes: "Critical features" },
+          { name: "Document results", notes: null },
+          { name: "Sign off", notes: null },
+        ],
+      },
+    ];
+
+    for (const templateDef of templateDefinitions) {
+      try {
+        // Create template
+        const { data: template, error: templateError } = await supabase
+          .from("substep_templates")
+          .insert({
+            tenant_id: tenantId,
+            name: templateDef.name,
+            description: templateDef.description,
+            operation_type: templateDef.operation_type,
+            is_global: false,
+          })
+          .select("id")
+          .single();
+
+        if (templateError) {
+          console.warn(`Template "${templateDef.name}" warning:`, templateError);
+          continue;
+        }
+
+        // Create template items
+        const items = templateDef.items.map((item, idx) => ({
+          template_id: template.id,
+          name: item.name,
+          notes: item.notes,
+          sequence: (idx + 1) * 10,
+        }));
+
+        const { error: itemsError } = await supabase
+          .from("substep_template_items")
+          .insert(items);
+
+        if (itemsError) {
+          console.warn(`Template items for "${templateDef.name}" warning:`, itemsError);
+        }
+      } catch (err) {
+        console.warn(`Template "${templateDef.name}" error:`, err);
+      }
+    }
+    console.log(`✓ Created ${templateDefinitions.length} substep templates`);
+
     // Step 8: Link resources to operations
     if (
       options.includeResources &&
@@ -1908,6 +2013,31 @@ export async function clearMockData(
       .delete()
       .eq("tenant_id", tenantId);
     if (substepsErr) console.warn("Substeps deletion warning:", substepsErr);
+
+    // 7.5. Delete substep template items (must delete before templates - FK constraint)
+    const { data: tenantTemplates, error: templateFetchErr } = await supabase
+      .from("substep_templates")
+      .select("id")
+      .eq("tenant_id", tenantId);
+
+    if (templateFetchErr) {
+      console.warn("Template fetch warning:", templateFetchErr);
+    } else if (tenantTemplates && tenantTemplates.length > 0) {
+      const templateIds = tenantTemplates.map((t) => t.id);
+      const { error: templateItemsErr } = await supabase
+        .from("substep_template_items")
+        .delete()
+        .in("template_id", templateIds);
+      if (templateItemsErr)
+        console.warn("Template items deletion warning:", templateItemsErr);
+    }
+
+    // 7.6. Delete substep templates (has tenant_id)
+    const { error: templatesErr } = await supabase
+      .from("substep_templates")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (templatesErr) console.warn("Templates deletion warning:", templatesErr);
 
     // 8. Delete operation_resources (NO tenant_id - must filter through operations)
     // CRITICAL: We must get operation IDs first to ensure tenant isolation
