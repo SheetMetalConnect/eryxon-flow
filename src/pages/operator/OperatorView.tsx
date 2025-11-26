@@ -1321,8 +1321,12 @@ export default function OperatorView() {
           operationName={selectedOperation.operation_name}
           partNumber={selectedOperation.part.part_number}
           plannedQuantity={selectedOperation.part.quantity}
-          onSuccess={() => {
+          onSuccess={async (quantityGood: number, shouldStopTime: boolean) => {
             setIsQuantityModalOpen(false);
+            // Auto-stop time tracking when quantity is achieved
+            if (shouldStopTime && activeTimeEntry) {
+              await handleStopTracking();
+            }
             loadOperations(selectedJobId);
           }}
         />
