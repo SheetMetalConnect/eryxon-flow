@@ -134,8 +134,11 @@ export function NextCellInfo({ nextCellName, metrics, loading = false, className
                         </div>
                     )}
 
-                    {/* Warning indicator */}
-                    {metrics.show_warning && metrics.wip_limit !== null && metrics.current_wip < metrics.wip_limit && (
+                    {/* Warning indicator - only show when utilization is at or above warning threshold (80% or custom) */}
+                    {metrics.show_warning && metrics.wip_limit !== null && metrics.current_wip < metrics.wip_limit && (() => {
+                        const threshold = metrics.wip_warning_threshold ?? Math.floor(metrics.wip_limit * 0.8);
+                        return metrics.current_wip >= threshold;
+                    })() && (
                         <div className="mt-2 text-xs font-medium text-amber-700 dark:text-amber-300">
                             Approaching capacity limit
                         </div>
