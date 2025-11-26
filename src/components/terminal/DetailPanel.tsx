@@ -1,15 +1,16 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { TerminalJob } from '@/types/terminal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Play, Pause, Square, FileText, Box, AlertTriangle, CheckCircle2, Clock, Circle, Maximize2, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { Play, Pause, Square, FileText, Box, AlertTriangle, CheckCircle2, Clock, Circle, Maximize2, X, ChevronDown, ChevronRight, Package, ClipboardList } from 'lucide-react';
 import { STEPViewer } from '@/components/STEPViewer'; // Reusing existing viewer
 import { PDFViewer } from '@/components/PDFViewer';
 import { OperationWithDetails } from '@/lib/database';
 import { cn } from '@/lib/utils';
 import IssueForm from '@/components/operator/IssueForm';
+import ProductionQuantityModal from '@/components/operator/ProductionQuantityModal';
 import { NextCellInfo } from './NextCellInfo';
 import { RoutingVisualization } from './RoutingVisualization';
 import { useCellQRMMetrics } from '@/hooks/useQRMMetrics';
@@ -17,6 +18,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { IconDisplay } from '@/components/ui/icon-picker';
+import { toast } from 'sonner';
 
 interface Substep {
     id: string;
@@ -40,10 +42,17 @@ interface DetailPanelProps {
 
 export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl, operations = [] }: DetailPanelProps) {
     const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
+    const [isQuantityModalOpen, setIsQuantityModalOpen] = useState(false);
     const [fullscreenViewer, setFullscreenViewer] = useState<'3d' | 'pdf' | null>(null);
     const [substepsByOperation, setSubstepsByOperation] = useState<Record<string, Substep[]>>({});
     const [expandedOperations, setExpandedOperations] = useState<Set<string>>(new Set());
+    const [isUpdatingSubstep, setIsUpdatingSubstep] = useState<string | null>(null);
     const { profile } = useAuth();
+
+    // Get current operation for quantity modal
+    const currentOperation = useMemo(() => {
+        return operations.find(op => op.id === job.operationId);
+    }, [operations, job.operationId]);
 
     // Fetch substeps for all operations
     useEffect(() => {
@@ -88,6 +97,73 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
             return next;
         });
     };
+
+    // Toggle substep status: not_started -> in_progress -> completed -> not_started
+    const toggleSubstepStatus = useCallback(async (substep: Substep, e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent operation expand/collapse
+
+        if (!profile?.id || !profile?.tenant_id) {
+            toast.error("Not authenticated");
+            return;
+        }
+
+        setIsUpdatingSubstep(substep.id);
+
+        // Determine next status
+        const statusOrder = ['not_started', 'in_progress', 'completed'];
+        const currentIndex = statusOrder.indexOf(substep.status);
+        const nextStatus = statusOrder[(currentIndex + 1) % statusOrder.length];
+
+        try {
+            const updateData: Record<string, any> = {
+                status: nextStatus,
+            };
+
+            // If completing, set completed_at and completed_by
+            if (nextStatus === 'completed') {
+                updateData.completed_at = new Date().toISOString();
+                updateData.completed_by = profile.id;
+            } else {
+                // If un-completing, clear the fields
+                updateData.completed_at = null;
+                updateData.completed_by = null;
+            }
+
+            const { error } = await supabase
+                .from('substeps')
+                .update(updateData)
+                .eq('id', substep.id)
+                .eq('tenant_id', profile.tenant_id);
+
+            if (error) throw error;
+
+            // Update local state
+            setSubstepsByOperation(prev => {
+                const opSubsteps = prev[substep.operation_id] || [];
+                return {
+                    ...prev,
+                    [substep.operation_id]: opSubsteps.map(s =>
+                        s.id === substep.id
+                            ? { ...s, status: nextStatus }
+                            : s
+                    ),
+                };
+            });
+
+            // Brief feedback
+            const statusLabels: Record<string, string> = {
+                'not_started': 'Reset',
+                'in_progress': 'Started',
+                'completed': 'Completed'
+            };
+            toast.success(`${substep.name}: ${statusLabels[nextStatus]}`);
+        } catch (error) {
+            console.error("Error updating substep:", error);
+            toast.error("Failed to update step");
+        } finally {
+            setIsUpdatingSubstep(null);
+        }
+    }, [profile]);
 
     // Compute next operation in the sequence FIRST
     const nextOperation = useMemo(() => {
@@ -161,6 +237,15 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                             <Square className="w-3.5 h-3.5 mr-1.5" /> Complete
                         </Button>
                     )}
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsQuantityModalOpen(true)}
+                        title="Record Production Quantity"
+                        className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/30 h-8 w-8 p-0"
+                    >
+                        <ClipboardList className="w-3.5 h-3.5" />
+                    </Button>
                     <Button
                         variant="outline"
                         size="sm"
@@ -303,37 +388,51 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                                                     {op.status === 'on_hold' && <AlertTriangle className="w-3 h-3 text-amber-500" />}
                                                 </div>
                                             </div>
-                                            {/* Substeps */}
+                                            {/* Substeps - Interactive */}
                                             {hasSubsteps && isExpanded && (
                                                 <div className="ml-6 pl-2 border-l border-muted/50 space-y-0.5 py-1">
-                                                    {opSubsteps.map((substep) => (
-                                                        <div
-                                                            key={substep.id}
-                                                            className="flex items-center gap-1.5 text-[10px] py-0.5"
-                                                        >
-                                                            {substep.status === 'completed' ? (
-                                                                <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />
-                                                            ) : substep.status === 'in_progress' ? (
-                                                                <Clock className="w-3 h-3 text-primary shrink-0" />
-                                                            ) : substep.status === 'blocked' ? (
-                                                                <AlertTriangle className="w-3 h-3 text-red-500 shrink-0" />
-                                                            ) : (
-                                                                <Circle className="w-3 h-3 text-muted-foreground/50 shrink-0" />
-                                                            )}
-                                                            {substep.icon_name && (
-                                                                <IconDisplay
-                                                                    iconName={substep.icon_name}
-                                                                    className="w-3 h-3 text-muted-foreground shrink-0"
-                                                                />
-                                                            )}
-                                                            <span className={cn(
-                                                                "truncate",
-                                                                substep.status === 'completed' && "text-muted-foreground line-through"
-                                                            )}>
-                                                                {substep.name}
-                                                            </span>
-                                                        </div>
-                                                    ))}
+                                                    {opSubsteps.map((substep) => {
+                                                        const isUpdating = isUpdatingSubstep === substep.id;
+                                                        return (
+                                                            <div
+                                                                key={substep.id}
+                                                                onClick={(e) => toggleSubstepStatus(substep, e)}
+                                                                className={cn(
+                                                                    "flex items-center gap-1.5 text-[10px] py-1 px-1.5 rounded cursor-pointer transition-colors select-none",
+                                                                    "hover:bg-accent/50 active:bg-accent",
+                                                                    isUpdating && "opacity-50 pointer-events-none"
+                                                                )}
+                                                                title={`Click to ${substep.status === 'completed' ? 'reset' : substep.status === 'in_progress' ? 'complete' : 'start'}`}
+                                                            >
+                                                                {substep.status === 'completed' ? (
+                                                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                                                ) : substep.status === 'in_progress' ? (
+                                                                    <Clock className="w-3.5 h-3.5 text-primary shrink-0 animate-pulse" />
+                                                                ) : substep.status === 'blocked' ? (
+                                                                    <AlertTriangle className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                                                                ) : (
+                                                                    <Circle className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
+                                                                )}
+                                                                {substep.icon_name && (
+                                                                    <IconDisplay
+                                                                        iconName={substep.icon_name}
+                                                                        className="w-3 h-3 text-muted-foreground shrink-0"
+                                                                    />
+                                                                )}
+                                                                <span className={cn(
+                                                                    "truncate flex-1",
+                                                                    substep.status === 'completed' && "text-muted-foreground line-through"
+                                                                )}>
+                                                                    {substep.name}
+                                                                </span>
+                                                                {substep.notes && (
+                                                                    <span className="text-[8px] text-muted-foreground/70 truncate max-w-[80px]">
+                                                                        {substep.notes}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
                                                 </div>
                                             )}
                                         </div>
@@ -361,6 +460,22 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                 onOpenChange={setIsIssueModalOpen}
                 onSuccess={() => setIsIssueModalOpen(false)}
             />
+
+            {/* Production Quantity Modal */}
+            {currentOperation && (
+                <ProductionQuantityModal
+                    isOpen={isQuantityModalOpen}
+                    onClose={() => setIsQuantityModalOpen(false)}
+                    operationId={job.operationId}
+                    operationName={currentOperation.operation_name}
+                    partNumber={currentOperation.part?.part_number || job.jobCode}
+                    plannedQuantity={currentOperation.part?.quantity}
+                    onSuccess={() => {
+                        setIsQuantityModalOpen(false);
+                        toast.success("Production quantity recorded");
+                    }}
+                />
+            )}
 
             {/* Fullscreen Viewer Overlay */}
             {fullscreenViewer && createPortal(
