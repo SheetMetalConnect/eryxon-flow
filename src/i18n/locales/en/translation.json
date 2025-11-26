@@ -452,6 +452,7 @@
   },
   "parts": {
     "title": "Parts Management",
+    "subtitle": "Track parts, assemblies, and components across all jobs",
     "3dModel": "3D Model",
     "actions": "Actions",
     "addPart": "Add Part",
@@ -870,6 +871,7 @@
   },
   "resources": {
     "title": "Resource Management",
+    "subtitle": "Manage tools, machines, and equipment for your operations",
     "active": "Active",
     "addResource": "Add Resource",
     "addResourcesOfType": "Add resources of type {{type}}",
@@ -1427,5 +1429,27 @@
     "noActivitiesFound": "No activities found",
     "tryAdjustingFilters": "Try adjusting your filters or search query",
     "loadMore": "Load More"
+  },
+  "integrations": {
+    "title": "Integration Marketplace",
+    "subtitle": "Browse and install pre-built integrations for common ERP systems, or build your own using our starter kits",
+    "marketplace": "Marketplace",
+    "starterKits": "Starter Kits",
+    "available": "Available",
+    "installed": "Installed",
+    "install": "Install",
+    "configure": "Configure",
+    "remove": "Remove"
+  },
+  "templates": {
+    "title": "Substep Templates",
+    "subtitle": "Manage substep templates and view all substeps across your operations"
+  },
+  "languageSwitcher": {
+    "selectLanguage": "Select Language"
+  },
+  "jobCreate": {
+    "title": "Create New Job",
+    "subtitle": "Build your job step-by-step: define details, add parts, configure operations, and review"
   }
 }

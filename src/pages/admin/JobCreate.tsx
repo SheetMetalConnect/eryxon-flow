@@ -306,7 +306,7 @@ export default function JobCreate() {
           {t("jobs.createNewJob")}
         </h1>
         <p className="text-muted-foreground text-lg">
-          Build your job step-by-step: define details, add parts, configure operations, and review
+          {t("jobCreate.subtitle")}
         </p>
       </div>
 

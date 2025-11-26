@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,6 +75,7 @@ const categoryLabels: Record<string, string> = {
 };
 
 export default function IntegrationsMarketplace() {
+  const { t } = useTranslation();
   const { session } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -257,10 +259,10 @@ export default function IntegrationsMarketplace() {
     <div className="p-6 max-w-7xl mx-auto space-y-8">
       <div>
         <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
-          Integration Marketplace
+          {t("integrations.title")}
         </h1>
         <p className="text-muted-foreground text-lg">
-          Browse and install pre-built integrations for common ERP systems, or build your own using our starter kits
+          {t("integrations.subtitle")}
         </p>
       </div>
 
