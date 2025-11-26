@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatDistanceToNow } from "date-fns";
@@ -68,6 +69,7 @@ interface ActivityStats {
 }
 
 export const ActivityMonitor: React.FC = () => {
+  const { t } = useTranslation();
   const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [stats, setStats] = useState<ActivityStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -323,10 +325,10 @@ export const ActivityMonitor: React.FC = () => {
       {/* Header Section */}
       <div>
         <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
-          Activity Monitor
+          {t("activityMonitor.title")}
         </h1>
         <p className="text-muted-foreground text-lg">
-          Real-time platform activity feed with comprehensive audit trail
+          {t("activityMonitor.description")}
         </p>
       </div>
 

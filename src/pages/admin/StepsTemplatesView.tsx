@@ -13,10 +13,10 @@ export default function StepsTemplatesView() {
     <div className="container mx-auto p-6 space-y-8">
         <div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
-            {t("Steps & Templates")}
+            {t("templates.title")}
           </h1>
           <p className="text-muted-foreground text-lg">
-            {t("Manage substep templates and view all substeps across your operations")}
+            {t("templates.subtitle")}
           </p>
         </div>
 

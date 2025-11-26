@@ -194,7 +194,7 @@ export default function ConfigResources() {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
               {t('resources.title')}
             </h1>
-            <p className="text-muted-foreground text-lg">{t('resources.description')}</p>
+            <p className="text-muted-foreground text-lg">{t('resources.subtitle')}</p>
           </div>
 
           <Dialog open={dialogOpen} onOpenChange={(open) => {

@@ -402,7 +402,7 @@ export default function Parts() {
             {t("parts.title")}
           </h1>
           <p className="text-muted-foreground text-lg">
-            Track parts, assemblies, and components across all jobs
+            {t("parts.subtitle")}
           </p>
         </div>
 

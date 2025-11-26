@@ -328,6 +328,7 @@
   },
   "parts": {
     "title": "Teileverwaltung",
+    "subtitle": "Verfolgen Sie Teile, Baugruppen und Komponenten über alle Aufträge",
     "3dModel": "3D-Modell",
     "actions": "Aktionen",
     "addPart": "Teil hinzufügen",
@@ -746,6 +747,7 @@
   },
   "resources": {
     "title": "Ressourcenverwaltung",
+    "subtitle": "Verwalten Sie Werkzeuge, Maschinen und Geräte für Ihre Arbeitsgänge",
     "active": "Aktiv",
     "addResource": "Ressource hinzufügen",
     "addResourcesOfType": "Ressourcen vom Typ {{type}} hinzufügen",
@@ -1300,5 +1302,27 @@
     "noActivitiesFound": "Keine Aktivitäten gefunden",
     "tryAdjustingFilters": "Versuchen Sie, Ihre Filter oder Suchanfrage anzupassen",
     "loadMore": "Mehr laden"
+  },
+  "integrations": {
+    "title": "Integrationen Marktplatz",
+    "subtitle": "Durchsuchen und installieren Sie vorgefertigte Integrationen für gängige ERP-Systeme oder erstellen Sie Ihre eigenen mit unseren Starter-Kits",
+    "marketplace": "Marktplatz",
+    "starterKits": "Starter-Kits",
+    "available": "Verfügbar",
+    "installed": "Installiert",
+    "install": "Installieren",
+    "configure": "Konfigurieren",
+    "remove": "Entfernen"
+  },
+  "templates": {
+    "title": "Unterschritt-Vorlagen",
+    "subtitle": "Verwalten Sie Unterschritt-Vorlagen und sehen Sie alle Unterschritte Ihrer Arbeitsgänge"
+  },
+  "languageSwitcher": {
+    "selectLanguage": "Sprache auswählen"
+  },
+  "jobCreate": {
+    "title": "Neuen Auftrag erstellen",
+    "subtitle": "Erstellen Sie Ihren Auftrag Schritt für Schritt: definieren Sie Details, fügen Sie Teile hinzu, konfigurieren Sie Arbeitsgänge und überprüfen Sie"
   }
 }

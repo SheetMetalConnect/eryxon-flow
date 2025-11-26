@@ -605,6 +605,7 @@
   },
   "parts": {
     "title": "Onderdelenbeheer",
+    "subtitle": "Volg onderdelen, samenstellingen en componenten over alle orders",
     "3dModel": "3D-model",
     "actions": "Acties",
     "addPart": "Onderdeel toevoegen",
@@ -1023,6 +1024,7 @@
   },
   "resources": {
     "title": "Resourcebeheer",
+    "subtitle": "Beheer gereedschappen, machines en apparatuur voor uw bewerkingen",
     "active": "Actief",
     "addResource": "Resource toevoegen",
     "addResourcesOfType": "Resources van type {{type}} toevoegen",
@@ -1580,5 +1582,27 @@
     "noActivitiesFound": "Geen activiteiten gevonden",
     "tryAdjustingFilters": "Probeer uw filters of zoekopdracht aan te passen",
     "loadMore": "Meer laden"
+  },
+  "integrations": {
+    "title": "Integratie Marktplaats",
+    "subtitle": "Blader door en installeer vooraf gebouwde integraties voor veelvoorkomende ERP-systemen, of bouw uw eigen integratie met onze startkits",
+    "marketplace": "Marktplaats",
+    "starterKits": "Startkits",
+    "available": "Beschikbaar",
+    "installed": "Geïnstalleerd",
+    "install": "Installeren",
+    "configure": "Configureren",
+    "remove": "Verwijderen"
+  },
+  "templates": {
+    "title": "Substap Sjablonen",
+    "subtitle": "Beheer substapsjablonen en bekijk alle substappen in uw bewerkingen"
+  },
+  "languageSwitcher": {
+    "selectLanguage": "Taal selecteren"
+  },
+  "jobCreate": {
+    "title": "Nieuwe Order Aanmaken",
+    "subtitle": "Bouw uw order stap voor stap: definieer details, voeg onderdelen toe, configureer bewerkingen en controleer"
   }
 }
