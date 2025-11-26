@@ -4,12 +4,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Play, Pause, Square, FileText, Box, AlertTriangle, CheckCircle2, Clock, Circle, Maximize2, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { Play, Pause, Square, FileText, Box, AlertTriangle, CheckCircle2, Clock, Circle, Maximize2, X, ChevronDown, ChevronRight, PackageCheck } from 'lucide-react';
 import { STEPViewer } from '@/components/STEPViewer'; // Reusing existing viewer
 import { PDFViewer } from '@/components/PDFViewer';
 import { OperationWithDetails } from '@/lib/database';
 import { cn } from '@/lib/utils';
 import IssueForm from '@/components/operator/IssueForm';
+import ProductionQuantityModal from '@/components/operator/ProductionQuantityModal';
 import { NextCellInfo } from './NextCellInfo';
 import { RoutingVisualization } from './RoutingVisualization';
 import { useCellQRMMetrics } from '@/hooks/useQRMMetrics';
@@ -36,10 +37,12 @@ interface DetailPanelProps {
     stepUrl?: string | null;
     pdfUrl?: string | null;
     operations?: OperationWithDetails[];
+    onDataRefresh?: () => void;
 }
 
-export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl, operations = [] }: DetailPanelProps) {
+export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl, operations = [], onDataRefresh }: DetailPanelProps) {
     const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
+    const [isQuantityModalOpen, setIsQuantityModalOpen] = useState(false);
     const [fullscreenViewer, setFullscreenViewer] = useState<'3d' | 'pdf' | null>(null);
     const [substepsByOperation, setSubstepsByOperation] = useState<Record<string, Substep[]>>({});
     const [expandedOperations, setExpandedOperations] = useState<Set<string>>(new Set());
@@ -145,9 +148,20 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                             <Play className="w-3.5 h-3.5 mr-1.5" /> Start
                         </Button>
                     ) : (
-                        <Button onClick={onPause} variant="outline" size="sm" className="flex-1 border-border text-foreground hover:bg-accent h-8 text-xs">
-                            <Pause className="w-3.5 h-3.5 mr-1.5" /> Pause
-                        </Button>
+                        <>
+                            <Button onClick={onPause} variant="outline" size="sm" className="flex-1 border-border text-foreground hover:bg-accent h-8 text-xs">
+                                <Pause className="w-3.5 h-3.5 mr-1.5" /> Pause
+                            </Button>
+                            <Button 
+                                onClick={() => setIsQuantityModalOpen(true)} 
+                                variant="outline" 
+                                size="sm" 
+                                className="border-primary text-primary hover:bg-primary/10 h-8 text-xs px-2"
+                                title="Record Production Quantities"
+                            >
+                                <PackageCheck className="w-3.5 h-3.5" />
+                            </Button>
+                        </>
                     )}
                     {(job.status === 'in_progress' || job.isCurrentUserClocked) && !job.activeTimeEntryId && (
                         <Button
@@ -360,6 +374,20 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                 open={isIssueModalOpen}
                 onOpenChange={setIsIssueModalOpen}
                 onSuccess={() => setIsIssueModalOpen(false)}
+            />
+
+            {/* Production Quantity Modal */}
+            <ProductionQuantityModal
+                isOpen={isQuantityModalOpen}
+                onClose={() => setIsQuantityModalOpen(false)}
+                operationId={job.operationId}
+                operationName={job.currentOp}
+                partNumber={job.description}
+                plannedQuantity={job.quantity}
+                onSuccess={() => {
+                    setIsQuantityModalOpen(false);
+                    onDataRefresh?.();
+                }}
             />
 
             {/* Fullscreen Viewer Overlay */}

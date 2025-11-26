@@ -35,6 +35,7 @@ import {
   ChevronLeft,
   ChevronRight,
   DragHandle,
+  Assignment,
 } from "@mui/icons-material";
 import { useAuth } from "../../contexts/AuthContext";
 import { supabase } from "../../integrations/supabase/client";
@@ -47,6 +48,7 @@ import { format } from "date-fns";
 import { PDFViewer } from "../../components/PDFViewer";
 import { STEPViewer } from "../../components/STEPViewer";
 import SubstepsManager from "../../components/operator/SubstepsManager";
+import ProductionQuantityModal from "../../components/operator/ProductionQuantityModal";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 
@@ -112,6 +114,7 @@ export default function OperatorView() {
   const [stepUrl, setStepUrl] = useState<string | null>(null);
   const [viewerTab, setViewerTab] = useState<number>(0);
   const [fullscreenViewer, setFullscreenViewer] = useState<'pdf' | '3d' | null>(null);
+  const [isQuantityModalOpen, setIsQuantityModalOpen] = useState<boolean>(false);
 
   // Panel collapse states
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState<boolean>(false);
@@ -757,6 +760,20 @@ export default function OperatorView() {
                   {t("Start")}
                 </Button>
               )}
+              {activeTimeEntry && (
+                <Tooltip title="Record Production Quantities">
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    startIcon={<Assignment sx={{ fontSize: 14 }} />}
+                    onClick={() => setIsQuantityModalOpen(true)}
+                    size="small"
+                    sx={{ fontSize: "0.7rem", py: 0.375, px: 1.25, minWidth: 0 }}
+                  >
+                    {t("Record Qty")}
+                  </Button>
+                </Tooltip>
+              )}
               <Button
                 variant="outlined"
                 color="primary"
@@ -1294,6 +1311,22 @@ export default function OperatorView() {
 
       {/* Fullscreen Overlay */}
       {FullscreenOverlay}
+
+      {/* Production Quantity Modal */}
+      {selectedOperation && (
+        <ProductionQuantityModal
+          isOpen={isQuantityModalOpen}
+          onClose={() => setIsQuantityModalOpen(false)}
+          operationId={selectedOperation.id}
+          operationName={selectedOperation.operation_name}
+          partNumber={selectedOperation.part.part_number}
+          plannedQuantity={selectedOperation.part.quantity}
+          onSuccess={() => {
+            setIsQuantityModalOpen(false);
+            loadOperations(selectedJobId);
+          }}
+        />
+      )}
     </Box>
   );
 }
