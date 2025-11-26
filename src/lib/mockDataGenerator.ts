@@ -1443,180 +1443,160 @@ export async function generateMockData(
       }
     }
 
-    // Step 7.5: Create realistic substeps for operations
-    // Schema: id, tenant_id, operation_id, name, sequence, status, notes, completed_at, completed_by, created_at, updated_at
+    // Step 7.5: Create a few example substeps (only for 2-3 in_progress operations)
+    // Keep it minimal - users can add more via templates or manually
     if (operationData.length > 0) {
-      const substeps: Array<{
-        tenant_id: string;
-        operation_id: string;
-        name: string;
-        sequence: number;
-        status: string;
-        notes?: string;
-        completed_at?: string;
-        completed_by?: string;
-      }> = [];
+      const inProgressOps = operationData.filter(op => op.status === "in_progress").slice(0, 2);
 
-      // Substep templates by cell type (operation category)
-      // Notes provide operator guidance for each step
-      const substepTemplates: Record<string, Array<{ name: string; notes?: string }>> = {
-        "Lasersnijden": [
-          { name: "Machine opstarten", notes: "Warm-up cyclus 5 min" },
-          { name: "NC programma laden", notes: "Controleer versienummer" },
-          { name: "Materiaal plaatsen", notes: "Let op orientatie markering" },
-          { name: "Nulpunt instellen" },
-          { name: "Testsnede uitvoeren", notes: "Controleer snijkwaliteit" },
-          { name: "Productie run starten" },
-          { name: "Onderdelen verwijderen" },
-          { name: "Visuele controle", notes: "Check snijkwaliteit en bramen" },
-        ],
-        "CNC Kantbank": [
-          { name: "Tooling selecteren", notes: "Controleer V-matrijs en stempel" },
-          { name: "Tooling monteren" },
-          { name: "Programma laden", notes: "Controleer versie en materiaal" },
-          { name: "Achteraanslag instellen" },
-          { name: "Testbuiging maken", notes: "Meet hoek met gradenmeter" },
-          { name: "Productie starten" },
-          { name: "Tussentijdse meting", notes: "Elke 5 stuks controleren" },
-          { name: "Eindcontrole afmetingen" },
-        ],
-        "Lassen": [
-          { name: "Lasapparatuur controleren", notes: "Gas, draad, masker controleren" },
-          { name: "Werkstuk uitlijnen" },
-          { name: "Bevestigen in jig", notes: "Controleer uitlijning" },
-          { name: "Hechten (tack)", notes: "Max 3mm laspunten" },
-          { name: "Rootlas", notes: "Binnenste laslaag" },
-          { name: "Vullagen" },
-          { name: "Deklaag", notes: "Laatste laslaag" },
-          { name: "Slak verwijderen" },
-          { name: "Visuele controle lasnaad", notes: "VT inspectie" },
-          { name: "Nabewerking indien nodig" },
-        ],
-        "Montage": [
-          { name: "Onderdelen verzamelen", notes: "Check tegen paklijst" },
-          { name: "Hardware controleren", notes: "Bouten, moeren, borgringen" },
-          { name: "Componenten voorbereiden" },
-          { name: "Subassemblies maken" },
-          { name: "Hoofdassemblage" },
-          { name: "Momentsleutel aandraaimomenten", notes: "Per tekening" },
-          { name: "Functionele test" },
-          { name: "Eindcontrole" },
-        ],
-        "Afwerking": [
-          { name: "Voorbehandeling check" },
-          { name: "Reinigen/ontvetten", notes: "Gebruik goedgekeurd reinigingsmiddel" },
-          { name: "Maskeren indien nodig" },
-          { name: "Oppervlaktebehandeling", notes: "Coating/Anodiseren" },
-          { name: "Droogtijd/uitharding", notes: "Volgens datasheet" },
-          { name: "Laagdikte meting", notes: "DFT meting" },
-          { name: "Demaskeren" },
-          { name: "Visuele eindcontrole" },
-        ],
-        "Kwaliteitscontrole": [
-          { name: "Documentatie verzamelen", notes: "Tekeningen, specs, certs" },
-          { name: "Visuele inspectie" },
-          { name: "Dimensie controle", notes: "Kritische maten per tekening" },
-          { name: "Functionele test", notes: "Indien van toepassing" },
-          { name: "Certificaten controleren", notes: "Materiaal certs" },
-          { name: "Meetrapport invullen" },
-          { name: "Goedkeuren/afkeuren", notes: "Status bijwerken in systeem" },
-          { name: "Label en vrijgave" },
-        ],
-      };
+      if (inProgressOps.length > 0) {
+        const substeps: Array<{
+          tenant_id: string;
+          operation_id: string;
+          name: string;
+          sequence: number;
+          status: string;
+          notes?: string;
+        }> = [];
 
-      // Helper to determine operation cell name from cell_id
-      const getCellName = (cellId: string): string | undefined => {
-        return Object.entries(cellIdMap).find(([_, id]) => id === cellId)?.[0];
-      };
+        // Simple substeps - just a few per operation to demonstrate the feature
+        for (const op of inProgressOps) {
+          const simpleSteps = [
+            { name: "Review drawing and specs", status: "completed" },
+            { name: "Prepare materials", status: "completed" },
+            { name: "Execute operation", status: "in_progress" },
+            { name: "Quality check", status: "not_started" },
+            { name: "Sign off", status: "not_started" },
+          ];
 
-      // Create substeps for each operation
-      for (const op of operationData) {
-        const cellName = getCellName(op.cell_id);
-        if (!cellName) continue;
+          simpleSteps.forEach((step, idx) => {
+            substeps.push({
+              tenant_id: tenantId,
+              operation_id: op.id,
+              name: step.name,
+              sequence: (idx + 1) * 10,
+              status: step.status,
+            });
+          });
+        }
 
-        const templates = substepTemplates[cellName];
-        if (!templates) continue;
+        if (substeps.length > 0) {
+          const { error: substepsError } = await supabase
+            .from("substeps")
+            .insert(substeps);
 
-        // For completed operations, mark all substeps as completed with timestamps
-        // For in_progress, mark some as completed/in_progress
-        // For not_started, all substeps are not_started
-        templates.forEach((template, idx) => {
-          let status = "not_started";
-          let completed_at: string | undefined;
-          let completed_by: string | undefined;
-
-          if (op.status === "completed") {
-            status = "completed";
-            // Set completion timestamp in the past (Oct-Nov 2025)
-            const completionDate = new Date("2025-10-20T08:00:00Z");
-            completionDate.setDate(completionDate.getDate() + Math.floor(Math.random() * 40));
-            completionDate.setHours(8 + idx, Math.floor(Math.random() * 60));
-            completed_at = completionDate.toISOString();
-            // Assign to a random operator if available
-            if (operatorIds.length > 0) {
-              completed_by = operatorIds[Math.floor(Math.random() * operatorIds.length)];
-            }
-          } else if (op.status === "in_progress") {
-            // First 30-70% are completed, one in_progress, rest not_started
-            const completionThreshold = Math.floor(templates.length * (0.3 + Math.random() * 0.4));
-            if (idx < completionThreshold) {
-              status = "completed";
-              const completionDate = new Date("2025-11-15T08:00:00Z");
-              completionDate.setDate(completionDate.getDate() + Math.floor(Math.random() * 10));
-              completionDate.setHours(8 + idx, Math.floor(Math.random() * 60));
-              completed_at = completionDate.toISOString();
-              if (operatorIds.length > 0) {
-                completed_by = operatorIds[Math.floor(Math.random() * operatorIds.length)];
-              }
-            } else if (idx === completionThreshold) {
-              status = "in_progress";
-            } else {
-              status = "not_started";
-            }
+          if (substepsError) {
+            console.warn("Substeps creation warning:", substepsError);
+          } else {
+            console.log(`✓ Created ${substeps.length} example substeps for ${inProgressOps.length} operations`);
           }
-
-          const substep: {
-            tenant_id: string;
-            operation_id: string;
-            name: string;
-            sequence: number;
-            status: string;
-            notes?: string;
-            completed_at?: string;
-            completed_by?: string;
-          } = {
-            tenant_id: tenantId,
-            operation_id: op.id,
-            name: template.name,
-            sequence: (idx + 1) * 10,
-            status,
-            notes: template.notes,
-          };
-
-          // Only add completed fields if they have values
-          if (completed_at) {
-            substep.completed_at = completed_at;
-          }
-          if (completed_by) {
-            substep.completed_by = completed_by;
-          }
-
-          substeps.push(substep);
-        });
-      }
-
-      if (substeps.length > 0) {
-        const { error: substepsError } = await supabase
-          .from("substeps")
-          .insert(substeps);
-
-        if (substepsError) {
-          console.warn("Substeps creation warning:", substepsError);
-        } else {
-          console.log(`✓ Created ${substeps.length} substeps for operations`);
         }
       }
     }
+
+    // Step 7.6: Create substep templates for reuse
+    const templateDefinitions = [
+      {
+        name: "Cutting",
+        description: "Standard cutting operation checklist",
+        operation_type: "cutting",
+        items: [
+          { name: "Review cutting plan", notes: "Check dimensions" },
+          { name: "Prepare material", notes: "Verify quantity and grade" },
+          { name: "First article check", notes: "Measure first piece" },
+          { name: "Execute cutting", notes: null },
+          { name: "Deburr and inspect", notes: "Remove sharp edges" },
+        ],
+      },
+      {
+        name: "Bending",
+        description: "Press brake bending checklist",
+        operation_type: "bending",
+        items: [
+          { name: "Select tooling", notes: "Check dies and punches" },
+          { name: "Set parameters", notes: "Tonnage, back gauge, angle" },
+          { name: "Test bend", notes: "Verify on scrap material" },
+          { name: "Execute bending", notes: null },
+          { name: "Inspect angles", notes: "Use protractor" },
+        ],
+      },
+      {
+        name: "Welding",
+        description: "Welding operation checklist",
+        operation_type: "welding",
+        items: [
+          { name: "Check equipment", notes: "Gas, wire, settings" },
+          { name: "Prepare joint", notes: "Clean and fit-up" },
+          { name: "Tack weld", notes: "Verify alignment" },
+          { name: "Execute welding", notes: null },
+          { name: "Visual inspection", notes: "Check for defects" },
+        ],
+      },
+      {
+        name: "Assembly",
+        description: "Assembly operation checklist",
+        operation_type: "assembly",
+        items: [
+          { name: "Verify components", notes: "Check all parts present" },
+          { name: "Review BOM", notes: "Confirm hardware" },
+          { name: "Fit and align", notes: null },
+          { name: "Fasten per spec", notes: "Use torque wrench if required" },
+          { name: "Function test", notes: null },
+        ],
+      },
+      {
+        name: "Quality Check",
+        description: "Final inspection checklist",
+        operation_type: "inspection",
+        items: [
+          { name: "Gather documents", notes: "Drawings, specs" },
+          { name: "Visual inspection", notes: null },
+          { name: "Measure dimensions", notes: "Critical features" },
+          { name: "Document results", notes: null },
+          { name: "Sign off", notes: null },
+        ],
+      },
+    ];
+
+    for (const templateDef of templateDefinitions) {
+      try {
+        // Create template
+        const { data: template, error: templateError } = await supabase
+          .from("substep_templates")
+          .insert({
+            tenant_id: tenantId,
+            name: templateDef.name,
+            description: templateDef.description,
+            operation_type: templateDef.operation_type,
+            is_global: false,
+          })
+          .select("id")
+          .single();
+
+        if (templateError) {
+          console.warn(`Template "${templateDef.name}" warning:`, templateError);
+          continue;
+        }
+
+        // Create template items
+        const items = templateDef.items.map((item, idx) => ({
+          template_id: template.id,
+          name: item.name,
+          notes: item.notes,
+          sequence: (idx + 1) * 10,
+        }));
+
+        const { error: itemsError } = await supabase
+          .from("substep_template_items")
+          .insert(items);
+
+        if (itemsError) {
+          console.warn(`Template items for "${templateDef.name}" warning:`, itemsError);
+        }
+      } catch (err) {
+        console.warn(`Template "${templateDef.name}" error:`, err);
+      }
+    }
+    console.log(`✓ Created ${templateDefinitions.length} substep templates`);
 
     // Step 8: Link resources to operations
     if (
@@ -2033,6 +2013,31 @@ export async function clearMockData(
       .delete()
       .eq("tenant_id", tenantId);
     if (substepsErr) console.warn("Substeps deletion warning:", substepsErr);
+
+    // 7.5. Delete substep template items (must delete before templates - FK constraint)
+    const { data: tenantTemplates, error: templateFetchErr } = await supabase
+      .from("substep_templates")
+      .select("id")
+      .eq("tenant_id", tenantId);
+
+    if (templateFetchErr) {
+      console.warn("Template fetch warning:", templateFetchErr);
+    } else if (tenantTemplates && tenantTemplates.length > 0) {
+      const templateIds = tenantTemplates.map((t) => t.id);
+      const { error: templateItemsErr } = await supabase
+        .from("substep_template_items")
+        .delete()
+        .in("template_id", templateIds);
+      if (templateItemsErr)
+        console.warn("Template items deletion warning:", templateItemsErr);
+    }
+
+    // 7.6. Delete substep templates (has tenant_id)
+    const { error: templatesErr } = await supabase
+      .from("substep_templates")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (templatesErr) console.warn("Templates deletion warning:", templatesErr);
 
     // 8. Delete operation_resources (NO tenant_id - must filter through operations)
     // CRITICAL: We must get operation IDs first to ensure tenant isolation
