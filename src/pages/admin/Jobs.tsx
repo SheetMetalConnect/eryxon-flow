@@ -275,7 +275,7 @@ export default function Jobs() {
         <Calendar className="h-3.5 w-3.5" />
         <span className="font-medium">{format(dueDate, "MMM dd")}</span>
         {job.due_date_override && (
-          <Clock className="h-3 w-3 text-muted-foreground" title="Date overridden" />
+          <Clock className="h-3 w-3 text-muted-foreground" />
         )}
       </div>
     );
