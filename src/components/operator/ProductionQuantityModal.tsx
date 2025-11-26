@@ -3,14 +3,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { AlertTriangle, Check } from "lucide-react";
+import { AlertTriangle, Check, Clock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface ProductionQuantityModalProps {
   isOpen: boolean;
@@ -29,14 +28,7 @@ interface ScrapReason {
   category: string;
 }
 
-interface FormData {
-  quantity_produced: number;
-  quantity_good: number;
-  scrap_reason_id: string;
-  scrap_confirmed: boolean;
-  material_lot: string;
-  notes: string;
-}
+type ShortfallChoice = "continuing" | "scrap" | null;
 
 export default function ProductionQuantityModal({
   isOpen,
@@ -47,28 +39,22 @@ export default function ProductionQuantityModal({
   plannedQuantity,
   onSuccess,
 }: ProductionQuantityModalProps) {
+  const { t } = useTranslation();
   const { profile } = useAuth();
-  const [formData, setFormData] = useState<FormData>({
-    quantity_produced: 0,
-    quantity_good: 0,
-    scrap_reason_id: "",
-    scrap_confirmed: false,
-    material_lot: "",
-    notes: "",
-  });
 
+  const [quantityGood, setQuantityGood] = useState<number>(0);
+  const [shortfallChoice, setShortfallChoice] = useState<ShortfallChoice>(null);
+  const [scrapReasonId, setScrapReasonId] = useState<string>("");
   const [scrapReasons, setScrapReasons] = useState<ScrapReason[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [previouslyRecordedGood, setPreviouslyRecordedGood] = useState<number>(0);
 
-  // Calculate scrap automatically
-  const calculatedScrap = Math.max(0, formData.quantity_produced - formData.quantity_good);
-  const hasScrap = calculatedScrap > 0;
-
-  // Check if quantity will be achieved after this entry
-  const totalGoodAfterEntry = previouslyRecordedGood + formData.quantity_good;
-  const quantityAchieved = plannedQuantity ? totalGoodAfterEntry >= plannedQuantity : false;
+  // Calculate remaining and shortfall
+  const remaining = plannedQuantity ? Math.max(0, plannedQuantity - previouslyRecordedGood) : 0;
+  const shortfall = remaining > 0 ? Math.max(0, remaining - quantityGood) : 0;
+  const hasShortfall = quantityGood > 0 && shortfall > 0;
+  const quantityAchieved = plannedQuantity ? (previouslyRecordedGood + quantityGood) >= plannedQuantity : false;
 
   useEffect(() => {
     if (isOpen) {
@@ -76,6 +62,12 @@ export default function ProductionQuantityModal({
       fetchPreviousQuantities();
     }
   }, [isOpen]);
+
+  // Reset shortfall choice when quantity changes
+  useEffect(() => {
+    setShortfallChoice(null);
+    setScrapReasonId("");
+  }, [quantityGood]);
 
   const fetchPreviousQuantities = async () => {
     try {
@@ -102,31 +94,20 @@ export default function ProductionQuantityModal({
       setScrapReasons(data || []);
     } catch (error) {
       console.error("Error fetching scrap reasons:", error);
-      toast.error("Failed to load scrap reasons");
     }
   };
 
   const validate = (): boolean => {
-    const { quantity_produced, quantity_good, scrap_reason_id, scrap_confirmed } = formData;
-
-    if (quantity_produced <= 0) {
-      setValidationError("Enter how many parts you produced");
+    if (quantityGood <= 0) {
+      setValidationError(t("production.enterGoodParts", "Enter good parts made"));
       return false;
     }
-    if (quantity_good < 0) {
-      setValidationError("Good parts cannot be negative");
+    if (hasShortfall && !shortfallChoice) {
+      setValidationError(t("production.selectShortfallChoice", "Select what happened to remaining parts"));
       return false;
     }
-    if (quantity_good > quantity_produced) {
-      setValidationError("Good parts cannot exceed produced");
-      return false;
-    }
-    if (hasScrap && !scrap_reason_id) {
-      setValidationError("Select a scrap reason");
-      return false;
-    }
-    if (hasScrap && !scrap_confirmed) {
-      setValidationError("Confirm the scrap before submitting");
+    if (shortfallChoice === "scrap" && !scrapReasonId) {
+      setValidationError(t("production.selectScrapReason", "Select scrap reason"));
       return false;
     }
     setValidationError(null);
@@ -141,197 +122,146 @@ export default function ProductionQuantityModal({
     }
     setIsSubmitting(true);
     try {
-      const { data, error } = await supabase.from("operation_quantities").insert([{
+      const scrapQty = shortfallChoice === "scrap" ? shortfall : 0;
+      const producedQty = quantityGood + scrapQty;
+
+      const { error } = await supabase.from("operation_quantities").insert([{
         tenant_id: profile.tenant_id,
         operation_id: operationId,
-        quantity_produced: formData.quantity_produced,
-        quantity_good: formData.quantity_good,
-        quantity_scrap: calculatedScrap,
+        quantity_produced: producedQty,
+        quantity_good: quantityGood,
+        quantity_scrap: scrapQty,
         quantity_rework: 0,
-        scrap_reason_id: formData.scrap_reason_id || null,
-        material_lot: formData.material_lot || null,
-        notes: formData.notes || null,
+        scrap_reason_id: scrapReasonId || null,
         recorded_at: new Date().toISOString(),
-      }]).select().single();
+      }]);
       if (error) throw error;
 
-      // Show success message
-      if (hasScrap) {
-        toast.success(`Recorded: ${formData.quantity_good} good, ${calculatedScrap} scrap`);
+      // Simple success message
+      if (scrapQty > 0) {
+        toast.success(t("production.recordedWithScrap", "{{good}} good, {{scrap}} scrap", { good: quantityGood, scrap: scrapQty }));
       } else {
-        toast.success(`Recorded: ${formData.quantity_good} good parts`);
+        toast.success(t("production.recorded", "{{count}} good parts recorded", { count: quantityGood }));
       }
 
-      // Notify parent with quantity and whether to stop time
-      onSuccess(formData.quantity_good, quantityAchieved);
+      onSuccess(quantityGood, quantityAchieved);
       handleClose();
     } catch (error: any) {
       console.error("Error recording production:", error);
-      toast.error(error.message || "Failed to record production");
+      toast.error(error.message || "Failed to record");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleClose = () => {
-    setFormData({
-      quantity_produced: 0,
-      quantity_good: 0,
-      scrap_reason_id: "",
-      scrap_confirmed: false,
-      material_lot: "",
-      notes: "",
-    });
+    setQuantityGood(0);
+    setShortfallChoice(null);
+    setScrapReasonId("");
     setValidationError(null);
     onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Report Production</DialogTitle>
+          <DialogTitle>{t("production.reportTitle", "Report Production")}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          {/* Part info */}
+
+        <div className="space-y-4 py-2">
+          {/* Target info */}
           <div className="bg-muted p-3 rounded-lg text-sm">
-            <div className="flex justify-between">
-              <span><strong>Part:</strong> {partNumber}</span>
-              <span><strong>Op:</strong> {operationName}</span>
-            </div>
+            <div className="font-medium">{partNumber}</div>
             {plannedQuantity && (
-              <div className="mt-1">
-                <strong>Target:</strong> {plannedQuantity} pcs
+              <div className="text-muted-foreground mt-1">
+                {t("production.target", "Target")}: {plannedQuantity}
                 {previouslyRecordedGood > 0 && (
-                  <span className="text-muted-foreground ml-2">
-                    ({previouslyRecordedGood} already recorded)
-                  </span>
+                  <span> ({remaining} {t("production.remaining", "remaining")})</span>
                 )}
               </div>
             )}
           </div>
 
-          {/* Main inputs - simple and clear */}
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="produced" className="text-base font-medium">Parts Produced</Label>
-              <p className="text-sm text-muted-foreground mb-2">How many parts did you make this run?</p>
-              <Input
-                id="produced"
-                type="number"
-                min="0"
-                value={formData.quantity_produced || ""}
-                onChange={(e) => setFormData({ ...formData, quantity_produced: parseInt(e.target.value) || 0 })}
-                className="text-lg h-12"
-                placeholder="0"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="good" className="text-base font-medium">Good Parts</Label>
-              <p className="text-sm text-muted-foreground mb-2">How many are good quality?</p>
-              <Input
-                id="good"
-                type="number"
-                min="0"
-                max={formData.quantity_produced}
-                value={formData.quantity_good || ""}
-                onChange={(e) => setFormData({ ...formData, quantity_good: parseInt(e.target.value) || 0 })}
-                className="text-lg h-12"
-                placeholder="0"
-              />
-            </div>
+          {/* Single input: How many good parts? */}
+          <div>
+            <Label htmlFor="good" className="text-base font-medium">
+              {t("production.goodPartsQuestion", "How many good parts?")}
+            </Label>
+            <Input
+              id="good"
+              type="number"
+              min="0"
+              value={quantityGood || ""}
+              onChange={(e) => setQuantityGood(parseInt(e.target.value) || 0)}
+              className="text-2xl h-14 mt-2 text-center font-bold"
+              placeholder="0"
+              autoFocus
+            />
           </div>
 
-          {/* Scrap display - only shows when there is scrap */}
-          {formData.quantity_produced > 0 && hasScrap && (
-            <div className="border border-amber-500/50 bg-amber-500/10 rounded-lg p-4 space-y-3">
-              <div className="flex items-center gap-2 text-amber-600">
-                <AlertTriangle className="h-5 w-5" />
-                <span className="font-semibold text-lg">{calculatedScrap} Scrap</span>
-              </div>
-
-              <div>
-                <Label htmlFor="scrap-reason">Why?</Label>
-                <Select
-                  value={formData.scrap_reason_id}
-                  onValueChange={(value) => setFormData({ ...formData, scrap_reason_id: value })}
-                >
-                  <SelectTrigger id="scrap-reason" className="mt-1">
-                    <SelectValue placeholder="Select reason" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {scrapReasons.map((reason) => (
-                      <SelectItem key={reason.id} value={reason.id}>
-                        {reason.code}: {reason.description}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center gap-2 pt-2">
-                <Checkbox
-                  id="confirm-scrap"
-                  checked={formData.scrap_confirmed}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, scrap_confirmed: checked === true })
-                  }
-                />
-                <Label htmlFor="confirm-scrap" className="text-sm cursor-pointer">
-                  I confirm {calculatedScrap} part{calculatedScrap > 1 ? "s are" : " is"} scrap
-                </Label>
-              </div>
-            </div>
-          )}
-
-          {/* Success indicator when no scrap */}
-          {formData.quantity_produced > 0 && !hasScrap && formData.quantity_good > 0 && (
+          {/* Quantity achieved - green success */}
+          {quantityAchieved && quantityGood > 0 && (
             <div className="flex items-center gap-2 text-green-600 bg-green-500/10 p-3 rounded-lg">
               <Check className="h-5 w-5" />
-              <span className="font-medium">{formData.quantity_good} good parts - no scrap</span>
+              <span className="font-medium">{t("production.targetReached", "Target reached!")}</span>
             </div>
           )}
 
-          {/* Quantity achieved notification */}
-          {quantityAchieved && formData.quantity_good > 0 && (
-            <Alert className="border-blue-500/50 bg-blue-500/10">
-              <Check className="h-4 w-4 text-blue-500" />
-              <AlertDescription className="text-blue-700">
-                Target quantity achieved! Time tracking will stop.
-              </AlertDescription>
-            </Alert>
-          )}
+          {/* Shortfall question - only when there's a gap */}
+          {hasShortfall && (
+            <div className="border border-amber-500/50 bg-amber-500/10 rounded-lg p-4 space-y-3">
+              <div className="flex items-center gap-2 text-amber-700">
+                <AlertTriangle className="h-5 w-5" />
+                <span className="font-medium">
+                  {t("production.shortfallQuestion", "{{count}} remaining - what happened?", { count: shortfall })}
+                </span>
+              </div>
 
-          {/* Optional notes - collapsed by default */}
-          <details className="text-sm">
-            <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
-              Add notes or material lot (optional)
-            </summary>
-            <div className="mt-3 space-y-3">
-              <div>
-                <Label htmlFor="material-lot">Material Lot</Label>
-                <Input
-                  id="material-lot"
-                  value={formData.material_lot}
-                  onChange={(e) => setFormData({ ...formData, material_lot: e.target.value })}
-                  placeholder="e.g., LOT-2024-1234"
-                  className="mt-1"
-                />
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant={shortfallChoice === "continuing" ? "default" : "outline"}
+                  className="h-12"
+                  onClick={() => {
+                    setShortfallChoice("continuing");
+                    setScrapReasonId("");
+                  }}
+                >
+                  <Clock className="h-4 w-4 mr-2" />
+                  {t("production.continuing", "Next shift")}
+                </Button>
+                <Button
+                  type="button"
+                  variant={shortfallChoice === "scrap" ? "destructive" : "outline"}
+                  className="h-12"
+                  onClick={() => setShortfallChoice("scrap")}
+                >
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  {t("production.scrap", "Scrap")}
+                </Button>
               </div>
-              <div>
-                <Label htmlFor="notes">Notes</Label>
-                <Textarea
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Any additional notes..."
-                  rows={2}
-                  className="mt-1"
-                />
-              </div>
+
+              {/* Scrap reason - only if scrap selected */}
+              {shortfallChoice === "scrap" && (
+                <div>
+                  <Label htmlFor="scrap-reason">{t("production.why", "Why?")}</Label>
+                  <Select value={scrapReasonId} onValueChange={setScrapReasonId}>
+                    <SelectTrigger id="scrap-reason" className="mt-1">
+                      <SelectValue placeholder={t("production.selectReason", "Select reason")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {scrapReasons.map((reason) => (
+                        <SelectItem key={reason.id} value={reason.id}>
+                          {reason.code}: {reason.description}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
-          </details>
+          )}
 
           {validationError && (
             <Alert variant="destructive">
@@ -341,15 +271,16 @@ export default function ProductionQuantityModal({
           )}
         </div>
 
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 pt-2">
           <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
-            Cancel
+            {t("common.cancel", "Cancel")}
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting || formData.quantity_produced <= 0}
+            disabled={isSubmitting || quantityGood <= 0}
+            size="lg"
           >
-            {isSubmitting ? "Saving..." : "Report"}
+            {isSubmitting ? t("common.saving", "Saving...") : t("production.report", "Report")}
           </Button>
         </div>
       </DialogContent>
