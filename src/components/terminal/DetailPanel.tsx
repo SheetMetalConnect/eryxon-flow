@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { TerminalJob } from '@/types/terminal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Play, Pause, Square, FileText, Box, AlertTriangle, CheckCircle2, Clock, Circle, Maximize2, X } from 'lucide-react';
+import { Play, Pause, Square, FileText, Box, AlertTriangle, CheckCircle2, Clock, Circle, Maximize2, X, ChevronDown, ChevronRight } from 'lucide-react';
 import { STEPViewer } from '@/components/STEPViewer'; // Reusing existing viewer
 import { PDFViewer } from '@/components/PDFViewer';
 import { OperationWithDetails } from '@/lib/database';
@@ -15,6 +15,18 @@ import { RoutingVisualization } from './RoutingVisualization';
 import { useCellQRMMetrics } from '@/hooks/useQRMMetrics';
 import { useAuth } from '@/contexts/AuthContext';
 import { createPortal } from 'react-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { IconDisplay } from '@/components/ui/icon-picker';
+
+interface Substep {
+    id: string;
+    operation_id: string;
+    name: string;
+    icon_name?: string | null;
+    sequence: number;
+    status: string;
+    notes?: string;
+}
 
 interface DetailPanelProps {
     job: TerminalJob;
@@ -29,7 +41,53 @@ interface DetailPanelProps {
 export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl, operations = [] }: DetailPanelProps) {
     const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
     const [fullscreenViewer, setFullscreenViewer] = useState<'3d' | 'pdf' | null>(null);
+    const [substepsByOperation, setSubstepsByOperation] = useState<Record<string, Substep[]>>({});
+    const [expandedOperations, setExpandedOperations] = useState<Set<string>>(new Set());
     const { profile } = useAuth();
+
+    // Fetch substeps for all operations
+    useEffect(() => {
+        const fetchSubsteps = async () => {
+            if (!profile?.tenant_id || operations.length === 0) return;
+
+            const operationIds = operations.map(op => op.id);
+            const { data, error } = await supabase
+                .from("substeps")
+                .select("*")
+                .in("operation_id", operationIds)
+                .eq("tenant_id", profile.tenant_id)
+                .order("sequence", { ascending: true });
+
+            if (error) {
+                console.error("Error fetching substeps:", error);
+                return;
+            }
+
+            // Group substeps by operation_id
+            const grouped: Record<string, Substep[]> = {};
+            (data || []).forEach((substep) => {
+                if (!grouped[substep.operation_id]) {
+                    grouped[substep.operation_id] = [];
+                }
+                grouped[substep.operation_id].push(substep);
+            });
+            setSubstepsByOperation(grouped);
+        };
+
+        fetchSubsteps();
+    }, [operations, profile?.tenant_id]);
+
+    const toggleOperationExpand = (opId: string) => {
+        setExpandedOperations(prev => {
+            const next = new Set(prev);
+            if (next.has(opId)) {
+                next.delete(opId);
+            } else {
+                next.add(opId);
+            }
+            return next;
+        });
+    };
 
     // Compute next operation in the sequence FIRST
     const nextOperation = useMemo(() => {
@@ -189,45 +247,98 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                                 {operations.length === 0 && (
                                     <div className="text-center text-muted-foreground py-4 text-xs">No operations found</div>
                                 )}
-                                {operations.map((op) => (
-                                    <div
-                                        key={op.id}
-                                        className={cn(
-                                            "px-2 py-1 rounded border-l-2 flex items-center justify-between transition-colors",
-                                            op.status === 'in_progress'
-                                                ? "bg-primary/5 border-l-primary"
-                                                : "bg-transparent border-l-transparent hover:bg-muted/30",
-                                            op.status === 'completed' && "opacity-50"
-                                        )}
-                                    >
-                                        <div className="flex items-center gap-1.5 min-w-0">
-                                            <span className={cn(
-                                                "text-[9px] font-mono w-4 shrink-0",
-                                                op.status === 'completed' ? "text-emerald-500" :
-                                                    op.status === 'in_progress' ? "text-primary font-bold" :
-                                                        "text-muted-foreground"
-                                            )}>
-                                                {op.sequence}.
-                                            </span>
-                                            <span className={cn(
-                                                "text-[11px] truncate",
-                                                op.status === 'completed' ? "text-muted-foreground line-through" : "text-foreground"
-                                            )}>
-                                                {op.operation_name}
-                                            </span>
-                                            <span className="text-[9px] text-muted-foreground shrink-0">
-                                                ({op.cell?.name?.slice(0, 8) || '?'})
-                                            </span>
+                                {operations.map((op) => {
+                                    const opSubsteps = substepsByOperation[op.id] || [];
+                                    const hasSubsteps = opSubsteps.length > 0;
+                                    const isExpanded = expandedOperations.has(op.id);
+                                    const completedSubsteps = opSubsteps.filter(s => s.status === 'completed').length;
+
+                                    return (
+                                        <div key={op.id}>
+                                            <div
+                                                className={cn(
+                                                    "px-2 py-1 rounded border-l-2 flex items-center justify-between transition-colors",
+                                                    op.status === 'in_progress'
+                                                        ? "bg-primary/5 border-l-primary"
+                                                        : "bg-transparent border-l-transparent hover:bg-muted/30",
+                                                    op.status === 'completed' && "opacity-50",
+                                                    hasSubsteps && "cursor-pointer"
+                                                )}
+                                                onClick={() => hasSubsteps && toggleOperationExpand(op.id)}
+                                            >
+                                                <div className="flex items-center gap-1.5 min-w-0">
+                                                    {hasSubsteps && (
+                                                        <span className="text-muted-foreground">
+                                                            {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                                                        </span>
+                                                    )}
+                                                    <span className={cn(
+                                                        "text-[9px] font-mono w-4 shrink-0",
+                                                        op.status === 'completed' ? "text-emerald-500" :
+                                                            op.status === 'in_progress' ? "text-primary font-bold" :
+                                                                "text-muted-foreground"
+                                                    )}>
+                                                        {op.sequence}.
+                                                    </span>
+                                                    <span className={cn(
+                                                        "text-[11px] truncate",
+                                                        op.status === 'completed' ? "text-muted-foreground line-through" : "text-foreground"
+                                                    )}>
+                                                        {op.operation_name}
+                                                    </span>
+                                                    <span className="text-[9px] text-muted-foreground shrink-0">
+                                                        ({op.cell?.name?.slice(0, 8) || '?'})
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-1 shrink-0">
+                                                    {hasSubsteps && (
+                                                        <span className="text-[8px] text-muted-foreground bg-muted px-1 rounded">
+                                                            {completedSubsteps}/{opSubsteps.length}
+                                                        </span>
+                                                    )}
+                                                    <span className="text-[9px] text-muted-foreground">{op.estimated_time}h</span>
+                                                    {op.status === 'completed' && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
+                                                    {op.status === 'in_progress' && <Clock className="w-3 h-3 text-primary" />}
+                                                    {op.status === 'not_started' && <Circle className="w-3 h-3 text-muted-foreground/50" />}
+                                                    {op.status === 'on_hold' && <AlertTriangle className="w-3 h-3 text-amber-500" />}
+                                                </div>
+                                            </div>
+                                            {/* Substeps */}
+                                            {hasSubsteps && isExpanded && (
+                                                <div className="ml-6 pl-2 border-l border-muted/50 space-y-0.5 py-1">
+                                                    {opSubsteps.map((substep) => (
+                                                        <div
+                                                            key={substep.id}
+                                                            className="flex items-center gap-1.5 text-[10px] py-0.5"
+                                                        >
+                                                            {substep.status === 'completed' ? (
+                                                                <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />
+                                                            ) : substep.status === 'in_progress' ? (
+                                                                <Clock className="w-3 h-3 text-primary shrink-0" />
+                                                            ) : substep.status === 'blocked' ? (
+                                                                <AlertTriangle className="w-3 h-3 text-red-500 shrink-0" />
+                                                            ) : (
+                                                                <Circle className="w-3 h-3 text-muted-foreground/50 shrink-0" />
+                                                            )}
+                                                            {substep.icon_name && (
+                                                                <IconDisplay
+                                                                    iconName={substep.icon_name}
+                                                                    className="w-3 h-3 text-muted-foreground shrink-0"
+                                                                />
+                                                            )}
+                                                            <span className={cn(
+                                                                "truncate",
+                                                                substep.status === 'completed' && "text-muted-foreground line-through"
+                                                            )}>
+                                                                {substep.name}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
-                                        <div className="flex items-center gap-1 shrink-0">
-                                            <span className="text-[9px] text-muted-foreground">{op.estimated_time}h</span>
-                                            {op.status === 'completed' && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
-                                            {op.status === 'in_progress' && <Clock className="w-3 h-3 text-primary" />}
-                                            {op.status === 'not_started' && <Circle className="w-3 h-3 text-muted-foreground/50" />}
-                                            {op.status === 'on_hold' && <AlertTriangle className="w-3 h-3 text-amber-500" />}
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </TabsContent>
                     </div>
