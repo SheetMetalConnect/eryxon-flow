@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { AlertTriangle, Check, Clock, Wrench } from "lucide-react";
+import { Check, Minus, Plus, AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface ProductionQuantityModalProps {
@@ -18,10 +16,8 @@ interface ProductionQuantityModalProps {
   partNumber: string;
   plannedQuantity?: number;
   onSuccess: (quantityGood: number, shouldStopTime: boolean) => void;
-  onScrapWithIssue?: (scrapQty: number) => void;
+  onFileIssue?: () => void;
 }
-
-type ShortfallChoice = "continuing" | "scrap" | "rework" | null;
 
 export default function ProductionQuantityModal({
   isOpen,
@@ -31,33 +27,29 @@ export default function ProductionQuantityModal({
   partNumber,
   plannedQuantity,
   onSuccess,
-  onScrapWithIssue,
+  onFileIssue,
 }: ProductionQuantityModalProps) {
   const { t } = useTranslation();
   const { profile } = useAuth();
 
   const [quantityGood, setQuantityGood] = useState<number>(0);
-  const [shortfallChoice, setShortfallChoice] = useState<ShortfallChoice>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [validationError, setValidationError] = useState<string | null>(null);
   const [previouslyRecordedGood, setPreviouslyRecordedGood] = useState<number>(0);
+  const [showShortfallPrompt, setShowShortfallPrompt] = useState(false);
 
-  // Calculate remaining and shortfall
-  const remaining = plannedQuantity ? Math.max(0, plannedQuantity - previouslyRecordedGood) : 0;
-  const shortfall = remaining > 0 ? Math.max(0, remaining - quantityGood) : 0;
-  const hasShortfall = quantityGood > 0 && shortfall > 0;
-  const quantityAchieved = plannedQuantity ? (previouslyRecordedGood + quantityGood) >= plannedQuantity : false;
+  // Calculate totals
+  const totalGoodAfter = previouslyRecordedGood + quantityGood;
+  const remaining = plannedQuantity ? Math.max(0, plannedQuantity - totalGoodAfter) : 0;
+  const targetAchieved = plannedQuantity ? totalGoodAfter >= plannedQuantity : false;
+  const hasShortfall = plannedQuantity ? totalGoodAfter < plannedQuantity : false;
 
   useEffect(() => {
     if (isOpen) {
       fetchPreviousQuantities();
+      setQuantityGood(0);
+      setShowShortfallPrompt(false);
     }
   }, [isOpen]);
-
-  // Reset shortfall choice when quantity changes
-  useEffect(() => {
-    setShortfallChoice(null);
-  }, [quantityGood]);
 
   const fetchPreviousQuantities = async () => {
     try {
@@ -73,56 +65,48 @@ export default function ProductionQuantityModal({
     }
   };
 
-  const validate = (): boolean => {
-    if (quantityGood <= 0) {
-      setValidationError(t("production.enterGoodParts", "Enter good parts made"));
-      return false;
-    }
-    if (hasShortfall && !shortfallChoice) {
-      setValidationError(t("production.selectShortfallChoice", "Select what happened to remaining parts"));
-      return false;
-    }
-    setValidationError(null);
-    return true;
-  };
+  const increment = () => setQuantityGood(q => q + 1);
+  const decrement = () => setQuantityGood(q => Math.max(0, q - 1));
 
-  const handleSubmit = async () => {
-    if (!validate()) return;
+  const handleSubmit = async (fileIssue: boolean = false) => {
+    if (quantityGood <= 0) {
+      toast.error(t("production.enterGoodParts", "Enter good parts made"));
+      return;
+    }
     if (!profile?.tenant_id) {
       toast.error("No tenant found");
       return;
     }
+
+    // If there's a shortfall and we haven't asked yet, ask
+    if (hasShortfall && !showShortfallPrompt && quantityGood > 0) {
+      setShowShortfallPrompt(true);
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const scrapQty = shortfallChoice === "scrap" ? shortfall : 0;
-      const reworkQty = shortfallChoice === "rework" ? shortfall : 0;
-      const producedQty = quantityGood + scrapQty + reworkQty;
+      const scrapQty = hasShortfall ? remaining : 0;
 
       const { error } = await supabase.from("operation_quantities").insert([{
         tenant_id: profile.tenant_id,
         operation_id: operationId,
-        quantity_produced: producedQty,
+        quantity_produced: quantityGood + scrapQty,
         quantity_good: quantityGood,
         quantity_scrap: scrapQty,
-        quantity_rework: reworkQty,
+        quantity_rework: 0,
         recorded_at: new Date().toISOString(),
       }]);
       if (error) throw error;
 
-      // Show success message
-      if (scrapQty > 0) {
-        toast.success(t("production.recordedWithScrap", "{{good}} good, {{scrap}} scrap", { good: quantityGood, scrap: scrapQty }));
-        // If there's scrap, trigger issue creation
-        if (onScrapWithIssue) {
-          onScrapWithIssue(scrapQty);
-        }
-      } else if (reworkQty > 0) {
-        toast.success(t("production.recordedWithRework", "{{good}} good, {{rework}} rework", { good: quantityGood, rework: reworkQty }));
-      } else {
-        toast.success(t("production.recorded", "{{count}} good parts recorded", { count: quantityGood }));
+      toast.success(t("production.recorded", "{{count}} good parts recorded", { count: quantityGood }));
+
+      // Open issue form if requested
+      if (fileIssue && onFileIssue) {
+        onFileIssue();
       }
 
-      onSuccess(quantityGood, quantityAchieved);
+      onSuccess(quantityGood, targetAchieved);
       handleClose();
     } catch (error: any) {
       console.error("Error recording production:", error);
@@ -134,126 +118,116 @@ export default function ProductionQuantityModal({
 
   const handleClose = () => {
     setQuantityGood(0);
-    setShortfallChoice(null);
-    setValidationError(null);
+    setShowShortfallPrompt(false);
     onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-xs">
         <DialogHeader>
           <DialogTitle>{t("production.reportTitle", "Report Production")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {/* Target info */}
-          <div className="bg-muted p-3 rounded-lg text-sm">
-            <div className="font-medium">{partNumber}</div>
+          {/* Part info */}
+          <div className="text-center text-sm text-muted-foreground">
+            <div className="font-medium text-foreground">{partNumber}</div>
             {plannedQuantity && (
-              <div className="text-muted-foreground mt-1">
+              <div>
                 {t("production.target", "Target")}: {plannedQuantity}
                 {previouslyRecordedGood > 0 && (
-                  <span> ({remaining} {t("production.remaining", "remaining")})</span>
+                  <span className="ml-1">({previouslyRecordedGood} {t("production.done", "done")})</span>
                 )}
               </div>
             )}
           </div>
 
-          {/* Single input: How many good parts? */}
-          <div>
-            <Label htmlFor="good" className="text-base font-medium">
-              {t("production.goodPartsQuestion", "How many good parts?")}
-            </Label>
-            <Input
-              id="good"
-              type="number"
-              min="0"
-              value={quantityGood || ""}
-              onChange={(e) => setQuantityGood(parseInt(e.target.value) || 0)}
-              className="text-2xl h-14 mt-2 text-center font-bold"
-              placeholder="0"
-              autoFocus
-            />
+          {/* Counter */}
+          <div className="flex items-center justify-center gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-14 w-14 rounded-full text-2xl"
+              onClick={decrement}
+              disabled={quantityGood <= 0}
+            >
+              <Minus className="h-6 w-6" />
+            </Button>
+            <div className="text-5xl font-bold w-24 text-center tabular-nums">
+              {quantityGood}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-14 w-14 rounded-full text-2xl"
+              onClick={increment}
+            >
+              <Plus className="h-6 w-6" />
+            </Button>
           </div>
 
-          {/* Quantity achieved - green success */}
-          {quantityAchieved && quantityGood > 0 && (
-            <div className="flex items-center gap-2 text-green-600 bg-green-500/10 p-3 rounded-lg">
-              <Check className="h-5 w-5" />
-              <span className="font-medium">{t("production.targetReached", "Target reached!")}</span>
-            </div>
-          )}
-
-          {/* Shortfall question - only when there's a gap */}
-          {hasShortfall && (
-            <div className="border border-amber-500/50 bg-amber-500/10 rounded-lg p-4 space-y-3">
-              <div className="flex items-center gap-2 text-amber-700">
-                <AlertTriangle className="h-5 w-5" />
-                <span className="font-medium">
-                  {t("production.shortfallQuestion", "{{count}} remaining - what happened?", { count: shortfall })}
+          {/* Status indicator */}
+          {quantityGood > 0 && (
+            <div className="text-center text-sm">
+              {targetAchieved ? (
+                <span className="text-green-600 flex items-center justify-center gap-1">
+                  <Check className="h-4 w-4" />
+                  {t("production.targetReached", "Target reached!")}
                 </span>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                <Button
-                  type="button"
-                  variant={shortfallChoice === "continuing" ? "default" : "outline"}
-                  className="h-12 px-2"
-                  onClick={() => setShortfallChoice("continuing")}
-                >
-                  <Clock className="h-4 w-4 mr-1" />
-                  {t("production.continuing", "Next shift")}
-                </Button>
-                <Button
-                  type="button"
-                  variant={shortfallChoice === "rework" ? "secondary" : "outline"}
-                  className="h-12 px-2"
-                  onClick={() => setShortfallChoice("rework")}
-                >
-                  <Wrench className="h-4 w-4 mr-1" />
-                  {t("production.rework", "Rework")}
-                </Button>
-                <Button
-                  type="button"
-                  variant={shortfallChoice === "scrap" ? "destructive" : "outline"}
-                  className="h-12 px-2"
-                  onClick={() => setShortfallChoice("scrap")}
-                >
-                  <AlertTriangle className="h-4 w-4 mr-1" />
-                  {t("production.scrap", "Scrap")}
-                </Button>
-              </div>
-
-              {/* Note about scrap creating issue */}
-              {shortfallChoice === "scrap" && (
-                <p className="text-sm text-muted-foreground">
-                  {t("production.scrapCreatesIssue", "An issue will be created to document this scrap.")}
-                </p>
-              )}
+              ) : plannedQuantity ? (
+                <span className="text-muted-foreground">
+                  {remaining} {t("production.remaining", "remaining")}
+                </span>
+              ) : null}
             </div>
           )}
 
-          {validationError && (
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>{validationError}</AlertDescription>
+          {/* Shortfall prompt */}
+          {showShortfallPrompt && (
+            <Alert className="border-amber-500/50 bg-amber-500/10">
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-700">
+                {t("production.shortfallPrompt", "{{count}} short of target. File an issue?", { count: remaining })}
+              </AlertDescription>
+              <div className="flex gap-2 mt-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSubmit(false)}
+                  disabled={isSubmitting}
+                >
+                  {t("common.no", "No")}
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => handleSubmit(true)}
+                  disabled={isSubmitting}
+                >
+                  {t("common.yes", "Yes")}
+                </Button>
+              </div>
             </Alert>
           )}
         </div>
 
-        <div className="flex justify-end gap-2 pt-2">
-          <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
-            {t("common.cancel", "Cancel")}
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={isSubmitting || quantityGood <= 0}
-            size="lg"
-          >
-            {isSubmitting ? t("common.saving", "Saving...") : t("production.report", "Report")}
-          </Button>
-        </div>
+        {!showShortfallPrompt && (
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
+              {t("common.cancel", "Cancel")}
+            </Button>
+            <Button
+              onClick={() => handleSubmit(false)}
+              disabled={isSubmitting || quantityGood <= 0}
+              size="lg"
+            >
+              {isSubmitting ? t("common.saving", "Saving...") : t("production.report", "Report")}
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

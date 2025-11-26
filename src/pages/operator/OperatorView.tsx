@@ -1344,8 +1344,8 @@ export default function OperatorView() {
             }
             loadOperations(selectedJobId);
           }}
-          onScrapWithIssue={(scrapQty: number) => {
-            // Open issue form to document the scrap
+          onFileIssue={() => {
+            // Open issue form to document the shortfall
             setIsIssueFormOpen(true);
           }}
         />

@@ -327,25 +327,20 @@
     "validationError": "Validation Error",
     "stopping": "Stopping...",
     "viewDetails": "View Details",
-    "optional": "optional"
+    "optional": "optional",
+    "yes": "Yes",
+    "no": "No"
   },
   "production": {
     "reportTitle": "Report Production",
     "target": "Target",
     "remaining": "remaining",
-    "goodPartsQuestion": "How many good parts?",
+    "done": "done",
     "targetReached": "Target reached!",
-    "shortfallQuestion": "{{count}} remaining - what happened?",
-    "continuing": "Next shift",
-    "rework": "Rework",
-    "scrap": "Scrap",
     "report": "Report",
     "enterGoodParts": "Enter good parts made",
-    "selectShortfallChoice": "Select what happened to remaining parts",
     "recorded": "{{count}} good parts recorded",
-    "recordedWithScrap": "{{good}} good, {{scrap}} scrap",
-    "recordedWithRework": "{{good}} good, {{rework}} rework",
-    "scrapCreatesIssue": "An issue will be created to document this scrap."
+    "shortfallPrompt": "{{count}} short of target. File an issue?"
   },
   "onboarding": {
     "welcome": "Welcome to Eryxon MES",
