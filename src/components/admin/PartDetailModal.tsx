@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -45,6 +45,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
   const { toast } = useToast();
   const { profile } = useAuth();
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const { routing, loading: routingLoading } = usePartRouting(partId);
   const [addingOperation, setAddingOperation] = useState(false);
   const [newOperation, setNewOperation] = useState({
@@ -309,6 +310,9 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         });
 
         setCadFiles(null);
+        
+        // Refresh modal data and parent list
+        await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
         onUpdate();
       }
 
@@ -406,6 +410,8 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         description: t("parts.fileDeletedSuccess"),
       });
 
+      // Refresh modal data and parent list
+      await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
       onUpdate();
     } catch (error: any) {
       console.error("Delete error:", error);
@@ -755,8 +761,9 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                 <ImageGallery
                   partId={partId}
                   imagePaths={part.image_paths}
-                  onImageDeleted={() => {
-                    // Refetch part data after image deletion
+                  onImageDeleted={async () => {
+                    // Refresh modal data and parent list
+                    await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
                     onUpdate();
                   }}
                   editable={true}
@@ -767,13 +774,10 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
             {/* Image Upload */}
             <ImageUpload
               partId={partId}
-              onUploadComplete={() => {
-                // Refetch part data after upload
+              onUploadComplete={async () => {
+                // Refresh modal data and parent list
+                await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
                 onUpdate();
-                toast({
-                  title: t("parts.images.uploadSuccess"),
-                  description: t("parts.images.imagesUploaded"),
-                });
               }}
             />
           </div>
