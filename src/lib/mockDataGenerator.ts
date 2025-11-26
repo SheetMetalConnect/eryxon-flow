@@ -331,7 +331,7 @@ export async function generateMockData(
         {
           tenant_id: tenantId,
           job_number: "WO-2025-1156",
-          customer: "ASML Supplier Services",
+          customer: "HighTech Precision B.V.",
           notes:
             "Precisie framewerk voor semiconductor equipment - Tolerantie ±0.05mm",
           status: "in_progress" as const,
@@ -340,8 +340,40 @@ export async function generateMockData(
           metadata: {
             orderValue: "€67.800",
             contactPerson: "Dr. K. Vermeer",
-            deliveryAddress: "Veldhoven ASML Campus",
+            deliveryAddress: "Veldhoven Tech Campus",
             qualityLevel: "High-precision",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_number: "WO-2025-1178",
+          customer: "Luchtvaart Componenten Nederland",
+          notes: "Luchtvaart beugels - AS9100 certificering vereist",
+          status: "in_progress" as const,
+          due_date: new Date("2026-02-15T00:00:00Z").toISOString(),
+          created_at: new Date("2025-11-20T11:00:00Z").toISOString(),
+          metadata: {
+            orderValue: "€42.500",
+            contactPerson: "Ir. M. de Vries",
+            deliveryAddress: "Papendrecht Industrieterrein",
+            qualityLevel: "Aerospace",
+            certification: "AS9100D",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_number: "WO-2025-1195",
+          customer: "MedTech Solutions B.V.",
+          notes: "Medische apparatuur behuizing - EN ISO 13485",
+          status: "not_started" as const,
+          due_date: new Date("2026-02-28T00:00:00Z").toISOString(),
+          created_at: new Date("2025-11-22T09:30:00Z").toISOString(),
+          metadata: {
+            orderValue: "€28.900",
+            contactPerson: "Dr. L. Bakker",
+            deliveryAddress: "Best Medisch Park",
+            qualityLevel: "Medical",
+            certification: "EN ISO 13485",
           },
         },
       ];
@@ -358,7 +390,7 @@ export async function generateMockData(
         jobIdMap[jobs[idx].job_number] = j.id;
       });
 
-      console.log("✓ Created 4 realistic Dutch customer jobs");
+      console.log("✓ Created 6 realistic Dutch customer jobs");
     }
 
     // Step 6: Create parts with assembly relationships
@@ -420,7 +452,7 @@ export async function generateMockData(
         {
           tenant_id: tenantId,
           job_id: jobIdMap["WO-2025-1156"],
-          part_number: "ASML-FRAME-MAIN",
+          part_number: "HTP-FRAME-MAIN",
           material: "RVS 304",
           notes: "Precisie framewerk - CMM inspectie verplicht",
           quantity: 4,
@@ -433,6 +465,42 @@ export async function generateMockData(
             material_spec: "EN 1.4301",
             inspection: "CMM + Material cert required",
             flatness: "< 0.02mm",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap["WO-2025-1178"],
+          part_number: "FK-BRACKET-A1",
+          material: "Aluminium 7075-T6",
+          notes: "Luchtvaart beugel - AS9100 traceability",
+          quantity: 16,
+          status: "in_progress" as const,
+          parent_part_id: null,
+          metadata: {
+            dimensions: "180x120x8mm",
+            weight: "0.45kg",
+            tolerance: "±0.1mm",
+            material_spec: "AMS-QQ-A-250/12",
+            certification: "AS9100D",
+            traceability: "Full lot traceability required",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap["WO-2025-1195"],
+          part_number: "PH-MED-HOUSING",
+          material: "RVS 316L",
+          notes: "Medische behuizing - biocompatibel",
+          quantity: 6,
+          status: "not_started" as const,
+          parent_part_id: null,
+          metadata: {
+            dimensions: "350x280x120mm",
+            weight: "4.2kg",
+            material_spec: "EN 1.4404",
+            certification: "EN ISO 13485",
+            surface_finish: "Ra < 0.8μm",
+            biocompatible: true,
           },
         },
       ];
@@ -507,17 +575,49 @@ export async function generateMockData(
         {
           tenant_id: tenantId,
           job_id: jobIdMap["WO-2025-1156"],
-          part_number: "ASML-MOUNT-PLT",
+          part_number: "HTP-MOUNT-PLT",
           material: "RVS 304",
-          notes: "Montageplaat precisie - Child of ASML-FRAME-MAIN",
+          notes: "Montageplaat precisie - Child of HTP-FRAME-MAIN",
           quantity: 8,
           status: "not_started" as const,
-          parent_part_id: partIdLookup["ASML-FRAME-MAIN"],
+          parent_part_id: partIdLookup["HTP-FRAME-MAIN"],
           metadata: {
             dimensions: "300x200x15mm",
             weight: "6.8kg",
             tolerance: "±0.05mm",
             material_spec: "EN 1.4301",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap["WO-2025-1178"],
+          part_number: "FK-BRACKET-B1",
+          material: "Aluminium 7075-T6",
+          notes: "Verstevigingsbeugel - Child of FK-BRACKET-A1",
+          quantity: 32,
+          status: "not_started" as const,
+          parent_part_id: partIdLookup["FK-BRACKET-A1"],
+          metadata: {
+            dimensions: "80x60x4mm",
+            weight: "0.12kg",
+            tolerance: "±0.1mm",
+            material_spec: "AMS-QQ-A-250/12",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap["WO-2025-1195"],
+          part_number: "PH-MED-COVER",
+          material: "RVS 316L",
+          notes: "Deksel medische behuizing - Child of PH-MED-HOUSING",
+          quantity: 6,
+          status: "not_started" as const,
+          parent_part_id: partIdLookup["PH-MED-HOUSING"],
+          metadata: {
+            dimensions: "360x290x3mm",
+            weight: "2.1kg",
+            material_spec: "EN 1.4404",
+            surface_finish: "Ra < 0.8μm",
           },
         },
       ];
@@ -962,14 +1062,14 @@ export async function generateMockData(
         );
       }
 
-      // WO-2025-1156 - ASML-FRAME-MAIN (high precision)
+      // WO-2025-1156 - HTP-FRAME-MAIN (high precision)
       const asmlFrame = partData.find(
-        (p) => p.part_number === "ASML-FRAME-MAIN",
+        (p) => p.part_number === "HTP-FRAME-MAIN",
       );
       if (asmlFrame) {
         createOperationRouting(
           asmlFrame.id,
-          "ASML-FRAME-MAIN",
+          "HTP-FRAME-MAIN",
           "WO-2025-1156",
           "RVS 304",
           [
@@ -1021,7 +1121,7 @@ export async function generateMockData(
               status: "not_started",
               metadata: {
                 cleanroom_assembly: true,
-                torque_spec: "Per ASML drawing",
+                torque_spec: "Per HTP drawing",
               },
             },
             {
@@ -1033,7 +1133,7 @@ export async function generateMockData(
               estimated_hours: 1.5,
               status: "not_started",
               metadata: {
-                cmm_program: "ASML-FRAME-MAIN-CMM.prg",
+                cmm_program: "HTP-FRAME-MAIN-CMM.prg",
                 material_cert: "EN 10204 3.1 required",
                 flatness_tolerance: "<0.02mm",
                 inspection_report: "Full dimensional report + weld inspection",
@@ -1043,14 +1143,14 @@ export async function generateMockData(
         );
       }
 
-      // WO-2025-1156 - ASML-MOUNT-PLT
+      // WO-2025-1156 - HTP-MOUNT-PLT
       const asmlMount = partData.find(
-        (p) => p.part_number === "ASML-MOUNT-PLT",
+        (p) => p.part_number === "HTP-MOUNT-PLT",
       );
       if (asmlMount) {
         createOperationRouting(
           asmlMount.id,
-          "ASML-MOUNT-PLT",
+          "HTP-MOUNT-PLT",
           "WO-2025-1156",
           "RVS 304",
           [
@@ -1083,6 +1183,241 @@ export async function generateMockData(
         );
       }
 
+      // WO-2025-1178 - FK-BRACKET-A1 (Aerospace bracket - in progress)
+      const fkBracketA1 = partData.find(
+        (p) => p.part_number === "FK-BRACKET-A1",
+      );
+      if (fkBracketA1) {
+        createOperationRouting(
+          fkBracketA1.id,
+          "FK-BRACKET-A1",
+          "WO-2025-1178",
+          "Aluminium 7075-T6",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "CNC frezen contouren",
+              description: "CNC frezen uit 7075-T6 plaat - AS9100 traceability",
+              estimated_hours: 1.5,
+              status: "completed",
+              metadata: {
+                material_cert: "AMS-QQ-A-250/12",
+                lot_traceability: true,
+              },
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Kanten aerospace",
+              description: "Precisie kanten met special tooling voor 7075",
+              estimated_hours: 1.0,
+              status: "in_progress",
+              metadata: {
+                tooling: "Aerospace-spec V-die",
+                spring_back_compensation: true,
+              },
+            },
+            {
+              cell: "Afwerking",
+              seq: 30,
+              operation_name: "Anodiseren Type II",
+              description: "Chromaatzuur anodiseren per MIL-A-8625",
+              estimated_hours: 0.8,
+              status: "not_started",
+              metadata: {
+                spec: "MIL-A-8625 Type II",
+                color: "Clear",
+              },
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 40,
+              operation_name: "FAI inspectie",
+              description: "First Article Inspection + AS9102 documentatie",
+              estimated_hours: 1.2,
+              status: "not_started",
+              metadata: {
+                inspection_type: "FAI",
+                documentation: "AS9102 FAIR",
+                cert_required: true,
+              },
+            },
+          ],
+        );
+      }
+
+      // WO-2025-1178 - FK-BRACKET-B1
+      const fkBracketB1 = partData.find(
+        (p) => p.part_number === "FK-BRACKET-B1",
+      );
+      if (fkBracketB1) {
+        createOperationRouting(
+          fkBracketB1.id,
+          "FK-BRACKET-B1",
+          "WO-2025-1178",
+          "Aluminium 7075-T6",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "Lasersnijden",
+              description: "Snijden verstevigingsbeugels",
+              estimated_hours: 0.6,
+              status: "not_started",
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Kanten",
+              description: "Kanten montageranden",
+              estimated_hours: 0.4,
+              status: "not_started",
+            },
+            {
+              cell: "Afwerking",
+              seq: 30,
+              operation_name: "Anodiseren",
+              description: "Anodiseren matching main bracket",
+              estimated_hours: 0.5,
+              status: "not_started",
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 40,
+              operation_name: "Inspectie",
+              description: "Dimensie controle + traceability",
+              estimated_hours: 0.3,
+              status: "not_started",
+            },
+          ],
+        );
+      }
+
+      // WO-2025-1195 - PH-MED-HOUSING (Medical - not started)
+      const phMedHousing = partData.find(
+        (p) => p.part_number === "PH-MED-HOUSING",
+      );
+      if (phMedHousing) {
+        createOperationRouting(
+          phMedHousing.id,
+          "PH-MED-HOUSING",
+          "WO-2025-1195",
+          "RVS 316L",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "Lasersnijden medisch",
+              description: "Fiber laser snijden 316L - cleanroom prep",
+              estimated_hours: 1.2,
+              status: "not_started",
+              metadata: {
+                cleanroom_prep: true,
+                nitrogen_cutting: true,
+              },
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Precisie kanten",
+              description: "Kanten met medische tooling",
+              estimated_hours: 1.0,
+              status: "not_started",
+              metadata: {
+                tooling: "Medical-grade",
+                contamination_control: true,
+              },
+            },
+            {
+              cell: "Lassen",
+              seq: 30,
+              operation_name: "TIG lassen medisch",
+              description: "TIG lassen - medical grade - purge welding",
+              estimated_hours: 2.0,
+              status: "not_started",
+              metadata: {
+                weld_type: "TIG orbital",
+                purge_welding: true,
+                argon_backing: true,
+              },
+            },
+            {
+              cell: "Afwerking",
+              seq: 40,
+              operation_name: "Elektropolish medisch",
+              description: "Elektrochemisch polijsten Ra < 0.8μm",
+              estimated_hours: 0.8,
+              status: "not_started",
+              metadata: {
+                target_roughness: "Ra < 0.8μm",
+                passivation: "Citric acid",
+              },
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 50,
+              operation_name: "Medische inspectie",
+              description: "Full inspection + EN ISO 13485 documentatie",
+              estimated_hours: 1.5,
+              status: "not_started",
+              metadata: {
+                standard: "EN ISO 13485",
+                biocompatibility_docs: true,
+                material_certs: "EN 10204 3.1",
+              },
+            },
+          ],
+        );
+      }
+
+      // WO-2025-1195 - PH-MED-COVER
+      const phMedCover = partData.find(
+        (p) => p.part_number === "PH-MED-COVER",
+      );
+      if (phMedCover) {
+        createOperationRouting(
+          phMedCover.id,
+          "PH-MED-COVER",
+          "WO-2025-1195",
+          "RVS 316L",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "Lasersnijden",
+              description: "Snijden deksel medische behuizing",
+              estimated_hours: 0.6,
+              status: "not_started",
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Kanten",
+              description: "Kanten randen voor sluiting",
+              estimated_hours: 0.5,
+              status: "not_started",
+            },
+            {
+              cell: "Afwerking",
+              seq: 30,
+              operation_name: "Elektropolish",
+              description: "Elektrochemisch polijsten",
+              estimated_hours: 0.5,
+              status: "not_started",
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 40,
+              operation_name: "Inspectie",
+              description: "Dimensie + oppervlakte controle",
+              estimated_hours: 0.4,
+              status: "not_started",
+            },
+          ],
+        );
+      }
+
       console.log(`🔧 Prepared ${operations.length} operations to insert...`);
       
       if (operations.length === 0) {
@@ -1105,6 +1440,181 @@ export async function generateMockData(
         console.log(
           `✓ Created ${operationsInserted?.length || 0} QRM-aligned operations with detailed routing`,
         );
+      }
+    }
+
+    // Step 7.5: Create realistic substeps for operations
+    // Schema: id, tenant_id, operation_id, name, sequence, status, notes, completed_at, completed_by, created_at, updated_at
+    if (operationData.length > 0) {
+      const substeps: Array<{
+        tenant_id: string;
+        operation_id: string;
+        name: string;
+        sequence: number;
+        status: string;
+        notes?: string;
+        completed_at?: string;
+        completed_by?: string;
+      }> = [];
+
+      // Substep templates by cell type (operation category)
+      // Notes provide operator guidance for each step
+      const substepTemplates: Record<string, Array<{ name: string; notes?: string }>> = {
+        "Lasersnijden": [
+          { name: "Machine opstarten", notes: "Warm-up cyclus 5 min" },
+          { name: "NC programma laden", notes: "Controleer versienummer" },
+          { name: "Materiaal plaatsen", notes: "Let op orientatie markering" },
+          { name: "Nulpunt instellen" },
+          { name: "Testsnede uitvoeren", notes: "Controleer snijkwaliteit" },
+          { name: "Productie run starten" },
+          { name: "Onderdelen verwijderen" },
+          { name: "Visuele controle", notes: "Check snijkwaliteit en bramen" },
+        ],
+        "CNC Kantbank": [
+          { name: "Tooling selecteren", notes: "Controleer V-matrijs en stempel" },
+          { name: "Tooling monteren" },
+          { name: "Programma laden", notes: "Controleer versie en materiaal" },
+          { name: "Achteraanslag instellen" },
+          { name: "Testbuiging maken", notes: "Meet hoek met gradenmeter" },
+          { name: "Productie starten" },
+          { name: "Tussentijdse meting", notes: "Elke 5 stuks controleren" },
+          { name: "Eindcontrole afmetingen" },
+        ],
+        "Lassen": [
+          { name: "Lasapparatuur controleren", notes: "Gas, draad, masker controleren" },
+          { name: "Werkstuk uitlijnen" },
+          { name: "Bevestigen in jig", notes: "Controleer uitlijning" },
+          { name: "Hechten (tack)", notes: "Max 3mm laspunten" },
+          { name: "Rootlas", notes: "Binnenste laslaag" },
+          { name: "Vullagen" },
+          { name: "Deklaag", notes: "Laatste laslaag" },
+          { name: "Slak verwijderen" },
+          { name: "Visuele controle lasnaad", notes: "VT inspectie" },
+          { name: "Nabewerking indien nodig" },
+        ],
+        "Montage": [
+          { name: "Onderdelen verzamelen", notes: "Check tegen paklijst" },
+          { name: "Hardware controleren", notes: "Bouten, moeren, borgringen" },
+          { name: "Componenten voorbereiden" },
+          { name: "Subassemblies maken" },
+          { name: "Hoofdassemblage" },
+          { name: "Momentsleutel aandraaimomenten", notes: "Per tekening" },
+          { name: "Functionele test" },
+          { name: "Eindcontrole" },
+        ],
+        "Afwerking": [
+          { name: "Voorbehandeling check" },
+          { name: "Reinigen/ontvetten", notes: "Gebruik goedgekeurd reinigingsmiddel" },
+          { name: "Maskeren indien nodig" },
+          { name: "Oppervlaktebehandeling", notes: "Coating/Anodiseren" },
+          { name: "Droogtijd/uitharding", notes: "Volgens datasheet" },
+          { name: "Laagdikte meting", notes: "DFT meting" },
+          { name: "Demaskeren" },
+          { name: "Visuele eindcontrole" },
+        ],
+        "Kwaliteitscontrole": [
+          { name: "Documentatie verzamelen", notes: "Tekeningen, specs, certs" },
+          { name: "Visuele inspectie" },
+          { name: "Dimensie controle", notes: "Kritische maten per tekening" },
+          { name: "Functionele test", notes: "Indien van toepassing" },
+          { name: "Certificaten controleren", notes: "Materiaal certs" },
+          { name: "Meetrapport invullen" },
+          { name: "Goedkeuren/afkeuren", notes: "Status bijwerken in systeem" },
+          { name: "Label en vrijgave" },
+        ],
+      };
+
+      // Helper to determine operation cell name from cell_id
+      const getCellName = (cellId: string): string | undefined => {
+        return Object.entries(cellIdMap).find(([_, id]) => id === cellId)?.[0];
+      };
+
+      // Create substeps for each operation
+      for (const op of operationData) {
+        const cellName = getCellName(op.cell_id);
+        if (!cellName) continue;
+
+        const templates = substepTemplates[cellName];
+        if (!templates) continue;
+
+        // For completed operations, mark all substeps as completed with timestamps
+        // For in_progress, mark some as completed/in_progress
+        // For not_started, all substeps are not_started
+        templates.forEach((template, idx) => {
+          let status = "not_started";
+          let completed_at: string | undefined;
+          let completed_by: string | undefined;
+
+          if (op.status === "completed") {
+            status = "completed";
+            // Set completion timestamp in the past (Oct-Nov 2025)
+            const completionDate = new Date("2025-10-20T08:00:00Z");
+            completionDate.setDate(completionDate.getDate() + Math.floor(Math.random() * 40));
+            completionDate.setHours(8 + idx, Math.floor(Math.random() * 60));
+            completed_at = completionDate.toISOString();
+            // Assign to a random operator if available
+            if (operatorIds.length > 0) {
+              completed_by = operatorIds[Math.floor(Math.random() * operatorIds.length)];
+            }
+          } else if (op.status === "in_progress") {
+            // First 30-70% are completed, one in_progress, rest not_started
+            const completionThreshold = Math.floor(templates.length * (0.3 + Math.random() * 0.4));
+            if (idx < completionThreshold) {
+              status = "completed";
+              const completionDate = new Date("2025-11-15T08:00:00Z");
+              completionDate.setDate(completionDate.getDate() + Math.floor(Math.random() * 10));
+              completionDate.setHours(8 + idx, Math.floor(Math.random() * 60));
+              completed_at = completionDate.toISOString();
+              if (operatorIds.length > 0) {
+                completed_by = operatorIds[Math.floor(Math.random() * operatorIds.length)];
+              }
+            } else if (idx === completionThreshold) {
+              status = "in_progress";
+            } else {
+              status = "not_started";
+            }
+          }
+
+          const substep: {
+            tenant_id: string;
+            operation_id: string;
+            name: string;
+            sequence: number;
+            status: string;
+            notes?: string;
+            completed_at?: string;
+            completed_by?: string;
+          } = {
+            tenant_id: tenantId,
+            operation_id: op.id,
+            name: template.name,
+            sequence: (idx + 1) * 10,
+            status,
+            notes: template.notes,
+          };
+
+          // Only add completed fields if they have values
+          if (completed_at) {
+            substep.completed_at = completed_at;
+          }
+          if (completed_by) {
+            substep.completed_by = completed_by;
+          }
+
+          substeps.push(substep);
+        });
+      }
+
+      if (substeps.length > 0) {
+        const { error: substepsError } = await supabase
+          .from("substeps")
+          .insert(substeps);
+
+        if (substepsError) {
+          console.warn("Substeps creation warning:", substepsError);
+        } else {
+          console.log(`✓ Created ${substeps.length} substeps for operations`);
+        }
       }
     }
 
