@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { SUBSTEP_TEMPLATES, type SubstepTemplate } from "./substepTemplates";
 
 export interface MockDataOptions {
   includeCells?: boolean;
@@ -1443,8 +1444,8 @@ export async function generateMockData(
       }
     }
 
-    // Step 7.5: Create realistic substeps for operations
-    // Schema: id, tenant_id, operation_id, name, sequence, status, notes, completed_at, completed_by, created_at, updated_at
+    // Step 7.5: Create substeps for operations using the standard template system
+    // Uses SUBSTEP_TEMPLATES from substepTemplates.ts for consistent, practical workflows
     if (operationData.length > 0) {
       const substeps: Array<{
         tenant_id: string;
@@ -1457,71 +1458,14 @@ export async function generateMockData(
         completed_by?: string;
       }> = [];
 
-      // Substep templates by cell type (operation category)
-      // Notes provide operator guidance for each step
-      const substepTemplates: Record<string, Array<{ name: string; notes?: string }>> = {
-        "Lasersnijden": [
-          { name: "Machine opstarten", notes: "Warm-up cyclus 5 min" },
-          { name: "NC programma laden", notes: "Controleer versienummer" },
-          { name: "Materiaal plaatsen", notes: "Let op orientatie markering" },
-          { name: "Nulpunt instellen" },
-          { name: "Testsnede uitvoeren", notes: "Controleer snijkwaliteit" },
-          { name: "Productie run starten" },
-          { name: "Onderdelen verwijderen" },
-          { name: "Visuele controle", notes: "Check snijkwaliteit en bramen" },
-        ],
-        "CNC Kantbank": [
-          { name: "Tooling selecteren", notes: "Controleer V-matrijs en stempel" },
-          { name: "Tooling monteren" },
-          { name: "Programma laden", notes: "Controleer versie en materiaal" },
-          { name: "Achteraanslag instellen" },
-          { name: "Testbuiging maken", notes: "Meet hoek met gradenmeter" },
-          { name: "Productie starten" },
-          { name: "Tussentijdse meting", notes: "Elke 5 stuks controleren" },
-          { name: "Eindcontrole afmetingen" },
-        ],
-        "Lassen": [
-          { name: "Lasapparatuur controleren", notes: "Gas, draad, masker controleren" },
-          { name: "Werkstuk uitlijnen" },
-          { name: "Bevestigen in jig", notes: "Controleer uitlijning" },
-          { name: "Hechten (tack)", notes: "Max 3mm laspunten" },
-          { name: "Rootlas", notes: "Binnenste laslaag" },
-          { name: "Vullagen" },
-          { name: "Deklaag", notes: "Laatste laslaag" },
-          { name: "Slak verwijderen" },
-          { name: "Visuele controle lasnaad", notes: "VT inspectie" },
-          { name: "Nabewerking indien nodig" },
-        ],
-        "Montage": [
-          { name: "Onderdelen verzamelen", notes: "Check tegen paklijst" },
-          { name: "Hardware controleren", notes: "Bouten, moeren, borgringen" },
-          { name: "Componenten voorbereiden" },
-          { name: "Subassemblies maken" },
-          { name: "Hoofdassemblage" },
-          { name: "Momentsleutel aandraaimomenten", notes: "Per tekening" },
-          { name: "Functionele test" },
-          { name: "Eindcontrole" },
-        ],
-        "Afwerking": [
-          { name: "Voorbehandeling check" },
-          { name: "Reinigen/ontvetten", notes: "Gebruik goedgekeurd reinigingsmiddel" },
-          { name: "Maskeren indien nodig" },
-          { name: "Oppervlaktebehandeling", notes: "Coating/Anodiseren" },
-          { name: "Droogtijd/uitharding", notes: "Volgens datasheet" },
-          { name: "Laagdikte meting", notes: "DFT meting" },
-          { name: "Demaskeren" },
-          { name: "Visuele eindcontrole" },
-        ],
-        "Kwaliteitscontrole": [
-          { name: "Documentatie verzamelen", notes: "Tekeningen, specs, certs" },
-          { name: "Visuele inspectie" },
-          { name: "Dimensie controle", notes: "Kritische maten per tekening" },
-          { name: "Functionele test", notes: "Indien van toepassing" },
-          { name: "Certificaten controleren", notes: "Materiaal certs" },
-          { name: "Meetrapport invullen" },
-          { name: "Goedkeuren/afkeuren", notes: "Status bijwerken in systeem" },
-          { name: "Label en vrijgave" },
-        ],
+      // Map Dutch cell names to template categories
+      const cellToTemplateMap: Record<string, keyof typeof SUBSTEP_TEMPLATES> = {
+        "Lasersnijden": "cutting",
+        "CNC Kantbank": "bending",
+        "Lassen": "welding",
+        "Montage": "assembly",
+        "Afwerking": "finishing",
+        "Kwaliteitscontrole": "inspection",
       };
 
       // Helper to determine operation cell name from cell_id
@@ -1529,16 +1473,18 @@ export async function generateMockData(
         return Object.entries(cellIdMap).find(([_, id]) => id === cellId)?.[0];
       };
 
-      // Create substeps for each operation
+      // Create substeps for each operation using standard templates
       for (const op of operationData) {
         const cellName = getCellName(op.cell_id);
         if (!cellName) continue;
 
-        const templates = substepTemplates[cellName];
-        if (!templates) continue;
+        const templateKey = cellToTemplateMap[cellName];
+        const templates: SubstepTemplate[] = templateKey
+          ? SUBSTEP_TEMPLATES[templateKey]
+          : SUBSTEP_TEMPLATES.general;
 
-        // For completed operations, mark all substeps as completed with timestamps
-        // For in_progress, mark some as completed/in_progress
+        // For completed operations, mark all substeps as completed
+        // For in_progress, mark first half as completed, one in_progress
         // For not_started, all substeps are not_started
         templates.forEach((template, idx) => {
           let status = "not_started";
@@ -1547,31 +1493,23 @@ export async function generateMockData(
 
           if (op.status === "completed") {
             status = "completed";
-            // Set completion timestamp in the past (Oct-Nov 2025)
             const completionDate = new Date("2025-10-20T08:00:00Z");
             completionDate.setDate(completionDate.getDate() + Math.floor(Math.random() * 40));
-            completionDate.setHours(8 + idx, Math.floor(Math.random() * 60));
             completed_at = completionDate.toISOString();
-            // Assign to a random operator if available
             if (operatorIds.length > 0) {
               completed_by = operatorIds[Math.floor(Math.random() * operatorIds.length)];
             }
           } else if (op.status === "in_progress") {
-            // First 30-70% are completed, one in_progress, rest not_started
-            const completionThreshold = Math.floor(templates.length * (0.3 + Math.random() * 0.4));
-            if (idx < completionThreshold) {
+            const halfPoint = Math.floor(templates.length / 2);
+            if (idx < halfPoint) {
               status = "completed";
               const completionDate = new Date("2025-11-15T08:00:00Z");
-              completionDate.setDate(completionDate.getDate() + Math.floor(Math.random() * 10));
-              completionDate.setHours(8 + idx, Math.floor(Math.random() * 60));
               completed_at = completionDate.toISOString();
               if (operatorIds.length > 0) {
                 completed_by = operatorIds[Math.floor(Math.random() * operatorIds.length)];
               }
-            } else if (idx === completionThreshold) {
+            } else if (idx === halfPoint) {
               status = "in_progress";
-            } else {
-              status = "not_started";
             }
           }
 
