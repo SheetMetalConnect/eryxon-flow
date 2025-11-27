@@ -53,11 +53,11 @@ export function canAccessApp(tenant: Tenant | null): SubscriptionAccessResult {
     }
   }
 
-  // Payment failed
+  // Payment failed or tenant suspended (requires approval)
   if (tenant.status === 'suspended') {
     return {
       allowed: false,
-      reason: 'payment_failed',
+      reason: 'payment_failed', // Using payment_failed for suspended status
     };
   }
 
@@ -90,7 +90,7 @@ export function getSubscriptionMessage(result: SubscriptionAccessResult): string
     case 'payment_overdue':
       return `Your payment is overdue. Please update your payment method by ${result.gracePeriodEnds?.toLocaleDateString()} to avoid service interruption.`;
     case 'payment_failed':
-      return 'Your payment has failed and the grace period has expired. Please update your payment method to restore access.';
+      return 'Your account is pending approval. Please wait for activation or contact support.';
     case 'subscription_cancelled':
       return 'Your subscription has been cancelled. Upgrade to restore access to premium features.';
     case 'subscription_required':

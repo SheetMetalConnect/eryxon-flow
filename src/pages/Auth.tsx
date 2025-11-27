@@ -17,9 +17,11 @@ export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { signIn, profile } = useAuth();
+  const { signIn, signUp, profile } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already logged in
@@ -38,9 +40,26 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      const { error } = await signIn(email, password);
-      if (error) {
-        setError(error.message);
+      if (isLogin) {
+        const { error } = await signIn(email, password);
+        if (error) {
+          setError(error.message);
+        }
+      } else {
+        // Sign up creates tenant with 'suspended' status - requires admin approval
+        const { error } = await signUp(email, password, {
+          full_name: fullName,
+          company_name: companyName,
+          role: "admin"
+        });
+        
+        if (error) {
+          setError(error.message);
+        } else {
+          setError(null);
+          // Show success message
+          setError("Account created! Your account is pending approval. You'll receive an email once activated.");
+        }
       }
     } catch (err) {
       setError(t("auth.unexpectedError"));
@@ -82,7 +101,7 @@ export default function Auth() {
 
           {/* Hero Section Title */}
           <h2 className="hero-title">
-            {t("auth.signIn")}
+            {isLogin ? t("auth.signIn") : t("auth.signUp")}
           </h2>
 
           {/* Informational Text */}
@@ -92,6 +111,38 @@ export default function Auth() {
 
           {/* Auth Form */}
           <form onSubmit={handleSubmit} className="space-y-4 text-left">
+            {!isLogin && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="fullName" className="text-sm font-medium">
+                    {t("auth.fullName")}
+                  </Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                    placeholder={t("auth.fullNamePlaceholder")}
+                    className="bg-input-background border-input"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="companyName" className="text-sm font-medium">
+                    {t("auth.companyName")}
+                  </Label>
+                  <Input
+                    id="companyName"
+                    type="text"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    placeholder={t("auth.companyNamePlaceholder")}
+                    className="bg-input-background border-input"
+                  />
+                </div>
+              </>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium">
@@ -137,9 +188,22 @@ export default function Auth() {
                 disabled={loading}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {t("auth.signIn")}
+                {isLogin ? t("auth.signIn") : t("auth.signUp")}
                 <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />
               </Button>
+            </div>
+
+            <div className="text-center pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setError(null);
+                }}
+                className="text-sm text-primary hover:underline"
+              >
+                {isLogin ? t("auth.noAccount") : t("auth.haveAccount")}
+              </button>
             </div>
           </form>
         </div>

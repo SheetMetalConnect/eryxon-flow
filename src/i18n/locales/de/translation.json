@@ -42,6 +42,8 @@
     "signUpDescription": "Erstellen Sie ein Konto, um loszulegen",
     "fullName": "Vollständiger Name",
     "fullNamePlaceholder": "Max Mustermann",
+    "companyName": "Firmenname (Optional)",
+    "companyNamePlaceholder": "Ihre Firma",
     "email": "E-Mail",
     "emailPlaceholder": "sie@firma.de",
     "password": "Passwort",
