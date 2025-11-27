@@ -1492,5 +1492,34 @@
   "jobCreate": {
     "title": "Create New Job",
     "subtitle": "Build your job step-by-step: define details, add parts, configure operations, and review"
+  },
+  "quality": {
+    "dashboardTitle": "Quality Overview",
+    "partsQuality": "Parts Quality Overview",
+    "yieldRate": "Yield Rate",
+    "totalProduced": "Produced",
+    "goodParts": "Good",
+    "scrap": "Scrap",
+    "rework": "Rework",
+    "openIssues": "Open Issues",
+    "critical": "Critical",
+    "topScrapReasons": "Top Scrap Reasons",
+    "scrapByCategory": "Scrap by Category",
+    "totalIssues": "Total Issues",
+    "criticalPending": "Critical Pending",
+    "highPending": "High Pending",
+    "resolved": "Resolved",
+    "resolutionRate": "Resolution Rate",
+    "bySeverity": "Issues by Severity",
+    "byStatus": "Issues by Status",
+    "totalReasons": "Total Reasons",
+    "activeReasons": "Active",
+    "usedReasons": "Used",
+    "unusedReasons": "Unused",
+    "timesUsed": "Times Used",
+    "totalScrapped": "Total Scrapped",
+    "noScrapData": "No scrap data recorded yet",
+    "usage": "Usage",
+    "scrapped": "Scrapped"
   }
 }
