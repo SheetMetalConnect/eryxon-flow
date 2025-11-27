@@ -349,7 +349,13 @@
     "sampleData": "Import Sample Data",
     "sampleDataDescription": "Start exploring Eryxon MES with realistic metal fabrication shop data",
     "sampleDataExplanation": "We'll create sample jobs, parts, and operations that represent a typical sheet metal fabrication workflow.",
-    "manufacturingCells": "Manufacturing Cells",
+    "planSelection": {
+      "title": "Choose Your Plan",
+      "comingSoon": "Pricing plans are being finalized",
+      "continue": "Continue with Free Plan",
+      "skip": "Skip for Now",
+      "freeForNow": "All features are currently free during beta"
+    },
     "sampleJobs": "Sample Jobs",
     "sampleParts": "Parts",
     "sampleOperations": "Operations",
@@ -1128,6 +1134,10 @@
   "pricing": {
     "title": "Pricing Plans",
     "subtitle": "Choose the perfect plan for your metal fabrication shop",
+    "comingSoonTitle": "Pricing Coming Soon",
+    "comingSoonSubtitle": "Professional pricing plans are currently being finalized",
+    "comingSoonDescription": "We're preparing transparent, fair pricing for European manufacturers. Contact us for early access and custom quotes.",
+    "contactUs": "Contact Us",
     "monthly": "Monthly",
     "annually": "Annually",
     "save20": "Save 20%",
@@ -1204,6 +1214,12 @@
   },
   "myPlan": {
     "title": "My Plan",
+    "comingSoonTitle": "Subscription Management Coming Soon",
+    "comingSoonSubtitle": "Professional subscription features are being finalized",
+    "comingSoonDescription": "We're building a comprehensive subscription management system. Currently, all features are available for free.",
+    "contactUs": "Contact Us",
+    "currentlyFree": "Currently Free for All Users",
+    "currentlyFreeDescription": "All features are available at no cost while we finalize our pricing structure.",
     "activeJobs": "Active Jobs",
     "admins": "Admins",
     "amount": "Amount",

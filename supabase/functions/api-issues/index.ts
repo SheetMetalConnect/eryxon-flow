@@ -27,7 +27,7 @@ import {
   handleMethodNotAllowed,
   handleOptions,
   NotFoundError,
-  ValidationError,
+  ValidationException,
   UnauthorizedError,
   BadRequestError,
 } from "../_shared/validation/errorHandler.ts";
@@ -282,7 +282,7 @@ async function handleCreateIssue(
   const validationResult = validator.validate(body, context);
 
   if (!validationResult.valid) {
-    throw new ValidationError(validationResult);
+    throw new ValidationException(validationResult);
   }
 
   // Generate NCR number if this is an NCR and no number provided
@@ -446,7 +446,7 @@ async function handleUpdateIssue(
       updates.resolved_by_id !== null &&
       !validUserIds.includes(updates.resolved_by_id)
     ) {
-      throw new ValidationError({
+      throw new ValidationException({
         valid: false,
         severity: "error" as any,
         httpStatus: 422,
@@ -467,7 +467,7 @@ async function handleUpdateIssue(
       updates.verified_by_id !== null &&
       !validUserIds.includes(updates.verified_by_id)
     ) {
-      throw new ValidationError({
+      throw new ValidationException({
         valid: false,
         severity: "error" as any,
         httpStatus: 422,
