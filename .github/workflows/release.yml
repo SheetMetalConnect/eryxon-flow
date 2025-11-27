@@ -1,0 +1,174 @@
+name: Release
+
+# Manual trigger for controlled releases
+on:
+  workflow_dispatch:
+    inputs:
+      run_migrations:
+        description: 'Run database migrations'
+        required: true
+        default: 'false'
+        type: boolean
+      deploy_functions:
+        description: 'Deploy Edge Functions'
+        required: true
+        default: 'true'
+        type: boolean
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Step 1: Run all tests
+  test:
+    name: 1. Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build (verify)
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_PROD }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_PROD }}
+
+      - name: Run tests
+        run: npm run test --if-present
+
+  # Step 2: Run migrations (if enabled, requires approval)
+  migrate:
+    name: 2. Run Migrations
+    runs-on: ubuntu-latest
+    needs: test
+    if: ${{ inputs.run_migrations == true }}
+    environment: production  # Requires manual approval
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link to production project
+        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF_PROD }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Run migrations
+        run: supabase db push --linked
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+  # Step 3: Deploy Edge Functions (if enabled)
+  deploy-functions:
+    name: 3. Deploy Edge Functions
+    runs-on: ubuntu-latest
+    needs: [test, migrate]
+    if: |
+      always() &&
+      needs.test.result == 'success' &&
+      (needs.migrate.result == 'success' || needs.migrate.result == 'skipped') &&
+      inputs.deploy_functions == true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy Edge Functions
+        run: supabase functions deploy --project-ref ${{ secrets.SUPABASE_PROJECT_REF_PROD }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+  # Step 4: Build and push Docker image
+  build-and-push:
+    name: 4. Build & Push Docker Image
+    runs-on: ubuntu-latest
+    needs: [test, migrate, deploy-functions]
+    if: |
+      always() &&
+      needs.test.result == 'success' &&
+      (needs.migrate.result == 'success' || needs.migrate.result == 'skipped') &&
+      (needs.deploy-functions.result == 'success' || needs.deploy-functions.result == 'skipped')
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}
+          build-args: |
+            VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL_PROD }}
+            VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY_PROD }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Step 5: Create GitHub release
+  create-release:
+    name: 5. Create Release
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: needs.build-and-push.result == 'success'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.build-and-push.outputs.version }}
+          generate_release_notes: true
+          body: |
+            ## Release v${{ needs.build-and-push.outputs.version }}
+
+            **What was deployed:**
+            - Migrations: ${{ inputs.run_migrations }}
+            - Edge Functions: ${{ inputs.deploy_functions }}
+
+            **Docker Image:**
+            ```
+            docker pull ghcr.io/${{ github.repository }}:${{ needs.build-and-push.outputs.version }}
+            ```
