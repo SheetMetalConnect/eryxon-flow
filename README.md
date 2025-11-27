@@ -29,7 +29,6 @@
 
 ![Commits](https://img.shields.io/badge/commits-517-blue)
 ![Inception](https://img.shields.io/badge/inception-2025-11-09-lightgrey)
-![LOC](https://img.shields.io/badge/lines-63K-green)
 ![Velocity](https://img.shields.io/badge/last_30d-517_commits-orange)
 
 </div>
