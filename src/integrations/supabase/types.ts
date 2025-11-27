@@ -319,6 +319,77 @@ export type Database = {
         }
         Relationships: []
       }
+      cycle_time_samples: {
+        Row: {
+          id: string
+          tenant_id: string
+          operation_id: string
+          sample_number: number
+          measured_time_seconds: number
+          quantity_measured: number
+          cycle_time_per_unit_seconds: number
+          measurement_type: string | null
+          measured_by: string | null
+          notes: string | null
+          metadata: Json | null
+          measured_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          operation_id: string
+          sample_number?: number
+          measured_time_seconds: number
+          quantity_measured?: number
+          measurement_type?: string | null
+          measured_by?: string | null
+          notes?: string | null
+          metadata?: Json | null
+          measured_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          operation_id?: string
+          sample_number?: number
+          measured_time_seconds?: number
+          quantity_measured?: number
+          measurement_type?: string | null
+          measured_by?: string | null
+          notes?: string | null
+          metadata?: Json | null
+          measured_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cycle_time_samples_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cycle_time_samples_operation_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: false
+            referencedRelation: "operations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cycle_time_samples_measured_by_fkey"
+            columns: ["measured_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       installed_integrations: {
         Row: {
           api_key_id: string | null
@@ -1221,6 +1292,48 @@ export type Database = {
           },
         ]
       }
+      operation_quantity_scrap_reasons: {
+        Row: {
+          id: string
+          operation_quantity_id: string
+          scrap_reason_id: string
+          quantity: number
+          notes: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          operation_quantity_id: string
+          scrap_reason_id: string
+          quantity?: number
+          notes?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          operation_quantity_id?: string
+          scrap_reason_id?: string
+          quantity?: number
+          notes?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "op_qty_scrap_reasons_qty_fkey"
+            columns: ["operation_quantity_id"]
+            isOneToOne: false
+            referencedRelation: "operation_quantities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "op_qty_scrap_reasons_reason_fkey"
+            columns: ["scrap_reason_id"]
+            isOneToOne: false
+            referencedRelation: "scrap_reasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operation_resources: {
         Row: {
           created_at: string | null
@@ -1289,6 +1402,7 @@ export type Database = {
           changeover_time: number | null
           planned_start: string | null
           planned_end: string | null
+          work_instructions: string | null
         }
         Insert: {
           actual_time?: number | null
@@ -1315,6 +1429,7 @@ export type Database = {
           changeover_time?: number | null
           planned_start?: string | null
           planned_end?: string | null
+          work_instructions?: string | null
         }
         Update: {
           actual_time?: number | null
@@ -1341,6 +1456,7 @@ export type Database = {
           changeover_time?: number | null
           planned_start?: string | null
           planned_end?: string | null
+          work_instructions?: string | null
         }
         Relationships: [
           {

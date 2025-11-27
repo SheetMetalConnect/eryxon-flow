@@ -24,7 +24,11 @@ export type WebhookEvent =
   | 'ncr.verified'
   // Step events
   | 'step.added'
-  | 'step.completed';
+  | 'step.completed'
+  // Production metrics events
+  | 'production.quantity_reported'
+  | 'production.scrap_recorded'
+  | 'production.cycle_time_measured';
 
 export interface WebhookData {
   [key: string]: any;
@@ -163,4 +167,91 @@ export async function triggerJobCreatedWebhook(
   }
 ) {
   return triggerWebhook(tenantId, 'job.created', jobData);
+}
+
+/**
+ * Triggers a production.quantity_reported webhook
+ */
+export async function triggerQuantityReportedWebhook(
+  tenantId: string,
+  quantityData: {
+    quantity_id: string;
+    operation_id: string;
+    operation_name: string;
+    part_id: string;
+    part_number: string;
+    job_id: string;
+    job_number: string;
+    quantity_produced: number;
+    quantity_good: number;
+    quantity_scrap: number;
+    quantity_rework: number;
+    yield_percentage: number;
+    recorded_by: string;
+    recorded_by_name: string;
+    recorded_at: string;
+  }
+) {
+  return triggerWebhook(tenantId, 'production.quantity_reported', quantityData);
+}
+
+/**
+ * Triggers a production.scrap_recorded webhook
+ */
+export async function triggerScrapRecordedWebhook(
+  tenantId: string,
+  scrapData: {
+    quantity_id: string;
+    operation_id: string;
+    operation_name: string;
+    part_id: string;
+    part_number: string;
+    job_id: string;
+    job_number: string;
+    quantity_scrap: number;
+    scrap_reasons: Array<{
+      reason_id: string;
+      reason_code: string;
+      reason_description: string;
+      category: string;
+      quantity: number;
+    }>;
+    recorded_by: string;
+    recorded_by_name: string;
+    recorded_at: string;
+  }
+) {
+  return triggerWebhook(tenantId, 'production.scrap_recorded', scrapData);
+}
+
+/**
+ * Triggers a production.cycle_time_measured webhook
+ */
+export async function triggerCycleTimeMeasuredWebhook(
+  tenantId: string,
+  cycleTimeData: {
+    sample_id: string;
+    operation_id: string;
+    operation_name: string;
+    part_id: string;
+    part_number: string;
+    job_id: string;
+    job_number: string;
+    sample_number: number;
+    measured_time_seconds: number;
+    quantity_measured: number;
+    cycle_time_per_unit_seconds: number;
+    measurement_type: string;
+    measured_by: string;
+    measured_by_name: string;
+    measured_at: string;
+    statistics: {
+      sample_count: number;
+      avg_cycle_time_seconds: number;
+      min_cycle_time_seconds: number;
+      max_cycle_time_seconds: number;
+    } | null;
+  }
+) {
+  return triggerWebhook(tenantId, 'production.cycle_time_measured', cycleTimeData);
 }
