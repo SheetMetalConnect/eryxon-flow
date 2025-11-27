@@ -27,12 +27,10 @@
 
 <div align="center">
 
-### 📊 Project Stats
-
-![Commits/month](https://img.shields.io/github/commit-activity/m/SheetMetalConnect/eryxon-flow?style=flat-square&label=commits/month)
-![Last commit](https://img.shields.io/github/last-commit/SheetMetalConnect/eryxon-flow?style=flat-square)
-![Created](https://img.shields.io/github/created-at/SheetMetalConnect/eryxon-flow?style=flat-square&label=inception)
-![Repo size](https://img.shields.io/github/repo-size/SheetMetalConnect/eryxon-flow?style=flat-square)
+![Commits](https://img.shields.io/badge/commits-0-blue)
+![Inception](https://img.shields.io/badge/inception-2024--01--01-lightgrey)
+![LOC](https://img.shields.io/badge/lines-0-green)
+![Velocity](https://img.shields.io/badge/last_30d-0_commits-orange)
 
 </div>
 
