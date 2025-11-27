@@ -39,6 +39,7 @@ import {
   Flag,
   Info,
   Factory,
+  Trash2,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -173,6 +174,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       path: ROUTES.ADMIN.CONFIG.STEPS_TEMPLATES,
       label: t("navigation.templates"),
       icon: FileText,
+      exact: true,
+    },
+    {
+      path: ROUTES.ADMIN.CONFIG.SCRAP_REASONS,
+      label: t("navigation.scrapReasons", "Scrap Reasons"),
+      icon: Trash2,
       exact: true,
     },
     {
