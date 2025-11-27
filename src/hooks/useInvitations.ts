@@ -46,7 +46,7 @@ export function useInvitations() {
     }
   };
 
-  // Create new invitation
+  // Create new invitation and send email via Edge Function
   const createInvitation = async (email: string, role: 'operator' | 'admin' = 'operator') => {
     if (!profile?.tenant_id) {
       toast.error('No tenant found');
@@ -54,20 +54,54 @@ export function useInvitations() {
     }
 
     try {
-      const { data, error: rpcError } = await supabase.rpc('create_invitation', {
-        p_email: email,
-        p_role: role,
-        p_tenant_id: profile.tenant_id,
-      });
+      // Get the current session for auth
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
 
-      if (rpcError) throw rpcError;
+      // Call the Edge Function to create invitation and send email
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-invitation`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            email,
+            role,
+            tenant_id: profile.tenant_id,
+          }),
+        }
+      );
 
-      toast.success(`Invitation sent to ${email}`);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create invitation');
+      }
+
+      if (result.email_sent) {
+        toast.success(`Invitation sent to ${email}`);
+      } else if (result.invitation_url) {
+        // Email not configured - show the URL for manual sharing
+        toast.success(
+          `Invitation created! Share this link with ${email}`,
+          {
+            duration: 10000,
+            description: result.invitation_url,
+          }
+        );
+      } else {
+        toast.success(`Invitation created for ${email}`);
+      }
 
       // Reload invitations
       await loadInvitations();
 
-      return data;
+      return result.invitation_id;
     } catch (err: any) {
       toast.error(err.message || 'Failed to create invitation');
       console.error('Error creating invitation:', err);

@@ -10,11 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Loader2, Mail, UserPlus, Users } from "lucide-react";
+import { Plus, Edit, Loader2, Mail, UserPlus, Users, Trash2, Clock, Link2, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { DataTable, DataTableColumnHeader, DataTableFilterableColumn } from "@/components/ui/data-table";
-import { useInvitations } from "@/hooks/useInvitations";
+import { useInvitations, Invitation } from "@/hooks/useInvitations";
 
 interface UserProfile {
   id: string;
@@ -29,7 +29,7 @@ interface UserProfile {
 export default function ConfigUsers() {
   const { t } = useTranslation();
   const { profile } = useAuth();
-  const { createInvitation } = useInvitations();
+  const { invitations, createInvitation, cancelInvitation, loading: invitationsLoading } = useInvitations();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -134,13 +134,16 @@ export default function ConfigUsers() {
 
     setInviting(true);
     try {
-      await createInvitation(inviteEmail, inviteRole);
-      setInviteDialogOpen(false);
-      setInviteEmail('');
-      setInviteRole('operator');
-      toast.success('Invitation sent successfully!');
+      const result = await createInvitation(inviteEmail, inviteRole);
+      if (result) {
+        setInviteDialogOpen(false);
+        setInviteEmail('');
+        setInviteRole('operator');
+        // Toast is already shown by createInvitation
+      }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to send invitation');
+      // Error toast already shown by createInvitation
+      console.error('Invitation error:', error);
     } finally {
       setInviting(false);
     }
@@ -675,6 +678,65 @@ export default function ConfigUsers() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Pending Invitations */}
+      {invitations.filter(inv => inv.status === 'pending').length > 0 && (
+        <Card className="glass-card border-yellow-500/20">
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center gap-2">
+              <Clock className="h-5 w-5 text-yellow-500" />
+              Pending Invitations ({invitations.filter(inv => inv.status === 'pending').length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {invitations.filter(inv => inv.status === 'pending').map((invitation) => (
+                <div key={invitation.id} className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border-subtle">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 rounded-lg bg-yellow-500/10">
+                      <Mail className="h-4 w-4 text-yellow-500" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{invitation.email}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Expires {new Date(invitation.expires_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <Badge variant={invitation.role === 'admin' ? 'default' : 'secondary'}>
+                      {invitation.role === 'admin' ? 'Admin' : 'Operator'}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const url = `${window.location.origin}/accept-invitation/${invitation.token}`;
+                        navigator.clipboard.writeText(url);
+                        toast.success('Invitation link copied to clipboard');
+                      }}
+                      className="gap-2"
+                    >
+                      <Copy className="h-4 w-4" />
+                      Copy Link
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => cancelInvitation(invitation.id)}
+                      className="gap-2 text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Users Table */}
       <Card className="glass-card">
