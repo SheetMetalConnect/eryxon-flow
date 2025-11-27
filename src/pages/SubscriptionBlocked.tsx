@@ -1,19 +1,8 @@
 import React from 'react';
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Alert,
-  Stack,
-  useTheme,
-} from '@mui/material';
-import {
-  BlockOutlined as BlockIcon,
-  CreditCard as CreditCardIcon,
-  Upgrade as UpgradeIcon,
-} from '@mui/icons-material';
+import { Ban, CreditCard, ArrowUpCircle } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { SubscriptionAccessResult } from '@/utils/subscriptionGuard';
 import { getSubscriptionMessage } from '@/utils/subscriptionGuard';
 
@@ -28,17 +17,15 @@ export const SubscriptionBlocked: React.FC<SubscriptionBlockedProps> = ({
   onManageBilling,
   onUpgrade,
 }) => {
-  const theme = useTheme();
-
-  const getAlertSeverity = () => {
+  const getAlertVariant = (): 'default' | 'destructive' => {
     switch (result.reason) {
       case 'payment_overdue':
-        return 'warning';
+        return 'default';
       case 'payment_failed':
       case 'subscription_cancelled':
-        return 'error';
+        return 'destructive';
       default:
-        return 'info';
+        return 'default';
     }
   };
 
@@ -56,80 +43,71 @@ export const SubscriptionBlocked: React.FC<SubscriptionBlockedProps> = ({
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        p: 3,
-        background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`,
-      }}
-    >
-      <Card sx={{ maxWidth: 600, width: '100%' }}>
-        <CardContent sx={{ p: 4, textAlign: 'center' }}>
-          <BlockIcon sx={{ fontSize: 80, color: 'error.main', mb: 2 }} />
+    <div className="flex items-center justify-center min-h-screen p-6 bg-gradient-to-br from-background to-muted/30">
+      <Card className="glass-card max-w-xl w-full">
+        <CardContent className="p-8 text-center">
+          <Ban className="h-20 w-20 text-destructive mx-auto mb-4" />
 
-          <Typography variant="h4" fontWeight={700} gutterBottom>
-            {getTitle()}
-          </Typography>
+          <h1 className="text-3xl font-bold mb-4">{getTitle()}</h1>
 
-          <Alert severity={getAlertSeverity()} sx={{ mb: 3, textAlign: 'left' }}>
-            {getSubscriptionMessage(result)}
+          <Alert variant={getAlertVariant()} className="mb-6 text-left">
+            <AlertDescription>
+              {getSubscriptionMessage(result)}
+            </AlertDescription>
           </Alert>
 
           {result.gracePeriodEnds && (
-            <Alert severity="warning" sx={{ mb: 3, textAlign: 'left' }}>
-              <Typography variant="body2" fontWeight={600}>
+            <Alert className="mb-6 text-left border-yellow-500/50 bg-yellow-500/10">
+              <AlertTitle className="font-semibold">
                 Grace Period Ends: {result.gracePeriodEnds.toLocaleString()}
-              </Typography>
-              <Typography variant="caption">
+              </AlertTitle>
+              <AlertDescription className="text-sm">
                 Update your payment method before this date to avoid service interruption.
-              </Typography>
+              </AlertDescription>
             </Alert>
           )}
 
-          <Stack spacing={2}>
+          <div className="space-y-3">
             {(result.reason === 'payment_overdue' || result.reason === 'payment_failed') && onManageBilling && (
               <Button
-                variant="contained"
-                size="large"
-                startIcon={<CreditCardIcon />}
+                size="lg"
                 onClick={onManageBilling}
-                fullWidth
+                className="w-full cta-button"
               >
+                <CreditCard className="h-5 w-5 mr-2" />
                 Update Payment Method
               </Button>
             )}
 
             {(result.reason === 'subscription_cancelled' || result.reason === 'no_subscription') && onUpgrade && (
               <Button
-                variant="contained"
-                size="large"
-                startIcon={<UpgradeIcon />}
+                size="lg"
                 onClick={onUpgrade}
-                fullWidth
+                className="w-full cta-button"
               >
+                <ArrowUpCircle className="h-5 w-5 mr-2" />
                 Upgrade Now
               </Button>
             )}
 
             <Button
-              variant="outlined"
-              size="large"
-              href="mailto:support@eryxonflow.com"
-              fullWidth
+              variant="outline"
+              size="lg"
+              asChild
+              className="w-full"
             >
-              Contact Support
+              <a href="mailto:support@eryxonflow.com">
+                Contact Support
+              </a>
             </Button>
-          </Stack>
+          </div>
 
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 3, display: 'block' }}>
+          <p className="text-xs text-muted-foreground mt-6">
             Need help? Our support team is here to assist you.
-          </Typography>
+          </p>
         </CardContent>
       </Card>
-    </Box>
+    </div>
   );
 };
 
