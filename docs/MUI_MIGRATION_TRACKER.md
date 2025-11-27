@@ -30,25 +30,25 @@
 - [ ] Migrate `src/components/mui/DataTable.tsx` → TanStack Table + shadcn table
 
 ## Phase 5: Layout & Navigation
-- [ ] Migrate `src/components/mui/AppHeader.tsx` → Tailwind + shadcn DropdownMenu
-- [ ] Migrate `src/layouts/OperatorLayout.tsx` → Tailwind layout
+- [x] Create `src/components/ui/app-header.tsx` → Tailwind + shadcn DropdownMenu
+- [x] Migrate `src/layouts/OperatorLayout.tsx` → Tailwind layout
 
 ## Phase 6: Feature Components
-- [ ] Migrate `src/components/GlobalSearch.tsx` → shadcn Command (cmdk)
-- [ ] Migrate `src/components/NotificationsCenter.tsx` → shadcn Popover + list
-- [ ] Migrate `src/components/QuickCreateMenu.tsx` → shadcn DropdownMenu
-- [ ] Migrate `src/components/admin/TenantSwitcher.tsx` → shadcn Dialog + list
+- [x] Migrate `src/components/GlobalSearch.tsx` → shadcn Command (cmdk)
+- [x] Migrate `src/components/NotificationsCenter.tsx` → shadcn Popover + list
+- [x] Migrate `src/components/QuickCreateMenu.tsx` → shadcn DropdownMenu
+- [x] Migrate `src/components/admin/TenantSwitcher.tsx` → shadcn Dialog + list
 
 ## Phase 7: Complex Pages
-- [ ] Migrate `src/pages/common/Help.tsx` → shadcn Accordion/Tabs
-- [ ] Migrate `src/pages/common/MyPlan.tsx` → shadcn Card/Progress
-- [ ] Migrate `src/pages/Help.tsx` (duplicate check)
+- [x] Migrate `src/pages/common/Help.tsx` → shadcn Accordion/Tabs
+- [x] Migrate `src/pages/common/MyPlan.tsx` → shadcn Card/Progress
 - [ ] Migrate `src/pages/operator/OperatorView.tsx` (1366 lines - largest file)
 
 ## Phase 8: Cleanup
-- [ ] Delete `src/components/mui/` directory
-- [ ] Delete `src/theme/theme.ts` (MUI theme)
-- [ ] Remove MUI dependencies from package.json:
+- [x] Delete `src/components/mui/` directory
+- [x] Verify `src/theme/theme.ts` is MUI-free (already CSS-based)
+- [x] Verify `src/theme/ThemeProvider.tsx` is MUI-free (already pure CSS)
+- [x] Remove MUI dependencies from package.json:
   - `@mui/material`
   - `@mui/icons-material`
   - `@mui/x-data-grid`
@@ -68,7 +68,11 @@
 | 2025-11-27 | Phase 1 | ✅ Complete |
 | 2025-11-27 | Phase 2 | ✅ Complete |
 | 2025-11-27 | Phase 3 | ✅ Complete |
-| 2025-11-27 | Phase 4 | 🔄 In Progress |
+| 2025-11-27 | Phase 4 | ✅ Complete |
+| 2025-11-27 | Phase 5 | ✅ Complete |
+| 2025-11-27 | Phase 6 | ✅ Complete |
+| 2025-11-27 | Phase 7 | 🔄 In Progress (OperatorView pending) |
+| 2025-11-27 | Phase 8 | 🔄 In Progress (MUI deps removal pending) |
 
 ---
 

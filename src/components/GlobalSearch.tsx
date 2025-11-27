@@ -1,35 +1,35 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+"use client";
+
+import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  Box,
+  Search,
+  Briefcase,
+  Package,
+  CheckCircle,
+  User,
+  AlertTriangle,
+  Play,
+  Clock,
+  Wrench,
+} from "lucide-react";
+import {
   Dialog,
-  TextField,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Typography,
-  CircularProgress,
-  alpha,
-  useTheme,
-  Chip,
-  InputAdornment,
-  Tooltip,
-} from '@mui/material';
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
-  Search as SearchIcon,
-  Work as WorkIcon,
-  Inventory as InventoryIcon,
-  CheckCircle as CheckCircleIcon,
-  Person as PersonIcon,
-  ReportProblem as ReportProblemIcon,
-  PlayCircleOutline as PlayCircleOutlineIcon,
-  Schedule as ScheduleIcon,
-  Close as CloseIcon,
-  Engineering as EngineeringIcon,
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { useGlobalSearch, SearchResult as SearchResultType } from '@/hooks/useGlobalSearch';
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Spinner } from "@/components/ui/spinner";
+import { cn } from "@/lib/utils";
+import { useGlobalSearch, SearchResult as SearchResultType } from "@/hooks/useGlobalSearch";
 
 interface GlobalSearchProps {
   open: boolean;
@@ -37,16 +37,14 @@ interface GlobalSearchProps {
 }
 
 export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResultType[]>([]);
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [query, setQuery] = React.useState("");
+  const [results, setResults] = React.useState<SearchResultType[]>([]);
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
   const navigate = useNavigate();
-  const theme = useTheme();
-  const inputRef = useRef<HTMLInputElement>(null);
   const { search, loading } = useGlobalSearch();
 
   // Debounced search
-  useEffect(() => {
+  React.useEffect(() => {
     if (!query.trim()) {
       setResults([]);
       setSelectedIndex(0);
@@ -62,37 +60,14 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
     return () => clearTimeout(timeoutId);
   }, [query, search]);
 
-  // Focus input when dialog opens
-  useEffect(() => {
-    if (open && inputRef.current) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  }, [open]);
-
   // Reset on close
-  useEffect(() => {
+  React.useEffect(() => {
     if (!open) {
-      setQuery('');
+      setQuery("");
       setResults([]);
       setSelectedIndex(0);
     }
   }, [open]);
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setSelectedIndex((prev) => Math.min(prev + 1, results.length - 1));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setSelectedIndex((prev) => Math.max(prev - 1, 0));
-    } else if (e.key === 'Enter' && results[selectedIndex]) {
-      e.preventDefault();
-      handleSelectResult(results[selectedIndex]);
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      onClose();
-    }
-  };
 
   const handleSelectResult = (result: SearchResultType) => {
     navigate(result.path);
@@ -101,29 +76,32 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
 
   const getResultIcon = (type: string) => {
     switch (type) {
-      case 'job':
-        return <WorkIcon />;
-      case 'part':
-        return <InventoryIcon />;
-      case 'operation':
-        return <EngineeringIcon />;
-      case 'user':
-        return <PersonIcon />;
-      case 'issue':
-        return <ReportProblemIcon />;
+      case "job":
+        return <Briefcase className="h-4 w-4" />;
+      case "part":
+        return <Package className="h-4 w-4" />;
+      case "operation":
+        return <Wrench className="h-4 w-4" />;
+      case "user":
+        return <User className="h-4 w-4" />;
+      case "issue":
+        return <AlertTriangle className="h-4 w-4" />;
       default:
-        return <SearchIcon />;
+        return <Search className="h-4 w-4" />;
     }
   };
 
   const getStatusIcon = (type: string, status?: string) => {
     if (!status) return null;
 
-    if (type === 'operation' || type === 'job' || type === 'part') {
-      if (status === 'completed') return <CheckCircleIcon fontSize="small" sx={{ color: theme.palette.success.main }} />;
-      if (status === 'in_progress') return <PlayCircleOutlineIcon fontSize="small" sx={{ color: theme.palette.warning.main }} />;
-      if (status === 'on_hold') return <ScheduleIcon fontSize="small" sx={{ color: theme.palette.error.main }} />;
-      return <ScheduleIcon fontSize="small" sx={{ color: theme.palette.info.main }} />;
+    if (type === "operation" || type === "job" || type === "part") {
+      if (status === "completed")
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      if (status === "in_progress")
+        return <Play className="h-4 w-4 text-yellow-500" />;
+      if (status === "on_hold")
+        return <Clock className="h-4 w-4 text-red-500" />;
+      return <Clock className="h-4 w-4 text-blue-500" />;
     }
     return null;
   };
@@ -137,168 +115,114 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
   }, {} as Record<string, SearchResultType[]>);
 
   const typeLabels: Record<string, string> = {
-    job: 'Jobs',
-    part: 'Parts',
-    operation: 'Operations',
-    user: 'Users',
-    issue: 'Issues',
+    job: "Jobs",
+    part: "Parts",
+    operation: "Operations",
+    user: "Users",
+    issue: "Issues",
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="sm"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 2,
-          maxHeight: '80vh',
-          overflow: 'hidden',
-        },
-      }}
-    >
-      <Box sx={{ p: 2 }}>
-        <TextField
-          inputRef={inputRef}
-          fullWidth
-          placeholder="Search jobs, parts, operations, users, issues..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-            endAdornment: loading ? (
-              <InputAdornment position="end">
-                <CircularProgress size={20} />
-              </InputAdornment>
-            ) : null,
-          }}
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 1.5,
-            },
-          }}
-        />
-      </Box>
-
-      <Box sx={{ maxHeight: 'calc(80vh - 100px)', overflow: 'auto', pb: 1 }}>
-        {!query.trim() && (
-          <Box sx={{ px: 3, py: 6, textAlign: 'center' }}>
-            <SearchIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
-            <Typography variant="body2" color="text.secondary">
-              Search across jobs, parts, operations, users, and issues
-            </Typography>
-            <Typography variant="caption" color="text.disabled" sx={{ mt: 1, display: 'block' }}>
-              Searches in job numbers, customers, part numbers, materials, notes, and more
-            </Typography>
-            <Typography variant="caption" color="text.disabled" sx={{ mt: 0.5, display: 'block' }}>
-              Use ↑↓ arrows to navigate, Enter to select, Esc to close
-            </Typography>
-          </Box>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent
+        className={cn(
+          "max-w-lg p-0 gap-0 overflow-hidden",
+          "bg-[rgba(20,20,20,0.95)] backdrop-blur-xl",
+          "border border-white/10",
+          "shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
         )}
+      >
+        <DialogHeader className="sr-only">
+          <DialogTitle>Global Search</DialogTitle>
+        </DialogHeader>
+        <Command className="bg-transparent" shouldFilter={false}>
+          <div className="flex items-center border-b border-white/10 px-3">
+            <Search className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+            <CommandInput
+              placeholder="Search jobs, parts, operations, users, issues..."
+              value={query}
+              onValueChange={setQuery}
+              className="flex h-12 w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            {loading && <Spinner size="sm" className="ml-2" />}
+          </div>
+          <CommandList className="max-h-[60vh] overflow-y-auto p-2">
+            {!query.trim() && (
+              <div className="px-4 py-12 text-center">
+                <Search className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                <p className="text-sm text-muted-foreground">
+                  Search across jobs, parts, operations, users, and issues
+                </p>
+                <p className="text-xs text-muted-foreground/70 mt-2">
+                  Searches in job numbers, customers, part numbers, materials, notes, and more
+                </p>
+                <p className="text-xs text-muted-foreground/50 mt-1">
+                  Use ↑↓ arrows to navigate, Enter to select, Esc to close
+                </p>
+              </div>
+            )}
 
-        {query.trim() && !loading && results.length === 0 && (
-          <Box sx={{ px: 3, py: 6, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
-              No results found for "{query}"
-            </Typography>
-          </Box>
-        )}
+            {query.trim() && !loading && results.length === 0 && (
+              <CommandEmpty className="py-12 text-center">
+                <p className="text-sm text-muted-foreground">
+                  No results found for "{query}"
+                </p>
+              </CommandEmpty>
+            )}
 
-        {results.length > 0 && (
-          <List sx={{ px: 1 }}>
             {Object.entries(groupedResults).map(([type, items]) => (
-              <Box key={type} sx={{ mb: 2 }}>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    px: 2,
-                    py: 0.5,
-                    display: 'block',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    color: 'text.secondary',
-                    fontSize: '0.7rem',
-                    letterSpacing: '0.5px',
-                  }}
-                >
-                  {typeLabels[type]} ({items.length})
-                </Typography>
-                {items.map((result, idx) => {
-                  const globalIndex = results.findIndex((r) => r.id === result.id);
-                  const hasDescription = result.description && result.description.length > 0;
+              <CommandGroup
+                key={type}
+                heading={
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {typeLabels[type]} ({items.length})
+                  </span>
+                }
+                className="mb-2"
+              >
+                {items.map((result) => {
+                  const hasDescription =
+                    result.description && result.description.length > 0;
 
                   return (
-                    <ListItem key={result.id} disablePadding sx={{ mb: 0.5 }}>
-                      <Tooltip
-                        title={hasDescription ? result.description : ''}
-                        placement="left"
-                        arrow
-                      >
-                        <ListItemButton
-                          selected={globalIndex === selectedIndex}
-                          onClick={() => handleSelectResult(result)}
-                          sx={{
-                            borderRadius: 1.5,
-                            mx: 1,
-                            '&.Mui-selected': {
-                              backgroundColor: alpha(theme.palette.primary.main, 0.12),
-                              '&:hover': {
-                                backgroundColor: alpha(theme.palette.primary.main, 0.18),
-                              },
-                            },
-                          }}
-                        >
-                          <ListItemIcon sx={{ minWidth: 40 }}>
-                            {getResultIcon(result.type)}
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={result.title}
-                            secondary={
-                              <Box component="span">
-                                {result.subtitle}
-                                {hasDescription && (
-                                  <Typography
-                                    component="span"
-                                    variant="caption"
-                                    sx={{
-                                      display: 'block',
-                                      color: 'text.disabled',
-                                      mt: 0.5,
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      whiteSpace: 'nowrap',
-                                    }}
-                                  >
-                                    {result.description}
-                                  </Typography>
-                                )}
-                              </Box>
-                            }
-                            primaryTypographyProps={{
-                              fontWeight: 500,
-                              fontSize: '0.95rem',
-                            }}
-                            secondaryTypographyProps={{
-                              fontSize: '0.8rem',
-                            }}
-                          />
-                          {getStatusIcon(result.type, result.status)}
-                        </ListItemButton>
-                      </Tooltip>
-                    </ListItem>
+                    <CommandItem
+                      key={result.id}
+                      value={result.id}
+                      onSelect={() => handleSelectResult(result)}
+                      className={cn(
+                        "flex items-start gap-3 px-3 py-2.5 rounded-lg cursor-pointer",
+                        "data-[selected=true]:bg-primary/15"
+                      )}
+                    >
+                      <span className="mt-0.5 text-muted-foreground">
+                        {getResultIcon(result.type)}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm truncate">
+                            {result.title}
+                          </span>
+                        </div>
+                        {result.subtitle && (
+                          <span className="text-xs text-muted-foreground block truncate">
+                            {result.subtitle}
+                          </span>
+                        )}
+                        {hasDescription && (
+                          <span className="text-xs text-muted-foreground/60 block truncate mt-0.5">
+                            {result.description}
+                          </span>
+                        )}
+                      </div>
+                      {getStatusIcon(result.type, result.status)}
+                    </CommandItem>
                   );
                 })}
-              </Box>
+              </CommandGroup>
             ))}
-          </List>
-        )}
-      </Box>
+          </CommandList>
+        </Command>
+      </DialogContent>
     </Dialog>
   );
 };

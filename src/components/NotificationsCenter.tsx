@@ -1,56 +1,54 @@
-import React, { useState } from 'react';
-import {
-  IconButton,
-  Badge,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  Typography,
-  Box,
-  Button,
-  Divider,
-  alpha,
-  useTheme,
-  Tooltip,
-  Chip,
-  Stack,
-  CircularProgress,
-  Tab,
-  Tabs,
-} from '@mui/material';
-import {
-  Notifications as NotificationsIcon,
-  ReportProblem as ReportProblemIcon,
-  Work as WorkIcon,
-  AssignmentTurnedIn as AssignmentIcon,
-  Schedule as ScheduleIcon,
-  CheckCircle as CheckCircleIcon,
-  Inventory as InventoryIcon,
-  PersonAdd as PersonAddIcon,
-  PushPin as PushPinIcon,
-  PushPinOutlined as PushPinOutlinedIcon,
-  Close as CloseIcon,
-  Circle as CircleIcon,
-  Info as InfoIcon,
-  DoneAll as DoneAllIcon,
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { useNotifications } from '@/hooks/useNotifications';
-import { Database } from '@/integrations/supabase/types';
+"use client";
 
-type Notification = Database['public']['Tables']['notifications']['Row'];
+import * as React from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Bell,
+  AlertTriangle,
+  Clock,
+  ClipboardCheck,
+  Package,
+  UserPlus,
+  Info,
+  CheckCircle,
+  Pin,
+  PinOff,
+  X,
+  Circle,
+  CheckCheck,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { useNotifications } from "@/hooks/useNotifications";
+import { Database } from "@/integrations/supabase/types";
+
+type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 
 interface NotificationsCenterProps {
-  color?: 'inherit' | 'primary' | 'secondary' | 'default';
+  className?: string;
 }
 
-export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ color = 'inherit' }) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [currentTab, setCurrentTab] = useState<'all' | 'pinned'>('all');
+export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({
+  className,
+}) => {
+  const [open, setOpen] = React.useState(false);
+  const [currentTab, setCurrentTab] = React.useState<"all" | "pinned">("all");
   const navigate = useNavigate();
-  const theme = useTheme();
-  const open = Boolean(anchorEl);
 
   const {
     notifications,
@@ -64,26 +62,16 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ color 
     markAllAsRead,
   } = useNotifications();
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
   const handleNotificationClick = async (notification: Notification) => {
-    // Mark as read when clicked
     if (!notification.read) {
       await markAsRead(notification.id);
     }
 
-    // Navigate if link exists
     if (notification.link) {
       navigate(notification.link);
     }
 
-    handleClose();
+    setOpen(false);
   };
 
   const handleTogglePin = async (e: React.MouseEvent, notificationId: string) => {
@@ -102,34 +90,31 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ color 
   };
 
   const getIcon = (type: string, severity: string) => {
-    const iconProps = {
-      fontSize: 'small' as const,
-      sx: {
-        color:
-          severity === 'high'
-            ? '#EF4444'
-            : severity === 'medium'
-            ? '#F59E0B'
-            : '#10B981',
-      },
-    };
+    const colorClass =
+      severity === "high"
+        ? "text-red-500"
+        : severity === "medium"
+        ? "text-yellow-500"
+        : "text-green-500";
+
+    const iconProps = { className: cn("h-4 w-4", colorClass) };
 
     switch (type) {
-      case 'issue':
-        return <ReportProblemIcon {...iconProps} />;
-      case 'job_due':
-        return <ScheduleIcon {...iconProps} />;
-      case 'assignment':
-        return <AssignmentIcon {...iconProps} />;
-      case 'new_part':
-      case 'part_completed':
-        return <InventoryIcon {...iconProps} />;
-      case 'new_user':
-        return <PersonAddIcon {...iconProps} />;
-      case 'system':
-        return <InfoIcon {...iconProps} />;
+      case "issue":
+        return <AlertTriangle {...iconProps} />;
+      case "job_due":
+        return <Clock {...iconProps} />;
+      case "assignment":
+        return <ClipboardCheck {...iconProps} />;
+      case "new_part":
+      case "part_completed":
+        return <Package {...iconProps} />;
+      case "new_user":
+        return <UserPlus {...iconProps} />;
+      case "system":
+        return <Info {...iconProps} />;
       default:
-        return <NotificationsIcon {...iconProps} />;
+        return <Bell {...iconProps} />;
     }
   };
 
@@ -141,252 +126,251 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({ color 
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Just now';
+    if (diffMins < 1) return "Just now";
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     return `${diffDays}d ago`;
   };
 
-  const getSeverityChip = (severity: string) => {
+  const getSeverityBadge = (severity: string) => {
     const colors = {
-      high: '#EF4444',
-      medium: '#F59E0B',
-      low: '#10B981',
+      high: "bg-red-500/10 text-red-500 border-red-500/30",
+      medium: "bg-yellow-500/10 text-yellow-500 border-yellow-500/30",
+      low: "bg-green-500/10 text-green-500 border-green-500/30",
     };
 
     return (
-      <Chip
-        label={severity.toUpperCase()}
-        size="small"
-        sx={{
-          height: 20,
-          fontSize: '0.7rem',
-          fontWeight: 600,
-          backgroundColor: alpha(colors[severity as keyof typeof colors] || colors.low, 0.1),
-          color: colors[severity as keyof typeof colors] || colors.low,
-          border: `1px solid ${alpha(colors[severity as keyof typeof colors] || colors.low, 0.3)}`,
-        }}
-      />
+      <span
+        className={cn(
+          "px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded border",
+          colors[severity as keyof typeof colors] || colors.low
+        )}
+      >
+        {severity}
+      </span>
     );
   };
 
   const renderNotificationItem = (notification: Notification) => (
-    <MenuItem
+    <div
       key={notification.id}
       onClick={() => handleNotificationClick(notification)}
-      sx={{
-        px: 2,
-        py: 1.5,
-        borderLeft: 3,
-        borderColor: !notification.read
-          ? notification.severity === 'high'
-            ? '#EF4444'
-            : notification.severity === 'medium'
-            ? '#F59E0B'
-            : '#10B981'
-          : 'transparent',
-        backgroundColor: !notification.read
-          ? alpha(theme.palette.primary.main, 0.04)
-          : 'transparent',
-        '&:hover': {
-          backgroundColor: alpha(theme.palette.primary.main, 0.08),
-        },
-        position: 'relative',
-      }}
+      className={cn(
+        "flex items-start gap-3 px-3 py-3 cursor-pointer transition-colors",
+        "border-l-2 hover:bg-white/5",
+        !notification.read
+          ? notification.severity === "high"
+            ? "border-l-red-500 bg-primary/5"
+            : notification.severity === "medium"
+            ? "border-l-yellow-500 bg-primary/5"
+            : "border-l-green-500 bg-primary/5"
+          : "border-l-transparent"
+      )}
     >
-      <ListItemIcon sx={{ minWidth: 'unset !important', mr: 1.5 }}>
-        {getIcon(notification.type, notification.severity)}
-      </ListItemIcon>
+      <span className="mt-0.5">{getIcon(notification.type, notification.severity)}</span>
 
-      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
-          <Typography variant="body2" fontWeight={600} noWrap sx={{ flexGrow: 1 }}>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="font-semibold text-sm truncate flex-1">
             {notification.title}
-          </Typography>
-          {getSeverityChip(notification.severity)}
-        </Stack>
+          </span>
+          {getSeverityBadge(notification.severity)}
+        </div>
 
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{
-            display: 'block',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            maxWidth: 280,
-          }}
-        >
+        <p className="text-xs text-muted-foreground truncate max-w-[280px]">
           {notification.message}
-        </Typography>
+        </p>
 
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
-          <Typography variant="caption" color="text.disabled">
+        <div className="flex items-center gap-2 mt-1">
+          <span className="text-[10px] text-muted-foreground/70">
             {formatTime(notification.created_at)}
-          </Typography>
+          </span>
           {notification.pinned && (
-            <Chip
-              icon={<PushPinIcon sx={{ fontSize: 12 }} />}
-              label="Pinned"
-              size="small"
-              sx={{
-                height: 18,
-                fontSize: '0.65rem',
-                '& .MuiChip-icon': { ml: 0.5 },
-              }}
-            />
+            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground bg-white/5 px-1.5 py-0.5 rounded">
+              <Pin className="h-2.5 w-2.5" />
+              Pinned
+            </span>
           )}
-        </Stack>
-      </Box>
+        </div>
+      </div>
 
       {/* Action buttons */}
-      <Stack direction="row" spacing={0.5} sx={{ ml: 1 }}>
-        {!notification.read && (
-          <Tooltip title="Mark as read">
-            <IconButton
-              size="small"
-              onClick={(e) => handleMarkAsRead(e, notification.id)}
-              sx={{ width: 28, height: 28 }}
-            >
-              <CircleIcon sx={{ fontSize: 8, color: theme.palette.primary.main }} />
-            </IconButton>
+      <div className="flex items-center gap-0.5">
+        <TooltipProvider>
+          {!notification.read && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 hover:bg-white/10"
+                  onClick={(e) => handleMarkAsRead(e, notification.id)}
+                >
+                  <Circle className="h-2 w-2 fill-primary text-primary" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Mark as read</TooltipContent>
+            </Tooltip>
+          )}
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 hover:bg-white/10"
+                onClick={(e) => handleTogglePin(e, notification.id)}
+              >
+                {notification.pinned ? (
+                  <PinOff className="h-4 w-4" />
+                ) : (
+                  <Pin className="h-4 w-4" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {notification.pinned ? "Unpin" : "Pin"}
+            </TooltipContent>
           </Tooltip>
-        )}
 
-        <Tooltip title={notification.pinned ? 'Unpin' : 'Pin'}>
-          <IconButton
-            size="small"
-            onClick={(e) => handleTogglePin(e, notification.id)}
-            sx={{ width: 28, height: 28 }}
-          >
-            {notification.pinned ? (
-              <PushPinIcon sx={{ fontSize: 16 }} />
-            ) : (
-              <PushPinOutlinedIcon sx={{ fontSize: 16 }} />
-            )}
-          </IconButton>
-        </Tooltip>
-
-        <Tooltip title="Dismiss">
-          <IconButton
-            size="small"
-            onClick={(e) => handleDismiss(e, notification.id)}
-            sx={{ width: 28, height: 28 }}
-          >
-            <CloseIcon sx={{ fontSize: 16 }} />
-          </IconButton>
-        </Tooltip>
-      </Stack>
-    </MenuItem>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 hover:bg-white/10"
+                onClick={(e) => handleDismiss(e, notification.id)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Dismiss</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+    </div>
   );
 
-  const displayNotifications = currentTab === 'pinned'
-    ? pinnedNotifications
-    : [...pinnedNotifications, ...unpinnedNotifications];
+  const displayNotifications =
+    currentTab === "pinned"
+      ? pinnedNotifications
+      : [...pinnedNotifications, ...unpinnedNotifications];
 
   return (
-    <>
-      <IconButton
-        onClick={handleClick}
-        color={color}
-        aria-label={`${unreadCount} notifications`}
-        aria-controls={open ? 'notifications-menu' : undefined}
-        aria-haspopup="true"
-        aria-expanded={open ? 'true' : undefined}
-      >
-        <Badge badgeContent={unreadCount} color="error">
-          <NotificationsIcon />
-        </Badge>
-      </IconButton>
-
-      <Menu
-        id="notifications-menu"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        PaperProps={{
-          elevation: 3,
-          sx: {
-            mt: 1.5,
-            minWidth: 420,
-            maxWidth: 480,
-            maxHeight: 600,
-            borderRadius: 2,
-          },
-        }}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("relative h-9 w-9 hover:bg-white/10", className)}
+          aria-label={`${unreadCount} notifications`}
+        >
+          <Bell className="h-5 w-5" />
+          {unreadCount > 0 && (
+            <Badge
+              variant="destructive"
+              className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px]"
+            >
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </Badge>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        className={cn(
+          "w-[420px] max-w-[90vw] p-0",
+          "bg-[rgba(20,20,20,0.95)] backdrop-blur-xl",
+          "border border-white/10",
+          "shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+        )}
       >
         {/* Header */}
-        <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
-          <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-            <Typography variant="subtitle2" fontWeight={600}>
-              Notifications {unreadCount > 0 && `(${unreadCount} unread)`}
-            </Typography>
+        <div className="px-4 py-3 border-b border-white/10">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-sm">
+              Notifications{" "}
+              {unreadCount > 0 && (
+                <span className="text-muted-foreground">
+                  ({unreadCount} unread)
+                </span>
+              )}
+            </span>
             {unreadCount > 0 && (
-              <Tooltip title="Mark all as read">
-                <IconButton size="small" onClick={markAllAsRead}>
-                  <DoneAllIcon sx={{ fontSize: 18 }} />
-                </IconButton>
-              </Tooltip>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 hover:bg-white/10"
+                      onClick={markAllAsRead}
+                    >
+                      <CheckCheck className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Mark all as read</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
-          </Stack>
+          </div>
 
           {/* Tabs */}
           <Tabs
             value={currentTab}
-            onChange={(_, newValue) => setCurrentTab(newValue)}
-            sx={{ mt: 1, minHeight: 36 }}
+            onValueChange={(v) => setCurrentTab(v as "all" | "pinned")}
+            className="mt-2"
           >
-            <Tab
-              label={`All (${notifications.length})`}
-              value="all"
-              sx={{ minHeight: 36, py: 0.5, textTransform: 'none' }}
-            />
-            <Tab
-              label={`Pinned (${pinnedNotifications.length})`}
-              value="pinned"
-              sx={{ minHeight: 36, py: 0.5, textTransform: 'none' }}
-            />
+            <TabsList className="h-8 w-full bg-white/5">
+              <TabsTrigger value="all" className="flex-1 text-xs h-7">
+                All ({notifications.length})
+              </TabsTrigger>
+              <TabsTrigger value="pinned" className="flex-1 text-xs h-7">
+                Pinned ({pinnedNotifications.length})
+              </TabsTrigger>
+            </TabsList>
           </Tabs>
-        </Box>
+        </div>
 
         {/* Notifications List */}
-        <Box sx={{ maxHeight: 450, overflow: 'auto' }}>
+        <ScrollArea className="max-h-[450px]">
           {loading ? (
-            <Box sx={{ px: 3, py: 6, textAlign: 'center' }}>
-              <CircularProgress size={40} />
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            <div className="py-12 text-center">
+              <Spinner size="lg" className="mx-auto" />
+              <p className="text-sm text-muted-foreground mt-3">
                 Loading notifications...
-              </Typography>
-            </Box>
+              </p>
+            </div>
           ) : displayNotifications.length === 0 ? (
-            <Box sx={{ px: 3, py: 6, textAlign: 'center' }}>
-              <CheckCircleIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
-              <Typography variant="body2" color="text.secondary">
-                {currentTab === 'pinned' ? "No pinned notifications" : "You're all caught up!"}
-              </Typography>
-              <Typography variant="caption" color="text.disabled">
-                {currentTab === 'pinned' ? "Pin important notifications to see them here" : "No new notifications"}
-              </Typography>
-            </Box>
+            <div className="py-12 text-center">
+              <CheckCircle className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+              <p className="text-sm text-muted-foreground">
+                {currentTab === "pinned"
+                  ? "No pinned notifications"
+                  : "You're all caught up!"}
+              </p>
+              <p className="text-xs text-muted-foreground/70 mt-1">
+                {currentTab === "pinned"
+                  ? "Pin important notifications to see them here"
+                  : "No new notifications"}
+              </p>
+            </div>
           ) : (
-            displayNotifications.map(renderNotificationItem)
+            <div className="divide-y divide-white/5">
+              {displayNotifications.map(renderNotificationItem)}
+            </div>
           )}
-        </Box>
+        </ScrollArea>
 
         {/* Footer */}
         {displayNotifications.length > 0 && (
-          <>
-            <Divider />
-            <Box sx={{ px: 2, py: 1, textAlign: 'center' }}>
-              <Typography variant="caption" color="text.disabled">
-                Use the pin icon to keep important notifications at the top
-              </Typography>
-            </Box>
-          </>
+          <div className="px-4 py-2 border-t border-white/10 text-center">
+            <p className="text-[10px] text-muted-foreground/70">
+              Use the pin icon to keep important notifications at the top
+            </p>
+          </div>
         )}
-      </Menu>
-    </>
+      </PopoverContent>
+    </Popover>
   );
 };
