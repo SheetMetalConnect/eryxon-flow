@@ -36,6 +36,7 @@ import {
   ChevronRight,
   DragHandle,
   Assignment,
+  ReportProblem,
 } from "@mui/icons-material";
 import { useAuth } from "../../contexts/AuthContext";
 import { supabase } from "../../integrations/supabase/client";
@@ -49,6 +50,7 @@ import { PDFViewer } from "../../components/PDFViewer";
 import { STEPViewer } from "../../components/STEPViewer";
 import SubstepsManager from "../../components/operator/SubstepsManager";
 import ProductionQuantityModal from "../../components/operator/ProductionQuantityModal";
+import IssueForm from "../../components/operator/IssueForm";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 
@@ -115,6 +117,7 @@ export default function OperatorView() {
   const [viewerTab, setViewerTab] = useState<number>(0);
   const [fullscreenViewer, setFullscreenViewer] = useState<'pdf' | '3d' | null>(null);
   const [isQuantityModalOpen, setIsQuantityModalOpen] = useState<boolean>(false);
+  const [isIssueFormOpen, setIsIssueFormOpen] = useState<boolean>(false);
 
   // Panel collapse states
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState<boolean>(false);
@@ -774,6 +777,18 @@ export default function OperatorView() {
                   </Button>
                 </Tooltip>
               )}
+              <Tooltip title={t("issues.reportIssue", "Report Issue")}>
+                <Button
+                  variant="outlined"
+                  color="warning"
+                  startIcon={<ReportProblem sx={{ fontSize: 14 }} />}
+                  onClick={() => setIsIssueFormOpen(true)}
+                  size="small"
+                  sx={{ fontSize: "0.7rem", py: 0.375, px: 1.25, minWidth: 0 }}
+                >
+                  {t("Issue")}
+                </Button>
+              </Tooltip>
               <Button
                 variant="outlined"
                 color="primary"
@@ -1321,10 +1336,28 @@ export default function OperatorView() {
           operationName={selectedOperation.operation_name}
           partNumber={selectedOperation.part.part_number}
           plannedQuantity={selectedOperation.part.quantity}
-          onSuccess={() => {
+          onSuccess={async (quantityGood: number, shouldStopTime: boolean) => {
             setIsQuantityModalOpen(false);
+            // Auto-stop time tracking when quantity is achieved
+            if (shouldStopTime && activeTimeEntry) {
+              await handleStopTracking();
+            }
             loadOperations(selectedJobId);
           }}
+          onFileIssue={() => {
+            // Open issue form to document the shortfall
+            setIsIssueFormOpen(true);
+          }}
+        />
+      )}
+
+      {/* Issue Form */}
+      {selectedOperation && (
+        <IssueForm
+          operationId={selectedOperation.id}
+          open={isIssueFormOpen}
+          onOpenChange={setIsIssueFormOpen}
+          onSuccess={() => loadOperations(selectedJobId)}
         />
       )}
     </Box>
