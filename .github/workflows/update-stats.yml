@@ -30,13 +30,14 @@ jobs:
           echo "inception=$INCEPTION" >> $GITHUB_OUTPUT
 
           # Lines of code (TypeScript/JavaScript/CSS)
-          LOC=$(find src -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.css" 2>/dev/null | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}')
+          LOC=$(find src -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.css" \) -exec cat {} + 2>/dev/null | wc -l)
+          LOC=${LOC:-0}
           if [ "$LOC" -gt 1000 ]; then
-            LOC_DISPLAY="$(echo "scale=1; $LOC/1000" | bc)K"
+            LOC_K=$((LOC / 1000))
+            echo "loc=${LOC_K}K" >> $GITHUB_OUTPUT
           else
-            LOC_DISPLAY="$LOC"
+            echo "loc=$LOC" >> $GITHUB_OUTPUT
           fi
-          echo "loc=$LOC_DISPLAY" >> $GITHUB_OUTPUT
 
           # Commits in last 30 days
           RECENT=$(git rev-list --count --since="30 days ago" HEAD)
