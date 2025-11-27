@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, ArrowRight, Factory, Activity, Users, BarChart3, Shield } from "lucide-react";
+import { Loader2, ArrowRight, Factory, CheckCircle2, Info } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { Link } from "react-router-dom";
@@ -19,8 +19,11 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [termsAgreed, setTermsAgreed] = useState(false);
+  const [emailConsent, setEmailConsent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const { signIn, signUp, profile } = useAuth();
   const navigate = useNavigate();
 
@@ -37,6 +40,7 @@ export default function Auth() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccess(null);
     setLoading(true);
 
     try {
@@ -46,19 +50,45 @@ export default function Auth() {
           setError(error.message);
         }
       } else {
+        // Validate required fields
+        if (!fullName.trim()) {
+          setError(t("auth.fullNameRequired"));
+          setLoading(false);
+          return;
+        }
+
+        if (!companyName.trim()) {
+          setError(t("auth.companyNameRequired"));
+          setLoading(false);
+          return;
+        }
+
+        // Validate terms agreement
+        if (!termsAgreed) {
+          setError(t("auth.mustAgreeToTerms"));
+          setLoading(false);
+          return;
+        }
+
         // Sign up creates tenant with 'suspended' status - requires admin approval
         const { error } = await signUp(email, password, {
           full_name: fullName,
           company_name: companyName,
           role: "admin"
         });
-        
+
         if (error) {
           setError(error.message);
         } else {
-          setError(null);
           // Show success message
-          setError("Account created! Your account is pending approval. You'll receive an email once activated.");
+          setSuccess(t("auth.pendingApprovalMessage"));
+          // Clear form
+          setEmail("");
+          setPassword("");
+          setFullName("");
+          setCompanyName("");
+          setTermsAgreed(false);
+          setEmailConsent(false);
         }
       }
     } catch (err) {
@@ -87,13 +117,13 @@ export default function Auth() {
 
           {/* Welcome Text */}
           <p className="welcome-text">
-            Welcome to
+            {t("auth.welcomeTo")}
           </p>
 
           {/* Title Container with Preview Pill */}
           <div className="title-container">
-            <h1 className="main-title">Eryxon Flow</h1>
-            <p className="preview-pill">Manufacturing Execution System</p>
+            <h1 className="main-title">{t("auth.appName")}</h1>
+            <p className="preview-pill">{t("auth.subtitle")}</p>
           </div>
 
           {/* Divider */}
@@ -106,8 +136,18 @@ export default function Auth() {
 
           {/* Informational Text */}
           <p className="informational-text">
-            Track jobs, manage operations, and monitor your shop floor in real-time. Sign in to access your manufacturing dashboard.
+            {isLogin ? t("auth.signInDescription") : t("auth.signUpDescription")}
           </p>
+
+          {/* Success Message */}
+          {success && (
+            <Alert className="mb-4 border-green-500/50 bg-green-500/10">
+              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <AlertDescription className="text-green-200">
+                {success}
+              </AlertDescription>
+            </Alert>
+          )}
 
           {/* Auth Form */}
           <form onSubmit={handleSubmit} className="space-y-4 text-left">
@@ -115,7 +155,7 @@ export default function Auth() {
               <>
                 <div className="space-y-2">
                   <Label htmlFor="fullName" className="text-sm font-medium">
-                    {t("auth.fullName")}
+                    {t("auth.fullName")} <span className="text-red-400">*</span>
                   </Label>
                   <Input
                     id="fullName"
@@ -130,13 +170,14 @@ export default function Auth() {
 
                 <div className="space-y-2">
                   <Label htmlFor="companyName" className="text-sm font-medium">
-                    {t("auth.companyName")}
+                    {t("auth.companyNameLabel")} <span className="text-red-400">*</span>
                   </Label>
                   <Input
                     id="companyName"
                     type="text"
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
+                    required
                     placeholder={t("auth.companyNamePlaceholder")}
                     className="bg-input-background border-input"
                   />
@@ -146,7 +187,7 @@ export default function Auth() {
 
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium">
-                {t("auth.email")}
+                {t("auth.email")} <span className="text-red-400">*</span>
               </Label>
               <Input
                 id="email"
@@ -161,7 +202,7 @@ export default function Auth() {
 
             <div className="space-y-2">
               <Label htmlFor="password" className="text-sm font-medium">
-                {t("auth.password")}
+                {t("auth.password")} <span className="text-red-400">*</span>
               </Label>
               <Input
                 id="password"
@@ -175,6 +216,52 @@ export default function Auth() {
               />
             </div>
 
+            {/* GDPR Checkboxes - Only show on Sign Up */}
+            {!isLogin && (
+              <div className="space-y-4 pt-2">
+                {/* Terms and Privacy Policy Agreement */}
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="termsAgreed"
+                    checked={termsAgreed}
+                    onCheckedChange={(checked) => setTermsAgreed(checked === true)}
+                    className="mt-1"
+                  />
+                  <Label
+                    htmlFor="termsAgreed"
+                    className="text-sm text-muted-foreground leading-relaxed cursor-pointer"
+                  >
+                    {t("auth.agreeToTerms")}{" "}
+                    <Link
+                      to="/privacy"
+                      className="text-primary hover:underline"
+                      target="_blank"
+                    >
+                      {t("auth.privacyPolicy")}
+                    </Link>{" "}
+                    {t("auth.and")}{" "}
+                    <Link
+                      to="/terms"
+                      className="text-primary hover:underline"
+                      target="_blank"
+                    >
+                      {t("auth.termsOfService")}
+                    </Link>
+                    {t("auth.emailConsent")}
+                    <span className="text-red-400"> *</span>
+                  </Label>
+                </div>
+
+                {/* GDPR Notice */}
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                  <Info className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {t("auth.gdprNotice")}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
@@ -185,7 +272,7 @@ export default function Auth() {
               <Button
                 type="submit"
                 className="w-full cta-button"
-                disabled={loading}
+                disabled={loading || (!isLogin && !termsAgreed)}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isLogin ? t("auth.signIn") : t("auth.signUp")}
@@ -199,6 +286,7 @@ export default function Auth() {
                 onClick={() => {
                   setIsLogin(!isLogin);
                   setError(null);
+                  setSuccess(null);
                 }}
                 className="text-sm text-primary hover:underline"
               >
@@ -206,6 +294,15 @@ export default function Auth() {
               </button>
             </div>
           </form>
+
+          {/* Coming Soon Notice */}
+          {!isLogin && (
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <p className="text-xs text-muted-foreground text-center">
+                {t("auth.comingSoonNotice")}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </>
