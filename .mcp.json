@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "url": "https://mcp.supabase.com/mcp?project_ref=vatgianzotsurljznsry",
+      "headers": {
+        "Authorization": "Bearer YOUR_SUPABASE_PAT_HERE"
+      }
+    }
+  }
+}

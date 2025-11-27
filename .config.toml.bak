@@ -1,0 +1,12 @@
+model = "gpt-5.1-codex-max"
+[projects."/Users/vanenkhuizen/Documents/GitHub/eryxon-flow"]
+trust_level = "trusted"
+
+[notice]
+"hide_gpt-5.1-codex-max_migration_prompt" = true
+
+[mcp_servers.supabase]
+url = "https://mcp.supabase.com/mcp?project_ref=vatgianzotsurljznsry"
+
+[features]
+rmcp_client = true
