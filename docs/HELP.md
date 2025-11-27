@@ -287,6 +287,37 @@ Security: Each webhook includes HMAC-SHA256 signature for verification
 2. Approve, Reject, or Close
 3. Add resolution notes
 
+### Quality Management Dashboards
+
+**Overview:** Quality dashboards are integrated throughout the admin interface to provide real-time visibility into production quality metrics.
+
+**Jobs Page Quality Dashboard:**
+- **Yield Rate** - Percentage of good parts vs total produced (color-coded: green >95%, yellow >85%, red <85%)
+- **Production Stats** - Total produced, good parts, scrap, rework counts
+- **Open Issues** - Pending issues count vs total issues
+- **Critical Issues** - Count of critical severity issues
+- **Top Scrap Reasons** - Most frequently cited scrap reason codes
+
+**Parts Page Quality Dashboard:**
+- Overall yield rate and production metrics
+- Scrap and rework quantities with percentages
+- Open issues affecting parts
+- Scrap breakdown by category (Material, Process, Equipment, Operator, Design, Other)
+
+**Issue Queue Analytics:**
+- **Summary Cards** - Total issues, pending, critical pending, high pending, resolved, resolution rate
+- **Severity Breakdown** - Visual bar chart showing issues by severity level
+- **Status Breakdown** - Visual bar chart showing issues by status (pending, approved, rejected, closed)
+- **Resolution Rate** - Percentage of issues that have been resolved
+
+**Scrap Reasons Configuration:**
+- **Usage Statistics** - Total reasons, active, used, unused counts
+- **Times Used** - How many times each scrap code has been applied
+- **Total Scrapped** - Total quantity scrapped using each code
+- **Top Scrap Reasons** - Ranked list by quantity
+- **Scrap by Category** - Visual breakdown by category
+- **Table Columns** - Usage count and scrapped quantity per reason
+
 ### 3D CAD Viewer
 
 **Supported Formats:** STEP (.step), STP (.stp)

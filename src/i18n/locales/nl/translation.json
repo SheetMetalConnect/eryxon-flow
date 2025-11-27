@@ -377,6 +377,7 @@
     "materials": "Materialen",
     "resources": "Gereedschappen",
     "templates": "Sjablonen",
+    "scrapReasons": "Afvalredenen",
     "integrations": "Integraties",
     "dataExport": "Gegevensexport",
     "accountAndSupport": "Account & Ondersteuning",
@@ -1639,5 +1640,34 @@
   "jobCreate": {
     "title": "Nieuwe Order Aanmaken",
     "subtitle": "Bouw uw order stap voor stap: definieer details, voeg onderdelen toe, configureer bewerkingen en controleer"
+  },
+  "quality": {
+    "dashboardTitle": "Kwaliteitsoverzicht",
+    "partsQuality": "Onderdelen Kwaliteitsoverzicht",
+    "yieldRate": "Opbrengst",
+    "totalProduced": "Geproduceerd",
+    "goodParts": "Goed",
+    "scrap": "Afval",
+    "rework": "Herwerk",
+    "openIssues": "Openstaande problemen",
+    "critical": "Kritiek",
+    "topScrapReasons": "Meest voorkomende afvalredenen",
+    "scrapByCategory": "Afval per categorie",
+    "totalIssues": "Totaal problemen",
+    "criticalPending": "Kritiek in afwachting",
+    "highPending": "Hoog in afwachting",
+    "resolved": "Opgelost",
+    "resolutionRate": "Oplossingspercentage",
+    "bySeverity": "Problemen per ernst",
+    "byStatus": "Problemen per status",
+    "totalReasons": "Totaal redenen",
+    "activeReasons": "Actief",
+    "usedReasons": "Gebruikt",
+    "unusedReasons": "Ongebruikt",
+    "timesUsed": "Keer gebruikt",
+    "totalScrapped": "Totaal afgekeurd",
+    "noScrapData": "Nog geen afvalgegevens geregistreerd",
+    "usage": "Gebruik",
+    "scrapped": "Afgekeurd"
   }
 }

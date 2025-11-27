@@ -137,6 +137,7 @@
     "materials": "Materialien",
     "resources": "Betriebsmittel",
     "templates": "Vorlagen",
+    "scrapReasons": "Ausschussgründe",
     "integrations": "Integrationen",
     "dataExport": "Datenexport",
     "accountAndSupport": "Konto & Support",
@@ -1366,5 +1367,34 @@
   "jobCreate": {
     "title": "Neuen Auftrag erstellen",
     "subtitle": "Erstellen Sie Ihren Auftrag Schritt für Schritt: definieren Sie Details, fügen Sie Teile hinzu, konfigurieren Sie Arbeitsgänge und überprüfen Sie"
+  },
+  "quality": {
+    "dashboardTitle": "Qualitätsübersicht",
+    "partsQuality": "Teile Qualitätsübersicht",
+    "yieldRate": "Ausbeute",
+    "totalProduced": "Produziert",
+    "goodParts": "Gut",
+    "scrap": "Ausschuss",
+    "rework": "Nacharbeit",
+    "openIssues": "Offene Probleme",
+    "critical": "Kritisch",
+    "topScrapReasons": "Häufigste Ausschussgründe",
+    "scrapByCategory": "Ausschuss nach Kategorie",
+    "totalIssues": "Gesamte Probleme",
+    "criticalPending": "Kritisch ausstehend",
+    "highPending": "Hoch ausstehend",
+    "resolved": "Gelöst",
+    "resolutionRate": "Lösungsrate",
+    "bySeverity": "Probleme nach Schweregrad",
+    "byStatus": "Probleme nach Status",
+    "totalReasons": "Gesamte Gründe",
+    "activeReasons": "Aktiv",
+    "usedReasons": "Verwendet",
+    "unusedReasons": "Unbenutzt",
+    "timesUsed": "Mal verwendet",
+    "totalScrapped": "Gesamt verschrottet",
+    "noScrapData": "Noch keine Ausschussdaten erfasst",
+    "usage": "Verwendung",
+    "scrapped": "Verschrottet"
   }
 }
