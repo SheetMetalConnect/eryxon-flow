@@ -4,17 +4,6 @@
 
 <div align="center">
 
-![GitHub repo size](https://img.shields.io/github/repo-size/SheetMetalConnect/eryxon-flow?style=for-the-badge&logo=github)
-![Lines of code](https://img.shields.io/tokei/lines/github/SheetMetalConnect/eryxon-flow?style=for-the-badge&logo=codelines&label=Lines%20of%20Code)
-![GitHub commit activity](https://img.shields.io/github/commit-activity/m/SheetMetalConnect/eryxon-flow?style=for-the-badge&logo=github)
-![Total commits](https://img.shields.io/github/commit-activity/t/SheetMetalConnect/eryxon-flow?style=for-the-badge&logo=git&label=Total%20Commits)
-![GitHub last commit](https://img.shields.io/github/last-commit/SheetMetalConnect/eryxon-flow?style=for-the-badge&logo=git)
-![GitHub language count](https://img.shields.io/github/languages/count/SheetMetalConnect/eryxon-flow?style=for-the-badge)
-
-</div>
-
-<div align="center">
-  
 [![React](https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-5.4.19-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
@@ -36,13 +25,19 @@
 
 ---
 
-A modern, production-ready MES (Manufacturing Execution System) for sheet metal manufacturing with real-time tracking, QRM capacity management, and comprehensive API integration.
-
 <div align="center">
 
-![GitHub Stats](https://github-readme-stats.vercel.app/api/pin/?username=SheetMetalConnect&repo=eryxon-flow&theme=tokyonight&hide_border=true&bg_color=1a1b27&title_color=70a5fd&icon_color=bf91f3&text_color=38bdae)
+### 📊 Project Velocity & Metrics
+
+![Metrics](./metrics.svg)
+
+*Auto-updated daily via GitHub Actions*
 
 </div>
+
+---
+
+A modern, production-ready MES (Manufacturing Execution System) for sheet metal manufacturing with real-time tracking, QRM capacity management, and comprehensive API integration.
 
 ## ✨ Key Features
 
@@ -134,7 +129,9 @@ For custom domains, see [Lovable docs](https://docs.lovable.dev/features/custom-
 
 **Proprietary - Internal Use Only**
 
-All rights reserved. This software is for internal use only and may not be distributed, copied, or modified without explicit permission.
+Copyright © 2025 Sheet Metal Connect e.U. All rights reserved.
+
+This software is for internal use only and may not be distributed, copied, or modified without explicit permission.
 
 ---
 
