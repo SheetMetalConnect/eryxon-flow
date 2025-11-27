@@ -1,43 +1,6 @@
+"use client";
+
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import {
-  Box,
-  Typography,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Button,
-  Chip,
-  Stack,
-  IconButton,
-  Alert,
-  CircularProgress,
-  SelectChangeEvent,
-  Tabs,
-  Tab,
-  Tooltip,
-  LinearProgress,
-} from "@mui/material";
-import {
-  PlayArrow,
-  Stop,
-  CheckCircle,
-  CalendarToday,
-  Timer,
-  Build,
-  Description,
-  ViewInAr,
-  Fullscreen,
-  CheckCircleOutline,
-  RadioButtonUnchecked,
-  ArrowForward,
-  Close,
-  ChevronLeft,
-  ChevronRight,
-  DragHandle,
-  Assignment,
-  ReportProblem,
-} from "@mui/icons-material";
 import { useAuth } from "../../contexts/AuthContext";
 import { supabase } from "../../integrations/supabase/client";
 import {
@@ -53,6 +16,48 @@ import ProductionQuantityModal from "../../components/operator/ProductionQuantit
 import IssueForm from "../../components/operator/IssueForm";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
+
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Spinner } from "@/components/ui/spinner";
+import { cn } from "@/lib/utils";
+import {
+  Play,
+  Square,
+  CheckCircle,
+  Calendar,
+  Clock,
+  Wrench,
+  FileText,
+  Box as BoxIcon,
+  Maximize2,
+  CheckCircle2,
+  Circle,
+  ArrowRight,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  GripVertical,
+  ClipboardList,
+  AlertTriangle,
+  Info,
+} from "lucide-react";
 
 interface Job {
   id: string;
@@ -106,16 +111,14 @@ export default function OperatorView() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string>("");
   const [operations, setOperations] = useState<Operation[]>([]);
-  const [selectedOperation, setSelectedOperation] = useState<Operation | null>(
-    null,
-  );
+  const [selectedOperation, setSelectedOperation] = useState<Operation | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTimeEntry, setActiveTimeEntry] = useState<any>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [stepUrl, setStepUrl] = useState<string | null>(null);
-  const [viewerTab, setViewerTab] = useState<number>(0);
-  const [fullscreenViewer, setFullscreenViewer] = useState<'pdf' | '3d' | null>(null);
+  const [viewerTab, setViewerTab] = useState<string>("pdf");
+  const [fullscreenViewer, setFullscreenViewer] = useState<"pdf" | "3d" | null>(null);
   const [isQuantityModalOpen, setIsQuantityModalOpen] = useState<boolean>(false);
   const [isIssueFormOpen, setIsIssueFormOpen] = useState<boolean>(false);
 
@@ -124,7 +127,7 @@ export default function OperatorView() {
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState<boolean>(false);
 
   // Resizable panel state
-  const [leftPanelWidth, setLeftPanelWidth] = useState<number>(55); // percentage
+  const [leftPanelWidth, setLeftPanelWidth] = useState<number>(55);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -149,9 +152,7 @@ export default function OperatorView() {
       const interval = setInterval(() => {
         const start = new Date(activeTimeEntry.start_time);
         const now = new Date();
-        const diffInSeconds = Math.floor(
-          (now.getTime() - start.getTime()) / 1000,
-        );
+        const diffInSeconds = Math.floor((now.getTime() - start.getTime()) / 1000);
         setElapsedSeconds(diffInSeconds);
       }, 1000);
       return () => clearInterval(interval);
@@ -172,9 +173,9 @@ export default function OperatorView() {
 
   // Auto-select viewer tab based on available files
   useEffect(() => {
-    if (pdfUrl && !stepUrl) setViewerTab(0);
-    else if (stepUrl && !pdfUrl) setViewerTab(1);
-    else if (pdfUrl) setViewerTab(0);
+    if (pdfUrl && !stepUrl) setViewerTab("pdf");
+    else if (stepUrl && !pdfUrl) setViewerTab("3d");
+    else if (pdfUrl) setViewerTab("pdf");
   }, [pdfUrl, stepUrl]);
 
   // Subscribe to time entry changes
@@ -193,7 +194,7 @@ export default function OperatorView() {
         },
         () => {
           loadOperations(selectedJobId);
-        },
+        }
       )
       .subscribe();
 
@@ -208,13 +209,15 @@ export default function OperatorView() {
     setIsDragging(true);
   }, []);
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging || !containerRef.current) return;
-    const containerRect = containerRef.current.getBoundingClientRect();
-    const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
-    // Constrain between 25% and 75%
-    setLeftPanelWidth(Math.min(75, Math.max(25, newWidth)));
-  }, [isDragging]);
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isDragging || !containerRef.current) return;
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+      setLeftPanelWidth(Math.min(75, Math.max(25, newWidth)));
+    },
+    [isDragging]
+  );
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -222,19 +225,19 @@ export default function OperatorView() {
 
   useEffect(() => {
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      document.body.style.cursor = 'col-resize';
-      document.body.style.userSelect = 'none';
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
     } else {
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
     }
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
     };
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
@@ -244,13 +247,16 @@ export default function OperatorView() {
     setIsDragging(true);
   }, []);
 
-  const handleTouchMove = useCallback((e: TouchEvent) => {
-    if (!isDragging || !containerRef.current) return;
-    const touch = e.touches[0];
-    const containerRect = containerRef.current.getBoundingClientRect();
-    const newWidth = ((touch.clientX - containerRect.left) / containerRect.width) * 100;
-    setLeftPanelWidth(Math.min(75, Math.max(25, newWidth)));
-  }, [isDragging]);
+  const handleTouchMove = useCallback(
+    (e: TouchEvent) => {
+      if (!isDragging || !containerRef.current) return;
+      const touch = e.touches[0];
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const newWidth = ((touch.clientX - containerRect.left) / containerRect.width) * 100;
+      setLeftPanelWidth(Math.min(75, Math.max(25, newWidth)));
+    },
+    [isDragging]
+  );
 
   const handleTouchEnd = useCallback(() => {
     setIsDragging(false);
@@ -258,12 +264,12 @@ export default function OperatorView() {
 
   useEffect(() => {
     if (isDragging) {
-      document.addEventListener('touchmove', handleTouchMove);
-      document.addEventListener('touchend', handleTouchEnd);
+      document.addEventListener("touchmove", handleTouchMove);
+      document.addEventListener("touchend", handleTouchEnd);
     }
     return () => {
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleTouchEnd);
     };
   }, [isDragging, handleTouchMove, handleTouchEnd]);
 
@@ -288,7 +294,6 @@ export default function OperatorView() {
 
   const loadOperations = async (jobId: string) => {
     try {
-      // Get all parts for this job
       const { data: parts, error: partsError } = await supabase
         .from("parts")
         .select("id")
@@ -304,23 +309,15 @@ export default function OperatorView() {
         return;
       }
 
-      // Get operations with parts and cells
       const { data, error } = await supabase
         .from("operations")
-        .select(
-          `
-          *,
-          part:parts(*),
-          cell:cells(*)
-        `,
-        )
+        .select(`*, part:parts(*), cell:cells(*)`)
         .in("part_id", partIds)
         .eq("tenant_id", profile.tenant_id)
         .order("sequence", { ascending: true });
 
       if (error) throw error;
 
-      // Get active time entries for these operations
       const operationIds = data?.map((op) => op.id) || [];
       const { data: timeEntries } = await supabase
         .from("time_entries")
@@ -328,7 +325,6 @@ export default function OperatorView() {
         .in("operation_id", operationIds)
         .is("end_time", null);
 
-      // Combine data
       const operationsWithTimeEntries = data?.map((op) => ({
         ...op,
         active_time_entry: timeEntries?.find((te) => te.operation_id === op.id),
@@ -336,22 +332,14 @@ export default function OperatorView() {
 
       setOperations(operationsWithTimeEntries || []);
 
-      // Auto-select first non-completed operation if none selected
-      if (
-        !selectedOperation &&
-        operationsWithTimeEntries &&
-        operationsWithTimeEntries.length > 0
-      ) {
-        const firstIncomplete = operationsWithTimeEntries.find(
-          (op) => op.status !== "completed"
-        ) || operationsWithTimeEntries[0];
+      if (!selectedOperation && operationsWithTimeEntries && operationsWithTimeEntries.length > 0) {
+        const firstIncomplete =
+          operationsWithTimeEntries.find((op) => op.status !== "completed") ||
+          operationsWithTimeEntries[0];
         setSelectedOperation(firstIncomplete);
         setActiveTimeEntry(firstIncomplete.active_time_entry || null);
       } else if (selectedOperation) {
-        // Update selected operation
-        const updated = operationsWithTimeEntries?.find(
-          (op) => op.id === selectedOperation.id,
-        );
+        const updated = operationsWithTimeEntries?.find((op) => op.id === selectedOperation.id);
         if (updated) {
           setSelectedOperation(updated);
           setActiveTimeEntry(updated.active_time_entry || null);
@@ -370,16 +358,11 @@ export default function OperatorView() {
       for (const path of filePaths) {
         const ext = path.toLowerCase();
         if (ext.endsWith(".pdf") && !pdf) {
-          const { data } = await supabase.storage
-            .from("files")
-            .createSignedUrl(path, 3600);
+          const { data } = await supabase.storage.from("files").createSignedUrl(path, 3600);
           if (data?.signedUrl) pdf = data.signedUrl;
         } else if ((ext.endsWith(".step") || ext.endsWith(".stp")) && !step) {
-          const { data } = await supabase.storage
-            .from("files")
-            .createSignedUrl(path, 3600);
+          const { data } = await supabase.storage.from("files").createSignedUrl(path, 3600);
           if (data?.signedUrl) {
-            // Convert to blob for STEP viewer
             const response = await fetch(data.signedUrl);
             const blob = await response.blob();
             step = URL.createObjectURL(blob);
@@ -398,11 +381,7 @@ export default function OperatorView() {
     if (!selectedOperation || !profile) return;
 
     try {
-      await startTimeTracking(
-        selectedOperation.id,
-        profile.id,
-        profile.tenant_id,
-      );
+      await startTimeTracking(selectedOperation.id, profile.id, profile.tenant_id);
       await loadOperations(selectedJobId);
     } catch (error: any) {
       console.error("Error starting time tracking:", error);
@@ -430,11 +409,7 @@ export default function OperatorView() {
     }
 
     try {
-      await completeOperation(
-        selectedOperation.id,
-        profile.tenant_id,
-        profile.id,
-      );
+      await completeOperation(selectedOperation.id, profile.tenant_id, profile.id);
       await loadOperations(selectedJobId);
     } catch (error) {
       console.error("Error completing operation:", error);
@@ -457,871 +432,618 @@ export default function OperatorView() {
     : null;
   const isOverdue = dueDate && dueDate < new Date();
 
-  // Calculate progress
   const completedOps = operations.filter((op) => op.status === "completed").length;
   const totalOps = operations.length;
   const progressPercent = totalOps > 0 ? (completedOps / totalOps) * 100 : 0;
 
-  // Handle viewer tap/click for fullscreen
   const handleViewerClick = useCallback(() => {
-    if (viewerTab === 0 && pdfUrl) {
-      setFullscreenViewer('pdf');
+    if (viewerTab === "pdf" && pdfUrl) {
+      setFullscreenViewer("pdf");
     } else if (stepUrl) {
-      setFullscreenViewer('3d');
+      setFullscreenViewer("3d");
     }
   }, [viewerTab, pdfUrl, stepUrl]);
-
-  if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="80vh"
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  // Fullscreen Viewer Overlay Portal
-  const FullscreenOverlay = fullscreenViewer && createPortal(
-    <Box
-      sx={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 9999,
-        bgcolor: "rgba(0, 0, 0, 0.98)",
-        display: "flex",
-        flexDirection: "column",
-      }}
-      onClick={(e) => {
-        // Close on backdrop click
-        if (e.target === e.currentTarget) {
-          setFullscreenViewer(null);
-        }
-      }}
-    >
-      {/* Overlay Header */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          px: 1.5,
-          py: 0.75,
-          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-          bgcolor: "rgba(17, 25, 40, 0.95)",
-          backdropFilter: "blur(12px)",
-          flexShrink: 0,
-        }}
-      >
-        <Tabs
-          value={fullscreenViewer === 'pdf' ? 0 : 1}
-          onChange={(_, v) => {
-            if (v === 0 && pdfUrl) setFullscreenViewer('pdf');
-            else if (v === 1 && stepUrl) setFullscreenViewer('3d');
-          }}
-          sx={{
-            minHeight: 32,
-            "& .MuiTab-root": {
-              minHeight: 32,
-              py: 0,
-              px: 1.5,
-              fontSize: "0.75rem",
-            }
-          }}
-        >
-          {pdfUrl && (
-            <Tab
-              icon={<Description sx={{ fontSize: 16 }} />}
-              iconPosition="start"
-              label={t("PDF")}
-            />
-          )}
-          {stepUrl && (
-            <Tab
-              icon={<ViewInAr sx={{ fontSize: 16 }} />}
-              iconPosition="start"
-              label={t("3D")}
-            />
-          )}
-        </Tabs>
-
-        <Stack direction="row" spacing={1} alignItems="center">
-          {selectedOperation && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.7rem" }}>
-              {selectedOperation.part.part_number} • {selectedOperation.operation_name}
-            </Typography>
-          )}
-          <IconButton
-            onClick={() => setFullscreenViewer(null)}
-            sx={{
-              bgcolor: "rgba(255, 255, 255, 0.1)",
-              "&:hover": { bgcolor: "rgba(255, 255, 255, 0.2)" },
-              width: 36,
-              height: 36,
-            }}
-          >
-            <Close sx={{ fontSize: 20 }} />
-          </IconButton>
-        </Stack>
-      </Box>
-
-      {/* Fullscreen Viewer Content */}
-      <Box
-        sx={{
-          flex: 1,
-          overflow: "hidden",
-          position: "relative",
-        }}
-      >
-        {fullscreenViewer === 'pdf' && pdfUrl && (
-          <PDFViewer url={pdfUrl} title="Drawing" />
-        )}
-        {fullscreenViewer === '3d' && stepUrl && (
-          <STEPViewer url={stepUrl} title="3D Model" />
-        )}
-      </Box>
-
-      {/* Close hint */}
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: 20,
-          left: "50%",
-          transform: "translateX(-50%)",
-          bgcolor: "rgba(0, 0, 0, 0.8)",
-          color: "rgba(255, 255, 255, 0.6)",
-          px: 2,
-          py: 0.75,
-          borderRadius: 2,
-          fontSize: "0.7rem",
-          display: "flex",
-          alignItems: "center",
-          gap: 0.75,
-          pointerEvents: "none",
-        }}
-      >
-        <Close sx={{ fontSize: 12 }} />
-        {t("Tap X or press ESC to close")}
-      </Box>
-    </Box>,
-    document.body
-  );
 
   // Handle ESC key to close fullscreen
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && fullscreenViewer) {
+      if (e.key === "Escape" && fullscreenViewer) {
         setFullscreenViewer(null);
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [fullscreenViewer]);
 
-  return (
-    <Box
-      sx={{
-        height: "calc(100vh - 64px)",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-        bgcolor: "background.default",
-      }}
-    >
-      {/* HEADER BAR - Compact Glass Style */}
-      <Box
-        sx={{
-          px: 1,
-          py: 0.75,
-          flexShrink: 0,
-          backdropFilter: "blur(16px) saturate(180%)",
-          background: "rgba(17, 25, 40, 0.9)",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[80vh]">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  // Fullscreen Viewer Overlay Portal
+  const FullscreenOverlay =
+    fullscreenViewer &&
+    createPortal(
+      <div
+        className="fixed inset-0 z-[9999] bg-black/98 flex flex-col"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            setFullscreenViewer(null);
+          }
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-          {/* Job Selector */}
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel sx={{ fontSize: "0.75rem" }}>{t("Job")}</InputLabel>
-            <Select
-              value={selectedJobId}
-              onChange={(e: SelectChangeEvent) => setSelectedJobId(e.target.value)}
-              label={t("Job")}
-              sx={{
-                fontSize: "0.75rem",
-                "& .MuiSelect-select": { py: 0.5 }
-              }}
-            >
-              {jobs.map((job) => (
-                <MenuItem key={job.id} value={job.id} sx={{ fontSize: "0.75rem" }}>
-                  <strong>{job.job_number}</strong>&nbsp;- {job.customer || "N/A"}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+        {/* Overlay Header */}
+        <div
+          className={cn(
+            "flex items-center justify-between px-4 py-2",
+            "border-b border-white/10",
+            "bg-[rgba(17,25,40,0.95)] backdrop-blur-xl"
+          )}
+        >
+          <Tabs
+            value={fullscreenViewer}
+            onValueChange={(v) => {
+              if (v === "pdf" && pdfUrl) setFullscreenViewer("pdf");
+              else if (v === "3d" && stepUrl) setFullscreenViewer("3d");
+            }}
+          >
+            <TabsList className="h-8 bg-white/5">
+              {pdfUrl && (
+                <TabsTrigger value="pdf" className="h-7 text-xs gap-1.5">
+                  <FileText className="h-3.5 w-3.5" />
+                  PDF
+                </TabsTrigger>
+              )}
+              {stepUrl && (
+                <TabsTrigger value="3d" className="h-7 text-xs gap-1.5">
+                  <BoxIcon className="h-3.5 w-3.5" />
+                  3D
+                </TabsTrigger>
+              )}
+            </TabsList>
+          </Tabs>
 
-          {/* Job Info Chips */}
+          <div className="flex items-center gap-3">
+            {selectedOperation && (
+              <span className="text-xs text-muted-foreground">
+                {selectedOperation.part.part_number} • {selectedOperation.operation_name}
+              </span>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setFullscreenViewer(null)}
+              className="h-9 w-9 bg-white/10 hover:bg-white/20"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Fullscreen Viewer Content */}
+        <div className="flex-1 overflow-hidden relative">
+          {fullscreenViewer === "pdf" && pdfUrl && <PDFViewer url={pdfUrl} title="Drawing" />}
+          {fullscreenViewer === "3d" && stepUrl && <STEPViewer url={stepUrl} title="3D Model" />}
+        </div>
+
+        {/* Close hint */}
+        <div
+          className={cn(
+            "absolute bottom-5 left-1/2 -translate-x-1/2",
+            "bg-black/80 text-white/60 px-4 py-1.5 rounded-lg",
+            "text-xs flex items-center gap-2 pointer-events-none"
+          )}
+        >
+          <X className="h-3 w-3" />
+          {t("Tap X or press ESC to close")}
+        </div>
+      </div>,
+      document.body
+    );
+
+  return (
+    <div className="h-[calc(100vh-64px)] flex flex-col overflow-hidden bg-background">
+      {/* HEADER BAR - Compact Glass Style */}
+      <div
+        className={cn(
+          "px-3 py-2 flex-shrink-0",
+          "backdrop-blur-xl bg-[rgba(17,25,40,0.9)]",
+          "border-b border-white/10"
+        )}
+      >
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Job Selector */}
+          <Select value={selectedJobId} onValueChange={setSelectedJobId}>
+            <SelectTrigger className="w-[200px] h-8 text-xs bg-white/5 border-white/10">
+              <SelectValue placeholder={t("Select Job")} />
+            </SelectTrigger>
+            <SelectContent className="bg-[rgba(20,20,20,0.95)] backdrop-blur-xl border-white/10">
+              {jobs.map((job) => (
+                <SelectItem key={job.id} value={job.id} className="text-xs">
+                  <span className="font-semibold">{job.job_number}</span>
+                  <span className="text-muted-foreground ml-1">- {job.customer || "N/A"}</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Job Info Badges */}
           {selectedJob && (
             <>
-              <Chip
-                icon={<CalendarToday sx={{ fontSize: 12 }} />}
-                label={format(dueDate!, "MMM dd")}
-                color={isOverdue ? "error" : "default"}
-                size="small"
-                sx={{ height: 22, "& .MuiChip-label": { px: 0.75, fontSize: "0.65rem" } }}
-              />
-              <Chip
-                label={`${completedOps}/${totalOps}`}
-                size="small"
-                color="primary"
-                variant="outlined"
-                sx={{ height: 22, "& .MuiChip-label": { px: 0.75, fontSize: "0.65rem" } }}
-              />
+              <Badge
+                variant={isOverdue ? "destructive" : "outline"}
+                className="h-6 gap-1 text-[10px]"
+              >
+                <Calendar className="h-3 w-3" />
+                {format(dueDate!, "MMM dd")}
+              </Badge>
+              <Badge variant="outline" className="h-6 text-[10px] border-primary/50 text-primary">
+                {completedOps}/{totalOps}
+              </Badge>
             </>
           )}
 
-          <Box sx={{ flexGrow: 1 }} />
+          <div className="flex-1" />
 
           {/* Timer Display */}
           {selectedOperation && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-              {/* Active clocking indicator */}
+            <div className="flex items-center gap-2">
               {activeTimeEntry && (
-                <Chip
-                  label={t("terminal.youAreClockedOn")}
-                  size="small"
-                  color="primary"
-                  variant="outlined"
-                  sx={{
-                    height: 22,
-                    fontSize: "0.6rem",
-                    fontWeight: "bold",
-                    borderWidth: 2,
-                    animation: "pulse 2s ease-in-out infinite",
-                    "@keyframes pulse": {
-                      "0%, 100%": { opacity: 1 },
-                      "50%": { opacity: 0.7 },
-                    },
-                  }}
-                />
-              )}
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.75,
-                  bgcolor: activeTimeEntry ? "primary.main" : "rgba(255, 255, 255, 0.08)",
-                  color: activeTimeEntry ? "primary.contrastText" : "text.primary",
-                  px: 1.25,
-                  py: 0.375,
-                  borderRadius: 1.5,
-                  border: activeTimeEntry ? "none" : "1px solid rgba(255, 255, 255, 0.08)",
-                }}
-              >
-                <Timer sx={{ fontSize: 16 }} />
-                <Typography
-                  sx={{
-                    fontFamily: "monospace",
-                    fontWeight: "bold",
-                    fontSize: "0.9rem",
-                    minWidth: 72,
-                  }}
+                <Badge
+                  className={cn(
+                    "h-6 text-[10px] font-bold border-2 border-primary",
+                    "animate-pulse"
+                  )}
+                  variant="outline"
                 >
+                  {t("terminal.youAreClockedOn")}
+                </Badge>
+              )}
+              <div
+                className={cn(
+                  "flex items-center gap-2 px-3 py-1.5 rounded-lg",
+                  activeTimeEntry
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-white/10 border border-white/10"
+                )}
+              >
+                <Clock className="h-4 w-4" />
+                <span className="font-mono font-bold text-sm min-w-[72px]">
                   {formatElapsedTime(elapsedSeconds)}
-                </Typography>
-              </Box>
-            </Box>
+                </span>
+              </div>
+            </div>
           )}
 
           {/* Action Buttons */}
-          {selectedOperation && (
-            <Stack direction="row" spacing={0.5}>
-              {activeTimeEntry ? (
-                <Button
-                  variant="contained"
-                  color="error"
-                  startIcon={<Stop sx={{ fontSize: 14 }} />}
-                  onClick={handleStopTracking}
-                  size="small"
-                  sx={{ fontSize: "0.7rem", py: 0.375, px: 1.25, minWidth: 0 }}
-                >
-                  {t("Stop")}
-                </Button>
-              ) : (
-                <Button
-                  variant="contained"
-                  color="success"
-                  startIcon={<PlayArrow sx={{ fontSize: 14 }} />}
-                  onClick={handleStartTracking}
-                  disabled={selectedOperation.status === "completed"}
-                  size="small"
-                  sx={{ fontSize: "0.7rem", py: 0.375, px: 1.25, minWidth: 0 }}
-                >
-                  {t("Start")}
-                </Button>
-              )}
-              {activeTimeEntry && (
-                <Tooltip title="Record Production Quantities">
+          <TooltipProvider>
+            {selectedOperation && (
+              <div className="flex items-center gap-1.5">
+                {activeTimeEntry ? (
                   <Button
-                    variant="outlined"
-                    color="primary"
-                    startIcon={<Assignment sx={{ fontSize: 14 }} />}
-                    onClick={() => setIsQuantityModalOpen(true)}
-                    size="small"
-                    sx={{ fontSize: "0.7rem", py: 0.375, px: 1.25, minWidth: 0 }}
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleStopTracking}
+                    className="h-7 text-xs gap-1"
                   >
-                    {t("Record Qty")}
+                    <Square className="h-3 w-3" />
+                    {t("Stop")}
                   </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    onClick={handleStartTracking}
+                    disabled={selectedOperation.status === "completed"}
+                    className="h-7 text-xs gap-1 bg-green-600 hover:bg-green-700"
+                  >
+                    <Play className="h-3 w-3" />
+                    {t("Start")}
+                  </Button>
+                )}
+                {activeTimeEntry && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsQuantityModalOpen(true)}
+                        className="h-7 text-xs gap-1 border-primary/50"
+                      >
+                        <ClipboardList className="h-3 w-3" />
+                        {t("Record Qty")}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Record Production Quantities</TooltipContent>
+                  </Tooltip>
+                )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsIssueFormOpen(true)}
+                      className="h-7 text-xs gap-1 border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10"
+                    >
+                      <AlertTriangle className="h-3 w-3" />
+                      {t("Issue")}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t("issues.reportIssue", "Report Issue")}</TooltipContent>
                 </Tooltip>
-              )}
-              <Tooltip title={t("issues.reportIssue", "Report Issue")}>
                 <Button
-                  variant="outlined"
-                  color="warning"
-                  startIcon={<ReportProblem sx={{ fontSize: 14 }} />}
-                  onClick={() => setIsIssueFormOpen(true)}
-                  size="small"
-                  sx={{ fontSize: "0.7rem", py: 0.375, px: 1.25, minWidth: 0 }}
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCompleteOperation}
+                  disabled={!!activeTimeEntry || selectedOperation.status === "completed"}
+                  className="h-7 text-xs gap-1"
                 >
-                  {t("Issue")}
+                  <CheckCircle className="h-3 w-3" />
+                  {t("Done")}
                 </Button>
-              </Tooltip>
-              <Button
-                variant="outlined"
-                color="primary"
-                startIcon={<CheckCircle sx={{ fontSize: 14 }} />}
-                onClick={handleCompleteOperation}
-                disabled={!!activeTimeEntry || selectedOperation.status === "completed"}
-                size="small"
-                sx={{ fontSize: "0.7rem", py: 0.375, px: 1.25, minWidth: 0 }}
-              >
-                {t("Done")}
-              </Button>
-            </Stack>
-          )}
-        </Box>
+              </div>
+            )}
+          </TooltipProvider>
+        </div>
 
         {/* Progress Bar */}
         {selectedJobId && totalOps > 0 && (
-          <LinearProgress
-            variant="determinate"
-            value={progressPercent}
-            sx={{ mt: 0.5, height: 2, borderRadius: 1, bgcolor: "rgba(255, 255, 255, 0.08)" }}
-          />
+          <Progress value={progressPercent} className="h-1 mt-2 bg-white/10" />
         )}
-      </Box>
+      </div>
 
       {/* MAIN CONTENT AREA */}
       {!selectedJobId ? (
-        <Box
-          sx={{
-            flex: 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
-          }}
-        >
-          <Box
-            sx={{
-              p: 3,
-              textAlign: "center",
-              backdropFilter: "blur(16px) saturate(180%)",
-              background: "rgba(17, 25, 40, 0.75)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: 2,
-            }}
+        <div className="flex-1 flex items-center justify-center">
+          <div
+            className={cn(
+              "p-8 text-center rounded-xl",
+              "backdrop-blur-xl bg-[rgba(17,25,40,0.75)]",
+              "border border-white/10"
+            )}
           >
-            <Build sx={{ fontSize: 48, color: "text.secondary", mb: 1.5, opacity: 0.4 }} />
-            <Typography variant="body1" color="text.secondary">
-              {t("Select a job to get started")}
-            </Typography>
-          </Box>
-        </Box>
+            <Wrench className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
+            <p className="text-muted-foreground">{t("Select a job to get started")}</p>
+          </div>
+        </div>
       ) : (
-        <Box
-          ref={containerRef}
-          sx={{
-            flex: 1,
-            display: "flex",
-            overflow: "hidden",
-            p: 0.5,
-            gap: 0,
-            position: "relative",
-          }}
-        >
+        <div ref={containerRef} className="flex-1 flex overflow-hidden p-1 gap-0 relative">
           {/* LEFT PANE - File Viewers */}
-          <Box
-            sx={{
+          <div
+            className={cn(
+              "flex flex-col overflow-hidden rounded-xl mr-0.5",
+              "backdrop-blur-xl bg-[rgba(17,25,40,0.75)]",
+              "border border-white/10"
+            )}
+            style={{
               width: leftPanelCollapsed ? 40 : `${leftPanelWidth}%`,
               minWidth: leftPanelCollapsed ? 40 : 180,
-              display: "flex",
-              flexDirection: "column",
-              overflow: "hidden",
               transition: leftPanelCollapsed ? "width 0.2s ease" : "none",
-              backdropFilter: "blur(16px) saturate(180%)",
-              background: "rgba(17, 25, 40, 0.75)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: 1.5,
-              mr: 0.25,
             }}
           >
             {/* Panel Header */}
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: leftPanelCollapsed ? "center" : "space-between",
-                borderBottom: leftPanelCollapsed ? "none" : 1,
-                borderColor: "rgba(255, 255, 255, 0.08)",
-                px: leftPanelCollapsed ? 0 : 0.5,
-                py: 0.25,
-                minHeight: 32,
-              }}
+            <div
+              className={cn(
+                "flex items-center min-h-[32px] px-1",
+                leftPanelCollapsed ? "justify-center" : "justify-between border-b border-white/10"
+              )}
             >
               {!leftPanelCollapsed && (pdfUrl || stepUrl) && (
                 <>
-                  <Tabs
-                    value={viewerTab}
-                    onChange={(_, v) => setViewerTab(v)}
-                    sx={{
-                      minHeight: 28,
-                      "& .MuiTab-root": {
-                        minHeight: 28,
-                        py: 0,
-                        px: 0.75,
-                        fontSize: "0.65rem",
-                        minWidth: 0,
-                      }
-                    }}
-                  >
-                    {pdfUrl && (
-                      <Tab
-                        icon={<Description sx={{ fontSize: 14 }} />}
-                        iconPosition="start"
-                        label={t("PDF")}
-                      />
-                    )}
-                    {stepUrl && (
-                      <Tab
-                        icon={<ViewInAr sx={{ fontSize: 14 }} />}
-                        iconPosition="start"
-                        label={t("3D")}
-                      />
-                    )}
+                  <Tabs value={viewerTab} onValueChange={setViewerTab}>
+                    <TabsList className="h-7 bg-transparent">
+                      {pdfUrl && (
+                        <TabsTrigger value="pdf" className="h-6 text-[10px] gap-1 px-2">
+                          <FileText className="h-3 w-3" />
+                          PDF
+                        </TabsTrigger>
+                      )}
+                      {stepUrl && (
+                        <TabsTrigger value="3d" className="h-6 text-[10px] gap-1 px-2">
+                          <BoxIcon className="h-3 w-3" />
+                          3D
+                        </TabsTrigger>
+                      )}
+                    </TabsList>
                   </Tabs>
-                  <Tooltip title={t("Open fullscreen")}>
-                    <IconButton
-                      size="small"
-                      onClick={handleViewerClick}
-                      sx={{
-                        p: 0.375,
-                        "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" }
-                      }}
-                    >
-                      <Fullscreen sx={{ fontSize: 16 }} />
-                    </IconButton>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleViewerClick}
+                        className="h-6 w-6 hover:bg-white/10"
+                      >
+                        <Maximize2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{t("Open fullscreen")}</TooltipContent>
                   </Tooltip>
                 </>
               )}
-              <Tooltip title={leftPanelCollapsed ? t("Expand") : t("Collapse")}>
-                <IconButton
-                  size="small"
-                  onClick={() => setLeftPanelCollapsed(!leftPanelCollapsed)}
-                  sx={{
-                    p: 0.375,
-                    "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" }
-                  }}
-                >
-                  {leftPanelCollapsed ? <ChevronRight sx={{ fontSize: 16 }} /> : <ChevronLeft sx={{ fontSize: 16 }} />}
-                </IconButton>
-              </Tooltip>
-            </Box>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setLeftPanelCollapsed(!leftPanelCollapsed)}
+                      className="h-6 w-6 hover:bg-white/10"
+                    >
+                      {leftPanelCollapsed ? (
+                        <ChevronRight className="h-4 w-4" />
+                      ) : (
+                        <ChevronLeft className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{leftPanelCollapsed ? t("Expand") : t("Collapse")}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
 
-            {/* Viewer Content - Click/Tap to fullscreen */}
+            {/* Viewer Content */}
             {!leftPanelCollapsed && (
-              <Box
-                sx={{
-                  flex: 1,
-                  overflow: "hidden",
-                  position: "relative",
-                  cursor: (pdfUrl || stepUrl) ? "pointer" : "default",
-                }}
+              <div
+                className={cn(
+                  "flex-1 overflow-hidden relative",
+                  (pdfUrl || stepUrl) && "cursor-pointer"
+                )}
                 onClick={(pdfUrl || stepUrl) ? handleViewerClick : undefined}
               >
                 {(pdfUrl || stepUrl) && (
                   <>
-                    {viewerTab === 0 && pdfUrl && (
+                    {viewerTab === "pdf" && pdfUrl && (
                       <PDFViewer url={pdfUrl} title="Drawing" compact />
                     )}
-                    {((viewerTab === 1 && stepUrl) || (viewerTab === 0 && !pdfUrl && stepUrl)) && (
+                    {((viewerTab === "3d" && stepUrl) || (viewerTab === "pdf" && !pdfUrl && stepUrl)) && (
                       <STEPViewer url={stepUrl} title="3D Model" compact />
                     )}
                     {/* Tap indicator */}
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        bottom: 6,
-                        right: 6,
-                        bgcolor: "rgba(0,0,0,0.7)",
-                        color: "white",
-                        px: 0.75,
-                        py: 0.375,
-                        borderRadius: 0.75,
-                        fontSize: "0.6rem",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 0.375,
-                        pointerEvents: "none",
-                        opacity: 0.75,
-                      }}
+                    <div
+                      className={cn(
+                        "absolute bottom-2 right-2 px-2 py-1 rounded",
+                        "bg-black/70 text-white text-[10px]",
+                        "flex items-center gap-1 pointer-events-none opacity-75"
+                      )}
                     >
-                      <Fullscreen sx={{ fontSize: 10 }} />
+                      <Maximize2 className="h-2.5 w-2.5" />
                       {t("Tap to expand")}
-                    </Box>
+                    </div>
                   </>
                 )}
                 {!pdfUrl && !stepUrl && (
-                  <Box
-                    sx={{
-                      height: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "text.secondary",
-                    }}
-                  >
-                    <Stack alignItems="center" spacing={0.5}>
-                      <ViewInAr sx={{ fontSize: 32, opacity: 0.25 }} />
-                      <Typography variant="caption" sx={{ fontSize: "0.65rem" }}>
-                        {t("No files")}
-                      </Typography>
-                    </Stack>
-                  </Box>
+                  <div className="h-full flex items-center justify-center text-muted-foreground">
+                    <div className="text-center">
+                      <BoxIcon className="h-8 w-8 mx-auto opacity-25 mb-1" />
+                      <span className="text-[10px]">{t("No files")}</span>
+                    </div>
+                  </div>
                 )}
-              </Box>
+              </div>
             )}
-          </Box>
+          </div>
 
           {/* Resizable Divider */}
           {!leftPanelCollapsed && !rightPanelCollapsed && (
-            <Box
+            <div
               onMouseDown={handleMouseDown}
               onTouchStart={handleTouchStart}
-              sx={{
-                width: 12,
-                cursor: "col-resize",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-                "&:hover": {
-                  "& .drag-indicator": {
-                    opacity: 1,
-                    bgcolor: "primary.main",
-                  }
-                },
-                touchAction: "none",
-              }}
+              className="w-3 cursor-col-resize flex items-center justify-center flex-shrink-0 touch-none"
             >
-              <Box
-                className="drag-indicator"
-                sx={{
-                  width: 4,
-                  height: 48,
-                  borderRadius: 2,
-                  bgcolor: isDragging ? "primary.main" : "rgba(255, 255, 255, 0.15)",
-                  opacity: isDragging ? 1 : 0.6,
-                  transition: "opacity 0.15s, background-color 0.15s",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+              <div
+                className={cn(
+                  "w-1 h-12 rounded-full flex items-center justify-center transition-all",
+                  isDragging ? "bg-primary opacity-100" : "bg-white/15 opacity-60 hover:opacity-100 hover:bg-primary"
+                )}
               >
-                <DragHandle sx={{ fontSize: 12, color: "rgba(255,255,255,0.5)", transform: "rotate(90deg)" }} />
-              </Box>
-            </Box>
+                <GripVertical className="h-3 w-3 text-white/50 rotate-90" />
+              </div>
+            </div>
           )}
 
           {/* RIGHT PANE - Info & Operations */}
-          <Box
-            sx={{
+          <div
+            className={cn(
+              "flex flex-col gap-1 overflow-hidden rounded-xl ml-0.5",
+              "backdrop-blur-xl bg-[rgba(17,25,40,0.75)]",
+              "border border-white/10"
+            )}
+            style={{
               width: rightPanelCollapsed ? 40 : `${100 - leftPanelWidth}%`,
               minWidth: rightPanelCollapsed ? 40 : 180,
-              display: "flex",
-              flexDirection: "column",
-              gap: 0.5,
-              overflow: "hidden",
               transition: rightPanelCollapsed ? "width 0.2s ease" : "none",
-              backdropFilter: "blur(16px) saturate(180%)",
-              background: "rgba(17, 25, 40, 0.75)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: 1.5,
-              ml: 0.25,
-              p: rightPanelCollapsed ? 0 : 0.5,
+              padding: rightPanelCollapsed ? 0 : "0.5rem",
             }}
           >
             {/* Panel Collapse Toggle */}
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: rightPanelCollapsed ? "center" : "flex-start",
-                justifyContent: rightPanelCollapsed ? "center" : "flex-end",
-                py: 0.25,
-                flexDirection: rightPanelCollapsed ? "column" : "row",
-                height: rightPanelCollapsed ? "100%" : "auto",
-              }}
+            <div
+              className={cn(
+                "flex py-0.5",
+                rightPanelCollapsed
+                  ? "items-center justify-center flex-col h-full"
+                  : "items-start justify-end"
+              )}
             >
-              <Tooltip title={rightPanelCollapsed ? t("Expand") : t("Collapse")}>
-                <IconButton
-                  size="small"
-                  onClick={() => setRightPanelCollapsed(!rightPanelCollapsed)}
-                  sx={{
-                    p: 0.375,
-                    "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" }
-                  }}
-                >
-                  {rightPanelCollapsed ? <ChevronLeft sx={{ fontSize: 16 }} /> : <ChevronRight sx={{ fontSize: 16 }} />}
-                </IconButton>
-              </Tooltip>
-            </Box>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setRightPanelCollapsed(!rightPanelCollapsed)}
+                      className="h-6 w-6 hover:bg-white/10"
+                    >
+                      {rightPanelCollapsed ? (
+                        <ChevronLeft className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {rightPanelCollapsed ? t("Expand") : t("Collapse")}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
 
             {!rightPanelCollapsed && (
               <>
                 {/* Compact Job & Part Info */}
                 {selectedOperation && (
-                  <Box
-                    sx={{
-                      flexShrink: 0,
-                      p: 0.75,
-                      borderRadius: 1,
-                      bgcolor: "rgba(255, 255, 255, 0.03)",
-                      border: "1px solid rgba(255, 255, 255, 0.05)",
-                    }}
-                  >
-                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.375 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                  <div className="flex-shrink-0 p-2 rounded-lg bg-white/5 border border-white/5">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
                         {t("Current Operation")}
-                      </Typography>
-                      <Chip
-                        label={selectedOperation.cell.name}
-                        size="small"
-                        sx={{
-                          bgcolor: selectedOperation.cell.color,
-                          color: "white",
-                          height: 16,
-                          fontSize: "0.6rem",
-                          "& .MuiChip-label": { px: 0.5 }
-                        }}
-                      />
-                    </Box>
-                    <Typography variant="body2" fontWeight="bold" sx={{ mb: 0.375, lineHeight: 1.2, fontSize: "0.8rem" }}>
+                      </span>
+                      <Badge
+                        style={{ backgroundColor: selectedOperation.cell.color }}
+                        className="h-4 text-[10px] text-white"
+                      >
+                        {selectedOperation.cell.name}
+                      </Badge>
+                    </div>
+                    <p className="font-bold text-sm leading-tight mb-1">
                       {selectedOperation.operation_name}
-                    </Typography>
+                    </p>
 
                     {/* Compact grid - 3 columns */}
-                    <Box
-                      sx={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(3, 1fr)",
-                        gap: 0.375,
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.55rem", display: "block" }}>
-                          {t("Part")}
-                        </Typography>
-                        <Typography variant="caption" fontWeight="medium" sx={{ fontSize: "0.65rem" }}>
+                    <div className="grid grid-cols-3 gap-1">
+                      <div>
+                        <span className="text-[9px] text-muted-foreground block">{t("Part")}</span>
+                        <span className="text-[11px] font-medium">
                           {selectedOperation.part.part_number}
-                        </Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.55rem", display: "block" }}>
-                          {t("Qty")}
-                        </Typography>
-                        <Typography variant="caption" fontWeight="bold" sx={{ fontSize: "0.65rem" }}>
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-muted-foreground block">{t("Qty")}</span>
+                        <span className="text-[11px] font-bold">
                           {selectedOperation.part.quantity}
-                        </Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.55rem", display: "block" }}>
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-muted-foreground block">
                           {t("Material")}
-                        </Typography>
-                        <Typography variant="caption" sx={{ fontSize: "0.65rem" }}>
-                          {selectedOperation.part.material}
-                        </Typography>
-                      </Box>
-                    </Box>
+                        </span>
+                        <span className="text-[11px]">{selectedOperation.part.material}</span>
+                      </div>
+                    </div>
 
                     {selectedOperation.notes && (
-                      <Alert severity="info" sx={{ mt: 0.5, py: 0, px: 0.75, "& .MuiAlert-icon": { py: 0.25, fontSize: 14 } }}>
-                        <Typography variant="caption" sx={{ fontSize: "0.6rem" }}>
+                      <Alert className="mt-2 py-1 px-2 bg-blue-500/10 border-blue-500/30">
+                        <Info className="h-3 w-3" />
+                        <AlertDescription className="text-[10px] ml-1">
                           {selectedOperation.notes}
-                        </Typography>
+                        </AlertDescription>
                       </Alert>
                     )}
 
                     {isOverdue && (
-                      <Alert severity="error" sx={{ mt: 0.5, py: 0, px: 0.75, "& .MuiAlert-icon": { py: 0.25, fontSize: 14 } }}>
-                        <Typography variant="caption" sx={{ fontSize: "0.6rem" }}>
+                      <Alert variant="destructive" className="mt-2 py-1 px-2">
+                        <AlertTriangle className="h-3 w-3" />
+                        <AlertDescription className="text-[10px] ml-1">
                           {t("Overdue!")} {format(dueDate!, "MMM dd")}
-                        </Typography>
+                        </AlertDescription>
                       </Alert>
                     )}
-                  </Box>
+                  </div>
                 )}
 
                 {/* Compact Operations List */}
-                <Box
-                  sx={{
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    overflow: "hidden",
-                    borderRadius: 1,
-                    bgcolor: "rgba(255, 255, 255, 0.03)",
-                    border: "1px solid rgba(255, 255, 255, 0.05)",
-                  }}
-                >
-                  <Box sx={{ px: 0.75, py: 0.375, borderBottom: 1, borderColor: "rgba(255, 255, 255, 0.05)" }}>
-                    <Typography variant="caption" fontWeight="bold" sx={{ fontSize: "0.65rem" }}>
+                <div className="flex-1 flex flex-col overflow-hidden rounded-lg bg-white/5 border border-white/5">
+                  <div className="px-2 py-1 border-b border-white/5">
+                    <span className="text-[11px] font-bold">
                       {t("Operations")} ({completedOps}/{totalOps})
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
 
-                  <Box sx={{ flex: 1, overflow: "auto", p: 0.375 }}>
+                  <div className="flex-1 overflow-auto p-1">
                     {operations.map((op, index) => {
                       const isSelected = selectedOperation?.id === op.id;
                       const isCompleted = op.status === "completed";
                       const isInProgress = op.status === "in_progress";
 
                       return (
-                        <Box
+                        <div
                           key={op.id}
                           onClick={() => {
                             setSelectedOperation(op);
                             setActiveTimeEntry(op.active_time_entry || null);
                           }}
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 0.375,
-                            py: 0.375,
-                            px: 0.5,
-                            mb: 0.125,
-                            borderRadius: 0.75,
-                            cursor: "pointer",
-                            bgcolor: isSelected
-                              ? "rgba(30, 144, 255, 0.15)"
+                          className={cn(
+                            "flex items-center gap-1 py-1 px-1.5 mb-0.5 rounded cursor-pointer",
+                            "border-l-2 transition-colors min-h-[28px]",
+                            isSelected
+                              ? "bg-primary/15 border-l-primary"
                               : isCompleted
-                                ? "rgba(52, 168, 83, 0.06)"
-                                : "transparent",
-                            borderLeft: isSelected ? "2px solid" : "2px solid transparent",
-                            borderColor: isSelected
-                              ? "primary.main"
-                              : "transparent",
-                            "&:hover": {
-                              bgcolor: isSelected
-                                ? "rgba(30, 144, 255, 0.2)"
-                                : "rgba(255, 255, 255, 0.04)",
-                            },
-                            transition: "background-color 0.1s",
-                            minHeight: 28,
-                          }}
+                                ? "bg-green-500/5 border-l-transparent"
+                                : "border-l-transparent hover:bg-white/5"
+                          )}
                         >
                           {/* Status Icon */}
                           {isCompleted ? (
-                            <CheckCircleOutline sx={{ fontSize: 12, color: "success.main" }} />
+                            <CheckCircle2 className="h-3 w-3 text-green-500 flex-shrink-0" />
                           ) : isInProgress ? (
-                            <ArrowForward sx={{ fontSize: 12, color: "primary.main" }} />
+                            <ArrowRight className="h-3 w-3 text-primary flex-shrink-0" />
                           ) : (
-                            <RadioButtonUnchecked sx={{ fontSize: 12, color: "text.disabled" }} />
+                            <Circle className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                           )}
 
                           {/* Operation Info */}
-                          <Typography
-                            variant="caption"
-                            fontWeight={isSelected ? "bold" : "medium"}
-                            noWrap
-                            sx={{
-                              flex: 1,
-                              minWidth: 0,
-                              fontSize: "0.65rem",
-                              textDecoration: isCompleted ? "line-through" : "none",
-                              color: isCompleted ? "text.secondary" : "text.primary",
-                            }}
+                          <span
+                            className={cn(
+                              "flex-1 min-w-0 truncate text-[11px]",
+                              isSelected && "font-bold",
+                              isCompleted && "line-through text-muted-foreground"
+                            )}
                           >
                             {index + 1}. {op.operation_name}
-                          </Typography>
+                          </span>
 
                           {/* Time + Active indicator */}
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.55rem" }}>
+                          <div className="flex items-center gap-1">
+                            <span className="text-[9px] text-muted-foreground">
                               {op.actual_time || 0}/{op.estimated_time}m
-                            </Typography>
-                            {op.active_time_entry && op.active_time_entry.operator_id === profile?.id && (
-                              <Chip
-                                icon={<Timer sx={{ fontSize: "10px !important" }} />}
-                                label={t("terminal.you")}
-                                size="small"
-                                color="primary"
-                                sx={{
-                                  height: 16,
-                                  fontSize: "0.5rem",
-                                  fontWeight: "bold",
-                                  "& .MuiChip-label": { px: 0.5 },
-                                  "& .MuiChip-icon": { ml: 0.25 },
-                                  animation: "pulse 2s ease-in-out infinite",
-                                  "@keyframes pulse": {
-                                    "0%, 100%": { opacity: 1 },
-                                    "50%": { opacity: 0.7 },
-                                  },
-                                }}
-                              />
-                            )}
-                            {op.active_time_entry && op.active_time_entry.operator_id !== profile?.id && (
-                              <Timer sx={{ fontSize: 10, color: "warning.main" }} />
-                            )}
-                          </Box>
-                        </Box>
+                            </span>
+                            {op.active_time_entry &&
+                              op.active_time_entry.operator_id === profile?.id && (
+                                <Badge className="h-4 text-[8px] px-1 animate-pulse">
+                                  <Clock className="h-2 w-2 mr-0.5" />
+                                  {t("terminal.you")}
+                                </Badge>
+                              )}
+                            {op.active_time_entry &&
+                              op.active_time_entry.operator_id !== profile?.id && (
+                                <Clock className="h-2.5 w-2.5 text-yellow-500" />
+                              )}
+                          </div>
+                        </div>
                       );
                     })}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
 
                 {/* Compact Substeps */}
                 {selectedOperation && (
-                  <Box
-                    sx={{
-                      flexShrink: 0,
-                      maxHeight: "22%",
-                      display: "flex",
-                      flexDirection: "column",
-                      overflow: "hidden",
-                      borderRadius: 1,
-                      bgcolor: "rgba(255, 255, 255, 0.03)",
-                      border: "1px solid rgba(255, 255, 255, 0.05)",
-                    }}
-                  >
-                    <Box sx={{ px: 0.75, py: 0.375, borderBottom: 1, borderColor: "rgba(255, 255, 255, 0.05)" }}>
-                      <Typography variant="caption" fontWeight="bold" sx={{ fontSize: "0.65rem" }}>
-                        {t("Substeps")}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ flex: 1, overflow: "auto", p: 0.375 }}>
+                  <div className="flex-shrink-0 max-h-[22%] flex flex-col overflow-hidden rounded-lg bg-white/5 border border-white/5">
+                    <div className="px-2 py-1 border-b border-white/5">
+                      <span className="text-[11px] font-bold">{t("Substeps")}</span>
+                    </div>
+                    <div className="flex-1 overflow-auto p-1">
                       <SubstepsManager
                         operationId={selectedOperation.id}
                         operationName={selectedOperation.operation_name}
                       />
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
                 )}
               </>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
       {/* Fullscreen Overlay */}
@@ -1338,14 +1060,12 @@ export default function OperatorView() {
           plannedQuantity={selectedOperation.part.quantity}
           onSuccess={async (quantityGood: number, shouldStopTime: boolean) => {
             setIsQuantityModalOpen(false);
-            // Auto-stop time tracking when quantity is achieved
             if (shouldStopTime && activeTimeEntry) {
               await handleStopTracking();
             }
             loadOperations(selectedJobId);
           }}
           onFileIssue={() => {
-            // Open issue form to document the shortfall
             setIsIssueFormOpen(true);
           }}
         />
@@ -1360,6 +1080,6 @@ export default function OperatorView() {
           onSuccess={() => loadOperations(selectedJobId)}
         />
       )}
-    </Box>
+    </div>
   );
 }
