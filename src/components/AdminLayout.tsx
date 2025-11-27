@@ -158,6 +158,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       exact: true,
     },
     {
+      path: "/admin/config/calendar",
+      label: "Calendar",
+      icon: CalendarClock,
+      exact: true,
+    },
+    {
       path: "/admin/config/materials",
       label: "Materials",
       icon: Wrench,
