@@ -1272,5 +1272,17 @@
     "expected": "Expected",
     "noActiveJobs": "No active jobs",
     "jobsFound": "jobs found"
+  },
+  "capacity": {
+    "title": "Capacity Matrix",
+    "autoSchedule": "Auto Schedule",
+    "workloadOverview": "Workload Overview",
+    "cell": "Cell",
+    "capacity": "Cap",
+    "scheduled": "Scheduled",
+    "utilization": "Utilization",
+    "schedulingComplete": "Scheduling Complete",
+    "schedulingFailed": "Scheduling Failed",
+    "operationsScheduled": "Successfully scheduled {{count}} operations."
   }
 }
