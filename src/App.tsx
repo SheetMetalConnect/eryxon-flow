@@ -35,6 +35,7 @@ import CapacityMatrix from "./pages/admin/CapacityMatrix";
 import { Operations } from "./pages/admin/Operations";
 import { Settings } from "./pages/admin/Settings";
 import IntegrationsMarketplace from "./pages/admin/IntegrationsMarketplace";
+import Shipments from "./pages/admin/Shipments";
 import StepsTemplatesView from "./pages/admin/StepsTemplatesView";
 import ApiDocs from "./pages/ApiDocs";
 import Pricing from "./pages/Pricing";
@@ -409,6 +410,17 @@ function AppRoutes() {
           <ProtectedRoute adminOnly>
             <Layout>
               <IntegrationsMarketplace />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/shipping"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <Shipments />
             </Layout>
           </ProtectedRoute>
         }
