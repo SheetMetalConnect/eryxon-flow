@@ -21,6 +21,7 @@ export const ROUTES = {
     ACTIVITY: "/admin/activity",
     INTEGRATIONS: "/admin/integrations",
     DATA_EXPORT: "/admin/data-export",
+    SHIPPING: "/admin/shipping",
     SETTINGS: "/admin/settings",
 
     CONFIG: {

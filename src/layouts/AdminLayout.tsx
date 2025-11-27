@@ -39,6 +39,7 @@ import {
   Flag,
   Info,
   Factory,
+  Truck,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -111,6 +112,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       path: ROUTES.ADMIN.ACTIVITY,
       label: t("navigation.activityMonitor"),
       icon: Clock,
+      exact: true,
+    },
+    {
+      path: ROUTES.ADMIN.SHIPPING,
+      label: t("navigation.shipping"),
+      icon: Truck,
       exact: true,
     },
   ];
