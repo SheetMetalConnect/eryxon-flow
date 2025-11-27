@@ -86,14 +86,15 @@ export default function ProductionQuantityModal({
 
     setIsSubmitting(true);
     try {
-      const scrapQty = hasShortfall ? remaining : 0;
-
+      // Only record what was actually made as good parts
+      // Shortfall is remaining work, NOT scrap
+      // Scrap should only be recorded when parts were made but failed quality
       const { error } = await supabase.from("operation_quantities").insert([{
         tenant_id: profile.tenant_id,
         operation_id: operationId,
-        quantity_produced: quantityGood + scrapQty,
+        quantity_produced: quantityGood,
         quantity_good: quantityGood,
-        quantity_scrap: scrapQty,
+        quantity_scrap: 0,
         quantity_rework: 0,
         recorded_at: new Date().toISOString(),
       }]);
