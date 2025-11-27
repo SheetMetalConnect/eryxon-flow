@@ -38,7 +38,7 @@ const pricingTiers = [
   {
     id: 'free',
     name: 'Free',
-    price: 0,
+    price: '€0',
     description: 'Perfect for small shops getting started',
     features: [
       '100 jobs per month',
@@ -53,7 +53,7 @@ const pricingTiers = [
   {
     id: 'pro',
     name: 'Pro',
-    price: 97,
+    price: '€97',
     popular: true,
     description: 'For growing shops with higher volume',
     features: [
@@ -71,7 +71,7 @@ const pricingTiers = [
   {
     id: 'premium',
     name: 'Enterprise',
-    price: 497,
+    price: '€497',
     description: 'Custom, bespoke solution',
     features: [
       'Everything in Pro',
@@ -175,7 +175,7 @@ export const MyPlan: React.FC = () => {
                   {currentTier?.description}
                 </Typography>
                 <Typography variant="h3" fontWeight={700}>
-                  ${currentTier?.price || 0}
+                  {currentTier?.price || '€0'}
                   <Typography component="span" variant="h6" sx={{ opacity: 0.8, ml: 1 }}>
                     {t('myPlan.perMonth')}
                   </Typography>

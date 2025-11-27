@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Eye, UserPlus, Download, Wrench } from "lucide-react";
+import { Loader2, Eye, Download, Wrench } from "lucide-react";
 import { DataTable, DataTableColumnHeader, DataTableFilterableColumn } from "@/components/ui/data-table";
 import {
   Tooltip,
@@ -13,6 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import OperationDetailModal from "@/components/admin/OperationDetailModal";
 
 interface Operation {
   id: string;
@@ -32,21 +34,16 @@ interface Operation {
 }
 
 export const Operations: React.FC = () => {
-  const [operations, setOperations] = useState<Operation[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [selectedOperationId, setSelectedOperationId] = useState<string | null>(null);
   const { profile } = useAuth();
   const navigate = useNavigate();
 
-  // Load operations data
-  useEffect(() => {
-    loadOperations();
-  }, [profile]);
+  // Fetch operations using React Query
+  const { data: operations = [], isLoading, refetch } = useQuery({
+    queryKey: ["admin-operations", profile?.tenant_id],
+    queryFn: async () => {
+      if (!profile?.tenant_id) return [];
 
-  const loadOperations = async () => {
-    if (!profile) return;
-
-    setLoading(true);
-    try {
       const { data } = await supabase
         .from("operations")
         .select(
@@ -75,65 +72,58 @@ export const Operations: React.FC = () => {
         `,
         )
         .eq("tenant_id", profile.tenant_id)
-        .order("created_at", { ascending: false })
-        .limit(500);
+        .order("created_at", { ascending: false });
 
-      if (data) {
-        // Fetch resource counts and names for all operations
-        const operationIds = data.map((op: any) => op.id);
-        const { data: resourceData } = await supabase
-          .from("operation_resources")
-          .select(`
-            operation_id,
-            resource:resources(name)
-          `)
-          .in("operation_id", operationIds);
+      if (!data) return [];
 
-        // Build a map of operation_id -> resource info
-        const resourceMap = new Map<string, { count: number; names: string[] }>();
-        resourceData?.forEach((item: any) => {
-          const opId = item.operation_id;
-          const resourceName = item.resource?.name || "Unknown";
+      // Fetch resource counts and names for all operations
+      const operationIds = data.map((op: any) => op.id);
+      const { data: resourceData } = await supabase
+        .from("operation_resources")
+        .select(`
+          operation_id,
+          resource:resources(name)
+        `)
+        .in("operation_id", operationIds);
 
-          if (!resourceMap.has(opId)) {
-            resourceMap.set(opId, { count: 0, names: [] });
-          }
+      // Build a map of operation_id -> resource info
+      const resourceMap = new Map<string, { count: number; names: string[] }>();
+      resourceData?.forEach((item: any) => {
+        const opId = item.operation_id;
+        const resourceName = item.resource?.name || "Unknown";
 
-          const info = resourceMap.get(opId)!;
-          info.count += 1;
-          info.names.push(resourceName);
-        });
+        if (!resourceMap.has(opId)) {
+          resourceMap.set(opId, { count: 0, names: [] });
+        }
 
-        const mappedOps: Operation[] = data.map((op: any) => {
-          const resourceInfo = resourceMap.get(op.id) || { count: 0, names: [] };
+        const info = resourceMap.get(opId)!;
+        info.count += 1;
+        info.names.push(resourceName);
+      });
 
-          return {
-            id: op.id,
-            operation_name: op.operation_name || "Unknown",
-            status: op.status || "not_started",
-            part_id: op.part_id,
-            part_number: op.parts?.part_number || "Unknown",
-            job_id: op.parts?.job_id || "",
-            job_number: op.parts?.jobs?.job_number || "Unknown",
-            cell: op.cells?.name || "Unknown",
-            cell_color: op.cells?.color || null,
-            assigned_operator_id: op.assigned_operator_id,
-            assigned_name: op.profiles?.full_name || op.profiles?.email || null,
-            due_date: null,
-            resources_count: resourceInfo.count,
-            resource_names: resourceInfo.names,
-          };
-        });
+      return data.map((op: any) => {
+        const resourceInfo = resourceMap.get(op.id) || { count: 0, names: [] };
 
-        setOperations(mappedOps);
-      }
-
-      setLoading(false);
-    } catch (error) {
-      console.error("Error loading operations:", error);
-      setLoading(false);
-    }
-  };
+        return {
+          id: op.id,
+          operation_name: op.operation_name || "Unknown",
+          status: op.status || "not_started",
+          part_id: op.part_id,
+          part_number: op.parts?.part_number || "Unknown",
+          job_id: op.parts?.job_id || "",
+          job_number: op.parts?.jobs?.job_number || "Unknown",
+          cell: op.cells?.name || "Unknown",
+          cell_color: op.cells?.color || null,
+          assigned_operator_id: op.assigned_operator_id,
+          assigned_name: op.profiles?.full_name || op.profiles?.email || null,
+          due_date: null,
+          resources_count: resourceInfo.count,
+          resource_names: resourceInfo.names,
+        };
+      }) as Operation[];
+    },
+    enabled: !!profile?.tenant_id,
+  });
 
   const handleExport = () => {
     const csv = [
@@ -294,14 +284,17 @@ export const Operations: React.FC = () => {
       header: "Actions",
       cell: ({ row }) => {
         return (
-          <div className="flex gap-1">
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <Eye className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <UserPlus className="h-4 w-4" />
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedOperationId(row.original.id);
+            }}
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
         );
       },
     },
@@ -338,7 +331,7 @@ export const Operations: React.FC = () => {
     },
   ], [uniqueCells]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -347,27 +340,51 @@ export const Operations: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <p className="text-sm text-muted-foreground">
-            Showing {operations.length} operations
-          </p>
+    <div className="p-4 space-y-4">
+      <div>
+        <div className="flex justify-between items-center mb-1">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+            Operations
+          </h1>
+          <Button onClick={handleExport} className="cta-button">
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
         </div>
-        <Button variant="outline" size="sm" onClick={handleExport}>
-          <Download className="h-4 w-4 mr-2" />
-          Export
-        </Button>
+        <p className="text-muted-foreground text-sm">
+          Monitor all manufacturing operations across cells and jobs
+        </p>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={operations}
-        filterableColumns={filterableColumns}
-        searchPlaceholder="Search by part, operation, operator..."
-        pageSize={20}
-        emptyMessage="No operations match the current filters"
-      />
+      <hr className="title-divider" />
+
+      <div className="informational-text text-sm py-2">
+        <Wrench className="inline h-4 w-4 mr-1.5 text-primary" />
+        <strong>{operations.length} operations</strong> across all work centers and manufacturing cells
+      </div>
+
+      <div className="glass-card p-4">
+        <DataTable
+          columns={columns}
+          data={operations}
+          filterableColumns={filterableColumns}
+          searchPlaceholder="Search by part, operation, operator..."
+          emptyMessage="No operations match the current filters"
+          loading={isLoading}
+          pageSize={50}
+          pageSizeOptions={[20, 50, 100, 200]}
+          searchDebounce={250}
+        />
+      </div>
+
+      {/* Operation Detail Modal */}
+      {selectedOperationId && (
+        <OperationDetailModal
+          operationId={selectedOperationId}
+          onClose={() => setSelectedOperationId(null)}
+          onUpdate={() => refetch()}
+        />
+      )}
     </div>
   );
 };

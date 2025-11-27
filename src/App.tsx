@@ -4,7 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { ThemeProvider } from "./theme/ThemeProvider";
 import { NotificationToastProvider } from "./components/NotificationToastProvider";
+import { McpActivityToasts } from "./components/admin/McpActivityToasts";
 import Auth from "./pages/Auth";
 import AcceptInvitation from "./pages/AcceptInvitation";
 import WorkQueue from "./pages/operator/WorkQueue";
@@ -21,7 +23,9 @@ import ConfigScrapReasons from "./pages/admin/ConfigScrapReasons";
 import OrganizationSettings from "./pages/admin/OrganizationSettings";
 import Assignments from "./pages/admin/Assignments";
 import ConfigApiKeys from "./pages/admin/ConfigApiKeys";
+import ConfigMcpKeys from "./pages/admin/ConfigMcpKeys";
 import ConfigWebhooks from "./pages/admin/ConfigWebhooks";
+import McpServerSettings from "./pages/admin/McpServerSettings";
 import DataExport from "./pages/admin/DataExport";
 import Jobs from "./pages/admin/Jobs";
 import JobCreate from "./pages/admin/JobCreate";
@@ -290,6 +294,28 @@ function AppRoutes() {
       />
 
       <Route
+        path="/admin/config/mcp-keys"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <ConfigMcpKeys />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/config/mcp-server"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <McpServerSettings />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/admin/data-export"
         element={
           <ProtectedRoute adminOnly>
@@ -489,19 +515,22 @@ function AppRoutes() {
 }
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <NotificationToastProvider>
-            <AppRoutes />
-          </NotificationToastProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <NotificationToastProvider>
+              <McpActivityToasts />
+              <AppRoutes />
+            </NotificationToastProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ThemeProvider>
 );
 
 export default App;

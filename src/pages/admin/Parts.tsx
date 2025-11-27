@@ -4,8 +4,21 @@ import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import PartDetailModal from "@/components/admin/PartDetailModal";
-import { Package, ChevronRight, Box, FileText, Eye } from "lucide-react";
+import {
+  Package,
+  ChevronRight,
+  Box,
+  FileText,
+  Eye,
+  TrendingUp,
+  CheckCircle2,
+  Trash2,
+  AlertTriangle,
+  Activity,
+  RefreshCw
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
@@ -17,6 +30,8 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { DataTable, DataTableColumnHeader, DataTableFilterableColumn } from "@/components/ui/data-table";
+import { useQualityMetrics } from "@/hooks/useQualityMetrics";
+import { cn } from "@/lib/utils";
 
 interface PartData {
   id: string;
@@ -72,6 +87,9 @@ export default function Parts() {
       return data;
     },
   });
+
+  // Fetch quality metrics
+  const { data: qualityMetrics } = useQualityMetrics();
 
   const {
     data: parts,
@@ -396,20 +414,139 @@ export default function Parts() {
   ], [t, materials, jobs]);
 
   return (
-    <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">{t("parts.title")}</h1>
+    <div className="p-6 space-y-8">
+        <div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+            {t("parts.title")}
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            {t("parts.subtitle")}
+          </p>
         </div>
 
-        <DataTable
-          columns={columns}
-          data={parts || []}
-          filterableColumns={filterableColumns}
-          searchPlaceholder={t("parts.searchByPartNumber")}
-          loading={isLoading}
-          pageSize={20}
-          emptyMessage={t("parts.noPartsFound")}
-        />
+        <hr className="title-divider" />
+
+        {/* Quality Metrics Dashboard */}
+        {qualityMetrics && (qualityMetrics.totalProduced > 0 || qualityMetrics.issueMetrics.total > 0) && (
+          <Card className="glass-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Activity className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
+                {t("quality.partsQuality", "Parts Quality Overview")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                {/* Yield Rate */}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <TrendingUp className="h-3.5 w-3.5" />
+                    {t("quality.yieldRate", "Yield Rate")}
+                  </div>
+                  <div className={cn(
+                    "text-lg font-bold",
+                    qualityMetrics.overallYield >= 95 ? "text-[hsl(var(--color-success))]" :
+                    qualityMetrics.overallYield >= 85 ? "text-[hsl(var(--color-warning))]" :
+                    "text-[hsl(var(--color-error))]"
+                  )}>
+                    {qualityMetrics.overallYield.toFixed(1)}%
+                  </div>
+                </div>
+
+                {/* Good Parts */}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--color-success))]" />
+                    {t("quality.goodParts", "Good")}
+                  </div>
+                  <div className="text-lg font-bold text-[hsl(var(--color-success))]">
+                    {qualityMetrics.totalGood.toLocaleString()}
+                  </div>
+                </div>
+
+                {/* Scrap */}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Trash2 className="h-3.5 w-3.5 text-[hsl(var(--color-error))]" />
+                    {t("quality.scrap", "Scrap")}
+                  </div>
+                  <div className={cn(
+                    "text-lg font-bold",
+                    qualityMetrics.totalScrap > 0 ? "text-[hsl(var(--color-error))]" : ""
+                  )}>
+                    {qualityMetrics.totalScrap.toLocaleString()}
+                    {qualityMetrics.scrapRate > 0 && (
+                      <span className="text-xs font-normal ml-1">({qualityMetrics.scrapRate.toFixed(1)}%)</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Rework */}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <RefreshCw className="h-3.5 w-3.5 text-[hsl(var(--color-warning))]" />
+                    {t("quality.rework", "Rework")}
+                  </div>
+                  <div className={cn(
+                    "text-lg font-bold",
+                    qualityMetrics.totalRework > 0 ? "text-[hsl(var(--color-warning))]" : ""
+                  )}>
+                    {qualityMetrics.totalRework.toLocaleString()}
+                    {qualityMetrics.reworkRate > 0 && (
+                      <span className="text-xs font-normal ml-1">({qualityMetrics.reworkRate.toFixed(1)}%)</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Issues */}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <AlertTriangle className="h-3.5 w-3.5 text-[hsl(var(--color-warning))]" />
+                    {t("quality.openIssues", "Open Issues")}
+                  </div>
+                  <div className={cn(
+                    "text-lg font-bold",
+                    qualityMetrics.issueMetrics.pending > 0 ? "text-[hsl(var(--color-warning))]" : ""
+                  )}>
+                    {qualityMetrics.issueMetrics.pending}
+                    <span className="text-xs font-normal text-muted-foreground ml-1">
+                      / {qualityMetrics.issueMetrics.total}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Scrap by Category */}
+              {qualityMetrics.scrapByCategory.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-white/10">
+                  <div className="text-xs text-muted-foreground mb-2">
+                    {t("quality.scrapByCategory", "Scrap by Category")}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {qualityMetrics.scrapByCategory.map((cat) => (
+                      <Badge key={cat.category} variant="outline" className="text-xs capitalize">
+                        {cat.category}: {cat.quantity}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="glass-card p-6">
+          <DataTable
+            columns={columns}
+            data={parts || []}
+            filterableColumns={filterableColumns}
+            searchPlaceholder={t("parts.searchByPartNumber")}
+            loading={isLoading}
+            pageSize={20}
+            emptyMessage={t("parts.noPartsFound")}
+            searchDebounce={200}
+          />
+        </div>
 
         {selectedPartId && (
           <PartDetailModal
@@ -421,11 +558,15 @@ export default function Parts() {
 
         {/* File Viewer Dialog */}
         <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
-          <DialogContent className="max-w-7xl max-h-[90vh]">
+          <DialogContent className="glass-card max-w-7xl max-h-[90vh]">
             <DialogHeader>
-              <DialogTitle>{currentFileTitle}</DialogTitle>
+              <DialogTitle className="text-xl flex items-center gap-2">
+                {currentFileType === "step" && <Box className="h-5 w-5 text-primary" />}
+                {currentFileType === "pdf" && <FileText className="h-5 w-5 text-destructive" />}
+                {currentFileTitle}
+              </DialogTitle>
             </DialogHeader>
-            <div className="w-full h-[75vh]">
+            <div className="w-full h-[75vh] rounded-lg overflow-hidden border border-white/10">
               {currentFileType === "step" && currentFileUrl && (
                 <STEPViewer url={currentFileUrl} />
               )}

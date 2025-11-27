@@ -232,23 +232,29 @@ export default function WorkQueue() {
         <CurrentlyTimingWidget />
 
         {/* Stats Card */}
-        <Card className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="glass-card p-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div>
               <p className="text-sm text-muted-foreground">Total Operations</p>
-              <p className="text-2xl font-bold">{totalOperations}</p>
+              <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                {totalOperations}
+              </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">In Progress</p>
-              <p className="text-2xl font-bold text-brand-primary">{inProgressOperations}</p>
+              <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                {inProgressOperations}
+              </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Completed</p>
-              <p className="text-2xl font-bold text-status-completed">{completedOperations}</p>
+              <p className="text-3xl font-bold text-status-completed">
+                {completedOperations}
+              </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Not Started</p>
-              <p className="text-2xl font-bold text-muted-foreground">
+              <p className="text-3xl font-bold text-muted-foreground">
                 {totalOperations - inProgressOperations - completedOperations}
               </p>
             </div>
@@ -256,7 +262,7 @@ export default function WorkQueue() {
         </Card>
 
         {/* Search and Material Filter */}
-        <div className="bg-card rounded-lg border p-4 space-y-4">
+        <div className="glass-card rounded-lg p-6 space-y-4">
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />

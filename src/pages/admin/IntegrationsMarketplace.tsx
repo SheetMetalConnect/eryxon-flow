@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,6 +75,7 @@ const categoryLabels: Record<string, string> = {
 };
 
 export default function IntegrationsMarketplace() {
+  const { t } = useTranslation();
   const { session } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -188,7 +190,7 @@ export default function IntegrationsMarketplace() {
 
   const IntegrationCard = ({ integration }: { integration: Integration }) => (
     <Card
-      className="hover:shadow-lg transition-shadow cursor-pointer"
+      className="glass-card hover:shadow-xl hover:scale-105 transition-all hover:border-white/20 cursor-pointer"
       onClick={() => setSelectedIntegration(integration)}
     >
       <CardHeader>
@@ -254,19 +256,19 @@ export default function IntegrationsMarketplace() {
   );
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <Store className="w-8 h-8" />
-          <h1 className="text-3xl font-bold">Integration Marketplace</h1>
-        </div>
-        <p className="text-muted-foreground">
-          Browse and install pre-built integrations for common ERP systems, or
-          build your own using our starter kits.
+    <div className="p-6 max-w-7xl mx-auto space-y-8">
+      <div>
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+          {t("integrations.title")}
+        </h1>
+        <p className="text-muted-foreground text-lg">
+          {t("integrations.subtitle")}
         </p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+      <hr className="title-divider" />
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="marketplace">
             <Package className="w-4 h-4 mr-2" />
@@ -343,7 +345,7 @@ export default function IntegrationsMarketplace() {
               ))}
             </div>
           ) : (
-            <Card>
+            <Card className="glass-card">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Package className="w-12 h-12 text-muted-foreground mb-4" />
                 <p className="text-muted-foreground">No integrations found</p>
@@ -363,13 +365,13 @@ export default function IntegrationsMarketplace() {
               ))}
             </div>
           ) : (
-            <Card>
+            <Card className="glass-card">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <CheckCircle2 className="w-12 h-12 text-muted-foreground mb-4" />
                 <p className="text-muted-foreground mb-4">
                   No integrations installed yet
                 </p>
-                <Button onClick={() => setActiveTab("marketplace")}>
+                <Button onClick={() => setActiveTab("marketplace")} className="cta-button">
                   Browse Marketplace
                 </Button>
               </CardContent>

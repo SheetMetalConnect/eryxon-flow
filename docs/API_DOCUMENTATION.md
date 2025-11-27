@@ -6,14 +6,314 @@ Eryxon Flow is a **100% API-driven** manufacturing execution system. Your ERP sy
 
 ## Table of Contents
 
-1. [Authentication](#authentication)
-2. [Core REST APIs](#core-rest-apis)
-3. [Job Lifecycle APIs](#job-lifecycle-apis)
-4. [Operation Lifecycle APIs](#operation-lifecycle-apis)
-5. [NCR (Non-Conformance Report) APIs](#ncr-apis)
-6. [Webhook Events](#webhook-events)
-7. [MCP Server Integration](#mcp-server-integration)
-8. [Database Indexing](#database-indexing)
+1. [REST Standards & Best Practices](#rest-standards--best-practices)
+2. [HTTP Status Codes](#http-status-codes)
+3. [Response Formats](#response-formats)
+4. [Error Handling](#error-handling-reference)
+5. [Validation Rules](#validation-rules)
+6. [Authentication](#authentication)
+7. [Core REST APIs](#core-rest-apis)
+8. [Job Lifecycle APIs](#job-lifecycle-apis)
+9. [Operation Lifecycle APIs](#operation-lifecycle-apis)
+10. [NCR (Non-Conformance Report) APIs](#ncr-apis)
+11. [Webhook Events](#webhook-events)
+12. [MCP Server Integration](#mcp-server-integration)
+13. [Database Indexing](#database-indexing)
+
+---
+
+## REST Standards & Best Practices
+
+Eryxon Flow API follows REST best practices with comprehensive validation, clear error messages, and proper HTTP semantics.
+
+### Key Principles
+
+✅ **Proper HTTP Status Codes** - Meaningful status codes for every response
+✅ **Standardized Responses** - Consistent success/error formats
+✅ **Comprehensive Validation** - Field-level validation before database operations
+✅ **Batch Operations** - Efficient foreign key validation
+✅ **Clear Error Messages** - Actionable error details
+✅ **Type Safety** - Schema validation for all requests
+
+---
+
+## HTTP Status Codes
+
+All API endpoints use proper REST status codes:
+
+### Success Codes (2xx)
+
+| Code | Meaning | Usage |
+|------|---------|-------|
+| **200 OK** | Success | GET requests, successful PATCH/DELETE |
+| **201 Created** | Resource created | Successful POST requests |
+| **204 No Content** | Success with no body | Alternative for DELETE (not currently used) |
+
+### Client Error Codes (4xx)
+
+| Code | Meaning | Usage | Example |
+|------|---------|-------|---------|
+| **400 Bad Request** | Malformed request | Invalid JSON, malformed query params | `{"error": "Invalid JSON in request body"}` |
+| **401 Unauthorized** | Authentication failed | Invalid/missing API key | `{"error": "Invalid or missing API key"}` |
+| **402 Payment Required** | Quota exceeded | Plan limits reached | `{"error": "Job limit exceeded (50/50)"}` |
+| **403 Forbidden** | Access denied | Tenant isolation violation | `{"error": "Access denied to this resource"}` |
+| **404 Not Found** | Resource doesn't exist | Job/part/operation ID not found | `{"error": "Job with ID xxx not found"}` |
+| **409 Conflict** | Resource conflict | Duplicate job_number, state violations | `{"error": "Job number JOB-001 already exists"}` |
+| **422 Unprocessable Entity** | **Validation error** | Well-formed but invalid data | See [Validation Errors](#validation-error-format) below |
+| **429 Too Many Requests** | Rate limit exceeded | Too many API calls | `{"error": "Rate limit exceeded"}` |
+
+### Server Error Codes (5xx)
+
+| Code | Meaning | Usage |
+|------|---------|-------|
+| **500 Internal Server Error** | Server error | Unexpected errors, database failures |
+
+### Status Code Decision Tree
+
+```
+Request received
+├─ Malformed JSON/query params? → 400 Bad Request
+├─ Invalid/missing API key? → 401 Unauthorized
+├─ Quota exceeded? → 402 Payment Required
+├─ Wrong tenant? → 403 Forbidden
+├─ Resource not found? → 404 Not Found
+├─ Duplicate/conflict? → 409 Conflict
+├─ Validation failed? → 422 Unprocessable Entity
+├─ Rate limit hit? → 429 Too Many Requests
+├─ Server error? → 500 Internal Server Error
+└─ Success
+   ├─ Created resource? → 201 Created
+   └─ Otherwise → 200 OK
+```
+
+---
+
+## Response Formats
+
+### Success Response
+
+All successful API responses follow this structure:
+
+```json
+{
+  "success": true,
+  "data": { ... },
+  "meta": {
+    "pagination": {
+      "limit": 100,
+      "offset": 0,
+      "total": 250
+    }
+  }
+}
+```
+
+**Fields:**
+- `success` - Always `true` for successful responses
+- `data` - The response payload (object or array)
+- `meta` - Optional metadata (pagination, filters, etc.)
+
+### Error Response
+
+All error responses follow this structure:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Validation failed",
+    "details": [
+      {
+        "field": "job_number",
+        "message": "Job number is required",
+        "constraint": "NOT_NULL",
+        "entityType": "job",
+        "entityIndex": 0
+      }
+    ],
+    "statusCode": 422
+  }
+}
+```
+
+**Fields:**
+- `success` - Always `false` for errors
+- `error.code` - Machine-readable error code
+- `error.message` - Human-readable summary
+- `error.details` - Array of specific errors (for validation)
+- `error.statusCode` - HTTP status code
+
+---
+
+## Error Handling Reference
+
+### Validation Error Format
+
+When validation fails (422), you'll receive detailed field-level errors:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "✗ 3 validation error(s) in job",
+    "details": [
+      {
+        "field": "job_number",
+        "message": "Missing required field: job_number",
+        "value": null,
+        "constraint": "NOT_NULL",
+        "entityType": "job",
+        "entityIndex": 0
+      },
+      {
+        "field": "parts[0].quantity",
+        "message": "Part quantity must be >= 1",
+        "value": 0,
+        "constraint": "MIN_VALUE",
+        "entityType": "part",
+        "entityIndex": 0
+      },
+      {
+        "field": "parts[0].operations[0].cell_id",
+        "message": "Foreign key cell_id references non-existent record: abc-123",
+        "value": "abc-123",
+        "constraint": "FK_CONSTRAINT",
+        "entityType": "operation",
+        "entityIndex": 0
+      }
+    ],
+    "statusCode": 422
+  }
+}
+```
+
+### Validation Constraint Types
+
+| Constraint | Meaning | Example |
+|------------|---------|---------|
+| `NOT_NULL` | Required field missing | `job_number` is required |
+| `FK_CONSTRAINT` | Foreign key violation | `cell_id` references non-existent cell |
+| `FK_REQUIRED` | Required foreign key missing | `part_id` is required |
+| `UUID_FORMAT` | Invalid UUID format | `id` must be a valid UUID |
+| `TYPE_MISMATCH` | Wrong data type | Expected number, got string |
+| `MIN_VALUE` | Value too small | `quantity` must be >= 1 |
+| `MAX_VALUE` | Value too large | `priority` must be <= 100 |
+| `MIN_LENGTH` | String too short | `job_number` must be at least 1 character |
+| `MAX_LENGTH` | String too long | `job_number` must be at most 255 characters |
+| `PATTERN_MISMATCH` | Doesn't match pattern | Invalid format |
+| `ENUM_CONSTRAINT` | Invalid enum value | `status` must be one of: not_started, in_progress, completed |
+| `DATE_FORMAT` | Invalid date format | `due_date` must be ISO 8601 format |
+| `UNIQUE_CONSTRAINT` | Duplicate value | Duplicate part numbers found |
+| `CIRCULAR_REFERENCE` | Self-referential FK | Part cannot be its own parent |
+
+### Common Error Codes
+
+| Code | HTTP | Description | Example |
+|------|------|-------------|---------|
+| `VALIDATION_ERROR` | 422 | Field validation failed | Missing required field |
+| `UNAUTHORIZED` | 401 | Authentication failed | Invalid API key |
+| `NOT_FOUND` | 404 | Resource doesn't exist | Job ID not found |
+| `CONFLICT` | 409 | Resource conflict | Duplicate job_number |
+| `QUOTA_EXCEEDED` | 402 | Plan limit reached | Job limit: 50/50 |
+| `BAD_REQUEST` | 400 | Malformed request | Invalid JSON |
+| `FORBIDDEN` | 403 | Access denied | Wrong tenant |
+| `METHOD_NOT_ALLOWED` | 405 | HTTP method not supported | POST to GET-only endpoint |
+| `INTERNAL_ERROR` | 500 | Server error | Database connection failed |
+
+---
+
+## Validation Rules
+
+### Jobs
+
+**Required Fields:**
+- `job_number` (string, 1-255 chars, unique per tenant)
+- `parts` (array, min 1 part)
+
+**Optional Fields:**
+- `customer_name` (string, max 255 chars)
+- `due_date` (ISO 8601 date string)
+- `priority` (integer, >= 0)
+- `current_cell_id` (UUID, must exist in cells)
+- `status` (enum: `not_started`, `in_progress`, `on_hold`, `completed`)
+- `description` (string)
+- `metadata` (JSON object)
+
+**Business Rules:**
+- Job number must be unique within tenant
+- At least one part required
+- Status transitions must be valid (not_started → in_progress → completed)
+- All foreign keys must reference existing records in same tenant
+
+### Parts
+
+**Required Fields:**
+- `job_id` (UUID, must exist)
+- `part_number` (string, unique within job)
+- `quantity` (integer, >= 1)
+- `operations` (array, min 1 operation)
+
+**Optional Fields:**
+- `material` (string)
+- `parent_part_id` (UUID, must exist in same job, cannot be self)
+- `current_cell_id` (UUID, must exist)
+- `material_id` (UUID, must exist)
+- `description` (string)
+- `drawing_url` (string)
+- `step_file_url` (string)
+
+**Business Rules:**
+- Part number unique within job
+- Parent part must belong to same job
+- Cannot be own parent (circular reference check)
+- Operations must have sequential sequence numbers (1, 2, 3...)
+
+### Operations
+
+**Required Fields:**
+- `part_id` (UUID, must exist)
+- `operation_name` (string, 1-255 chars)
+- `sequence` (integer, >= 1, unique within part)
+
+**Optional Fields:**
+- `cell_id` (UUID, must exist)
+- `assigned_operator_id` (UUID, must exist in profiles)
+- `estimated_time_minutes` (number, >= 0)
+- `setup_time_minutes` (number, >= 0)
+- `instructions` (string)
+- `status` (enum: `not_started`, `in_progress`, `paused`, `completed`)
+
+**Business Rules:**
+- Sequence must be positive integer
+- Sequence unique within part
+- All FKs must belong to same tenant
+
+### Issues/NCRs
+
+**Required Fields:**
+- `operation_id` (UUID, must exist)
+- `title` (string, 1-255 chars)
+- `description` (string, min 1 char)
+
+**Optional Fields:**
+- `severity` (enum: `low`, `medium`, `high`, `critical`)
+- `status` (enum: `open`, `in_progress`, `resolved`, `closed`)
+- `issue_type` (enum: `general`, `ncr`)
+- `reported_by_id` (UUID, must exist)
+- `resolved_by_id` (UUID, must exist)
+- `verified_by_id` (UUID, must exist)
+
+**NCR-Specific Fields** (when `issue_type` = `"ncr"`):
+- `ncr_number` (auto-generated if not provided)
+- `ncr_category` (enum: `material`, `process`, `equipment`, `design`, `supplier`, `documentation`, `other`)
+- `ncr_disposition` (enum: `use_as_is`, `rework`, `repair`, `scrap`, `return_to_supplier`)
+- `root_cause` (string)
+- `corrective_action` (string)
+- `preventive_action` (string)
+- `affected_quantity` (integer)
+- `verification_required` (boolean)
 
 ---
 

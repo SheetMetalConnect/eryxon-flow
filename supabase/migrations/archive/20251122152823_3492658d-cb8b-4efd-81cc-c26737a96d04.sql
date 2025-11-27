@@ -1,31 +1,33 @@
--- Fix handle_new_user to properly create tenants and set first user as admin
-DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
+-- Update handle_new_user function to create tenants with 'suspended' status
+-- New signups require manual approval before they can use the system
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER
+RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
-AS $$
+SET search_path = 'public'
+AS $function$
 DECLARE
   v_tenant_id UUID;
   v_company_name TEXT;
   v_username TEXT;
   v_full_name TEXT;
   v_role app_role;
+  v_tenant_status subscription_status;
   v_is_new_tenant BOOLEAN := false;
 BEGIN
   -- Extract metadata
   v_username := COALESCE(NEW.raw_user_meta_data->>'username', SPLIT_PART(NEW.email, '@', 1));
   v_full_name := COALESCE(NEW.raw_user_meta_data->>'full_name', '');
   v_company_name := NEW.raw_user_meta_data->>'company_name';
+  v_tenant_status := COALESCE((NEW.raw_user_meta_data->>'tenant_status')::subscription_status, 'trial');
   
   -- Check if tenant_id provided (invitation flow)
   IF NEW.raw_user_meta_data->>'tenant_id' IS NOT NULL THEN
     v_tenant_id := (NEW.raw_user_meta_data->>'tenant_id')::UUID;
     v_role := COALESCE((NEW.raw_user_meta_data->>'role')::app_role, 'operator');
   ELSE
-    -- New signup - create tenant first
+    -- New signup - create tenant with suspended status for manual approval
     v_is_new_tenant := true;
     v_role := 'admin'; -- First user is always admin
     
@@ -38,7 +40,7 @@ BEGIN
       COALESCE(v_company_name, v_username || '''s Organization'),
       v_company_name,
       'free', -- Default to free plan
-      'trial' -- Default to trial status
+      v_tenant_status -- Will be 'suspended' for new signups
     )
     RETURNING id INTO v_tenant_id;
   END IF;
@@ -70,10 +72,4 @@ BEGIN
   
   RETURN NEW;
 END;
-$$;
-
--- Recreate trigger
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+$function$;

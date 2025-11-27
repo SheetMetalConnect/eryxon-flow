@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Building2, Save } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Loader2, Building2, Save, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 const TIMEZONES = [
   'UTC',
@@ -24,6 +26,7 @@ const TIMEZONES = [
 ];
 
 export default function OrganizationSettings() {
+  const { t } = useTranslation();
   const { profile, tenant, refreshTenant } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -32,6 +35,9 @@ export default function OrganizationSettings() {
     company_name: '',
     timezone: 'UTC',
     billing_email: '',
+    factory_opening_time: '07:00',
+    factory_closing_time: '17:00',
+    auto_stop_tracking: false,
   });
 
   useEffect(() => {
@@ -52,11 +58,20 @@ export default function OrganizationSettings() {
 
       if (error) throw error;
 
+      // Format time from database format (HH:MM:SS) to input format (HH:MM)
+      const formatTime = (time: string | null) => {
+        if (!time) return '';
+        return time.substring(0, 5);
+      };
+
       setFormData({
         name: data.name || '',
         company_name: data.company_name || '',
         timezone: data.timezone || 'UTC',
         billing_email: data.billing_email || '',
+        factory_opening_time: formatTime(data.factory_opening_time) || '07:00',
+        factory_closing_time: formatTime(data.factory_closing_time) || '17:00',
+        auto_stop_tracking: data.auto_stop_tracking || false,
       });
     } catch (error: any) {
       console.error('Error loading tenant details:', error);
@@ -81,12 +96,15 @@ export default function OrganizationSettings() {
           company_name: formData.company_name,
           timezone: formData.timezone,
           billing_email: formData.billing_email,
+          factory_opening_time: formData.factory_opening_time + ':00',
+          factory_closing_time: formData.factory_closing_time + ':00',
+          auto_stop_tracking: formData.auto_stop_tracking,
         })
         .eq('id', tenant.id);
 
       if (error) throw error;
 
-      toast.success('Organization settings updated');
+      toast.success(t('organizationSettings.settingsUpdated'));
       await refreshTenant();
     } catch (error: any) {
       console.error('Error updating tenant:', error);
@@ -105,16 +123,20 @@ export default function OrganizationSettings() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-8">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Organization Settings</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+          Organization Settings
+        </h1>
+        <p className="text-muted-foreground text-lg">
           Manage your organization profile and preferences
         </p>
       </div>
 
+      <hr className="title-divider" />
+
       <form onSubmit={handleSave}>
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Building2 className="h-5 w-5" />
@@ -171,7 +193,7 @@ export default function OrganizationSettings() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="billing_email">Billing Email</Label>
+              <Label htmlFor="billing_email">{t('organizationSettings.billingEmail')}</Label>
               <Input
                 id="billing_email"
                 type="email"
@@ -182,19 +204,80 @@ export default function OrganizationSettings() {
             </div>
 
             <div className="pt-4">
-              <Button type="submit" disabled={saving} className="gap-2">
+              <Button type="submit" disabled={saving} className="cta-button gap-2">
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                 <Save className="h-4 w-4" />
-                Save Changes
+                {t('organizationSettings.saveChanges')}
               </Button>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Factory Hours Card */}
+        <Card className="glass-card">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              <CardTitle>{t('organizationSettings.factoryHours.title')}</CardTitle>
+            </div>
+            <CardDescription>
+              {t('organizationSettings.factoryHours.description')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="factory_opening_time">{t('organizationSettings.factoryHours.openingTime')}</Label>
+                <Input
+                  id="factory_opening_time"
+                  type="time"
+                  value={formData.factory_opening_time}
+                  onChange={(e) => setFormData({ ...formData, factory_opening_time: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="factory_closing_time">{t('organizationSettings.factoryHours.closingTime')}</Label>
+                <Input
+                  id="factory_closing_time"
+                  type="time"
+                  value={formData.factory_closing_time}
+                  onChange={(e) => setFormData({ ...formData, factory_closing_time: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <Label htmlFor="auto_stop_tracking" className="text-base">
+                  {t('organizationSettings.factoryHours.autoStopTracking')}
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {t('organizationSettings.factoryHours.autoStopDescription')}
+                </p>
+              </div>
+              <Switch
+                id="auto_stop_tracking"
+                checked={formData.auto_stop_tracking}
+                onCheckedChange={(checked) => setFormData({ ...formData, auto_stop_tracking: checked })}
+              />
+            </div>
+
+            {formData.auto_stop_tracking && (
+              <div className="rounded-lg bg-warning/10 border border-warning/20 p-3">
+                <p className="text-sm text-warning">
+                  {t('organizationSettings.factoryHours.autoStopWarning', {
+                    time: formData.factory_closing_time,
+                  })}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </form>
 
       {/* Subscription Info (Read-only for now) */}
       {tenant && (
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle>Subscription</CardTitle>
             <CardDescription>Your current plan and usage</CardDescription>

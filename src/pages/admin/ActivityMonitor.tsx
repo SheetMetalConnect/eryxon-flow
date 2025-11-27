@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatDistanceToNow } from "date-fns";
@@ -40,6 +41,9 @@ import {
   Wrench,
   Circle,
   Loader2,
+  Zap,
+  AlertTriangle,
+  Server,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -65,6 +69,7 @@ interface ActivityStats {
 }
 
 export const ActivityMonitor: React.FC = () => {
+  const { t } = useTranslation();
   const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [stats, setStats] = useState<ActivityStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -190,6 +195,10 @@ export const ActivityMonitor: React.FC = () => {
         return <CloudDownload className={iconClass} />;
       case "import":
         return <CloudUpload className={iconClass} />;
+      case "mcp_execute":
+        return <Zap className={iconClass} />;
+      case "mcp_error":
+        return <AlertTriangle className={iconClass} />;
       default:
         return <Circle className={iconClass} />;
     }
@@ -215,6 +224,10 @@ export const ActivityMonitor: React.FC = () => {
       case "export":
       case "import":
         return "bg-[hsl(var(--color-warning))]/10 text-[hsl(var(--color-warning))] border-[hsl(var(--color-warning))]/20";
+      case "mcp_execute":
+        return "bg-purple-500/10 text-purple-400 border-purple-500/20";
+      case "mcp_error":
+        return "bg-red-500/10 text-red-400 border-red-500/20";
       default:
         return "bg-[hsl(var(--foreground))]/10 text-[hsl(var(--foreground))]/60 border-[hsl(var(--foreground))]/20";
     }
@@ -237,6 +250,8 @@ export const ActivityMonitor: React.FC = () => {
       case "material":
       case "resource":
         return <Wrench className={iconClass} />;
+      case "mcp_tool":
+        return <Server className={iconClass} />;
       default:
         return <Activity className={iconClass} />;
     }
@@ -306,19 +321,18 @@ export const ActivityMonitor: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-8">
       {/* Header Section */}
       <div>
-        <div className="flex items-center gap-3 mb-2">
-          <Activity className="h-10 w-10 text-foreground/80" />
-          <div>
-            <h1 className="text-3xl font-bold">Activity Monitor</h1>
-            <p className="text-sm text-muted-foreground">
-              Real-time platform activity feed with comprehensive audit trail
-            </p>
-          </div>
-        </div>
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+          {t("activityMonitor.title")}
+        </h1>
+        <p className="text-muted-foreground text-lg">
+          {t("activityMonitor.description")}
+        </p>
       </div>
+
+      <hr className="title-divider" />
 
       {/* Statistics Cards */}
       {stats && (

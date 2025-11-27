@@ -25,6 +25,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import CurrentlyTimingWidget from './CurrentlyTimingWidget';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { AppTour } from '@/components/onboarding';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import { cn } from '@/lib/utils';
@@ -52,41 +53,42 @@ export const OperatorLayout = ({ children }: OperatorLayoutProps) => {
     <>
       <AnimatedBackground />
       <div className="relative flex flex-col min-h-screen bg-background">
-        {/* Top Header - Glass Morphism */}
+        {/* Top Header - Glass Morphism - Compact */}
         <header className="sticky top-0 z-50 w-full glass-card border-b border-border-subtle">
-          <div className="flex items-center justify-between h-16 px-4 sm:px-6">
+          <div className="flex items-center justify-between h-12 px-3 sm:px-4">
             {/* Logo/Brand */}
-            <div className="flex items-center gap-3">
-              <Factory className="h-8 w-8 text-primary" strokeWidth={1.5} />
-              <span className="hidden sm:block text-lg font-bold hero-title">
+            <div className="flex items-center gap-2">
+              <Factory className="h-6 w-6 text-primary" strokeWidth={1.5} />
+              <span className="hidden sm:block text-sm font-bold hero-title">
                 {t('app.name')}
               </span>
             </div>
 
             {/* Right Side Actions */}
-            <div className="flex items-center gap-2">
-              {/* Language Switcher */}
+            <div className="flex items-center gap-1.5">
+              {/* Theme & Language Switchers */}
+              <ThemeToggle variant="dropdown" />
               <LanguageSwitcher />
 
               {/* User Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-9 w-9 rounded-full p-0">
-                    <Avatar className="h-9 w-9 border-2 border-primary/20">
-                      <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-primary-foreground font-semibold">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0">
+                    <Avatar className="h-7 w-7 border border-primary/20">
+                      <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-primary-foreground font-semibold text-xs">
                         {profile?.full_name?.charAt(0).toUpperCase() || 'O'}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-64 glass-card" align="end">
-                  {/* Tenant Info */}
+                <DropdownMenuContent className="w-56 glass-card" align="end">
+                  {/* Tenant Info - Compact */}
                   {tenant && (
                     <>
-                      <div className="px-3 py-2 bg-primary/5 border-b border-border-subtle">
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4 text-primary" />
-                          <span className="text-sm font-bold text-primary truncate">
+                      <div className="px-2 py-1.5 bg-primary/5 border-b border-border-subtle">
+                        <div className="flex items-center gap-1.5">
+                          <Building2 className="h-3.5 w-3.5 text-primary" />
+                          <span className="text-xs font-bold text-primary truncate">
                             {tenant.company_name || tenant.name}
                           </span>
                         </div>
@@ -95,11 +97,11 @@ export const OperatorLayout = ({ children }: OperatorLayoutProps) => {
                     </>
                   )}
 
-                  {/* User Info */}
-                  <div className="px-3 py-2">
-                    <div className="text-sm font-semibold">{profile?.full_name}</div>
-                    <div className="text-xs text-muted-foreground">{profile?.email}</div>
-                    <div className="inline-block mt-1.5 px-2 py-0.5 rounded text-xs font-semibold uppercase bg-gradient-to-r from-primary to-primary/60 text-primary-foreground">
+                  {/* User Info - Compact */}
+                  <div className="px-2 py-1.5">
+                    <div className="text-xs font-semibold">{profile?.full_name}</div>
+                    <div className="text-[10px] text-muted-foreground">{profile?.email}</div>
+                    <div className="inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase bg-gradient-to-r from-primary to-primary/60 text-primary-foreground">
                       {t('app.operator')}
                     </div>
                   </div>
@@ -108,17 +110,17 @@ export const OperatorLayout = ({ children }: OperatorLayoutProps) => {
 
                   <DropdownMenuItem
                     onClick={() => navigate('/help')}
-                    className="gap-2 cursor-pointer focus:bg-white/5"
+                    className="gap-1.5 cursor-pointer focus:bg-white/5 text-xs"
                   >
-                    <HelpCircle className="h-4 w-4" />
+                    <HelpCircle className="h-3.5 w-3.5" />
                     Help & Docs
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
                     onClick={signOut}
-                    className="gap-2 cursor-pointer focus:bg-white/5 text-destructive focus:text-destructive"
+                    className="gap-1.5 cursor-pointer focus:bg-white/5 text-destructive focus:text-destructive text-xs"
                   >
-                    <LogOut className="h-4 w-4" />
+                    <LogOut className="h-3.5 w-3.5" />
                     {t('auth.signOut')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -127,16 +129,16 @@ export const OperatorLayout = ({ children }: OperatorLayoutProps) => {
           </div>
         </header>
 
-        {/* Currently Timing Widget - Sticky */}
-        <div className="sticky top-16 z-40 border-b border-border-subtle glass-card">
-          <div className="px-4 sm:px-6 py-3">
+        {/* Currently Timing Widget - Sticky - Compact */}
+        <div className="sticky top-12 z-40 border-b border-border-subtle glass-card">
+          <div className="px-3 sm:px-4 py-2">
             <CurrentlyTimingWidget />
           </div>
         </div>
 
-        {/* Desktop Navigation Tabs - Hidden on mobile */}
-        <div className="hidden sm:block sticky top-[calc(4rem+theme(spacing.16))] z-30 border-b border-border-subtle glass-card">
-          <div className="flex gap-1 px-6 py-2">
+        {/* Desktop Navigation Tabs - Hidden on mobile - Compact */}
+        <div className="hidden sm:block sticky top-[calc(3rem+theme(spacing.12))] z-30 border-b border-border-subtle glass-card">
+          <div className="flex gap-0.5 px-4 py-1.5">
             {navItems.map((item) => (
               <Button
                 key={item.path}
@@ -144,41 +146,41 @@ export const OperatorLayout = ({ children }: OperatorLayoutProps) => {
                 size="sm"
                 onClick={() => navigate(item.path)}
                 className={cn(
-                  "gap-2 transition-base",
+                  "gap-1.5 transition-base h-7 text-xs px-2.5",
                   isActive(item.path)
                     ? "nav-item-active"
                     : "nav-item-hover"
                 )}
               >
-                <item.icon className="h-4 w-4" />
+                <item.icon className="h-3.5 w-3.5" />
                 {item.label}
               </Button>
             ))}
           </div>
         </div>
 
-        {/* Main Content */}
-        <main className="flex-1 px-4 sm:px-6 py-4 sm:py-6 pb-20 sm:pb-6">
+        {/* Main Content - Reduced padding */}
+        <main className="flex-1 px-3 sm:px-4 py-3 sm:py-4 pb-16 sm:pb-4">
           {children}
         </main>
 
-        {/* Mobile Bottom Navigation - Fixed */}
+        {/* Mobile Bottom Navigation - Fixed - Compact */}
         <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border-subtle glass-card">
-          <div className="grid grid-cols-4 h-16">
+          <div className="grid grid-cols-4 h-14">
             {navItems.map((item) => (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 transition-base",
+                  "flex flex-col items-center justify-center gap-0.5 transition-base",
                   isActive(item.path)
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <item.icon className={cn("h-5 w-5", isActive(item.path) && "text-primary")} />
+                <item.icon className={cn("h-4 w-4", isActive(item.path) && "text-primary")} />
                 <span className={cn(
-                  "text-xs",
+                  "text-[10px]",
                   isActive(item.path) ? "font-semibold" : "font-medium"
                 )}>
                   {item.label}

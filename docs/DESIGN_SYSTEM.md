@@ -2,8 +2,8 @@
 
 **Antigravity-inspired dark-first design system for manufacturing execution**
 
-Version: 3.1 "Antigravity"
-Last Updated: November 22, 2025
+Version: 3.3 "Compact Antigravity"
+Last Updated: November 25, 2025
 Status: ✅ Active
 
 ---
@@ -12,6 +12,7 @@ Status: ✅ Active
 
 - [Overview](#overview)
 - [Design Philosophy](#design-philosophy)
+- [Responsive & Compact Design](#responsive--compact-design)
 - [Getting Started](#getting-started)
 - [Typography](#typography)
 - [Color Palette](#color-palette)
@@ -91,8 +92,271 @@ We've removed light mode support to focus on an Antigravity-grade dark shell:
 - **Token-First Values**: Gradients, pills, and icons reference shared CSS variables (no hex literals).
 - **Layered Glass Depth**: Always stack content over the animated background with a glass card or capsule.
 - **Smooth Animations**: Background orbs use 20s float cycles; cards fade in with `fadeInUp`.
-- **Consistent Roundings**: Use 10px, 12px, and 24px radii exactly as seen in the Antigravity card.
-- **Touch-Optimized Rhythm**: Vertical spacing uses full rem steps (1rem, 1.25rem, 1.5rem, 2rem).
+- **Compact Roundings**: Use 4px, 6px, 8px, and 12px radii for a tighter, more data-dense feel.
+- **Compact Spacing**: Reduced padding and gaps (0.5rem, 0.75rem, 1rem) to maximize data visibility.
+- **Touch-Optimized Rhythm**: Maintain 44px minimum touch targets while reducing visual padding.
+
+---
+
+## Responsive & Compact Design
+
+### Design Goals for v3.3
+
+Version 3.3 "Compact Antigravity" builds on v3.2 with improved light mode contrast and even tighter admin layouts:
+
+1. **Tablet-First for Operators**: Operators primarily use tablets on the shop floor
+2. **PC-First for Admin**: Admin users work on desktop with multi-column layouts
+3. **Mobile Support**: Essential features accessible on mobile devices
+4. **Data Density**: Maximize visible data without sacrificing readability
+5. **Light Mode Contrast**: Improved WCAG AA compliance with darker grays and better border visibility
+
+### Admin Page Layout Standards
+
+Admin pages follow a consistent compact layout pattern:
+
+```tsx
+<div className="p-4 space-y-4">
+  {/* Header: 2xl title, sm description */}
+  <div>
+    <div className="flex justify-between items-center mb-1">
+      <h1 className="text-2xl font-bold bg-gradient-to-r ...">Title</h1>
+      <Button className="cta-button">Action</Button>
+    </div>
+    <p className="text-muted-foreground text-sm">Description</p>
+  </div>
+
+  <hr className="title-divider" />
+
+  {/* Content in glass-card with p-4 */}
+  <div className="glass-card p-4">
+    <DataTable ... />
+  </div>
+</div>
+```
+
+Key spacing values:
+- **Page padding**: `p-4` (16px)
+- **Section gap**: `space-y-4` (16px)
+- **Card padding**: `p-4` (16px)
+- **Header margin**: `mb-1` (4px)
+- **Title size**: `text-2xl` (24px)
+- **Description size**: `text-sm` (14px)
+
+### Breakpoints
+
+```css
+/* Breakpoint Scale */
+--breakpoint-sm: 640px;   /* Mobile landscape */
+--breakpoint-md: 768px;   /* Tablet portrait */
+--breakpoint-lg: 1024px;  /* Tablet landscape / Small laptop */
+--breakpoint-xl: 1280px;  /* Desktop */
+--breakpoint-2xl: 1536px; /* Large desktop */
+```
+
+**Usage:**
+```css
+/* Mobile-first approach */
+.component { padding: 0.5rem; }
+
+@media (min-width: 768px) {
+  .component { padding: 0.75rem; }
+}
+
+@media (min-width: 1024px) {
+  .component { padding: 1rem; }
+}
+```
+
+### Compact Spacing Scale
+
+Reduced spacing for better data density:
+
+| Token | Old Value | New Value | Use Case |
+|-------|-----------|-----------|----------|
+| `--space-xs` | 0.25rem (4px) | 0.125rem (2px) | Minimal gaps |
+| `--space-sm` | 0.5rem (8px) | 0.25rem (4px) | Tight spacing |
+| `--space-base` | 1rem (16px) | 0.5rem (8px) | Default gaps |
+| `--space-md` | 1.5rem (24px) | 0.75rem (12px) | Section spacing |
+| `--space-lg` | 2rem (32px) | 1rem (16px) | Large gaps |
+| `--space-xl` | 3rem (48px) | 1.5rem (24px) | Page sections |
+| `--space-2xl` | 4rem (64px) | 2rem (32px) | Hero sections |
+
+### Compact Border Radius Scale
+
+Tighter radii for a more professional, data-focused appearance:
+
+| Token | Old Value | New Value | Use Case |
+|-------|-----------|-----------|----------|
+| `--radius-sm` | 0.375rem (6px) | 0.25rem (4px) | Small elements |
+| `--radius-base` | 0.5rem (8px) | 0.375rem (6px) | Buttons, inputs |
+| `--radius-md` | 0.75rem (12px) | 0.5rem (8px) | Cards |
+| `--radius-lg` | 1rem (16px) | 0.625rem (10px) | Modals |
+| `--radius-xl` | 1.5rem (24px) | 0.75rem (12px) | Large cards |
+| `--radius-2xl` | 2rem (32px) | 1rem (16px) | Hero sections |
+
+### Collapsible Panels
+
+For responsive layouts, panels should collapse on smaller viewports:
+
+**Left Sidebar (Admin Layout):**
+- Desktop (≥1024px): Full sidebar with labels
+- Tablet (768px-1023px): Icon-only collapsed sidebar
+- Mobile (<768px): Hidden with hamburger menu overlay
+
+**Right Panel (Terminal View):**
+- Desktop (≥1280px): Full detail panel visible
+- Tablet (1024px-1279px): Collapsible drawer from right
+- Mobile (<1024px): Full-screen overlay modal
+
+**CSS Pattern:**
+```css
+/* Collapsible panel utility */
+.collapsible-panel {
+  transition: width 200ms ease, transform 200ms ease;
+}
+
+.collapsible-panel.collapsed {
+  width: 0;
+  transform: translateX(100%);
+  overflow: hidden;
+}
+
+@media (max-width: 1023px) {
+  .collapsible-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 50;
+    width: 100%;
+    max-width: 400px;
+  }
+}
+```
+
+### Compact Component Patterns
+
+**Compact Tenant Info:**
+```tsx
+{/* Collapsed: Just icon + status dot */}
+{/* Expanded: Company name + plan badge on single line */}
+<div className="flex items-center gap-2 p-2">
+  <Building2 className="h-4 w-4 shrink-0" />
+  {!collapsed && (
+    <div className="flex items-center gap-1.5 min-w-0">
+      <span className="text-xs font-medium truncate">{tenant.name}</span>
+      <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+        {tenant.plan}
+      </Badge>
+    </div>
+  )}
+</div>
+```
+
+**Compact MCP Status:**
+```tsx
+{/* Single icon with status color - tooltip for details */}
+<TooltipTrigger>
+  <div className="flex items-center gap-1">
+    <div className={cn(
+      "h-2 w-2 rounded-full",
+      status === "online" && "bg-green-500",
+      status === "offline" && "bg-red-500"
+    )} />
+    {!collapsed && <span className="text-xs">MCP</span>}
+  </div>
+</TooltipTrigger>
+```
+
+**Compact Cards:**
+```css
+.card-compact {
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+}
+
+.card-compact .card-header {
+  padding: 0.5rem;
+  padding-bottom: 0.25rem;
+}
+
+.card-compact .card-content {
+  padding: 0.5rem;
+  padding-top: 0.25rem;
+}
+```
+
+### Table Scroll Behavior
+
+All data tables must have proper scroll behavior:
+
+```css
+/* Table container with scroll */
+.table-container {
+  overflow: auto;
+  max-height: calc(100vh - 200px); /* Account for header + toolbar */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Sticky header */
+.table-container thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: hsl(var(--card));
+}
+
+/* Ensure scrollbar is always visible on desktop */
+@media (min-width: 1024px) {
+  .table-container {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .table-container::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .table-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .table-container::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 4px;
+  }
+}
+```
+
+### Viewport-Specific Layouts
+
+**Admin Dashboard (Grid):**
+```css
+/* Mobile: Stack everything */
+@media (max-width: 767px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+/* Desktop: 4 columns */
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+}
+```
 
 ---
 
@@ -1077,6 +1341,39 @@ Smooth floating animation for gradient orbs.
 - `copy-on-click` and CTA buttons receive focus rings.
 - Use logical DOM order: icon → microcopy → hero → sections → CTA.
 
+### Light Mode Contrast (v3.3)
+
+Light mode uses adjusted neutral grays for better contrast:
+
+| Token | Dark Mode | Light Mode | WCAG |
+|-------|-----------|------------|------|
+| `--neutral-50` (text) | 88% (light) | 10% (dark) | AA ✅ |
+| `--neutral-300` (muted) | 63% | 30% | AA ✅ |
+| `--neutral-600` (borders) | 33% | 70% | AA ✅ |
+
+**Light Mode Overrides in CSS:**
+```css
+:root.light .glass-card {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+:root.light .informational-text {
+  color: #333333;
+  border-color: rgba(0, 102, 204, 0.25);
+}
+
+:root.light .title-divider {
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 102, 204, 0.4) 50%, transparent 100%);
+}
+```
+
+Key light mode improvements:
+- **Primary text**: `#1a1a1a` (10% lightness vs 15% before)
+- **Muted text**: `#4d4d4d` (30% lightness vs 37% before)
+- **Borders**: `#b3b3b3` (70% lightness vs 80% before)
+- **Glass cards**: 90% opacity with stronger border
+
 ---
 
 ## Migration Guide
@@ -1158,9 +1455,236 @@ Smooth floating animation for gradient orbs.
 
 ---
 
+## Manufacturing-Specific Patterns
+
+### Dashboard Stat Cards with Glass Effect
+
+Perfect for displaying key manufacturing metrics like active workers, pending issues, or completed tasks.
+
+```tsx
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Users, Activity, Clock, AlertTriangle } from 'lucide-react';
+
+function StatCard({ title, value, description, icon: Icon, onClick }) {
+  return (
+    <Card
+      className="glass-card cursor-pointer transition-all hover:shadow-xl hover:scale-105 active:scale-100 hover:border-white/20"
+      onClick={onClick}
+    >
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <div className="p-2 rounded-lg bg-primary/10">
+          <Icon className="h-5 w-5 text-primary" />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+          {value}
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">{description}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Usage in Dashboard
+<div className="grid gap-4 md:grid-cols-4">
+  <StatCard
+    title="Active Workers"
+    value={stats.activeWorkers}
+    description="Currently working"
+    icon={Users}
+    onClick={() => navigate("/admin/users")}
+  />
+  <StatCard
+    title="Pending Issues"
+    value={stats.pendingIssues}
+    description="Awaiting review"
+    icon={AlertTriangle}
+    onClick={() => navigate("/admin/issues")}
+  />
+</div>
+```
+
+### Page Headers with Gradient Text
+
+Standard pattern for all admin pages to create visual hierarchy and brand consistency.
+
+```tsx
+<div className="space-y-8">
+  <div>
+    <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+      Jobs Management
+    </h1>
+    <p className="text-muted-foreground text-lg">
+      Manage all jobs, track progress, and monitor deadlines
+    </p>
+  </div>
+
+  <hr className="title-divider" />
+
+  {/* Page content */}
+</div>
+```
+
+### Glass Data Tables
+
+Wrap data tables in glass cards for depth and visual appeal.
+
+```tsx
+<div className="glass-card p-6">
+  <DataTable
+    columns={columns}
+    data={jobs || []}
+    filterableColumns={filterableColumns}
+    searchPlaceholder="Search jobs..."
+    loading={isLoading}
+    pageSize={20}
+  />
+</div>
+```
+
+### Modal Dialogs with Glass Effect
+
+All dialogs should use glass morphism for consistency.
+
+```tsx
+<Dialog open={isOpen} onOpenChange={setIsOpen}>
+  <DialogContent className="glass-card max-w-2xl">
+    <DialogHeader>
+      <DialogTitle className="text-xl flex items-center gap-2">
+        <Activity className="h-5 w-5 text-primary" />
+        Operation Details
+      </DialogTitle>
+    </DialogHeader>
+    <div className="space-y-4">
+      {/* Dialog content */}
+    </div>
+  </DialogContent>
+</Dialog>
+```
+
+### Status Badges with Manufacturing Colors
+
+Use consistent color coding for manufacturing statuses.
+
+```tsx
+// Work status badges
+<Badge className="bg-status-active text-black">Active</Badge>
+<Badge className="bg-status-completed text-white">Completed</Badge>
+<Badge className="bg-status-on-hold text-white">On Hold</Badge>
+<Badge className="bg-status-blocked text-white">Blocked</Badge>
+
+// Cell/Stage badges with glass effect
+<Badge className="bg-primary/20 text-primary border-primary/30">
+  Cutting Cell
+</Badge>
+```
+
+### Empty States with Informational Capsules
+
+Use informational-text class for empty states to maintain visual interest.
+
+```tsx
+{activeWork.length === 0 ? (
+  <div className="text-center py-12">
+    <div className="informational-text max-w-md mx-auto">
+      No active work sessions. Operators can start timing from the work queue.
+    </div>
+  </div>
+) : (
+  // Display data
+)}
+```
+
 ## Component Examples
 
-### Antigravity Browser Control Screen
+### Auth/Onboarding Screen (Full Antigravity Pattern)
+
+```tsx
+import AnimatedBackground from '@/components/AnimatedBackground';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, Factory, Activity, Users, BarChart3, Shield } from 'lucide-react';
+
+export default function Auth() {
+  const [isLogin, setIsLogin] = useState(true);
+
+  return (
+    <>
+      <AnimatedBackground />
+
+      <div className="landing-container">
+        <div className="onboarding-card">
+          {/* Icon */}
+          <div className="icon-container">
+            <Factory className="w-32 h-32 text-primary browser-icon" strokeWidth={1.5} />
+          </div>
+
+          {/* Welcome Text */}
+          <p className="welcome-text">Welcome to</p>
+
+          {/* Title Container with Preview Pill */}
+          <div className="title-container">
+            <h1 className="main-title">Eryxon Flow</h1>
+            <p className="preview-pill">Manufacturing Execution System</p>
+          </div>
+
+          {/* Divider */}
+          <hr className="title-divider" />
+
+          {/* Hero Section Title */}
+          <h2 className="hero-title">
+            {isLogin ? "Sign In" : "Create Account"}
+          </h2>
+
+          {/* Informational Text */}
+          <p className="informational-text">
+            {isLogin
+              ? "Track jobs, manage operations, and monitor your shop floor in real-time."
+              : "Create your account to start managing your manufacturing operations."}
+          </p>
+
+          {/* Auth Form */}
+          <form className="space-y-4 text-left">
+            {/* Form fields */}
+            <Button type="submit" className="w-full cta-button">
+              {isLogin ? "Sign In" : "Sign Up"}
+              <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />
+            </Button>
+          </form>
+
+          {/* Features Section - Show on Signup */}
+          {!isLogin && (
+            <div className="use-cases-section">
+              <h3 className="section-heading">Why Choose Eryxon Flow?</h3>
+              <div className="use-cases-grid">
+                <div className="use-case-card">
+                  <Activity className="use-case-icon icon-blue" />
+                  <span className="use-case-text">Real-time job and operation tracking</span>
+                </div>
+                <div className="use-case-card">
+                  <Users className="use-case-icon icon-green" />
+                  <span className="use-case-text">Operator-friendly touch interface</span>
+                </div>
+                <div className="use-case-card">
+                  <BarChart3 className="use-case-icon icon-yellow" />
+                  <span className="use-case-text">Quick Response Manufacturing metrics</span>
+                </div>
+                <div className="use-case-card">
+                  <Shield className="use-case-icon icon-red" />
+                  <span className="use-case-text">Secure multi-tenant architecture</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+```
+
+### Generic Antigravity Onboarding Template
 
 ```tsx
 import AnimatedBackground from '@/components/AnimatedBackground';
@@ -1275,7 +1799,7 @@ For questions about the design system:
 
 ---
 
-**Document Version:** 3.1 "Antigravity"
-**Last Updated:** November 22, 2025
+**Document Version:** 3.3 "Compact Antigravity"
+**Last Updated:** November 25, 2025
 **Author:** Eryxon Development Team
-**Status:** ✅ Active - Dark Mode Only
+**Status:** ✅ Active - Dark/Light Mode, Compact Responsive

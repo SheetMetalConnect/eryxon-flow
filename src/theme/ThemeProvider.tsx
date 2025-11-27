@@ -1,65 +1,153 @@
-import React, { createContext, useContext, useMemo } from 'react';
-import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import theme from './theme';
-
-// Import Inter font
-import '@fontsource/inter/300.css';
-import '@fontsource/inter/400.css';
-import '@fontsource/inter/500.css';
-import '@fontsource/inter/600.css';
-import '@fontsource/inter/700.css';
+import React, { createContext, useContext, useMemo, useEffect, useState, useCallback } from 'react';
 
 /**
- * ERYXON MES THEME PROVIDER - DARK MODE ONLY
+ * ERYXON MES THEME PROVIDER - Dark/Light/Auto Mode Support
  *
- * This provider now only supports dark mode.
- * The theme toggle functionality is kept for backward compatibility
- * but does nothing since we only have dark mode.
+ * Pure CSS-based theme provider using CSS custom properties
+ *
+ * This provider supports:
+ * - 'dark': Always use dark theme
+ * - 'light': Always use light theme
+ * - 'auto': Follow system/browser preference (default)
+ *
+ * Features:
+ * - Persists user preference to localStorage
+ * - Detects browser color scheme preference
+ * - Syncs HTML class for Tailwind CSS
+ * - No MUI dependency - pure CSS custom properties
  */
 
-type ThemeMode = 'dark';
+export type ThemeMode = 'dark' | 'light' | 'auto';
+export type ResolvedTheme = 'dark' | 'light';
+
+const STORAGE_KEY = 'eryxon-theme-mode';
 
 interface ThemeContextType {
   mode: ThemeMode;
-  toggleTheme: () => void; // Kept for backward compatibility, does nothing
+  resolvedTheme: ResolvedTheme;
+  setTheme: (mode: ThemeMode) => void;
+  toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  mode: 'dark',
+  mode: 'auto',
+  resolvedTheme: 'dark',
+  setTheme: () => {},
   toggleTheme: () => {},
 });
 
 export const useThemeMode = () => useContext(ThemeContext);
 
+// Get system preference
+const getSystemTheme = (): ResolvedTheme => {
+  if (typeof window === 'undefined') return 'dark';
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+};
+
+// Get stored preference
+const getStoredTheme = (): ThemeMode => {
+  if (typeof window === 'undefined') return 'auto';
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored === 'dark' || stored === 'light' || stored === 'auto') {
+    return stored;
+  }
+  return 'auto';
+};
+
+// Resolve the actual theme based on mode
+const resolveTheme = (mode: ThemeMode): ResolvedTheme => {
+  if (mode === 'auto') {
+    return getSystemTheme();
+  }
+  return mode;
+};
+
+// Apply theme to document
+const applyThemeToDocument = (resolvedTheme: ResolvedTheme) => {
+  const root = document.documentElement;
+
+  if (resolvedTheme === 'light') {
+    root.classList.remove('dark');
+    root.classList.add('light');
+  } else {
+    root.classList.remove('light');
+    root.classList.add('dark');
+  }
+};
+
 interface ThemeProviderProps {
   children: React.ReactNode;
+  defaultMode?: ThemeMode;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  // Always use dark mode
-  const mode: ThemeMode = 'dark';
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({
+  children,
+  defaultMode
+}) => {
+  // Initialize with stored preference or default
+  const [mode, setModeState] = useState<ThemeMode>(() => {
+    return defaultMode ?? getStoredTheme();
+  });
 
-  // No-op toggle function for backward compatibility
-  const toggleTheme = () => {
-    // Dark mode only - toggle does nothing
-    console.info('Eryxon MES uses dark mode only');
-  };
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => {
+    return resolveTheme(mode);
+  });
+
+  // Update resolved theme when mode changes
+  useEffect(() => {
+    const resolved = resolveTheme(mode);
+    setResolvedTheme(resolved);
+    applyThemeToDocument(resolved);
+    localStorage.setItem(STORAGE_KEY, mode);
+  }, [mode]);
+
+  // Listen for system theme changes when in auto mode
+  useEffect(() => {
+    if (mode !== 'auto') return;
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      const newTheme = e.matches ? 'light' : 'dark';
+      setResolvedTheme(newTheme);
+      applyThemeToDocument(newTheme);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [mode]);
+
+  // Apply initial theme on mount
+  useEffect(() => {
+    applyThemeToDocument(resolvedTheme);
+  }, []);
+
+  const setTheme = useCallback((newMode: ThemeMode) => {
+    setModeState(newMode);
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setModeState(current => {
+      // Cycle through: auto -> light -> dark -> auto
+      if (current === 'auto') return 'light';
+      if (current === 'light') return 'dark';
+      return 'auto';
+    });
+  }, []);
 
   const contextValue = useMemo(
     () => ({
       mode,
+      resolvedTheme,
+      setTheme,
       toggleTheme,
     }),
-    [mode]
+    [mode, resolvedTheme, setTheme, toggleTheme]
   );
 
   return (
     <ThemeContext.Provider value={contextValue}>
-      <MuiThemeProvider theme={theme}>
-        <CssBaseline />
-        {children}
-      </MuiThemeProvider>
+      {children}
     </ThemeContext.Provider>
   );
 };

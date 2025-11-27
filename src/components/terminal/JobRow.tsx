@@ -1,8 +1,9 @@
 import React from 'react';
 import { TerminalJob } from '@/types/terminal';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Box, AlertTriangle } from 'lucide-react';
+import { FileText, Box, AlertTriangle, Clock, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface JobRowProps {
     job: TerminalJob;
@@ -23,6 +24,8 @@ const getOperationBadgeColor = (opName: string) => {
 };
 
 export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
+    const { t } = useTranslation();
+
     return (
         <tr
             onClick={onClick}
@@ -30,11 +33,33 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
                 "cursor-pointer transition-colors border-b border-border hover:bg-accent/30",
                 isSelected && "bg-accent/50 ring-1 ring-primary",
                 variant === 'process' && "bg-status-active/5",
+                job.isCurrentUserClocked && "bg-primary/10 ring-1 ring-primary/50",
             )}
         >
-            {/* Job Number */}
+            {/* Job Number with clocking indicator */}
             <td className="px-2 py-1.5 text-sm font-medium text-foreground whitespace-nowrap">
-                {job.jobCode}
+                <div className="flex items-center gap-2">
+                    {job.isCurrentUserClocked && (
+                        <Badge
+                            className="bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0 animate-pulse"
+                            title={t('terminal.youAreClockedOn')}
+                        >
+                            <Clock className="w-2.5 h-2.5 mr-0.5" />
+                            {t('terminal.you')}
+                        </Badge>
+                    )}
+                    {job.activeTimeEntryId && !job.isCurrentUserClocked && (
+                        <Badge
+                            variant="outline"
+                            className="text-[10px] px-1.5 py-0 border-muted-foreground/50"
+                            title={job.activeOperatorName}
+                        >
+                            <User className="w-2.5 h-2.5 mr-0.5" />
+                            {job.activeOperatorName?.split(' ')[0] || t('terminal.other')}
+                        </Badge>
+                    )}
+                    {job.jobCode}
+                </div>
             </td>
 
             {/* Part Number */}

@@ -34,6 +34,7 @@ export default function MyIssues() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [loading, setLoading] = useState(true);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
 
   useEffect(() => {
     if (profile?.id) {
@@ -41,6 +42,29 @@ export default function MyIssues() {
       setupRealtime();
     }
   }, [profile?.id]);
+
+  // Load signed URLs for issue images
+  useEffect(() => {
+    const loadImageUrls = async () => {
+      if (!selectedIssue?.image_paths || selectedIssue.image_paths.length === 0) {
+        setImageUrls([]);
+        return;
+      }
+
+      const urls = await Promise.all(
+        selectedIssue.image_paths.map(async (path) => {
+          const { data } = await supabase.storage
+            .from("issues")
+            .createSignedUrl(path, 3600); // 1 hour expiry
+          return data?.signedUrl || "";
+        })
+      );
+
+      setImageUrls(urls.filter(url => url !== ""));
+    };
+
+    loadImageUrls();
+  }, [selectedIssue?.id]);
 
   const loadIssues = async () => {
     if (!profile?.id) return;
@@ -112,14 +136,18 @@ export default function MyIssues() {
 
   return (
     <>
-      <div className="space-y-6">
+      <div className="p-6 space-y-8">
         <div>
-          <h1 className="text-3xl font-bold">{t("myIssues.title")}</h1>
-          <p className="text-muted-foreground">{t("myIssues.description")}</p>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+            {t("myIssues.title")}
+          </h1>
+          <p className="text-muted-foreground text-lg">{t("myIssues.description")}</p>
         </div>
 
+        <hr className="title-divider" />
+
         {issues.length === 0 ? (
-          <Card className="p-12 text-center">
+          <Card className="glass-card p-12 text-center">
             <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <h3 className="text-lg font-medium mb-2">{t("myIssues.noIssues")}</h3>
             <p className="text-sm text-muted-foreground">
@@ -131,7 +159,7 @@ export default function MyIssues() {
             {issues.map((issue) => (
               <Card
                 key={issue.id}
-                className="p-4 cursor-pointer hover:shadow-md transition"
+                className="glass-card p-4 cursor-pointer hover:shadow-xl hover:scale-105 transition-all hover:border-white/20"
                 onClick={() => setSelectedIssue(issue)}
               >
                 <div className="flex items-start justify-between gap-4">
@@ -163,7 +191,7 @@ export default function MyIssues() {
 
       {/* Issue Detail Modal */}
       <Dialog open={!!selectedIssue} onOpenChange={() => setSelectedIssue(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="glass-card max-w-2xl">
           <DialogHeader>
             <DialogTitle>{t("myIssues.issueDetails")}</DialogTitle>
           </DialogHeader>
@@ -212,14 +240,14 @@ export default function MyIssues() {
                 </div>
               )}
 
-              {selectedIssue.image_paths && selectedIssue.image_paths.length > 0 && (
+              {imageUrls.length > 0 && (
                 <div>
                   <div className="text-sm text-muted-foreground mb-2">{t("myIssues.attachedPhotos")}</div>
                   <div className="grid grid-cols-2 gap-2">
-                    {selectedIssue.image_paths.map((path, index) => (
+                    {imageUrls.map((url, index) => (
                       <img
                         key={index}
-                        src={supabase.storage.from("issues").getPublicUrl(path).data.publicUrl}
+                        src={url}
                         alt={`${t("myIssues.issuePhoto")} ${index + 1}`}
                         className="rounded border"
                       />

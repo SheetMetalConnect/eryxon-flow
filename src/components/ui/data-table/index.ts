@@ -4,6 +4,12 @@ export type {
   DataTableFilterableColumn,
   DataTableSearchableColumn,
 } from "./DataTable";
+export { VirtualizedDataTable } from "./VirtualizedDataTable";
+export type {
+  VirtualizedDataTableFilterOption,
+  VirtualizedDataTableFilterableColumn,
+  VirtualizedDataTableSearchableColumn,
+} from "./VirtualizedDataTable";
 export { DataTableColumnHeader } from "./DataTableColumnHeader";
 export { DataTablePagination } from "./DataTablePagination";
 export { DataTableToolbar } from "./DataTableToolbar";

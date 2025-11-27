@@ -17,9 +17,19 @@ import { useTranslation } from "react-i18next";
 import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
 
 const AVAILABLE_EVENTS = [
-  { id: 'operation.started', label: 'Operation Started' },
-  { id: 'operation.completed', label: 'Operation Completed' },
-  { id: 'issue.created', label: 'Issue Created' },
+  // Job lifecycle events
+  { id: 'job.created', label: 'Job Created', description: 'When a new job is created via API' },
+  { id: 'job.started', label: 'Job Started', description: 'When a job changes to in_progress' },
+  { id: 'job.stopped', label: 'Job Stopped', description: 'When a job is put on hold' },
+  { id: 'job.completed', label: 'Job Completed', description: 'When a job is marked complete' },
+  { id: 'job.resumed', label: 'Job Resumed', description: 'When a paused job is resumed' },
+  // Operation lifecycle events
+  { id: 'operation.started', label: 'Operation Started', description: 'When an operator starts an operation' },
+  { id: 'operation.paused', label: 'Operation Paused', description: 'When an operation is paused' },
+  { id: 'operation.resumed', label: 'Operation Resumed', description: 'When a paused operation is resumed' },
+  { id: 'operation.completed', label: 'Operation Completed', description: 'When an operation is marked complete' },
+  // Issue/NCR events
+  { id: 'issue.created', label: 'Issue Created', description: 'When a quality issue or NCR is reported' },
 ];
 
 interface Webhook {
@@ -344,12 +354,17 @@ export default function ConfigWebhooks() {
   ], []);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">{t('webhooks.title')}</h1>
-          <p className="text-muted-foreground">{t('webhooks.description')}</p>
-        </div>
+    <div className="p-6 space-y-8">
+      <div>
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+          {t('webhooks.title')}
+        </h1>
+        <p className="text-muted-foreground text-lg">{t('webhooks.description')}</p>
+      </div>
+
+      <hr className="title-divider" />
+
+      <div className="flex justify-end">
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={fetchWebhookLogs}>
             <RefreshCw className="mr-2 h-4 w-4" />
@@ -357,12 +372,12 @@ export default function ConfigWebhooks() {
           </Button>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="cta-button">
                 <Plus className="mr-2 h-4 w-4" />
                 {t('webhooks.addWebhook')}
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="glass-card">
               <DialogHeader>
                 <DialogTitle>{t('webhooks.createWebhook')}</DialogTitle>
                 <DialogDescription>
@@ -383,24 +398,30 @@ export default function ConfigWebhooks() {
                   </div>
                   <div className="space-y-2">
                     <Label>{t('webhooks.events')}</Label>
-                    {AVAILABLE_EVENTS.map((event) => (
-                      <div key={event.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={event.id}
-                          checked={selectedEvents.includes(event.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setSelectedEvents([...selectedEvents, event.id]);
-                            } else {
-                              setSelectedEvents(selectedEvents.filter(e => e !== event.id));
-                            }
-                          }}
-                        />
-                        <Label htmlFor={event.id} className="cursor-pointer">
-                          {event.label}
-                        </Label>
-                      </div>
-                    ))}
+                    <div className="border rounded-lg p-3 space-y-3 max-h-72 overflow-y-auto">
+                      {AVAILABLE_EVENTS.map((event) => (
+                        <div key={event.id} className="flex items-start space-x-2">
+                          <Checkbox
+                            id={event.id}
+                            checked={selectedEvents.includes(event.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedEvents([...selectedEvents, event.id]);
+                              } else {
+                                setSelectedEvents(selectedEvents.filter(e => e !== event.id));
+                              }
+                            }}
+                            className="mt-0.5"
+                          />
+                          <div>
+                            <Label htmlFor={event.id} className="cursor-pointer font-medium">
+                              {event.label}
+                            </Label>
+                            <p className="text-xs text-muted-foreground">{event.description}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                   <Button onClick={createWebhook} className="w-full">
                     {t('webhooks.createWebhook')}
@@ -408,10 +429,10 @@ export default function ConfigWebhooks() {
                 </div>
               </DialogContent>
             </Dialog>
-          </div>
         </div>
+      </div>
 
-        <Tabs defaultValue="webhooks" className="w-full">
+      <Tabs defaultValue="webhooks" className="w-full">
           <TabsList>
             <TabsTrigger value="webhooks">{t('webhooks.webhooks')}</TabsTrigger>
             <TabsTrigger value="logs">{t('webhooks.deliveryLogs')}</TabsTrigger>
@@ -419,7 +440,7 @@ export default function ConfigWebhooks() {
           </TabsList>
 
           <TabsContent value="webhooks" className="space-y-6">
-            <Card>
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle>{t('webhooks.configuredWebhooks')}</CardTitle>
                 <CardDescription>
@@ -439,7 +460,7 @@ export default function ConfigWebhooks() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle>Webhook Payload Format</CardTitle>
                 <CardDescription>Example of webhook POST request</CardDescription>
@@ -468,7 +489,7 @@ export default function ConfigWebhooks() {
           </TabsContent>
 
           <TabsContent value="logs" className="space-y-4">
-            <Card>
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle>{t('webhooks.webhookDeliveryLogs')}</CardTitle>
                 <CardDescription>{t('webhooks.recentAttempts')}</CardDescription>
@@ -487,7 +508,7 @@ export default function ConfigWebhooks() {
           </TabsContent>
 
           <TabsContent value="docs" className="space-y-4">
-            <Card>
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle>Webhook Documentation</CardTitle>
                 <CardDescription>How to set up and verify webhooks</CardDescription>
@@ -495,12 +516,33 @@ export default function ConfigWebhooks() {
               <CardContent className="space-y-6">
                 <div>
                   <h3 className="font-semibold mb-2">Available Events</h3>
-                  <ul className="space-y-2 text-sm">
-                    <li><code className="bg-muted px-2 py-1 rounded">job.created</code> - Triggered when a job is created via API</li>
-                    <li><code className="bg-muted px-2 py-1 rounded">operation.started</code> - Triggered when an operator starts an operation</li>
-                    <li><code className="bg-muted px-2 py-1 rounded">operation.completed</code> - Triggered when an operation is marked complete</li>
-                    <li><code className="bg-muted px-2 py-1 rounded">issue.created</code> - Triggered when a quality issue is reported</li>
-                  </ul>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-2">Job Lifecycle</h4>
+                      <ul className="space-y-2 text-sm">
+                        <li><code className="bg-muted px-2 py-1 rounded">job.created</code> - When a new job is created via API</li>
+                        <li><code className="bg-muted px-2 py-1 rounded">job.started</code> - When a job changes to in_progress</li>
+                        <li><code className="bg-muted px-2 py-1 rounded">job.stopped</code> - When a job is put on hold</li>
+                        <li><code className="bg-muted px-2 py-1 rounded">job.completed</code> - When a job is marked complete</li>
+                        <li><code className="bg-muted px-2 py-1 rounded">job.resumed</code> - When a paused job is resumed</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-2">Operation Lifecycle</h4>
+                      <ul className="space-y-2 text-sm">
+                        <li><code className="bg-muted px-2 py-1 rounded">operation.started</code> - When an operator starts an operation</li>
+                        <li><code className="bg-muted px-2 py-1 rounded">operation.paused</code> - When an operation is paused</li>
+                        <li><code className="bg-muted px-2 py-1 rounded">operation.resumed</code> - When a paused operation is resumed</li>
+                        <li><code className="bg-muted px-2 py-1 rounded">operation.completed</code> - When an operation is marked complete</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-2">Quality & Issues</h4>
+                      <ul className="space-y-2 text-sm">
+                        <li><code className="bg-muted px-2 py-1 rounded">issue.created</code> - When a quality issue or NCR is reported</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
 
                 <div>

@@ -281,7 +281,7 @@ Comprehensive documentation is available in the `/docs` folder:
 - **[EDGE_FUNCTIONS_SETUP.md](docs/EDGE_FUNCTIONS_SETUP.md)** - Edge Functions guide
 - **[INTEGRATIONS_MARKETPLACE.md](docs/INTEGRATIONS_MARKETPLACE.md)** - Integration platform
 - **[RESOURCE_SEEDING_INSTRUCTIONS.md](docs/RESOURCE_SEEDING_INSTRUCTIONS.md)** - Seed data guide
-- **[CLAUDE.md](CLAUDE.md)** - AI assistant guide for this codebase
+- **[CLAUDE.md](docs/CLAUDE.md)** - AI assistant guide for this codebase
 
 ## 🛠️ Development
 

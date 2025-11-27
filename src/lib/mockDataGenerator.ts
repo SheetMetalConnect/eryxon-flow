@@ -331,7 +331,7 @@ export async function generateMockData(
         {
           tenant_id: tenantId,
           job_number: "WO-2025-1156",
-          customer: "ASML Supplier Services",
+          customer: "HighTech Precision B.V.",
           notes:
             "Precisie framewerk voor semiconductor equipment - Tolerantie ±0.05mm",
           status: "in_progress" as const,
@@ -340,8 +340,40 @@ export async function generateMockData(
           metadata: {
             orderValue: "€67.800",
             contactPerson: "Dr. K. Vermeer",
-            deliveryAddress: "Veldhoven ASML Campus",
+            deliveryAddress: "Veldhoven Tech Campus",
             qualityLevel: "High-precision",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_number: "WO-2025-1178",
+          customer: "Luchtvaart Componenten Nederland",
+          notes: "Luchtvaart beugels - AS9100 certificering vereist",
+          status: "in_progress" as const,
+          due_date: new Date("2026-02-15T00:00:00Z").toISOString(),
+          created_at: new Date("2025-11-20T11:00:00Z").toISOString(),
+          metadata: {
+            orderValue: "€42.500",
+            contactPerson: "Ir. M. de Vries",
+            deliveryAddress: "Papendrecht Industrieterrein",
+            qualityLevel: "Aerospace",
+            certification: "AS9100D",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_number: "WO-2025-1195",
+          customer: "MedTech Solutions B.V.",
+          notes: "Medische apparatuur behuizing - EN ISO 13485",
+          status: "not_started" as const,
+          due_date: new Date("2026-02-28T00:00:00Z").toISOString(),
+          created_at: new Date("2025-11-22T09:30:00Z").toISOString(),
+          metadata: {
+            orderValue: "€28.900",
+            contactPerson: "Dr. L. Bakker",
+            deliveryAddress: "Best Medisch Park",
+            qualityLevel: "Medical",
+            certification: "EN ISO 13485",
           },
         },
       ];
@@ -358,7 +390,7 @@ export async function generateMockData(
         jobIdMap[jobs[idx].job_number] = j.id;
       });
 
-      console.log("✓ Created 4 realistic Dutch customer jobs");
+      console.log("✓ Created 6 realistic Dutch customer jobs");
     }
 
     // Step 6: Create parts with assembly relationships
@@ -420,7 +452,7 @@ export async function generateMockData(
         {
           tenant_id: tenantId,
           job_id: jobIdMap["WO-2025-1156"],
-          part_number: "ASML-FRAME-MAIN",
+          part_number: "HTP-FRAME-MAIN",
           material: "RVS 304",
           notes: "Precisie framewerk - CMM inspectie verplicht",
           quantity: 4,
@@ -433,6 +465,42 @@ export async function generateMockData(
             material_spec: "EN 1.4301",
             inspection: "CMM + Material cert required",
             flatness: "< 0.02mm",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap["WO-2025-1178"],
+          part_number: "FK-BRACKET-A1",
+          material: "Aluminium 7075-T6",
+          notes: "Luchtvaart beugel - AS9100 traceability",
+          quantity: 16,
+          status: "in_progress" as const,
+          parent_part_id: null,
+          metadata: {
+            dimensions: "180x120x8mm",
+            weight: "0.45kg",
+            tolerance: "±0.1mm",
+            material_spec: "AMS-QQ-A-250/12",
+            certification: "AS9100D",
+            traceability: "Full lot traceability required",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap["WO-2025-1195"],
+          part_number: "PH-MED-HOUSING",
+          material: "RVS 316L",
+          notes: "Medische behuizing - biocompatibel",
+          quantity: 6,
+          status: "not_started" as const,
+          parent_part_id: null,
+          metadata: {
+            dimensions: "350x280x120mm",
+            weight: "4.2kg",
+            material_spec: "EN 1.4404",
+            certification: "EN ISO 13485",
+            surface_finish: "Ra < 0.8μm",
+            biocompatible: true,
           },
         },
       ];
@@ -507,17 +575,49 @@ export async function generateMockData(
         {
           tenant_id: tenantId,
           job_id: jobIdMap["WO-2025-1156"],
-          part_number: "ASML-MOUNT-PLT",
+          part_number: "HTP-MOUNT-PLT",
           material: "RVS 304",
-          notes: "Montageplaat precisie - Child of ASML-FRAME-MAIN",
+          notes: "Montageplaat precisie - Child of HTP-FRAME-MAIN",
           quantity: 8,
           status: "not_started" as const,
-          parent_part_id: partIdLookup["ASML-FRAME-MAIN"],
+          parent_part_id: partIdLookup["HTP-FRAME-MAIN"],
           metadata: {
             dimensions: "300x200x15mm",
             weight: "6.8kg",
             tolerance: "±0.05mm",
             material_spec: "EN 1.4301",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap["WO-2025-1178"],
+          part_number: "FK-BRACKET-B1",
+          material: "Aluminium 7075-T6",
+          notes: "Verstevigingsbeugel - Child of FK-BRACKET-A1",
+          quantity: 32,
+          status: "not_started" as const,
+          parent_part_id: partIdLookup["FK-BRACKET-A1"],
+          metadata: {
+            dimensions: "80x60x4mm",
+            weight: "0.12kg",
+            tolerance: "±0.1mm",
+            material_spec: "AMS-QQ-A-250/12",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap["WO-2025-1195"],
+          part_number: "PH-MED-COVER",
+          material: "RVS 316L",
+          notes: "Deksel medische behuizing - Child of PH-MED-HOUSING",
+          quantity: 6,
+          status: "not_started" as const,
+          parent_part_id: partIdLookup["PH-MED-HOUSING"],
+          metadata: {
+            dimensions: "360x290x3mm",
+            weight: "2.1kg",
+            material_spec: "EN 1.4404",
+            surface_finish: "Ra < 0.8μm",
           },
         },
       ];
@@ -962,14 +1062,14 @@ export async function generateMockData(
         );
       }
 
-      // WO-2025-1156 - ASML-FRAME-MAIN (high precision)
+      // WO-2025-1156 - HTP-FRAME-MAIN (high precision)
       const asmlFrame = partData.find(
-        (p) => p.part_number === "ASML-FRAME-MAIN",
+        (p) => p.part_number === "HTP-FRAME-MAIN",
       );
       if (asmlFrame) {
         createOperationRouting(
           asmlFrame.id,
-          "ASML-FRAME-MAIN",
+          "HTP-FRAME-MAIN",
           "WO-2025-1156",
           "RVS 304",
           [
@@ -1021,7 +1121,7 @@ export async function generateMockData(
               status: "not_started",
               metadata: {
                 cleanroom_assembly: true,
-                torque_spec: "Per ASML drawing",
+                torque_spec: "Per HTP drawing",
               },
             },
             {
@@ -1033,7 +1133,7 @@ export async function generateMockData(
               estimated_hours: 1.5,
               status: "not_started",
               metadata: {
-                cmm_program: "ASML-FRAME-MAIN-CMM.prg",
+                cmm_program: "HTP-FRAME-MAIN-CMM.prg",
                 material_cert: "EN 10204 3.1 required",
                 flatness_tolerance: "<0.02mm",
                 inspection_report: "Full dimensional report + weld inspection",
@@ -1043,14 +1143,14 @@ export async function generateMockData(
         );
       }
 
-      // WO-2025-1156 - ASML-MOUNT-PLT
+      // WO-2025-1156 - HTP-MOUNT-PLT
       const asmlMount = partData.find(
-        (p) => p.part_number === "ASML-MOUNT-PLT",
+        (p) => p.part_number === "HTP-MOUNT-PLT",
       );
       if (asmlMount) {
         createOperationRouting(
           asmlMount.id,
-          "ASML-MOUNT-PLT",
+          "HTP-MOUNT-PLT",
           "WO-2025-1156",
           "RVS 304",
           [
@@ -1083,6 +1183,241 @@ export async function generateMockData(
         );
       }
 
+      // WO-2025-1178 - FK-BRACKET-A1 (Aerospace bracket - in progress)
+      const fkBracketA1 = partData.find(
+        (p) => p.part_number === "FK-BRACKET-A1",
+      );
+      if (fkBracketA1) {
+        createOperationRouting(
+          fkBracketA1.id,
+          "FK-BRACKET-A1",
+          "WO-2025-1178",
+          "Aluminium 7075-T6",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "CNC frezen contouren",
+              description: "CNC frezen uit 7075-T6 plaat - AS9100 traceability",
+              estimated_hours: 1.5,
+              status: "completed",
+              metadata: {
+                material_cert: "AMS-QQ-A-250/12",
+                lot_traceability: true,
+              },
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Kanten aerospace",
+              description: "Precisie kanten met special tooling voor 7075",
+              estimated_hours: 1.0,
+              status: "in_progress",
+              metadata: {
+                tooling: "Aerospace-spec V-die",
+                spring_back_compensation: true,
+              },
+            },
+            {
+              cell: "Afwerking",
+              seq: 30,
+              operation_name: "Anodiseren Type II",
+              description: "Chromaatzuur anodiseren per MIL-A-8625",
+              estimated_hours: 0.8,
+              status: "not_started",
+              metadata: {
+                spec: "MIL-A-8625 Type II",
+                color: "Clear",
+              },
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 40,
+              operation_name: "FAI inspectie",
+              description: "First Article Inspection + AS9102 documentatie",
+              estimated_hours: 1.2,
+              status: "not_started",
+              metadata: {
+                inspection_type: "FAI",
+                documentation: "AS9102 FAIR",
+                cert_required: true,
+              },
+            },
+          ],
+        );
+      }
+
+      // WO-2025-1178 - FK-BRACKET-B1
+      const fkBracketB1 = partData.find(
+        (p) => p.part_number === "FK-BRACKET-B1",
+      );
+      if (fkBracketB1) {
+        createOperationRouting(
+          fkBracketB1.id,
+          "FK-BRACKET-B1",
+          "WO-2025-1178",
+          "Aluminium 7075-T6",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "Lasersnijden",
+              description: "Snijden verstevigingsbeugels",
+              estimated_hours: 0.6,
+              status: "not_started",
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Kanten",
+              description: "Kanten montageranden",
+              estimated_hours: 0.4,
+              status: "not_started",
+            },
+            {
+              cell: "Afwerking",
+              seq: 30,
+              operation_name: "Anodiseren",
+              description: "Anodiseren matching main bracket",
+              estimated_hours: 0.5,
+              status: "not_started",
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 40,
+              operation_name: "Inspectie",
+              description: "Dimensie controle + traceability",
+              estimated_hours: 0.3,
+              status: "not_started",
+            },
+          ],
+        );
+      }
+
+      // WO-2025-1195 - PH-MED-HOUSING (Medical - not started)
+      const phMedHousing = partData.find(
+        (p) => p.part_number === "PH-MED-HOUSING",
+      );
+      if (phMedHousing) {
+        createOperationRouting(
+          phMedHousing.id,
+          "PH-MED-HOUSING",
+          "WO-2025-1195",
+          "RVS 316L",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "Lasersnijden medisch",
+              description: "Fiber laser snijden 316L - cleanroom prep",
+              estimated_hours: 1.2,
+              status: "not_started",
+              metadata: {
+                cleanroom_prep: true,
+                nitrogen_cutting: true,
+              },
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Precisie kanten",
+              description: "Kanten met medische tooling",
+              estimated_hours: 1.0,
+              status: "not_started",
+              metadata: {
+                tooling: "Medical-grade",
+                contamination_control: true,
+              },
+            },
+            {
+              cell: "Lassen",
+              seq: 30,
+              operation_name: "TIG lassen medisch",
+              description: "TIG lassen - medical grade - purge welding",
+              estimated_hours: 2.0,
+              status: "not_started",
+              metadata: {
+                weld_type: "TIG orbital",
+                purge_welding: true,
+                argon_backing: true,
+              },
+            },
+            {
+              cell: "Afwerking",
+              seq: 40,
+              operation_name: "Elektropolish medisch",
+              description: "Elektrochemisch polijsten Ra < 0.8μm",
+              estimated_hours: 0.8,
+              status: "not_started",
+              metadata: {
+                target_roughness: "Ra < 0.8μm",
+                passivation: "Citric acid",
+              },
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 50,
+              operation_name: "Medische inspectie",
+              description: "Full inspection + EN ISO 13485 documentatie",
+              estimated_hours: 1.5,
+              status: "not_started",
+              metadata: {
+                standard: "EN ISO 13485",
+                biocompatibility_docs: true,
+                material_certs: "EN 10204 3.1",
+              },
+            },
+          ],
+        );
+      }
+
+      // WO-2025-1195 - PH-MED-COVER
+      const phMedCover = partData.find(
+        (p) => p.part_number === "PH-MED-COVER",
+      );
+      if (phMedCover) {
+        createOperationRouting(
+          phMedCover.id,
+          "PH-MED-COVER",
+          "WO-2025-1195",
+          "RVS 316L",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "Lasersnijden",
+              description: "Snijden deksel medische behuizing",
+              estimated_hours: 0.6,
+              status: "not_started",
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Kanten",
+              description: "Kanten randen voor sluiting",
+              estimated_hours: 0.5,
+              status: "not_started",
+            },
+            {
+              cell: "Afwerking",
+              seq: 30,
+              operation_name: "Elektropolish",
+              description: "Elektrochemisch polijsten",
+              estimated_hours: 0.5,
+              status: "not_started",
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 40,
+              operation_name: "Inspectie",
+              description: "Dimensie + oppervlakte controle",
+              estimated_hours: 0.4,
+              status: "not_started",
+            },
+          ],
+        );
+      }
+
       console.log(`🔧 Prepared ${operations.length} operations to insert...`);
       
       if (operations.length === 0) {
@@ -1107,6 +1442,161 @@ export async function generateMockData(
         );
       }
     }
+
+    // Step 7.5: Create a few example substeps (only for 2-3 in_progress operations)
+    // Keep it minimal - users can add more via templates or manually
+    if (operationData.length > 0) {
+      const inProgressOps = operationData.filter(op => op.status === "in_progress").slice(0, 2);
+
+      if (inProgressOps.length > 0) {
+        const substeps: Array<{
+          tenant_id: string;
+          operation_id: string;
+          name: string;
+          sequence: number;
+          status: string;
+          notes?: string;
+        }> = [];
+
+        // Simple substeps - just a few per operation to demonstrate the feature
+        for (const op of inProgressOps) {
+          const simpleSteps = [
+            { name: "Review drawing and specs", status: "completed" },
+            { name: "Prepare materials", status: "completed" },
+            { name: "Execute operation", status: "in_progress" },
+            { name: "Quality check", status: "not_started" },
+            { name: "Sign off", status: "not_started" },
+          ];
+
+          simpleSteps.forEach((step, idx) => {
+            substeps.push({
+              tenant_id: tenantId,
+              operation_id: op.id,
+              name: step.name,
+              sequence: (idx + 1) * 10,
+              status: step.status,
+            });
+          });
+        }
+
+        if (substeps.length > 0) {
+          const { error: substepsError } = await supabase
+            .from("substeps")
+            .insert(substeps);
+
+          if (substepsError) {
+            console.warn("Substeps creation warning:", substepsError);
+          } else {
+            console.log(`✓ Created ${substeps.length} example substeps for ${inProgressOps.length} operations`);
+          }
+        }
+      }
+    }
+
+    // Step 7.6: Create substep templates for reuse
+    const templateDefinitions = [
+      {
+        name: "Cutting",
+        description: "Standard cutting operation checklist",
+        operation_type: "cutting",
+        items: [
+          { name: "Review cutting plan", notes: "Check dimensions" },
+          { name: "Prepare material", notes: "Verify quantity and grade" },
+          { name: "First article check", notes: "Measure first piece" },
+          { name: "Execute cutting", notes: null },
+          { name: "Deburr and inspect", notes: "Remove sharp edges" },
+        ],
+      },
+      {
+        name: "Bending",
+        description: "Press brake bending checklist",
+        operation_type: "bending",
+        items: [
+          { name: "Select tooling", notes: "Check dies and punches" },
+          { name: "Set parameters", notes: "Tonnage, back gauge, angle" },
+          { name: "Test bend", notes: "Verify on scrap material" },
+          { name: "Execute bending", notes: null },
+          { name: "Inspect angles", notes: "Use protractor" },
+        ],
+      },
+      {
+        name: "Welding",
+        description: "Welding operation checklist",
+        operation_type: "welding",
+        items: [
+          { name: "Check equipment", notes: "Gas, wire, settings" },
+          { name: "Prepare joint", notes: "Clean and fit-up" },
+          { name: "Tack weld", notes: "Verify alignment" },
+          { name: "Execute welding", notes: null },
+          { name: "Visual inspection", notes: "Check for defects" },
+        ],
+      },
+      {
+        name: "Assembly",
+        description: "Assembly operation checklist",
+        operation_type: "assembly",
+        items: [
+          { name: "Verify components", notes: "Check all parts present" },
+          { name: "Review BOM", notes: "Confirm hardware" },
+          { name: "Fit and align", notes: null },
+          { name: "Fasten per spec", notes: "Use torque wrench if required" },
+          { name: "Function test", notes: null },
+        ],
+      },
+      {
+        name: "Quality Check",
+        description: "Final inspection checklist",
+        operation_type: "inspection",
+        items: [
+          { name: "Gather documents", notes: "Drawings, specs" },
+          { name: "Visual inspection", notes: null },
+          { name: "Measure dimensions", notes: "Critical features" },
+          { name: "Document results", notes: null },
+          { name: "Sign off", notes: null },
+        ],
+      },
+    ];
+
+    for (const templateDef of templateDefinitions) {
+      try {
+        // Create template
+        const { data: template, error: templateError } = await supabase
+          .from("substep_templates")
+          .insert({
+            tenant_id: tenantId,
+            name: templateDef.name,
+            description: templateDef.description,
+            operation_type: templateDef.operation_type,
+            is_global: false,
+          })
+          .select("id")
+          .single();
+
+        if (templateError) {
+          console.warn(`Template "${templateDef.name}" warning:`, templateError);
+          continue;
+        }
+
+        // Create template items
+        const items = templateDef.items.map((item, idx) => ({
+          template_id: template.id,
+          name: item.name,
+          notes: item.notes,
+          sequence: (idx + 1) * 10,
+        }));
+
+        const { error: itemsError } = await supabase
+          .from("substep_template_items")
+          .insert(items);
+
+        if (itemsError) {
+          console.warn(`Template items for "${templateDef.name}" warning:`, itemsError);
+        }
+      } catch (err) {
+        console.warn(`Template "${templateDef.name}" error:`, err);
+      }
+    }
+    console.log(`✓ Created ${templateDefinitions.length} substep templates`);
 
     // Step 8: Link resources to operations
     if (
@@ -1447,9 +1937,13 @@ export async function generateMockData(
  * Clears all mock data for a tenant
  * CRITICAL: All deletions MUST be scoped to tenant_id to prevent cross-tenant contamination
  * Useful for resetting during onboarding
+ *
+ * @param tenantId - The UUID of the tenant to clear data for
+ * @param useDatabaseFunction - If true, uses the database function clear_demo_data() (recommended)
  */
 export async function clearMockData(
   tenantId: string,
+  useDatabaseFunction: boolean = true,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     if (!tenantId) {
@@ -1461,28 +1955,91 @@ export async function clearMockData(
     // CRITICAL: Delete in reverse order of dependencies
     // All deletions MUST include tenant_id filter to prevent cross-tenant contamination
 
-    // 1. Delete issues (has tenant_id)
+    // 1. Delete notifications (has tenant_id)
+    const { error: notifErr } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (notifErr) console.warn("Notifications deletion warning:", notifErr);
+
+    // 2. Delete issues (has tenant_id)
     const { error: issuesErr } = await supabase
       .from("issues")
       .delete()
       .eq("tenant_id", tenantId);
     if (issuesErr) console.warn("Issues deletion warning:", issuesErr);
 
-    // 2. Delete operation_quantities (has tenant_id)
+    // 3. Delete operation_quantities (has tenant_id)
     const { error: qtyErr } = await supabase
       .from("operation_quantities")
       .delete()
       .eq("tenant_id", tenantId);
     if (qtyErr) console.warn("Quantity records deletion warning:", qtyErr);
 
-    // 3. Delete time_entries (has tenant_id)
+    // 4. Delete time_entry_pauses (NO tenant_id - must filter through time_entries)
+    const { data: tenantTimeEntries, error: teFetchErr } = await supabase
+      .from("time_entries")
+      .select("id")
+      .eq("tenant_id", tenantId);
+
+    if (teFetchErr) {
+      console.warn("Time entries fetch warning:", teFetchErr);
+    } else if (tenantTimeEntries && tenantTimeEntries.length > 0) {
+      const timeEntryIds = tenantTimeEntries.map((te) => te.id);
+      const { error: tepErr } = await supabase
+        .from("time_entry_pauses")
+        .delete()
+        .in("time_entry_id", timeEntryIds);
+      if (tepErr) console.warn("Time entry pauses deletion warning:", tepErr);
+    }
+
+    // 5. Delete time_entries (has tenant_id)
     const { error: timeErr } = await supabase
       .from("time_entries")
       .delete()
       .eq("tenant_id", tenantId);
     if (timeErr) console.warn("Time entries deletion warning:", timeErr);
 
-    // 4. Delete operation_resources (NO tenant_id - must filter through operations)
+    // 6. Delete assignments (has tenant_id)
+    const { error: assignErr } = await supabase
+      .from("assignments")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (assignErr) console.warn("Assignments deletion warning:", assignErr);
+
+    // 7. Delete substeps (has tenant_id)
+    const { error: substepsErr } = await supabase
+      .from("substeps")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (substepsErr) console.warn("Substeps deletion warning:", substepsErr);
+
+    // 7.5. Delete substep template items (must delete before templates - FK constraint)
+    const { data: tenantTemplates, error: templateFetchErr } = await supabase
+      .from("substep_templates")
+      .select("id")
+      .eq("tenant_id", tenantId);
+
+    if (templateFetchErr) {
+      console.warn("Template fetch warning:", templateFetchErr);
+    } else if (tenantTemplates && tenantTemplates.length > 0) {
+      const templateIds = tenantTemplates.map((t) => t.id);
+      const { error: templateItemsErr } = await supabase
+        .from("substep_template_items")
+        .delete()
+        .in("template_id", templateIds);
+      if (templateItemsErr)
+        console.warn("Template items deletion warning:", templateItemsErr);
+    }
+
+    // 7.6. Delete substep templates (has tenant_id)
+    const { error: templatesErr } = await supabase
+      .from("substep_templates")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (templatesErr) console.warn("Templates deletion warning:", templatesErr);
+
+    // 8. Delete operation_resources (NO tenant_id - must filter through operations)
     // CRITICAL: We must get operation IDs first to ensure tenant isolation
     const { data: tenantOperations, error: opFetchErr } = await supabase
       .from("operations")
@@ -1501,62 +2058,68 @@ export async function clearMockData(
         console.warn("Operation resources deletion warning:", opResErr);
     }
 
-    // 5. Delete operations (has tenant_id)
+    // 9. Delete operations (has tenant_id)
     const { error: opsErr } = await supabase
       .from("operations")
       .delete()
       .eq("tenant_id", tenantId);
     if (opsErr) console.warn("Operations deletion warning:", opsErr);
 
-    // 6. Delete parts (has tenant_id)
+    // 10. Delete parts (has tenant_id)
     const { error: partsErr } = await supabase
       .from("parts")
       .delete()
       .eq("tenant_id", tenantId);
     if (partsErr) console.warn("Parts deletion warning:", partsErr);
 
-    // 7. Delete jobs (has tenant_id)
+    // 11. Delete jobs (has tenant_id)
     const { error: jobsErr } = await supabase
       .from("jobs")
       .delete()
       .eq("tenant_id", tenantId);
     if (jobsErr) console.warn("Jobs deletion warning:", jobsErr);
 
-    // 8. Delete cells (has tenant_id)
+    // 12. Delete cells (has tenant_id)
     const { error: cellsErr } = await supabase
       .from("cells")
       .delete()
       .eq("tenant_id", tenantId);
     if (cellsErr) console.warn("Cells deletion warning:", cellsErr);
 
-    // 9. Delete resources (has tenant_id)
+    // 13. Delete resources (has tenant_id)
     const { error: resourcesErr } = await supabase
       .from("resources")
       .delete()
       .eq("tenant_id", tenantId);
     if (resourcesErr) console.warn("Resources deletion warning:", resourcesErr);
 
-    // 10. Delete scrap_reasons (has tenant_id)
+    // 14. Delete materials (has tenant_id, if any exist)
+    const { error: materialsErr } = await supabase
+      .from("materials")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (materialsErr) console.warn("Materials deletion warning:", materialsErr);
+
+    // 15. Delete scrap_reasons (has tenant_id)
     const { error: scrapErr } = await supabase
       .from("scrap_reasons")
       .delete()
       .eq("tenant_id", tenantId);
     if (scrapErr) console.warn("Scrap reasons deletion warning:", scrapErr);
 
-    // 11. Delete demo operators (has tenant_id + email filter for safety)
-    // CRITICAL: Double filter by both tenant_id AND email to ensure only demo operators are deleted
+    // 16. Delete demo operators (has tenant_id + email filter for safety)
+    // CRITICAL: Use correct email addresses that match seed_demo_operators function
+    // The SQL function creates: demo.operator1@example.com, demo.operator2@example.com, etc.
     const { error: profilesErr } = await supabase
       .from("profiles")
       .delete()
       .eq("tenant_id", tenantId)
       .eq("role", "operator")
       .in("email", [
-        "jan.devries@sheetmetalconnect.nl",
-        "emma.bakker@sheetmetalconnect.nl",
-        "luuk.vandenberg@sheetmetalconnect.nl",
-        "sophie.jansen@sheetmetalconnect.nl",
-        "daan.mulder@sheetmetalconnect.nl",
-        "lisa.visser@sheetmetalconnect.nl",
+        "demo.operator1@example.com",
+        "demo.operator2@example.com",
+        "demo.operator3@example.com",
+        "demo.operator4@example.com",
       ]);
     if (profilesErr)
       console.warn("Demo operators deletion warning:", profilesErr);

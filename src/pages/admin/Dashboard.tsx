@@ -13,9 +13,12 @@ import {
   Loader2,
   AlertTriangle,
   LucideIcon,
+  ArrowRight,
   Trash2,
+  Square,
+  User,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { seedDemoData } from "@/lib/seed";
@@ -30,6 +33,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { adminStopTimeTracking, stopAllActiveTimeEntries } from "@/lib/database";
 
 interface ActiveWork {
   id: string;
@@ -70,16 +82,20 @@ function StatCard({
 }: StatCardProps) {
   return (
     <Card
-      className="cursor-pointer transition-all hover:shadow-lg hover:scale-105 active:scale-100"
+      className="glass-card cursor-pointer transition-all hover:shadow-xl hover:scale-105 active:scale-100 hover:border-white/20"
       onClick={onClick}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <div className="p-2 rounded-lg bg-primary/10">
+          <Icon className="h-5 w-5 text-primary" />
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <div className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+          {value}
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">{description}</p>
       </CardContent>
     </Card>
   );
@@ -104,6 +120,12 @@ export default function Dashboard() {
   const [needsSetup, setNeedsSetup] = useState(false);
   const [seeding, setSeeding] = useState(false);
   const [wiping, setWiping] = useState(false);
+  const [selectedWork, setSelectedWork] = useState<ActiveWork | null>(null);
+  const [stopDialogOpen, setStopDialogOpen] = useState(false);
+  const [stopping, setStopping] = useState(false);
+  const [stoppingAll, setStoppingAll] = useState(false);
+  const [isPastClosingTime, setIsPastClosingTime] = useState(false);
+  const [factoryClosingTime, setFactoryClosingTime] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -212,6 +234,43 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
+
+  // Check factory hours and set warning if past closing time
+  const checkFactoryHours = async () => {
+    if (!profile?.tenant_id) return;
+
+    try {
+      const { data: tenant } = await supabase
+        .from("tenants")
+        .select("factory_closing_time, auto_stop_tracking")
+        .eq("id", profile.tenant_id)
+        .single();
+
+      if (tenant?.factory_closing_time) {
+        setFactoryClosingTime(tenant.factory_closing_time.substring(0, 5));
+
+        // Parse closing time and compare with current time
+        const now = new Date();
+        const [hours, minutes] = tenant.factory_closing_time.split(":").map(Number);
+        const closingTime = new Date();
+        closingTime.setHours(hours, minutes, 0, 0);
+
+        setIsPastClosingTime(now > closingTime);
+      }
+    } catch (error) {
+      console.error("Error checking factory hours:", error);
+    }
+  };
+
+  // Check factory hours on load and every minute
+  useEffect(() => {
+    if (!profile?.tenant_id) return;
+
+    checkFactoryHours();
+    const interval = setInterval(checkFactoryHours, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, [profile?.tenant_id]);
 
   const setupRealtimeSubscription = () => {
     if (!profile?.tenant_id) return;
@@ -376,12 +435,68 @@ export default function Dashboard() {
     }
   };
 
+  const handleRowClick = (work: ActiveWork) => {
+    setSelectedWork(work);
+    setStopDialogOpen(true);
+  };
+
+  const handleStopClocking = async () => {
+    if (!selectedWork) return;
+
+    setStopping(true);
+    try {
+      await adminStopTimeTracking(selectedWork.id);
+      toast({
+        title: t("dashboard.clockingStopped"),
+        description: t("dashboard.clockingStoppedDescription", {
+          operator: selectedWork.operator.full_name,
+          operation: selectedWork.operation.operation_name,
+        }),
+      });
+      setStopDialogOpen(false);
+      setSelectedWork(null);
+      loadData();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: t("dashboard.stopFailed"),
+        description: error?.message || String(error),
+      });
+    } finally {
+      setStopping(false);
+    }
+  };
+
+  const handleStopAllClockings = async () => {
+    if (!profile?.tenant_id) return;
+
+    setStoppingAll(true);
+    try {
+      const stoppedCount = await stopAllActiveTimeEntries(profile.tenant_id);
+      toast({
+        title: t("dashboard.allClockingsStopped"),
+        description: t("dashboard.allClockingsStoppedDescription", { count: stoppedCount }),
+      });
+      loadData();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: t("dashboard.stopAllFailed"),
+        description: error?.message || String(error),
+      });
+    } finally {
+      setStoppingAll(false);
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2">{t("dashboard.title")}</h1>
-          <p className="text-muted-foreground">{t("dashboard.description")}</p>
+          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+            {t("dashboard.title")}
+          </h1>
+          <p className="text-muted-foreground text-lg">{t("dashboard.description")}</p>
         </div>
         {!needsSetup &&
           profile?.tenant_id === "11111111-1111-1111-1111-111111111111" && (
@@ -406,18 +521,24 @@ export default function Dashboard() {
           )}
       </div>
 
+      <hr className="title-divider" />
+
       {needsSetup && (
-        <Card>
+        <Card className="glass-card border-warning/20">
           <CardHeader>
-            <CardTitle>{t("dashboard.initialSetup")}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-warning" />
+              {t("dashboard.initialSetup")}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between gap-4">
               <p className="text-muted-foreground">
                 {t("dashboard.noStagesFound")}
               </p>
-              <Button onClick={handleSeed} disabled={seeding}>
+              <Button onClick={handleSeed} disabled={seeding} className="cta-button">
                 {seeding ? t("dashboard.seeding") : t("dashboard.seedDemoData")}
+                {!seeding && <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />}
               </Button>
             </div>
           </CardContent>
@@ -431,7 +552,7 @@ export default function Dashboard() {
           value={stats.activeWorkers}
           description={t("dashboard.currentlyWorking")}
           icon={Users}
-          onClick={() => navigate("/admin/users")}
+          onClick={() => navigate("/admin/activity")}
         />
 
         <StatCard
@@ -447,7 +568,7 @@ export default function Dashboard() {
           value={stats.inProgressTasks}
           description={t("dashboard.activeTasks")}
           icon={Activity}
-          onClick={() => navigate("/admin/assignments")}
+          onClick={() => navigate("/admin/operations")}
         />
 
         <StatCard
@@ -460,35 +581,35 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Stats Panel */}
-      <Card>
+      <Card className="glass-card">
         <CardHeader>
-          <CardTitle>{t("dashboard.quickStats")}</CardTitle>
+          <CardTitle className="text-xl">{t("dashboard.quickStats")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-4">
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">
-                {t("dashboard.totalJobs")}
+              <p className="text-sm text-muted-foreground">{t("dashboard.totalJobs")}</p>
+              <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                {stats.totalJobs}
               </p>
-              <p className="text-2xl font-bold">{stats.totalJobs}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">
-                {t("dashboard.totalParts")}
+              <p className="text-sm text-muted-foreground">{t("dashboard.totalParts")}</p>
+              <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                {stats.totalParts}
               </p>
-              <p className="text-2xl font-bold">{stats.totalParts}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">
-                {t("dashboard.activeCells")}
+              <p className="text-sm text-muted-foreground">{t("dashboard.activeCells")}</p>
+              <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                {stats.activeCells}
               </p>
-              <p className="text-2xl font-bold">{stats.activeCells}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">
-                {t("dashboard.completedToday")}
+              <p className="text-sm text-muted-foreground">{t("dashboard.completedToday")}</p>
+              <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                {stats.completedToday}
               </p>
-              <p className="text-2xl font-bold">{stats.completedToday}</p>
             </div>
           </div>
         </CardContent>
@@ -497,59 +618,223 @@ export default function Dashboard() {
       {/* QRM Dashboard */}
       <QRMDashboard />
 
+      {/* Past Closing Time Warning */}
+      {isPastClosingTime && activeWork.length > 0 && (
+        <Card className="glass-card border-warning/50 bg-warning/5">
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-warning/20">
+                  <Clock className="h-5 w-5 text-warning" />
+                </div>
+                <div>
+                  <p className="font-medium text-warning">
+                    {t("dashboard.pastClosingTimeWarning")}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("dashboard.pastClosingTimeDescription", {
+                      time: factoryClosingTime,
+                      count: activeWork.length,
+                    })}
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                className="border-warning text-warning hover:bg-warning hover:text-warning-foreground gap-2"
+                onClick={handleStopAllClockings}
+                disabled={stoppingAll}
+              >
+                {stoppingAll ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t("common.stopping")}
+                  </>
+                ) : (
+                  <>
+                    <Square className="h-4 w-4" />
+                    {t("dashboard.stopAllClockings")}
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Active Work Table */}
-      <Card data-tour="active-operations">
-        <CardHeader>
-          <CardTitle>{t("dashboard.activeWork")}</CardTitle>
+      <Card className="glass-card" data-tour="active-operations">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-xl flex items-center gap-2">
+            <Activity className="h-5 w-5 text-primary" />
+            {t("dashboard.activeWork")}
+          </CardTitle>
+          {activeWork.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleStopAllClockings}
+              disabled={stoppingAll}
+              className="gap-2"
+            >
+              {stoppingAll ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t("common.stopping")}
+                </>
+              ) : (
+                <>
+                  <Square className="h-4 w-4" />
+                  {t("dashboard.stopAll")}
+                </>
+              )}
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {activeWork.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              {t("dashboard.noActiveWork")}
+            <div className="text-center py-12">
+              <div className="informational-text max-w-md mx-auto">
+                {t("dashboard.noActiveWork")}
+              </div>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("dashboard.operator")}</TableHead>
-                  <TableHead>{t("dashboard.operation")}</TableHead>
-                  <TableHead>{t("dashboard.job")}</TableHead>
-                  <TableHead>{t("dashboard.part")}</TableHead>
-                  <TableHead>{t("dashboard.cell")}</TableHead>
-                  <TableHead>{t("dashboard.elapsedTime")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {activeWork.map((work) => (
-                  <TableRow key={work.id}>
-                    <TableCell className="font-medium">
-                      {work.operator.full_name}
-                    </TableCell>
-                    <TableCell>{work.operation.operation_name}</TableCell>
-                    <TableCell>
-                      <div>{work.operation.part.job.job_number}</div>
-                      {work.operation.part.job.customer && (
-                        <div className="text-xs text-muted-foreground">
-                          {work.operation.part.job.customer}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>{work.operation.part.part_number}</TableCell>
-                    <TableCell>
-                      <Badge className="bg-accent text-white">
-                        {work.operation.cell.name}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {formatDistanceToNow(new Date(work.start_time))}
-                    </TableCell>
+            <div className="rounded-lg border border-white/10 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-white/10 hover:bg-white/5">
+                    <TableHead>{t("dashboard.operator")}</TableHead>
+                    <TableHead>{t("dashboard.operation")}</TableHead>
+                    <TableHead>{t("dashboard.job")}</TableHead>
+                    <TableHead>{t("dashboard.part")}</TableHead>
+                    <TableHead>{t("dashboard.cell")}</TableHead>
+                    <TableHead>{t("dashboard.elapsedTime")}</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {activeWork.map((work) => (
+                    <TableRow
+                      key={work.id}
+                      className="border-white/10 hover:bg-white/5 cursor-pointer transition-colors"
+                      onClick={() => handleRowClick(work)}
+                    >
+                      <TableCell className="font-medium">
+                        {work.operator.full_name}
+                      </TableCell>
+                      <TableCell>{work.operation.operation_name}</TableCell>
+                      <TableCell>
+                        <div>{work.operation.part.job.job_number}</div>
+                        {work.operation.part.job.customer && (
+                          <div className="text-xs text-muted-foreground">
+                            {work.operation.part.job.customer}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>{work.operation.part.part_number}</TableCell>
+                      <TableCell>
+                        <Badge className="bg-primary/20 text-primary border-primary/30">
+                          {work.operation.cell.name}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {formatDistanceToNow(new Date(work.start_time))}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Stop Clocking Dialog */}
+      <Dialog open={stopDialogOpen} onOpenChange={setStopDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary" />
+              {t("dashboard.stopClockingTitle")}
+            </DialogTitle>
+            <DialogDescription>
+              {t("dashboard.stopClockingDescription")}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedWork && (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.operator")}</p>
+                  <p className="font-medium flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    {selectedWork.operator.full_name}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.operation")}</p>
+                  <p className="font-medium">{selectedWork.operation.operation_name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.job")}</p>
+                  <p className="font-medium">{selectedWork.operation.part.job.job_number}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.part")}</p>
+                  <p className="font-medium">{selectedWork.operation.part.part_number}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.cell")}</p>
+                  <Badge className="bg-primary/20 text-primary border-primary/30">
+                    {selectedWork.operation.cell.name}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.startedAt")}</p>
+                  <p className="font-medium">
+                    {format(new Date(selectedWork.start_time), "PPp")}
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
+                <p className="text-sm text-warning flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  {t("dashboard.elapsedTime")}: {formatDistanceToNow(new Date(selectedWork.start_time))}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setStopDialogOpen(false)}
+              disabled={stopping}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleStopClocking}
+              disabled={stopping}
+              className="gap-2"
+            >
+              {stopping ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t("common.stopping")}
+                </>
+              ) : (
+                <>
+                  <Square className="h-4 w-4" />
+                  {t("dashboard.stopClocking")}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

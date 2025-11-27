@@ -23,7 +23,7 @@ const languages: Language[] = [
 ];
 
 export const LanguageSwitcher = () => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
 
   const handleLanguageChange = async (languageCode: string) => {
@@ -48,7 +48,7 @@ export const LanguageSwitcher = () => {
       <PopoverContent className="w-64 p-0 glass-card" align="end">
         <div className="px-4 py-3 border-b border-border-subtle bg-primary/5">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Select Language
+            {t("languageSwitcher.selectLanguage")}
           </p>
         </div>
         <div className="p-1">

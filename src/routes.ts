@@ -30,7 +30,9 @@ export const ROUTES = {
       USERS: "/admin/config/users",
       STEPS_TEMPLATES: "/admin/config/steps-templates",
       API_KEYS: "/admin/config/api-keys",
+      MCP_KEYS: "/admin/config/mcp-keys",
       WEBHOOKS: "/admin/config/webhooks",
+      MCP_SERVER: "/admin/config/mcp-server",
     }
   },
 
@@ -38,6 +40,7 @@ export const ROUTES = {
     API_DOCS: "/api-docs",
     PRICING: "/pricing",
     MY_PLAN: "/my-plan",
+    BILLING_COMING_SOON: "/billing/coming-soon",
     HELP: "/help",
     ABOUT: "/about",
   },

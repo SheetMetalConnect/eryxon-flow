@@ -13,7 +13,7 @@ import {
   handleOptions,
   NotFoundError,
   ConflictError,
-  ValidationError,
+  ValidationException,
   UnauthorizedError,
   PaymentRequiredError,
   BadRequestError,
@@ -286,7 +286,7 @@ async function handleCreatePart(
   const validationResult = validator.validate(partWithJobId, context);
 
   if (!validationResult.valid) {
-    throw new ValidationError(validationResult);
+    throw new ValidationException(validationResult);
   }
 
   // Additional business validations
@@ -322,7 +322,7 @@ async function handleCreatePart(
     }
 
     if (parentPart.job_id !== body.job_id) {
-      throw new ValidationError({
+      throw new ValidationException({
         valid: false,
         severity: "error" as any,
         httpStatus: 422,
@@ -434,7 +434,7 @@ async function handleUpdatePart(
     if (
       updates.current_cell_id && !validCellIds.includes(updates.current_cell_id)
     ) {
-      throw new ValidationError({
+      throw new ValidationException({
         valid: false,
         severity: "error" as any,
         httpStatus: 422,
@@ -451,7 +451,7 @@ async function handleUpdatePart(
     }
 
     if (updates.material_id && !validMaterialIds.includes(updates.material_id)) {
-      throw new ValidationError({
+      throw new ValidationException({
         valid: false,
         severity: "error" as any,
         httpStatus: 422,

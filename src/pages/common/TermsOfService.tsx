@@ -255,13 +255,14 @@ export default function TermsOfService() {
           </Typography>
           <Typography paragraph color="text.secondary" sx={{ mt: 2 }}>
             {t("legal.termsOfService.impressumLink")}{" "}
-            <Link
+            <a
               href="https://www.sheetmetalconnect.nl/impressum/"
               target="_blank"
+              rel="noopener noreferrer"
               style={{ color: 'inherit', textDecoration: 'underline' }}
             >
               {t("legal.termsOfService.impressumText")}
-            </Link>.
+            </a>.
           </Typography>
         </Box>
       </Paper>

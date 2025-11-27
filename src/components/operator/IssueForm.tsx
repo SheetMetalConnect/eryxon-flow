@@ -29,6 +29,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile?.id || !profile?.tenant_id || !description.trim()) return;
+    if (loading) return; // Prevent double submission
 
     setLoading(true);
     try {
@@ -40,12 +41,15 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess }
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
           const path = `${profile.tenant_id}/issues/${issueId}/${file.name}`;
-          
+
           const { error: uploadError } = await supabase.storage
             .from("issues")
             .upload(path, file);
 
-          if (uploadError) throw uploadError;
+          if (uploadError) {
+            console.error('Image upload error:', uploadError);
+            throw new Error(`Failed to upload image: ${uploadError.message}`);
+          }
           imagePaths.push(path);
         }
       }

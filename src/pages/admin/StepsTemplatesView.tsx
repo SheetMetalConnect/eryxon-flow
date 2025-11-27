@@ -10,15 +10,17 @@ export default function StepsTemplatesView() {
   const [activeTab, setActiveTab] = useState("templates");
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {t("Steps & Templates")}
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+            {t("templates.title")}
           </h1>
-          <p className="text-muted-foreground mt-2">
-            {t("Manage substep templates and view all substeps across your operations")}
+          <p className="text-muted-foreground text-lg">
+            {t("templates.subtitle")}
           </p>
         </div>
+
+        <hr className="title-divider" />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
@@ -31,7 +33,7 @@ export default function StepsTemplatesView() {
           </TabsList>
 
           <TabsContent value="templates" className="space-y-4">
-            <Card>
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle>{t("Substep Templates")}</CardTitle>
                 <p className="text-sm text-muted-foreground">
@@ -45,7 +47,7 @@ export default function StepsTemplatesView() {
           </TabsContent>
 
           <TabsContent value="substeps" className="space-y-4">
-            <Card>
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle>{t("All Substeps")}</CardTitle>
                 <p className="text-sm text-muted-foreground">

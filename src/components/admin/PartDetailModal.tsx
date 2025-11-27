@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -11,14 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { useState, useEffect } from "react";
-import { Plus, Save, X, Upload, Eye, Trash2, Box, FileText, AlertTriangle, Package, ChevronRight, Wrench } from "lucide-react";
+import { useState } from "react";
+import { Plus, Save, X, Upload, Eye, Trash2, Box, FileText, AlertTriangle, Package, ChevronRight, Wrench, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFileUpload } from "@/hooks/useFileUpload";
-import { UploadProgress, StorageQuotaDisplay } from "@/components/UploadProgress";
+import { UploadProgress } from "@/components/UploadProgress";
 import {
   Select,
   SelectContent,
@@ -32,6 +32,8 @@ import { useTranslation } from "react-i18next";
 import { IssuesSummarySection } from "@/components/issues/IssuesSummarySection";
 import { RoutingVisualization } from "@/components/qrm/RoutingVisualization";
 import { usePartRouting } from "@/hooks/useQRMMetrics";
+import { ImageUpload } from "@/components/parts/ImageUpload";
+import { ImageGallery } from "@/components/parts/ImageGallery";
 
 interface PartDetailModalProps {
   partId: string;
@@ -43,6 +45,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
   const { toast } = useToast();
   const { profile } = useAuth();
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const { routing, loading: routingLoading } = usePartRouting(partId);
   const [addingOperation, setAddingOperation] = useState(false);
   const [newOperation, setNewOperation] = useState({
@@ -65,17 +68,9 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
   const {
     progress: uploadProgress,
     isUploading,
-    storageQuota,
     uploadFiles,
-    deleteFile,
-    fetchStorageQuota,
     resetProgress,
   } = useFileUpload();
-
-  // Fetch storage quota on mount
-  useEffect(() => {
-    fetchStorageQuota();
-  }, [fetchStorageQuota]);
 
   const { data: part, isLoading } = useQuery({
     queryKey: ["part-detail", partId],
@@ -307,6 +302,9 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         });
 
         setCadFiles(null);
+        
+        // Refresh modal data and parent list
+        await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
         onUpdate();
       }
 
@@ -404,6 +402,8 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         description: t("parts.fileDeletedSuccess"),
       });
 
+      // Refresh modal data and parent list
+      await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
       onUpdate();
     } catch (error: any) {
       console.error("Delete error:", error);
@@ -502,7 +502,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
           {/* Routing Visualization */}
           <div>
-            <Label className="text-lg">{t("qrm.routing", "Routing")}</Label>
+            <Label className="text-lg">{t("qrm.routing")}</Label>
             <div className="mt-3 border rounded-lg p-4 bg-muted">
               <RoutingVisualization routing={routing} loading={routingLoading} compact />
             </div>
@@ -641,9 +641,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               </Label>
             </div>
 
-            {/* Storage Quota Display */}
-            <StorageQuotaDisplay quota={storageQuota} className="mb-4" />
-
             {/* File Upload */}
             <div className="border rounded-lg p-4 mb-3 bg-muted">
               <div className="flex items-center gap-3">
@@ -738,6 +735,42 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
             </div>
           </div>
 
+          {/* Images Section */}
+          <div>
+            <div className="flex justify-between items-center mb-3">
+              <Label className="text-lg flex items-center gap-2">
+                <ImageIcon className="h-5 w-5" />
+                {t("parts.images.title")} ({part?.image_paths?.length || 0})
+              </Label>
+            </div>
+
+            {/* Image Gallery */}
+            {part?.image_paths && part.image_paths.length > 0 && (
+              <div className="mb-4">
+                <ImageGallery
+                  partId={partId}
+                  imagePaths={part.image_paths}
+                  onImageDeleted={async () => {
+                    // Refresh modal data and parent list
+                    await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
+                    onUpdate();
+                  }}
+                  editable={true}
+                />
+              </div>
+            )}
+
+            {/* Image Upload */}
+            <ImageUpload
+              partId={partId}
+              onUploadComplete={async () => {
+                // Refresh modal data and parent list
+                await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
+                onUpdate();
+              }}
+            />
+          </div>
+
           {/* NCRs / Issues Summary */}
           <IssuesSummarySection partId={partId} />
 
@@ -825,7 +858,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   <div className="col-span-2">
                     <div className="flex items-center gap-2 mb-2">
                       <Wrench className="h-4 w-4 text-orange-600" />
-                      <Label>Required Resources (Optional)</Label>
+                      <Label>{t("operations.requiredResourcesOptional")}</Label>
                     </div>
 
                     {/* Resource Selection Dropdown */}
@@ -844,7 +877,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                       }}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Add a resource..." />
+                        <SelectValue placeholder={t("operations.addResource")} />
                       </SelectTrigger>
                       <SelectContent>
                         {availableResources
@@ -898,7 +931,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                               </div>
                               <div className="grid grid-cols-2 gap-2">
                                 <div>
-                                  <Label className="text-xs">Quantity</Label>
+                                  <Label className="text-xs">{t("operations.quantity")}</Label>
                                   <Input
                                     type="number"
                                     min="0.1"
@@ -913,7 +946,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                                   />
                                 </div>
                                 <div>
-                                  <Label className="text-xs">Instructions (Optional)</Label>
+                                  <Label className="text-xs">{t("operations.instructionsOptional")}</Label>
                                   <Input
                                     value={selectedRes.notes}
                                     onChange={(e) => {
@@ -921,7 +954,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                                       updated[idx].notes = e.target.value;
                                       setNewOperation({ ...newOperation, selected_resources: updated });
                                     }}
-                                    placeholder="Special instructions..."
+                                    placeholder={t("operations.specialInstructions")}
                                     className="h-8 text-xs"
                                   />
                                 </div>

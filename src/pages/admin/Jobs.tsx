@@ -5,6 +5,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import {
   Calendar,
@@ -14,8 +15,20 @@ import {
   Box,
   FileText,
   Eye,
+  MoreHorizontal,
+  Briefcase,
+  Package,
+  CheckCircle2,
+  PauseCircle,
+  Layers,
+  AlertTriangle,
+  TrendingUp,
+  Trash2,
+  AlertOctagon,
+  Activity,
 } from "lucide-react";
-import { format, isBefore, addDays } from "date-fns";
+import { useQualityMetrics } from "@/hooks/useQualityMetrics";
+import { format, isBefore, addDays, isAfter } from "date-fns";
 import JobDetailModal from "@/components/admin/JobDetailModal";
 import DueDateOverrideModal from "@/components/admin/DueDateOverrideModal";
 import { STEPViewer } from "@/components/STEPViewer";
@@ -26,11 +39,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { JobIssueBadge } from "@/components/issues/JobIssueBadge";
 import { CompactOperationsFlow } from "@/components/qrm/OperationsFlowVisualization";
 import { useMultipleJobsRouting } from "@/hooks/useQRMMetrics";
 import { DataTable, DataTableColumnHeader, DataTableFilterableColumn } from "@/components/ui/data-table";
+import { cn } from "@/lib/utils";
 
 interface JobData {
   id: string;
@@ -45,6 +66,15 @@ interface JobData {
   pdfFiles: string[];
   hasSTEP: boolean;
   hasPDF: boolean;
+}
+
+interface JobStats {
+  total: number;
+  inProgress: number;
+  completed: number;
+  onHold: number;
+  overdue: number;
+  dueThisWeek: number;
 }
 
 export default function Jobs() {
@@ -104,20 +134,54 @@ export default function Jobs() {
     },
   });
 
+  // Calculate stats from jobs data
+  const stats: JobStats = useMemo(() => {
+    if (!jobs) return { total: 0, inProgress: 0, completed: 0, onHold: 0, overdue: 0, dueThisWeek: 0 };
+
+    const today = new Date();
+    const weekFromNow = addDays(today, 7);
+
+    return {
+      total: jobs.length,
+      inProgress: jobs.filter((j: any) => j.status === "in_progress").length,
+      completed: jobs.filter((j: any) => j.status === "completed").length,
+      onHold: jobs.filter((j: any) => j.status === "on_hold").length,
+      overdue: jobs.filter((j: any) => {
+        const dueDate = new Date(j.due_date_override || j.due_date);
+        return isBefore(dueDate, today) && j.status !== "completed";
+      }).length,
+      dueThisWeek: jobs.filter((j: any) => {
+        const dueDate = new Date(j.due_date_override || j.due_date);
+        return isAfter(dueDate, today) && isBefore(dueDate, weekFromNow) && j.status !== "completed";
+      }).length,
+    };
+  }, [jobs]);
+
   // Get job IDs for routing fetch
   const jobIds = useMemo(() => jobs?.map((job: any) => job.id) || [], [jobs]);
 
   // Fetch routing for all jobs
   const { routings, loading: routingsLoading } = useMultipleJobsRouting(jobIds);
 
+  // Fetch quality metrics
+  const { data: qualityMetrics, isLoading: qualityLoading } = useQualityMetrics();
+
   const handleSetOnHold = async (jobId: string) => {
     await supabase.from("jobs").update({ status: "on_hold" }).eq("id", jobId);
     refetch();
+    toast({
+      title: t("jobs.statusUpdated"),
+      description: t("jobs.jobOnHold"),
+    });
   };
 
   const handleResume = async (jobId: string) => {
     await supabase.from("jobs").update({ status: "in_progress" }).eq("id", jobId);
     refetch();
+    toast({
+      title: t("jobs.statusUpdated"),
+      description: t("jobs.jobResumed"),
+    });
   };
 
   // Handle viewing file (STEP or PDF)
@@ -182,11 +246,11 @@ export default function Jobs() {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      not_started: "secondary",
-      in_progress: "default",
-      completed: "outline",
-      on_hold: "destructive",
+    const config: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; className: string }> = {
+      not_started: { variant: "secondary", className: "bg-muted/50" },
+      in_progress: { variant: "default", className: "bg-[hsl(var(--brand-primary))]/20 text-[hsl(var(--brand-primary))] border-[hsl(var(--brand-primary))]/30" },
+      completed: { variant: "outline", className: "bg-[hsl(var(--color-success))]/20 text-[hsl(var(--color-success))] border-[hsl(var(--color-success))]/30" },
+      on_hold: { variant: "destructive", className: "bg-[hsl(var(--color-warning))]/20 text-[hsl(var(--color-warning))] border-[hsl(var(--color-warning))]/30" },
     };
     const statusLabels: Record<string, string> = {
       not_started: t("operations.status.notStarted"),
@@ -194,24 +258,35 @@ export default function Jobs() {
       completed: t("operations.status.completed"),
       on_hold: t("operations.status.onHold"),
     };
+    const { variant, className } = config[status] || config.not_started;
     return (
-      <Badge variant={variants[status] || "default"}>
+      <Badge variant={variant} className={cn("font-medium", className)}>
         {statusLabels[status] || status}
       </Badge>
     );
   };
 
-  const getDueDateStyle = (job: any) => {
+  const getDueDateDisplay = (job: any) => {
     const dueDate = new Date(job.due_date_override || job.due_date);
     const today = new Date();
     const weekFromNow = addDays(today, 7);
 
-    if (isBefore(dueDate, today)) {
-      return "text-destructive font-semibold";
-    } else if (isBefore(dueDate, weekFromNow)) {
-      return "text-warning font-semibold";
-    }
-    return "";
+    const isOverdue = isBefore(dueDate, today);
+    const isDueSoon = !isOverdue && isBefore(dueDate, weekFromNow);
+
+    return (
+      <div className={cn(
+        "flex items-center gap-1.5",
+        isOverdue && "text-[hsl(var(--color-error))]",
+        isDueSoon && "text-[hsl(var(--color-warning))]"
+      )}>
+        <Calendar className="h-3.5 w-3.5" />
+        <span className="font-medium">{format(dueDate, "MMM dd")}</span>
+        {job.due_date_override && (
+          <Clock className="h-3 w-3 text-muted-foreground" />
+        )}
+      </div>
+    );
   };
 
   const columns: ColumnDef<JobData>[] = useMemo(() => [
@@ -221,39 +296,27 @@ export default function Jobs() {
         <DataTableColumnHeader column={column} title={t("jobs.jobNumber")} />
       ),
       cell: ({ row }) => (
-        <span className="font-medium">{row.getValue("job_number")}</span>
+        <div className="flex flex-col">
+          <span className="font-semibold text-foreground">{row.getValue("job_number")}</span>
+          <span className="text-xs text-muted-foreground truncate max-w-[120px]">
+            {row.original.customer || "-"}
+          </span>
+        </div>
       ),
-    },
-    {
-      accessorKey: "customer",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("jobs.customer")} />
-      ),
+      size: 140,
     },
     {
       accessorKey: "due_date",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t("jobs.dueDate")} />
       ),
-      cell: ({ row }) => {
-        const job = row.original;
-        return (
-          <div className={`flex items-center gap-2 ${getDueDateStyle(job)}`}>
-            <Calendar className="h-4 w-4" />
-            {format(new Date(job.due_date_override || job.due_date), "MMM dd, yyyy")}
-            {job.due_date_override && (
-              <Badge variant="outline" className="text-xs">
-                {t("jobs.dueDate")}
-              </Badge>
-            )}
-          </div>
-        );
-      },
+      cell: ({ row }) => getDueDateDisplay(row.original),
       sortingFn: (rowA, rowB) => {
         const dateA = new Date(rowA.original.due_date_override || rowA.original.due_date);
         const dateB = new Date(rowB.original.due_date_override || rowB.original.due_date);
         return dateA.getTime() - dateB.getTime();
       },
+      size: 100,
     },
     {
       accessorKey: "status",
@@ -264,6 +327,7 @@ export default function Jobs() {
       filterFn: (row, id, value) => {
         return value.includes(row.getValue(id));
       },
+      size: 120,
     },
     {
       id: "flow",
@@ -271,131 +335,147 @@ export default function Jobs() {
       cell: ({ row }) => {
         const job = row.original;
         return (
-          <CompactOperationsFlow
-            routing={routings[job.id] || []}
-            loading={routingsLoading}
-          />
+          <div className="min-w-[100px]">
+            <CompactOperationsFlow
+              routing={routings[job.id] || []}
+              loading={routingsLoading}
+            />
+          </div>
         );
       },
+      size: 140,
     },
     {
-      accessorKey: "parts_count",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("jobs.parts")} />
-      ),
-      cell: ({ row }) => (
-        <div className="text-right">{row.getValue("parts_count")}</div>
-      ),
-    },
-    {
-      accessorKey: "operations_count",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("jobs.operations")} />
-      ),
-      cell: ({ row }) => (
-        <div className="text-right">{row.getValue("operations_count")}</div>
-      ),
-    },
-    {
-      id: "ncrs",
-      header: "NCRs",
-      cell: ({ row }) => <JobIssueBadge jobId={row.original.id} size="sm" />,
+      id: "details",
+      header: t("jobs.details", "Details"),
+      cell: ({ row }) => {
+        const job = row.original;
+        return (
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1" title={t("jobs.parts")}>
+              <Package className="h-3.5 w-3.5" />
+              {job.parts_count}
+            </span>
+            <span className="flex items-center gap-1" title={t("jobs.operations")}>
+              <Layers className="h-3.5 w-3.5" />
+              {job.operations_count}
+            </span>
+            <JobIssueBadge jobId={job.id} size="sm" />
+          </div>
+        );
+      },
+      size: 140,
     },
     {
       id: "files",
-      header: "Files",
+      header: t("jobs.files", "Files"),
       cell: ({ row }) => {
         const job = row.original;
+        if (!job.hasSTEP && !job.hasPDF) {
+          return <span className="text-xs text-muted-foreground">-</span>;
+        }
         return (
           <div className="flex gap-1">
             {job.hasSTEP && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 w-7 p-0"
+                className="h-7 w-7 p-0 hover:bg-[hsl(var(--brand-primary))]/10"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleViewFile(job.stepFiles[0]);
                 }}
                 title={`${job.stepFiles.length} STEP file(s)`}
               >
-                <Box className="h-4 w-4 text-primary" />
+                <Box className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
               </Button>
             )}
             {job.hasPDF && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 w-7 p-0"
+                className="h-7 w-7 p-0 hover:bg-[hsl(var(--color-error))]/10"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleViewFile(job.pdfFiles[0]);
                 }}
                 title={`${job.pdfFiles.length} PDF file(s)`}
               >
-                <FileText className="h-4 w-4 text-destructive" />
+                <FileText className="h-4 w-4 text-[hsl(var(--color-error))]" />
               </Button>
-            )}
-            {!job.hasSTEP && !job.hasPDF && (
-              <span className="text-xs text-muted-foreground">-</span>
             )}
           </div>
         );
       },
+      size: 80,
     },
     {
       id: "actions",
-      header: t("common.edit"),
+      header: "",
       cell: ({ row }) => {
         const job = row.original;
         return (
-          <div className="flex justify-end gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedJobId(job.id);
-              }}
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setOverrideJobId(job.id);
-              }}
-            >
-              <Clock className="h-4 w-4" />
-            </Button>
-            {job.status === "on_hold" ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <Button
-                variant="default"
+                variant="ghost"
                 size="sm"
+                className="h-8 w-8 p-0"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="glass-card w-48">
+              <DropdownMenuItem
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleResume(job.id);
+                  setSelectedJobId(job.id);
                 }}
+                className="gap-2"
               >
-                {t("operations.startOperation")}
-              </Button>
-            ) : (
-              <Button
-                variant="destructive"
-                size="sm"
+                <Eye className="h-4 w-4" />
+                {t("common.viewDetails")}
+              </DropdownMenuItem>
+              <DropdownMenuItem
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleSetOnHold(job.id);
+                  setOverrideJobId(job.id);
                 }}
+                className="gap-2"
               >
-                <AlertCircle className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
+                <Clock className="h-4 w-4" />
+                {t("jobs.overrideDueDate")}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {job.status === "on_hold" ? (
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleResume(job.id);
+                  }}
+                  className="gap-2 text-[hsl(var(--color-success))]"
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  {t("jobs.resumeJob")}
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSetOnHold(job.id);
+                  }}
+                  className="gap-2 text-[hsl(var(--color-warning))]"
+                >
+                  <PauseCircle className="h-4 w-4" />
+                  {t("jobs.putOnHold")}
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         );
       },
+      size: 50,
     },
   ], [t, routings, routingsLoading]);
 
@@ -413,24 +493,255 @@ export default function Jobs() {
   ], [t]);
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">{t("jobs.title")}</h1>
-        <Button onClick={() => navigate("/admin/jobs/new")}>
-          <Plus className="mr-2 h-4 w-4" /> {t("jobs.createJob")}
-        </Button>
+    <div className="p-4 space-y-4">
+      {/* Header */}
+      <div>
+        <div className="flex justify-between items-center mb-1">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+            {t("jobs.title")}
+          </h1>
+          <Button onClick={() => navigate("/admin/jobs/new")} className="cta-button">
+            <Plus className="mr-2 h-4 w-4" /> {t("jobs.createJob")}
+          </Button>
+        </div>
+        <p className="text-muted-foreground text-sm">
+          {t("jobs.subtitle", "Manage all jobs, track progress, and monitor deadlines")}
+        </p>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={jobs || []}
-        filterableColumns={filterableColumns}
-        searchPlaceholder={t("jobs.searchJobs")}
-        loading={isLoading}
-        pageSize={20}
-        emptyMessage={t("jobs.noJobsFound") || "No jobs found."}
-      />
+      <hr className="title-divider" />
 
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <Card className="glass-card transition-smooth hover:scale-[1.02]">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-[hsl(var(--brand-primary))]/10">
+                <Briefcase className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
+              </div>
+              <div>
+                <div className="text-xl font-bold">{stats.total}</div>
+                <div className="text-xs text-muted-foreground">{t("jobs.total", "Total")}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card transition-smooth hover:scale-[1.02]">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-[hsl(var(--color-info))]/10">
+                <Layers className="h-4 w-4 text-[hsl(var(--color-info))]" />
+              </div>
+              <div>
+                <div className="text-xl font-bold">{stats.inProgress}</div>
+                <div className="text-xs text-muted-foreground">{t("operations.status.inProgress")}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card transition-smooth hover:scale-[1.02]">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-[hsl(var(--color-success))]/10">
+                <CheckCircle2 className="h-4 w-4 text-[hsl(var(--color-success))]" />
+              </div>
+              <div>
+                <div className="text-xl font-bold">{stats.completed}</div>
+                <div className="text-xs text-muted-foreground">{t("operations.status.completed")}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card transition-smooth hover:scale-[1.02]">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-[hsl(var(--color-warning))]/10">
+                <PauseCircle className="h-4 w-4 text-[hsl(var(--color-warning))]" />
+              </div>
+              <div>
+                <div className="text-xl font-bold">{stats.onHold}</div>
+                <div className="text-xs text-muted-foreground">{t("operations.status.onHold")}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className={cn(
+          "glass-card transition-smooth hover:scale-[1.02]",
+          stats.overdue > 0 && "border-[hsl(var(--color-error))]/30"
+        )}>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-[hsl(var(--color-error))]/10">
+                <AlertTriangle className="h-4 w-4 text-[hsl(var(--color-error))]" />
+              </div>
+              <div>
+                <div className={cn(
+                  "text-xl font-bold",
+                  stats.overdue > 0 && "text-[hsl(var(--color-error))]"
+                )}>{stats.overdue}</div>
+                <div className="text-xs text-muted-foreground">{t("jobs.overdue", "Overdue")}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className={cn(
+          "glass-card transition-smooth hover:scale-[1.02]",
+          stats.dueThisWeek > 0 && "border-[hsl(var(--color-warning))]/30"
+        )}>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-[hsl(var(--color-warning))]/10">
+                <Clock className="h-4 w-4 text-[hsl(var(--color-warning))]" />
+              </div>
+              <div>
+                <div className={cn(
+                  "text-xl font-bold",
+                  stats.dueThisWeek > 0 && "text-[hsl(var(--color-warning))]"
+                )}>{stats.dueThisWeek}</div>
+                <div className="text-xs text-muted-foreground">{t("jobs.dueThisWeek", "Due This Week")}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quality Metrics Dashboard */}
+      {qualityMetrics && (qualityMetrics.totalProduced > 0 || qualityMetrics.issueMetrics.total > 0) && (
+        <Card className="glass-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Activity className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
+              {t("quality.dashboardTitle", "Quality Overview")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {/* Yield Rate */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <TrendingUp className="h-3.5 w-3.5" />
+                  {t("quality.yieldRate", "Yield Rate")}
+                </div>
+                <div className={cn(
+                  "text-lg font-bold",
+                  qualityMetrics.overallYield >= 95 ? "text-[hsl(var(--color-success))]" :
+                  qualityMetrics.overallYield >= 85 ? "text-[hsl(var(--color-warning))]" :
+                  "text-[hsl(var(--color-error))]"
+                )}>
+                  {qualityMetrics.overallYield.toFixed(1)}%
+                </div>
+              </div>
+
+              {/* Total Produced */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Package className="h-3.5 w-3.5" />
+                  {t("quality.totalProduced", "Produced")}
+                </div>
+                <div className="text-lg font-bold">{qualityMetrics.totalProduced.toLocaleString()}</div>
+              </div>
+
+              {/* Good Parts */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--color-success))]" />
+                  {t("quality.goodParts", "Good")}
+                </div>
+                <div className="text-lg font-bold text-[hsl(var(--color-success))]">
+                  {qualityMetrics.totalGood.toLocaleString()}
+                </div>
+              </div>
+
+              {/* Scrap */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Trash2 className="h-3.5 w-3.5 text-[hsl(var(--color-error))]" />
+                  {t("quality.scrap", "Scrap")}
+                </div>
+                <div className={cn(
+                  "text-lg font-bold",
+                  qualityMetrics.totalScrap > 0 ? "text-[hsl(var(--color-error))]" : ""
+                )}>
+                  {qualityMetrics.totalScrap.toLocaleString()}
+                  {qualityMetrics.scrapRate > 0 && (
+                    <span className="text-xs font-normal ml-1">({qualityMetrics.scrapRate.toFixed(1)}%)</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Open Issues */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <AlertTriangle className="h-3.5 w-3.5 text-[hsl(var(--color-warning))]" />
+                  {t("quality.openIssues", "Open Issues")}
+                </div>
+                <div className={cn(
+                  "text-lg font-bold",
+                  qualityMetrics.issueMetrics.pending > 0 ? "text-[hsl(var(--color-warning))]" : ""
+                )}>
+                  {qualityMetrics.issueMetrics.pending}
+                  <span className="text-xs font-normal text-muted-foreground ml-1">
+                    / {qualityMetrics.issueMetrics.total}
+                  </span>
+                </div>
+              </div>
+
+              {/* Critical Issues */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <AlertOctagon className="h-3.5 w-3.5 text-[hsl(var(--color-error))]" />
+                  {t("quality.critical", "Critical")}
+                </div>
+                <div className={cn(
+                  "text-lg font-bold",
+                  qualityMetrics.issueMetrics.bySeverity.critical > 0 ? "text-[hsl(var(--color-error))]" : ""
+                )}>
+                  {qualityMetrics.issueMetrics.bySeverity.critical}
+                </div>
+              </div>
+            </div>
+
+            {/* Top Scrap Reasons Mini-Bar */}
+            {qualityMetrics.topScrapReasons.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <div className="text-xs text-muted-foreground mb-2">
+                  {t("quality.topScrapReasons", "Top Scrap Reasons")}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {qualityMetrics.topScrapReasons.slice(0, 5).map((reason) => (
+                    <Badge key={reason.code} variant="outline" className="text-xs">
+                      {reason.code}: {reason.quantity}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Jobs Table */}
+      <div className="glass-card p-4">
+        <DataTable
+          columns={columns}
+          data={jobs || []}
+          filterableColumns={filterableColumns}
+          searchPlaceholder={t("jobs.searchJobs")}
+          loading={isLoading}
+          pageSize={20}
+          emptyMessage={t("jobs.noJobsFound") || "No jobs found."}
+          searchDebounce={200}
+          onRowClick={(row) => setSelectedJobId(row.id)}
+          compact={true}
+        />
+      </div>
+
+      {/* Job Detail Modal */}
       {selectedJobId && (
         <JobDetailModal
           jobId={selectedJobId}
@@ -439,6 +750,7 @@ export default function Jobs() {
         />
       )}
 
+      {/* Due Date Override Modal */}
       {overrideJobId && (
         <DueDateOverrideModal
           jobId={overrideJobId}
@@ -449,11 +761,11 @@ export default function Jobs() {
 
       {/* File Viewer Dialog */}
       <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
-        <DialogContent className="max-w-7xl max-h-[90vh]">
+        <DialogContent className="glass-card max-w-7xl max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>{currentFileTitle}</DialogTitle>
+            <DialogTitle className="text-xl">{currentFileTitle}</DialogTitle>
           </DialogHeader>
-          <div className="w-full h-[75vh]">
+          <div className="w-full h-[75vh] rounded-lg overflow-hidden border border-white/10">
             {currentFileType === "step" && currentFileUrl && (
               <STEPViewer url={currentFileUrl} />
             )}
