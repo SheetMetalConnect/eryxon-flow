@@ -27,7 +27,10 @@
 
 <div align="center">
 
-![Metrics](./metrics.svg)
+![Commits](https://img.shields.io/badge/commits-0-blue)
+![Inception](https://img.shields.io/badge/inception-2024--01--01-lightgrey)
+![LOC](https://img.shields.io/badge/lines-0-green)
+![Velocity](https://img.shields.io/badge/last_30d-0_commits-orange)
 
 </div>
 
