@@ -27,10 +27,10 @@
 
 <div align="center">
 
-![Commits](https://img.shields.io/badge/commits-0-blue)
-![Inception](https://img.shields.io/badge/inception-2024--01--01-lightgrey)
-![LOC](https://img.shields.io/badge/lines-0-green)
-![Velocity](https://img.shields.io/badge/last_30d-0_commits-orange)
+![Commits](https://img.shields.io/badge/commits-514-blue)
+![Inception](https://img.shields.io/badge/inception-2025-11-09-lightgrey)
+![LOC](https://img.shields.io/badge/lines-63.3K-green)
+![Velocity](https://img.shields.io/badge/last_30d-514_commits-orange)
 
 </div>
 
