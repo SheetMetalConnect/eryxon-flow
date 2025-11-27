@@ -161,6 +161,11 @@ function ProtectedRoute({ children, adminOnly }) {
    const [isOpen, setIsOpen] = useState(false);
    ```
 
+4. **Caching Layer**: Optional Redis caching for server-side data
+   - See `src/lib/queryClient.ts` for React Query configuration
+   - See `supabase/functions/_shared/cache.ts` for Edge Function caching
+   - See `docs/CACHING.md` for full caching architecture documentation
+
 ### 3. Data Fetching Patterns
 
 **Standard Pattern**:
@@ -622,12 +627,20 @@ serve(async (req) => {
 - `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/i18n/index.ts` - i18n config
 
 ### Key Utilities
-- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/lib/utils.ts` - `cn()` utility
-- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/lib/database.ts` - DB query helpers
-- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/lib/searchService.ts` - Global search
-- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/lib/substepTemplates.ts` - Substep template management
-- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/lib/mockDataGenerator.ts` - Mock data generation
-- `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/lib/webhooks.ts` - Webhook utilities
+- `/src/lib/utils.ts` - `cn()` utility
+- `/src/lib/database.ts` - DB query helpers
+- `/src/lib/searchService.ts` - Global search
+- `/src/lib/substepTemplates.ts` - Substep template management
+- `/src/lib/mockDataGenerator.ts` - Mock data generation
+- `/src/lib/webhooks.ts` - Webhook utilities
+- `/src/lib/queryClient.ts` - React Query configuration with cache presets
+- `/src/lib/cacheInvalidation.ts` - Cache invalidation utilities
+
+### Caching Infrastructure
+- `/supabase/functions/_shared/cache.ts` - Cache abstraction (Redis/in-memory)
+- `/supabase/functions/_shared/cache-utils.ts` - High-level caching utilities
+- `/supabase/functions/_shared/rate-limiter.ts` - Rate limiting with cache support
+- `/mcp-server/src/utils/cache.ts` - MCP Server cache utilities
 
 ### Styling
 - `/Users/vanenkhuizen/Documents/GitHub/eryxon-flow/src/styles/design-system.css` - Design tokens
