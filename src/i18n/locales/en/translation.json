@@ -1617,6 +1617,12 @@
     "step5Title": "Track Progress",
     "step5Desc": "Update shipment status as it progresses: Draft → Planned → Loading → In Transit → Delivered.",
     "tipTitle": "Pro Tip:",
-    "tipContent": "Add delivery postal codes to your jobs when creating them. This enables automatic grouping by location for more efficient route planning."
+    "tipContent": "Add delivery postal codes to your jobs when creating them. This enables automatic grouping by location for more efficient route planning.",
+    "loadSummary": "Load Summary",
+    "totalKg": "kg total",
+    "partsTotal": "parts",
+    "largestPartMm": "mm (L×W)",
+    "largestPart": "largest part",
+    "destinations": "destinations"
   }
 }

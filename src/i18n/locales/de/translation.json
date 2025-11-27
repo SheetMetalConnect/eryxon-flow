@@ -1490,6 +1490,12 @@
     "step5Title": "Fortschritt Verfolgen",
     "step5Desc": "Aktualisieren Sie den Sendungsstatus: Entwurf → Geplant → Laden → Unterwegs → Geliefert.",
     "tipTitle": "Profi-Tipp:",
-    "tipContent": "Fügen Sie Liefer-PLZ zu Ihren Aufträgen beim Erstellen hinzu. Dies ermöglicht automatische Standortgruppierung für effizientere Routenplanung."
+    "tipContent": "Fügen Sie Liefer-PLZ zu Ihren Aufträgen beim Erstellen hinzu. Dies ermöglicht automatische Standortgruppierung für effizientere Routenplanung.",
+    "loadSummary": "Ladungsübersicht",
+    "totalKg": "kg gesamt",
+    "partsTotal": "Teile",
+    "largestPartMm": "mm (L×B)",
+    "largestPart": "größtes Teil",
+    "destinations": "Ziele"
   }
 }

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { useShipment, useRemoveJobFromShipment, useUpdateShipmentStatus } from '@/hooks/useShipments';
@@ -34,6 +35,8 @@ import {
   ArrowRight,
   Building,
   Hash,
+  Ruler,
+  Layers,
 } from 'lucide-react';
 
 interface ShipmentDetailModalProps {
@@ -75,6 +78,37 @@ export default function ShipmentDetailModal({ shipmentId, onClose }: ShipmentDet
   const volumeUsage = shipment.max_volume_m3
     ? ((shipment.current_volume_m3 || 0) / shipment.max_volume_m3) * 100
     : null;
+
+  // Calculate operator-focused metrics from parts data
+  const operatorMetrics = useMemo(() => {
+    if (!shipment.shipment_jobs) return null;
+
+    let totalParts = 0;
+    let largestLength = 0;
+    let largestWidth = 0;
+    let largestHeight = 0;
+    const uniqueDestinations = new Set<string>();
+
+    shipment.shipment_jobs.forEach((sj: any) => {
+      if (sj.job?.parts) {
+        sj.job.parts.forEach((part: any) => {
+          totalParts += part.quantity || 1;
+          if (part.length_mm && part.length_mm > largestLength) largestLength = part.length_mm;
+          if (part.width_mm && part.width_mm > largestWidth) largestWidth = part.width_mm;
+          if (part.height_mm && part.height_mm > largestHeight) largestHeight = part.height_mm;
+        });
+      }
+      if (sj.job?.delivery_postal_code) {
+        uniqueDestinations.add(sj.job.delivery_postal_code);
+      }
+    });
+
+    return {
+      totalParts,
+      largestDimensions: largestLength > 0 ? { length: largestLength, width: largestWidth, height: largestHeight } : null,
+      uniqueDestinations: uniqueDestinations.size,
+    };
+  }, [shipment.shipment_jobs]);
 
   const handleRemoveJob = (jobId: string) => {
     if (confirm(t('shipping.confirmRemoveJob', 'Remove this job from the shipment?'))) {
@@ -152,6 +186,58 @@ export default function ShipmentDetailModal({ shipmentId, onClose }: ShipmentDet
                 )}
               </div>
             )}
+
+            {/* Operator Load Summary - Most Important Metrics */}
+            <Card className="glass-card border-[hsl(var(--brand-primary))]/30 bg-[hsl(var(--brand-primary))]/5">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <Truck className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
+                  {t('shipping.loadSummary', 'Load Summary')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-4 gap-4">
+                  {/* Total Weight */}
+                  <div className="text-center p-3 rounded-lg bg-background/50">
+                    <Weight className="h-5 w-5 mx-auto mb-1 text-[hsl(var(--brand-primary))]" />
+                    <div className="text-2xl font-bold">{(shipment.current_weight_kg || 0).toFixed(1)}</div>
+                    <div className="text-xs text-muted-foreground">{t('shipping.totalKg', 'kg total')}</div>
+                  </div>
+
+                  {/* Total Parts */}
+                  <div className="text-center p-3 rounded-lg bg-background/50">
+                    <Layers className="h-5 w-5 mx-auto mb-1 text-[hsl(var(--color-info))]" />
+                    <div className="text-2xl font-bold">{operatorMetrics?.totalParts || shipment.items_count || 0}</div>
+                    <div className="text-xs text-muted-foreground">{t('shipping.partsTotal', 'parts')}</div>
+                  </div>
+
+                  {/* Largest Part */}
+                  <div className="text-center p-3 rounded-lg bg-background/50">
+                    <Ruler className="h-5 w-5 mx-auto mb-1 text-[hsl(var(--color-warning))]" />
+                    {operatorMetrics?.largestDimensions ? (
+                      <>
+                        <div className="text-lg font-bold">
+                          {operatorMetrics.largestDimensions.length} × {operatorMetrics.largestDimensions.width}
+                        </div>
+                        <div className="text-xs text-muted-foreground">{t('shipping.largestPartMm', 'mm (L×W)')}</div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-lg font-bold text-muted-foreground">-</div>
+                        <div className="text-xs text-muted-foreground">{t('shipping.largestPart', 'largest part')}</div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Destinations */}
+                  <div className="text-center p-3 rounded-lg bg-background/50">
+                    <MapPin className="h-5 w-5 mx-auto mb-1 text-[hsl(var(--color-success))]" />
+                    <div className="text-2xl font-bold">{operatorMetrics?.uniqueDestinations || 1}</div>
+                    <div className="text-xs text-muted-foreground">{t('shipping.destinations', 'destinations')}</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Info Cards */}
             <div className="grid grid-cols-2 gap-4">

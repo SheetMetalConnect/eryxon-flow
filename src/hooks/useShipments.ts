@@ -108,7 +108,16 @@ export function useShipment(id: string | null) {
               delivery_postal_code,
               total_weight_kg,
               total_volume_m3,
-              package_count
+              package_count,
+              parts (
+                id,
+                part_number,
+                quantity,
+                weight_kg,
+                length_mm,
+                width_mm,
+                height_mm
+              )
             )
           )
         `)

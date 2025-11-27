@@ -172,6 +172,15 @@ export interface ShipmentJobWithJob extends ShipmentJob {
     total_weight_kg: number | null;
     total_volume_m3: number | null;
     package_count: number | null;
+    parts?: Array<{
+      id: string;
+      part_number: string;
+      quantity: number;
+      weight_kg: number | null;
+      length_mm: number | null;
+      width_mm: number | null;
+      height_mm: number | null;
+    }>;
   };
 }
 

@@ -1763,6 +1763,12 @@
     "step5Title": "Voortgang Volgen",
     "step5Desc": "Werk de zendingsstatus bij naarmate deze vordert: Concept → Gepland → Laden → Onderweg → Afgeleverd.",
     "tipTitle": "Pro Tip:",
-    "tipContent": "Voeg afleverpostcodes toe aan uw orders bij het aanmaken. Dit maakt automatisch groeperen op locatie mogelijk voor efficiëntere routeplanning."
+    "tipContent": "Voeg afleverpostcodes toe aan uw orders bij het aanmaken. Dit maakt automatisch groeperen op locatie mogelijk voor efficiëntere routeplanning.",
+    "loadSummary": "Laadsamenvatting",
+    "totalKg": "kg totaal",
+    "partsTotal": "onderdelen",
+    "largestPartMm": "mm (L×B)",
+    "largestPart": "grootste onderdeel",
+    "destinations": "bestemmingen"
   }
 }

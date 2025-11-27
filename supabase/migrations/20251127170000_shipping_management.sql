@@ -370,6 +370,32 @@ CREATE INDEX IF NOT EXISTS idx_jobs_delivery_postal ON public.jobs(delivery_post
 CREATE INDEX IF NOT EXISTS idx_jobs_delivery_city ON public.jobs(delivery_city);
 
 -- ============================================================================
+-- EXTEND PARTS TABLE WITH SHIPPING INFORMATION
+-- ============================================================================
+
+-- Add essential shipping-related columns to parts
+DO $$
+BEGIN
+  -- Weight for individual part (in kg)
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'parts' AND column_name = 'weight_kg') THEN
+    ALTER TABLE public.parts ADD COLUMN weight_kg DECIMAL(10, 3);
+  END IF;
+
+  -- Dimensions (in mm - standard for metal fabrication)
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'parts' AND column_name = 'length_mm') THEN
+    ALTER TABLE public.parts ADD COLUMN length_mm DECIMAL(10, 2);
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'parts' AND column_name = 'width_mm') THEN
+    ALTER TABLE public.parts ADD COLUMN width_mm DECIMAL(10, 2);
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'parts' AND column_name = 'height_mm') THEN
+    ALTER TABLE public.parts ADD COLUMN height_mm DECIMAL(10, 2);
+  END IF;
+END $$;
+
+-- ============================================================================
 -- GRANT PERMISSIONS
 -- ============================================================================
 
