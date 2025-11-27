@@ -495,12 +495,31 @@ export function useAddJobsToShipment() {
       shipment_id: string;
       job_ids: string[];
     }) => {
-      const inserts = job_ids.map((job_id, index) => ({
-        shipment_id,
-        job_id,
-        tenant_id: profile?.tenant_id,
-        loading_sequence: index + 1,
-      }));
+      // First fetch the jobs to get their weight and volume data
+      const { data: jobsData, error: jobsError } = await supabase
+        .from('jobs')
+        .select('id, total_weight_kg, total_volume_m3, package_count')
+        .in('id', job_ids);
+
+      if (jobsError) throw jobsError;
+
+      // Create a map for quick lookup
+      const jobMap = new Map(
+        (jobsData || []).map((job: any) => [job.id, job])
+      );
+
+      const inserts = job_ids.map((job_id, index) => {
+        const job = jobMap.get(job_id);
+        return {
+          shipment_id,
+          job_id,
+          tenant_id: profile?.tenant_id,
+          loading_sequence: index + 1,
+          weight_kg: job?.total_weight_kg || null,
+          volume_m3: job?.total_volume_m3 || null,
+          packages_count: job?.package_count || 1,
+        };
+      });
 
       const { data, error } = await supabase
         .from('shipment_jobs')
