@@ -772,6 +772,94 @@ export default function Help() {
               </AccordionDetails>
             </Accordion>
 
+            <Accordion>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography fontWeight="600">Shipping Management</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Typography paragraph>
+                  Navigate to <strong>Shipping</strong> to manage outbound deliveries.
+                </Typography>
+                <Typography variant="subtitle2" gutterBottom>
+                  How It Works
+                </Typography>
+                <List dense>
+                  <ListItem>
+                    <ListItemText
+                      primary="1. Complete manufacturing jobs"
+                      secondary="Only completed jobs can be assigned to shipments"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText
+                      primary="2. View 'Ready to Ship' tab"
+                      secondary="See completed jobs grouped by postal code for efficient route planning"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText
+                      primary="3. Create a shipment"
+                      secondary="Set vehicle type, capacity limits, schedule, and route"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText
+                      primary="4. Assign jobs to shipment"
+                      secondary="Select jobs by location, monitor weight/volume capacity"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText
+                      primary="5. Track progress"
+                      secondary="Update status: Draft → Planned → Loading → In Transit → Delivered"
+                    />
+                  </ListItem>
+                </List>
+
+                <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
+                  Load Summary Metrics
+                </Typography>
+                <Typography paragraph>
+                  The Load Summary card shows key operator metrics:
+                </Typography>
+                <List dense>
+                  <ListItem>
+                    <ListItemText
+                      primary="Total weight (kg)"
+                      secondary="Combined weight of all parts in the shipment"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText
+                      primary="Total parts"
+                      secondary="Number of individual parts being shipped"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText
+                      primary="Largest part dimensions (mm)"
+                      secondary="Helps determine if parts fit in vehicle"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText
+                      primary="Number of destinations"
+                      secondary="Unique delivery locations in the shipment"
+                    />
+                  </ListItem>
+                </List>
+
+                <Alert severity="info" sx={{ mt: 2 }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Tip: Add Delivery Postal Codes
+                  </Typography>
+                  <Typography variant="body2">
+                    When creating jobs, add delivery postal codes to enable automatic grouping by location for more efficient route planning.
+                  </Typography>
+                </Alert>
+              </AccordionDetails>
+            </Accordion>
+
             <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
               Best Practices
             </Typography>
