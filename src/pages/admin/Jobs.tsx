@@ -5,7 +5,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import {
   Calendar,
@@ -22,7 +22,12 @@ import {
   PauseCircle,
   Layers,
   AlertTriangle,
+  TrendingUp,
+  Trash2,
+  AlertOctagon,
+  Activity,
 } from "lucide-react";
+import { useQualityMetrics } from "@/hooks/useQualityMetrics";
 import { format, isBefore, addDays, isAfter } from "date-fns";
 import JobDetailModal from "@/components/admin/JobDetailModal";
 import DueDateOverrideModal from "@/components/admin/DueDateOverrideModal";
@@ -157,6 +162,9 @@ export default function Jobs() {
 
   // Fetch routing for all jobs
   const { routings, loading: routingsLoading } = useMultipleJobsRouting(jobIds);
+
+  // Fetch quality metrics
+  const { data: qualityMetrics, isLoading: qualityLoading } = useQualityMetrics();
 
   const handleSetOnHold = async (jobId: string) => {
     await supabase.from("jobs").update({ status: "on_hold" }).eq("id", jobId);
@@ -601,6 +609,121 @@ export default function Jobs() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Quality Metrics Dashboard */}
+      {qualityMetrics && (qualityMetrics.totalProduced > 0 || qualityMetrics.issueMetrics.total > 0) && (
+        <Card className="glass-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Activity className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
+              {t("quality.dashboardTitle", "Quality Overview")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {/* Yield Rate */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <TrendingUp className="h-3.5 w-3.5" />
+                  {t("quality.yieldRate", "Yield Rate")}
+                </div>
+                <div className={cn(
+                  "text-lg font-bold",
+                  qualityMetrics.overallYield >= 95 ? "text-[hsl(var(--color-success))]" :
+                  qualityMetrics.overallYield >= 85 ? "text-[hsl(var(--color-warning))]" :
+                  "text-[hsl(var(--color-error))]"
+                )}>
+                  {qualityMetrics.overallYield.toFixed(1)}%
+                </div>
+              </div>
+
+              {/* Total Produced */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Package className="h-3.5 w-3.5" />
+                  {t("quality.totalProduced", "Produced")}
+                </div>
+                <div className="text-lg font-bold">{qualityMetrics.totalProduced.toLocaleString()}</div>
+              </div>
+
+              {/* Good Parts */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--color-success))]" />
+                  {t("quality.goodParts", "Good")}
+                </div>
+                <div className="text-lg font-bold text-[hsl(var(--color-success))]">
+                  {qualityMetrics.totalGood.toLocaleString()}
+                </div>
+              </div>
+
+              {/* Scrap */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Trash2 className="h-3.5 w-3.5 text-[hsl(var(--color-error))]" />
+                  {t("quality.scrap", "Scrap")}
+                </div>
+                <div className={cn(
+                  "text-lg font-bold",
+                  qualityMetrics.totalScrap > 0 ? "text-[hsl(var(--color-error))]" : ""
+                )}>
+                  {qualityMetrics.totalScrap.toLocaleString()}
+                  {qualityMetrics.scrapRate > 0 && (
+                    <span className="text-xs font-normal ml-1">({qualityMetrics.scrapRate.toFixed(1)}%)</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Open Issues */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <AlertTriangle className="h-3.5 w-3.5 text-[hsl(var(--color-warning))]" />
+                  {t("quality.openIssues", "Open Issues")}
+                </div>
+                <div className={cn(
+                  "text-lg font-bold",
+                  qualityMetrics.issueMetrics.pending > 0 ? "text-[hsl(var(--color-warning))]" : ""
+                )}>
+                  {qualityMetrics.issueMetrics.pending}
+                  <span className="text-xs font-normal text-muted-foreground ml-1">
+                    / {qualityMetrics.issueMetrics.total}
+                  </span>
+                </div>
+              </div>
+
+              {/* Critical Issues */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <AlertOctagon className="h-3.5 w-3.5 text-[hsl(var(--color-error))]" />
+                  {t("quality.critical", "Critical")}
+                </div>
+                <div className={cn(
+                  "text-lg font-bold",
+                  qualityMetrics.issueMetrics.bySeverity.critical > 0 ? "text-[hsl(var(--color-error))]" : ""
+                )}>
+                  {qualityMetrics.issueMetrics.bySeverity.critical}
+                </div>
+              </div>
+            </div>
+
+            {/* Top Scrap Reasons Mini-Bar */}
+            {qualityMetrics.topScrapReasons.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <div className="text-xs text-muted-foreground mb-2">
+                  {t("quality.topScrapReasons", "Top Scrap Reasons")}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {qualityMetrics.topScrapReasons.slice(0, 5).map((reason) => (
+                    <Badge key={reason.code} variant="outline" className="text-xs">
+                      {reason.code}: {reason.quantity}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Jobs Table */}
       <div className="glass-card p-4">

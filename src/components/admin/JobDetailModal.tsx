@@ -334,6 +334,22 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                               </div>
                             </div>
 
+                            {/* Timing Info */}
+                            <div className="grid grid-cols-4 gap-2 text-xs text-muted-foreground ml-7">
+                              <div>
+                                <span className="font-semibold">{t("capacity.scheduled")}:</span> {operation.planned_start ? format(new Date(operation.planned_start), 'MMM d') : '-'}
+                              </div>
+                              <div>
+                                <span className="font-semibold">Setup:</span> {operation.setup_time || 0}m
+                              </div>
+                              <div>
+                                <span className="font-semibold">Run:</span> {operation.run_time_per_unit || 0}m/u
+                              </div>
+                              <div>
+                                <span className="font-semibold">Est Total:</span> {operation.estimated_time || 0}m
+                              </div>
+                            </div>
+
                             {/* Compact status badge */}
                             <Badge
                               className={`

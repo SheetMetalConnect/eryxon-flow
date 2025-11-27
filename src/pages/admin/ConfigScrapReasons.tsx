@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,13 +6,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Edit2, Trash2, Package } from "lucide-react";
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Package,
+  BarChart3,
+  TrendingUp,
+  Activity,
+  AlertTriangle,
+  Hash
+} from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useTranslation } from "react-i18next";
+import { useScrapReasonUsage } from "@/hooks/useQualityMetrics";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 interface ScrapReason {
   id: string;
@@ -33,6 +47,7 @@ const categories = [
 ];
 
 export default function ConfigScrapReasons() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const queryClient = useQueryClient();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -40,6 +55,9 @@ export default function ConfigScrapReasons() {
   const [activeOnly, setActiveOnly] = useState<boolean>(true);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [editingReason, setEditingReason] = useState<Partial<ScrapReason> | null>(null);
+
+  // Fetch usage statistics
+  const { data: usageStats } = useScrapReasonUsage();
 
   const { data: scrapReasons, isLoading } = useQuery({
     queryKey: ["scrap-reasons", selectedCategory, activeOnly, searchQuery],
@@ -128,6 +146,49 @@ export default function ConfigScrapReasons() {
     return categories.find((c) => c.value === category)?.color || "bg-gray-100 text-gray-800";
   };
 
+  // Compute usage analytics
+  const analytics = useMemo(() => {
+    if (!usageStats) return null;
+
+    const totalUsage = usageStats.reduce((sum, r) => sum + r.usageCount, 0);
+    const totalScrapQty = usageStats.reduce((sum, r) => sum + r.totalScrapQuantity, 0);
+    const activeReasons = usageStats.filter((r) => r.active).length;
+    const usedReasons = usageStats.filter((r) => r.usageCount > 0).length;
+    const unusedReasons = usageStats.filter((r) => r.usageCount === 0 && r.active).length;
+
+    // Get top 5 most used reasons
+    const topReasons = [...usageStats]
+      .sort((a, b) => b.totalScrapQuantity - a.totalScrapQuantity)
+      .slice(0, 5)
+      .filter((r) => r.totalScrapQuantity > 0);
+
+    // Group by category
+    const byCategory = categories.map((cat) => ({
+      ...cat,
+      count: usageStats.filter((r) => r.category === cat.value).length,
+      totalScrap: usageStats
+        .filter((r) => r.category === cat.value)
+        .reduce((sum, r) => sum + r.totalScrapQuantity, 0),
+    }));
+
+    return {
+      totalReasons: usageStats.length,
+      activeReasons,
+      usedReasons,
+      unusedReasons,
+      totalUsage,
+      totalScrapQty,
+      topReasons,
+      byCategory,
+    };
+  }, [usageStats]);
+
+  // Create a map for quick lookup of usage stats
+  const usageMap = useMemo(() => {
+    if (!usageStats) return new Map();
+    return new Map(usageStats.map((u) => [u.id, u]));
+  }, [usageStats]);
+
   return (
     <div className="p-6 space-y-8">
       <div>
@@ -140,6 +201,177 @@ export default function ConfigScrapReasons() {
       </div>
 
       <hr className="title-divider" />
+
+      {/* Usage Statistics Dashboard */}
+      {analytics && (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {/* Total Reasons */}
+            <Card className="glass-card transition-smooth hover:scale-[1.02]">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-[hsl(var(--brand-primary))]/10">
+                    <Hash className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold">{analytics.totalReasons}</div>
+                    <div className="text-xs text-muted-foreground">{t("quality.totalReasons", "Total Reasons")}</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Active */}
+            <Card className="glass-card transition-smooth hover:scale-[1.02]">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-[hsl(var(--color-success))]/10">
+                    <Activity className="h-4 w-4 text-[hsl(var(--color-success))]" />
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold text-[hsl(var(--color-success))]">{analytics.activeReasons}</div>
+                    <div className="text-xs text-muted-foreground">{t("quality.activeReasons", "Active")}</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Used */}
+            <Card className="glass-card transition-smooth hover:scale-[1.02]">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-[hsl(var(--color-info))]/10">
+                    <TrendingUp className="h-4 w-4 text-[hsl(var(--color-info))]" />
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold">{analytics.usedReasons}</div>
+                    <div className="text-xs text-muted-foreground">{t("quality.usedReasons", "Used")}</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Unused */}
+            <Card className={cn(
+              "glass-card transition-smooth hover:scale-[1.02]",
+              analytics.unusedReasons > 0 && "border-[hsl(var(--color-warning))]/30"
+            )}>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-[hsl(var(--color-warning))]/10">
+                    <AlertTriangle className="h-4 w-4 text-[hsl(var(--color-warning))]" />
+                  </div>
+                  <div>
+                    <div className={cn(
+                      "text-xl font-bold",
+                      analytics.unusedReasons > 0 && "text-[hsl(var(--color-warning))]"
+                    )}>{analytics.unusedReasons}</div>
+                    <div className="text-xs text-muted-foreground">{t("quality.unusedReasons", "Unused")}</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Total Usage */}
+            <Card className="glass-card transition-smooth hover:scale-[1.02]">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-[hsl(var(--color-error))]/10">
+                    <BarChart3 className="h-4 w-4 text-[hsl(var(--color-error))]" />
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold">{analytics.totalUsage}</div>
+                    <div className="text-xs text-muted-foreground">{t("quality.timesUsed", "Times Used")}</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Total Scrap Qty */}
+            <Card className="glass-card transition-smooth hover:scale-[1.02]">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-[hsl(var(--color-error))]/10">
+                    <Trash2 className="h-4 w-4 text-[hsl(var(--color-error))]" />
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold text-[hsl(var(--color-error))]">
+                      {analytics.totalScrapQty.toLocaleString()}
+                    </div>
+                    <div className="text-xs text-muted-foreground">{t("quality.totalScrapped", "Total Scrapped")}</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Top Reasons and Category Breakdown */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Top Scrap Reasons */}
+            {analytics.topReasons.length > 0 && (
+              <Card className="glass-card">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
+                    {t("quality.topScrapReasons", "Top Scrap Reasons")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-2">
+                    {analytics.topReasons.map((reason, index) => (
+                      <div key={reason.id} className="flex items-center gap-3">
+                        <div className="w-6 text-xs text-muted-foreground font-medium">#{index + 1}</div>
+                        <Badge className={getCategoryColor(reason.category)} variant="outline">
+                          {reason.code}
+                        </Badge>
+                        <div className="flex-1 text-xs text-muted-foreground truncate">
+                          {reason.description}
+                        </div>
+                        <div className="text-sm font-medium text-[hsl(var(--color-error))]">
+                          {reason.totalScrapQuantity}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* By Category */}
+            <Card className="glass-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
+                  {t("quality.scrapByCategory", "Scrap by Category")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-2">
+                  {analytics.byCategory.filter((c) => c.totalScrap > 0).map((cat) => (
+                    <div key={cat.value} className="flex items-center gap-3">
+                      <div className="w-24 text-xs text-muted-foreground">{cat.label}</div>
+                      <div className="flex-1 h-4 bg-muted/30 rounded-full overflow-hidden">
+                        <div
+                          className={cn("h-full rounded-full", cat.color.replace('text-', 'bg-').replace('-800', '-500'))}
+                          style={{
+                            width: `${analytics.totalScrapQty > 0 ? (cat.totalScrap / analytics.totalScrapQty) * 100 : 0}%`
+                          }}
+                        />
+                      </div>
+                      <div className="w-12 text-xs font-medium text-right">{cat.totalScrap}</div>
+                    </div>
+                  ))}
+                  {analytics.byCategory.filter((c) => c.totalScrap > 0).length === 0 && (
+                    <div className="text-xs text-muted-foreground text-center py-2">
+                      {t("quality.noScrapData", "No scrap data recorded yet")}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      )}
 
       <div className="flex justify-end">
         <div className="flex gap-2">
@@ -185,39 +417,60 @@ export default function ConfigScrapReasons() {
                 <TableHead>Description</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-center">{t("quality.usage", "Usage")}</TableHead>
+                <TableHead className="text-center">{t("quality.scrapped", "Scrapped")}</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow><TableCell colSpan={5} className="text-center">Loading...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center">Loading...</TableCell></TableRow>
               ) : scrapReasons?.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">No scrap reasons found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">No scrap reasons found</TableCell></TableRow>
               ) : (
-                scrapReasons?.map((reason) => (
-                  <TableRow key={reason.id}>
-                    <TableCell className="font-medium">{reason.code}</TableCell>
-                    <TableCell>{reason.description}</TableCell>
-                    <TableCell>
-                      <Badge className={getCategoryColor(reason.category)}>
-                        {categories.find((c) => c.value === reason.category)?.label}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={reason.active ? "default" : "secondary"}>{reason.active ? "Active" : "Inactive"}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => { setEditingReason(reason); setDialogOpen(true); }}>
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(reason)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                scrapReasons?.map((reason) => {
+                  const usage = usageMap.get(reason.id);
+                  return (
+                    <TableRow key={reason.id}>
+                      <TableCell className="font-medium">{reason.code}</TableCell>
+                      <TableCell>{reason.description}</TableCell>
+                      <TableCell>
+                        <Badge className={getCategoryColor(reason.category)}>
+                          {categories.find((c) => c.value === reason.category)?.label}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={reason.active ? "default" : "secondary"}>{reason.active ? "Active" : "Inactive"}</Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <span className={cn(
+                          "font-medium",
+                          (usage?.usageCount || 0) > 0 ? "text-foreground" : "text-muted-foreground"
+                        )}>
+                          {usage?.usageCount || 0}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <span className={cn(
+                          "font-medium",
+                          (usage?.totalScrapQuantity || 0) > 0 ? "text-[hsl(var(--color-error))]" : "text-muted-foreground"
+                        )}>
+                          {usage?.totalScrapQuantity?.toLocaleString() || 0}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => { setEditingReason(reason); setDialogOpen(true); }}>
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => handleDelete(reason)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>

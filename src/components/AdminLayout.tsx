@@ -39,6 +39,7 @@ import {
   Flag,
   Info,
   Factory,
+  CalendarClock,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -110,6 +111,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       path: "/admin/activity",
       label: "Activity",
       icon: Clock,
+      exact: true,
+    },
+    {
+      path: "/admin/capacity",
+      label: "Capacity",
+      icon: CalendarClock,
       exact: true,
     },
   ];
@@ -571,52 +578,52 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     <>
       <AnimatedBackground />
       <div className="relative flex h-screen overflow-hidden bg-background">
-      {/* Mobile Menu Button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="fixed left-3 top-3 z-50 h-8 w-8 p-0 lg:hidden"
-        onClick={() => setMobileOpen(!mobileOpen)}
-      >
-        <Menu className="h-4 w-4" />
-      </Button>
+        {/* Mobile Menu Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="fixed left-3 top-3 z-50 h-8 w-8 p-0 lg:hidden"
+          onClick={() => setMobileOpen(!mobileOpen)}
+        >
+          <Menu className="h-4 w-4" />
+        </Button>
 
-      {/* Mobile Sidebar Overlay */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      {/* Sidebar - Mobile */}
-      <aside
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 w-56 border-r sidebar-glass transition-transform lg:hidden",
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        {/* Mobile Sidebar Overlay */}
+        {mobileOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
+            onClick={() => setMobileOpen(false)}
+          />
         )}
-      >
-        <SidebarContent />
-      </aside>
 
-      {/* Sidebar - Desktop (auto-collapse on tablet) */}
-      <aside
-        className={cn(
-          "hidden border-r sidebar-glass transition-all md:block",
-          collapsed ? "w-14" : "w-52 xl:w-56"
-        )}
-      >
-        <div className="relative h-full">
+        {/* Sidebar - Mobile */}
+        <aside
+          className={cn(
+            "fixed inset-y-0 left-0 z-50 w-56 border-r sidebar-glass transition-transform lg:hidden",
+            mobileOpen ? "translate-x-0" : "-translate-x-full"
+          )}
+        >
           <SidebarContent />
-        </div>
-      </aside>
+        </aside>
 
-      {/* Main Content - Reduced padding */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="container mx-auto p-3 pt-14 md:p-4 md:pt-4 lg:p-5">
-          {children}
-        </div>
-      </main>
+        {/* Sidebar - Desktop (auto-collapse on tablet) */}
+        <aside
+          className={cn(
+            "hidden border-r sidebar-glass transition-all md:block",
+            collapsed ? "w-14" : "w-52 xl:w-56"
+          )}
+        >
+          <div className="relative h-full">
+            <SidebarContent />
+          </div>
+        </aside>
+
+        {/* Main Content - Reduced padding */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="container mx-auto p-3 pt-14 md:p-4 md:pt-4 lg:p-5">
+            {children}
+          </div>
+        </main>
       </div>
     </>
   );

@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,9 +21,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
-import { AlertCircle, CheckCircle, XCircle } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  Activity,
+  Clock,
+  AlertTriangle,
+  AlertOctagon,
+  TrendingUp,
+  BarChart3,
+  CircleDot,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 interface Issue {
   id: string;
@@ -208,6 +220,66 @@ export default function IssueQueue() {
 
   const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
 
+  // State for all issues (unfiltered) for analytics
+  const [allIssues, setAllIssues] = useState<Issue[]>([]);
+
+  // Load all issues for analytics
+  useEffect(() => {
+    const loadAllIssues = async () => {
+      if (!profile?.tenant_id) return;
+      const { data } = await supabase
+        .from("issues")
+        .select(`
+          id,
+          severity,
+          status,
+          created_at
+        `)
+        .eq("tenant_id", profile.tenant_id);
+      setAllIssues((data as Issue[]) || []);
+    };
+    loadAllIssues();
+  }, [profile?.tenant_id]);
+
+  // Compute analytics from all issues
+  const analytics = useMemo(() => {
+    const total = allIssues.length;
+    const byStatus = {
+      pending: allIssues.filter((i) => i.status === "pending").length,
+      approved: allIssues.filter((i) => i.status === "approved").length,
+      rejected: allIssues.filter((i) => i.status === "rejected").length,
+      closed: allIssues.filter((i) => i.status === "closed").length,
+    };
+    const bySeverity = {
+      critical: allIssues.filter((i) => i.severity === "critical").length,
+      high: allIssues.filter((i) => i.severity === "high").length,
+      medium: allIssues.filter((i) => i.severity === "medium").length,
+      low: allIssues.filter((i) => i.severity === "low").length,
+    };
+
+    // Calculate resolution rate
+    const resolved = byStatus.approved + byStatus.rejected + byStatus.closed;
+    const resolutionRate = total > 0 ? (resolved / total) * 100 : 0;
+
+    // Calculate average time to resolution (for resolved issues)
+    const resolvedIssues = allIssues.filter(
+      (i) => i.status === "approved" || i.status === "rejected" || i.status === "closed"
+    );
+
+    return {
+      total,
+      byStatus,
+      bySeverity,
+      resolutionRate,
+      criticalPending: allIssues.filter(
+        (i) => i.severity === "critical" && i.status === "pending"
+      ).length,
+      highPending: allIssues.filter(
+        (i) => i.severity === "high" && i.status === "pending"
+      ).length,
+    };
+  }, [allIssues]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -228,6 +300,193 @@ export default function IssueQueue() {
       </div>
 
       <hr className="title-divider" />
+
+      {/* Analytics Dashboard */}
+      {analytics.total > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {/* Total Issues */}
+          <Card className="glass-card transition-smooth hover:scale-[1.02]">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-[hsl(var(--brand-primary))]/10">
+                  <BarChart3 className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
+                </div>
+                <div>
+                  <div className="text-xl font-bold">{analytics.total}</div>
+                  <div className="text-xs text-muted-foreground">{t("quality.totalIssues", "Total Issues")}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Pending */}
+          <Card className={cn(
+            "glass-card transition-smooth hover:scale-[1.02]",
+            analytics.byStatus.pending > 0 && "border-[hsl(var(--color-warning))]/30"
+          )}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-[hsl(var(--color-warning))]/10">
+                  <Clock className="h-4 w-4 text-[hsl(var(--color-warning))]" />
+                </div>
+                <div>
+                  <div className={cn(
+                    "text-xl font-bold",
+                    analytics.byStatus.pending > 0 && "text-[hsl(var(--color-warning))]"
+                  )}>{analytics.byStatus.pending}</div>
+                  <div className="text-xs text-muted-foreground">{t("issues.status.pending")}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Critical */}
+          <Card className={cn(
+            "glass-card transition-smooth hover:scale-[1.02]",
+            analytics.criticalPending > 0 && "border-[hsl(var(--color-error))]/30"
+          )}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-[hsl(var(--color-error))]/10">
+                  <AlertOctagon className="h-4 w-4 text-[hsl(var(--color-error))]" />
+                </div>
+                <div>
+                  <div className={cn(
+                    "text-xl font-bold",
+                    analytics.criticalPending > 0 && "text-[hsl(var(--color-error))]"
+                  )}>{analytics.criticalPending}</div>
+                  <div className="text-xs text-muted-foreground">{t("quality.criticalPending", "Critical Pending")}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* High Priority */}
+          <Card className={cn(
+            "glass-card transition-smooth hover:scale-[1.02]",
+            analytics.highPending > 0 && "border-[hsl(var(--severity-high))]/30"
+          )}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-[hsl(var(--severity-high))]/10">
+                  <AlertTriangle className="h-4 w-4 text-[hsl(var(--severity-high))]" />
+                </div>
+                <div>
+                  <div className={cn(
+                    "text-xl font-bold",
+                    analytics.highPending > 0 && "text-[hsl(var(--severity-high))]"
+                  )}>{analytics.highPending}</div>
+                  <div className="text-xs text-muted-foreground">{t("quality.highPending", "High Pending")}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Resolved */}
+          <Card className="glass-card transition-smooth hover:scale-[1.02]">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-[hsl(var(--color-success))]/10">
+                  <CheckCircle className="h-4 w-4 text-[hsl(var(--color-success))]" />
+                </div>
+                <div>
+                  <div className="text-xl font-bold text-[hsl(var(--color-success))]">
+                    {analytics.byStatus.approved + analytics.byStatus.closed}
+                  </div>
+                  <div className="text-xs text-muted-foreground">{t("quality.resolved", "Resolved")}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Resolution Rate */}
+          <Card className="glass-card transition-smooth hover:scale-[1.02]">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-[hsl(var(--color-info))]/10">
+                  <TrendingUp className="h-4 w-4 text-[hsl(var(--color-info))]" />
+                </div>
+                <div>
+                  <div className={cn(
+                    "text-xl font-bold",
+                    analytics.resolutionRate >= 80 ? "text-[hsl(var(--color-success))]" :
+                    analytics.resolutionRate >= 50 ? "text-[hsl(var(--color-warning))]" :
+                    "text-[hsl(var(--color-error))]"
+                  )}>{analytics.resolutionRate.toFixed(0)}%</div>
+                  <div className="text-xs text-muted-foreground">{t("quality.resolutionRate", "Resolution Rate")}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Severity & Status Breakdown */}
+      {analytics.total > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* By Severity */}
+          <Card className="glass-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Activity className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
+                {t("quality.bySeverity", "Issues by Severity")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-2">
+                {[
+                  { key: "critical", label: t("issues.severity.critical"), color: "bg-severity-critical", value: analytics.bySeverity.critical },
+                  { key: "high", label: t("issues.severity.high"), color: "bg-severity-high", value: analytics.bySeverity.high },
+                  { key: "medium", label: t("issues.severity.medium"), color: "bg-severity-medium", value: analytics.bySeverity.medium },
+                  { key: "low", label: t("issues.severity.low"), color: "bg-severity-low", value: analytics.bySeverity.low },
+                ].map((item) => (
+                  <div key={item.key} className="flex items-center gap-3">
+                    <div className="w-20 text-xs text-muted-foreground">{item.label}</div>
+                    <div className="flex-1 h-4 bg-muted/30 rounded-full overflow-hidden">
+                      <div
+                        className={cn("h-full rounded-full", item.color)}
+                        style={{ width: `${analytics.total > 0 ? (item.value / analytics.total) * 100 : 0}%` }}
+                      />
+                    </div>
+                    <div className="w-8 text-xs font-medium text-right">{item.value}</div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* By Status */}
+          <Card className="glass-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <CircleDot className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
+                {t("quality.byStatus", "Issues by Status")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-2">
+                {[
+                  { key: "pending", label: t("issues.status.pending"), color: "bg-[hsl(var(--color-warning))]", value: analytics.byStatus.pending },
+                  { key: "approved", label: t("issues.status.approved"), color: "bg-[hsl(var(--color-success))]", value: analytics.byStatus.approved },
+                  { key: "rejected", label: t("issues.status.rejected"), color: "bg-[hsl(var(--color-error))]", value: analytics.byStatus.rejected },
+                  { key: "closed", label: t("issues.status.closed"), color: "bg-muted-foreground", value: analytics.byStatus.closed },
+                ].map((item) => (
+                  <div key={item.key} className="flex items-center gap-3">
+                    <div className="w-20 text-xs text-muted-foreground">{item.label}</div>
+                    <div className="flex-1 h-4 bg-muted/30 rounded-full overflow-hidden">
+                      <div
+                        className={cn("h-full rounded-full", item.color)}
+                        style={{ width: `${analytics.total > 0 ? (item.value / analytics.total) * 100 : 0}%` }}
+                      />
+                    </div>
+                    <div className="w-8 text-xs font-medium text-right">{item.value}</div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

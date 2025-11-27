@@ -31,6 +31,7 @@ import Jobs from "./pages/admin/Jobs";
 import JobCreate from "./pages/admin/JobCreate";
 import Parts from "./pages/admin/Parts";
 import { ActivityMonitor } from "./pages/admin/ActivityMonitor";
+import CapacityMatrix from "./pages/admin/CapacityMatrix";
 import { Operations } from "./pages/admin/Operations";
 import { Settings } from "./pages/admin/Settings";
 import IntegrationsMarketplace from "./pages/admin/IntegrationsMarketplace";
@@ -365,6 +366,17 @@ function AppRoutes() {
           <ProtectedRoute adminOnly>
             <Layout>
               <ActivityMonitor />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/capacity"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <CapacityMatrix />
             </Layout>
           </ProtectedRoute>
         }
