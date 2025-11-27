@@ -27,11 +27,12 @@
 
 <div align="center">
 
-### 📊 Project Velocity & Metrics
+### 📊 Project Stats
 
-![Metrics](./metrics.svg)
-
-*Auto-updated daily via GitHub Actions*
+![Commits/month](https://img.shields.io/github/commit-activity/m/SheetMetalConnect/eryxon-flow?style=flat-square&label=commits/month)
+![Last commit](https://img.shields.io/github/last-commit/SheetMetalConnect/eryxon-flow?style=flat-square)
+![Created](https://img.shields.io/github/created-at/SheetMetalConnect/eryxon-flow?style=flat-square&label=inception)
+![Repo size](https://img.shields.io/github/repo-size/SheetMetalConnect/eryxon-flow?style=flat-square)
 
 </div>
 
