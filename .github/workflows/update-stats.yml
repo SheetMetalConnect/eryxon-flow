@@ -1,0 +1,30 @@
+name: Update Repository Metrics
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday
+  workflow_dispatch:
+
+jobs:
+  github-metrics:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Generate Metrics
+        uses: lowlighter/metrics@latest
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+          # Output
+          filename: metrics.svg
+          output_action: commit
+          committer_message: "chore: update metrics [skip ci]"
+
+          # Minimal config = fast rendering (~30s)
+          base: header, repositories
+          base_indepth: no
+          repositories_forks: no
+          config_timezone: Europe/Vienna
