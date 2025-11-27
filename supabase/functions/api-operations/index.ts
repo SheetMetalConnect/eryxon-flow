@@ -28,7 +28,7 @@ import {
   handleOptions,
   NotFoundError,
   ConflictError,
-  ValidationError,
+  ValidationException,
   UnauthorizedError,
   BadRequestError,
 } from "../_shared/validation/errorHandler.ts";
@@ -344,7 +344,7 @@ async function handleCreateOperation(
   const validationResult = validator.validate(body, context);
 
   if (!validationResult.valid) {
-    throw new ValidationError(validationResult);
+    throw new ValidationException(validationResult);
   }
 
   // Get the next sequence number if not provided
@@ -452,7 +452,7 @@ async function handleUpdateOperation(
       updates.assigned_operator_id !== null &&
       !validOperatorIds.includes(updates.assigned_operator_id)
     ) {
-      throw new ValidationError({
+      throw new ValidationException({
         valid: false,
         severity: "error" as any,
         httpStatus: 422,
@@ -469,7 +469,7 @@ async function handleUpdateOperation(
     }
 
     if (updates.cell_id && !validCellIds.includes(updates.cell_id)) {
-      throw new ValidationError({
+      throw new ValidationException({
         valid: false,
         severity: "error" as any,
         httpStatus: 422,

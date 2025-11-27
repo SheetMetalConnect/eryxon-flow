@@ -1004,6 +1004,10 @@
   "pricing": {
     "title": "Preispläne",
     "subtitle": "Wählen Sie den perfekten Plan für Ihren Metallbaubetrieb",
+    "comingSoonTitle": "Preise kommen bald",
+    "comingSoonSubtitle": "Professionelle Preispläne werden derzeit finalisiert",
+    "comingSoonDescription": "Wir bereiten transparente, faire Preise für europäische Hersteller vor. Kontaktieren Sie uns für frühen Zugang und individuelle Angebote.",
+    "contactUs": "Kontaktieren Sie uns",
     "monthly": "Monatlich",
     "annually": "Jährlich",
     "save20": "20% sparen",
@@ -1080,6 +1084,12 @@
   },
   "myPlan": {
     "title": "Mein Plan",
+    "comingSoonTitle": "Abonnementverwaltung kommt bald",
+    "comingSoonSubtitle": "Professionelle Abonnementfunktionen werden finalisiert",
+    "comingSoonDescription": "Wir entwickeln ein umfassendes Abonnementverwaltungssystem. Derzeit sind alle Funktionen kostenlos verfügbar.",
+    "contactUs": "Kontaktieren Sie uns",
+    "currentlyFree": "Derzeit kostenlos für alle Benutzer",
+    "currentlyFreeDescription": "Alle Funktionen sind kostenlos verfügbar, während wir unsere Preisstruktur finalisieren.",
     "activeJobs": "Aktive Aufträge",
     "admins": "Administratoren",
     "amount": "Betrag",

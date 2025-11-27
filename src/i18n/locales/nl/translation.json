@@ -1281,6 +1281,10 @@
   "pricing": {
     "title": "Abonnementen",
     "subtitle": "Kies het perfecte abonnement voor uw metaalbedrijf",
+    "comingSoonTitle": "Prijzen komen binnenkort",
+    "comingSoonSubtitle": "Professionele abonnementen worden momenteel afgerond",
+    "comingSoonDescription": "We bereiden transparante, eerlijke prijzen voor Europese fabrikanten voor. Neem contact op voor vroege toegang en op maat gemaakte offertes.",
+    "contactUs": "Neem contact op",
     "monthly": "Maandelijks",
     "annually": "Jaarlijks",
     "save20": "20% besparen",
@@ -1358,6 +1362,12 @@
   "myPlan": {
     "title": "Mijn abonnement",
     "subtitle": "Beheer uw abonnement en gebruik",
+    "comingSoonTitle": "Abonnementsbeheer komt binnenkort",
+    "comingSoonSubtitle": "Professionele abonnementsfuncties worden afgerond",
+    "comingSoonDescription": "We bouwen een uitgebreid abonnementsbeheer systeem. Momenteel zijn alle functies gratis beschikbaar.",
+    "contactUs": "Neem contact op",
+    "currentlyFree": "Momenteel gratis voor alle gebruikers",
+    "currentlyFreeDescription": "Alle functies zijn kostenlos beschikbaar terwijl we onze prijsstructuur afronden.",
     "activeJobs": "Actieve opdrachten",
     "admins": "Beheerders",
     "amount": "Bedrag",
