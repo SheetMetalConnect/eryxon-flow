@@ -3,6 +3,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils';
 import type { RoutingStep } from '@/types/qrm';
 import { getRoutingProgress } from '@/types/qrm';
+import { useTranslation } from 'react-i18next';
 
 interface RoutingVisualizationProps {
   routing: RoutingStep[];
@@ -17,6 +18,8 @@ export function RoutingVisualization({
   compact = false,
   showProgress = true,
 }: RoutingVisualizationProps) {
+  const { t } = useTranslation();
+
   if (loading) {
     return (
       <div className="flex items-center text-sm text-muted-foreground">
@@ -42,7 +45,7 @@ export function RoutingVisualization({
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <MinusCircle className="h-4 w-4" />
-        <span>No routing defined</span>
+        <span>{t("qrm.noRoutingDefined")}</span>
       </div>
     );
   }
@@ -127,7 +130,7 @@ export function RoutingVisualization({
                       {/* Operation count */}
                       {!compact && (
                         <div className="text-xs font-medium mt-0.5 opacity-80">
-                          {step.completed_operations}/{step.operation_count} ops
+                          {step.completed_operations}/{step.operation_count} {t("qrm.ops")}
                         </div>
                       )}
                     </div>
@@ -137,17 +140,17 @@ export function RoutingVisualization({
                   <div className="space-y-1">
                     <div className="font-semibold text-foreground">{step.cell_name}</div>
                     <div className="text-xs text-muted-foreground">
-                      {step.completed_operations} of {step.operation_count} operations completed
+                      {t("qrm.operationsCompleted", { completed: step.completed_operations, total: step.operation_count })}
                     </div>
                     {step.parts_in_cell !== undefined && step.parts_in_cell > 0 && (
                       <div className="text-xs text-muted-foreground">
-                        {step.parts_in_cell} part{step.parts_in_cell !== 1 ? 's' : ''} in cell
+                        {t("qrm.partsInCell", { count: step.parts_in_cell })}
                       </div>
                     )}
                     <div className="text-xs mt-2">
-                      {isCompleted && <span className="text-status-completed font-medium">✓ Completed</span>}
-                      {isInProgress && <span className="text-status-active font-medium">◉ In Progress</span>}
-                      {isNotStarted && <span className="text-muted-foreground font-medium">○ Not Started</span>}
+                      {isCompleted && <span className="text-status-completed font-medium">✓ {t("qrm.statusCompleted")}</span>}
+                      {isInProgress && <span className="text-status-active font-medium">◉ {t("qrm.statusInProgress")}</span>}
+                      {isNotStarted && <span className="text-muted-foreground font-medium">○ {t("qrm.statusNotStarted")}</span>}
                     </div>
                   </div>
                 </TooltipContent>

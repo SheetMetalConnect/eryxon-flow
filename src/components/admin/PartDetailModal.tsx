@@ -502,7 +502,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
           {/* Routing Visualization */}
           <div>
-            <Label className="text-lg">{t("qrm.routing", "Routing")}</Label>
+            <Label className="text-lg">{t("qrm.routing")}</Label>
             <div className="mt-3 border rounded-lg p-4 bg-muted">
               <RoutingVisualization routing={routing} loading={routingLoading} compact />
             </div>
@@ -858,7 +858,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   <div className="col-span-2">
                     <div className="flex items-center gap-2 mb-2">
                       <Wrench className="h-4 w-4 text-orange-600" />
-                      <Label>Required Resources (Optional)</Label>
+                      <Label>{t("operations.requiredResourcesOptional")}</Label>
                     </div>
 
                     {/* Resource Selection Dropdown */}
@@ -877,7 +877,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                       }}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Add a resource..." />
+                        <SelectValue placeholder={t("operations.addResource")} />
                       </SelectTrigger>
                       <SelectContent>
                         {availableResources
@@ -931,7 +931,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                               </div>
                               <div className="grid grid-cols-2 gap-2">
                                 <div>
-                                  <Label className="text-xs">Quantity</Label>
+                                  <Label className="text-xs">{t("operations.quantity")}</Label>
                                   <Input
                                     type="number"
                                     min="0.1"
@@ -946,7 +946,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                                   />
                                 </div>
                                 <div>
-                                  <Label className="text-xs">Instructions (Optional)</Label>
+                                  <Label className="text-xs">{t("operations.instructionsOptional")}</Label>
                                   <Input
                                     value={selectedRes.notes}
                                     onChange={(e) => {
@@ -954,7 +954,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                                       updated[idx].notes = e.target.value;
                                       setNewOperation({ ...newOperation, selected_resources: updated });
                                     }}
-                                    placeholder="Special instructions..."
+                                    placeholder={t("operations.specialInstructions")}
                                     className="h-8 text-xs"
                                   />
                                 </div>
