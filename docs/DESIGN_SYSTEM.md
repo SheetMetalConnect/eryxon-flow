@@ -51,10 +51,12 @@ All values originate from the Antigravity design kit (`browser.css`) so the engi
 
 - **CSS Framework**: Tailwind CSS + CSS Custom Properties
 - **UI Components**: 100% shadcn/ui primitives (button, sheet, dialog, form, badge, etc.)
-- **Complex Components**: Material-UI v7 (DataGrid, DatePickers) wrapped in shadcn shells when needed
+- **Data Tables**: TanStack Table with shadcn/ui table primitives
+- **Date/Time Pickers**: Custom shadcn/ui components using react-day-picker + popover
 - **Typography**: Inter + system UI stack
 - **Styling Approach**: Dark mode only, glass morphism, animated backgrounds
 - **Reference Styles**: Antigravity `browser.css` pack for gradients, pills, and layout primitives
+- **Icons**: Lucide React (consistent with shadcn/ui)
 
 ---
 
