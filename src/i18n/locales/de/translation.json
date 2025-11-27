@@ -137,6 +137,7 @@
     "materials": "Materialien",
     "resources": "Betriebsmittel",
     "templates": "Vorlagen",
+    "scrapReasons": "Ausschussgründe",
     "integrations": "Integrationen",
     "dataExport": "Datenexport",
     "accountAndSupport": "Konto & Support",
@@ -230,8 +231,22 @@
     "loading": "Wird geladen...",
     "next": "Weiter",
     "save": "Speichern",
+    "saving": "Speichern...",
     "success": "Erfolg",
-    "validationError": "Validierungsfehler"
+    "validationError": "Validierungsfehler",
+    "yes": "Ja",
+    "no": "Nein"
+  },
+  "production": {
+    "reportTitle": "Produktion melden",
+    "target": "Ziel",
+    "remaining": "verbleibend",
+    "done": "fertig",
+    "targetReached": "Ziel erreicht!",
+    "report": "Melden",
+    "enterGoodParts": "Gutteile eingeben",
+    "recorded": "{{count}} Gutteile erfasst",
+    "shortfallPrompt": "{{count}} unter Ziel. Problem melden?"
   },
   "onboarding": {
     "welcome": "Willkommen bei Eryxon MES",
@@ -569,10 +584,15 @@
     "created": "Erstellt",
     "createIssue": "Problem melden",
     "critical": "Kritisch",
-    "describeIssue": "Beschreiben Sie das Problem",
+    "describeIssue": "Beschreiben Sie das Problem...",
     "description": "Beschreibung",
     "editIssue": "Problem bearbeiten",
     "deleteIssue": "Problem löschen",
+    "addPhoto": "Foto hinzufügen",
+    "filesSelected": "{{count}} Foto(s)",
+    "report": "Melden",
+    "selectCategory": "Kategorie auswählen",
+    "category": "Kategorie",
     "enterResolutionNotes": "Lösungsnotizen eingeben",
     "failedToReportIssue": "Problem konnte nicht gemeldet werden",
     "failedToUpdateIssue": "Problem konnte nicht aktualisiert werden",
@@ -1367,6 +1387,7 @@
     "title": "Neuen Auftrag erstellen",
     "subtitle": "Erstellen Sie Ihren Auftrag Schritt für Schritt: definieren Sie Details, fügen Sie Teile hinzu, konfigurieren Sie Arbeitsgänge und überprüfen Sie"
   },
+<<<<<<< HEAD
   "shipping": {
     "title": "Versandverwaltung",
     "subtitle": "Gruppieren Sie abgeschlossene Aufträge in Sendungen, weisen Sie Fahrzeuge zu und verfolgen Sie Lieferungen",
@@ -1497,5 +1518,34 @@
     "largestPartMm": "mm (L×B)",
     "largestPart": "größtes Teil",
     "destinations": "Ziele"
+  },
+  "quality": {
+    "dashboardTitle": "Qualitätsübersicht",
+    "partsQuality": "Teile Qualitätsübersicht",
+    "yieldRate": "Ausbeute",
+    "totalProduced": "Produziert",
+    "goodParts": "Gut",
+    "scrap": "Ausschuss",
+    "rework": "Nacharbeit",
+    "openIssues": "Offene Probleme",
+    "critical": "Kritisch",
+    "topScrapReasons": "Häufigste Ausschussgründe",
+    "scrapByCategory": "Ausschuss nach Kategorie",
+    "totalIssues": "Gesamte Probleme",
+    "criticalPending": "Kritisch ausstehend",
+    "highPending": "Hoch ausstehend",
+    "resolved": "Gelöst",
+    "resolutionRate": "Lösungsrate",
+    "bySeverity": "Probleme nach Schweregrad",
+    "byStatus": "Probleme nach Status",
+    "totalReasons": "Gesamte Gründe",
+    "activeReasons": "Aktiv",
+    "usedReasons": "Verwendet",
+    "unusedReasons": "Unbenutzt",
+    "timesUsed": "Mal verwendet",
+    "totalScrapped": "Gesamt verschrottet",
+    "noScrapData": "Noch keine Ausschussdaten erfasst",
+    "usage": "Verwendung",
+    "scrapped": "Verschrottet"
   }
 }

@@ -30,6 +30,7 @@ export const ROUTES = {
       RESOURCES: "/admin/config/resources",
       USERS: "/admin/config/users",
       STEPS_TEMPLATES: "/admin/config/steps-templates",
+      SCRAP_REASONS: "/admin/config/scrap-reasons",
       API_KEYS: "/admin/config/api-keys",
       MCP_KEYS: "/admin/config/mcp-keys",
       WEBHOOKS: "/admin/config/webhooks",

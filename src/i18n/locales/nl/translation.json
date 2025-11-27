@@ -377,6 +377,7 @@
     "materials": "Materialen",
     "resources": "Gereedschappen",
     "templates": "Sjablonen",
+    "scrapReasons": "Afvalredenen",
     "integrations": "Integraties",
     "dataExport": "Gegevensexport",
     "accountAndSupport": "Account & Ondersteuning",
@@ -499,9 +500,23 @@
     "loading": "Laden...",
     "next": "Volgende",
     "save": "Opslaan",
+    "saving": "Opslaan...",
     "success": "Succes",
     "validationError": "Validatiefout",
-    "stopping": "Stoppen..."
+    "stopping": "Stoppen...",
+    "yes": "Ja",
+    "no": "Nee"
+  },
+  "production": {
+    "reportTitle": "Productie Melden",
+    "target": "Doel",
+    "remaining": "resterend",
+    "done": "klaar",
+    "targetReached": "Doel bereikt!",
+    "report": "Melden",
+    "enterGoodParts": "Voer goede onderdelen in",
+    "recorded": "{{count}} goede onderdelen geregistreerd",
+    "shortfallPrompt": "{{count}} onder doel. Probleem melden?"
   },
   "onboarding": {
     "welcome": "Welkom bij Eryxon MES",
@@ -839,10 +854,15 @@
     "created": "Aangemaakt",
     "createIssue": "Probleem melden",
     "critical": "Kritiek",
-    "describeIssue": "Beschrijf het probleem",
+    "describeIssue": "Beschrijf het probleem...",
     "description": "Beschrijving",
     "editIssue": "Probleem bewerken",
     "deleteIssue": "Probleem verwijderen",
+    "addPhoto": "Foto toevoegen",
+    "filesSelected": "{{count}} foto('s)",
+    "report": "Melden",
+    "selectCategory": "Categorie selecteren",
+    "category": "Categorie",
     "enterResolutionNotes": "Oplossingsnotities invoeren",
     "failedToReportIssue": "Probleem melden mislukt",
     "failedToUpdateIssue": "Probleem bijwerken mislukt",
@@ -1640,6 +1660,7 @@
     "title": "Nieuwe Order Aanmaken",
     "subtitle": "Bouw uw order stap voor stap: definieer details, voeg onderdelen toe, configureer bewerkingen en controleer"
   },
+<<<<<<< HEAD
   "shipping": {
     "title": "Verzendbeheer",
     "subtitle": "Groepeer voltooide orders in zendingen, wijs voertuigen toe en volg leveringen",
@@ -1770,5 +1791,34 @@
     "largestPartMm": "mm (L×B)",
     "largestPart": "grootste onderdeel",
     "destinations": "bestemmingen"
+  },
+  "quality": {
+    "dashboardTitle": "Kwaliteitsoverzicht",
+    "partsQuality": "Onderdelen Kwaliteitsoverzicht",
+    "yieldRate": "Opbrengst",
+    "totalProduced": "Geproduceerd",
+    "goodParts": "Goed",
+    "scrap": "Afval",
+    "rework": "Herwerk",
+    "openIssues": "Openstaande problemen",
+    "critical": "Kritiek",
+    "topScrapReasons": "Meest voorkomende afvalredenen",
+    "scrapByCategory": "Afval per categorie",
+    "totalIssues": "Totaal problemen",
+    "criticalPending": "Kritiek in afwachting",
+    "highPending": "Hoog in afwachting",
+    "resolved": "Opgelost",
+    "resolutionRate": "Oplossingspercentage",
+    "bySeverity": "Problemen per ernst",
+    "byStatus": "Problemen per status",
+    "totalReasons": "Totaal redenen",
+    "activeReasons": "Actief",
+    "usedReasons": "Gebruikt",
+    "unusedReasons": "Ongebruikt",
+    "timesUsed": "Keer gebruikt",
+    "totalScrapped": "Totaal afgekeurd",
+    "noScrapData": "Nog geen afvalgegevens geregistreerd",
+    "usage": "Gebruik",
+    "scrapped": "Afgekeurd"
   }
 }
