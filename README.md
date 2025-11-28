@@ -72,6 +72,7 @@ Comprehensive documentation is available in the [`/docs`](./docs) folder:
 - **[API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md)** - REST API reference
 - **[DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md)** - Design tokens and styling
 - **[EDGE_FUNCTIONS_SETUP.md](docs/EDGE_FUNCTIONS_SETUP.md)** - Edge Functions guide
+- **[CICD_DEPLOYMENT_PLAN.md](docs/CICD_DEPLOYMENT_PLAN.md)** - CI/CD pipeline and Docker deployment
 - **[CLAUDE.md](CLAUDE.md)** - AI assistant guide for contributors
 
 Additional documentation:
@@ -117,11 +118,26 @@ Additional documentation:
 
 ## 📦 Deployment
 
-Deployed via [Lovable Platform](https://lovable.dev/projects/aaa3208a-70fb-4eb6-a5eb-5823f025e734)
+| Environment | Platform | Details |
+|-------------|----------|---------|
+| **Development** | [Lovable](https://lovable.dev/projects/aaa3208a-70fb-4eb6-a5eb-5823f025e734) | Auto-syncs with GitHub |
+| **Production** | Docker on Hetzner | EU-hosted, fixed costs |
+| **Local/On-Premise** | Docker | Same image, custom Supabase |
 
-To deploy updates: **Share → Publish**
+### CI/CD Pipeline
 
-For custom domains, see [Lovable docs](https://docs.lovable.dev/features/custom-domain)
+- **PRs**: Automated lint, type-check, build, test
+- **Releases**: Manual workflow with migrations and Edge Functions deployment
+- **Docker Images**: Published to GitHub Container Registry (GHCR)
+
+See **[docs/CICD_DEPLOYMENT_PLAN.md](docs/CICD_DEPLOYMENT_PLAN.md)** for full setup instructions.
+
+### Quick Docker Run
+
+```bash
+docker pull ghcr.io/sheetmetalconnect/eryxon-flow:latest
+docker run -p 8080:80 ghcr.io/sheetmetalconnect/eryxon-flow:latest
+```
 
 ## 📄 License
 
@@ -133,6 +149,6 @@ This software is for internal use only and may not be distributed, copied, or mo
 
 ---
 
-**Built with** React 18 + TypeScript + Supabase  
-**Status**: Production  
+**Built with** React 18 + TypeScript + Supabase
+**Status**: Production
 **Version**: 1.2

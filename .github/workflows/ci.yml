@@ -2,7 +2,7 @@ name: CI
 
 on:
   pull_request:
-    branches: [main, dev]
+    branches: [main]
 
 jobs:
   lint-and-typecheck:
@@ -45,8 +45,8 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_DEV }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_DEV }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_PROD }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_PROD }}
 
   test:
     name: Test
