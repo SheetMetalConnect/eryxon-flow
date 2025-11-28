@@ -50,6 +50,37 @@ export default function ShipmentDetailModal({ shipmentId, onClose }: ShipmentDet
   const removeJob = useRemoveJobFromShipment();
   const updateStatus = useUpdateShipmentStatus();
 
+  // Calculate operator-focused metrics from parts data - must be before early returns
+  const operatorMetrics = useMemo(() => {
+    if (!shipment?.shipment_jobs) return null;
+
+    let totalParts = 0;
+    let largestLength = 0;
+    let largestWidth = 0;
+    let largestHeight = 0;
+    const uniqueDestinations = new Set<string>();
+
+    shipment.shipment_jobs.forEach((sj: any) => {
+      if (sj.job?.parts) {
+        sj.job.parts.forEach((part: any) => {
+          totalParts += part.quantity || 1;
+          if (part.length_mm && part.length_mm > largestLength) largestLength = part.length_mm;
+          if (part.width_mm && part.width_mm > largestWidth) largestWidth = part.width_mm;
+          if (part.height_mm && part.height_mm > largestHeight) largestHeight = part.height_mm;
+        });
+      }
+      if (sj.job?.delivery_postal_code) {
+        uniqueDestinations.add(sj.job.delivery_postal_code);
+      }
+    });
+
+    return {
+      totalParts,
+      largestDimensions: largestLength > 0 ? { length: largestLength, width: largestWidth, height: largestHeight } : null,
+      uniqueDestinations: uniqueDestinations.size,
+    };
+  }, [shipment?.shipment_jobs]);
+
   if (isLoading) {
     return (
       <Dialog open onOpenChange={onClose}>
@@ -78,37 +109,6 @@ export default function ShipmentDetailModal({ shipmentId, onClose }: ShipmentDet
   const volumeUsage = shipment.max_volume_m3
     ? ((shipment.current_volume_m3 || 0) / shipment.max_volume_m3) * 100
     : null;
-
-  // Calculate operator-focused metrics from parts data
-  const operatorMetrics = useMemo(() => {
-    if (!shipment.shipment_jobs) return null;
-
-    let totalParts = 0;
-    let largestLength = 0;
-    let largestWidth = 0;
-    let largestHeight = 0;
-    const uniqueDestinations = new Set<string>();
-
-    shipment.shipment_jobs.forEach((sj: any) => {
-      if (sj.job?.parts) {
-        sj.job.parts.forEach((part: any) => {
-          totalParts += part.quantity || 1;
-          if (part.length_mm && part.length_mm > largestLength) largestLength = part.length_mm;
-          if (part.width_mm && part.width_mm > largestWidth) largestWidth = part.width_mm;
-          if (part.height_mm && part.height_mm > largestHeight) largestHeight = part.height_mm;
-        });
-      }
-      if (sj.job?.delivery_postal_code) {
-        uniqueDestinations.add(sj.job.delivery_postal_code);
-      }
-    });
-
-    return {
-      totalParts,
-      largestDimensions: largestLength > 0 ? { length: largestLength, width: largestWidth, height: largestHeight } : null,
-      uniqueDestinations: uniqueDestinations.size,
-    };
-  }, [shipment.shipment_jobs]);
 
   const handleRemoveJob = (jobId: string) => {
     if (confirm(t('shipping.confirmRemoveJob', 'Remove this job from the shipment?'))) {

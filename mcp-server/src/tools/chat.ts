@@ -133,11 +133,12 @@ function getDateFilter(timePeriod: string): Date | null {
   switch (timePeriod) {
     case "today":
       return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    case "this_week":
+    case "this_week": {
       const weekStart = new Date(now);
       weekStart.setDate(now.getDate() - now.getDay());
       weekStart.setHours(0, 0, 0, 0);
       return weekStart;
+    }
     case "this_month":
       return new Date(now.getFullYear(), now.getMonth(), 1);
     case "all":

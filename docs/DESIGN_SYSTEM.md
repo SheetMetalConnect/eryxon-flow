@@ -1,16 +1,13 @@
 # Eryxon Flow Design System
 
-**Antigravity-inspired dark-first design system for manufacturing execution**
-
-Version: 3.3 "Compact Antigravity"
-Last Updated: November 25, 2025
-Status: ✅ Active
+**Modern design system for manufacturing execution with dark/light/auto theme support**
 
 ---
 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Theme Modes](#theme-modes)
 - [Design Philosophy](#design-philosophy)
 - [Responsive & Compact Design](#responsive--compact-design)
 - [Getting Started](#getting-started)
@@ -19,42 +16,69 @@ Status: ✅ Active
 - [Components](#components)
 - [Animations](#animations)
 - [Best Practices](#best-practices)
-- [Migration Guide](#migration-guide)
+- [Manufacturing Patterns](#manufacturing-specific-patterns)
 
 ---
 
 ## Overview
 
-The Eryxon Flow design system is a **modern, dark-first** UI framework built for manufacturing professionals. Release 3.1 realigns every surface with the Antigravity Browser Control pack so the product looks identical to the animated onboarding reference.
+The Eryxon Flow design system is a **modern, multi-theme** UI framework built for manufacturing professionals. It supports **dark**, **light**, and **auto** (system preference) modes.
 
-It combines:
+### Core Features
 
-- **Antigravity Ambient Field**: Deep #111927 base plus layered radial gradients from the `browser.css` pack
-- **Floating Gradient Orbs**: Three drifting light sources that keep the background alive
-- **Glass Morphism Surfaces**: Blur + saturate cards with translucent borders
-- **Neon Accent Palette**: Icon tints and pills in electric blue, green, yellow, and red
-- **System-Weighted Typography**: Inter blended with the OS stack for crisp UI copy
-- **Touch-Optimized Layouts**: 44px+ targets, stacked content, and centered onboarding
-- **shadcn/ui-Only Components**: Every primitive (button, input, badge, dialog, etc.) comes from shadcn/ui and then receives glassmorphism styling
-
-### Antigravity DNA
-
-1. **Ambient Gradient Shell** — `background-color: #111927` plus two radial gradients for depth.
-2. **Onboarding Glass Card** — `rgba(17, 25, 40, 0.75)` panel with 16px blur, saturate(180%), and 1px translucent border.
-3. **Layered Hero Stack** — Icon container, uppercase welcome text, hero gradient title, and a translucent preview pill.
-4. **Narrative Sections** — Informational text capsule, workflow callout, and use-case grid with tinted stroke icons.
-5. **Micro-Interactions** — Copy-on-click pill, CTA button with arrow icon, and animated pills for status states.
-
-All values originate from the Antigravity design kit (`browser.css`) so the engineering implementation stays pixel-accurate.
+- **Multi-Theme Support**: Dark, light, and auto modes with seamless switching
+- **Glass Morphism Surfaces**: Blur + saturate cards with translucent borders (adapts to theme)
+- **Accent Palette**: Icon tints and pills in blue, green, yellow, and red
+- **System Typography**: Inter blended with the OS stack for crisp UI copy
+- **Touch-Optimized Layouts**: 44px+ targets for shop-floor tablets
+- **shadcn/ui Components**: Every primitive comes from shadcn/ui with theme-aware styling
 
 ### Technology Stack
 
 - **CSS Framework**: Tailwind CSS + CSS Custom Properties
+- **Theme Provider**: `src/theme/ThemeProvider.tsx` (dark/light/auto with localStorage persistence)
 - **UI Components**: 100% shadcn/ui primitives (button, sheet, dialog, form, badge, etc.)
-- **Complex Components**: Material-UI v7 (DataGrid, DatePickers) wrapped in shadcn shells when needed
+- **Data Tables**: TanStack Table with shadcn/ui table primitives
+- **Date/Time Pickers**: Custom shadcn/ui components using react-day-picker + popover
 - **Typography**: Inter + system UI stack
-- **Styling Approach**: Dark mode only, glass morphism, animated backgrounds
-- **Reference Styles**: Antigravity `browser.css` pack for gradients, pills, and layout primitives
+- **Icons**: Lucide React (consistent with shadcn/ui)
+
+---
+
+## Theme Modes
+
+The system supports three theme modes controlled by `ThemeProvider`:
+
+### Available Modes
+
+| Mode | Behavior |
+|------|----------|
+| `dark` | Always uses dark theme |
+| `light` | Always uses light theme |
+| `auto` | Follows system/browser preference (default) |
+
+### Usage
+
+```tsx
+import { useThemeMode } from '@/theme/ThemeProvider';
+
+function ThemeToggle() {
+  const { mode, setTheme, toggleTheme } = useThemeMode();
+
+  return (
+    <button onClick={toggleTheme}>
+      Current: {mode}
+    </button>
+  );
+}
+```
+
+### CSS Class Application
+
+- Dark mode: `<html class="dark">`
+- Light mode: `<html class="light">`
+
+All CSS tokens automatically adapt based on the root class. Use design tokens (not hardcoded colors) to ensure theme compatibility.
 
 ---
 
@@ -69,22 +93,27 @@ Our tagline drives every design decision and anchors the Antigravity styling pas
 3. **Functional**: Touch-optimized layouts (44px+ targets) remain practical for shop-floor tablets.
 4. **Professional**: Enterprise-grade typography, accessibility, and predictable motion keep trust high.
 
-### Antigravity Aesthetic
+### Visual Aesthetic
 
-- **Ambient Field + Depth** — The background is never flat; radial gradients and floating orbs add parallax.
-- **Glass Cards** — Every hero surface uses blur(16px) saturate(180%) with translucent borders.
+- **Ambient Field + Depth** — Backgrounds use radial gradients; floating orbs add parallax in dark mode.
+- **Glass Cards** — Hero surfaces use `backdrop-filter: blur(16px) saturate(180%)` with translucent borders.
 - **Layered Messaging** — Icon container, uppercase welcome text, gradient hero, preview pill, and divider.
-- **Narrative Sections** — Informational capsule, workflow callout, and use-case grid tell the story.
-- **Neon Icon Tints** — Blue, green, yellow, and red strokes mimic the Antigravity iconography.
+- **Narrative Sections** — Informational capsule, workflow callout, and use-case grid structure content.
+- **Status Icon Tints** — Blue, green, yellow, and red strokes for semantic meaning.
 
-### Dark Mode Only
+### Theme-Aware Design
 
-We've removed light mode support to focus on an Antigravity-grade dark shell:
+Both themes are optimized for manufacturing environments:
 
-- **Deep Navy Base**: `#111927` background dampens glare in low-light facilities.
-- **Radial Highlights**: `hsl(205.47, 77%, 40%)` and `hsl(218, 39%, 11%)` gradients add controlled glow.
-- **Glass Surfaces**: `rgba(17, 25, 40, 0.75)` cards stay legible while showcasing blur and saturation.
-- **Manufacturing Focus**: High-contrast text + iconography stays readable on large kiosks and tablets.
+**Dark Mode** (default for low-light facilities):
+- Deep backgrounds reduce glare on shop floor
+- Radial gradients add depth without distraction
+- Glass surfaces with blur/saturation effects
+
+**Light Mode** (for well-lit offices):
+- Clean white backgrounds with subtle gradients
+- Improved WCAG AA contrast ratios
+- Glass surfaces adapt with appropriate opacity
 
 ### Key Principles
 
@@ -100,9 +129,9 @@ We've removed light mode support to focus on an Antigravity-grade dark shell:
 
 ## Responsive & Compact Design
 
-### Design Goals for v3.3
+### Design Goals
 
-Version 3.3 "Compact Antigravity" builds on v3.2 with improved light mode contrast and even tighter admin layouts:
+Core design goals with improved light mode contrast and compact admin layouts:
 
 1. **Tablet-First for Operators**: Operators primarily use tablets on the shop floor
 2. **PC-First for Admin**: Admin users work on desktop with multi-column layouts
@@ -366,7 +395,7 @@ All data tables must have proper scroll behavior:
 
 ```
 src/styles/design-system.css  ← All design tokens and base styles
-src/theme/theme.ts            ← Material-UI theme configuration
+src/theme/ThemeProvider.tsx   ← Theme mode provider (dark/light/auto)
 tailwind.config.ts            ← Tailwind CSS configuration
 src/components/AnimatedBackground.tsx  ← Background animation
 components/ui/*               ← shadcn/ui primitives (auto-generated)
@@ -415,17 +444,6 @@ Every interactive element ships from `shadcn/ui`. Never hand-roll components whe
 <div className="bg-background text-foreground rounded-xl p-6">
   Content
 </div>
-```
-
-**In Material-UI:**
-```jsx
-<Box sx={{
-  bgcolor: 'background.default',
-  color: 'text.primary',
-  borderRadius: 2
-}}>
-  Content
-</Box>
 ```
 
 ### shadcn Theme Bridge
@@ -1341,7 +1359,7 @@ Smooth floating animation for gradient orbs.
 - `copy-on-click` and CTA buttons receive focus rings.
 - Use logical DOM order: icon → microcopy → hero → sections → CTA.
 
-### Light Mode Contrast (v3.3)
+### Light Mode Contrast
 
 Light mode uses adjusted neutral grays for better contrast:
 
@@ -1373,85 +1391,6 @@ Key light mode improvements:
 - **Muted text**: `#4d4d4d` (30% lightness vs 37% before)
 - **Borders**: `#b3b3b3` (70% lightness vs 80% before)
 - **Glass cards**: 90% opacity with stronger border
-
----
-
-## Migration Guide
-
-### From Old Design System
-
-#### Move Everything to shadcn/ui
-
-1. Initialize once per repo:
-   ```bash
-   npx shadcn@latest init
-   ```
-2. Generate every primitive you use (button, input, badge, dialog, sheet, tooltip, dropdown-menu, separator).
-3. Delete bespoke component directories that duplicated shadcn functionality.
-4. Route all new UI work through `components/ui/*` so upgrades remain centralized.
-
-#### Adopt the Antigravity Ambient Field
-
-**Before**
-```jsx
-<div className="min-h-screen bg-background">
-```
-
-**After**
-```jsx
-<>
-  <AnimatedBackground variant="antigravity" />
-  <div className="landing-container">
-    <div className="onboarding-card">...</div>
-  </div>
-</>
-```
-
-#### Replace Solid Cards with Glass
-
-**Before**
-```jsx
-<Card className="max-w-md bg-card shadow">
-```
-
-**After**
-```jsx
-<div className="onboarding-card">
-  {/* Glass + blur */}
-</div>
-```
-
-#### Add the Title Stack + Preview Pill
-
-**Before**
-```jsx
-<h1 className="text-4xl font-bold">Welcome</h1>
-```
-
-**After**
-```jsx
-<div className="title-container">
-  <h1 className="main-title">Antigravity Browser Control</h1>
-  <p className="preview-pill">Preview</p>
-</div>
-<h2 className="hero-title">Getting Started</h2>
-```
-
-#### Layer Narrative Sections
-
-```jsx
-<p className="informational-text">...</p>
-<div className="workflow-section">...</div>
-<div className="use-cases-section">...</div>
-```
-
-- Never skip the workflow column or use-case grid; they reinforce the Antigravity storytelling arc.
-
-#### Introduce Copy + CTA Micro-Interactions
-
-- Replace static code blocks with `.copy-on-click`.
-- Upgrade CTAs to `.cta-button` with the `ArrowRight` icon and hover translation.
-- Use shadcn form primitives and wrap the `Dialog`/`Sheet` content with `.glass-card` classes.
 
 ---
 
@@ -1775,7 +1714,7 @@ export default function BrowserOnboarding() {
 ### Design System Files
 
 - **Main CSS**: `/src/styles/design-system.css`
-- **MUI Theme**: `/src/theme/theme.ts`
+- **Theme Provider**: `/src/theme/ThemeProvider.tsx`
 - **Tailwind Config**: `/tailwind.config.ts`
 - **Animated Background**: `/src/components/AnimatedBackground.tsx`
 - **Reference Layout**: `docs/DESIGN_SYSTEM.md` (this guide)
@@ -1796,10 +1735,3 @@ For questions about the design system:
 3. Inspect `/components/ui/*` and `/src/styles/design-system.css` for component + token definitions
 4. Reference https://ui.shadcn.com for component APIs and usage notes
 5. Ask in team chat or create an issue with screenshots of any deviations
-
----
-
-**Document Version:** 3.3 "Compact Antigravity"
-**Last Updated:** November 25, 2025
-**Author:** Eryxon Development Team
-**Status:** ✅ Active - Dark/Light Mode, Compact Responsive

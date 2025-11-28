@@ -1,26 +1,19 @@
-import React, { useState, useEffect } from "react";
+"use client";
+
+import * as React from "react";
+import { Building2, CheckCircle, X } from "lucide-react";
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  ListItemIcon,
-  Typography,
-  Box,
-  CircularProgress,
-  Chip,
-  alpha,
-  useTheme,
-  IconButton,
-} from "@mui/material";
-import {
-  Business as BusinessIcon,
-  CheckCircle as CheckCircleIcon,
-  Close as CloseIcon,
-} from "@mui/icons-material";
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Spinner } from "@/components/ui/spinner";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -43,13 +36,12 @@ export const TenantSwitcher: React.FC<TenantSwitcherProps> = ({
   open,
   onClose,
 }) => {
-  const theme = useTheme();
   const { profile, tenant, switchTenant } = useAuth();
-  const [tenants, setTenants] = useState<Tenant[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [switching, setSwitching] = useState(false);
+  const [tenants, setTenants] = React.useState<Tenant[]>([]);
+  const [loading, setLoading] = React.useState(false);
+  const [switching, setSwitching] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (open && profile?.is_root_admin) {
       loadTenants();
     }
@@ -83,14 +75,14 @@ export const TenantSwitcher: React.FC<TenantSwitcherProps> = ({
     }
   };
 
-  const getPlanColor = (plan: string) => {
+  const getPlanStyles = (plan: string) => {
     switch (plan) {
       case "premium":
-        return "#764ba2";
+        return "bg-purple-600 text-white";
       case "pro":
-        return "#8b5cf6";
+        return "bg-violet-500 text-white";
       default:
-        return "#64748b";
+        return "bg-slate-500 text-white";
     }
   };
 
@@ -110,140 +102,103 @@ export const TenantSwitcher: React.FC<TenantSwitcherProps> = ({
   }
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="sm"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 2,
-        },
-      }}
-    >
-      <DialogTitle sx={{ pb: 1 }}>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <BusinessIcon color="primary" />
-            <Typography variant="h6" fontWeight={600}>
-              Switch Tenant
-            </Typography>
-          </Box>
-          <IconButton onClick={onClose} size="small">
-            <CloseIcon />
-          </IconButton>
-        </Box>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          Select a tenant to switch context. All data will be filtered to the
-          selected tenant.
-        </Typography>
-      </DialogTitle>
-      <DialogContent sx={{ pt: 2 }}>
-        {loading ? (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              py: 4,
-            }}
-          >
-            <CircularProgress />
-          </Box>
-        ) : (
-          <List sx={{ p: 0 }}>
-            {tenants.map((t) => {
-              const isActive = t.id === tenant?.id;
-              return (
-                <ListItem key={t.id} disablePadding sx={{ mb: 1 }}>
-                  <ListItemButton
-                    onClick={() => handleSwitchTenant(t.id)}
-                    disabled={switching}
-                    sx={{
-                      borderRadius: 1.5,
-                      border: 1,
-                      borderColor: isActive
-                        ? theme.palette.primary.main
-                        : "divider",
-                      backgroundColor: isActive
-                        ? alpha(theme.palette.primary.main, 0.05)
-                        : "transparent",
-                      "&:hover": {
-                        backgroundColor: isActive
-                          ? alpha(theme.palette.primary.main, 0.08)
-                          : alpha(theme.palette.action.hover, 0.04),
-                      },
-                    }}
-                  >
-                    <ListItemIcon>
-                      <BusinessIcon
-                        sx={{
-                          color: isActive
-                            ? theme.palette.primary.main
-                            : "text.secondary",
-                        }}
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent
+        className={cn(
+          "max-w-md p-0",
+          "bg-[rgba(20,20,20,0.95)] backdrop-blur-xl",
+          "border border-white/10",
+          "shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+        )}
+      >
+        <DialogHeader className="px-6 pt-6 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
+              <Building2 className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <DialogTitle className="text-lg font-semibold">
+                Switch Tenant
+              </DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground">
+                Select a tenant to switch context
+              </DialogDescription>
+            </div>
+          </div>
+        </DialogHeader>
+
+        <div className="px-4 pb-4">
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <Spinner size="lg" />
+            </div>
+          ) : (
+            <ScrollArea className="max-h-[400px]">
+              <div className="space-y-2">
+                {tenants.map((t) => {
+                  const isActive = t.id === tenant?.id;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => handleSwitchTenant(t.id)}
+                      disabled={switching}
+                      className={cn(
+                        "w-full flex items-start gap-3 p-4 rounded-xl text-left transition-all",
+                        "border hover:bg-white/5",
+                        isActive
+                          ? "border-primary bg-primary/5"
+                          : "border-white/10"
+                      )}
+                    >
+                      <Building2
+                        className={cn(
+                          "h-5 w-5 mt-0.5",
+                          isActive ? "text-primary" : "text-muted-foreground"
+                        )}
                       />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
-                          }}
-                        >
-                          <Typography
-                            variant="body1"
-                            fontWeight={isActive ? 600 : 500}
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={cn(
+                              "font-medium truncate",
+                              isActive && "text-primary"
+                            )}
                           >
                             {t.company_name || t.name}
-                          </Typography>
+                          </span>
                           {isActive && (
-                            <CheckCircleIcon
-                              fontSize="small"
-                              sx={{ color: theme.palette.primary.main }}
-                            />
+                            <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
                           )}
-                        </Box>
-                      }
-                      secondary={
-                        <Box sx={{ display: "flex", gap: 1, mt: 0.5 }}>
-                          <Chip
-                            label={getPlanLabel(t.plan)}
-                            size="small"
-                            sx={{
-                              height: 20,
-                              fontSize: "0.7rem",
-                              fontWeight: 600,
-                              backgroundColor: getPlanColor(t.plan),
-                              color: "#fff",
-                            }}
-                          />
-                          <Typography variant="caption" color="text.secondary">
+                        </div>
+
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <Badge
+                            className={cn(
+                              "text-[10px] font-semibold px-1.5 py-0 h-5",
+                              getPlanStyles(t.plan)
+                            )}
+                          >
+                            {getPlanLabel(t.plan)}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
                             {t.user_count} user{t.user_count !== 1 ? "s" : ""}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
+                          </span>
+                          <span className="text-xs text-muted-foreground">
                             •
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
+                          </span>
+                          <span className="text-xs text-muted-foreground capitalize">
                             {t.status}
-                          </Typography>
-                        </Box>
-                      }
-                    />
-                  </ListItemButton>
-                </ListItem>
-              );
-            })}
-          </List>
-        )}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );

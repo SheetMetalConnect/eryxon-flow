@@ -41,7 +41,7 @@ import StepsTemplatesView from "./pages/admin/StepsTemplatesView";
 import ApiDocs from "./pages/ApiDocs";
 import Pricing from "./pages/Pricing";
 import { MyPlan } from "./pages/MyPlan";
-import Help from "./pages/Help";
+import Help from "./pages/common/Help";
 import About from "./pages/About";
 import PrivacyPolicy from "./pages/common/PrivacyPolicy";
 import TermsOfService from "./pages/common/TermsOfService";

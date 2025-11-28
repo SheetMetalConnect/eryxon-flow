@@ -1,169 +1,105 @@
-import React, { useState } from 'react';
+"use client";
+
+import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  IconButton,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  Typography,
-  alpha,
-  useTheme,
-} from '@mui/material';
+  Plus,
+  Briefcase,
+  Package,
+  ClipboardCheck,
+  AlertTriangle,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
-  Add as AddIcon,
-  Work as WorkIcon,
-  Inventory as InventoryIcon,
-  AssignmentTurnedIn as AssignmentIcon,
-  ReportProblem as ReportProblemIcon,
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 interface QuickCreateMenuProps {
-  color?: 'inherit' | 'primary' | 'secondary' | 'default';
+  className?: string;
 }
 
-export const QuickCreateMenu: React.FC<QuickCreateMenuProps> = ({ color = 'inherit' }) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+export const QuickCreateMenu: React.FC<QuickCreateMenuProps> = ({ className }) => {
   const navigate = useNavigate();
-  const theme = useTheme();
-  const open = Boolean(anchorEl);
-
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
 
   const menuItems = [
     {
-      label: 'Job',
-      icon: <WorkIcon fontSize="small" />,
-      action: () => {
-        navigate('/admin/jobs/new');
-        handleClose();
-      },
-      shortcut: 'Cmd+N J',
+      label: "Job",
+      icon: Briefcase,
+      action: () => navigate("/admin/jobs/new"),
+      shortcut: "⌘N J",
     },
     {
-      label: 'Part',
-      icon: <InventoryIcon fontSize="small" />,
-      action: () => {
-        // TODO: Implement quick part creation modal
-        navigate('/admin/parts');
-        handleClose();
-      },
-      shortcut: 'Cmd+N P',
+      label: "Part",
+      icon: Package,
+      action: () => navigate("/admin/parts"),
+      shortcut: "⌘N P",
     },
     {
-      label: 'Assignment',
-      icon: <AssignmentIcon fontSize="small" />,
-      action: () => {
-        navigate('/admin/assignments');
-        handleClose();
-      },
-      shortcut: '',
+      label: "Assignment",
+      icon: ClipboardCheck,
+      action: () => navigate("/admin/assignments"),
+      shortcut: "",
     },
     {
-      label: 'Issue',
-      icon: <ReportProblemIcon fontSize="small" />,
-      action: () => {
-        navigate('/admin/issues');
-        handleClose();
-      },
-      shortcut: '',
+      label: "Issue",
+      icon: AlertTriangle,
+      action: () => navigate("/admin/issues"),
+      shortcut: "",
     },
   ];
 
   return (
-    <>
-      <IconButton
-        onClick={handleClick}
-        color={color}
-        sx={{
-          backgroundColor: alpha(theme.palette.primary.main, 0.1),
-          '&:hover': {
-            backgroundColor: alpha(theme.palette.primary.main, 0.2),
-          },
-        }}
-        aria-label="Quick create"
-        aria-controls={open ? 'quick-create-menu' : undefined}
-        aria-haspopup="true"
-        aria-expanded={open ? 'true' : undefined}
-      >
-        <AddIcon />
-      </IconButton>
-
-      <Menu
-        id="quick-create-menu"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        PaperProps={{
-          elevation: 3,
-          sx: {
-            mt: 1.5,
-            minWidth: 220,
-            borderRadius: 2,
-            '& .MuiMenuItem-root': {
-              borderRadius: 1,
-              mx: 0.5,
-              my: 0.25,
-            },
-          },
-        }}
-      >
-        <Typography
-          variant="caption"
-          sx={{
-            px: 2,
-            py: 1,
-            display: 'block',
-            fontWeight: 600,
-            color: 'text.secondary',
-            fontSize: '0.7rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-          }}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "h-9 w-9 bg-primary/10 hover:bg-primary/20",
+            className
+          )}
+          aria-label="Quick create"
         >
+          <Plus className="h-5 w-5" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className={cn(
+          "w-56",
+          "bg-[rgba(20,20,20,0.95)] backdrop-blur-xl",
+          "border border-white/10",
+          "shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+        )}
+      >
+        <DropdownMenuLabel className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           Create New
-        </Typography>
+        </DropdownMenuLabel>
 
-        {menuItems.map((item) => (
-          <MenuItem key={item.label} onClick={item.action} sx={{ gap: 1.5 }}>
-            <ListItemIcon sx={{ minWidth: 'unset !important' }}>
-              {item.icon}
-            </ListItemIcon>
-            <ListItemText
-              primary={item.label}
-              primaryTypographyProps={{
-                fontWeight: 500,
-                fontSize: '0.9rem',
-              }}
-            />
-            {item.shortcut && (
-              <Typography
-                variant="caption"
-                sx={{
-                  ml: 'auto',
-                  px: 0.75,
-                  py: 0.25,
-                  borderRadius: 0.5,
-                  backgroundColor: alpha(theme.palette.text.primary, 0.06),
-                  color: 'text.secondary',
-                  fontSize: '0.7rem',
-                  fontFamily: 'monospace',
-                }}
-              >
-                {item.shortcut}
-              </Typography>
-            )}
-          </MenuItem>
-        ))}
-      </Menu>
-    </>
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <DropdownMenuItem
+              key={item.label}
+              onClick={item.action}
+              className="cursor-pointer gap-3 focus:bg-white/10"
+            >
+              <Icon className="h-4 w-4 text-muted-foreground" />
+              <span className="flex-1 font-medium">{item.label}</span>
+              {item.shortcut && (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/5 text-muted-foreground">
+                  {item.shortcut}
+                </span>
+              )}
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };

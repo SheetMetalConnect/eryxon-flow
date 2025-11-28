@@ -1,1011 +1,555 @@
-import { useState } from "react";
+"use client";
+
+import * as React from "react";
+import { Link } from "react-router-dom";
 import {
-  Box,
-  Container,
-  Typography,
+  Play,
+  User,
+  Shield,
+  Bug,
+  ChevronDown,
+  Clock,
+  FileText,
+  CheckCircle,
+  Code,
+  Wrench,
+  ExternalLink,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
   Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Paper,
-  Grid,
-  Card,
-  CardContent,
-  CardActionArea,
-  Tabs,
-  Tab,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Alert,
-  Divider,
-} from "@mui/material";
-import {
-  ExpandMore as ExpandMoreIcon,
-  PlayArrow as PlayArrowIcon,
-  Person as PersonIcon,
-  AdminPanelSettings as AdminIcon,
-  Timer as TimerIcon,
-  BugReport as BugReportIcon,
-  Description as DocsIcon,
-  CheckCircle as CheckIcon,
-  Code as CodeIcon,
-  Build as BuildIcon,
-} from "@mui/icons-material";
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`help-tabpanel-${index}`}
-      aria-labelledby={`help-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
-    </div>
-  );
-}
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 export default function Help() {
-  const [tabValue, setTabValue] = useState(0);
-
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
-
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <div className="container max-w-5xl mx-auto py-8 px-4">
       {/* Header */}
-      <Box sx={{ mb: 4, textAlign: "center" }}>
-        <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
-          Help
-        </Typography>
-        <Typography variant="h6" color="text.secondary">
-          How to use Eryxon MES
-        </Typography>
-      </Box>
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold mb-2">Help</h1>
+        <p className="text-lg text-muted-foreground">How to use Eryxon MES</p>
+      </div>
 
       {/* Quick Links */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <Card elevation={2}>
-            <CardActionArea href="/admin/api-docs">
-              <CardContent sx={{ textAlign: "center", py: 3 }}>
-                <CodeIcon sx={{ fontSize: 48, color: "primary.main", mb: 2 }} />
-                <Typography variant="h6" gutterBottom>
-                  API Docs
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Complete API reference
-                </Typography>
-              </CardContent>
-            </CardActionArea>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <Link to="/admin/api-docs">
+          <Card className="glass-card hover:bg-white/5 transition-colors cursor-pointer h-full">
+            <CardContent className="flex flex-col items-center justify-center py-6 text-center">
+              <Code className="h-12 w-12 text-primary mb-3" />
+              <h3 className="font-semibold mb-1">API Docs</h3>
+              <p className="text-sm text-muted-foreground">Complete API reference</p>
+            </CardContent>
           </Card>
-        </Grid>
+        </Link>
 
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <Card elevation={2}>
-            <CardActionArea
-              onClick={() =>
-                window.open(
-                  "https://github.com/SheetMetalConnect/eryxon-flow",
-                  "_blank",
-                )
-              }
-            >
-              <CardContent sx={{ textAlign: "center", py: 3 }}>
-                <DocsIcon sx={{ fontSize: 48, color: "primary.main", mb: 2 }} />
-                <Typography variant="h6" gutterBottom>
-                  GitHub
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Source and docs
-                </Typography>
-              </CardContent>
-            </CardActionArea>
+        <a
+          href="https://github.com/SheetMetalConnect/eryxon-flow"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Card className="glass-card hover:bg-white/5 transition-colors cursor-pointer h-full">
+            <CardContent className="flex flex-col items-center justify-center py-6 text-center">
+              <FileText className="h-12 w-12 text-primary mb-3" />
+              <h3 className="font-semibold mb-1">GitHub</h3>
+              <p className="text-sm text-muted-foreground">Source and docs</p>
+            </CardContent>
           </Card>
-        </Grid>
+        </a>
 
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <Card elevation={2}>
-            <CardActionArea href="/admin/about">
-              <CardContent sx={{ textAlign: "center", py: 3 }}>
-                <BuildIcon sx={{ fontSize: 48, color: "primary.main", mb: 2 }} />
-                <Typography variant="h6" gutterBottom>
-                  About
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  About Eryxon MES
-                </Typography>
-              </CardContent>
-            </CardActionArea>
+        <Link to="/admin/about">
+          <Card className="glass-card hover:bg-white/5 transition-colors cursor-pointer h-full">
+            <CardContent className="flex flex-col items-center justify-center py-6 text-center">
+              <Wrench className="h-12 w-12 text-primary mb-3" />
+              <h3 className="font-semibold mb-1">About</h3>
+              <p className="text-sm text-muted-foreground">About Eryxon MES</p>
+            </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Link>
+      </div>
 
       {/* Tabs */}
-      <Paper elevation={1}>
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          variant="scrollable"
-          scrollButtons="auto"
-          sx={{ borderBottom: 1, borderColor: "divider" }}
-        >
-          <Tab
-            icon={<PlayArrowIcon />}
-            label="Getting Started"
-            iconPosition="start"
-          />
-          <Tab
-            icon={<PersonIcon />}
-            label="For Operators"
-            iconPosition="start"
-          />
-          <Tab icon={<AdminIcon />} label="For Admins" iconPosition="start" />
-          <Tab
-            icon={<BugReportIcon />}
-            label="FAQ"
-            iconPosition="start"
-          />
-        </Tabs>
-
-        {/* Getting Started Tab */}
-        <TabPanel value={tabValue} index={0}>
-          <Box sx={{ px: 3 }}>
-            <Typography variant="h5" gutterBottom fontWeight="600">
+      <Card className="glass-card">
+        <Tabs defaultValue="getting-started" className="w-full">
+          <TabsList className="w-full justify-start border-b border-white/10 rounded-none bg-transparent h-auto p-0 overflow-x-auto">
+            <TabsTrigger
+              value="getting-started"
+              className="data-[state=active]:bg-white/10 rounded-none border-b-2 border-transparent data-[state=active]:border-primary gap-2 px-4 py-3"
+            >
+              <Play className="h-4 w-4" />
               Getting Started
-            </Typography>
-            <Typography paragraph color="text.secondary">
-              Eryxon MES is a manufacturing execution system for sheet metal fabrication.
-            </Typography>
+            </TabsTrigger>
+            <TabsTrigger
+              value="operators"
+              className="data-[state=active]:bg-white/10 rounded-none border-b-2 border-transparent data-[state=active]:border-primary gap-2 px-4 py-3"
+            >
+              <User className="h-4 w-4" />
+              For Operators
+            </TabsTrigger>
+            <TabsTrigger
+              value="admins"
+              className="data-[state=active]:bg-white/10 rounded-none border-b-2 border-transparent data-[state=active]:border-primary gap-2 px-4 py-3"
+            >
+              <Shield className="h-4 w-4" />
+              For Admins
+            </TabsTrigger>
+            <TabsTrigger
+              value="faq"
+              className="data-[state=active]:bg-white/10 rounded-none border-b-2 border-transparent data-[state=active]:border-primary gap-2 px-4 py-3"
+            >
+              <Bug className="h-4 w-4" />
+              FAQ
+            </TabsTrigger>
+          </TabsList>
 
-            <Alert severity="info" sx={{ mb: 3 }}>
-              <Typography variant="subtitle2" gutterBottom>
-                Your role determines what you can access
-              </Typography>
-              <Typography variant="body2">
+          {/* Getting Started Tab */}
+          <TabsContent value="getting-started" className="p-6">
+            <h2 className="text-2xl font-semibold mb-2">Getting Started</h2>
+            <p className="text-muted-foreground mb-4">
+              Eryxon MES is a manufacturing execution system for sheet metal fabrication.
+            </p>
+
+            <Alert className="mb-6 bg-primary/10 border-primary/30">
+              <AlertTitle className="font-semibold">Your role determines what you can access</AlertTitle>
+              <AlertDescription>
                 <strong>Operators</strong> execute work and track time. <strong>Admins</strong> manage jobs, configure settings, and oversee production.
-              </Typography>
+              </AlertDescription>
             </Alert>
 
-            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
-              How It Works
-            </Typography>
+            <h3 className="text-lg font-semibold mb-3 mt-6">How It Works</h3>
+            <div className="space-y-3">
+              {[
+                { title: "1. Jobs are created by admins", desc: "Each job represents a customer order or manufacturing project" },
+                { title: "2. Jobs contain Parts", desc: "Parts can be standalone components or assemblies made of multiple parts" },
+                { title: "3. Parts have Operations", desc: "Operations are specific tasks (cutting, bending, welding, etc.) performed on parts" },
+                { title: "4. Operators execute operations", desc: "Track time, report issues, and mark work complete from the Work Queue" },
+                { title: "5. Real-time tracking", desc: "Admins see live updates of production progress on the dashboard" },
+              ].map((item, i) => (
+                <div key={i} className="flex gap-3 items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">{item.title}</p>
+                    <p className="text-sm text-muted-foreground">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  <CheckIcon color="success" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="1. Jobs are created by admins"
-                  secondary="Each job represents a customer order or manufacturing project"
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <CheckIcon color="success" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="2. Jobs contain Parts"
-                  secondary="Parts can be standalone components or assemblies made of multiple parts"
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <CheckIcon color="success" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="3. Parts have Operations"
-                  secondary="Operations are specific tasks (cutting, bending, welding, etc.) performed on parts"
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <CheckIcon color="success" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="4. Operators execute operations"
-                  secondary="Track time, report issues, and mark work complete from the Work Queue"
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <CheckIcon color="success" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="5. Real-time tracking"
-                  secondary="Admins see live updates of production progress on the dashboard"
-                />
-              </ListItem>
-            </List>
+            <Separator className="my-6 bg-white/10" />
 
-            <Divider sx={{ my: 3 }} />
+            <h3 className="text-lg font-semibold mb-4">Key Features</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { icon: Clock, title: "Time Tracking", desc: "Track actual time vs. estimated time. Pause and resume as needed." },
+                { icon: Bug, title: "Issue Management", desc: "Report production issues with photos. Admins review and resolve issues." },
+                { icon: Wrench, title: "3D CAD Viewer", desc: "View STEP files in browser with 3D controls, wireframe mode, and exploded views." },
+                { icon: Code, title: "API Integration", desc: "Connect with ERP and other systems via REST API with webhooks." },
+              ].map((item, i) => {
+                const Icon = item.icon;
+                return (
+                  <Card key={i} className="border-white/10 bg-white/5">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Icon className="h-5 w-5 text-primary" />
+                        <h4 className="font-semibold">{item.title}</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{item.desc}</p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
 
-            <Typography variant="h6" gutterBottom>
-              Key Features
-            </Typography>
-
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Card variant="outlined">
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom fontWeight="600">
-                      <TimerIcon sx={{ verticalAlign: "middle", mr: 1 }} />
-                      Time Tracking
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Track actual time vs. estimated time. Pause and resume as needed.
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Card variant="outlined">
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom fontWeight="600">
-                      <BugReportIcon sx={{ verticalAlign: "middle", mr: 1 }} />
-                      Issue Management
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Report production issues with photos. Admins review and resolve issues.
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Card variant="outlined">
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom fontWeight="600">
-                      <BuildIcon sx={{ verticalAlign: "middle", mr: 1 }} />
-                      3D CAD Viewer
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      View STEP files in browser with 3D controls, wireframe mode, and exploded views.
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Card variant="outlined">
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom fontWeight="600">
-                      <CodeIcon sx={{ verticalAlign: "middle", mr: 1 }} />
-                      API Integration
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Connect with ERP and other systems via REST API with webhooks.
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
-          </Box>
-        </TabPanel>
-
-        {/* For Operators Tab */}
-        <TabPanel value={tabValue} index={1}>
-          <Box sx={{ px: 3 }}>
-            <Typography variant="h5" gutterBottom fontWeight="600">
-              Operator Guide
-            </Typography>
-            <Typography paragraph color="text.secondary">
+          {/* For Operators Tab */}
+          <TabsContent value="operators" className="p-6">
+            <h2 className="text-2xl font-semibold mb-2">Operator Guide</h2>
+            <p className="text-muted-foreground mb-6">
               As an operator, you'll spend most of your time in the Work Queue executing operations.
-            </Typography>
+            </p>
 
-            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
-              Daily Workflow
-            </Typography>
+            <h3 className="text-lg font-semibold mb-3">Daily Workflow</h3>
+            <Accordion type="single" collapsible defaultValue="item-1" className="space-y-2">
+              <AccordionItem value="item-1" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  1. View Your Work Queue
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-3">
+                    After logging in, you'll see your <strong className="text-foreground">Work Queue</strong> with all operations assigned to you.
+                  </p>
+                  <ul className="space-y-2">
+                    <li><strong className="text-foreground">Filter by status, material, or cell</strong> - Use the filter buttons at the top</li>
+                    <li><strong className="text-foreground">Search by part or job number</strong> - Use Cmd+K (Mac) or Ctrl+K (Windows)</li>
+                    <li><strong className="text-foreground">Sort by priority or due date</strong> - Click column headers</li>
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
 
-            <Accordion defaultExpanded>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography fontWeight="600">1. View Your Work Queue</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>
-                  After logging in, you'll see your <strong>Work Queue</strong> with all operations assigned to you.
-                </Typography>
-                <List dense>
-                  <ListItem>
-                    <ListItemText
-                      primary="Filter by status, material, or cell"
-                      secondary="Use the filter buttons at the top to narrow down your list"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Search by part or job number"
-                      secondary="Use Cmd+K (Mac) or Ctrl+K (Windows) for quick search"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Sort by priority or due date"
-                      secondary="Click column headers to sort the list"
-                    />
-                  </ListItem>
-                </List>
-              </AccordionDetails>
+              <AccordionItem value="item-2" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  2. Start an Operation
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-3">Click on an operation card to open details:</p>
+                  <ul className="space-y-2 mb-4">
+                    <li><strong className="text-foreground">Review operation details</strong> - Check part number, material, and any special notes</li>
+                    <li><strong className="text-foreground">View CAD files (if available)</strong> - Click 'View 3D' to see STEP files</li>
+                    <li><strong className="text-foreground">Click 'Start Timing'</strong> - This begins tracking your time</li>
+                  </ul>
+                  <Alert className="bg-yellow-500/10 border-yellow-500/30">
+                    <AlertDescription>
+                      You can only time one operation at a time. Starting a new operation will stop timing on the previous one.
+                    </AlertDescription>
+                  </Alert>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-3" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  3. During Work
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-3">While working on an operation:</p>
+                  <ul className="space-y-2">
+                    <li><strong className="text-foreground">The timer runs automatically</strong> - You'll see elapsed time in the Currently Timing widget</li>
+                    <li><strong className="text-foreground">Pause if needed</strong> - Taking a break? Click 'Pause' - pause time won't count</li>
+                    <li><strong className="text-foreground">Report issues</strong> - If you encounter problems, click 'Report Issue'</li>
+                    <li><strong className="text-foreground">Add photos to issues</strong> - Use your device camera to document problems</li>
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-4" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  4. Complete the Operation
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-3">When you're done:</p>
+                  <ul className="space-y-2">
+                    <li><strong className="text-foreground">Click 'Stop Timing'</strong> - This records your actual time</li>
+                    <li><strong className="text-foreground">Mark as complete</strong> - Click 'Complete Operation'</li>
+                    <li><strong className="text-foreground">Move to next operation</strong> - Return to Work Queue</li>
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-5" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  5. Review Your Activity
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-3">
+                    Click <strong className="text-foreground">My Activity</strong> in the navigation to see:
+                  </p>
+                  <ul className="space-y-2">
+                    <li>Your completed work for the last 7 days</li>
+                    <li>Time spent on each operation</li>
+                    <li>Total hours worked</li>
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
             </Accordion>
 
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography fontWeight="600">2. Start an Operation</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>Click on an operation card to open details:</Typography>
-                <List dense>
-                  <ListItem>
-                    <ListItemText
-                      primary="Review operation details"
-                      secondary="Check part number, material, and any special notes"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="View CAD files (if available)"
-                      secondary="Click 'View 3D' to see STEP files in the 3D viewer"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Click 'Start Timing'"
-                      secondary="This begins tracking your time and marks the operation as in-progress"
-                    />
-                  </ListItem>
-                </List>
-                <Alert severity="warning" sx={{ mt: 2 }}>
-                  You can only time one operation at a time. Starting a new operation will stop timing on the previous one.
-                </Alert>
-              </AccordionDetails>
-            </Accordion>
+            <h3 className="text-lg font-semibold mb-3 mt-8">Tips for Operators</h3>
+            <Card className="border-white/10 bg-white/5">
+              <CardContent className="p-4">
+                <ul className="space-y-2">
+                  {[
+                    "Always start timing before you begin work",
+                    "Pause the timer during breaks or interruptions",
+                    "Report issues immediately when they occur",
+                    "Take photos of issues for documentation",
+                    "Mark operations complete as soon as you finish",
+                  ].map((tip, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                      <span className="text-sm">{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography fontWeight="600">3. During Work</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>While working on an operation:</Typography>
-                <List dense>
-                  <ListItem>
-                    <ListItemText
-                      primary="The timer runs automatically"
-                      secondary="You'll see elapsed time in the Currently Timing widget at the top"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Pause if needed"
-                      secondary="Taking a break? Click 'Pause' - pause time won't count toward the operation"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Report issues"
-                      secondary="If you encounter problems, click 'Report Issue' and select severity"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Add photos to issues"
-                      secondary="Use your device camera to document problems"
-                    />
-                  </ListItem>
-                </List>
-              </AccordionDetails>
-            </Accordion>
-
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography fontWeight="600">4. Complete the Operation</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>When you're done:</Typography>
-                <List dense>
-                  <ListItem>
-                    <ListItemText
-                      primary="Click 'Stop Timing'"
-                      secondary="This records your actual time and stops the timer"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Mark as complete"
-                      secondary="Click 'Complete Operation' to move it to finished status"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Move to next operation"
-                      secondary="Return to Work Queue and select the next operation"
-                    />
-                  </ListItem>
-                </List>
-              </AccordionDetails>
-            </Accordion>
-
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography fontWeight="600">5. Review Your Activity</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>
-                  Click <strong>My Activity</strong> in the bottom navigation to see:
-                </Typography>
-                <List dense>
-                  <ListItem>
-                    <ListItemText primary="Your completed work for the last 7 days" />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText primary="Time spent on each operation" />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText primary="Total hours worked" />
-                  </ListItem>
-                </List>
-              </AccordionDetails>
-            </Accordion>
-
-            <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
-              Tips for Operators
-            </Typography>
-
-            <Paper variant="outlined" sx={{ p: 2, bgcolor: "background.default" }}>
-              <List dense>
-                <ListItem>
-                  <ListItemIcon>
-                    <CheckIcon fontSize="small" color="primary" />
-                  </ListItemIcon>
-                  <ListItemText primary="Always start timing before you begin work" />
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon>
-                    <CheckIcon fontSize="small" color="primary" />
-                  </ListItemIcon>
-                  <ListItemText primary="Pause the timer during breaks or interruptions" />
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon>
-                    <CheckIcon fontSize="small" color="primary" />
-                  </ListItemIcon>
-                  <ListItemText primary="Report issues immediately when they occur" />
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon>
-                    <CheckIcon fontSize="small" color="primary" />
-                  </ListItemIcon>
-                  <ListItemText primary="Take photos of issues for documentation" />
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon>
-                    <CheckIcon fontSize="small" color="primary" />
-                  </ListItemIcon>
-                  <ListItemText primary="Mark operations complete as soon as you finish" />
-                </ListItem>
-              </List>
-            </Paper>
-          </Box>
-        </TabPanel>
-
-        {/* For Admins Tab */}
-        <TabPanel value={tabValue} index={2}>
-          <Box sx={{ px: 3 }}>
-            <Typography variant="h5" gutterBottom fontWeight="600">
-              Admin Guide
-            </Typography>
-            <Typography paragraph color="text.secondary">
+          {/* For Admins Tab */}
+          <TabsContent value="admins" className="p-6">
+            <h2 className="text-2xl font-semibold mb-2">Admin Guide</h2>
+            <p className="text-muted-foreground mb-6">
               As an admin, you have full access to manage jobs, configure the system, and oversee production.
-            </Typography>
+            </p>
 
-            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
-              Key Admin Tasks
-            </Typography>
+            <h3 className="text-lg font-semibold mb-3">Key Admin Tasks</h3>
+            <Accordion type="single" collapsible defaultValue="admin-1" className="space-y-2">
+              <AccordionItem value="admin-1" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  Creating Jobs
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground space-y-4">
+                  <p>
+                    Navigate to <strong className="text-foreground">Jobs → Create New Job</strong>
+                  </p>
+                  <div>
+                    <p className="font-medium text-foreground mb-2">Step 1: Job Details</p>
+                    <ul className="space-y-1 text-sm">
+                      <li><strong>Job Number</strong> - Unique identifier (e.g., JOB-001)</li>
+                      <li><strong>Customer Name</strong> - Who is this for?</li>
+                      <li><strong>Due Date</strong> - When does the customer need it?</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground mb-2">Step 2: Add Parts</p>
+                    <ul className="space-y-1 text-sm">
+                      <li><strong>Part Number</strong> - Unique within this job</li>
+                      <li><strong>Material</strong> - Select from your catalog</li>
+                      <li><strong>Quantity</strong> - How many to make</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground mb-2">Step 3: Add Operations</p>
+                    <ul className="space-y-1 text-sm">
+                      <li><strong>Operation Name</strong> - E.g., Laser Cut, Bend 90°</li>
+                      <li><strong>Cell/Stage</strong> - Cutting, Bending, etc.</li>
+                      <li><strong>Estimated Time</strong> - How long (minutes)</li>
+                    </ul>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
 
-            <Accordion defaultExpanded>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography fontWeight="600">Creating Jobs</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>
-                  Navigate to <strong>Jobs → Create New Job</strong>
-                </Typography>
-                <Typography variant="subtitle2" gutterBottom>
-                  Step 1: Job Details
-                </Typography>
-                <List dense>
-                  <ListItem>
-                    <ListItemText
-                      primary="Job Number"
-                      secondary="Unique identifier (e.g., JOB-001, PO-12345)"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Customer Name"
-                      secondary="Who is this for?"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Due Date"
-                      secondary="When does the customer need it?"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Notes (optional)"
-                      secondary="Special instructions, rush order, etc."
-                    />
-                  </ListItem>
-                </List>
+              <AccordionItem value="admin-2" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  Assigning Work
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-3">
+                    Go to <strong className="text-foreground">Assignments</strong> page:
+                  </p>
+                  <ul className="space-y-2 mb-4">
+                    <li>Select a part from available parts in active jobs</li>
+                    <li>Select an operator to assign the work</li>
+                    <li>Click Assign - Operator will see this in their Work Queue</li>
+                  </ul>
+                  <Alert className="bg-primary/10 border-primary/30">
+                    <AlertDescription>
+                      You can assign the same part to multiple operators for collaborative work.
+                    </AlertDescription>
+                  </Alert>
+                </AccordionContent>
+              </AccordionItem>
 
-                <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
-                  Step 2: Add Parts
-                </Typography>
-                <List dense>
-                  <ListItem>
-                    <ListItemText
-                      primary="Part Number"
-                      secondary="Unique within this job (e.g., PART-001)"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Material"
-                      secondary="Select from your materials catalog"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Quantity"
-                      secondary="How many of this part to make"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Parent Part (for assemblies)"
-                      secondary="If this is a component of an assembly, select the parent"
-                    />
-                  </ListItem>
-                </List>
+              <AccordionItem value="admin-3" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  Managing Issues
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-3">
+                    When operators report issues, they appear in <strong className="text-foreground">Issues</strong> page:
+                  </p>
+                  <ul className="space-y-2">
+                    <li><strong>Review issue details</strong> - Read description, view photos</li>
+                    <li><strong>Approve if valid</strong> - Confirms it needs fixing</li>
+                    <li><strong>Reject if not valid</strong> - Reported in error</li>
+                    <li><strong>Close when resolved</strong> - Mark as fixed</li>
+                    <li><strong>Add resolution notes</strong> - Document how it was resolved</li>
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
 
-                <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
-                  Step 3: Add Operations to Each Part
-                </Typography>
-                <List dense>
-                  <ListItem>
-                    <ListItemText
-                      primary="Operation Name"
-                      secondary="E.g., Laser Cut, Bend 90°, Weld Corner"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Cell/Stage"
-                      secondary="Which workflow stage? (Cutting, Bending, etc.)"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Estimated Time"
-                      secondary="How long should this take? (minutes)"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Sequence"
-                      secondary="What order should operations be done in?"
-                    />
-                  </ListItem>
-                </List>
-              </AccordionDetails>
+              <AccordionItem value="admin-4" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  Configuring the System
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground space-y-3">
+                  <p className="font-medium text-foreground">Settings Menu:</p>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="font-medium text-foreground text-sm">Stages/Cells</p>
+                      <p className="text-sm">Define workflow stages (Cutting, Bending, Welding)</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground text-sm">Materials</p>
+                      <p className="text-sm">Create catalog (Steel 1018, Aluminum 6061)</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground text-sm">Resources</p>
+                      <p className="text-sm">Track tools, fixtures, molds, equipment</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground text-sm">Users</p>
+                      <p className="text-sm">Create operator and admin accounts</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground text-sm">API Keys</p>
+                      <p className="text-sm">Generate keys for external integrations</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground text-sm">Webhooks</p>
+                      <p className="text-sm">Real-time notifications to external systems</p>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
             </Accordion>
 
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography fontWeight="600">Assigning Work</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>
-                  Go to <strong>Assignments</strong> page:
-                </Typography>
-                <List dense>
-                  <ListItem>
-                    <ListItemText
-                      primary="Select a part from the dropdown"
-                      secondary="Choose from available parts in active jobs"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Select an operator"
-                      secondary="Assign to the person who will do the work"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Click Assign"
-                      secondary="Operator will now see this part's operations in their Work Queue"
-                    />
-                  </ListItem>
-                </List>
-                <Alert severity="info" sx={{ mt: 2 }}>
-                  You can assign the same part to multiple operators for collaborative work.
-                </Alert>
-              </AccordionDetails>
-            </Accordion>
+            <h3 className="text-lg font-semibold mb-3 mt-8">Best Practices</h3>
+            <Card className="border-white/10 bg-white/5">
+              <CardContent className="p-4">
+                <ul className="space-y-2">
+                  {[
+                    "Set up your workflow cells first - this makes job creation easier",
+                    "Create a materials catalog before adding jobs",
+                    "Review the dashboard daily to catch issues early",
+                    "Respond to issues quickly",
+                    "Export data regularly for backups",
+                  ].map((tip, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                      <span className="text-sm">{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography fontWeight="600">Managing Issues</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>
-                  When operators report issues, they appear in <strong>Issues</strong> page:
-                </Typography>
-                <List dense>
-                  <ListItem>
-                    <ListItemText
-                      primary="Review issue details"
-                      secondary="Read description, view photos, check severity"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Approve if valid"
-                      secondary="Confirms it's a real issue that needs fixing"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Reject if not valid"
-                      secondary="Use this if the issue was reported in error"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Close when resolved"
-                      secondary="Mark as closed once the problem is fixed"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Add resolution notes"
-                      secondary="Document how the issue was resolved"
-                    />
-                  </ListItem>
-                </List>
-              </AccordionDetails>
-            </Accordion>
+          {/* FAQ Tab */}
+          <TabsContent value="faq" className="p-6">
+            <h2 className="text-2xl font-semibold mb-6">Frequently Asked Questions</h2>
 
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography fontWeight="600">Configuring the System</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography variant="subtitle2" gutterBottom>
-                  Settings Menu
-                </Typography>
+            <h3 className="text-lg font-semibold mb-3">General</h3>
+            <Accordion type="single" collapsible className="space-y-2 mb-8">
+              <AccordionItem value="faq-1" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="hover:no-underline">
+                  What's the difference between Jobs, Parts, and Operations?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground space-y-2">
+                  <p><strong className="text-foreground">Job:</strong> A customer order or manufacturing project</p>
+                  <p><strong className="text-foreground">Part:</strong> An individual component within a job</p>
+                  <p><strong className="text-foreground">Operation:</strong> A specific task performed on a part</p>
+                  <p><strong className="text-foreground">Hierarchy:</strong> Job → Parts → Operations</p>
+                </AccordionContent>
+              </AccordionItem>
 
-                <Typography variant="body2" fontWeight="600" sx={{ mt: 2 }}>
-                  Stages/Cells
-                </Typography>
-                <Typography variant="body2" color="text.secondary" paragraph>
-                  Define your workflow stages (Cutting, Bending, Welding, etc.). Assign colors for visual identification.
-                </Typography>
-
-                <Typography variant="body2" fontWeight="600">
-                  Materials
-                </Typography>
-                <Typography variant="body2" color="text.secondary" paragraph>
-                  Create a catalog of materials you work with (Steel 1018, Aluminum 6061, etc.)
-                </Typography>
-
-                <Typography variant="body2" fontWeight="600">
-                  Resources
-                </Typography>
-                <Typography variant="body2" color="text.secondary" paragraph>
-                  Track tools, fixtures, molds, and equipment used in operations
-                </Typography>
-
-                <Typography variant="body2" fontWeight="600">
-                  Users
-                </Typography>
-                <Typography variant="body2" color="text.secondary" paragraph>
-                  Create operator and admin accounts. Set roles and permissions.
-                </Typography>
-
-                <Typography variant="body2" fontWeight="600">
-                  API Keys
-                </Typography>
-                <Typography variant="body2" color="text.secondary" paragraph>
-                  Generate keys for external system integrations (ERP, accounting software)
-                </Typography>
-
-                <Typography variant="body2" fontWeight="600">
-                  Webhooks
-                </Typography>
-                <Typography variant="body2" color="text.secondary" paragraph>
-                  Configure real-time notifications to external systems when events occur
-                </Typography>
-              </AccordionDetails>
-            </Accordion>
-
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography fontWeight="600">Exporting Data</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>
-                  Navigate to <strong>Data Export</strong> page:
-                </Typography>
-                <List dense>
-                  <ListItem>
-                    <ListItemText
-                      primary="Select which data to export"
-                      secondary="Choose specific entities or 'Select All' for complete backup"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Choose format"
-                      secondary="JSON for developers, CSV for Excel/spreadsheets"
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Click Export"
-                      secondary="Download starts automatically. CSV format comes as a ZIP archive."
-                    />
-                  </ListItem>
-                </List>
-              </AccordionDetails>
-            </Accordion>
-
-            <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
-              Best Practices
-            </Typography>
-
-            <Paper variant="outlined" sx={{ p: 2, bgcolor: "background.default" }}>
-              <List dense>
-                <ListItem>
-                  <ListItemIcon>
-                    <CheckIcon fontSize="small" color="primary" />
-                  </ListItemIcon>
-                  <ListItemText primary="Set up your workflow cells first - this makes job creation easier" />
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon>
-                    <CheckIcon fontSize="small" color="primary" />
-                  </ListItemIcon>
-                  <ListItemText primary="Create a materials catalog before adding jobs" />
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon>
-                    <CheckIcon fontSize="small" color="primary" />
-                  </ListItemIcon>
-                  <ListItemText primary="Review the dashboard daily to catch issues early" />
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon>
-                    <CheckIcon fontSize="small" color="primary" />
-                  </ListItemIcon>
-                  <ListItemText primary="Respond to issues quickly" />
-                </ListItem>
-                <ListItem>
-                  <ListItemIcon>
-                    <CheckIcon fontSize="small" color="primary" />
-                  </ListItemIcon>
-                  <ListItemText primary="Export data regularly for backups" />
-                </ListItem>
-              </List>
-            </Paper>
-          </Box>
-        </TabPanel>
-
-        {/* FAQ Tab */}
-        <TabPanel value={tabValue} index={3}>
-          <Box sx={{ px: 3 }}>
-            <Typography variant="h5" gutterBottom fontWeight="600">
-              Frequently Asked Questions
-            </Typography>
-
-            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
-              General
-            </Typography>
-
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>What's the difference between Jobs, Parts, and Operations?</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>
-                  <strong>Job:</strong> A customer order or manufacturing project
-                </Typography>
-                <Typography paragraph>
-                  <strong>Part:</strong> An individual component within a job. Parts can be assemblies containing other parts.
-                </Typography>
-                <Typography paragraph>
-                  <strong>Operation:</strong> A specific task performed on a part (e.g., "Laser Cut", "Bend 90°")
-                </Typography>
-                <Typography paragraph>
-                  <strong>Hierarchy:</strong> Job → Parts → Operations
-                </Typography>
-              </AccordionDetails>
-            </Accordion>
-
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>Can I time multiple operations at once?</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography>
+              <AccordionItem value="faq-2" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="hover:no-underline">
+                  Can I time multiple operations at once?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
                   No, you can only time one operation at a time per operator. Starting a new timer automatically stops any previous one.
-                </Typography>
-              </AccordionDetails>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="faq-3" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="hover:no-underline">
+                  What happens to pause time?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-3">Pause time is tracked separately. When you stop timing:</p>
+                  <pre className="bg-black/30 p-3 rounded-lg text-sm font-mono overflow-x-auto">
+{`Total Time = Stop Time - Start Time
+Pause Time = Sum of all pauses
+Effective Time = Total Time - Pause Time`}
+                  </pre>
+                  <p className="mt-3">Only Effective Time counts toward the operation's actual time.</p>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="faq-4" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="hover:no-underline">
+                  How do assemblies work?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-3">Assemblies are parts that contain other parts:</p>
+                  <pre className="bg-black/30 p-3 rounded-lg text-sm font-mono overflow-x-auto">
+{`Bracket Assembly (parent)
+├── Left Plate (child)
+├── Right Plate (child)
+└── Mounting Bracket (child)`}
+                  </pre>
+                  <p className="mt-3">Each part can have its own operations.</p>
+                </AccordionContent>
+              </AccordionItem>
             </Accordion>
 
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>What happens to pause time?</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>
-                  Pause time is tracked separately. When you stop timing:
-                </Typography>
-                <Typography component="pre" sx={{ bgcolor: "background.default", p: 2, borderRadius: 1 }}>
-                  Total Time = Stop Time - Start Time{"\n"}
-                  Pause Time = Sum of all pauses{"\n"}
-                  Effective Time = Total Time - Pause Time
-                </Typography>
-                <Typography paragraph sx={{ mt: 2 }}>
-                  Only Effective Time counts toward the operation's actual time.
-                </Typography>
-              </AccordionDetails>
+            <h3 className="text-lg font-semibold mb-3">Troubleshooting</h3>
+            <Accordion type="single" collapsible className="space-y-2 mb-8">
+              <AccordionItem value="trouble-1" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="hover:no-underline">
+                  I don't see any operations in my Work Queue
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground space-y-2">
+                  <p><strong className="text-foreground">Check 1:</strong> Make sure work has been assigned to you by an admin.</p>
+                  <p><strong className="text-foreground">Check 2:</strong> Clear all filters to see if operations appear.</p>
+                  <p><strong className="text-foreground">Check 3:</strong> You might have completed all assigned work. Check "My Activity".</p>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="trouble-2" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="hover:no-underline">
+                  Timer doesn't start when I click "Start Timing"
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground space-y-2">
+                  <p><strong className="text-foreground">Cause:</strong> You likely have another operation already timing.</p>
+                  <p><strong className="text-foreground">Solution:</strong> Check the "Currently Timing" widget at the top. Stop that timer first.</p>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="trouble-3" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="hover:no-underline">
+                  3D CAD viewer won't load my STEP file
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground space-y-2">
+                  <p><strong className="text-foreground">Check 1:</strong> Is the file a valid STEP format (.step or .stp)?</p>
+                  <p><strong className="text-foreground">Check 2:</strong> File size - Maximum is 50MB.</p>
+                  <p><strong className="text-foreground">Check 3:</strong> Try re-exporting from your CAD software.</p>
+                  <p><strong className="text-foreground">Check 4:</strong> Click "Fit View" if the model appears off-screen.</p>
+                </AccordionContent>
+              </AccordionItem>
             </Accordion>
 
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>How do assemblies work?</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>
-                  Assemblies are parts that contain other parts:
-                </Typography>
-                <Typography component="pre" sx={{ bgcolor: "background.default", p: 2, borderRadius: 1 }}>
-                  Bracket Assembly (parent){"\n"}
-                  ├── Left Plate (child){"\n"}
-                  ├── Right Plate (child){"\n"}
-                  └── Mounting Bracket (child)
-                </Typography>
-                <Typography paragraph sx={{ mt: 2 }}>
-                  Each part can have its own operations. The hierarchy shows how parts relate to each other.
-                </Typography>
-              </AccordionDetails>
+            <h3 className="text-lg font-semibold mb-3">API & Integration</h3>
+            <Accordion type="single" collapsible className="space-y-2">
+              <AccordionItem value="api-1" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="hover:no-underline">
+                  How do I get API access?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground space-y-2">
+                  <p><strong className="text-foreground">Step 1:</strong> Go to Settings → API Keys</p>
+                  <p><strong className="text-foreground">Step 2:</strong> Click "Generate New API Key"</p>
+                  <p><strong className="text-foreground">Step 3:</strong> Copy the key immediately (shown only once)</p>
+                  <p><strong className="text-foreground">Step 4:</strong> Use in Authorization header: <code className="bg-black/30 px-1.5 py-0.5 rounded text-sm">Authorization: Bearer ery_live_xxxxx</code></p>
+                  <Alert className="mt-4 bg-yellow-500/10 border-yellow-500/30">
+                    <AlertDescription>
+                      Store your API key securely. It cannot be retrieved later.
+                    </AlertDescription>
+                  </Alert>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="api-2" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="hover:no-underline">
+                  How do webhooks work?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-3">Webhooks send HTTP POST notifications to your server when events occur:</p>
+                  <ul className="space-y-1 mb-4">
+                    <li><code className="text-xs bg-black/30 px-1.5 py-0.5 rounded">operation.started</code> - When operator starts timing</li>
+                    <li><code className="text-xs bg-black/30 px-1.5 py-0.5 rounded">operation.completed</code> - When operation finishes</li>
+                    <li><code className="text-xs bg-black/30 px-1.5 py-0.5 rounded">issue.created</code> - When issue is reported</li>
+                    <li><code className="text-xs bg-black/30 px-1.5 py-0.5 rounded">job.created</code> - When new job is created</li>
+                  </ul>
+                  <p><strong className="text-foreground">Setup:</strong> Go to Settings → Webhooks → Add endpoint URL → Select events</p>
+                </AccordionContent>
+              </AccordionItem>
             </Accordion>
-
-            <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
-              Troubleshooting
-            </Typography>
-
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>I don't see any operations in my Work Queue</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>
-                  <strong>Check 1:</strong> Make sure work has been assigned to you by an admin.
-                </Typography>
-                <Typography paragraph>
-                  <strong>Check 2:</strong> Clear all filters to see if operations appear.
-                </Typography>
-                <Typography paragraph>
-                  <strong>Check 3:</strong> You might have completed all assigned work. Check "My Activity".
-                </Typography>
-              </AccordionDetails>
-            </Accordion>
-
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>Timer doesn't start when I click "Start Timing"</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>
-                  <strong>Cause:</strong> You likely have another operation already timing.
-                </Typography>
-                <Typography paragraph>
-                  <strong>Solution:</strong> Check the "Currently Timing" widget at the top. Stop that timer first.
-                </Typography>
-              </AccordionDetails>
-            </Accordion>
-
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>3D CAD viewer won't load my STEP file</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>
-                  <strong>Check 1:</strong> Is the file a valid STEP format (.step or .stp)?
-                </Typography>
-                <Typography paragraph>
-                  <strong>Check 2:</strong> File size - Maximum is 50MB.
-                </Typography>
-                <Typography paragraph>
-                  <strong>Check 3:</strong> Try re-exporting from your CAD software with standard STEP settings.
-                </Typography>
-                <Typography paragraph>
-                  <strong>Check 4:</strong> Click "Fit View" if the model loaded but appears off-screen.
-                </Typography>
-              </AccordionDetails>
-            </Accordion>
-
-            <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
-              API & Integration
-            </Typography>
-
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>How do I get API access?</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>
-                  <strong>Step 1:</strong> Go to Settings → API Keys
-                </Typography>
-                <Typography paragraph>
-                  <strong>Step 2:</strong> Click "Generate New API Key"
-                </Typography>
-                <Typography paragraph>
-                  <strong>Step 3:</strong> Copy the key immediately (shown only once)
-                </Typography>
-                <Typography paragraph>
-                  <strong>Step 4:</strong> Use the key in Authorization header: <code>Authorization: Bearer ery_live_xxxxx</code>
-                </Typography>
-                <Alert severity="warning" sx={{ mt: 2 }}>
-                  Store your API key securely. It cannot be retrieved later.
-                </Alert>
-              </AccordionDetails>
-            </Accordion>
-
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>How do webhooks work?</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography paragraph>
-                  Webhooks send HTTP POST notifications to your server when events occur:
-                </Typography>
-                <List dense>
-                  <ListItem>
-                    <ListItemText primary="operation.started - When operator starts timing" />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText primary="operation.completed - When operation finishes" />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText primary="issue.created - When issue is reported" />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText primary="job.created - When new job is created" />
-                  </ListItem>
-                </List>
-                <Typography paragraph sx={{ mt: 2 }}>
-                  <strong>Setup:</strong> Go to Settings → Webhooks → Add endpoint URL → Select events
-                </Typography>
-              </AccordionDetails>
-            </Accordion>
-          </Box>
-        </TabPanel>
-      </Paper>
-    </Container>
+          </TabsContent>
+        </Tabs>
+      </Card>
+    </div>
   );
 }

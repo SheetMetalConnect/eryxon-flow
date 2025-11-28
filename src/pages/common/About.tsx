@@ -1,41 +1,63 @@
-import {
-  Box,
-  Container,
-  Typography,
-  Paper,
-  Link,
-  Divider,
-} from "@mui/material";
+import { Link } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 export default function About() {
   return (
-    <Container maxWidth="sm" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
-        About
-      </Typography>
+    <div className="max-w-lg mx-auto py-8 px-4">
+      <h1 className="text-3xl font-bold mb-6">About</h1>
 
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" gutterBottom fontWeight="600">
-          Eryxon MES
-        </Typography>
-        <Typography paragraph color="text.secondary">
-          Manufacturing execution system for metals fabrication. Track jobs, parts, and operations through production.
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Made by <Link href="https://sheetmetalconnect.com" target="_blank">Sheet Metal Connect</Link>
-        </Typography>
-      </Paper>
+      <Card className="glass-card mb-6">
+        <CardContent className="p-6">
+          <h2 className="text-lg font-semibold mb-2">Eryxon MES</h2>
+          <p className="text-muted-foreground mb-4">
+            Manufacturing execution system for metals fabrication. Track jobs, parts, and operations through production.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Made by{" "}
+            <a
+              href="https://sheetmetalconnect.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              Sheet Metal Connect
+            </a>
+          </p>
+        </CardContent>
+      </Card>
 
-      <Divider sx={{ my: 3 }} />
+      <Separator className="my-6" />
 
-      <Box>
-        <Typography variant="body2" color="text.secondary">
-          <Link href="/help">Help</Link> · <Link href="/api-docs">API Docs</Link> · <Link href="https://github.com/SheetMetalConnect/eryxon-flow" target="_blank">GitHub</Link>
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          <Link href="/privacy-policy">Privacy Policy</Link> · <Link href="/terms-of-service">Terms of Service</Link>
-        </Typography>
-      </Box>
-    </Container>
+      <div className="space-y-2">
+        <p className="text-sm text-muted-foreground">
+          <Link to="/help" className="hover:underline">
+            Help
+          </Link>{" "}
+          ·{" "}
+          <Link to="/api-docs" className="hover:underline">
+            API Docs
+          </Link>{" "}
+          ·{" "}
+          <a
+            href="https://github.com/SheetMetalConnect/eryxon-flow"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:underline"
+          >
+            GitHub
+          </a>
+        </p>
+        <p className="text-sm text-muted-foreground">
+          <Link to="/privacy-policy" className="hover:underline">
+            Privacy Policy
+          </Link>{" "}
+          ·{" "}
+          <Link to="/terms-of-service" className="hover:underline">
+            Terms of Service
+          </Link>
+        </p>
+      </div>
+    </div>
   );
 }
