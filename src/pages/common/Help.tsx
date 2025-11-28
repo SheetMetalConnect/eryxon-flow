@@ -14,6 +14,9 @@ import {
   Code,
   Wrench,
   ExternalLink,
+  Sparkles,
+  Calendar,
+  GitBranch,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,8 +29,48 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+
+interface Release {
+  version: string;
+  date: string;
+  sha: string;
+  changes: string[];
+}
+
+interface ReleasesData {
+  releases: Release[];
+  lastUpdated: string;
+}
 
 export default function Help() {
+  const [releases, setReleases] = React.useState<Release[]>([]);
+  const [releasesLoading, setReleasesLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    fetch('/releases.json')
+      .then(res => res.json())
+      .then((data: ReleasesData) => {
+        setReleases(data.releases || []);
+        setReleasesLoading(false);
+      })
+      .catch(() => {
+        setReleasesLoading(false);
+      });
+  }, []);
+
+  const formatDate = (dateStr: string) => {
+    try {
+      return new Date(dateStr).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
   return (
     <div className="container max-w-5xl mx-auto py-8 px-4">
       {/* Header */}
@@ -104,6 +147,13 @@ export default function Help() {
             >
               <Bug className="h-4 w-4" />
               FAQ
+            </TabsTrigger>
+            <TabsTrigger
+              value="whats-new"
+              className="data-[state=active]:bg-white/10 rounded-none border-b-2 border-transparent data-[state=active]:border-primary gap-2 px-4 py-3"
+            >
+              <Sparkles className="h-4 w-4" />
+              What's New
             </TabsTrigger>
           </TabsList>
 
@@ -547,6 +597,83 @@ Effective Time = Total Time - Pause Time`}
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
+          </TabsContent>
+
+          {/* What's New Tab */}
+          <TabsContent value="whats-new" className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-semibold mb-2">What's New</h2>
+                <p className="text-muted-foreground">
+                  Latest updates and improvements to Eryxon MES
+                </p>
+              </div>
+              <a
+                href="https://github.com/SheetMetalConnect/eryxon-flow/releases"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline flex items-center gap-1"
+              >
+                View all releases
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+
+            {releasesLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : releases.length === 0 ? (
+              <Alert className="bg-primary/10 border-primary/30">
+                <AlertDescription>
+                  No release notes available yet. Check back after the next release.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <div className="space-y-6">
+                {releases.map((release, index) => (
+                  <Card key={release.version} className={cn(
+                    "border-white/10",
+                    index === 0 ? "bg-primary/5 border-primary/20" : "bg-white/5"
+                  )}>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-3">
+                          <CardTitle className="text-lg">
+                            v{release.version}
+                          </CardTitle>
+                          {index === 0 && (
+                            <Badge variant="secondary" className="bg-primary/20 text-primary border-0">
+                              Latest
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5" />
+                            {formatDate(release.date)}
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <GitBranch className="h-3.5 w-3.5" />
+                            <code className="text-xs">{release.sha}</code>
+                          </span>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2">
+                        {release.changes.map((change, changeIndex) => (
+                          <li key={changeIndex} className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-sm">{change}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </Card>
