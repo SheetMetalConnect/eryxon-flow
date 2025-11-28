@@ -2,10 +2,6 @@
 
 **Antigravity-inspired dark-first design system for manufacturing execution**
 
-Version: 3.3 "Compact Antigravity"
-Last Updated: November 25, 2025
-Status: ✅ Active
-
 ---
 
 ## Table of Contents
@@ -19,7 +15,7 @@ Status: ✅ Active
 - [Components](#components)
 - [Animations](#animations)
 - [Best Practices](#best-practices)
-- [Migration Guide](#migration-guide)
+- [Manufacturing Patterns](#manufacturing-specific-patterns)
 
 ---
 
@@ -102,9 +98,9 @@ We've removed light mode support to focus on an Antigravity-grade dark shell:
 
 ## Responsive & Compact Design
 
-### Design Goals for v3.3
+### Design Goals
 
-Version 3.3 "Compact Antigravity" builds on v3.2 with improved light mode contrast and even tighter admin layouts:
+Core design goals with improved light mode contrast and compact admin layouts:
 
 1. **Tablet-First for Operators**: Operators primarily use tablets on the shop floor
 2. **PC-First for Admin**: Admin users work on desktop with multi-column layouts
@@ -368,7 +364,7 @@ All data tables must have proper scroll behavior:
 
 ```
 src/styles/design-system.css  ← All design tokens and base styles
-src/theme/theme.ts            ← Material-UI theme configuration
+src/theme/ThemeProvider.tsx   ← Theme mode provider (dark/light/auto)
 tailwind.config.ts            ← Tailwind CSS configuration
 src/components/AnimatedBackground.tsx  ← Background animation
 components/ui/*               ← shadcn/ui primitives (auto-generated)
@@ -417,17 +413,6 @@ Every interactive element ships from `shadcn/ui`. Never hand-roll components whe
 <div className="bg-background text-foreground rounded-xl p-6">
   Content
 </div>
-```
-
-**In Material-UI:**
-```jsx
-<Box sx={{
-  bgcolor: 'background.default',
-  color: 'text.primary',
-  borderRadius: 2
-}}>
-  Content
-</Box>
 ```
 
 ### shadcn Theme Bridge
@@ -1343,7 +1328,7 @@ Smooth floating animation for gradient orbs.
 - `copy-on-click` and CTA buttons receive focus rings.
 - Use logical DOM order: icon → microcopy → hero → sections → CTA.
 
-### Light Mode Contrast (v3.3)
+### Light Mode Contrast
 
 Light mode uses adjusted neutral grays for better contrast:
 
@@ -1375,85 +1360,6 @@ Key light mode improvements:
 - **Muted text**: `#4d4d4d` (30% lightness vs 37% before)
 - **Borders**: `#b3b3b3` (70% lightness vs 80% before)
 - **Glass cards**: 90% opacity with stronger border
-
----
-
-## Migration Guide
-
-### From Old Design System
-
-#### Move Everything to shadcn/ui
-
-1. Initialize once per repo:
-   ```bash
-   npx shadcn@latest init
-   ```
-2. Generate every primitive you use (button, input, badge, dialog, sheet, tooltip, dropdown-menu, separator).
-3. Delete bespoke component directories that duplicated shadcn functionality.
-4. Route all new UI work through `components/ui/*` so upgrades remain centralized.
-
-#### Adopt the Antigravity Ambient Field
-
-**Before**
-```jsx
-<div className="min-h-screen bg-background">
-```
-
-**After**
-```jsx
-<>
-  <AnimatedBackground variant="antigravity" />
-  <div className="landing-container">
-    <div className="onboarding-card">...</div>
-  </div>
-</>
-```
-
-#### Replace Solid Cards with Glass
-
-**Before**
-```jsx
-<Card className="max-w-md bg-card shadow">
-```
-
-**After**
-```jsx
-<div className="onboarding-card">
-  {/* Glass + blur */}
-</div>
-```
-
-#### Add the Title Stack + Preview Pill
-
-**Before**
-```jsx
-<h1 className="text-4xl font-bold">Welcome</h1>
-```
-
-**After**
-```jsx
-<div className="title-container">
-  <h1 className="main-title">Antigravity Browser Control</h1>
-  <p className="preview-pill">Preview</p>
-</div>
-<h2 className="hero-title">Getting Started</h2>
-```
-
-#### Layer Narrative Sections
-
-```jsx
-<p className="informational-text">...</p>
-<div className="workflow-section">...</div>
-<div className="use-cases-section">...</div>
-```
-
-- Never skip the workflow column or use-case grid; they reinforce the Antigravity storytelling arc.
-
-#### Introduce Copy + CTA Micro-Interactions
-
-- Replace static code blocks with `.copy-on-click`.
-- Upgrade CTAs to `.cta-button` with the `ArrowRight` icon and hover translation.
-- Use shadcn form primitives and wrap the `Dialog`/`Sheet` content with `.glass-card` classes.
 
 ---
 
@@ -1777,7 +1683,7 @@ export default function BrowserOnboarding() {
 ### Design System Files
 
 - **Main CSS**: `/src/styles/design-system.css`
-- **MUI Theme**: `/src/theme/theme.ts`
+- **Theme Provider**: `/src/theme/ThemeProvider.tsx`
 - **Tailwind Config**: `/tailwind.config.ts`
 - **Animated Background**: `/src/components/AnimatedBackground.tsx`
 - **Reference Layout**: `docs/DESIGN_SYSTEM.md` (this guide)
@@ -1798,10 +1704,3 @@ For questions about the design system:
 3. Inspect `/components/ui/*` and `/src/styles/design-system.css` for component + token definitions
 4. Reference https://ui.shadcn.com for component APIs and usage notes
 5. Ask in team chat or create an issue with screenshots of any deviations
-
----
-
-**Document Version:** 3.3 "Compact Antigravity"
-**Last Updated:** November 25, 2025
-**Author:** Eryxon Development Team
-**Status:** ✅ Active - Dark/Light Mode, Compact Responsive
