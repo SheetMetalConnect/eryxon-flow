@@ -16,6 +16,7 @@ import OperatorTerminal from "./pages/operator/OperatorTerminal";
 import Dashboard from "./pages/admin/Dashboard";
 import IssueQueue from "./pages/admin/IssueQueue";
 import ConfigStages from "./pages/admin/ConfigStages";
+import FactoryCalendar from "./pages/admin/FactoryCalendar";
 import ConfigMaterials from "./pages/admin/ConfigMaterials";
 import ConfigResources from "./pages/admin/ConfigResources";
 import ConfigUsers from "./pages/admin/ConfigUsers";
@@ -189,6 +190,17 @@ function AppRoutes() {
           <ProtectedRoute adminOnly>
             <Layout>
               <ConfigStages />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/config/calendar"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <FactoryCalendar />
             </Layout>
           </ProtectedRoute>
         }

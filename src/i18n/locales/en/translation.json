@@ -1687,11 +1687,20 @@
     "autoSchedule": "Auto Schedule",
     "workloadOverview": "Workload Overview",
     "cell": "Cell",
-    "capacity": "Cap",
+    "capacity": "Capacity",
     "scheduled": "Scheduled",
     "utilization": "Utilization",
     "schedulingComplete": "Scheduling Complete",
     "schedulingFailed": "Scheduling Failed",
-    "operationsScheduled": "Successfully scheduled {{count}} operations."
+    "operationsScheduled": "Successfully scheduled {{count}} operations.",
+    "description": "View and manage cell capacity across dates",
+    "schedulingCapacity": "Scheduling Capacity",
+    "hoursPerDay": "Hours per Day",
+    "hoursUnit": "hours",
+    "hoursPerDayHelp": "Maximum work hours this cell can process per day. Used by the scheduler to allocate operations."
+  },
+  "calendar": {
+    "title": "Factory Calendar",
+    "description": "Manage holidays, closures, and special working days"
   }
 }

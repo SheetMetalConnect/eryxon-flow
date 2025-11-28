@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Loader2, Trash2, GripVertical, Infinity, CheckCircle, AlertTriangle, Factory, Settings2 } from "lucide-react";
+import { Plus, Edit, Loader2, Trash2, GripVertical, Infinity, CheckCircle, AlertTriangle, Factory, Settings2, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
@@ -36,6 +36,7 @@ interface Stage {
   wip_warning_threshold: number | null;
   enforce_wip_limit: boolean | null;
   show_capacity_warning: boolean | null;
+  capacity_hours_per_day: number | null;
 }
 
 interface SortableStageCardProps {
@@ -109,20 +110,19 @@ function SortableStageCard({ stage, onEdit, onDelete, tenantId, t }: SortableSta
                   <span className="flex items-center gap-1">
                     <span className="font-medium">#{stage.sequence}</span>
                   </span>
+                  <span className="flex items-center gap-1">
+                    <CalendarClock className="h-3.5 w-3.5" />
+                    {stage.capacity_hours_per_day || 8}h/day
+                  </span>
                   {stage.wip_limit !== null ? (
                     <span className="flex items-center gap-1">
                       <Settings2 className="h-3.5 w-3.5" />
-                      {t("qrm.wipLimit", "WIP Limit")}: {stage.wip_limit}
+                      {t("qrm.wipLimit", "WIP")}: {stage.wip_limit}
                       {stage.enforce_wip_limit && (
                         <span className="text-xs text-orange-600 font-medium">(enforced)</span>
                       )}
                     </span>
-                  ) : (
-                    <span className="flex items-center gap-1 text-muted-foreground/70">
-                      <Infinity className="h-3.5 w-3.5" />
-                      {t("qrm.noLimit", "No WIP Limit")}
-                    </span>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -184,6 +184,7 @@ export default function ConfigStages() {
     wip_warning_threshold: null as number | null,
     enforce_wip_limit: false,
     show_capacity_warning: true,
+    capacity_hours_per_day: 8 as number | null,
   });
 
   const sensors = useSensors(
@@ -232,6 +233,7 @@ export default function ConfigStages() {
             wip_warning_threshold: formData.wip_warning_threshold,
             enforce_wip_limit: formData.enforce_wip_limit,
             show_capacity_warning: formData.show_capacity_warning,
+            capacity_hours_per_day: formData.capacity_hours_per_day,
           })
           .eq("id", editingStage.id);
 
@@ -251,6 +253,7 @@ export default function ConfigStages() {
           wip_warning_threshold: formData.wip_warning_threshold,
           enforce_wip_limit: formData.enforce_wip_limit,
           show_capacity_warning: formData.show_capacity_warning,
+          capacity_hours_per_day: formData.capacity_hours_per_day,
         });
 
         toast.success(t("stages.stageCreated"));
@@ -276,6 +279,7 @@ export default function ConfigStages() {
       wip_warning_threshold: null,
       enforce_wip_limit: false,
       show_capacity_warning: true,
+      capacity_hours_per_day: 8,
     });
     setEditingStage(null);
   };
@@ -292,6 +296,7 @@ export default function ConfigStages() {
       wip_warning_threshold: stage.wip_warning_threshold,
       enforce_wip_limit: stage.enforce_wip_limit ?? false,
       show_capacity_warning: stage.show_capacity_warning ?? true,
+      capacity_hours_per_day: stage.capacity_hours_per_day ?? 8,
     });
     setDialogOpen(true);
   };
@@ -506,11 +511,44 @@ export default function ConfigStages() {
                   </div>
                 </div>
 
+                {/* Scheduling Capacity */}
+                <div className="space-y-4 pt-2 border-t">
+                  <div className="flex items-center gap-2">
+                    <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                    <h3 className="font-semibold text-sm">{t("capacity.schedulingCapacity", "Scheduling Capacity")}</h3>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="capacity_hours_per_day">{t("capacity.hoursPerDay", "Hours per Day")}</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="capacity_hours_per_day"
+                        type="number"
+                        min="1"
+                        max="24"
+                        step="0.5"
+                        value={formData.capacity_hours_per_day ?? 8}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            capacity_hours_per_day: e.target.value ? parseFloat(e.target.value) : 8
+                          })
+                        }
+                        className="w-24"
+                      />
+                      <span className="text-sm text-muted-foreground">{t("capacity.hoursUnit", "hours")}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {t("capacity.hoursPerDayHelp", "Maximum work hours this cell can process per day. Used by the scheduler to allocate operations.")}
+                    </p>
+                  </div>
+                </div>
+
                 {/* QRM Settings */}
                 <div className="space-y-4 pt-2 border-t">
                   <div className="flex items-center gap-2">
                     <Settings2 className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="font-semibold text-sm">{t("qrm.settings", "Capacity Settings")}</h3>
+                    <h3 className="font-semibold text-sm">{t("qrm.settings", "WIP Limits")}</h3>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -553,7 +591,7 @@ export default function ConfigStages() {
                   </div>
 
                   <p className="text-xs text-muted-foreground">
-                    {t("qrm.wipLimitHelp", "Set capacity limits to prevent overloading this stage. Leave empty for unlimited.")}
+                    {t("qrm.wipLimitHelp", "Set WIP limits to prevent overloading this stage. Leave empty for unlimited.")}
                   </p>
 
                   <div className="space-y-3 p-3 bg-muted/50 rounded-lg">
