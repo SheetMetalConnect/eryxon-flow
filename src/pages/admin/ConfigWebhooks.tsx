@@ -14,7 +14,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Trash2, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
-import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTable } from "@/components/ui/data-table/DataTable";
+import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
 
 const AVAILABLE_EVENTS = [
   // Job lifecycle events
@@ -389,85 +390,85 @@ export default function ConfigWebhooks() {
                   <Label htmlFor="webhook-url">{t('webhooks.webhookUrl')}</Label>
                   <Input
                     id="webhook-url"
-                      type="url"
-                      placeholder={t('webhooks.urlPlaceholder')}
-                      value={webhookUrl}
-                      onChange={(e) => setWebhookUrl(e.target.value)}
-                    />
-                    <p className="text-sm text-muted-foreground">{t('webhooks.mustBeHttps')}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{t('webhooks.events')}</Label>
-                    <div className="border rounded-lg p-3 space-y-3 max-h-72 overflow-y-auto">
-                      {AVAILABLE_EVENTS.map((event) => (
-                        <div key={event.id} className="flex items-start space-x-2">
-                          <Checkbox
-                            id={event.id}
-                            checked={selectedEvents.includes(event.id)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setSelectedEvents([...selectedEvents, event.id]);
-                              } else {
-                                setSelectedEvents(selectedEvents.filter(e => e !== event.id));
-                              }
-                            }}
-                            className="mt-0.5"
-                          />
-                          <div>
-                            <Label htmlFor={event.id} className="cursor-pointer font-medium">
-                              {event.label}
-                            </Label>
-                            <p className="text-xs text-muted-foreground">{event.description}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <Button onClick={createWebhook} className="w-full">
-                    {t('webhooks.createWebhook')}
-                  </Button>
+                    type="url"
+                    placeholder={t('webhooks.urlPlaceholder')}
+                    value={webhookUrl}
+                    onChange={(e) => setWebhookUrl(e.target.value)}
+                  />
+                  <p className="text-sm text-muted-foreground">{t('webhooks.mustBeHttps')}</p>
                 </div>
-              </DialogContent>
-            </Dialog>
+                <div className="space-y-2">
+                  <Label>{t('webhooks.events')}</Label>
+                  <div className="border rounded-lg p-3 space-y-3 max-h-72 overflow-y-auto">
+                    {AVAILABLE_EVENTS.map((event) => (
+                      <div key={event.id} className="flex items-start space-x-2">
+                        <Checkbox
+                          id={event.id}
+                          checked={selectedEvents.includes(event.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedEvents([...selectedEvents, event.id]);
+                            } else {
+                              setSelectedEvents(selectedEvents.filter(e => e !== event.id));
+                            }
+                          }}
+                          className="mt-0.5"
+                        />
+                        <div>
+                          <Label htmlFor={event.id} className="cursor-pointer font-medium">
+                            {event.label}
+                          </Label>
+                          <p className="text-xs text-muted-foreground">{event.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <Button onClick={createWebhook} className="w-full">
+                  {t('webhooks.createWebhook')}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
       <Tabs defaultValue="webhooks" className="w-full">
-          <TabsList>
-            <TabsTrigger value="webhooks">{t('webhooks.webhooks')}</TabsTrigger>
-            <TabsTrigger value="logs">{t('webhooks.deliveryLogs')}</TabsTrigger>
-            <TabsTrigger value="docs">{t('webhooks.documentation')}</TabsTrigger>
-          </TabsList>
+        <TabsList>
+          <TabsTrigger value="webhooks">{t('webhooks.webhooks')}</TabsTrigger>
+          <TabsTrigger value="logs">{t('webhooks.deliveryLogs')}</TabsTrigger>
+          <TabsTrigger value="docs">{t('webhooks.documentation')}</TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="webhooks" className="space-y-6">
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle>{t('webhooks.configuredWebhooks')}</CardTitle>
-                <CardDescription>
-                  {t('webhooks.webhooksDescription')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <DataTable
-                  columns={webhookColumns}
-                  data={webhooks}
-                  loading={loading}
-                  searchPlaceholder={t('webhooks.searchWebhooks') || "Search webhooks..."}
-                  pageSize={10}
-                  emptyMessage={t('webhooks.noWebhooks')}
-                  showToolbar={false}
-                />
-              </CardContent>
-            </Card>
+        <TabsContent value="webhooks" className="space-y-6">
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle>{t('webhooks.configuredWebhooks')}</CardTitle>
+              <CardDescription>
+                {t('webhooks.webhooksDescription')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DataTable
+                columns={webhookColumns}
+                data={webhooks || []}
+                loading={loading}
+                searchPlaceholder={t('webhooks.searchWebhooks') || "Search webhooks..."}
+                pageSize={10}
+                emptyMessage={t('webhooks.noWebhooks')}
+                showToolbar={false}
+              />
+            </CardContent>
+          </Card>
 
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle>Webhook Payload Format</CardTitle>
-                <CardDescription>Example of webhook POST request</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <pre className="text-sm bg-muted p-4 rounded overflow-x-auto">
-{`{
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle>Webhook Payload Format</CardTitle>
+              <CardDescription>Example of webhook POST request</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <pre className="text-sm bg-muted p-4 rounded overflow-x-auto">
+                {`{
   "event": "operation.completed",
   "timestamp": "2024-01-15T10:30:00Z",
   "tenant_id": "uuid",
@@ -480,79 +481,79 @@ export default function ConfigWebhooks() {
     "actual_time": 50
   }
 }`}
-                </pre>
-                <p className="text-sm text-muted-foreground mt-4">
-                  All requests include an <code>X-Eryxon-Signature</code> header with HMAC signature for verification.
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </pre>
+              <p className="text-sm text-muted-foreground mt-4">
+                All requests include an <code>X-Eryxon-Signature</code> header with HMAC signature for verification.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          <TabsContent value="logs" className="space-y-4">
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle>{t('webhooks.webhookDeliveryLogs')}</CardTitle>
-                <CardDescription>{t('webhooks.recentAttempts')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <DataTable
-                  columns={logColumns}
-                  data={webhookLogs}
-                  loading={logsLoading}
-                  searchPlaceholder="Search logs..."
-                  pageSize={20}
-                  emptyMessage={t('webhooks.noDeliveries')}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
+        <TabsContent value="logs" className="space-y-4">
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle>{t('webhooks.webhookDeliveryLogs')}</CardTitle>
+              <CardDescription>{t('webhooks.recentAttempts')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DataTable
+                columns={logColumns}
+                data={webhookLogs || []}
+                loading={logsLoading}
+                searchPlaceholder="Search logs..."
+                pageSize={20}
+                emptyMessage={t('webhooks.noDeliveries')}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          <TabsContent value="docs" className="space-y-4">
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle>Webhook Documentation</CardTitle>
-                <CardDescription>How to set up and verify webhooks</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h3 className="font-semibold mb-2">Available Events</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground mb-2">Job Lifecycle</h4>
-                      <ul className="space-y-2 text-sm">
-                        <li><code className="bg-muted px-2 py-1 rounded">job.created</code> - When a new job is created via API</li>
-                        <li><code className="bg-muted px-2 py-1 rounded">job.started</code> - When a job changes to in_progress</li>
-                        <li><code className="bg-muted px-2 py-1 rounded">job.stopped</code> - When a job is put on hold</li>
-                        <li><code className="bg-muted px-2 py-1 rounded">job.completed</code> - When a job is marked complete</li>
-                        <li><code className="bg-muted px-2 py-1 rounded">job.resumed</code> - When a paused job is resumed</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground mb-2">Operation Lifecycle</h4>
-                      <ul className="space-y-2 text-sm">
-                        <li><code className="bg-muted px-2 py-1 rounded">operation.started</code> - When an operator starts an operation</li>
-                        <li><code className="bg-muted px-2 py-1 rounded">operation.paused</code> - When an operation is paused</li>
-                        <li><code className="bg-muted px-2 py-1 rounded">operation.resumed</code> - When a paused operation is resumed</li>
-                        <li><code className="bg-muted px-2 py-1 rounded">operation.completed</code> - When an operation is marked complete</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground mb-2">Quality & Issues</h4>
-                      <ul className="space-y-2 text-sm">
-                        <li><code className="bg-muted px-2 py-1 rounded">issue.created</code> - When a quality issue or NCR is reported</li>
-                      </ul>
-                    </div>
+        <TabsContent value="docs" className="space-y-4">
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle>Webhook Documentation</CardTitle>
+              <CardDescription>How to set up and verify webhooks</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="font-semibold mb-2">Available Events</h3>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-2">Job Lifecycle</h4>
+                    <ul className="space-y-2 text-sm">
+                      <li><code className="bg-muted px-2 py-1 rounded">job.created</code> - When a new job is created via API</li>
+                      <li><code className="bg-muted px-2 py-1 rounded">job.started</code> - When a job changes to in_progress</li>
+                      <li><code className="bg-muted px-2 py-1 rounded">job.stopped</code> - When a job is put on hold</li>
+                      <li><code className="bg-muted px-2 py-1 rounded">job.completed</code> - When a job is marked complete</li>
+                      <li><code className="bg-muted px-2 py-1 rounded">job.resumed</code> - When a paused job is resumed</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-2">Operation Lifecycle</h4>
+                    <ul className="space-y-2 text-sm">
+                      <li><code className="bg-muted px-2 py-1 rounded">operation.started</code> - When an operator starts an operation</li>
+                      <li><code className="bg-muted px-2 py-1 rounded">operation.paused</code> - When an operation is paused</li>
+                      <li><code className="bg-muted px-2 py-1 rounded">operation.resumed</code> - When a paused operation is resumed</li>
+                      <li><code className="bg-muted px-2 py-1 rounded">operation.completed</code> - When an operation is marked complete</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-2">Quality & Issues</h4>
+                    <ul className="space-y-2 text-sm">
+                      <li><code className="bg-muted px-2 py-1 rounded">issue.created</code> - When a quality issue or NCR is reported</li>
+                    </ul>
                   </div>
                 </div>
+              </div>
 
-                <div>
-                  <h3 className="font-semibold mb-2">Signature Verification</h3>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    All webhook requests include an X-Eryxon-Signature header with HMAC-SHA256 signature.
-                    Verify the signature to ensure the request came from Eryxon Flow:
-                  </p>
-                  <pre className="text-xs bg-muted p-4 rounded overflow-x-auto">
-{`// Node.js example
+              <div>
+                <h3 className="font-semibold mb-2">Signature Verification</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  All webhook requests include an X-Eryxon-Signature header with HMAC-SHA256 signature.
+                  Verify the signature to ensure the request came from Eryxon Flow:
+                </p>
+                <pre className="text-xs bg-muted p-4 rounded overflow-x-auto">
+                  {`// Node.js example
 const crypto = require('crypto');
 
 function verifyWebhook(payload, signature, secret) {
@@ -566,23 +567,23 @@ function verifyWebhook(payload, signature, secret) {
     Buffer.from(expectedSignature)
   );
 }`}
-                  </pre>
-                </div>
+                </pre>
+              </div>
 
-                <div>
-                  <h3 className="font-semibold mb-2">Best Practices</h3>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                    <li>Always verify the signature before processing webhooks</li>
-                    <li>Respond with 200 status code quickly (within 10 seconds)</li>
-                    <li>Use HTTPS endpoints only</li>
-                    <li>Implement retry logic for processing failures</li>
-                    <li>Log webhook payloads for debugging</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              <div>
+                <h3 className="font-semibold mb-2">Best Practices</h3>
+                <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                  <li>Always verify the signature before processing webhooks</li>
+                  <li>Respond with 200 status code quickly (within 10 seconds)</li>
+                  <li>Use HTTPS endpoints only</li>
+                  <li>Implement retry logic for processing failures</li>
+                  <li>Log webhook payloads for debugging</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
