@@ -1221,6 +1221,48 @@ export type Database = {
           },
         ]
       }
+      operation_quantity_scrap_reasons: {
+        Row: {
+          id: string
+          operation_quantity_id: string
+          scrap_reason_id: string
+          quantity: number
+          notes: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          operation_quantity_id: string
+          scrap_reason_id: string
+          quantity?: number
+          notes?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          operation_quantity_id?: string
+          scrap_reason_id?: string
+          quantity?: number
+          notes?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "op_qty_scrap_reasons_qty_fkey"
+            columns: ["operation_quantity_id"]
+            isOneToOne: false
+            referencedRelation: "operation_quantities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "op_qty_scrap_reasons_reason_fkey"
+            columns: ["scrap_reason_id"]
+            isOneToOne: false
+            referencedRelation: "scrap_reasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operation_resources: {
         Row: {
           created_at: string | null
