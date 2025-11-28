@@ -1,12 +1,13 @@
 # Eryxon Flow Design System
 
-**Antigravity-inspired dark-first design system for manufacturing execution**
+**Modern design system for manufacturing execution with dark/light/auto theme support**
 
 ---
 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Theme Modes](#theme-modes)
 - [Design Philosophy](#design-philosophy)
 - [Responsive & Compact Design](#responsive--compact-design)
 - [Getting Started](#getting-started)
@@ -21,38 +22,63 @@
 
 ## Overview
 
-The Eryxon Flow design system is a **modern, dark-first** UI framework built for manufacturing professionals. Release 3.1 realigns every surface with the Antigravity Browser Control pack so the product looks identical to the animated onboarding reference.
+The Eryxon Flow design system is a **modern, multi-theme** UI framework built for manufacturing professionals. It supports **dark**, **light**, and **auto** (system preference) modes.
 
-It combines:
+### Core Features
 
-- **Antigravity Ambient Field**: Deep #111927 base plus layered radial gradients from the `browser.css` pack
-- **Floating Gradient Orbs**: Three drifting light sources that keep the background alive
-- **Glass Morphism Surfaces**: Blur + saturate cards with translucent borders
-- **Neon Accent Palette**: Icon tints and pills in electric blue, green, yellow, and red
-- **System-Weighted Typography**: Inter blended with the OS stack for crisp UI copy
-- **Touch-Optimized Layouts**: 44px+ targets, stacked content, and centered onboarding
-- **shadcn/ui-Only Components**: Every primitive (button, input, badge, dialog, etc.) comes from shadcn/ui and then receives glassmorphism styling
-
-### Antigravity DNA
-
-1. **Ambient Gradient Shell** — `background-color: #111927` plus two radial gradients for depth.
-2. **Onboarding Glass Card** — `rgba(17, 25, 40, 0.75)` panel with 16px blur, saturate(180%), and 1px translucent border.
-3. **Layered Hero Stack** — Icon container, uppercase welcome text, hero gradient title, and a translucent preview pill.
-4. **Narrative Sections** — Informational text capsule, workflow callout, and use-case grid with tinted stroke icons.
-5. **Micro-Interactions** — Copy-on-click pill, CTA button with arrow icon, and animated pills for status states.
-
-All values originate from the Antigravity design kit (`browser.css`) so the engineering implementation stays pixel-accurate.
+- **Multi-Theme Support**: Dark, light, and auto modes with seamless switching
+- **Glass Morphism Surfaces**: Blur + saturate cards with translucent borders (adapts to theme)
+- **Accent Palette**: Icon tints and pills in blue, green, yellow, and red
+- **System Typography**: Inter blended with the OS stack for crisp UI copy
+- **Touch-Optimized Layouts**: 44px+ targets for shop-floor tablets
+- **shadcn/ui Components**: Every primitive comes from shadcn/ui with theme-aware styling
 
 ### Technology Stack
 
 - **CSS Framework**: Tailwind CSS + CSS Custom Properties
+- **Theme Provider**: `src/theme/ThemeProvider.tsx` (dark/light/auto with localStorage persistence)
 - **UI Components**: 100% shadcn/ui primitives (button, sheet, dialog, form, badge, etc.)
 - **Data Tables**: TanStack Table with shadcn/ui table primitives
 - **Date/Time Pickers**: Custom shadcn/ui components using react-day-picker + popover
 - **Typography**: Inter + system UI stack
-- **Styling Approach**: Dark mode only, glass morphism, animated backgrounds
-- **Reference Styles**: Antigravity `browser.css` pack for gradients, pills, and layout primitives
 - **Icons**: Lucide React (consistent with shadcn/ui)
+
+---
+
+## Theme Modes
+
+The system supports three theme modes controlled by `ThemeProvider`:
+
+### Available Modes
+
+| Mode | Behavior |
+|------|----------|
+| `dark` | Always uses dark theme |
+| `light` | Always uses light theme |
+| `auto` | Follows system/browser preference (default) |
+
+### Usage
+
+```tsx
+import { useThemeMode } from '@/theme/ThemeProvider';
+
+function ThemeToggle() {
+  const { mode, setTheme, toggleTheme } = useThemeMode();
+
+  return (
+    <button onClick={toggleTheme}>
+      Current: {mode}
+    </button>
+  );
+}
+```
+
+### CSS Class Application
+
+- Dark mode: `<html class="dark">`
+- Light mode: `<html class="light">`
+
+All CSS tokens automatically adapt based on the root class. Use design tokens (not hardcoded colors) to ensure theme compatibility.
 
 ---
 
@@ -67,22 +93,27 @@ Our tagline drives every design decision and anchors the Antigravity styling pas
 3. **Functional**: Touch-optimized layouts (44px+ targets) remain practical for shop-floor tablets.
 4. **Professional**: Enterprise-grade typography, accessibility, and predictable motion keep trust high.
 
-### Antigravity Aesthetic
+### Visual Aesthetic
 
-- **Ambient Field + Depth** — The background is never flat; radial gradients and floating orbs add parallax.
-- **Glass Cards** — Every hero surface uses blur(16px) saturate(180%) with translucent borders.
+- **Ambient Field + Depth** — Backgrounds use radial gradients; floating orbs add parallax in dark mode.
+- **Glass Cards** — Hero surfaces use `backdrop-filter: blur(16px) saturate(180%)` with translucent borders.
 - **Layered Messaging** — Icon container, uppercase welcome text, gradient hero, preview pill, and divider.
-- **Narrative Sections** — Informational capsule, workflow callout, and use-case grid tell the story.
-- **Neon Icon Tints** — Blue, green, yellow, and red strokes mimic the Antigravity iconography.
+- **Narrative Sections** — Informational capsule, workflow callout, and use-case grid structure content.
+- **Status Icon Tints** — Blue, green, yellow, and red strokes for semantic meaning.
 
-### Dark Mode Only
+### Theme-Aware Design
 
-We've removed light mode support to focus on an Antigravity-grade dark shell:
+Both themes are optimized for manufacturing environments:
 
-- **Deep Navy Base**: `#111927` background dampens glare in low-light facilities.
-- **Radial Highlights**: `hsl(205.47, 77%, 40%)` and `hsl(218, 39%, 11%)` gradients add controlled glow.
-- **Glass Surfaces**: `rgba(17, 25, 40, 0.75)` cards stay legible while showcasing blur and saturation.
-- **Manufacturing Focus**: High-contrast text + iconography stays readable on large kiosks and tablets.
+**Dark Mode** (default for low-light facilities):
+- Deep backgrounds reduce glare on shop floor
+- Radial gradients add depth without distraction
+- Glass surfaces with blur/saturation effects
+
+**Light Mode** (for well-lit offices):
+- Clean white backgrounds with subtle gradients
+- Improved WCAG AA contrast ratios
+- Glass surfaces adapt with appropriate opacity
 
 ### Key Principles
 
