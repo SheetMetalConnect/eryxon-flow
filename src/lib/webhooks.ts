@@ -27,8 +27,7 @@ export type WebhookEvent =
   | 'step.completed'
   // Production metrics events
   | 'production.quantity_reported'
-  | 'production.scrap_recorded'
-  | 'production.cycle_time_measured';
+  | 'production.scrap_recorded';
 
 export interface WebhookData {
   [key: string]: any;
@@ -222,36 +221,4 @@ export async function triggerScrapRecordedWebhook(
   }
 ) {
   return triggerWebhook(tenantId, 'production.scrap_recorded', scrapData);
-}
-
-/**
- * Triggers a production.cycle_time_measured webhook
- */
-export async function triggerCycleTimeMeasuredWebhook(
-  tenantId: string,
-  cycleTimeData: {
-    sample_id: string;
-    operation_id: string;
-    operation_name: string;
-    part_id: string;
-    part_number: string;
-    job_id: string;
-    job_number: string;
-    sample_number: number;
-    measured_time_seconds: number;
-    quantity_measured: number;
-    cycle_time_per_unit_seconds: number;
-    measurement_type: string;
-    measured_by: string;
-    measured_by_name: string;
-    measured_at: string;
-    statistics: {
-      sample_count: number;
-      avg_cycle_time_seconds: number;
-      min_cycle_time_seconds: number;
-      max_cycle_time_seconds: number;
-    } | null;
-  }
-) {
-  return triggerWebhook(tenantId, 'production.cycle_time_measured', cycleTimeData);
 }
