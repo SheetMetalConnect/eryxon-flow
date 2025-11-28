@@ -1,25 +1,14 @@
 /**
- * Simple in-memory rate limiter for Edge Functions
+ * Rate limiter for Edge Functions
  *
- * For production, consider using Redis or Supabase Edge Functions rate limiting
+ * Uses Redis (Upstash) when available for persistent rate limiting across
+ * function restarts and distributed instances. Falls back to in-memory
+ * when Redis is not configured.
+ *
+ * This is a drop-in replacement for the previous in-memory-only implementation.
  */
 
-interface RateLimitEntry {
-  count: number;
-  resetAt: number;
-}
-
-const rateLimitStore = new Map<string, RateLimitEntry>();
-
-// Cleanup old entries every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of rateLimitStore.entries()) {
-    if (entry.resetAt < now) {
-      rateLimitStore.delete(key);
-    }
-  }
-}, 5 * 60 * 1000);
+import { getCache, CacheKeys, CacheTTL } from './cache.ts';
 
 export interface RateLimitConfig {
   maxRequests: number;
@@ -41,14 +30,91 @@ export interface RateLimitResult {
  * @param config - Rate limit configuration
  * @returns Rate limit result
  */
-export function checkRateLimit(
+export async function checkRateLimit(
+  identifier: string,
+  config: RateLimitConfig
+): Promise<RateLimitResult> {
+  const cache = getCache();
+  const prefix = config.keyPrefix || 'default';
+  const windowSeconds = Math.ceil(config.windowMs / 1000);
+
+  // Create cache keys
+  const countKey = CacheKeys.rateLimit(prefix, `${identifier}:count`);
+  const resetKey = CacheKeys.rateLimit(prefix, `${identifier}:reset`);
+
+  const now = Date.now();
+
+  // Get current state from cache
+  const [countStr, resetStr] = await cache.mget([countKey, resetKey]);
+
+  let count = countStr ? parseInt(countStr, 10) : 0;
+  let resetAt = resetStr ? parseInt(resetStr, 10) : 0;
+
+  // Check if window expired
+  if (!resetAt || resetAt < now) {
+    // Start new window
+    resetAt = now + config.windowMs;
+    count = 1;
+
+    // Set new count and reset time with TTL
+    await cache.mset([
+      { key: countKey, value: '1', ttlSeconds: windowSeconds },
+      { key: resetKey, value: resetAt.toString(), ttlSeconds: windowSeconds },
+    ]);
+
+    return {
+      allowed: true,
+      remaining: config.maxRequests - 1,
+      resetAt,
+    };
+  }
+
+  // Increment count
+  count = await cache.incr(countKey, windowSeconds);
+
+  // Check if exceeded
+  if (count > config.maxRequests) {
+    return {
+      allowed: false,
+      remaining: 0,
+      resetAt,
+      retryAfter: Math.ceil((resetAt - now) / 1000),
+    };
+  }
+
+  return {
+    allowed: true,
+    remaining: config.maxRequests - count,
+    resetAt,
+  };
+}
+
+/**
+ * Synchronous version for backward compatibility
+ * Uses in-memory only (no Redis) for immediate response
+ *
+ * @deprecated Use async checkRateLimit instead for persistent rate limiting
+ */
+const syncRateLimitStore = new Map<string, { count: number; resetAt: number }>();
+
+// Cleanup old entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of syncRateLimitStore.entries()) {
+    if (entry.resetAt < now) {
+      syncRateLimitStore.delete(key);
+    }
+  }
+}, 5 * 60 * 1000);
+
+export function checkRateLimitSync(
   identifier: string,
   config: RateLimitConfig
 ): RateLimitResult {
   const key = `${config.keyPrefix || 'default'}:${identifier}`;
   const now = Date.now();
 
-  let entry = rateLimitStore.get(key);
+  let entry = syncRateLimitStore.get(key);
 
   // Create new entry if doesn't exist or window expired
   if (!entry || entry.resetAt < now) {
@@ -56,7 +122,7 @@ export function checkRateLimit(
       count: 1,
       resetAt: now + config.windowMs,
     };
-    rateLimitStore.set(key, entry);
+    syncRateLimitStore.set(key, entry);
 
     return {
       allowed: true,

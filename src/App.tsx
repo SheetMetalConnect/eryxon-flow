@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ThemeProvider } from "./theme/ThemeProvider";
@@ -16,6 +16,7 @@ import OperatorTerminal from "./pages/operator/OperatorTerminal";
 import Dashboard from "./pages/admin/Dashboard";
 import IssueQueue from "./pages/admin/IssueQueue";
 import ConfigStages from "./pages/admin/ConfigStages";
+import FactoryCalendar from "./pages/admin/FactoryCalendar";
 import ConfigMaterials from "./pages/admin/ConfigMaterials";
 import ConfigResources from "./pages/admin/ConfigResources";
 import ConfigUsers from "./pages/admin/ConfigUsers";
@@ -48,8 +49,7 @@ import NotFound from "./pages/NotFound";
 import { OnboardingWizard } from "./components/onboarding";
 import Layout from "./components/Layout";
 import { Loader2 } from "lucide-react";
-
-const queryClient = new QueryClient();
+import { queryClient } from "./lib/queryClient";
 
 // SECURITY NOTE: This route protection is for UI convenience only.
 // Actual authorization is enforced server-side via RLS policies.
@@ -190,6 +190,17 @@ function AppRoutes() {
           <ProtectedRoute adminOnly>
             <Layout>
               <ConfigStages />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/config/calendar"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <FactoryCalendar />
             </Layout>
           </ProtectedRoute>
         }
