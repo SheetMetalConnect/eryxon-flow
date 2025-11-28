@@ -93,7 +93,6 @@ export class SchedulerService {
     // Simplified single-pass scheduling for a list of operations that are already sorted/grouped
     public scheduleOperations(operations: Operation[], startDate: Date = new Date()): ScheduledOperation[] {
         const scheduled: ScheduledOperation[] = [];
-        let currentJobId: string | null = null;
         let jobStartDate = startDate;
 
         for (const op of operations) {
