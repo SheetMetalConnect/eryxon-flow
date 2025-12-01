@@ -1316,8 +1316,8 @@
     }
   },
   "pricing": {
-    "title": "Abonnementen",
-    "subtitle": "Kies het perfecte abonnement voor uw metaalbedrijf",
+    "title": "Prijzen",
+    "subtitle": "Eenvoudige, transparante prijzen voor Europese metaalbedrijven. Geen verkoopgesprekken, geen verborgen kosten.",
     "comingSoonTitle": "Prijzen komen binnenkort",
     "comingSoonSubtitle": "Professionele abonnementen worden momenteel afgerond",
     "comingSoonDescription": "We bereiden transparante, eerlijke prijzen voor Europese fabrikanten voor. Neem contact op voor vroege toegang en op maat gemaakte offertes.",
@@ -1327,56 +1327,90 @@
     "save20": "20% besparen",
     "currentPlan": "Huidig abonnement",
     "choosePlan": "Abonnement kiezen",
-    "upgrade": "Upgraden",
+    "upgrade": "Upgrade aanvragen",
     "downgrade": "Downgraden",
     "contactSales": "Contact verkoop",
+    "managePlan": "Abonnement beheren",
+    "hostedPlans": "Gehoste abonnementen",
+    "hostedPlansDescription": "Wij hosten alles op Hetzner (EU). U betaalt voor hosting, rekenkracht en ondersteuning.",
+    "alternatives": "Alternatieven",
+    "alternativesDescription": "Volledige controle nodig of speciale vereisten?",
     "free": {
       "name": "Gratis",
       "price": "€0",
-      "description": "Perfect om te beginnen",
+      "description": "Begin en evalueer",
       "features": [
-        "Alle functies inbegrepen",
-        "Tot 100 opdrachten per maand",
-        "Tot 1.000 onderdelen per maand",
-        "5GB opslag",
-        "10GB datagebruik per maand",
-        "Documentatie beschikbaar",
-        "Community-ondersteuning"
+        "25 opdrachten per maand",
+        "250 onderdelen per maand",
+        "500MB opslag",
+        "Beperkte API-toegang",
+        "Webhooks inbegrepen",
+        "MCP Server inbegrepen",
+        "Alleen documentatie"
       ]
     },
     "pro": {
       "name": "Pro",
       "price": "€97",
-      "description": "Ideaal voor groeiende bedrijven",
+      "description": "Voor productiebedrijven",
       "features": [
-        "Onbeperkt aantal gebruikers",
-        "1.000 opdrachten per maand",
-        "10.000 onderdelen per maand",
-        "50GB opslag",
+        "500 opdrachten per maand",
+        "5.000 onderdelen per maand",
+        "10GB opslag",
         "Volledige API-toegang",
-        "Multi-tenant architectuur",
-        "Prioriteit e-mailondersteuning",
-        "Geavanceerde analyses",
-        "Webhook-integraties"
+        "Webhooks",
+        "MCP Server",
+        "E-mailondersteuning (geen SLA)",
+        "Extra opslag op aanvraag"
       ]
     },
     "premium": {
-      "name": "Enterprise",
+      "name": "Premium",
       "price": "€497",
-      "description": "Op maat gemaakte oplossing",
+      "description": "Voor groeiende bedrijven",
       "features": [
-        "Alles in Pro",
-        "Onbeperkte opdrachten en onderdelen",
-        "Onbeperkte opslag",
-        "Onbeperkt gebruik",
-        "Self-hosted (on-premises)",
-        "Single-tenant architectuur",
+        "Fair use (hoge limieten)",
+        "100GB opslag",
+        "Volledige API-toegang",
+        "Webhooks",
+        "MCP Server",
         "SSO/SAML authenticatie",
-        "Toegewijd ondersteuningskanaal",
-        "Aangepaste SLA",
-        "White-label opties",
-        "Geavanceerde beveiligingscontroles"
+        "White-label (optioneel)",
+        "Prioriteit e-mailondersteuning",
+        "Extra opslag op aanvraag"
       ]
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "price": "Op aanvraag",
+      "description": "Uw infrastructuur, wij implementeren",
+      "features": [
+        "Single-tenant implementatie",
+        "Uw netwerk of dedicated gehost",
+        "Onbeperkte opdrachten, onderdelen, opslag",
+        "Volledige API, Webhooks, MCP Server",
+        "SSO/SAML authenticatie",
+        "White-label inbegrepen",
+        "Toegewijd ondersteuningskanaal",
+        "Aangepaste SLA indien nodig"
+      ],
+      "cta": "Vraag offerte aan"
+    },
+    "selfHosted": {
+      "name": "Self-Hosted",
+      "price": "€0",
+      "description": "Uw setup, u bent op uzelf aangewezen",
+      "features": [
+        "Download en draai zelf",
+        "Onbeperkte opdrachten, onderdelen, opslag",
+        "Volledige API, Webhooks, MCP Server",
+        "Broncode onder BSL 1.1",
+        "Community-ondersteuning via docs",
+        "GitHub Discussions",
+        "Geen officiële ondersteuning"
+      ],
+      "cta": "Bekijk op GitHub",
+      "note": "Voor technische gebruikers, privacybewuste bedrijven, of degenen die toch niet betalen. Kost ons niets."
     },
     "perMonth": "/maand",
     "perYear": "/jaar",
@@ -1384,16 +1418,20 @@
     "billedAnnually": "Jaarlijks gefactureerd",
     "howItWorks": {
       "title": "Hoe het werkt",
-      "selfServiceTitle": "Een MES waar u van houdt",
-      "selfServiceDescription": "Eryxon Flow is ontworpen voor eenvoud. Begin gratis en stel alles zelf in, of upgrade naar Pro voor hogere limieten en extra ondersteuning. Volledig gehost op Supabase, speciaal gemaakt voor de Europese markt.",
+      "selfServiceTitle": "Self-service",
+      "selfServiceDescription": "Geen onboarding-gesprekken. Geen consultants. Meld u aan, configureer uw fasen en materialen, sluit uw API aan, en ga. Alleen documentatie en e-mailondersteuning (Pro+).",
       "upgradeTitle": "Hoe upgraden",
-      "upgradeDescription": "Klaar om te upgraden? Klik op de 'Upgrade aanvragen' of 'Contact verkoop' knop hierboven om een e-mail te sturen naar office@sheetmetalconnect.com. We nemen zo snel mogelijk contact met u op met de volgende stappen.",
-      "usageTitle": "Gebruik bijhouden en abonnementsbeheer",
-      "usageDescription": "Monitor uw gebruik, houd het aantal opdrachten en onderdelen bij, en beheer uw abonnement vanaf uw Mijn abonnement-pagina. U ziet realtime gebruiksstatistieken en ontvangt waarschuwingen wanneer u de limieten nadert."
+      "upgradeDescription": "Klaar om te upgraden? Klik op \"Upgrade aanvragen\" om office@sheetmetalconnect.com te e-mailen. We nemen contact met u op met de volgende stappen.",
+      "usageTitle": "Gebruik & limieten",
+      "usageDescription": "Monitor uw gebruik vanaf uw Mijn abonnement-pagina. U ziet realtime statistieken en waarschuwingen wanneer u limieten nadert."
     },
     "securityBanner": {
-      "title": "Beveiliging op Enterprise-niveau",
-      "description": "Gratis en Pro: Multi-tenant architectuur met volledige gegevensisolatie per tenant. Beveiliging op rijniveau zorgt voor scheiding op databaseniveau. Premium: Single-tenant implementatie met toegewijde infrastructuur, volledig afgeschermd. Alle niveaus omvatten alleen HTTPS-verkeer, gehashte wachtwoorden, versleutelde API-sleutels en tijdelijk beperkte bestandstoegang via ondertekende URL's."
+      "title": "Enterprise-niveau beveiliging",
+      "description": "Gratis, Pro & Premium: Multi-tenant architectuur met volledige gegevensisolatie per tenant. Beveiliging op rijniveau zorgt voor scheiding op databaseniveau. Enterprise: Single-tenant implementatie op uw infrastructuur. Alle niveaus bevatten HTTPS, gehashte wachtwoorden, versleutelde API-sleutels en ondertekende URL's voor bestandstoegang."
+    },
+    "whyHosted": {
+      "title": "Waarom betalen voor gehost?",
+      "description": "De meeste metaalbedrijven zijn geen DevOps-mensen. Zij zullen niet zelf hosten. U betaalt voor hosting, rekenkracht en ondersteuning — niet voor de software zelf."
     }
   },
   "myPlan": {
