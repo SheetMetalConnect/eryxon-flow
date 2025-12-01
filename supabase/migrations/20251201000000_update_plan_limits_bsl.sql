@@ -1,7 +1,20 @@
--- Update plan limits for BSL 1.1 pricing model
+-- Update plan limits for BSL 1.1 pricing model (4 hosted tiers + self-hosted)
 -- Free: 25 jobs/mo, 250 parts/mo, 500MB storage
 -- Pro: 500 jobs/mo, 5000 parts/mo, 10GB storage
--- Premium/Enterprise: Unlimited (NULL)
+-- Premium: Fair use (2000 jobs/mo, 20000 parts/mo, 100GB storage)
+-- Enterprise: Unlimited (NULL) - their infrastructure
+
+-- Add 'enterprise' to the subscription_plan enum if not exists
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_enum
+    WHERE enumlabel = 'enterprise'
+    AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'subscription_plan')
+  ) THEN
+    ALTER TYPE subscription_plan ADD VALUE 'enterprise';
+  END IF;
+END $$;
 
 -- Update existing tenants by plan
 UPDATE public.tenants
@@ -18,12 +31,22 @@ SET
   max_storage_gb = 10
 WHERE plan = 'pro';
 
+-- Premium now has fair use limits (high but not unlimited)
+UPDATE public.tenants
+SET
+  max_jobs = 2000,
+  max_parts_per_month = 20000,
+  max_storage_gb = 100
+WHERE plan = 'premium';
+
+-- Enterprise has unlimited (NULL)
+-- Note: Existing 'premium' tenants that should be enterprise need manual migration
 UPDATE public.tenants
 SET
   max_jobs = NULL,
   max_parts_per_month = NULL,
   max_storage_gb = NULL
-WHERE plan = 'premium';
+WHERE plan = 'enterprise';
 
 -- Update the handle_new_tenant function with new free tier defaults
 CREATE OR REPLACE FUNCTION public.handle_new_tenant()
@@ -81,34 +104,40 @@ AS $$
     CASE p_plan
       WHEN 'free' THEN 25
       WHEN 'pro' THEN 500
-      WHEN 'premium' THEN NULL  -- unlimited
+      WHEN 'premium' THEN 2000      -- Fair use
+      WHEN 'enterprise' THEN NULL   -- Unlimited
     END,
     CASE p_plan
       WHEN 'free' THEN 250
       WHEN 'pro' THEN 5000
-      WHEN 'premium' THEN NULL  -- unlimited
+      WHEN 'premium' THEN 20000     -- Fair use
+      WHEN 'enterprise' THEN NULL   -- Unlimited
     END,
     CASE p_plan
       WHEN 'free' THEN 1
       WHEN 'pro' THEN 10
-      WHEN 'premium' THEN NULL  -- unlimited
+      WHEN 'premium' THEN 100
+      WHEN 'enterprise' THEN NULL   -- Unlimited
     END,
     CASE p_plan
       WHEN 'free' THEN FALSE
       WHEN 'pro' THEN TRUE
       WHEN 'premium' THEN TRUE
+      WHEN 'enterprise' THEN TRUE
     END,
     CASE p_plan
       WHEN 'free' THEN FALSE
       WHEN 'pro' THEN TRUE
       WHEN 'premium' THEN TRUE
+      WHEN 'enterprise' THEN TRUE
     END,
     CASE p_plan
       WHEN 'free' THEN FALSE
       WHEN 'pro' THEN FALSE
       WHEN 'premium' THEN TRUE
+      WHEN 'enterprise' THEN TRUE
     END;
 $$;
 
 -- Add comment for documentation
-COMMENT ON FUNCTION public.get_plan_limits IS 'Returns plan limits for BSL 1.1 pricing model. Free: 25 jobs, 250 parts, 1GB. Pro: 500 jobs, 5000 parts, 10GB. Premium: unlimited.';
+COMMENT ON FUNCTION public.get_plan_limits IS 'Returns plan limits for BSL 1.1 pricing model. Free: 25/250/1GB. Pro: 500/5K/10GB. Premium: 2K/20K/100GB (fair use). Enterprise: unlimited.';

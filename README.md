@@ -104,23 +104,25 @@ Additional documentation:
 
 ## Pricing
 
-| | Free | Pro | Enterprise | Self-hosted |
-|---|---|---|---|---|
-| **Price** | €0 | €97/mo | €497/mo | €0 |
-| **Where** | My infra | My infra | Your infra | Your infra |
-| **Jobs/mo** | 25 | 500 | Unlimited | Unlimited |
-| **Parts/mo** | 250 | 5,000 | Unlimited | Unlimited |
-| **Storage** | 500MB | 10GB | Your cost | Your cost |
-| **API** | Limited | Full | Full | Full |
-| **Webhooks** | No | Yes | Yes | Yes |
-| **MCP Server** | No | Yes | Yes | Yes |
-| **SSO/SAML** | No | No | Yes | DIY |
-| **Support** | Docs | Email | Dedicated | Community |
+| | Free | Pro | Premium | Enterprise | Self-hosted |
+|---|---|---|---|---|---|
+| **Price** | €0 | €97/mo | €497/mo | By request | €0 |
+| **Where** | My infra | My infra | My infra | Your infra | Your infra |
+| **Jobs/mo** | 25 | 500 | Fair use | Unlimited | Unlimited |
+| **Parts/mo** | 250 | 5,000 | Fair use | Unlimited | Unlimited |
+| **Storage** | 500MB | 10GB | 100GB | Your cost | Your cost |
+| **API** | Limited | Full | Full | Full | Full |
+| **Webhooks** | No | Yes | Yes | Yes | Yes |
+| **MCP Server** | No | Yes | Yes | Yes | Yes |
+| **SSO/SAML** | No | No | Yes | Yes | DIY |
+| **White-label** | No | No | Optional | Yes | DIY |
+| **Support** | Docs | Email | Priority | Dedicated | Community |
 
-- **Free** — Try it. Limited. No support.
-- **Pro** — I run it. Real usage. Email support.
-- **Enterprise** — Your network, your Supabase, I deploy and support it.
-- **Self-hosted** — Download it, run it yourself, unlimited, you're on your own.
+- **Free** — Try it. Very limited.
+- **Pro** — Real usage, my infra, email support.
+- **Premium** — High limits, SSO, priority support. Still my infra.
+- **Enterprise** — Your network, I deploy, custom scope. Contact me.
+- **Self-hosted** — On your own. Free forever.
 
 Want to self-host? See the [Self-Hosting Guide](docs/SELF_HOSTING_GUIDE.md).
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
 
-export type SubscriptionPlan = 'free' | 'pro' | 'premium';
+export type SubscriptionPlan = 'free' | 'pro' | 'premium' | 'enterprise';
 export type SubscriptionStatus = 'active' | 'cancelled' | 'suspended' | 'trial';
 
 export interface TenantSubscription {
@@ -76,19 +76,21 @@ export const useSubscription = () => {
   }, [profile?.tenant_id]);
 
   const getPlanDisplayName = (plan: SubscriptionPlan): string => {
-    const planNames = {
+    const planNames: Record<SubscriptionPlan, string> = {
       free: 'Free Plan',
       pro: 'Pro Plan',
       premium: 'Premium Plan',
+      enterprise: 'Enterprise Plan',
     };
     return planNames[plan] || 'Unknown Plan';
   };
 
   const getPlanColor = (plan: SubscriptionPlan): string => {
-    const planColors = {
+    const planColors: Record<SubscriptionPlan, string> = {
       free: '#64748b', // slate
       pro: '#8b5cf6', // purple
-      premium: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', // gradient
+      premium: '#f59e0b', // amber
+      enterprise: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', // gradient
     };
     return planColors[plan] || '#64748b';
   };
