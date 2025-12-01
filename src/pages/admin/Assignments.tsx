@@ -26,7 +26,8 @@ import { Loader2, UserCheck, X, UserPlus, ArrowRight, Users } from "lucide-react
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
-import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTable } from "@/components/ui/data-table/DataTable";
+import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
 
 interface Part {
   id: string;
