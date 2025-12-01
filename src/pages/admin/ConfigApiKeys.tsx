@@ -12,7 +12,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Key, Copy, Trash2, Plus, BookOpen, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
-import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTable } from "@/components/ui/data-table/DataTable";
+import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
 
 interface ApiKey {
   id: string;

@@ -50,7 +50,9 @@ import { useToast } from "@/hooks/use-toast";
 import { JobIssueBadge } from "@/components/issues/JobIssueBadge";
 import { CompactOperationsFlow } from "@/components/qrm/OperationsFlowVisualization";
 import { useMultipleJobsRouting } from "@/hooks/useQRMMetrics";
-import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTable } from "@/components/ui/data-table/DataTable";
+import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
+import type { DataTableFilterableColumn } from "@/components/ui/data-table/DataTable";
 import { cn } from "@/lib/utils";
 
 interface JobData {

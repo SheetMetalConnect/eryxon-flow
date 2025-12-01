@@ -13,7 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Loader2, Mail, UserPlus, Users, Trash2, Clock, Link2, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTable } from "@/components/ui/data-table/DataTable";
+import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
+import type { DataTableFilterableColumn } from "@/components/ui/data-table/DataTable";
 import { useInvitations, Invitation } from "@/hooks/useInvitations";
 
 interface UserProfile {

@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DataTable, DataTableColumnHeader, DataTableFilterableColumn } from '@/components/ui/data-table';
+import { DataTable } from "@/components/ui/data-table/DataTable";
+import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
+import type { DataTableFilterableColumn } from "@/components/ui/data-table/DataTable";
 import { cn } from '@/lib/utils';
 import {
   useShipments,
