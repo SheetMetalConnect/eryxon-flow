@@ -96,7 +96,9 @@ export function ToastProvider({ children }: ToastProviderProps) {
         info: toast.info,
       }[severity];
 
-      const toastId = toastFn(message, {
+      let toastId: string | number = '';
+      
+      toastId = toastFn(message, {
         duration,
         action: options?.actions?.length || options?.showPinAction ? (
           <div className="flex items-center gap-1">

@@ -78,7 +78,7 @@ export function OnboardingWizard() {
       try {
         const { error: tenantError } = await supabase
           .from('tenants')
-          .update({ plan })
+          .update({ plan: plan as any }) // Cast needed until migration is applied
           .eq('id', profile.tenant_id);
 
         if (tenantError) {

@@ -185,15 +185,18 @@ export function DataTable<T extends Record<string, any>>({
     setPage(0);
   };
 
+  // Ensure rows is always an array
+  const safeRows = rows || [];
+
   // Filter rows based on search query
   const filteredRows = searchQuery
-    ? rows.filter((row) =>
+    ? safeRows.filter((row) =>
         columns.some((column) => {
           const value = row[column.id];
           return value?.toString().toLowerCase().includes(searchQuery.toLowerCase());
         })
       )
-    : rows;
+    : safeRows;
 
   // Sort rows
   const sortedRows = React.useMemo(() => {
@@ -210,19 +213,19 @@ export function DataTable<T extends Record<string, any>>({
     });
   }, [filteredRows, order, orderBy]);
 
-  // Paginate rows
-  const paginatedRows = sortedRows.slice(
+  // Paginate rows - with safety check
+  const paginatedRows = sortedRows?.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
-  );
+  ) || [];
 
   // Show action column if any action handler is provided
   const showActions = !!(onEdit || onDelete || onView);
 
-  // Pagination info
-  const totalPages = Math.ceil(sortedRows.length / rowsPerPage);
+  // Pagination info - with safety checks
+  const totalPages = Math.ceil((sortedRows?.length || 0) / rowsPerPage);
   const startIndex = page * rowsPerPage + 1;
-  const endIndex = Math.min((page + 1) * rowsPerPage, sortedRows.length);
+  const endIndex = Math.min((page + 1) * rowsPerPage, sortedRows?.length || 0);
 
   const getSortIcon = (columnId: string) => {
     if (orderBy !== columnId) {
