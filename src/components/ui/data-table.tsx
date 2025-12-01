@@ -200,6 +200,7 @@ export function DataTable<T extends Record<string, any>>({
 
   // Sort rows
   const sortedRows = React.useMemo(() => {
+    if (!filteredRows || !Array.isArray(filteredRows)) return [];
     if (!orderBy) return filteredRows;
 
     return [...filteredRows].sort((a, b) => {
@@ -214,10 +215,9 @@ export function DataTable<T extends Record<string, any>>({
   }, [filteredRows, order, orderBy]);
 
   // Paginate rows - with safety check
-  const paginatedRows = sortedRows?.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  ) || [];
+  const paginatedRows = Array.isArray(sortedRows) 
+    ? sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+    : [];
 
   // Show action column if any action handler is provided
   const showActions = !!(onEdit || onDelete || onView);
