@@ -124,7 +124,7 @@ Additional documentation:
 - **Enterprise** — Your network, I deploy, custom scope. Contact me.
 - **Self-hosted** — On your own. Free forever.
 
-Want to self-host? See the [Self-Hosting Guide](docs/SELF_HOSTING_GUIDE.md).
+Paid plans billed yearly. Want to self-host? See the [Self-Hosting Guide](docs/SELF_HOSTING_GUIDE.md).
 
 Need integration work or custom forks? [Contact us](mailto:office@sheetmetalconnect.com).
 
