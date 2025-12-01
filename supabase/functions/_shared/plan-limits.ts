@@ -4,10 +4,11 @@
  * This module provides utilities for enforcing subscription plan limits
  * across all API endpoints.
  *
- * Plan Limits:
- * - Free:       100 jobs, 1000 parts/month, 5GB storage, limited API access
- * - Pro:        1000 jobs, 10000 parts/month, 50GB storage, full API access
- * - Enterprise: Unlimited everything (premium tier in DB)
+ * Plan Limits (BSL 1.1 Model):
+ * - Free:       25 jobs/mo, 250 parts/mo, 1GB storage, limited API (no webhooks, no MCP)
+ * - Pro:        500 jobs/mo, 5000 parts/mo, 10GB storage, full API + webhooks + MCP
+ * - Enterprise: Unlimited everything, SSO/SAML (premium tier in DB)
+ * - Self-hosted: Unlimited (configured via env, not enforced)
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
