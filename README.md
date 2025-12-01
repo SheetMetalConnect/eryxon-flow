@@ -1,41 +1,27 @@
-# Eryxon Flow - Manufacturing Execution System
+# Eryxon MES
 
-**Internal Project - Proprietary**
+**The simple, elegant and powerful manufacturing execution system that your people will love to use. Made for SMB metal fabrication.**
 
 <div align="center">
 
+[![License: BSL 1.1](https://img.shields.io/badge/License-BSL_1.1-blue?style=for-the-badge)](LICENSE)
 [![React](https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-5.4.19-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Supabase](https://img.shields.io/badge/Supabase-2.80.0-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind-3.4.17-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-
-</div>
-
-<div align="center">
-
-![React Query](https://img.shields.io/badge/React_Query-5.83.0-FF4154?style=flat-square&logo=react-query&logoColor=white)
-![React Router](https://img.shields.io/badge/React_Router-6.30.1-CA4245?style=flat-square&logo=react-router&logoColor=white)
-![MUI](https://img.shields.io/badge/Material_UI-7.3.5-007FFF?style=flat-square&logo=mui&logoColor=white)
-![Three.js](https://img.shields.io/badge/Three.js-0.180.0-000000?style=flat-square&logo=three.js&logoColor=white)
-![Zod](https://img.shields.io/badge/Zod-3.25.76-3E67B1?style=flat-square&logo=zod&logoColor=white)
-![i18next](https://img.shields.io/badge/i18next-25.6.2-26A69A?style=flat-square&logo=i18next&logoColor=white)
 
 </div>
 
 ---
 
-<div align="center">
+## What Makes This Different
 
-![Commits](https://img.shields.io/badge/commits-557-blue)
-![Inception](https://img.shields.io/badge/inception-2025-11-09-lightgrey)
-![Velocity](https://img.shields.io/badge/last_30d-557_commits-orange)
+- **MCP Server** - AI/automation ready out of the box
+- **API-first** - Send data from any system
+- **Webhooks** - Link to any other system
+- **Event-driven, real-time** - Industry 4.0 ready
+- **Modern UI** - Operators actually want to use it
 
-</div>
-
----
-
-A modern, production-ready MES (Manufacturing Execution System) for sheet metal manufacturing with real-time tracking, QRM capacity management, and comprehensive API integration.
+It's opinionated. Built for sheet metal manufacturing. Not for everyone.
 
 ## ✨ Key Features
 
@@ -116,39 +102,60 @@ Additional documentation:
 - **API Security**: Bearer token auth with bcrypt-hashed keys
 - **Webhooks**: HMAC-SHA256 signatures for verification
 
-## 📦 Deployment
+## Pricing (Hosted)
 
-| Environment | Platform | Details |
-|-------------|----------|---------|
-| **Development** | [Lovable](https://lovable.dev/projects/aaa3208a-70fb-4eb6-a5eb-5823f025e734) | Auto-syncs with GitHub |
-| **Production** | Docker on Hetzner | EU-hosted, fixed costs |
-| **Local/On-Premise** | Docker | Same image, custom Supabase |
+| Tier | Limits | Support | Price |
+|------|--------|---------|-------|
+| **Free** | 100 jobs/mo, 1K parts | Docs only | €0 |
+| **Pro** | 1K jobs/mo, 10K parts | Email | €97/mo |
+| **Enterprise** | Unlimited | Dedicated + SSO | €497/mo |
 
-### CI/CD Pipeline
+- **Free** = Try it without installing anything
+- **Enterprise** = Hand-holding tier (your infra or ours)
 
-- **PRs**: Automated lint, type-check, build, test
-- **Releases**: Manual workflow with migrations and Edge Functions deployment
-- **Docker Images**: Published to GitHub Container Registry (GHCR)
+Want to self-host? See the [Self-Hosting Guide](docs/SELF_HOSTING_GUIDE.md) - unlimited, free, you manage it.
 
-See **[docs/CICD_DEPLOYMENT_PLAN.md](docs/CICD_DEPLOYMENT_PLAN.md)** for full setup instructions.
+Need integration work or custom forks? [Contact us](mailto:office@sheetmetalconnect.com).
 
-### Quick Docker Run
+## Deployment
+
+### Self-Hosted (Free)
+
+```bash
+# Clone and configure
+git clone https://github.com/SheetMetalConnect/eryxon-flow.git
+cd eryxon-flow
+cp .env.example .env
+# Edit .env with your Supabase credentials
+
+# Run with Docker
+docker-compose up -d
+```
+
+See **[docs/SELF_HOSTING_GUIDE.md](docs/SELF_HOSTING_GUIDE.md)** for complete setup instructions.
+
+### Docker Quick Start
 
 ```bash
 docker pull ghcr.io/sheetmetalconnect/eryxon-flow:latest
-docker run -p 8080:80 ghcr.io/sheetmetalconnect/eryxon-flow:latest
+docker run -p 8080:80 \
+  -e VITE_SUPABASE_URL=your-url \
+  -e VITE_SUPABASE_PUBLISHABLE_KEY=your-key \
+  ghcr.io/sheetmetalconnect/eryxon-flow:latest
 ```
 
-## 📄 License
+## License
 
-**Proprietary - Internal Use Only**
+**Business Source License 1.1 (BSL 1.1)**
 
-Copyright © 2025 Sheet Metal Connect e.U. All rights reserved.
+- You can view, modify, and self-host the code for your own use - free, unlimited
+- You cannot offer commercial hosted versions that compete with our SaaS
+- After 4 years, converts to Apache 2.0
 
-This software is for internal use only and may not be distributed, copied, or modified without explicit permission.
+See [LICENSE](LICENSE) for full terms.
+
+Copyright © 2025 Sheet Metal Connect e.U.
 
 ---
 
-**Built with** React 18 + TypeScript + Supabase
-**Status**: Production
-**Version**: 1.2
+**Built with** React + TypeScript + Supabase | **Region**: EU (Netherlands)
