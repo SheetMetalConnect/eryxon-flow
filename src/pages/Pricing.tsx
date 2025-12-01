@@ -113,14 +113,14 @@ Thank you!`;
           <div className="flex items-start gap-4">
             <Server className="h-8 w-8 text-green-600 flex-shrink-0" />
             <div className="space-y-2">
-              <h3 className="font-semibold">Self-Hosted Option (Free, Unlimited)</h3>
+              <h3 className="font-semibold">Self-Hosted (Free, Unlimited)</h3>
               <p className="text-sm text-muted-foreground">
-                Want to run it yourself? The source code is available under BSL 1.1.
-                Self-host on your own infrastructure with unlimited jobs, parts, and storage.
-                Community support via docs only. See the{" "}
+                Download it, run it yourself, you're on your own. Source code available under BSL 1.1.
+                Unlimited jobs, parts, storage. Full API, webhooks, MCP server.
+                Community support via docs and GitHub Discussions only. See the{" "}
                 <a href="https://github.com/SheetMetalConnect/eryxon-flow" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
                   GitHub repository
-                </a> for setup instructions.
+                </a>.
               </p>
             </div>
           </div>

@@ -102,18 +102,27 @@ Additional documentation:
 - **API Security**: Bearer token auth with bcrypt-hashed keys
 - **Webhooks**: HMAC-SHA256 signatures for verification
 
-## Pricing (Hosted)
+## Pricing
 
-| Tier | Limits | Support | Price |
-|------|--------|---------|-------|
-| **Free** | 100 jobs/mo, 1K parts | Docs only | €0 |
-| **Pro** | 1K jobs/mo, 10K parts | Email | €97/mo |
-| **Enterprise** | Unlimited | Dedicated + SSO | €497/mo |
+| | Free | Pro | Enterprise | Self-hosted |
+|---|---|---|---|---|
+| **Price** | €0 | €97/mo | €497/mo | €0 |
+| **Where** | My infra | My infra | Your infra | Your infra |
+| **Jobs/mo** | 25 | 500 | Unlimited | Unlimited |
+| **Parts/mo** | 250 | 5,000 | Unlimited | Unlimited |
+| **Storage** | 500MB | 10GB | Your cost | Your cost |
+| **API** | Limited | Full | Full | Full |
+| **Webhooks** | No | Yes | Yes | Yes |
+| **MCP Server** | No | Yes | Yes | Yes |
+| **SSO/SAML** | No | No | Yes | DIY |
+| **Support** | Docs | Email | Dedicated | Community |
 
-- **Free** = Try it without installing anything
-- **Enterprise** = Hand-holding tier (your infra or ours)
+- **Free** — Try it. Limited. No support.
+- **Pro** — I run it. Real usage. Email support.
+- **Enterprise** — Your network, your Supabase, I deploy and support it.
+- **Self-hosted** — Download it, run it yourself, unlimited, you're on your own.
 
-Want to self-host? See the [Self-Hosting Guide](docs/SELF_HOSTING_GUIDE.md) - unlimited, free, you manage it.
+Want to self-host? See the [Self-Hosting Guide](docs/SELF_HOSTING_GUIDE.md).
 
 Need integration work or custom forks? [Contact us](mailto:office@sheetmetalconnect.com).
 
