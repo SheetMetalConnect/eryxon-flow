@@ -265,6 +265,7 @@ export type Database = {
       cells: {
         Row: {
           active: boolean | null
+          capacity_hours_per_day: number | null
           color: string | null
           created_at: string | null
           description: string | null
@@ -279,10 +280,10 @@ export type Database = {
           updated_at: string | null
           wip_limit: number | null
           wip_warning_threshold: number | null
-          capacity_hours_per_day: number | null
         }
         Insert: {
           active?: boolean | null
+          capacity_hours_per_day?: number | null
           color?: string | null
           created_at?: string | null
           description?: string | null
@@ -297,10 +298,10 @@ export type Database = {
           updated_at?: string | null
           wip_limit?: number | null
           wip_warning_threshold?: number | null
-          capacity_hours_per_day?: number | null
         }
         Update: {
           active?: boolean | null
+          capacity_hours_per_day?: number | null
           color?: string | null
           created_at?: string | null
           description?: string | null
@@ -315,9 +316,58 @@ export type Database = {
           updated_at?: string | null
           wip_limit?: number | null
           wip_warning_threshold?: number | null
-          capacity_hours_per_day?: number | null
         }
         Relationships: []
+      }
+      factory_calendar: {
+        Row: {
+          capacity_multiplier: number | null
+          closing_time: string | null
+          created_at: string | null
+          date: string
+          day_type: string
+          id: string
+          name: string | null
+          notes: string | null
+          opening_time: string | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          capacity_multiplier?: number | null
+          closing_time?: string | null
+          created_at?: string | null
+          date: string
+          day_type?: string
+          id?: string
+          name?: string | null
+          notes?: string | null
+          opening_time?: string | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          capacity_multiplier?: number | null
+          closing_time?: string | null
+          created_at?: string | null
+          date?: string
+          day_type?: string
+          id?: string
+          name?: string | null
+          notes?: string | null
+          opening_time?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "factory_calendar_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       installed_integrations: {
         Row: {
@@ -575,6 +625,47 @@ export type Database = {
           },
         ]
       }
+      issue_categories: {
+        Row: {
+          active: boolean | null
+          code: string
+          created_at: string | null
+          description: string
+          id: string
+          severity_default: string | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          code: string
+          created_at?: string | null
+          description: string
+          id?: string
+          severity_default?: string | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          code?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          severity_default?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issue_categories_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       issues: {
         Row: {
           affected_quantity: number | null
@@ -690,45 +781,72 @@ export type Database = {
           created_at: string | null
           current_cell_id: string | null
           customer: string | null
+          delivery_address: string | null
+          delivery_city: string | null
+          delivery_country: string | null
+          delivery_lat: number | null
+          delivery_lng: number | null
+          delivery_postal_code: string | null
           due_date: string | null
           due_date_override: string | null
           id: string
           job_number: string
           metadata: Json | null
           notes: string | null
+          package_count: number | null
           search_vector: unknown
           status: Database["public"]["Enums"]["job_status"] | null
           tenant_id: string
+          total_volume_m3: number | null
+          total_weight_kg: number | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
           current_cell_id?: string | null
           customer?: string | null
+          delivery_address?: string | null
+          delivery_city?: string | null
+          delivery_country?: string | null
+          delivery_lat?: number | null
+          delivery_lng?: number | null
+          delivery_postal_code?: string | null
           due_date?: string | null
           due_date_override?: string | null
           id?: string
           job_number: string
           metadata?: Json | null
           notes?: string | null
+          package_count?: number | null
           search_vector?: unknown
           status?: Database["public"]["Enums"]["job_status"] | null
           tenant_id: string
+          total_volume_m3?: number | null
+          total_weight_kg?: number | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
           current_cell_id?: string | null
           customer?: string | null
+          delivery_address?: string | null
+          delivery_city?: string | null
+          delivery_country?: string | null
+          delivery_lat?: number | null
+          delivery_lng?: number | null
+          delivery_postal_code?: string | null
           due_date?: string | null
           due_date_override?: string | null
           id?: string
           job_number?: string
           metadata?: Json | null
           notes?: string | null
+          package_count?: number | null
           search_vector?: unknown
           status?: Database["public"]["Enums"]["job_status"] | null
           tenant_id?: string
+          total_volume_m3?: number | null
+          total_weight_kg?: number | null
           updated_at?: string | null
         }
         Relationships: [
@@ -1132,6 +1250,64 @@ export type Database = {
           },
         ]
       }
+      operation_day_allocations: {
+        Row: {
+          cell_id: string
+          created_at: string | null
+          date: string
+          end_time: string
+          hours_allocated: number
+          id: string
+          operation_id: string
+          start_time: string
+          tenant_id: string
+        }
+        Insert: {
+          cell_id: string
+          created_at?: string | null
+          date: string
+          end_time: string
+          hours_allocated: number
+          id?: string
+          operation_id: string
+          start_time: string
+          tenant_id: string
+        }
+        Update: {
+          cell_id?: string
+          created_at?: string | null
+          date?: string
+          end_time?: string
+          hours_allocated?: number
+          id?: string
+          operation_id?: string
+          start_time?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operation_day_allocations_cell_id_fkey"
+            columns: ["cell_id"]
+            isOneToOne: false
+            referencedRelation: "cells"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_day_allocations_operation_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: false
+            referencedRelation: "operations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_day_allocations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operation_quantities: {
         Row: {
           created_at: string
@@ -1221,48 +1397,6 @@ export type Database = {
           },
         ]
       }
-      operation_quantity_scrap_reasons: {
-        Row: {
-          id: string
-          operation_quantity_id: string
-          scrap_reason_id: string
-          quantity: number
-          notes: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          operation_quantity_id: string
-          scrap_reason_id: string
-          quantity?: number
-          notes?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          operation_quantity_id?: string
-          scrap_reason_id?: string
-          quantity?: number
-          notes?: string | null
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "op_qty_scrap_reasons_qty_fkey"
-            columns: ["operation_quantity_id"]
-            isOneToOne: false
-            referencedRelation: "operation_quantities"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "op_qty_scrap_reasons_reason_fkey"
-            columns: ["scrap_reason_id"]
-            isOneToOne: false
-            referencedRelation: "scrap_reasons"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       operation_resources: {
         Row: {
           created_at: string | null
@@ -1310,6 +1444,7 @@ export type Database = {
           actual_time: number | null
           assigned_operator_id: string | null
           cell_id: string
+          changeover_time: number | null
           completed_at: string | null
           completion_percentage: number | null
           created_at: string | null
@@ -1320,22 +1455,22 @@ export type Database = {
           notes: string | null
           operation_name: string
           part_id: string
+          planned_end: string | null
+          planned_start: string | null
+          run_time_per_unit: number | null
           search_vector: unknown
           sequence: number
+          setup_time: number | null
           status: Database["public"]["Enums"]["task_status"] | null
           tenant_id: string
           updated_at: string | null
-          setup_time: number | null
-          run_time_per_unit: number | null
           wait_time: number | null
-          changeover_time: number | null
-          planned_start: string | null
-          planned_end: string | null
         }
         Insert: {
           actual_time?: number | null
           assigned_operator_id?: string | null
           cell_id: string
+          changeover_time?: number | null
           completed_at?: string | null
           completion_percentage?: number | null
           created_at?: string | null
@@ -1346,22 +1481,22 @@ export type Database = {
           notes?: string | null
           operation_name: string
           part_id: string
+          planned_end?: string | null
+          planned_start?: string | null
+          run_time_per_unit?: number | null
           search_vector?: unknown
           sequence: number
+          setup_time?: number | null
           status?: Database["public"]["Enums"]["task_status"] | null
           tenant_id: string
           updated_at?: string | null
-          setup_time?: number | null
-          run_time_per_unit?: number | null
           wait_time?: number | null
-          changeover_time?: number | null
-          planned_start?: string | null
-          planned_end?: string | null
         }
         Update: {
           actual_time?: number | null
           assigned_operator_id?: string | null
           cell_id?: string
+          changeover_time?: number | null
           completed_at?: string | null
           completion_percentage?: number | null
           created_at?: string | null
@@ -1372,17 +1507,16 @@ export type Database = {
           notes?: string | null
           operation_name?: string
           part_id?: string
+          planned_end?: string | null
+          planned_start?: string | null
+          run_time_per_unit?: number | null
           search_vector?: unknown
           sequence?: number
+          setup_time?: number | null
           status?: Database["public"]["Enums"]["task_status"] | null
           tenant_id?: string
           updated_at?: string | null
-          setup_time?: number | null
-          run_time_per_unit?: number | null
           wait_time?: number | null
-          changeover_time?: number | null
-          planned_start?: string | null
-          planned_end?: string | null
         }
         Relationships: [
           {
@@ -1413,9 +1547,11 @@ export type Database = {
           created_at: string | null
           current_cell_id: string | null
           file_paths: string[] | null
+          height_mm: number | null
           id: string
           image_paths: string[] | null
           job_id: string
+          length_mm: number | null
           material: string
           material_cert_number: string | null
           material_lot: string | null
@@ -1429,14 +1565,18 @@ export type Database = {
           status: Database["public"]["Enums"]["job_status"] | null
           tenant_id: string
           updated_at: string | null
+          weight_kg: number | null
+          width_mm: number | null
         }
         Insert: {
           created_at?: string | null
           current_cell_id?: string | null
           file_paths?: string[] | null
+          height_mm?: number | null
           id?: string
           image_paths?: string[] | null
           job_id: string
+          length_mm?: number | null
           material: string
           material_cert_number?: string | null
           material_lot?: string | null
@@ -1450,14 +1590,18 @@ export type Database = {
           status?: Database["public"]["Enums"]["job_status"] | null
           tenant_id: string
           updated_at?: string | null
+          weight_kg?: number | null
+          width_mm?: number | null
         }
         Update: {
           created_at?: string | null
           current_cell_id?: string | null
           file_paths?: string[] | null
+          height_mm?: number | null
           id?: string
           image_paths?: string[] | null
           job_id?: string
+          length_mm?: number | null
           material?: string
           material_cert_number?: string | null
           material_lot?: string | null
@@ -1471,6 +1615,8 @@ export type Database = {
           status?: Database["public"]["Enums"]["job_status"] | null
           tenant_id?: string
           updated_at?: string | null
+          weight_kg?: number | null
+          width_mm?: number | null
         }
         Relationships: [
           {
@@ -1644,6 +1790,260 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "scrap_reasons_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shipment_jobs: {
+        Row: {
+          created_at: string | null
+          delivered_at: string | null
+          delivery_notes: string | null
+          delivery_signature: string | null
+          id: string
+          job_id: string
+          loaded_at: string | null
+          loaded_by: string | null
+          loading_sequence: number | null
+          metadata: Json | null
+          notes: string | null
+          packages_count: number | null
+          shipment_id: string
+          tenant_id: string
+          updated_at: string | null
+          volume_m3: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          delivered_at?: string | null
+          delivery_notes?: string | null
+          delivery_signature?: string | null
+          id?: string
+          job_id: string
+          loaded_at?: string | null
+          loaded_by?: string | null
+          loading_sequence?: number | null
+          metadata?: Json | null
+          notes?: string | null
+          packages_count?: number | null
+          shipment_id: string
+          tenant_id: string
+          updated_at?: string | null
+          volume_m3?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          delivered_at?: string | null
+          delivery_notes?: string | null
+          delivery_signature?: string | null
+          id?: string
+          job_id?: string
+          loaded_at?: string | null
+          loaded_by?: string | null
+          loading_sequence?: number | null
+          metadata?: Json | null
+          notes?: string | null
+          packages_count?: number | null
+          shipment_id?: string
+          tenant_id?: string
+          updated_at?: string | null
+          volume_m3?: number | null
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipment_jobs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipment_jobs_loaded_by_fkey"
+            columns: ["loaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipment_jobs_shipment_id_fkey"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipment_jobs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shipments: {
+        Row: {
+          actual_arrival: string | null
+          actual_departure: string | null
+          created_at: string | null
+          created_by: string | null
+          currency: string | null
+          current_volume_m3: number | null
+          current_weight_kg: number | null
+          description: string | null
+          destination_address: string | null
+          destination_city: string | null
+          destination_country: string | null
+          destination_lat: number | null
+          destination_lng: number | null
+          destination_name: string | null
+          destination_postal_code: string | null
+          distance_km: number | null
+          driver_name: string | null
+          driver_phone: string | null
+          estimated_arrival: string | null
+          estimated_duration_minutes: number | null
+          id: string
+          items_count: number | null
+          max_height_cm: number | null
+          max_length_cm: number | null
+          max_volume_m3: number | null
+          max_weight_kg: number | null
+          max_width_cm: number | null
+          metadata: Json | null
+          name: string | null
+          notes: string | null
+          origin_address: string | null
+          origin_city: string | null
+          origin_country: string | null
+          origin_lat: number | null
+          origin_lng: number | null
+          origin_name: string | null
+          origin_postal_code: string | null
+          route_notes: string | null
+          scheduled_date: string | null
+          scheduled_time: string | null
+          shipment_number: string
+          shipping_cost: number | null
+          status: Database["public"]["Enums"]["shipment_status"]
+          tenant_id: string
+          updated_at: string | null
+          vehicle_identifier: string | null
+          vehicle_type: Database["public"]["Enums"]["vehicle_type"] | null
+        }
+        Insert: {
+          actual_arrival?: string | null
+          actual_departure?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          current_volume_m3?: number | null
+          current_weight_kg?: number | null
+          description?: string | null
+          destination_address?: string | null
+          destination_city?: string | null
+          destination_country?: string | null
+          destination_lat?: number | null
+          destination_lng?: number | null
+          destination_name?: string | null
+          destination_postal_code?: string | null
+          distance_km?: number | null
+          driver_name?: string | null
+          driver_phone?: string | null
+          estimated_arrival?: string | null
+          estimated_duration_minutes?: number | null
+          id?: string
+          items_count?: number | null
+          max_height_cm?: number | null
+          max_length_cm?: number | null
+          max_volume_m3?: number | null
+          max_weight_kg?: number | null
+          max_width_cm?: number | null
+          metadata?: Json | null
+          name?: string | null
+          notes?: string | null
+          origin_address?: string | null
+          origin_city?: string | null
+          origin_country?: string | null
+          origin_lat?: number | null
+          origin_lng?: number | null
+          origin_name?: string | null
+          origin_postal_code?: string | null
+          route_notes?: string | null
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          shipment_number: string
+          shipping_cost?: number | null
+          status?: Database["public"]["Enums"]["shipment_status"]
+          tenant_id: string
+          updated_at?: string | null
+          vehicle_identifier?: string | null
+          vehicle_type?: Database["public"]["Enums"]["vehicle_type"] | null
+        }
+        Update: {
+          actual_arrival?: string | null
+          actual_departure?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          current_volume_m3?: number | null
+          current_weight_kg?: number | null
+          description?: string | null
+          destination_address?: string | null
+          destination_city?: string | null
+          destination_country?: string | null
+          destination_lat?: number | null
+          destination_lng?: number | null
+          destination_name?: string | null
+          destination_postal_code?: string | null
+          distance_km?: number | null
+          driver_name?: string | null
+          driver_phone?: string | null
+          estimated_arrival?: string | null
+          estimated_duration_minutes?: number | null
+          id?: string
+          items_count?: number | null
+          max_height_cm?: number | null
+          max_length_cm?: number | null
+          max_volume_m3?: number | null
+          max_weight_kg?: number | null
+          max_width_cm?: number | null
+          metadata?: Json | null
+          name?: string | null
+          notes?: string | null
+          origin_address?: string | null
+          origin_city?: string | null
+          origin_country?: string | null
+          origin_lat?: number | null
+          origin_lng?: number | null
+          origin_name?: string | null
+          origin_postal_code?: string | null
+          route_notes?: string | null
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          shipment_number?: string
+          shipping_cost?: number | null
+          status?: Database["public"]["Enums"]["shipment_status"]
+          tenant_id?: string
+          updated_at?: string | null
+          vehicle_identifier?: string | null
+          vehicle_type?: Database["public"]["Enums"]["vehicle_type"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipments_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -1872,6 +2272,7 @@ export type Database = {
           trial_ends_at: string | null
           updated_at: string | null
           vat_number: string | null
+          working_days_mask: number | null
         }
         Insert: {
           auto_stop_tracking?: boolean | null
@@ -1912,6 +2313,7 @@ export type Database = {
           trial_ends_at?: string | null
           updated_at?: string | null
           vat_number?: string | null
+          working_days_mask?: number | null
         }
         Update: {
           auto_stop_tracking?: boolean | null
@@ -1952,6 +2354,7 @@ export type Database = {
           trial_ends_at?: string | null
           updated_at?: string | null
           vat_number?: string | null
+          working_days_mask?: number | null
         }
         Relationships: []
       }
@@ -2282,6 +2685,8 @@ export type Database = {
             }
             Returns: string
           }
+      delete_tenant_data: { Args: { p_tenant_id: string }; Returns: Json }
+      delete_user_account: { Args: never; Returns: Json }
       disable_demo_mode: { Args: { p_tenant_id: string }; Returns: undefined }
       dismiss_notification: {
         Args: { p_notification_id: string }
@@ -2309,6 +2714,10 @@ export type Database = {
           key_id: string
           key_prefix: string
         }[]
+      }
+      generate_shipment_number: {
+        Args: { p_tenant_id: string }
+        Returns: string
       }
       get_activity_logs: {
         Args: {
@@ -2432,15 +2841,15 @@ export type Database = {
       get_part_routing: {
         Args: { p_part_id: string }
         Returns: {
-          actual_time: number
+          actual_hours: number
           cell_id: string
           cell_name: string
-          completed_at: string
-          estimated_time: number
+          description: string
+          estimated_hours: number
           operation_id: string
-          operation_name: string
+          operation_number: string
           sequence: number
-          status: Database["public"]["Enums"]["task_status"]
+          status: string
         }[]
       }
       get_storage_quota: {
@@ -2565,10 +2974,25 @@ export type Database = {
       }
       seed_default_scrap_reasons: {
         Args: { p_tenant_id: string }
-        Returns: undefined
+        Returns: {
+          inserted_count: number
+          message: string
+        }[]
       }
-      seed_demo_operators: { Args: { p_tenant_id: string }; Returns: undefined }
-      seed_demo_resources: { Args: { p_tenant_id: string }; Returns: undefined }
+      seed_demo_operators: {
+        Args: { p_tenant_id: string }
+        Returns: {
+          created_count: number
+          message: string
+        }[]
+      }
+      seed_demo_resources: {
+        Args: { p_tenant_id: string }
+        Returns: {
+          created_count: number
+          message: string
+        }[]
+      }
       set_active_tenant: { Args: { p_tenant_id: string }; Returns: undefined }
       should_show_demo_banner: {
         Args: { p_tenant_id: string }
@@ -2611,13 +3035,13 @@ export type Database = {
       app_role: "operator" | "admin"
       assignment_status: "assigned" | "accepted" | "in_progress" | "completed"
       integration_category:
-      | "erp"
-      | "accounting"
-      | "crm"
-      | "inventory"
-      | "shipping"
-      | "analytics"
-      | "other"
+        | "erp"
+        | "accounting"
+        | "crm"
+        | "inventory"
+        | "shipping"
+        | "analytics"
+        | "other"
       integration_status: "draft" | "published" | "deprecated" | "archived"
       invoice_payment_status:
         | "pending"
@@ -2632,11 +3056,11 @@ export type Database = {
       issue_type: "general" | "ncr"
       job_status: "not_started" | "in_progress" | "completed" | "on_hold"
       ncr_category:
-      | "material_defect"
-      | "dimensional"
-      | "surface_finish"
-      | "process_error"
-      | "other"
+        | "material_defect"
+        | "dimensional"
+        | "surface_finish"
+        | "process_error"
+        | "other"
       ncr_disposition: "scrap" | "rework" | "use_as_is" | "return_to_supplier"
       payment_provider: "invoice" | "stripe" | "sumup"
       payment_transaction_status:
@@ -2646,9 +3070,26 @@ export type Database = {
         | "failed"
         | "cancelled"
       payment_transaction_type: "charge" | "refund" | "chargeback" | "dispute"
+      shipment_status:
+        | "draft"
+        | "planned"
+        | "loading"
+        | "in_transit"
+        | "delivered"
+        | "cancelled"
       subscription_plan: "free" | "pro" | "premium"
       subscription_status: "active" | "cancelled" | "suspended" | "trial"
       task_status: "not_started" | "in_progress" | "completed" | "on_hold"
+      vehicle_type:
+        | "truck"
+        | "van"
+        | "car"
+        | "bike"
+        | "freight"
+        | "air"
+        | "sea"
+        | "rail"
+        | "other"
       waitlist_status: "pending" | "approved" | "rejected" | "converted"
     }
     CompositeTypes: {
@@ -2663,116 +3104,116 @@ type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-  | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-  : never = never,
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
-  ? R
-  : never
+    ? R
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-    DefaultSchema["Views"])
-  ? (DefaultSchema["Tables"] &
-    DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-      Row: infer R
-    }
-  ? R
-  : never
-  : never
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-  | keyof DefaultSchema["Tables"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
+      Insert: infer I
+    }
+    ? I
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
-  : never
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-  | keyof DefaultSchema["Tables"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Update: infer U
-  }
-  ? U
-  : never
+      Update: infer U
+    }
+    ? U
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-    Update: infer U
-  }
-  ? U
-  : never
-  : never
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-  | keyof DefaultSchema["Enums"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-  ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-  : never
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-  | keyof DefaultSchema["CompositeTypes"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-  ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-  : never
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
 
 export const Constants = {
   public: {
@@ -2819,9 +3260,28 @@ export const Constants = {
         "cancelled",
       ],
       payment_transaction_type: ["charge", "refund", "chargeback", "dispute"],
+      shipment_status: [
+        "draft",
+        "planned",
+        "loading",
+        "in_transit",
+        "delivered",
+        "cancelled",
+      ],
       subscription_plan: ["free", "pro", "premium"],
       subscription_status: ["active", "cancelled", "suspended", "trial"],
       task_status: ["not_started", "in_progress", "completed", "on_hold"],
+      vehicle_type: [
+        "truck",
+        "van",
+        "car",
+        "bike",
+        "freight",
+        "air",
+        "sea",
+        "rail",
+        "other",
+      ],
       waitlist_status: ["pending", "approved", "rejected", "converted"],
     },
   },
