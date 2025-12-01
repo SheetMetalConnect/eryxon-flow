@@ -1,0 +1,9 @@
+# Cloudflare Pages Configuration for Eryxon Flow Website
+# Deploy using: wrangler pages deploy dist --project-name=eryxon-flow
+
+name = "eryxon-flow-website"
+compatibility_date = "2024-01-01"
+
+# Pages-specific settings
+[site]
+bucket = "./dist"

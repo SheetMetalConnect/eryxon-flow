@@ -1,0 +1,43 @@
+# LLM.txt - Eryxon Flow
+
+## Project Description
+Eryxon Flow is an open-source Manufacturing Execution System (MES) designed for sheet metal fabrication and adaptable to any manufacturing workflow. It provides real-time production tracking, QRM capacity management, operator terminals, and complete API integration.
+
+## Key Features
+- **Job Management**: Complete lifecycle tracking from creation to completion
+- **Time Tracking**: Start, pause, resume timing with actual vs estimated comparison
+- **QRM Capacity**: WIP limits, capacity warnings, and bottleneck prevention
+- **Operator Terminal**: Touch-optimized interface for shop floor tablets
+- **3D CAD Viewer**: View STEP files directly in browser with Three.js
+- **Issue Management**: Quality issue reporting with photo capture
+- **Multi-Language**: English, Dutch, German with i18next support
+- **REST API**: Complete API for ERP integration with webhooks
+- **Multi-Tenant**: Row-level security for SaaS deployments
+
+## Technical Stack
+- **Frontend**: React 18 + TypeScript + Tailwind CSS
+- **Backend**: Supabase (PostgreSQL + Edge Functions)
+- **3D Rendering**: Three.js with occt-import-js
+- **Internationalization**: i18next
+- **Deployment**: Docker, Cloudflare Pages
+- **Authentication**: Supabase Auth with row-level security
+
+## Use Cases
+- **Sheet Metal Fabrication**: Track cutting, bending, welding operations
+- **Job Shops**: Manage diverse manufacturing orders
+- **Production Planning**: QRM-based capacity management
+- **Quality Control**: Issue tracking and resolution workflow
+- **ERP Integration**: Sync with existing business systems via API
+
+## Installation
+Clone from GitHub and deploy with Docker or run locally with npm.
+Full documentation at: https://github.com/SheetMetalConnect/eryxon-flow
+
+## Repository
+Source code and documentation available at: https://github.com/SheetMetalConnect/eryxon-flow
+
+## License
+MIT License - Open source and free to use
+
+## Keywords
+MES, Manufacturing Execution System, sheet metal, production tracking, QRM, Quick Response Manufacturing, time tracking, job management, open source, React, TypeScript, Supabase, PostgreSQL, 3D CAD viewer, operator terminal, API integration, webhooks, multi-tenant, SaaS
