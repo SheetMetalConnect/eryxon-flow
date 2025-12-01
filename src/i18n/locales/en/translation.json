@@ -1178,8 +1178,8 @@
     }
   },
   "pricing": {
-    "title": "Pricing Plans",
-    "subtitle": "Choose the perfect plan for your metal fabrication shop",
+    "title": "Pricing",
+    "subtitle": "Simple, transparent pricing for European metal fabricators. No sales calls, no hidden fees.",
     "comingSoonTitle": "Pricing Coming Soon",
     "comingSoonSubtitle": "Professional pricing plans are currently being finalized",
     "comingSoonDescription": "We're preparing transparent, fair pricing for European manufacturers. Contact us for early access and custom quotes.",
@@ -1189,56 +1189,90 @@
     "save20": "Save 20%",
     "currentPlan": "Current Plan",
     "choosePlan": "Choose Plan",
-    "upgrade": "Upgrade",
+    "upgrade": "Request Upgrade",
     "downgrade": "Downgrade",
     "contactSales": "Contact Sales",
+    "managePlan": "Manage Plan",
+    "hostedPlans": "Hosted Plans",
+    "hostedPlansDescription": "We host everything on Hetzner (EU). You pay for hosting, compute, and support.",
+    "alternatives": "Alternatives",
+    "alternativesDescription": "Need full control or have special requirements?",
     "free": {
       "name": "Free",
       "price": "€0",
-      "description": "Perfect for getting started",
+      "description": "Get started and evaluate",
       "features": [
-        "All features included",
-        "Up to 100 jobs per month",
-        "Up to 1,000 parts per month",
-        "5GB storage",
-        "10GB data usage per month",
-        "Documentation available",
-        "Community support"
+        "25 jobs per month",
+        "250 parts per month",
+        "500MB storage",
+        "Limited API access",
+        "Webhooks included",
+        "MCP Server included",
+        "Documentation only"
       ]
     },
     "pro": {
       "name": "Pro",
       "price": "€97",
-      "description": "Best for growing shops",
+      "description": "For production shops",
       "features": [
-        "Unlimited users",
-        "1,000 jobs per month",
-        "10,000 parts per month",
-        "50GB storage",
+        "500 jobs per month",
+        "5,000 parts per month",
+        "10GB storage",
         "Full API access",
-        "Multi-tenant architecture",
-        "Priority email support",
-        "Advanced analytics",
-        "Webhook integrations"
+        "Webhooks",
+        "MCP Server",
+        "Email support (no SLA)",
+        "Extra storage on request"
       ]
     },
     "premium": {
-      "name": "Enterprise",
+      "name": "Premium",
       "price": "€497",
-      "description": "Custom, bespoke solution",
+      "description": "For growing operations",
       "features": [
-        "Everything in Pro",
-        "Unlimited jobs & parts",
-        "Unlimited storage",
-        "Unlimited usage",
-        "Self-hosted (on-premises)",
-        "Single-tenant architecture",
+        "Fair use (high limits)",
+        "100GB storage",
+        "Full API access",
+        "Webhooks",
+        "MCP Server",
         "SSO/SAML authentication",
-        "Dedicated support channel",
-        "Custom SLA",
-        "White-label options",
-        "Advanced security controls"
+        "White-label (optional)",
+        "Priority email support",
+        "Extra storage on request"
       ]
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "price": "By request",
+      "description": "Your infrastructure, I deploy",
+      "features": [
+        "Single-tenant deployment",
+        "Your network or dedicated hosted",
+        "Unlimited jobs, parts, storage",
+        "Full API, Webhooks, MCP Server",
+        "SSO/SAML authentication",
+        "White-label included",
+        "Dedicated support channel",
+        "Custom SLA if needed"
+      ],
+      "cta": "Contact for Quote"
+    },
+    "selfHosted": {
+      "name": "Self-Hosted",
+      "price": "€0",
+      "description": "Your setup, you're on your own",
+      "features": [
+        "Download and run yourself",
+        "Unlimited jobs, parts, storage",
+        "Full API, Webhooks, MCP Server",
+        "Source code under BSL 1.1",
+        "Community support via docs",
+        "GitHub Discussions",
+        "No official support"
+      ],
+      "cta": "View on GitHub",
+      "note": "For technical users, privacy-conscious companies, or those who won't pay anyway. Costs us nothing."
     },
     "perMonth": "/month",
     "perYear": "/year",
@@ -1246,16 +1280,20 @@
     "billedAnnually": "Billed annually",
     "howItWorks": {
       "title": "How It Works",
-      "selfServiceTitle": "A MES You'll Love to Use",
-      "selfServiceDescription": "Eryxon Flow is designed for simplicity. Start free and set everything up yourself, or upgrade to Pro for higher tiers and additional support. Fully hosted on Supabase, built specifically for the European market.",
+      "selfServiceTitle": "Self-Service",
+      "selfServiceDescription": "No onboarding calls. No consultants. Sign up, configure your stages and materials, connect your API, and go. Documentation and email support (Pro+) only.",
       "upgradeTitle": "How to Upgrade",
-      "upgradeDescription": "Ready to upgrade? Click the 'Request Upgrade' or 'Contact Sales' button above to send an email to office@sheetmetalconnect.com. We'll get back to you with next steps.",
-      "usageTitle": "Usage Tracking & Plan Management",
-      "usageDescription": "Monitor your usage, track jobs and parts count, and manage your subscription from your My Plan page. You'll see real-time usage statistics and receive alerts when approaching tier limits."
+      "upgradeDescription": "Ready to upgrade? Click \"Request Upgrade\" to email office@sheetmetalconnect.com. We'll get back to you with next steps.",
+      "usageTitle": "Usage & Limits",
+      "usageDescription": "Monitor your usage from your My Plan page. You'll see real-time statistics and alerts when approaching limits."
     },
     "securityBanner": {
       "title": "Enterprise-Grade Security",
-      "description": "Free & Pro: Multi-tenant architecture with complete data isolation per tenant. Row-level security enforces separation at the database level. Premium: Single-tenant deployment with dedicated infrastructure, completely air-gapped. All tiers include HTTPS traffic only, hashed passwords, encrypted API keys, and time-limited file access via signed URLs."
+      "description": "Free, Pro & Premium: Multi-tenant architecture with complete data isolation per tenant. Row-level security enforces separation at the database level. Enterprise: Single-tenant deployment on your infrastructure. All tiers include HTTPS, hashed passwords, encrypted API keys, and signed URLs for file access."
+    },
+    "whyHosted": {
+      "title": "Why pay for hosted?",
+      "description": "Most metal fabricators aren't DevOps people. They won't self-host. You're paying for hosting, compute, and support — not for the software itself."
     }
   },
   "myPlan": {
