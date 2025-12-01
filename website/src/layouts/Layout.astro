@@ -60,14 +60,15 @@ const fullTitle = title.includes("Eryxon Flow") ? title : `${title} | Eryxon Flo
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta name="theme-color" content="#8b5cf6" />
+    <meta name="theme-color" content="#1e90ff" />
 
     <!-- Preload critical resources -->
     <link rel="preload" href="/video-poster-small.webp" as="image" />
 
-    <!-- Fonts - Deferred loading for below-the-fold content -->
+    <!-- Fonts - Inter (brand font) + JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link id="jetbrains-font" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..800&display=swap" rel="stylesheet" media="print" />
     <noscript><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..800&display=swap" rel="stylesheet" /></noscript>
 
@@ -251,13 +252,15 @@ const fullTitle = title.includes("Eryxon Flow") ? title : `${title} | Eryxon Flo
       "codeRepository": "https://github.com/SheetMetalConnect/eryxon-flow"
     })}></script>
   </head>
-  <body class="min-h-screen bg-background text-foreground antialiased relative pt-24">
-    <!-- Gradient Background -->
-    <div class="fixed inset-0 pointer-events-none z-0">
-      <div class="absolute inset-0 opacity-30">
-        <div class="absolute top-0 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[100px]"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent-2/20 rounded-full blur-[100px]"></div>
-      </div>
+  <body class="min-h-screen text-foreground antialiased relative pt-24" style="background-color: #111927; background-image: radial-gradient(at 47% 33%, hsl(205.47, 77%, 40%) 0, transparent 59%), radial-gradient(at 82% 65%, hsl(218, 39%, 11%) 0, transparent 55%);">
+    <!-- Animated Gradient Orbs (Design System) -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+      <!-- Orb 1 - Blue -->
+      <div class="absolute w-[500px] h-[500px] rounded-full opacity-50 animate-float" style="background: radial-gradient(circle, rgba(30, 144, 255, 0.4) 0%, transparent 70%); top: -10%; left: -10%; filter: blur(80px);"></div>
+      <!-- Orb 2 - Yellow -->
+      <div class="absolute w-[400px] h-[400px] rounded-full opacity-50 animate-float" style="background: radial-gradient(circle, rgba(251, 188, 5, 0.3) 0%, transparent 70%); bottom: -10%; right: -10%; filter: blur(80px); animation-delay: 7s;"></div>
+      <!-- Orb 3 - Green -->
+      <div class="absolute w-[350px] h-[350px] rounded-full opacity-50 animate-float" style="background: radial-gradient(circle, rgba(52, 168, 83, 0.3) 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%, -50%); filter: blur(80px); animation-delay: 14s;"></div>
     </div>
 
     <!-- Main content wrapper -->
