@@ -98,9 +98,29 @@ Thank you!`;
                 <strong>Free & Pro:</strong> Multi-tenant architecture with complete data isolation per tenant.
                 Row-level security enforces separation at the database level.
                 {" "}
-                <strong>Premium:</strong> Single-tenant deployment with dedicated infrastructure, completely air-gapped.
+                <strong>Enterprise:</strong> Single-tenant deployment - your infrastructure or dedicated hosted.
                 {" "}
-                All tiers include HTTPS traffic only, hashed passwords, encrypted API keys, and time-limited file access via signed URLs.
+                All tiers include HTTPS, hashed passwords, encrypted API keys, and signed URLs for file access.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Self-Hosted Option */}
+      <Card className="bg-green-500/10 border-green-500/20">
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-4">
+            <Server className="h-8 w-8 text-green-600 flex-shrink-0" />
+            <div className="space-y-2">
+              <h3 className="font-semibold">Self-Hosted (Free, Unlimited)</h3>
+              <p className="text-sm text-muted-foreground">
+                Download it, run it yourself, you're on your own. Source code available under BSL 1.1.
+                Unlimited jobs, parts, storage. Full API, webhooks, MCP server.
+                Community support via docs and GitHub Discussions only. See the{" "}
+                <a href="https://github.com/SheetMetalConnect/eryxon-flow" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                  GitHub repository
+                </a>.
               </p>
             </div>
           </div>
@@ -202,29 +222,29 @@ Thank you!`;
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <h4 className="font-semibold mb-2">Self-Service Only</h4>
+            <h4 className="font-semibold mb-2">Self-Service</h4>
             <p className="text-sm text-muted-foreground">
-              No onboarding calls. No consultants. No phone support. Sign up, configure your stages
-              and materials, connect your API, and go. Documentation and email support only.
+              No onboarding calls. No consultants. Sign up, configure your stages
+              and materials, connect your API, and go. Documentation and email support (Pro+) only.
             </p>
           </div>
 
           <div>
             <h4 className="font-semibold mb-2">How to Upgrade</h4>
             <p className="text-sm text-muted-foreground">
-              Ready to upgrade? Click the "Request Upgrade" or "Contact Sales" button above to send
-              an email to <a href="mailto:office@sheetmetalconnect.com" className="text-primary hover:underline">
+              Ready to upgrade? Click "Request Upgrade" above to email{' '}
+              <a href="mailto:office@sheetmetalconnect.com" className="text-primary hover:underline">
                 office@sheetmetalconnect.com
               </a>. We'll get back to you with next steps.
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-2">Usage Tracking & Plan Management</h4>
+            <h4 className="font-semibold mb-2">Usage & Limits</h4>
             <p className="text-sm text-muted-foreground">
-              Monitor your usage, track jobs and parts count, and manage your subscription from your{' '}
+              Monitor your usage from your{' '}
               <Link to="/my-plan" className="text-primary hover:underline">My Plan</Link> page.
-              You'll see real-time usage statistics and receive alerts when approaching tier limits.
+              You'll see real-time statistics and alerts when approaching limits.
             </p>
           </div>
         </CardContent>

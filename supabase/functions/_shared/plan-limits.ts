@@ -4,16 +4,18 @@
  * This module provides utilities for enforcing subscription plan limits
  * across all API endpoints.
  *
- * Plan Limits:
- * - Free:       100 jobs, 1000 parts/month, 5GB storage, limited API access
- * - Pro:        1000 jobs, 10000 parts/month, 50GB storage, full API access
- * - Enterprise: Unlimited everything (premium tier in DB)
+ * Plan Limits (BSL 1.1 Model - 4 hosted tiers + self-hosted):
+ * - Free:       25 jobs/mo, 250 parts/mo, 1GB storage, limited API (no webhooks, no MCP)
+ * - Pro:        500 jobs/mo, 5000 parts/mo, 10GB storage, full API + webhooks + MCP
+ * - Premium:    2000 jobs/mo, 20000 parts/mo, 100GB storage, SSO/SAML, priority support
+ * - Enterprise: Unlimited, their infrastructure, custom scope
+ * - Self-hosted: Unlimited (configured via env, not enforced)
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 export interface PlanLimits {
-  plan: 'free' | 'pro' | 'premium';
+  plan: 'free' | 'pro' | 'premium' | 'enterprise';
   max_jobs: number | null;
   max_parts_per_month: number | null;
   max_storage_gb: number | null;
@@ -148,16 +150,16 @@ export async function canCreateParts(
 /**
  * Check if a tenant has API access
  * Free plan has limited API access (rate limited more aggressively)
- * Pro and Enterprise have full API access
+ * Pro, Premium, and Enterprise have full API access
  */
-export function getApiAccessLevel(plan: 'free' | 'pro' | 'premium'): 'limited' | 'full' {
+export function getApiAccessLevel(plan: 'free' | 'pro' | 'premium' | 'enterprise'): 'limited' | 'full' {
   return plan === 'free' ? 'limited' : 'full';
 }
 
 /**
  * Get rate limit configuration based on plan
  */
-export function getRateLimitConfig(plan: 'free' | 'pro' | 'premium'): {
+export function getRateLimitConfig(plan: 'free' | 'pro' | 'premium' | 'enterprise'): {
   maxRequests: number;
   windowMs: number;
 } {
@@ -174,7 +176,12 @@ export function getRateLimitConfig(plan: 'free' | 'pro' | 'premium'): {
       };
     case 'premium':
       return {
-        maxRequests: 10000,   // 10000 requests per hour
+        maxRequests: 5000,    // 5000 requests per hour (priority)
+        windowMs: 60 * 60 * 1000,
+      };
+    case 'enterprise':
+      return {
+        maxRequests: 10000,   // 10000 requests per hour (dedicated)
         windowMs: 60 * 60 * 1000,
       };
     default:
@@ -274,13 +281,15 @@ export async function canUploadFile(
 /**
  * Get a user-friendly plan name
  */
-export function getPlanDisplayName(plan: 'free' | 'pro' | 'premium'): string {
+export function getPlanDisplayName(plan: 'free' | 'pro' | 'premium' | 'enterprise'): string {
   switch (plan) {
     case 'free':
       return 'Free';
     case 'pro':
       return 'Pro';
     case 'premium':
+      return 'Premium';
+    case 'enterprise':
       return 'Enterprise';
     default:
       return 'Unknown';
