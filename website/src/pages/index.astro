@@ -72,7 +72,7 @@ import ComparisonTable from '@components/ComparisonTable.astro';
     </div>
 
     <!-- Get Started Section -->
-    <section id="get-started" class="relative py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background via-background/95 to-background">
+    <section id="get-started" class="relative py-24 px-4 sm:px-6 lg:px-8 bg-zinc-900/50 border-t border-white/5">
       <div class="max-w-4xl mx-auto text-center">
         <h2 class="text-4xl sm:text-5xl font-bold gradient-text mb-6">
           Get Started in Minutes
@@ -133,7 +133,7 @@ npm run dev</code></pre>
     </section>
 
     <!-- Footer -->
-    <footer class="relative py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-t from-card/20 to-background border-t border-border/50">
+    <footer class="relative py-16 px-4 sm:px-6 lg:px-8 bg-background border-t border-white/5">
       <div class="max-w-6xl mx-auto">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
           <!-- Brand -->
@@ -207,84 +207,44 @@ npm run dev</code></pre>
 <style>
   /* Floating dark glass navigation */
   .nav-glass {
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(9, 9, 11, 0.7);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 9999px; /* Pill shape */
     box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.3),
-      0 2px 8px rgba(0, 0, 0, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      0 4px 20px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
     position: fixed;
     width: calc(100vw - 2rem);
-    max-width: 1152px;
+    max-width: 900px; /* Smaller max-width for tighter nav */
     left: 50%;
     transform: translateX(-50%);
+    transition: all 0.3s ease;
   }
 
-  .nav-glass::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.05) 0%,
-      rgba(255, 255, 255, 0.02) 50%,
-      rgba(255, 255, 255, 0.01) 100%
-    );
-    border-radius: 16px;
-    pointer-events: none;
-    z-index: -1;
-  }
-
-  /* Navigation link glow effects */
+  /* Navigation link styles */
   .nav-link {
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(161, 161, 170, 1); /* muted-foreground */
     text-decoration: none;
     padding: 8px 16px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    position: relative;
+    border-radius: 9999px;
+    transition: all 0.2s ease;
     font-weight: 500;
+    font-size: 0.95rem;
   }
 
   .nav-link:hover {
-    color: rgba(255, 255, 255, 1);
-    text-shadow: 0 0 8px rgba(30, 144, 255, 0.6);
-    box-shadow:
-      0 0 20px rgba(30, 144, 255, 0.3),
-      inset 0 0 20px rgba(30, 144, 255, 0.1);
-    background: rgba(30, 144, 255, 0.1);
-    transform: translateY(-1px);
-  }
-
-  .nav-link::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, transparent, rgba(30, 144, 255, 0.1), transparent);
-    border-radius: 8px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .nav-link:hover::before {
-    opacity: 1;
+    color: #fafafa; /* foreground */
+    background: rgba(255, 255, 255, 0.05);
   }
 
   /* Terminal styling */
   .terminal-window {
-    background: rgba(23, 23, 23, 0.8);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #18181b; /* Zinc 900 */
+    border: 1px solid #27272a; /* Zinc 800 */
     border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
   }
 
   .terminal-header {
@@ -292,8 +252,8 @@ npm run dev</code></pre>
     align-items: center;
     gap: 8px;
     padding: 12px 16px;
-    background: rgba(38, 38, 38, 0.8);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: #27272a; /* Zinc 800 */
+    border-bottom: 1px solid #3f3f46; /* Zinc 700 */
     border-radius: 12px 12px 0 0;
   }
 
@@ -309,19 +269,21 @@ npm run dev</code></pre>
 
   .terminal-title {
     margin-left: 8px;
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.5);
+    font-size: 13px;
+    color: #a1a1aa;
+    font-family: 'Inter', sans-serif;
   }
 
-  /* Glass effect */
+  /* Glass effect utility */
   .glass {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
-  /* Gradient text - Design System colors */
+  /* Gradient text */
   .gradient-text {
-    background: linear-gradient(135deg, #1e90ff 0%, #4a9eff 50%, #fbbc05 100%);
+    background: linear-gradient(135deg, #fff 0%, #a1a1aa 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -341,39 +303,29 @@ npm run dev</code></pre>
   /* Smooth scroll behavior */
   html {
     scroll-behavior: smooth;
-    scroll-padding-top: 80px;
+    scroll-padding-top: 100px;
   }
 
-  /* Remove top padding since nav is floating */
   main {
     padding-top: 0;
   }
 
   /* Responsive improvements */
   @media (max-width: 768px) {
-    html {
-      scroll-padding-top: 60px;
-    }
-
     .nav-glass {
-      top: 8px;
-      border-radius: 12px;
-      width: calc(100vw - 1rem);
+      top: 16px;
+      border-radius: 16px;
+      width: calc(100vw - 2rem);
       max-width: none;
+      padding: 0.5rem;
     }
 
     .mobile-menu {
-      animation: slideDown 0.3s ease-out;
-      background: rgba(0, 0, 0, 0.85) !important;
-      backdrop-filter: blur(40px) !important;
-      -webkit-backdrop-filter: blur(40px) !important;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .nav-glass {
-      width: calc(100vw - 0.5rem);
-      top: 4px;
+      animation: slideDown 0.2s ease-out;
+      background: rgba(9, 9, 11, 0.95) !important;
+      backdrop-filter: blur(20px) !important;
+      -webkit-backdrop-filter: blur(20px) !important;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
     }
   }
 

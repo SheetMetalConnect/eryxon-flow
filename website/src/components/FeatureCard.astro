@@ -44,51 +44,34 @@ const cardClasses = `
   overflow-hidden
   rounded-2xl
   border
-  border-border/50
-  bg-card/50
-  backdrop-blur-xl
+  border-white/5
+  bg-zinc-900/30
+  backdrop-blur-sm
   p-6
   transition-all
-  duration-500
-  hover:border-accent/50
-  hover:shadow-2xl
-  hover:shadow-accent/20
-  hover:scale-[1.02]
+  duration-300
+  hover:border-white/10
+  hover:bg-zinc-900/50
   fade-in-on-scroll
 `;
 ---
 
 <div class={cardClasses}>
-  <!-- Gradient overlay on hover -->
-  <div class="absolute inset-0 bg-gradient-to-br from-accent/10 to-accent-2/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-
-  <!-- Glow effect for accent cards -->
-  {accent && (
-    <div class="absolute inset-0 bg-gradient-to-br from-accent/20 to-accent-2/20 opacity-50 animate-pulse" />
-  )}
-
   <!-- Content -->
   <div class="relative z-10 h-full flex flex-col">
     <!-- Icon and title -->
     <div class="flex items-start gap-4 mb-4">
-      <div class="text-accent transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" set:html={iconSvg} />
+      <div class="text-zinc-400 group-hover:text-white transition-colors duration-300" set:html={iconSvg} />
       <div class="flex-1">
-        <h3 class="text-xl font-semibold text-foreground mb-2 group-hover:text-accent transition-colors duration-300">
+        <h3 class="text-xl font-semibold text-zinc-100 mb-2 group-hover:text-white transition-colors duration-300">
           {title}
         </h3>
-        <p class="text-muted-foreground leading-relaxed">
+        <p class="text-zinc-400 leading-relaxed text-sm">
           {description}
         </p>
       </div>
     </div>
-
-    <!-- Floating particles for visual interest -->
-    <div class="absolute top-4 right-4 w-2 h-2 bg-accent/30 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" style="animation-delay: 0.5s;" />
-    <div class="absolute bottom-8 left-8 w-1 h-1 bg-accent-2/30 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" style="animation-delay: 1s;" />
   </div>
-
-  <!-- Border glow effect -->
-  <div class="absolute inset-0 rounded-2xl border border-accent/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 </div>
 
 <style>

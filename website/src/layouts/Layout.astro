@@ -252,15 +252,19 @@ const fullTitle = title.includes("Eryxon Flow") ? title : `${title} | Eryxon Flo
       "codeRepository": "https://github.com/SheetMetalConnect/eryxon-flow"
     })}></script>
   </head>
-  <body class="min-h-screen text-foreground antialiased relative pt-24" style="background-color: #111927; background-image: radial-gradient(at 47% 33%, hsl(205.47, 77%, 40%) 0, transparent 59%), radial-gradient(at 82% 65%, hsl(218, 39%, 11%) 0, transparent 55%);">
-    <!-- Animated Gradient Orbs (Design System) -->
+  <body class="min-h-screen text-foreground antialiased relative pt-24 bg-background selection:bg-accent selection:text-white overflow-x-hidden">
+    <!-- Background Gradients -->
+    <div class="fixed inset-0 pointer-events-none z-0">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900/20 via-background to-background"></div>
+        <div class="absolute top-0 left-0 right-0 h-[500px] bg-gradient-to-b from-accent/5 to-transparent opacity-30 blur-[100px]"></div>
+    </div>
+
+    <!-- Animated Gradient Orbs (Subtler) -->
     <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
       <!-- Orb 1 - Blue -->
-      <div class="absolute w-[500px] h-[500px] rounded-full opacity-50 animate-float" style="background: radial-gradient(circle, rgba(30, 144, 255, 0.4) 0%, transparent 70%); top: -10%; left: -10%; filter: blur(80px);"></div>
-      <!-- Orb 2 - Yellow -->
-      <div class="absolute w-[400px] h-[400px] rounded-full opacity-50 animate-float" style="background: radial-gradient(circle, rgba(251, 188, 5, 0.3) 0%, transparent 70%); bottom: -10%; right: -10%; filter: blur(80px); animation-delay: 7s;"></div>
-      <!-- Orb 3 - Green -->
-      <div class="absolute w-[350px] h-[350px] rounded-full opacity-50 animate-float" style="background: radial-gradient(circle, rgba(52, 168, 83, 0.3) 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%, -50%); filter: blur(80px); animation-delay: 14s;"></div>
+      <div class="absolute w-[600px] h-[600px] rounded-full opacity-20 animate-float" style="background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%); top: -20%; left: -10%; filter: blur(100px);"></div>
+      <!-- Orb 2 - Cyan -->
+      <div class="absolute w-[500px] h-[500px] rounded-full opacity-10 animate-float" style="background: radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, transparent 70%); bottom: -10%; right: -10%; filter: blur(100px); animation-delay: 5s;"></div>
     </div>
 
     <!-- Main content wrapper -->
