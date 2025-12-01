@@ -86,17 +86,17 @@ export default function CapacityMatrix() {
                     *,
                     operation:operations(
                         id,
-                        name,
+                        operation_name,
                         part:parts(
-                            name,
-                            job:jobs(job_number, customer_name)
+                            part_number,
+                            job:jobs(job_number, customer)
                         )
                     )
                 `)
                 .gte("date", format(startDate, 'yyyy-MM-dd'))
                 .lte("date", format(endDate, 'yyyy-MM-dd'));
             if (error) throw error;
-            return (data || []) as DayAllocation[];
+            return (data || []) as any;
         },
     });
 

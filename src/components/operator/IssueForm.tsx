@@ -49,7 +49,12 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess }
         .eq("active", true)
         .order("code");
       if (!error && data) {
-        setCategories(data);
+        // Type cast the severity_default to match our union type
+        const typedData = data.map(cat => ({
+          ...cat,
+          severity_default: cat.severity_default as "low" | "medium" | "high" | "critical"
+        }));
+        setCategories(typedData);
       }
     } catch (error) {
       // Table might not exist yet - that's ok, we'll show severity selector instead

@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, Eye, Download, Wrench } from "lucide-react";
-import { DataTable, DataTableColumnHeader, DataTableFilterableColumn } from "@/components/ui/data-table";
+import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
 import {
   Tooltip,
   TooltipContent,

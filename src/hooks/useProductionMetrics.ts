@@ -344,8 +344,8 @@ export function useRecordProduction() {
       }));
 
       const { error: scrapError } = await supabase
-        .from("operation_quantity_scrap_reasons")
-        .insert(scrapReasonRecords);
+        .from("operation_quantity_scrap_reasons" as any)
+        .insert(scrapReasonRecords as any);
 
       if (scrapError) {
         console.error("Failed to record scrap reasons:", scrapError);

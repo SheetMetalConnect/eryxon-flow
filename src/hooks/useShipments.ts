@@ -347,7 +347,8 @@ export function useCreateShipment() {
           tenant_id: profile?.tenant_id,
           created_by: profile?.id,
           status: 'draft',
-        })
+          metadata: input.metadata as any, // Cast metadata to avoid type mismatch
+        } as any) // Cast entire insert to any until types are regenerated
         .select()
         .single();
 
@@ -383,7 +384,10 @@ export function useUpdateShipment() {
     mutationFn: async ({ id, ...input }: UpdateShipmentInput & { id: string }) => {
       const { data, error } = await supabase
         .from('shipments')
-        .update(input)
+        .update({
+          ...input,
+          metadata: input.metadata as any, // Cast metadata to avoid type mismatch
+        } as any) // Cast entire update to any until types are regenerated
         .eq('id', id)
         .select()
         .single();
@@ -612,9 +616,9 @@ export function useUpdateShipmentStatus() {
         updates.actual_arrival = new Date().toISOString();
       }
 
-      const { data, error } = await supabase
+      const { data, error} = await supabase
         .from('shipments')
-        .update(updates)
+        .update(updates as any) // Cast to any until types are regenerated
         .eq('id', id)
         .select()
         .single();

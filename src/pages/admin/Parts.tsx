@@ -29,7 +29,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { DataTable, DataTableColumnHeader, DataTableFilterableColumn } from "@/components/ui/data-table";
+import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
 import { useQualityMetrics } from "@/hooks/useQualityMetrics";
 import { cn } from "@/lib/utils";
 
