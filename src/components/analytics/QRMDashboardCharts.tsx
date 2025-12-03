@@ -310,11 +310,10 @@ export const ReliabilityHeatmap = ({ data }: { data: QRMDashboardMetrics["reliab
             <table className="w-full text-sm">
                 <thead>
                     <tr>
-                        <th className="text-left font-medium text-muted-foreground pb-2">Cell</th>
-                        <th className="text-center font-medium text-muted-foreground pb-2">W1</th>
-                        <th className="text-center font-medium text-muted-foreground pb-2">W2</th>
-                        <th className="text-center font-medium text-muted-foreground pb-2">W3</th>
-                        <th className="text-center font-medium text-muted-foreground pb-2">W4</th>
+                        <th className="text-left font-medium text-muted-foreground pb-2">{t("qrm.reliability.cell")}</th>
+                        {data.weekLabels.map((label, i) => (
+                            <th key={i} className="text-center font-medium text-muted-foreground pb-2 text-xs">{label}</th>
+                        ))}
                     </tr>
                 </thead>
                 <tbody>

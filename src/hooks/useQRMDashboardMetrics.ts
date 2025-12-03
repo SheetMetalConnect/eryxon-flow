@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { subDays, startOfDay, endOfDay, format, startOfWeek, subWeeks, eachDayOfInterval } from "date-fns";
+import { subDays, startOfDay, endOfDay, format, startOfWeek, endOfWeek, subWeeks, eachDayOfInterval } from "date-fns";
 
 export interface QRMDashboardMetrics {
     mct: {
@@ -32,6 +32,7 @@ export interface QRMDashboardMetrics {
     };
     reliability: {
         heatmap: { cellName: string; week1: number; week2: number; week3: number; week4: number }[];
+        weekLabels: string[];
     };
 }
 
@@ -288,6 +289,12 @@ export function useQRMDashboardMetrics(dateRange: number = 30) {
                 }
             });
 
+            // Generate week labels with actual date ranges (e.g., "Nov 4-10")
+            const weekLabels = weekStarts.map((weekStart, i) => {
+                const weekEnd = endOfWeek(weekStart);
+                return `${format(weekStart, 'MMM d')}-${format(weekEnd, 'd')}`;
+            });
+
             // Convert to percentage-based heatmap
             const reliabilityHeatmap = Array.from(reliabilityByCell.entries())
                 .map(([cellName, weeks]) => ({
@@ -336,6 +343,7 @@ export function useQRMDashboardMetrics(dateRange: number = 30) {
                 },
                 reliability: {
                     heatmap: reliabilityHeatmap,
+                    weekLabels,
                 },
             };
         },
