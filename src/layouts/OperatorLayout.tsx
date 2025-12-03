@@ -34,6 +34,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { AppTour } from "@/components/onboarding";
 import { ROUTES } from "@/routes";
 import SessionTrackingBar from "@/components/SessionTrackingBar";
+import { BrandLogo } from "@/components/BrandLogo";
 
 interface OperatorLayoutProps {
   children: React.ReactNode;
@@ -68,20 +69,11 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
       >
         <div className="flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6">
           {/* Logo/Brand */}
-          <div className="flex items-center gap-3">
-            <div
-              className={cn(
-                "h-9 w-9 rounded-lg flex items-center justify-center",
-                "bg-gradient-to-br from-[#3a4656] to-[#0080ff]",
-                "text-white font-bold text-sm"
-              )}
-            >
-              SM
-            </div>
-            <span className="hidden sm:block text-lg font-bold text-foreground tracking-tight">
-              {t("app.name")}
-            </span>
-          </div>
+          <BrandLogo
+            showText={true}
+            size="md"
+            textClassName="hidden sm:block text-foreground"
+          />
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-2">

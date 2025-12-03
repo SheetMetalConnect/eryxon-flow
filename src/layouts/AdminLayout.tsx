@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { BrandLogo } from "@/components/BrandLogo";
 import {
   LogOut,
   LayoutDashboard,
@@ -38,7 +39,6 @@ import {
   Activity,
   Flag,
   Info,
-  Factory,
   Truck,
   Trash2,
 } from "lucide-react";
@@ -264,14 +264,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     <div className="flex h-full flex-col">
       {/* Logo/Brand */}
       <div className="flex h-16 items-center border-b px-6">
-        <div className="flex items-center gap-2">
-          <Factory className="h-8 w-8 text-primary" strokeWidth={1.5} />
-          {!collapsed && (
-            <span className="text-lg font-bold hero-title">
-              Eryxon Flow
-            </span>
-          )}
-        </div>
+        <BrandLogo
+          showText={!collapsed}
+          size="md"
+        />
       </div>
 
       {/* Navigation */}

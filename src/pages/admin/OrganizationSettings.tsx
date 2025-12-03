@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Building2, Save, Clock } from 'lucide-react';
+import { Loader2, Building2, Save, Clock, Palette, Image, Crown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
@@ -38,7 +38,15 @@ export default function OrganizationSettings() {
     factory_opening_time: '07:00',
     factory_closing_time: '17:00',
     auto_stop_tracking: false,
+    // Whitelabeling fields (premium only)
+    logo_url: '',
+    app_name: '',
+    primary_color: '',
+    favicon_url: '',
   });
+
+  // Check if tenant has premium features
+  const hasPremiumFeatures = tenant?.plan === 'premium';
 
   useEffect(() => {
     loadTenantDetails();
@@ -72,6 +80,11 @@ export default function OrganizationSettings() {
         factory_opening_time: formatTime(data.factory_opening_time) || '07:00',
         factory_closing_time: formatTime(data.factory_closing_time) || '17:00',
         auto_stop_tracking: data.auto_stop_tracking || false,
+        // Whitelabeling fields
+        logo_url: data.logo_url || '',
+        app_name: data.app_name || '',
+        primary_color: data.primary_color || '',
+        favicon_url: data.favicon_url || '',
       });
     } catch (error: any) {
       console.error('Error loading tenant details:', error);
@@ -89,17 +102,28 @@ export default function OrganizationSettings() {
     setSaving(true);
 
     try {
+      // Build update object with whitelabeling fields only if premium
+      const updateData: Record<string, any> = {
+        name: formData.name,
+        company_name: formData.company_name,
+        timezone: formData.timezone,
+        billing_email: formData.billing_email,
+        factory_opening_time: formData.factory_opening_time + ':00',
+        factory_closing_time: formData.factory_closing_time + ':00',
+        auto_stop_tracking: formData.auto_stop_tracking,
+      };
+
+      // Only update whitelabeling fields for premium tenants
+      if (hasPremiumFeatures) {
+        updateData.logo_url = formData.logo_url || null;
+        updateData.app_name = formData.app_name || null;
+        updateData.primary_color = formData.primary_color || null;
+        updateData.favicon_url = formData.favicon_url || null;
+      }
+
       const { error } = await supabase
         .from('tenants')
-        .update({
-          name: formData.name,
-          company_name: formData.company_name,
-          timezone: formData.timezone,
-          billing_email: formData.billing_email,
-          factory_opening_time: formData.factory_opening_time + ':00',
-          factory_closing_time: formData.factory_closing_time + ':00',
-          auto_stop_tracking: formData.auto_stop_tracking,
-        })
+        .update(updateData)
         .eq('id', tenant.id);
 
       if (error) throw error;
@@ -270,6 +294,135 @@ export default function OrganizationSettings() {
                   })}
                 </p>
               </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Whitelabeling Card - Premium Only */}
+        <Card className="glass-card">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Palette className="h-5 w-5" />
+              <CardTitle>{t('organizationSettings.whitelabeling.title', 'Whitelabeling')}</CardTitle>
+              <Crown className="h-4 w-4 text-yellow-500" />
+            </div>
+            <CardDescription>
+              {t('organizationSettings.whitelabeling.description', 'Customize your application branding (Premium feature)')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {!hasPremiumFeatures ? (
+              <div className="rounded-lg bg-muted/50 border border-border p-6 text-center">
+                <Crown className="h-12 w-12 mx-auto text-yellow-500 mb-3" />
+                <h3 className="text-lg font-semibold mb-2">
+                  {t('organizationSettings.whitelabeling.premiumRequired', 'Premium Feature')}
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {t('organizationSettings.whitelabeling.upgradeMessage', 'Upgrade to Premium to customize your application branding with custom logo, colors, and app name.')}
+                </p>
+                <Button variant="outline" size="sm">
+                  {t('organizationSettings.whitelabeling.upgradeCTA', 'Learn about Premium')}
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="app_name">
+                      {t('organizationSettings.whitelabeling.appName', 'Application Name')}
+                    </Label>
+                    <Input
+                      id="app_name"
+                      value={formData.app_name}
+                      onChange={(e) => setFormData({ ...formData, app_name: e.target.value })}
+                      placeholder={t('organizationSettings.whitelabeling.appNamePlaceholder', 'My Company MES')}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {t('organizationSettings.whitelabeling.appNameHint', 'Displayed in the header and browser title')}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="primary_color">
+                      {t('organizationSettings.whitelabeling.primaryColor', 'Primary Color')}
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="primary_color"
+                        type="color"
+                        value={formData.primary_color || '#0080ff'}
+                        onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
+                        className="w-14 h-10 p-1 cursor-pointer"
+                      />
+                      <Input
+                        value={formData.primary_color}
+                        onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
+                        placeholder="#0080ff"
+                        className="flex-1"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {t('organizationSettings.whitelabeling.primaryColorHint', 'Used for buttons, links, and accents')}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="logo_url">
+                    <div className="flex items-center gap-2">
+                      <Image className="h-4 w-4" />
+                      {t('organizationSettings.whitelabeling.logoUrl', 'Logo URL')}
+                    </div>
+                  </Label>
+                  <Input
+                    id="logo_url"
+                    type="url"
+                    value={formData.logo_url}
+                    onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
+                    placeholder="https://example.com/logo.png"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t('organizationSettings.whitelabeling.logoUrlHint', 'Recommended size: 128x128px. Supports PNG, JPG, SVG.')}
+                  </p>
+                  {formData.logo_url && (
+                    <div className="mt-2 p-3 bg-muted rounded-lg inline-flex items-center gap-3">
+                      <span className="text-sm text-muted-foreground">{t('organizationSettings.whitelabeling.preview', 'Preview:')}</span>
+                      <img
+                        src={formData.logo_url}
+                        alt="Logo preview"
+                        className="h-10 w-10 object-contain rounded"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="favicon_url">
+                    {t('organizationSettings.whitelabeling.faviconUrl', 'Favicon URL')}
+                  </Label>
+                  <Input
+                    id="favicon_url"
+                    type="url"
+                    value={formData.favicon_url}
+                    onChange={(e) => setFormData({ ...formData, favicon_url: e.target.value })}
+                    placeholder="https://example.com/favicon.ico"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t('organizationSettings.whitelabeling.faviconUrlHint', 'Recommended: 32x32px ICO or PNG file.')}
+                  </p>
+                </div>
+
+                <div className="pt-4">
+                  <Button type="submit" disabled={saving} className="cta-button gap-2">
+                    {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                    <Save className="h-4 w-4" />
+                    {t('organizationSettings.saveChanges')}
+                  </Button>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>

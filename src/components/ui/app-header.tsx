@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { BrandLogo } from "@/components/BrandLogo";
 
 interface NavItem {
   path: string;
@@ -94,13 +95,13 @@ export function AppHeader({ className }: AppHeaderProps) {
     >
       <div className="flex h-16 items-center px-4 md:px-6">
         {/* Logo and Brand */}
-        <div className="flex items-center gap-3 mr-8">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20 text-white font-bold text-lg">
-            SM
-          </div>
-          <span className="hidden md:block text-lg font-bold text-white tracking-tight">
-            Sheet Metal Connect
-          </span>
+        <div className="mr-8">
+          <BrandLogo
+            showText={true}
+            size="md"
+            textClassName="hidden md:block text-white"
+            iconClassName="bg-white/20"
+          />
         </div>
 
         {/* Navigation Links */}
