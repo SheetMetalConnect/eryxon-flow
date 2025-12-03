@@ -34,6 +34,7 @@ export const ROUTES = {
       API_KEYS: "/admin/config/api-keys",
       MCP_KEYS: "/admin/config/mcp-keys",
       WEBHOOKS: "/admin/config/webhooks",
+      MQTT_PUBLISHERS: "/admin/config/mqtt-publishers",
       MCP_SERVER: "/admin/config/mcp-server",
     },
 

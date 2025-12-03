@@ -2681,6 +2681,134 @@ export type Database = {
         }
         Relationships: []
       }
+      mqtt_publishers: {
+        Row: {
+          id: string
+          tenant_id: string
+          name: string
+          description: string | null
+          broker_url: string
+          port: number
+          username: string | null
+          password: string | null
+          topic_pattern: string
+          default_enterprise: string | null
+          default_site: string | null
+          default_area: string | null
+          use_tls: boolean | null
+          events: string[]
+          active: boolean | null
+          last_connected_at: string | null
+          last_error: string | null
+          created_at: string | null
+          updated_at: string | null
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          name: string
+          description?: string | null
+          broker_url: string
+          port?: number
+          username?: string | null
+          password?: string | null
+          topic_pattern?: string
+          default_enterprise?: string | null
+          default_site?: string | null
+          default_area?: string | null
+          use_tls?: boolean | null
+          events?: string[]
+          active?: boolean | null
+          last_connected_at?: string | null
+          last_error?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          name?: string
+          description?: string | null
+          broker_url?: string
+          port?: number
+          username?: string | null
+          password?: string | null
+          topic_pattern?: string
+          default_enterprise?: string | null
+          default_site?: string | null
+          default_area?: string | null
+          use_tls?: boolean | null
+          events?: string[]
+          active?: boolean | null
+          last_connected_at?: string | null
+          last_error?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          created_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mqtt_publishers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mqtt_publishers_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      mqtt_logs: {
+        Row: {
+          id: string
+          mqtt_publisher_id: string
+          event_type: string
+          topic: string
+          payload: Json
+          success: boolean
+          error_message: string | null
+          latency_ms: number | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          mqtt_publisher_id: string
+          event_type: string
+          topic: string
+          payload: Json
+          success?: boolean
+          error_message?: string | null
+          latency_ms?: number | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          mqtt_publisher_id?: string
+          event_type?: string
+          topic?: string
+          payload?: Json
+          success?: boolean
+          error_message?: string | null
+          latency_ms?: number | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mqtt_logs_mqtt_publisher_id_fkey"
+            columns: ["mqtt_publisher_id"]
+            isOneToOne: false
+            referencedRelation: "mqtt_publishers"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       issues_with_context: {

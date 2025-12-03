@@ -40,6 +40,7 @@ import {
   Info,
   Truck,
   Trash2,
+  Radio,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -210,6 +211,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       path: ROUTES.ADMIN.INTEGRATIONS,
       label: t("navigation.integrations"),
       icon: Store,
+      exact: true,
+    },
+    {
+      path: ROUTES.ADMIN.CONFIG.MQTT_PUBLISHERS,
+      label: t("navigation.mqttPublishers"),
+      icon: Radio,
       exact: true,
     },
     {

@@ -26,6 +26,7 @@ import Assignments from "./pages/admin/Assignments";
 import ConfigApiKeys from "./pages/admin/ConfigApiKeys";
 import ConfigMcpKeys from "./pages/admin/ConfigMcpKeys";
 import ConfigWebhooks from "./pages/admin/ConfigWebhooks";
+import ConfigMqttPublishers from "./pages/admin/ConfigMqttPublishers";
 import McpServerSettings from "./pages/admin/McpServerSettings";
 import DataExport from "./pages/admin/DataExport";
 import DataImport from "./pages/admin/DataImport";
@@ -306,6 +307,17 @@ function AppRoutes() {
           <ProtectedRoute adminOnly>
             <Layout>
               <ConfigWebhooks />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/config/mqtt-publishers"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <ConfigMqttPublishers />
             </Layout>
           </ProtectedRoute>
         }
