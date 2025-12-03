@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -17,7 +18,10 @@ import {
   RefreshCw,
   FileUp,
   Table2,
-  Eye
+  Eye,
+  HelpCircle,
+  Code,
+  ExternalLink
 } from "lucide-react";
 import Papa from "papaparse";
 import { useTranslation } from "react-i18next";
@@ -400,6 +404,27 @@ export default function DataImport() {
       </div>
 
       <hr className="title-divider" />
+
+      {/* Quick Links Banner */}
+      <Alert className="bg-primary/5 border-primary/20">
+        <HelpCircle className="h-4 w-4" />
+        <AlertTitle>Need Help?</AlertTitle>
+        <AlertDescription className="flex flex-wrap items-center gap-3 mt-2">
+          <span className="text-sm">Learn more about data sync options:</span>
+          <Link to="/help?tab=erp-integration">
+            <Button variant="outline" size="sm" className="h-7 gap-1.5">
+              <HelpCircle className="h-3.5 w-3.5" />
+              ERP Integration Guide
+            </Button>
+          </Link>
+          <Link to="/admin/api-docs">
+            <Button variant="outline" size="sm" className="h-7 gap-1.5">
+              <Code className="h-3.5 w-3.5" />
+              API Documentation
+            </Button>
+          </Link>
+        </AlertDescription>
+      </Alert>
 
       {/* Progress Steps */}
       <div className="flex items-center justify-between mb-6">
