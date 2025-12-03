@@ -30,6 +30,7 @@ import {
   Key,
   Webhook,
   FileDown,
+  FileUp,
   HelpCircle,
   CreditCard,
   Code,
@@ -221,6 +222,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       path: "/admin/config/webhooks",
       label: t("navigation.webhooks"),
       icon: Webhook,
+      exact: true,
+    },
+    {
+      path: "/admin/data-import",
+      label: t("navigation.dataImport"),
+      icon: FileUp,
       exact: true,
     },
     {

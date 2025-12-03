@@ -28,6 +28,7 @@ import ConfigMcpKeys from "./pages/admin/ConfigMcpKeys";
 import ConfigWebhooks from "./pages/admin/ConfigWebhooks";
 import McpServerSettings from "./pages/admin/McpServerSettings";
 import DataExport from "./pages/admin/DataExport";
+import DataImport from "./pages/admin/DataImport";
 import Jobs from "./pages/admin/Jobs";
 import JobCreate from "./pages/admin/JobCreate";
 import Parts from "./pages/admin/Parts";
@@ -333,6 +334,17 @@ function AppRoutes() {
           <ProtectedRoute adminOnly>
             <Layout>
               <DataExport />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/data-import"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <DataImport />
             </Layout>
           </ProtectedRoute>
         }

@@ -124,6 +124,7 @@
     "templates": "Templates",
     "scrapReasons": "Scrap Reasons",
     "integrations": "Integrations",
+    "dataImport": "Data Import",
     "dataExport": "Data Export",
     "shipping": "Shipping",
     "accountAndSupport": "Account & Support",
@@ -1127,6 +1128,81 @@
       "operationCompleted": "Operation Completed",
       "issueCreated": "Issue Created",
       "issueResolved": "Issue Resolved"
+    }
+  },
+  "dataImport": {
+    "title": "Data Import",
+    "description": "Import data from CSV files or external systems",
+    "steps": {
+      "select": "Select Entity",
+      "upload": "Upload File",
+      "map": "Map Fields",
+      "preview": "Preview",
+      "import": "Import",
+      "complete": "Complete"
+    },
+    "selectEntity": "Select Entity to Import",
+    "selectEntityDescription": "Choose the type of data you want to import",
+    "uploadFile": "Upload CSV File",
+    "uploadFileDescription": "Upload your CSV file or download a template",
+    "mapFields": "Map Fields",
+    "mapFieldsDescription": "Match your CSV columns to the correct fields",
+    "previewData": "Preview Data",
+    "previewDataDescription": "Review and validate your data before importing",
+    "importing": "Importing Data",
+    "importingDescription": "Your data is being imported",
+    "importComplete": "Import Complete",
+    "importCompleteDescription": "Your data has been imported successfully",
+    "downloadTemplate": "Download Template",
+    "dropzoneText": "Drag and drop your CSV file here, or click to browse",
+    "fileSelected": "File Selected",
+    "rows": "rows",
+    "columns": "columns",
+    "csvColumn": "CSV Column",
+    "mapsTo": "Maps To",
+    "skip": "Skip",
+    "selectField": "Select field",
+    "requiredFieldsMissing": "Required fields missing",
+    "requiredFieldsMissingDescription": "Please map all required fields before continuing",
+    "validationResults": "Validation Results",
+    "validRecords": "Valid Records",
+    "invalidRecords": "Invalid Records",
+    "fieldMissing": "Required field missing",
+    "invalidValue": "Invalid value",
+    "row": "Row",
+    "field": "Field",
+    "error": "Error",
+    "processing": "Processing",
+    "recordsOf": "of",
+    "created": "Created",
+    "updated": "Updated",
+    "skipped": "Skipped",
+    "failed": "Failed",
+    "importAnother": "Import Another File",
+    "backToStart": "Back to Start",
+    "noValidRecords": "No valid records to import",
+    "noValidRecordsDescription": "Please fix the validation errors and try again",
+    "entities": {
+      "jobs": {
+        "name": "Jobs",
+        "description": "Sales orders and manufacturing jobs"
+      },
+      "parts": {
+        "name": "Parts",
+        "description": "Parts, components, and assemblies"
+      },
+      "operations": {
+        "name": "Operations",
+        "description": "Manufacturing operations and routing steps"
+      },
+      "cells": {
+        "name": "Cells",
+        "description": "Manufacturing cells and work centers"
+      },
+      "resources": {
+        "name": "Resources",
+        "description": "Tools, equipment, and machinery"
+      }
     }
   },
   "dataExport": {
