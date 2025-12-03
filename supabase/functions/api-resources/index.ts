@@ -704,11 +704,12 @@ async function handleBulkSyncResources(
   });
 }
 
-// Helper function to generate sync hash
+// Helper function to generate sync hash (using SHA-256 for Web Crypto API compatibility)
 async function generateSyncHash(payload: any): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(JSON.stringify(payload));
-  const hashBuffer = await crypto.subtle.digest("MD5", data);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  // Return first 32 chars (128 bits) for brevity, similar to MD5 output length
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("").substring(0, 32);
 }
