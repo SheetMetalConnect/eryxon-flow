@@ -354,8 +354,8 @@ export default function CapacityMatrix() {
     // Show skeleton during initial load
     const isInitialLoading = cellsLoading;
 
-    if (isInitialLoading) {
-        return <CapacityMatrixSkeleton rowCount={cells?.length || 6} />;
+    if (isInitialLoading || !cells) {
+        return <CapacityMatrixSkeleton rowCount={6} />;
     }
 
     // Get dialog data
