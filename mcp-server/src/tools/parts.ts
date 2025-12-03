@@ -50,6 +50,18 @@ const tools: Tool[] = [
           type: "string",
           description: "New current stage ID",
         },
+        drawing_no: {
+          type: "string",
+          description: "Drawing number reference",
+        },
+        cnc_program_name: {
+          type: "string",
+          description: "CNC program name for machine operators (generates QR code)",
+        },
+        is_bullet_card: {
+          type: "boolean",
+          description: "QRM bullet card flag - indicates rush/priority order",
+        },
       },
       required: ["id"],
     },

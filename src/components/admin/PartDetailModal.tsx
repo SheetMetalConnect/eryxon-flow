@@ -11,8 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
-import { Plus, Save, X, Upload, Eye, Trash2, Box, FileText, AlertTriangle, Package, ChevronRight, Wrench, Image as ImageIcon } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { useState, useEffect } from "react";
+import { Plus, Save, X, Upload, Eye, Trash2, Box, FileText, AlertTriangle, Package, ChevronRight, Wrench, Image as ImageIcon, Zap, QrCode } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { useToast } from "@/hooks/use-toast";
 import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
@@ -64,6 +66,12 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
   const [currentFileType, setCurrentFileType] = useState<'step' | 'pdf' | null>(null);
   const [currentFileTitle, setCurrentFileTitle] = useState<string>("");
 
+  // New part fields state
+  const [drawingNo, setDrawingNo] = useState<string>("");
+  const [cncProgramName, setCncProgramName] = useState<string>("");
+  const [isBulletCard, setIsBulletCard] = useState<boolean>(false);
+  const [hasChanges, setHasChanges] = useState<boolean>(false);
+
   // Upload hook with progress tracking and quota validation
   const {
     progress: uploadProgress,
@@ -102,6 +110,55 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       return data;
     },
   });
+
+  // Initialize new fields from part data
+  useEffect(() => {
+    if (part) {
+      setDrawingNo(part.drawing_no || "");
+      setCncProgramName(part.cnc_program_name || "");
+      setIsBulletCard(part.is_bullet_card || false);
+      setHasChanges(false);
+    }
+  }, [part]);
+
+  // Mutation to update part fields
+  const updatePartFieldsMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("parts")
+        .update({
+          drawing_no: drawingNo || null,
+          cnc_program_name: cncProgramName || null,
+          is_bullet_card: isBulletCard,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", partId);
+
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      toast({
+        title: t("common.success"),
+        description: t("parts.fieldsUpdated"),
+      });
+      setHasChanges(false);
+      await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
+      onUpdate();
+    },
+    onError: (error: any) => {
+      toast({
+        title: t("common.error"),
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Track changes
+  const handleFieldChange = (setter: (value: any) => void, value: any) => {
+    setter(value);
+    setHasChanges(true);
+  };
 
   // Fetch available resources for linking
   const { data: availableResources } = useQuery({
@@ -497,6 +554,95 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   );
                 })()}
               </div>
+            </div>
+          </div>
+
+          {/* Manufacturing Fields - Drawing No, CNC Program, Bullet Card */}
+          <div className="border rounded-lg p-4 bg-muted/30">
+            <div className="flex items-center justify-between mb-4">
+              <Label className="text-lg flex items-center gap-2">
+                <QrCode className="h-5 w-5" />
+                {t("parts.manufacturingInfo")}
+              </Label>
+              {hasChanges && (
+                <Button
+                  size="sm"
+                  onClick={() => updatePartFieldsMutation.mutate()}
+                  disabled={updatePartFieldsMutation.isPending}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {updatePartFieldsMutation.isPending ? t("common.saving") : t("common.saveChanges")}
+                </Button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {/* Drawing Number */}
+              <div>
+                <Label htmlFor="drawing-no">{t("parts.drawingNo")}</Label>
+                <Input
+                  id="drawing-no"
+                  value={drawingNo}
+                  onChange={(e) => handleFieldChange(setDrawingNo, e.target.value)}
+                  placeholder={t("parts.drawingNoPlaceholder")}
+                  className="mt-1"
+                />
+              </div>
+
+              {/* CNC Program Name */}
+              <div>
+                <Label htmlFor="cnc-program">{t("parts.cncProgramName")}</Label>
+                <Input
+                  id="cnc-program"
+                  value={cncProgramName}
+                  onChange={(e) => handleFieldChange(setCncProgramName, e.target.value)}
+                  placeholder={t("parts.cncProgramPlaceholder")}
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Bullet Card Toggle */}
+              <div className="col-span-2">
+                <div className="flex items-center justify-between p-3 border rounded-md bg-card">
+                  <div className="flex items-center gap-3">
+                    <Zap className={`h-5 w-5 ${isBulletCard ? 'text-destructive' : 'text-muted-foreground'}`} />
+                    <div>
+                      <Label htmlFor="bullet-card" className="cursor-pointer">
+                        {t("parts.bulletCard")}
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        {t("parts.bulletCardDesc")}
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    id="bullet-card"
+                    checked={isBulletCard}
+                    onCheckedChange={(checked) => handleFieldChange(setIsBulletCard, checked)}
+                  />
+                </div>
+              </div>
+
+              {/* QR Code Preview */}
+              {cncProgramName && (
+                <div className="col-span-2">
+                  <Label>{t("parts.qrCodePreview")}</Label>
+                  <div className="mt-2 flex items-center gap-4 p-3 border rounded-md bg-white">
+                    <QRCodeSVG
+                      value={cncProgramName}
+                      size={80}
+                      level="M"
+                      includeMargin={false}
+                    />
+                    <div>
+                      <p className="font-mono font-bold text-foreground">{cncProgramName}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("parts.qrCodeDesc")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

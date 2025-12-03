@@ -16,6 +16,9 @@ export interface PartUpdateData {
   drawing_url?: string;
   step_file_url?: string;
   job_id?: string;
+  drawing_no?: string;
+  cnc_program_name?: string;
+  is_bullet_card?: boolean;
 }
 
 export class PartValidator extends BaseValidator<PartUpdateData> {
@@ -120,6 +123,37 @@ export class PartValidator extends BaseValidator<PartUpdateData> {
         required: false,
       });
       if (stepError) errors.push(stepError);
+    }
+
+    // drawing_no
+    if (entity.drawing_no !== undefined) {
+      const drawingNoError = this.validateString(entity, "drawing_no", index, {
+        required: false,
+        maxLength: 255,
+      });
+      if (drawingNoError) errors.push(drawingNoError);
+    }
+
+    // cnc_program_name
+    if (entity.cnc_program_name !== undefined) {
+      const cncProgramError = this.validateString(entity, "cnc_program_name", index, {
+        required: false,
+        maxLength: 255,
+      });
+      if (cncProgramError) errors.push(cncProgramError);
+    }
+
+    // is_bullet_card (boolean validation)
+    if (entity.is_bullet_card !== undefined) {
+      if (typeof entity.is_bullet_card !== "boolean") {
+        errors.push({
+          field: "is_bullet_card",
+          message: "is_bullet_card must be a boolean",
+          constraint: "TYPE",
+          entityType: "part",
+          entityIndex: index,
+        });
+      }
     }
 
     return errors;

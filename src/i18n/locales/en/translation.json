@@ -613,7 +613,17 @@
       "downloadFailedDescription": "Unable to download image. Please try again.",
       "storageUsed": "Storage Used",
       "addFailed": "Failed to add images"
-    }
+    },
+    "manufacturingInfo": "Manufacturing Information",
+    "drawingNo": "Drawing Number",
+    "drawingNoPlaceholder": "e.g., DWG-2024-001",
+    "cncProgramName": "CNC Program Name",
+    "cncProgramPlaceholder": "e.g., PROG_12345",
+    "bulletCard": "Bullet Card (Rush Order)",
+    "bulletCardDesc": "Mark this part as a priority rush order (QRM terminology)",
+    "qrCodePreview": "QR Code Preview",
+    "qrCodeDesc": "Scan this QR code at the CNC machine to load the program",
+    "fieldsUpdated": "Part fields updated successfully"
   },
   "operations": {
     "title": "Operations",
@@ -1466,7 +1476,8 @@
     "jobsFound": "jobs found",
     "you": "YOU",
     "other": "Other",
-    "youAreClockedOn": "You are currently clocked on this operation"
+    "youAreClockedOn": "You are currently clocked on this operation",
+    "bulletCard": "Rush Order - Bullet Card"
   },
   "activityMonitor": {
     "title": "Activity Monitor",

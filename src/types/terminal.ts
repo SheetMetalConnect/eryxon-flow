@@ -27,4 +27,8 @@ export interface TerminalJob {
     cellColor?: string;
     cellId: string;
     currentSequence?: number; // Added for next operation detection
+    // Part-specific fields
+    drawingNo?: string | null;
+    cncProgramName?: string | null;
+    isBulletCard?: boolean | null; // QRM: Rush/priority order flag
 }

@@ -1544,12 +1544,15 @@ export type Database = {
       }
       parts: {
         Row: {
+          cnc_program_name: string | null
           created_at: string | null
           current_cell_id: string | null
+          drawing_no: string | null
           file_paths: string[] | null
           height_mm: number | null
           id: string
           image_paths: string[] | null
+          is_bullet_card: boolean | null
           job_id: string
           length_mm: number | null
           material: string
@@ -1569,12 +1572,15 @@ export type Database = {
           width_mm: number | null
         }
         Insert: {
+          cnc_program_name?: string | null
           created_at?: string | null
           current_cell_id?: string | null
+          drawing_no?: string | null
           file_paths?: string[] | null
           height_mm?: number | null
           id?: string
           image_paths?: string[] | null
+          is_bullet_card?: boolean | null
           job_id: string
           length_mm?: number | null
           material: string
@@ -1594,12 +1600,15 @@ export type Database = {
           width_mm?: number | null
         }
         Update: {
+          cnc_program_name?: string | null
           created_at?: string | null
           current_cell_id?: string | null
+          drawing_no?: string | null
           file_paths?: string[] | null
           height_mm?: number | null
           id?: string
           image_paths?: string[] | null
+          is_bullet_card?: boolean | null
           job_id?: string
           length_mm?: number | null
           material?: string
