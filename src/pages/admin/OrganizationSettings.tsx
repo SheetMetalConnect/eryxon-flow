@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Building2, Save, Clock, Paintbrush, Crown, Upload, X } from 'lucide-react';
+import { Loader2, Building2, Save, Clock, Paintbrush, Crown, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
@@ -96,8 +96,8 @@ export default function OrganizationSettings() {
     }
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
 
     if (!tenant) return;
 
@@ -423,7 +423,7 @@ export default function OrganizationSettings() {
                   <div className="pt-4">
                     <Button
                       type="button"
-                      onClick={handleSave}
+                      onClick={() => handleSave()}
                       disabled={saving}
                       className="cta-button gap-2"
                     >

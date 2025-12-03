@@ -38,7 +38,6 @@ import {
   Activity,
   Flag,
   Info,
-  Factory,
   Truck,
   Trash2,
 } from "lucide-react";
