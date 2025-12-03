@@ -81,12 +81,12 @@ export default function OrganizationSettings() {
         factory_opening_time: formatTime(data.factory_opening_time) || '07:00',
         factory_closing_time: formatTime(data.factory_closing_time) || '17:00',
         auto_stop_tracking: data.auto_stop_tracking || false,
-        // Whitelabeling fields
-        whitelabel_enabled: data.whitelabel_enabled || false,
-        whitelabel_logo_url: data.whitelabel_logo_url || '',
-        whitelabel_app_name: data.whitelabel_app_name || '',
-        whitelabel_primary_color: data.whitelabel_primary_color || '',
-        whitelabel_favicon_url: data.whitelabel_favicon_url || '',
+        // Whitelabeling fields (cast to any to access fields not in generated types)
+        whitelabel_enabled: (data as any).whitelabel_enabled || false,
+        whitelabel_logo_url: (data as any).whitelabel_logo_url || '',
+        whitelabel_app_name: (data as any).whitelabel_app_name || '',
+        whitelabel_primary_color: (data as any).whitelabel_primary_color || '',
+        whitelabel_favicon_url: (data as any).whitelabel_favicon_url || '',
       });
     } catch (error: any) {
       console.error('Error loading tenant details:', error);

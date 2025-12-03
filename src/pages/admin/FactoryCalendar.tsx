@@ -103,8 +103,7 @@ export default function FactoryCalendar() {
 
   // Working days mask from tenant (Mon=1, Tue=2, Wed=4, Thu=8, Fri=16, Sat=32, Sun=64)
   // Default 31 = Mon-Fri
-  const typedTenant = tenant as TenantRow | null;
-  const workingDaysMask = typedTenant?.working_days_mask ?? 31;
+  const workingDaysMask = (tenant as any)?.working_days_mask ?? 31;
 
   // Translation helpers for day types
   const getDayTypeLabel = (type: DayType): string => {
@@ -457,7 +456,7 @@ export default function FactoryCalendar() {
                       </Badge>
                       <div>
                         <div className="font-medium">
-                          {format(new Date(day.date + 'T00:00:00'), 'EEEE, MMMM d')}
+                          {day.date ? format(new Date(day.date + 'T00:00:00'), 'EEEE, MMMM d') : 'Unknown date'}
                         </div>
                         {day.name && (
                           <div className="text-sm text-muted-foreground">{day.name}</div>
@@ -473,7 +472,8 @@ export default function FactoryCalendar() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDateClick(new Date(day.date + 'T00:00:00'))}
+                      onClick={() => day.date && handleDateClick(new Date(day.date + 'T00:00:00'))}
+                      disabled={!day.date}
                     >
                       {t("common.edit", "Edit")}
                     </Button>

@@ -118,7 +118,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // The RPC returns an array, get the first element
       if (data && data.length > 0) {
-        setTenant(data[0]);
+        const tenantData = data[0] as any;
+        setTenant({
+          id: tenantData.id,
+          name: tenantData.name,
+          company_name: tenantData.company_name,
+          plan: tenantData.plan,
+          status: tenantData.status,
+          whitelabel_enabled: tenantData.whitelabel_enabled ?? false,
+          whitelabel_logo_url: tenantData.whitelabel_logo_url ?? null,
+          whitelabel_app_name: tenantData.whitelabel_app_name ?? null,
+          whitelabel_primary_color: tenantData.whitelabel_primary_color ?? null,
+          whitelabel_favicon_url: tenantData.whitelabel_favicon_url ?? null,
+        });
       }
     } catch (error) {
       console.error("Error fetching tenant:", error);
