@@ -12,8 +12,7 @@ import { OperationWithDetails } from '@/lib/database';
 import { cn } from '@/lib/utils';
 import IssueForm from '@/components/operator/IssueForm';
 import ProductionQuantityModal from '@/components/operator/ProductionQuantityModal';
-import { NextCellInfo } from './NextCellInfo';
-import { RoutingVisualization } from './RoutingVisualization';
+import { JobFlowProgress } from './JobFlowProgress';
 import { useCellQRMMetrics } from '@/hooks/useQRMMetrics';
 import { useAuth } from '@/contexts/AuthContext';
 import { createPortal } from 'react-dom';
@@ -201,24 +200,17 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                 </div>
             </div>
 
-            {/* QRM Section - Next Cell and Routing - Compact */}
-            <div className="p-2 border-b border-border bg-muted/20 space-y-2">
-                {/* Next Cell Capacity */}
-                {nextOperation && (
-                    <NextCellInfo
-                        nextCellName={nextOperation.cell?.name || 'Unknown Cell'}
-                        metrics={nextCellMetrics}
-                    />
-                )}
-
-                {/* Routing Visualization */}
-                {job.jobId && (
-                    <RoutingVisualization
+            {/* Job Flow Progress - Compact routing indicator */}
+            {job.jobId && (
+                <div className="px-3 py-2 border-b border-border bg-muted/20">
+                    <JobFlowProgress
                         jobId={job.jobId}
                         currentCellId={job.cellId}
+                        nextCellName={nextOperation?.cell?.name}
+                        nextCellMetrics={nextCellMetrics}
                     />
-                )}
-            </div>
+                </div>
+            )}
 
             {/* CNC Program QR Code - Compact inline display */}
             {job.cncProgramName && (

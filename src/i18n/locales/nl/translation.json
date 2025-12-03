@@ -1767,6 +1767,17 @@
         "inProgress": "In bewerking",
         "completed": "Voltooid"
       }
+    },
+    "flowProgress": {
+      "loading": "Route laden...",
+      "step": "Stap",
+      "noLimit": "Geen limiet",
+      "atCapacity": "Op capaciteit",
+      "nearCapacity": "Bijna vol",
+      "available": "Beschikbaar",
+      "unknown": "Onbekend",
+      "finalStep": "Laatste stap",
+      "cannotProceed": "Kan niet doorgaan - volgende cel op capaciteit"
     }
   },
   "activityMonitor": {
