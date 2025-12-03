@@ -1324,7 +1324,45 @@
     "partsInCell": "{{count}} Teil(e) in Zelle",
     "statusCompleted": "Abgeschlossen",
     "statusInProgress": "In Bearbeitung",
-    "statusNotStarted": "Nicht gestartet"
+    "statusNotStarted": "Nicht gestartet",
+    "dashboardTitle": "QRM Produktions-Dashboard",
+    "dashboardSubtitle": "Echtzeit-Kennzahlen für Quick Response Manufacturing Leistung.",
+    "last30Days": "Letzte 30 Tage",
+    "refresh": "Aktualisieren",
+    "mct": {
+      "title": "MCT Trend (Manufacturing Critical-path Time)",
+      "days": "Tage",
+      "target": "Ziel"
+    },
+    "otp": {
+      "title": "Lieferzuverlässigkeit (OTP)",
+      "onTime": "Pünktlich"
+    },
+    "queueTime": {
+      "title": "Wartezeit pro Zelle",
+      "hours": "Stunden"
+    },
+    "cycleTime": {
+      "title": "Zykluszeit pro Arbeitsgang",
+      "minutes": "Minuten"
+    },
+    "wipAge": {
+      "title": "WIP Altersverteilung",
+      "jobs": "Aufträge"
+    },
+    "issueRate": {
+      "title": "Problemquote nach Kategorie",
+      "rate": "Quote (%)"
+    },
+    "throughput": {
+      "title": "Durchsatz pro Zelle",
+      "units": "Einheiten/Tag"
+    },
+    "reliability": {
+      "title": "Zellen Zuverlässigkeit Heatmap",
+      "cell": "Zelle",
+      "week": "Woche"
+    }
   },
   "terminal": {
     "columns": {

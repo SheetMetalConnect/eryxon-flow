@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { addDays, subDays, startOfDay, endOfDay, format } from "date-fns";
+import { subDays, startOfDay, endOfDay, format, startOfWeek, subWeeks, eachDayOfInterval } from "date-fns";
 
 export interface QRMDashboardMetrics {
     mct: {
@@ -87,8 +87,12 @@ export function useQRMDashboardMetrics(dateRange: number = 30) {
 
             // --- Calculations ---
 
-            // MCT & OTP
-            // For jobs, we use updated_at as completion time if status is completed
+            // Generate date range for trends
+            const endDate = new Date();
+            const startDateTrend = subDays(endDate, dateRange);
+            const dateInterval = eachDayOfInterval({ start: startDateTrend, end: endDate });
+
+            // MCT & OTP with trends
             const completedJobs = jobs?.filter(j => j.status === 'completed' && j.updated_at) || [];
             const mctValues = completedJobs.map(j => {
                 const start = new Date(j.created_at!).getTime();
@@ -99,6 +103,41 @@ export function useQRMDashboardMetrics(dateRange: number = 30) {
 
             const onTimeJobs = completedJobs.filter(j => j.due_date && new Date(j.updated_at!) <= new Date(j.due_date));
             const otp = completedJobs.length ? (onTimeJobs.length / completedJobs.length) * 100 : 100;
+
+            // MCT trend - group by day
+            const mctByDay = new Map<string, number[]>();
+            completedJobs.forEach(j => {
+                const day = format(new Date(j.updated_at!), 'yyyy-MM-dd');
+                const mctDays = (new Date(j.updated_at!).getTime() - new Date(j.created_at!).getTime()) / (1000 * 60 * 60 * 24);
+                if (!mctByDay.has(day)) mctByDay.set(day, []);
+                mctByDay.get(day)!.push(mctDays);
+            });
+
+            const mctTrend = dateInterval.filter((_, i) => i % 3 === 0).map(date => {
+                const day = format(date, 'yyyy-MM-dd');
+                const dayMcts = mctByDay.get(day) || [];
+                const avgDayMct = dayMcts.length ? dayMcts.reduce((a, b) => a + b, 0) / dayMcts.length : avgMct;
+                return { date: format(date, 'MMM d'), value: Number(avgDayMct.toFixed(1)) };
+            });
+
+            // OTP trend - calculate daily OTP
+            const otpByDay = new Map<string, { onTime: number; total: number }>();
+            completedJobs.forEach(j => {
+                const day = format(new Date(j.updated_at!), 'yyyy-MM-dd');
+                if (!otpByDay.has(day)) otpByDay.set(day, { onTime: 0, total: 0 });
+                const dayData = otpByDay.get(day)!;
+                dayData.total++;
+                if (j.due_date && new Date(j.updated_at!) <= new Date(j.due_date)) {
+                    dayData.onTime++;
+                }
+            });
+
+            const otpTrend = dateInterval.filter((_, i) => i % 3 === 0).map(date => {
+                const day = format(date, 'yyyy-MM-dd');
+                const dayData = otpByDay.get(day);
+                const dayOtp = dayData && dayData.total > 0 ? (dayData.onTime / dayData.total) * 100 : otp;
+                return { date: format(date, 'MMM d'), value: Number(dayOtp.toFixed(1)) };
+            });
 
             // Queue Time by Cell
             const queueByCellMap = new Map<string, { total: number; count: number }>();
@@ -168,42 +207,115 @@ export function useQRMDashboardMetrics(dateRange: number = 30) {
                 rate: (count / totalOps) * 100
             })).sort((a, b) => b.count - a.count).slice(0, 5);
 
-            // Throughput
-            const throughputMap = new Map<string, { current: number, history: number[] }>();
-            // Simplified: just counting completed ops per cell
-            operations?.filter(o => o.status === 'completed').forEach(op => {
-                if (op.cells?.name) {
+            // Throughput by cell with real daily trends
+            const completedOps = operations?.filter(o => o.status === 'completed' && o.completed_at) || [];
+            const throughputByCellDay = new Map<string, Map<string, number>>();
+
+            completedOps.forEach(op => {
+                if (op.cells?.name && op.completed_at) {
                     const cell = op.cells.name;
-                    if (!throughputMap.has(cell)) throughputMap.set(cell, { current: 0, history: [] });
-                    // Logic for trend would require day-by-day grouping, for now simplified
-                    throughputMap.get(cell)!.current++;
+                    const day = format(new Date(op.completed_at), 'yyyy-MM-dd');
+
+                    if (!throughputByCellDay.has(cell)) {
+                        throughputByCellDay.set(cell, new Map());
+                    }
+                    const cellMap = throughputByCellDay.get(cell)!;
+                    cellMap.set(day, (cellMap.get(day) || 0) + 1);
                 }
             });
-            const throughputByCell = Array.from(throughputMap.entries()).map(([name, data]) => ({
-                cellName: name,
-                current: data.current,
-                trend: [data.current] // Placeholder for trend
-            }));
 
-            // Reliability Heatmap (Mocked for now as complex week-over-week logic is heavy)
-            const reliabilityHeatmap = [
-                { cellName: "Laser", week1: 98, week2: 95, week3: 92, week4: 96 },
-                { cellName: "Bending", week1: 88, week2: 90, week3: 85, week4: 89 },
-                { cellName: "Welding", week1: 92, week2: 94, week3: 91, week4: 93 },
-                { cellName: "Assembly", week1: 95, week2: 96, week3: 98, week4: 97 },
-                { cellName: "Painting", week1: 85, week2: 82, week3: 88, week4: 86 },
+            // Generate last 14 days for trend
+            const last14Days = eachDayOfInterval({ start: subDays(new Date(), 13), end: new Date() });
+
+            const throughputByCell = Array.from(throughputByCellDay.entries()).map(([name, dayMap]) => {
+                const trend = last14Days.map(date => {
+                    const day = format(date, 'yyyy-MM-dd');
+                    return dayMap.get(day) || 0;
+                });
+                const totalOps = trend.reduce((a, b) => a + b, 0);
+                const daysWithData = trend.filter(v => v > 0).length || 1;
+                return {
+                    cellName: name,
+                    current: Math.round(totalOps / daysWithData),
+                    trend
+                };
+            }).sort((a, b) => b.current - a.current);
+
+            // Reliability Heatmap - calculate OTP per cell per week (real data)
+            // Week boundaries for last 4 weeks
+            const now = new Date();
+            const weekStarts = [
+                startOfWeek(subWeeks(now, 3)),
+                startOfWeek(subWeeks(now, 2)),
+                startOfWeek(subWeeks(now, 1)),
+                startOfWeek(now)
             ];
 
+            // Group operations by cell and week, calculate reliability (completed on time vs planned)
+            const reliabilityByCell = new Map<string, { week1: { onTime: number; total: number }; week2: { onTime: number; total: number }; week3: { onTime: number; total: number }; week4: { onTime: number; total: number } }>();
+
+            completedOps.forEach(op => {
+                if (!op.cells?.name || !op.completed_at) return;
+
+                const cellName = op.cells.name;
+                const completedDate = new Date(op.completed_at);
+
+                // Initialize cell if needed
+                if (!reliabilityByCell.has(cellName)) {
+                    reliabilityByCell.set(cellName, {
+                        week1: { onTime: 0, total: 0 },
+                        week2: { onTime: 0, total: 0 },
+                        week3: { onTime: 0, total: 0 },
+                        week4: { onTime: 0, total: 0 }
+                    });
+                }
+
+                const cellData = reliabilityByCell.get(cellName)!;
+
+                // Determine which week this operation belongs to
+                let weekKey: 'week1' | 'week2' | 'week3' | 'week4' | null = null;
+                if (completedDate >= weekStarts[3]) weekKey = 'week4';
+                else if (completedDate >= weekStarts[2]) weekKey = 'week3';
+                else if (completedDate >= weekStarts[1]) weekKey = 'week2';
+                else if (completedDate >= weekStarts[0]) weekKey = 'week1';
+
+                if (weekKey) {
+                    cellData[weekKey].total++;
+                    // On-time if completed before or on planned_end, or if no planned_end (assume on-time)
+                    if (!op.planned_end || completedDate <= new Date(op.planned_end)) {
+                        cellData[weekKey].onTime++;
+                    }
+                }
+            });
+
+            // Convert to percentage-based heatmap
+            const reliabilityHeatmap = Array.from(reliabilityByCell.entries())
+                .map(([cellName, weeks]) => ({
+                    cellName,
+                    week1: weeks.week1.total > 0 ? Math.round((weeks.week1.onTime / weeks.week1.total) * 100) : 100,
+                    week2: weeks.week2.total > 0 ? Math.round((weeks.week2.onTime / weeks.week2.total) * 100) : 100,
+                    week3: weeks.week3.total > 0 ? Math.round((weeks.week3.onTime / weeks.week3.total) * 100) : 100,
+                    week4: weeks.week4.total > 0 ? Math.round((weeks.week4.onTime / weeks.week4.total) * 100) : 100
+                }))
+                .sort((a, b) => a.cellName.localeCompare(b.cellName))
+                .slice(0, 8); // Limit to 8 cells
+
+
+            // Calculate MCT target from historical 75th percentile (achievable stretch goal)
+            const sortedMcts = [...mctValues].sort((a, b) => a - b);
+            const mctTarget = sortedMcts.length > 0
+                ? sortedMcts[Math.floor(sortedMcts.length * 0.25)] // 25th percentile = faster than 75% of historical jobs
+                : avgMct * 0.8; // Fallback: 20% better than current average
 
             return {
                 mct: {
                     current: avgMct,
-                    trend: [], // Trend requires more complex historical queries
-                    target: 10,
+                    trend: mctTrend,
+                    target: Number(mctTarget.toFixed(1)),
                 },
                 otp: {
                     current: otp,
-                    trend: [],
+                    trend: otpTrend,
                 },
                 queueTime: {
                     byCell: queueTimeByCell,

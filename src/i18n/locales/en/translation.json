@@ -847,6 +847,11 @@
     "throughput": {
       "title": "Throughput by Cell",
       "units": "Units/Day"
+    },
+    "reliability": {
+      "title": "Cell Reliability Heatmap",
+      "cell": "Cell",
+      "week": "Week"
     }
   },
   "stages": {

@@ -1594,7 +1594,45 @@
     "partsInCell": "{{count}} onderde(e)l(en) in cel",
     "statusCompleted": "Voltooid",
     "statusInProgress": "Bezig",
-    "statusNotStarted": "Niet gestart"
+    "statusNotStarted": "Niet gestart",
+    "dashboardTitle": "QRM Productie Dashboard",
+    "dashboardSubtitle": "Real-time metrics voor Quick Response Manufacturing prestaties.",
+    "last30Days": "Laatste 30 dagen",
+    "refresh": "Vernieuwen",
+    "mct": {
+      "title": "MCT Trend (Manufacturing Critical-path Time)",
+      "days": "Dagen",
+      "target": "Doel"
+    },
+    "otp": {
+      "title": "Leverbetrouwbaarheid (OTP)",
+      "onTime": "Op tijd"
+    },
+    "queueTime": {
+      "title": "Wachttijd per cel",
+      "hours": "Uren"
+    },
+    "cycleTime": {
+      "title": "Cyclustijd per bewerking",
+      "minutes": "Minuten"
+    },
+    "wipAge": {
+      "title": "WIP Leeftijdsverdeling",
+      "jobs": "Opdrachten"
+    },
+    "issueRate": {
+      "title": "Problemenpercentage per categorie",
+      "rate": "Percentage (%)"
+    },
+    "throughput": {
+      "title": "Doorvoer per cel",
+      "units": "Eenheden/dag"
+    },
+    "reliability": {
+      "title": "Cel Betrouwbaarheid Heatmap",
+      "cell": "Cel",
+      "week": "Week"
+    }
   },
   "terminal": {
     "columns": {
