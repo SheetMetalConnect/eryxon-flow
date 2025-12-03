@@ -1584,5 +1584,21 @@
     "noScrapData": "Noch keine Ausschussdaten erfasst",
     "usage": "Verwendung",
     "scrapped": "Verschrottet"
+  },
+  "sessionTracking": {
+    "currentlyTracking": "Aktuelle Zeiterfassung",
+    "task": "Auftrag",
+    "elapsed": "vergangen",
+    "paused": "Pausiert",
+    "pause": "Pause",
+    "resume": "Fortsetzen",
+    "stop": "Stoppen",
+    "stopped": "Zeiterfassung gestoppt",
+    "stopFailed": "Zeiterfassung konnte nicht gestoppt werden",
+    "pauseFailed": "Zeiterfassung konnte nicht pausiert werden",
+    "resumed": "Zeiterfassung fortgesetzt",
+    "resumeFailed": "Zeiterfassung konnte nicht fortgesetzt werden",
+    "minimize": "Minimieren",
+    "moreOperations": "weitere Arbeitsgang/Arbeitsgänge"
   }
 }

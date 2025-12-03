@@ -33,6 +33,7 @@ import CurrentlyTimingWidget from "@/components/operator/CurrentlyTimingWidget";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { AppTour } from "@/components/onboarding";
 import { ROUTES } from "@/routes";
+import SessionTrackingBar from "@/components/SessionTrackingBar";
 
 interface OperatorLayoutProps {
   children: React.ReactNode;
@@ -228,7 +229,7 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 px-4 sm:px-6 py-4 sm:py-6 pb-20 sm:pb-6">
+      <main className="flex-1 px-4 sm:px-6 py-4 sm:py-6 pb-32 sm:pb-24">
         {children}
       </main>
 
@@ -265,6 +266,9 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
           })}
         </div>
       </nav>
+
+      {/* Global Session Tracking Bar */}
+      <SessionTrackingBar />
 
       {/* Onboarding Tour - only show if not completed */}
       {profile && !(profile as any).tour_completed && <AppTour userRole="operator" />}

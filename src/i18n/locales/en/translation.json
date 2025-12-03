@@ -1740,5 +1740,21 @@
   "calendar": {
     "title": "Factory Calendar",
     "description": "Manage holidays, closures, and special working days"
+  },
+  "sessionTracking": {
+    "currentlyTracking": "Currently Tracking",
+    "task": "Task",
+    "elapsed": "elapsed",
+    "paused": "Paused",
+    "pause": "Pause",
+    "resume": "Resume",
+    "stop": "Stop",
+    "stopped": "Time tracking stopped",
+    "stopFailed": "Failed to stop time tracking",
+    "pauseFailed": "Failed to pause time tracking",
+    "resumed": "Time tracking resumed",
+    "resumeFailed": "Failed to resume time tracking",
+    "minimize": "Minimize",
+    "moreOperations": "more operation(s)"
   }
 }
