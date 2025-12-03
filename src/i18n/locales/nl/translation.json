@@ -1333,8 +1333,6 @@
     "managePlan": "Abonnement beheren",
     "hostedPlans": "Gehoste abonnementen",
     "hostedPlansDescription": "Wij hosten alles op Hetzner (EU). U betaalt voor hosting, rekenkracht en ondersteuning.",
-    "alternatives": "Alternatieven",
-    "alternativesDescription": "Volledige controle nodig of speciale vereisten?",
     "free": {
       "name": "Gratis",
       "price": "€0",
@@ -1380,59 +1378,10 @@
         "Extra opslag op aanvraag"
       ]
     },
-    "enterprise": {
-      "name": "Enterprise",
-      "price": "Op aanvraag",
-      "description": "Uw infrastructuur, wij implementeren",
-      "features": [
-        "Single-tenant implementatie",
-        "Uw netwerk of dedicated gehost",
-        "Onbeperkte opdrachten, onderdelen, opslag",
-        "Volledige API, Webhooks, MCP Server",
-        "SSO/SAML authenticatie",
-        "White-label inbegrepen",
-        "Toegewijd ondersteuningskanaal",
-        "Aangepaste SLA indien nodig"
-      ],
-      "cta": "Vraag offerte aan"
-    },
-    "selfHosted": {
-      "name": "Self-Hosted",
-      "price": "€0",
-      "description": "Uw setup, u bent op uzelf aangewezen",
-      "features": [
-        "Download en draai zelf",
-        "Onbeperkte opdrachten, onderdelen, opslag",
-        "Volledige API, Webhooks, MCP Server",
-        "Broncode onder BSL 1.1",
-        "Community-ondersteuning via docs",
-        "GitHub Discussions",
-        "Geen officiële ondersteuning"
-      ],
-      "cta": "Bekijk op GitHub",
-      "note": "Voor technische gebruikers, privacybewuste bedrijven, of degenen die toch niet betalen. Kost ons niets."
-    },
     "perMonth": "/maand",
     "perYear": "/jaar",
     "billedMonthly": "Maandelijks gefactureerd",
-    "billedAnnually": "Jaarlijks gefactureerd",
-    "howItWorks": {
-      "title": "Hoe het werkt",
-      "selfServiceTitle": "Self-service",
-      "selfServiceDescription": "Geen onboarding-gesprekken. Geen consultants. Meld u aan, configureer uw fasen en materialen, sluit uw API aan, en ga. Alleen documentatie en e-mailondersteuning (Pro+).",
-      "upgradeTitle": "Hoe upgraden",
-      "upgradeDescription": "Klaar om te upgraden? Klik op \"Upgrade aanvragen\" om office@sheetmetalconnect.com te e-mailen. We nemen contact met u op met de volgende stappen.",
-      "usageTitle": "Gebruik & limieten",
-      "usageDescription": "Monitor uw gebruik vanaf uw Mijn abonnement-pagina. U ziet realtime statistieken en waarschuwingen wanneer u limieten nadert."
-    },
-    "securityBanner": {
-      "title": "Enterprise-niveau beveiliging",
-      "description": "Gratis, Pro & Premium: Multi-tenant architectuur met volledige gegevensisolatie per tenant. Beveiliging op rijniveau zorgt voor scheiding op databaseniveau. Enterprise: Single-tenant implementatie op uw infrastructuur. Alle niveaus bevatten HTTPS, gehashte wachtwoorden, versleutelde API-sleutels en ondertekende URL's voor bestandstoegang."
-    },
-    "whyHosted": {
-      "title": "Waarom betalen voor gehost?",
-      "description": "De meeste metaalbedrijven zijn geen DevOps-mensen. Zij zullen niet zelf hosten. U betaalt voor hosting, rekenkracht en ondersteuning — niet voor de software zelf."
-    }
+    "billedAnnually": "Jaarlijks gefactureerd"
   },
   "myPlan": {
     "title": "Mijn abonnement",
@@ -1460,8 +1409,6 @@
     "managePayment": "Betaalmethode beheren",
     "manufacturingCells": "Productiecellen",
     "mostPopular": "Meest populair",
-    "multiTenant": "Multi-tenant",
-    "multiTenantDescription": "Gedeelde infrastructuur met toegewijde gegevensisolatie",
     "nextBillingDate": "Volgende factureringsdatum",
     "noSalesCalls": "Geen verkoopgesprekken vereist",
     "operators": "Operators",
@@ -1474,8 +1421,6 @@
     "planFeatures": "Abonnementskenmerken",
     "readyToUpgrade": "Klaar om te upgraden?",
     "requestUpgrade": "Upgrade aanvragen",
-    "singleTenant": "Single-tenant",
-    "singleTenantDescription": "Toegewijde infrastructuur voor maximale controle en beveiliging",
     "status": "Status",
     "storage": "Opslag",
     "totalJobs": "Totaal opdrachten",

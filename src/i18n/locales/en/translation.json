@@ -1195,8 +1195,6 @@
     "managePlan": "Manage Plan",
     "hostedPlans": "Hosted Plans",
     "hostedPlansDescription": "We host everything on Hetzner (EU). You pay for hosting, compute, and support.",
-    "alternatives": "Alternatives",
-    "alternativesDescription": "Need full control or have special requirements?",
     "free": {
       "name": "Free",
       "price": "€0",
@@ -1242,59 +1240,10 @@
         "Extra storage on request"
       ]
     },
-    "enterprise": {
-      "name": "Enterprise",
-      "price": "By request",
-      "description": "Your infrastructure, I deploy",
-      "features": [
-        "Single-tenant deployment",
-        "Your network or dedicated hosted",
-        "Unlimited jobs, parts, storage",
-        "Full API, Webhooks, MCP Server",
-        "SSO/SAML authentication",
-        "White-label included",
-        "Dedicated support channel",
-        "Custom SLA if needed"
-      ],
-      "cta": "Contact for Quote"
-    },
-    "selfHosted": {
-      "name": "Self-Hosted",
-      "price": "€0",
-      "description": "Your setup, you're on your own",
-      "features": [
-        "Download and run yourself",
-        "Unlimited jobs, parts, storage",
-        "Full API, Webhooks, MCP Server",
-        "Source code under BSL 1.1",
-        "Community support via docs",
-        "GitHub Discussions",
-        "No official support"
-      ],
-      "cta": "View on GitHub",
-      "note": "For technical users, privacy-conscious companies, or those who won't pay anyway. Costs us nothing."
-    },
     "perMonth": "/month",
     "perYear": "/year",
     "billedMonthly": "Billed monthly",
-    "billedAnnually": "Billed annually",
-    "howItWorks": {
-      "title": "How It Works",
-      "selfServiceTitle": "Self-Service",
-      "selfServiceDescription": "No onboarding calls. No consultants. Sign up, configure your stages and materials, connect your API, and go. Documentation and email support (Pro+) only.",
-      "upgradeTitle": "How to Upgrade",
-      "upgradeDescription": "Ready to upgrade? Click \"Request Upgrade\" to email office@sheetmetalconnect.com. We'll get back to you with next steps.",
-      "usageTitle": "Usage & Limits",
-      "usageDescription": "Monitor your usage from your My Plan page. You'll see real-time statistics and alerts when approaching limits."
-    },
-    "securityBanner": {
-      "title": "Enterprise-Grade Security",
-      "description": "Free, Pro & Premium: Multi-tenant architecture with complete data isolation per tenant. Row-level security enforces separation at the database level. Enterprise: Single-tenant deployment on your infrastructure. All tiers include HTTPS, hashed passwords, encrypted API keys, and signed URLs for file access."
-    },
-    "whyHosted": {
-      "title": "Why pay for hosted?",
-      "description": "Most metal fabricators aren't DevOps people. They won't self-host. You're paying for hosting, compute, and support — not for the software itself."
-    }
+    "billedAnnually": "Billed annually"
   },
   "myPlan": {
     "title": "My Plan",
@@ -1321,8 +1270,6 @@
     "managePayment": "Manage Payment Method",
     "manufacturingCells": "Manufacturing Cells",
     "mostPopular": "Most Popular",
-    "multiTenant": "Multi-Tenant",
-    "multiTenantDescription": "Shared infrastructure with dedicated data isolation",
     "nextBillingDate": "Next Billing Date",
     "noSalesCalls": "No sales calls required",
     "operators": "Operators",
@@ -1335,8 +1282,6 @@
     "planFeatures": "Plan Features",
     "readyToUpgrade": "Ready to upgrade?",
     "requestUpgrade": "Request Upgrade",
-    "singleTenant": "Single-Tenant",
-    "singleTenantDescription": "Dedicated infrastructure for maximum control and security",
     "status": "Status",
     "storage": "Storage",
     "subtitle": "Manage your subscription and usage",
