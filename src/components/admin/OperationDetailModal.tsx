@@ -28,11 +28,13 @@ import {
   Play,
   AlertCircle,
   ChevronRight,
+  MapPin,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 
 interface OperationDetailModalProps {
@@ -46,6 +48,7 @@ export default function OperationDetailModal({
   onClose,
   onUpdate,
 }: OperationDetailModalProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { profile } = useAuth();
   const queryClient = useQueryClient();
@@ -94,7 +97,7 @@ export default function OperationDetailModal({
     },
   });
 
-  // Fetch resources for this operation
+  // Fetch resources for this operation with full details
   const { data: resources } = useQuery({
     queryKey: ["operation-resources", operationId],
     queryFn: async () => {
@@ -107,7 +110,10 @@ export default function OperationDetailModal({
           resource:resources (
             id,
             name,
-            type
+            type,
+            identifier,
+            location,
+            status
           )
         `)
         .eq("operation_id", operationId);
@@ -348,15 +354,69 @@ export default function OperationDetailModal({
             {/* Resources */}
             {resources && resources.length > 0 && (
               <div>
-                <Label className="text-xs text-muted-foreground mb-2 block">Required Resources</Label>
-                <div className="flex flex-wrap gap-2">
-                  {resources.map((r: any) => (
-                    <Badge key={r.id} variant="outline" className="gap-1">
-                      <Wrench className="h-3 w-3" />
-                      {r.resource?.name}
-                      {r.quantity > 1 && ` × ${r.quantity}`}
-                    </Badge>
-                  ))}
+                <Label className="text-xs text-muted-foreground mb-2 block flex items-center gap-1.5">
+                  <Wrench className="h-4 w-4" />
+                  {t("operations.requiredResources")} ({resources.length})
+                </Label>
+                <div className="space-y-2">
+                  {resources.map((r: any) => {
+                    const statusColors: Record<string, string> = {
+                      available: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800",
+                      in_use: "text-amber-600 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800",
+                      maintenance: "text-red-600 bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800",
+                      retired: "text-muted-foreground bg-muted/50 border-muted",
+                    };
+                    const getStatusLabel = (status: string) => {
+                      const labels: Record<string, string> = {
+                        available: t("terminal.resources.status.available"),
+                        in_use: t("terminal.resources.status.inUse"),
+                        maintenance: t("terminal.resources.status.maintenance"),
+                        retired: t("terminal.resources.status.retired"),
+                      };
+                      return labels[status] || status;
+                    };
+                    return (
+                      <div key={r.id} className="border rounded-md p-2.5 bg-muted/20">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <Wrench className="h-3.5 w-3.5 text-orange-500 shrink-0" />
+                              <span className="font-medium text-sm">{r.resource?.name}</span>
+                              {r.quantity > 1 && (
+                                <Badge variant="secondary" className="text-[10px] px-1 py-0">×{r.quantity}</Badge>
+                              )}
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
+                              <p className="capitalize">{t("operations.type")}: {r.resource?.type?.replace("_", " ")}</p>
+                              {r.resource?.identifier && <p>ID: {r.resource.identifier}</p>}
+                              {r.resource?.location && (
+                                <p className="flex items-center gap-1">
+                                  <MapPin className="h-3 w-3" />
+                                  {t("terminal.resources.location")}: {r.resource.location}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          {r.resource?.status && (
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] shrink-0 ${statusColors[r.resource.status] || ""}`}
+                            >
+                              {getStatusLabel(r.resource.status)}
+                            </Badge>
+                          )}
+                        </div>
+                        {r.notes && (
+                          <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded text-xs">
+                            <div className="flex items-start gap-1.5">
+                              <AlertCircle className="h-3 w-3 text-amber-600 mt-0.5 shrink-0" />
+                              <span className="text-amber-700 dark:text-amber-300">{r.notes}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

@@ -1346,7 +1346,34 @@
     "you": "SIE",
     "other": "Andere",
     "youAreClockedOn": "Sie sind derzeit bei diesem Arbeitsgang eingestempelt",
-    "bulletCard": "Eilauftrag - Bullet Card"
+    "bulletCard": "Eilauftrag - Bullet Card",
+    "resources": {
+      "title": "Erforderliche Betriebsmittel",
+      "noResources": "Keine Betriebsmittel erforderlich",
+      "loading": "Betriebsmittel werden geladen...",
+      "resource": "Betriebsmittel",
+      "resources": "Betriebsmittel",
+      "location": "Standort",
+      "status": {
+        "available": "Verfügbar",
+        "inUse": "In Verwendung",
+        "maintenance": "Wartung",
+        "retired": "Ausgemustert"
+      }
+    },
+    "assembly": {
+      "title": "Baugruppen-Abhängigkeiten",
+      "warning": "Komponenten nicht bereit",
+      "warningDesc": "Einige Komponenten sind noch nicht fertig",
+      "allComplete": "Alle Komponenten bereit",
+      "componentsPending": "{{count}} Komponente(n) ausstehend",
+      "checkComponents": "Prüfen Sie Komponenten vor Beginn der Montage",
+      "partStatus": {
+        "notStarted": "Nicht gestartet",
+        "inProgress": "In Bearbeitung",
+        "completed": "Abgeschlossen"
+      }
+    }
   },
   "activityMonitor": {
     "title": "Aktivitätsmonitor",

@@ -6,6 +6,8 @@ import { Play, Pause, Square, FileText, Box, AlertTriangle, CheckCircle2, Clock,
 import { CncProgramQrCode } from './CncProgramQrCode';
 import { STEPViewer } from '@/components/STEPViewer';
 import { PDFViewer } from '@/components/PDFViewer';
+import { OperationResources } from './OperationResources';
+import { AssemblyDependencies } from './AssemblyDependencies';
 import { OperationWithDetails } from '@/lib/database';
 import { cn } from '@/lib/utils';
 import IssueForm from '@/components/operator/IssueForm';
@@ -233,6 +235,15 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                     </div>
                 </div>
             )}
+
+            {/* Resources & Assembly Dependencies Section */}
+            <div className="px-3 py-2 border-b border-border bg-muted/10 space-y-2">
+                {/* Required Resources for this Operation */}
+                <OperationResources operationId={job.operationId} />
+
+                {/* Assembly Dependencies - show if this part has child parts */}
+                <AssemblyDependencies partId={job.partId} />
+            </div>
 
             {/* Main Content Tabs - Compact */}
             <div className="flex-1 min-h-0">

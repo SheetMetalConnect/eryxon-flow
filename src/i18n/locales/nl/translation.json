@@ -1616,7 +1616,34 @@
     "you": "JIJ",
     "other": "Ander",
     "youAreClockedOn": "Je bent momenteel ingeklokt op deze bewerking",
-    "bulletCard": "Spoedorder - Bullet Card"
+    "bulletCard": "Spoedorder - Bullet Card",
+    "resources": {
+      "title": "Benodigde Gereedschappen",
+      "noResources": "Geen gereedschappen nodig",
+      "loading": "Gereedschappen laden...",
+      "resource": "gereedschap",
+      "resources": "gereedschappen",
+      "location": "Locatie",
+      "status": {
+        "available": "Beschikbaar",
+        "inUse": "In gebruik",
+        "maintenance": "Onderhoud",
+        "retired": "Buiten gebruik"
+      }
+    },
+    "assembly": {
+      "title": "Samenstelling Afhankelijkheden",
+      "warning": "Componenten Niet Gereed",
+      "warningDesc": "Sommige componenten zijn nog niet voltooid",
+      "allComplete": "Alle Componenten Gereed",
+      "componentsPending": "{{count}} component(en) wachtend",
+      "checkComponents": "Controleer componenten voor montage",
+      "partStatus": {
+        "notStarted": "Niet gestart",
+        "inProgress": "In bewerking",
+        "completed": "Voltooid"
+      }
+    }
   },
   "activityMonitor": {
     "title": "Activiteitenmonitor",
