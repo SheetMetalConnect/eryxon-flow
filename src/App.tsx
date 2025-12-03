@@ -38,6 +38,11 @@ import { Settings } from "./pages/admin/Settings";
 import IntegrationsMarketplace from "./pages/admin/IntegrationsMarketplace";
 import Shipments from "./pages/admin/Shipments";
 import StepsTemplatesView from "./pages/admin/StepsTemplatesView";
+import AnalyticsDashboard from "./pages/admin/Analytics";
+import OEEAnalytics from "./pages/admin/analytics/OEEAnalytics";
+import ReliabilityAnalytics from "./pages/admin/analytics/ReliabilityAnalytics";
+import QRMAnalytics from "./pages/admin/analytics/QRMAnalytics";
+import QRMDashboard from "./pages/admin/analytics/QRMDashboard";
 import ApiDocs from "./pages/ApiDocs";
 import Pricing from "./pages/Pricing";
 import { MyPlan } from "./pages/MyPlan";
@@ -432,6 +437,62 @@ function AppRoutes() {
           <ProtectedRoute adminOnly>
             <Layout>
               <Shipments />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Analytics Routes */}
+      <Route
+        path="/admin/analytics"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <AnalyticsDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/analytics/oee"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <OEEAnalytics />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/analytics/reliability"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <ReliabilityAnalytics />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/analytics/qrm"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <QRMAnalytics />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/analytics/qrm-dashboard"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <QRMDashboard />
             </Layout>
           </ProtectedRoute>
         }

@@ -119,6 +119,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       icon: CalendarClock,
       exact: true,
     },
+    {
+      path: "/admin/analytics/qrm-dashboard",
+      label: "QRM Analytics",
+      icon: Activity,
+      exact: true,
+    },
   ];
 
   // Operator views - Admin can see what operators see

@@ -35,6 +35,14 @@ export const ROUTES = {
       MCP_KEYS: "/admin/config/mcp-keys",
       WEBHOOKS: "/admin/config/webhooks",
       MCP_SERVER: "/admin/config/mcp-server",
+    },
+
+    ANALYTICS: {
+      ROOT: "/admin/analytics",
+      OEE: "/admin/analytics/oee",
+      RELIABILITY: "/admin/analytics/reliability",
+      QRM: "/admin/analytics/qrm",
+      QRM_DASHBOARD: "/admin/analytics/qrm-dashboard",
     }
   },
 

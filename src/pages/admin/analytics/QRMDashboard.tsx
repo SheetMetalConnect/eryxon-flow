@@ -1,136 +1,190 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, RefreshCw, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/routes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-// Placeholder components
-const MCTChart = () => <div className="h-full w-full flex items-center justify-center text-muted-foreground">MCT Chart Placeholder</div>;
-const OTPGauge = () => <div className="h-full w-full flex items-center justify-center text-muted-foreground">OTP Gauge Placeholder</div>;
-const QueueTimeChart = () => <div className="h-full w-full flex items-center justify-center text-muted-foreground">Queue Time Placeholder</div>;
-const CycleTimeChart = () => <div className="h-full w-full flex items-center justify-center text-muted-foreground">Cycle Time Placeholder</div>;
-const WIPAgeChart = () => <div className="h-full w-full flex items-center justify-center text-muted-foreground">WIP Age Placeholder</div>;
-const IssueRateChart = () => <div className="h-full w-full flex items-center justify-center text-muted-foreground">Issue Rate Placeholder</div>;
-const ThroughputChart = () => <div className="h-full w-full flex items-center justify-center text-muted-foreground">Throughput Placeholder</div>;
+import { useTranslation } from "react-i18next";
+import { useQRMDashboardMetrics } from "@/hooks/useQRMDashboardMetrics";
+import {
+  MCTChart,
+  OTPGauge,
+  QueueTimeChart,
+  CycleTimeChart,
+  WIPAgeChart,
+  IssueRateChart,
+  ThroughputChart,
+  ReliabilityHeatmap,
+} from "@/components/analytics/QRMDashboardCharts";
+import { Loader2 } from "lucide-react";
 
 const QRMDashboard = () => {
-    const navigate = useNavigate();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [dateRange, setDateRange] = useState(30);
 
+  const { data: metrics, isLoading, refetch } = useQRMDashboardMetrics(dateRange);
+
+  if (isLoading || !metrics) {
     return (
-        <div className="space-y-6 p-6 pb-16 min-h-screen bg-background">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => navigate(ROUTES.ADMIN.ANALYTICS.ROOT)}
-                        className="shrink-0"
-                    >
-                        <ArrowLeft className="h-5 w-5" />
-                    </Button>
-                    <div className="flex flex-col gap-1">
-                        <h1 className="text-3xl font-bold tracking-tight">QRM Production Dashboard</h1>
-                        <p className="text-muted-foreground">
-                            Real-time metrics for Quick Response Manufacturing performance.
-                        </p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="h-9 gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>Last 30 Days</span>
-                    </Button>
-                    <Button variant="outline" size="sm" className="h-9 gap-2">
-                        <RefreshCw className="h-4 w-4" />
-                        <span>Refresh</span>
-                    </Button>
-                </div>
-            </div>
-
-            {/* Dashboard Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-                {/* Row 1: Outcome Metrics */}
-                <div className="md:col-span-1 h-[300px]">
-                    <Card className="glass-card h-full">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">Delivery Reliability (OTP)</CardTitle>
-                        </CardHeader>
-                        <CardContent className="h-[calc(100%-3rem)]">
-                            <OTPGauge />
-                        </CardContent>
-                    </Card>
-                </div>
-                <div className="md:col-span-2 h-[300px]">
-                    <Card className="glass-card h-full">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">MCT Trend (Manufacturing Critical-path Time)</CardTitle>
-                        </CardHeader>
-                        <CardContent className="h-[calc(100%-3rem)]">
-                            <MCTChart />
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Row 2: Flow Health */}
-                <div className="md:col-span-1 lg:col-span-1 h-[300px]">
-                    <Card className="glass-card h-full">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">WIP Age Distribution</CardTitle>
-                        </CardHeader>
-                        <CardContent className="h-[calc(100%-3rem)]">
-                            <WIPAgeChart />
-                        </CardContent>
-                    </Card>
-                </div>
-                <div className="md:col-span-2 lg:col-span-2 h-[300px]">
-                    <Card className="glass-card h-full">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">Queue Time by Cell</CardTitle>
-                        </CardHeader>
-                        <CardContent className="h-[calc(100%-3rem)]">
-                            <QueueTimeChart />
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Row 3: Operational Detail */}
-                <div className="md:col-span-1 h-[300px]">
-                    <Card className="glass-card h-full">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">Operation Cycle Time</CardTitle>
-                        </CardHeader>
-                        <CardContent className="h-[calc(100%-3rem)]">
-                            <CycleTimeChart />
-                        </CardContent>
-                    </Card>
-                </div>
-                <div className="md:col-span-1 h-[300px]">
-                    <Card className="glass-card h-full">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">Issue Rate by Category</CardTitle>
-                        </CardHeader>
-                        <CardContent className="h-[calc(100%-3rem)]">
-                            <IssueRateChart />
-                        </CardContent>
-                    </Card>
-                </div>
-                <div className="md:col-span-1 h-[300px]">
-                    <Card className="glass-card h-full">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">Throughput by Cell</CardTitle>
-                        </CardHeader>
-                        <CardContent className="h-[calc(100%-3rem)]">
-                            <ThroughputChart />
-                        </CardContent>
-                    </Card>
-                </div>
-
-            </div>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
+  }
+
+  return (
+    <div className="space-y-6 p-6 pb-16 min-h-screen bg-background">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(ROUTES.ADMIN.ANALYTICS.ROOT)}
+            className="shrink-0"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl font-bold tracking-tight">{t("qrm.dashboardTitle")}</h1>
+            <p className="text-muted-foreground">
+              {t("qrm.dashboardSubtitle")}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="h-9 gap-2">
+            <Calendar className="h-4 w-4" />
+            <span>{t("qrm.last30Days")}</span>
+          </Button>
+          <Button variant="outline" size="sm" className="h-9 gap-2" onClick={() => refetch()}>
+            <RefreshCw className="h-4 w-4" />
+            <span>{t("qrm.refresh")}</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Dashboard Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        {/* Row 1: Outcome Metrics */}
+        <div className="md:col-span-1 h-[300px]">
+          <Card
+            className="glass-card h-full cursor-pointer hover:border-primary/50 transition-colors"
+            onClick={() => navigate("/admin/jobs?status=completed")}
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("qrm.otp.title")}</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[calc(100%-3rem)]">
+              <OTPGauge data={metrics.otp} />
+            </CardContent>
+          </Card>
+        </div>
+        <div className="md:col-span-2 h-[300px]">
+          <Card
+            className="glass-card h-full cursor-pointer hover:border-primary/50 transition-colors"
+            onClick={() => navigate("/admin/jobs?status=completed")}
+          >
+            <CardHeader className="pb-2 flex flex-row items-center justify-between">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("qrm.mct.title")}</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[calc(100%-3rem)]">
+              <MCTChart data={metrics.mct} />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Row 2: Flow Health */}
+        <div className="md:col-span-1 h-[300px]">
+          <Card
+            className="glass-card h-full cursor-pointer hover:border-primary/50 transition-colors"
+            onClick={() => navigate("/admin/jobs?status=active")}
+          >
+            <CardHeader className="pb-2 flex flex-row items-center justify-between">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("qrm.wipAge.title")}</CardTitle>
+              <span className="text-2xl font-bold">{metrics.wipAge.totalWip}</span>
+            </CardHeader>
+            <CardContent className="h-[calc(100%-3rem)]">
+              <WIPAgeChart data={metrics.wipAge} />
+            </CardContent>
+          </Card>
+        </div>
+        <div className="md:col-span-2 h-[300px]">
+          <Card
+            className="glass-card h-full cursor-pointer hover:border-primary/50 transition-colors"
+            onClick={() => navigate("/admin/operations")}
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("qrm.queueTime.title")}</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[calc(100%-3rem)]">
+              <QueueTimeChart data={metrics.queueTime} />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Row 3: Operational Detail */}
+        <div className="md:col-span-1 h-[300px]">
+          <Card
+            className="glass-card h-full cursor-pointer hover:border-primary/50 transition-colors"
+            onClick={() => navigate("/admin/operations")}
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("qrm.cycleTime.title")}</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[calc(100%-3rem)]">
+              <CycleTimeChart data={metrics.cycleTime} />
+            </CardContent>
+          </Card>
+        </div>
+        <div className="md:col-span-1 h-[300px]">
+          <Card
+            className="glass-card h-full cursor-pointer hover:border-primary/50 transition-colors"
+            onClick={() => navigate("/admin/issues")}
+          >
+            <CardHeader className="pb-2 flex flex-row items-center justify-between">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("qrm.issueRate.title")}</CardTitle>
+              <span className="text-2xl font-bold">{metrics.issueRate.totalIssues}</span>
+            </CardHeader>
+            <CardContent className="h-[calc(100%-3rem)]">
+              <IssueRateChart data={metrics.issueRate} />
+            </CardContent>
+          </Card>
+        </div>
+        <div className="md:col-span-1 h-[300px]">
+          <Card
+            className="glass-card h-full cursor-pointer hover:border-primary/50 transition-colors"
+            onClick={() => navigate("/admin/capacity")}
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("qrm.throughput.title")}</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[calc(100%-3rem)]">
+              <ThroughputChart data={metrics.throughput} />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Row 4: Reliability Heatmap */}
+        <div className="md:col-span-3 h-[300px]">
+          <Card
+            className="glass-card h-full cursor-pointer hover:border-primary/50 transition-colors"
+            onClick={() => navigate("/admin/operations")}
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("qrm.reliability.title")}</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[calc(100%-3rem)]">
+              <ReliabilityHeatmap data={metrics.reliability} />
+            </CardContent>
+          </Card>
+        </div>
+
+      </div>
+    </div>
+  );
 };
 
 export default QRMDashboard;
