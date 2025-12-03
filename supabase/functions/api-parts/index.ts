@@ -89,7 +89,22 @@ serve(async (req) => {
     // Set tenant context for RLS
     await supabase.rpc("set_active_tenant", { p_tenant_id: tenantId });
 
-    // Route by HTTP method
+    // Check for sync endpoints
+    const url = new URL(req.url);
+    const pathSegments = url.pathname.split("/").filter(Boolean);
+    const lastSegment = pathSegments[pathSegments.length - 1];
+
+    // Route: PUT /api-parts/sync - Upsert by external_id
+    if (lastSegment === "sync" && req.method === "PUT") {
+      return await handleSyncPart(req, supabase, tenantId);
+    }
+
+    // Route: POST /api-parts/bulk-sync - Bulk upsert
+    if (lastSegment === "bulk-sync" && req.method === "POST") {
+      return await handleBulkSyncParts(req, supabase, tenantId);
+    }
+
+    // Route by HTTP method for standard CRUD
     switch (req.method) {
       case "GET":
         return await handleGetParts(req, supabase, tenantId);
@@ -100,7 +115,7 @@ serve(async (req) => {
       case "DELETE":
         return await handleDeletePart(req, supabase, tenantId);
       default:
-        return handleMethodNotAllowed(["GET", "POST", "PATCH", "DELETE"]);
+        return handleMethodNotAllowed(["GET", "POST", "PATCH", "DELETE", "PUT"]);
     }
   } catch (error) {
     return handleError(error);
@@ -548,4 +563,368 @@ async function handleDeletePart(
     { message: "Part deleted successfully", part_id: partId },
     200,
   );
+}
+
+/**
+ * PUT /api-parts/sync - Upsert part by external_id
+ */
+async function handleSyncPart(
+  req: Request,
+  supabase: any,
+  tenantId: string,
+): Promise<Response> {
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    throw new BadRequestError("Invalid JSON in request body");
+  }
+
+  // Validate required sync fields
+  if (!body.external_id) {
+    throw new BadRequestError("external_id is required for sync operations");
+  }
+
+  if (!body.external_source) {
+    throw new BadRequestError("external_source is required for sync operations");
+  }
+
+  if (!body.part_number) {
+    throw new BadRequestError("part_number is required");
+  }
+
+  // Resolve job_id - either by ID or by external_id
+  let jobId = body.job_id;
+  if (!jobId && body.job_external_id) {
+    const { data: job } = await supabase
+      .from("jobs")
+      .select("id")
+      .eq("tenant_id", tenantId)
+      .eq("external_source", body.external_source)
+      .eq("external_id", body.job_external_id)
+      .is("deleted_at", null)
+      .maybeSingle();
+    jobId = job?.id;
+  }
+
+  if (!jobId) {
+    throw new BadRequestError("job_id or job_external_id is required");
+  }
+
+  // Check if record exists by external_id
+  const { data: existing } = await supabase
+    .from("parts")
+    .select("id, status")
+    .eq("tenant_id", tenantId)
+    .eq("external_source", body.external_source)
+    .eq("external_id", body.external_id)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  const syncHash = await generateSyncHash(body);
+  const now = new Date().toISOString();
+
+  if (existing) {
+    // UPDATE existing record
+    const updates: any = {
+      job_id: jobId,
+      part_number: body.part_number,
+      material: body.material || "Unknown",
+      quantity: body.quantity || 1,
+      notes: body.notes,
+      metadata: body.metadata,
+      file_paths: body.file_paths,
+      synced_at: now,
+      sync_hash: syncHash,
+      updated_at: now,
+    };
+
+    // Only update status if explicitly provided
+    if (body.status && body.status !== existing.status) {
+      updates.status = body.status;
+    }
+
+    const { data: part, error } = await supabase
+      .from("parts")
+      .update(updates)
+      .eq("id", existing.id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update part: ${error.message}`);
+    }
+
+    return createSuccessResponse({
+      action: "updated",
+      part,
+    });
+  } else {
+    // Check plan limits
+    const partsQuotaCheck = await canCreateParts(supabase, tenantId, 1);
+    if (!partsQuotaCheck.allowed) {
+      throw new PaymentRequiredError(
+        "part",
+        partsQuotaCheck.current || 0,
+        partsQuotaCheck.limit || 0,
+      );
+    }
+
+    // CREATE new record
+    const { data: part, error } = await supabase
+      .from("parts")
+      .insert({
+        tenant_id: tenantId,
+        job_id: jobId,
+        part_number: body.part_number,
+        material: body.material || "Unknown",
+        quantity: body.quantity || 1,
+        notes: body.notes,
+        metadata: body.metadata,
+        file_paths: body.file_paths,
+        status: body.status || "not_started",
+        external_id: body.external_id,
+        external_source: body.external_source,
+        synced_at: now,
+        sync_hash: syncHash,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to create part: ${error.message}`);
+    }
+
+    return createSuccessResponse({
+      action: "created",
+      part,
+    }, 201);
+  }
+}
+
+/**
+ * POST /api-parts/bulk-sync - Bulk upsert parts
+ */
+async function handleBulkSyncParts(
+  req: Request,
+  supabase: any,
+  tenantId: string,
+): Promise<Response> {
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    throw new BadRequestError("Invalid JSON in request body");
+  }
+
+  const { parts, options = {} } = body;
+
+  if (!Array.isArray(parts)) {
+    throw new BadRequestError("parts must be an array");
+  }
+
+  if (parts.length === 0) {
+    return createSuccessResponse({
+      total: 0,
+      created: 0,
+      updated: 0,
+      errors: 0,
+      results: [],
+    });
+  }
+
+  if (parts.length > 1000) {
+    throw new BadRequestError("Maximum 1000 parts per bulk-sync request");
+  }
+
+  // Pre-fetch job mappings for external IDs
+  const jobExternalIds = [...new Set(parts.filter(p => p.job_external_id).map(p => p.job_external_id))];
+  const jobMap = new Map<string, string>();
+
+  if (jobExternalIds.length > 0) {
+    const { data: jobs } = await supabase
+      .from("jobs")
+      .select("id, external_id")
+      .eq("tenant_id", tenantId)
+      .in("external_id", jobExternalIds)
+      .is("deleted_at", null);
+
+    if (jobs) {
+      for (const job of jobs) {
+        jobMap.set(job.external_id, job.id);
+      }
+    }
+  }
+
+  const results: any[] = [];
+  let created = 0;
+  let updated = 0;
+  let errors = 0;
+
+  for (const part of parts) {
+    try {
+      // Validate required fields
+      if (!part.external_id || !part.external_source) {
+        results.push({
+          external_id: part.external_id,
+          action: "error",
+          error: "external_id and external_source are required",
+        });
+        errors++;
+        continue;
+      }
+
+      if (!part.part_number) {
+        results.push({
+          external_id: part.external_id,
+          action: "error",
+          error: "part_number is required",
+        });
+        errors++;
+        continue;
+      }
+
+      // Resolve job_id
+      let jobId = part.job_id;
+      if (!jobId && part.job_external_id) {
+        jobId = jobMap.get(part.job_external_id);
+      }
+
+      if (!jobId) {
+        results.push({
+          external_id: part.external_id,
+          action: "error",
+          error: "job_id or valid job_external_id is required",
+        });
+        errors++;
+        continue;
+      }
+
+      // Check if exists
+      const { data: existing } = await supabase
+        .from("parts")
+        .select("id")
+        .eq("tenant_id", tenantId)
+        .eq("external_source", part.external_source)
+        .eq("external_id", part.external_id)
+        .is("deleted_at", null)
+        .maybeSingle();
+
+      const syncHash = await generateSyncHash(part);
+      const now = new Date().toISOString();
+
+      if (existing) {
+        // Update
+        const { data: updated_part, error } = await supabase
+          .from("parts")
+          .update({
+            job_id: jobId,
+            part_number: part.part_number,
+            material: part.material || "Unknown",
+            quantity: part.quantity || 1,
+            notes: part.notes,
+            metadata: part.metadata,
+            synced_at: now,
+            sync_hash: syncHash,
+            updated_at: now,
+          })
+          .eq("id", existing.id)
+          .select("id")
+          .single();
+
+        if (error) {
+          results.push({
+            external_id: part.external_id,
+            action: "error",
+            error: error.message,
+          });
+          errors++;
+        } else {
+          results.push({
+            external_id: part.external_id,
+            id: updated_part.id,
+            action: "updated",
+          });
+          updated++;
+        }
+      } else {
+        // Create
+        const { data: new_part, error } = await supabase
+          .from("parts")
+          .insert({
+            tenant_id: tenantId,
+            job_id: jobId,
+            part_number: part.part_number,
+            material: part.material || "Unknown",
+            quantity: part.quantity || 1,
+            notes: part.notes,
+            metadata: part.metadata,
+            status: part.status || "not_started",
+            external_id: part.external_id,
+            external_source: part.external_source,
+            synced_at: now,
+            sync_hash: syncHash,
+          })
+          .select("id")
+          .single();
+
+        if (error) {
+          results.push({
+            external_id: part.external_id,
+            action: "error",
+            error: error.message,
+          });
+          errors++;
+        } else {
+          results.push({
+            external_id: part.external_id,
+            id: new_part.id,
+            action: "created",
+          });
+          created++;
+        }
+      }
+    } catch (err: any) {
+      results.push({
+        external_id: part.external_id,
+        action: "error",
+        error: err.message || "Unknown error",
+      });
+      errors++;
+    }
+  }
+
+  // Log the import
+  await supabase.from("sync_imports").insert({
+    tenant_id: tenantId,
+    source: "api",
+    entity_type: "parts",
+    status: errors > 0 ? (created + updated > 0 ? "completed" : "failed") : "completed",
+    total_records: parts.length,
+    created_count: created,
+    updated_count: updated,
+    error_count: errors,
+    errors: errors > 0 ? results.filter(r => r.action === "error") : null,
+    started_at: new Date().toISOString(),
+    completed_at: new Date().toISOString(),
+  });
+
+  return createSuccessResponse({
+    total: parts.length,
+    created,
+    updated,
+    errors,
+    results,
+  });
+}
+
+/**
+ * Helper function to generate sync hash
+ */
+async function generateSyncHash(payload: any): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(JSON.stringify(payload));
+  const hashBuffer = await crypto.subtle.digest("MD5", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 }
