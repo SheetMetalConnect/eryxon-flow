@@ -31,8 +31,8 @@ export interface QRMDashboardMetrics {
         byCell: { cellName: string; current: number; trend: number[] }[];
     };
     reliability: {
-        heatmap: { cellName: string; week1: number; week2: number; week3: number; week4: number }[];
-        weekLabels: string[];
+        heatmap: { cellName: string; values: number[] }[];
+        periodLabels: string[];
     };
 }
 
@@ -89,9 +89,15 @@ export function useQRMDashboardMetrics(dateRange: number = 30) {
             // --- Calculations ---
 
             // Generate date range for trends
-            const endDate = new Date();
-            const startDateTrend = subDays(endDate, dateRange);
-            const dateInterval = eachDayOfInterval({ start: startDateTrend, end: endDate });
+            const now = new Date();
+            const startDateTrend = subDays(now, dateRange);
+            const dateInterval = eachDayOfInterval({ start: startDateTrend, end: now });
+
+            // Calculate sampling interval to get ~10-12 data points for trends
+            const trendSampleInterval = Math.max(1, Math.floor(dateRange / 10));
+
+            // Calculate number of periods for reliability (weeks for 30+ days, days for shorter)
+            const numPeriods = Math.min(8, Math.max(4, Math.ceil(dateRange / 7)));
 
             // MCT & OTP with trends
             const completedJobs = jobs?.filter(j => j.status === 'completed' && j.updated_at) || [];
@@ -114,7 +120,7 @@ export function useQRMDashboardMetrics(dateRange: number = 30) {
                 mctByDay.get(day)!.push(mctDays);
             });
 
-            const mctTrend = dateInterval.filter((_, i) => i % 3 === 0).map(date => {
+            const mctTrend = dateInterval.filter((_, i) => i % trendSampleInterval === 0).map(date => {
                 const day = format(date, 'yyyy-MM-dd');
                 const dayMcts = mctByDay.get(day) || [];
                 const avgDayMct = dayMcts.length ? dayMcts.reduce((a, b) => a + b, 0) / dayMcts.length : avgMct;
@@ -133,7 +139,7 @@ export function useQRMDashboardMetrics(dateRange: number = 30) {
                 }
             });
 
-            const otpTrend = dateInterval.filter((_, i) => i % 3 === 0).map(date => {
+            const otpTrend = dateInterval.filter((_, i) => i % trendSampleInterval === 0).map(date => {
                 const day = format(date, 'yyyy-MM-dd');
                 const dayData = otpByDay.get(day);
                 const dayOtp = dayData && dayData.total > 0 ? (dayData.onTime / dayData.total) * 100 : otp;
@@ -225,11 +231,12 @@ export function useQRMDashboardMetrics(dateRange: number = 30) {
                 }
             });
 
-            // Generate last 14 days for trend
-            const last14Days = eachDayOfInterval({ start: subDays(new Date(), 13), end: new Date() });
+            // Generate trend days based on dateRange (use ~14 points for sparklines)
+            const sparklineDays = Math.min(dateRange, 14);
+            const trendDays = eachDayOfInterval({ start: subDays(now, sparklineDays - 1), end: now });
 
             const throughputByCell = Array.from(throughputByCellDay.entries()).map(([name, dayMap]) => {
-                const trend = last14Days.map(date => {
+                const trend = trendDays.map(date => {
                     const day = format(date, 'yyyy-MM-dd');
                     return dayMap.get(day) || 0;
                 });
@@ -242,18 +249,21 @@ export function useQRMDashboardMetrics(dateRange: number = 30) {
                 };
             }).sort((a, b) => b.current - a.current);
 
-            // Reliability Heatmap - calculate OTP per cell per week (real data)
-            // Week boundaries for last 4 weeks
-            const now = new Date();
-            const weekStarts = [
-                startOfWeek(subWeeks(now, 3)),
-                startOfWeek(subWeeks(now, 2)),
-                startOfWeek(subWeeks(now, 1)),
-                startOfWeek(now)
-            ];
+            // Reliability Heatmap - calculate OTP per cell per period (dynamic based on dateRange)
+            // Generate period boundaries based on numPeriods
+            const periodDays = Math.floor(dateRange / numPeriods);
+            const periodStarts: Date[] = [];
+            const periodLabels: string[] = [];
 
-            // Group operations by cell and week, calculate reliability (completed on time vs planned)
-            const reliabilityByCell = new Map<string, { week1: { onTime: number; total: number }; week2: { onTime: number; total: number }; week3: { onTime: number; total: number }; week4: { onTime: number; total: number } }>();
+            for (let i = numPeriods - 1; i >= 0; i--) {
+                const periodStart = subDays(now, i * periodDays + periodDays);
+                const periodEnd = subDays(now, i * periodDays);
+                periodStarts.push(periodStart);
+                periodLabels.push(`${format(periodStart, 'MMM d')}-${format(periodEnd, 'd')}`);
+            }
+
+            // Group operations by cell and period, calculate reliability
+            const reliabilityByCell = new Map<string, { onTime: number; total: number }[]>();
 
             completedOps.forEach(op => {
                 if (!op.cells?.name || !op.completed_at) return;
@@ -263,46 +273,32 @@ export function useQRMDashboardMetrics(dateRange: number = 30) {
 
                 // Initialize cell if needed
                 if (!reliabilityByCell.has(cellName)) {
-                    reliabilityByCell.set(cellName, {
-                        week1: { onTime: 0, total: 0 },
-                        week2: { onTime: 0, total: 0 },
-                        week3: { onTime: 0, total: 0 },
-                        week4: { onTime: 0, total: 0 }
-                    });
+                    reliabilityByCell.set(cellName, Array.from({ length: numPeriods }, () => ({ onTime: 0, total: 0 })));
                 }
 
                 const cellData = reliabilityByCell.get(cellName)!;
 
-                // Determine which week this operation belongs to
-                let weekKey: 'week1' | 'week2' | 'week3' | 'week4' | null = null;
-                if (completedDate >= weekStarts[3]) weekKey = 'week4';
-                else if (completedDate >= weekStarts[2]) weekKey = 'week3';
-                else if (completedDate >= weekStarts[1]) weekKey = 'week2';
-                else if (completedDate >= weekStarts[0]) weekKey = 'week1';
+                // Determine which period this operation belongs to
+                for (let p = 0; p < numPeriods; p++) {
+                    const periodStart = periodStarts[p];
+                    const periodEnd = p < numPeriods - 1 ? periodStarts[p + 1] : now;
 
-                if (weekKey) {
-                    cellData[weekKey].total++;
-                    // On-time if completed before or on planned_end, or if no planned_end (assume on-time)
-                    if (!op.planned_end || completedDate <= new Date(op.planned_end)) {
-                        cellData[weekKey].onTime++;
+                    if (completedDate >= periodStart && completedDate < periodEnd) {
+                        cellData[p].total++;
+                        // On-time if completed before or on planned_end, or if no planned_end (assume on-time)
+                        if (!op.planned_end || completedDate <= new Date(op.planned_end)) {
+                            cellData[p].onTime++;
+                        }
+                        break;
                     }
                 }
             });
 
-            // Generate week labels with actual date ranges (e.g., "Nov 4-10")
-            const weekLabels = weekStarts.map((weekStart, i) => {
-                const weekEnd = endOfWeek(weekStart);
-                return `${format(weekStart, 'MMM d')}-${format(weekEnd, 'd')}`;
-            });
-
-            // Convert to percentage-based heatmap
+            // Convert to percentage-based heatmap with dynamic values array
             const reliabilityHeatmap = Array.from(reliabilityByCell.entries())
-                .map(([cellName, weeks]) => ({
+                .map(([cellName, periods]) => ({
                     cellName,
-                    week1: weeks.week1.total > 0 ? Math.round((weeks.week1.onTime / weeks.week1.total) * 100) : 100,
-                    week2: weeks.week2.total > 0 ? Math.round((weeks.week2.onTime / weeks.week2.total) * 100) : 100,
-                    week3: weeks.week3.total > 0 ? Math.round((weeks.week3.onTime / weeks.week3.total) * 100) : 100,
-                    week4: weeks.week4.total > 0 ? Math.round((weeks.week4.onTime / weeks.week4.total) * 100) : 100
+                    values: periods.map(p => p.total > 0 ? Math.round((p.onTime / p.total) * 100) : 100)
                 }))
                 .sort((a, b) => a.cellName.localeCompare(b.cellName))
                 .slice(0, 8); // Limit to 8 cells
@@ -343,7 +339,7 @@ export function useQRMDashboardMetrics(dateRange: number = 30) {
                 },
                 reliability: {
                     heatmap: reliabilityHeatmap,
-                    weekLabels,
+                    periodLabels,
                 },
             };
         },

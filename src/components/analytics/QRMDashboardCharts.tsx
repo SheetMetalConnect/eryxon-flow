@@ -311,7 +311,7 @@ export const ReliabilityHeatmap = ({ data }: { data: QRMDashboardMetrics["reliab
                 <thead>
                     <tr>
                         <th className="text-left font-medium text-muted-foreground pb-2">{t("qrm.reliability.cell")}</th>
-                        {data.weekLabels.map((label, i) => (
+                        {data.periodLabels.map((label, i) => (
                             <th key={i} className="text-center font-medium text-muted-foreground pb-2 text-xs">{label}</th>
                         ))}
                     </tr>
@@ -320,7 +320,7 @@ export const ReliabilityHeatmap = ({ data }: { data: QRMDashboardMetrics["reliab
                     {data.heatmap.map((row, i) => (
                         <tr key={i} className="border-b border-border/50 last:border-0">
                             <td className="py-2 font-medium">{row.cellName}</td>
-                            {[row.week1, row.week2, row.week3, row.week4].map((val, j) => (
+                            {row.values.map((val, j) => (
                                 <td key={j} className="py-2 text-center">
                                     <div
                                         className="inline-flex items-center justify-center w-8 h-8 rounded-md text-xs font-bold text-white"
