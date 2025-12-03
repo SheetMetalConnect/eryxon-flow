@@ -68,6 +68,21 @@ serve(async (req) => {
       );
     }
 
+    // Check for sync endpoints
+    const url = new URL(req.url);
+    const pathSegments = url.pathname.split("/").filter(Boolean);
+    const lastSegment = pathSegments[pathSegments.length - 1];
+
+    // Route: PUT /api-cells/sync - Upsert by external_id
+    if (lastSegment === "sync" && req.method === "PUT") {
+      return await handleSyncCell(req, supabase, tenantId);
+    }
+
+    // Route: POST /api-cells/bulk-sync - Bulk upsert
+    if (lastSegment === "bulk-sync" && req.method === "POST") {
+      return await handleBulkSyncCells(req, supabase, tenantId);
+    }
+
     // Handle GET requests - list cells
     if (req.method === 'GET') {
       const url = new URL(req.url);
@@ -336,3 +351,339 @@ serve(async (req) => {
     );
   }
 });
+
+/**
+ * PUT /api-cells/sync - Upsert cell by external_id
+ */
+async function handleSyncCell(
+  req: Request,
+  supabase: any,
+  tenantId: string,
+): Promise<Response> {
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: { code: 'BAD_REQUEST', message: 'Invalid JSON in request body' }
+      }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // Validate required sync fields
+  if (!body.external_id) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: { code: 'BAD_REQUEST', message: 'external_id is required for sync operations' }
+      }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  if (!body.external_source) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: { code: 'BAD_REQUEST', message: 'external_source is required for sync operations' }
+      }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  if (!body.name) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: { code: 'BAD_REQUEST', message: 'name is required' }
+      }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // Check if record exists by external_id
+  const { data: existing } = await supabase
+    .from("cells")
+    .select("id")
+    .eq("tenant_id", tenantId)
+    .eq("external_source", body.external_source)
+    .eq("external_id", body.external_id)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  const now = new Date().toISOString();
+
+  if (existing) {
+    // UPDATE existing record
+    const { data: cell, error } = await supabase
+      .from("cells")
+      .update({
+        name: body.name,
+        color: body.color || '#3B82F6',
+        sequence: body.sequence,
+        active: body.active ?? true,
+        synced_at: now,
+        updated_at: now,
+      })
+      .eq("id", existing.id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update cell: ${error.message}`);
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: { action: "updated", cell }
+      }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } else {
+    // Get next sequence if not provided
+    let sequence = body.sequence;
+    if (sequence === undefined) {
+      const { data: maxSeq } = await supabase
+        .from("cells")
+        .select("sequence")
+        .eq("tenant_id", tenantId)
+        .order("sequence", { ascending: false })
+        .limit(1)
+        .single();
+      sequence = (maxSeq?.sequence ?? 0) + 1;
+    }
+
+    // CREATE new record
+    const { data: cell, error } = await supabase
+      .from("cells")
+      .insert({
+        tenant_id: tenantId,
+        name: body.name,
+        color: body.color || '#3B82F6',
+        sequence: sequence,
+        active: body.active ?? true,
+        external_id: body.external_id,
+        external_source: body.external_source,
+        synced_at: now,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to create cell: ${error.message}`);
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: { action: "created", cell }
+      }),
+      { status: 201, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+}
+
+/**
+ * POST /api-cells/bulk-sync - Bulk upsert cells
+ */
+async function handleBulkSyncCells(
+  req: Request,
+  supabase: any,
+  tenantId: string,
+): Promise<Response> {
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: { code: 'BAD_REQUEST', message: 'Invalid JSON in request body' }
+      }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  const { cells, options = {} } = body;
+
+  if (!Array.isArray(cells)) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: { code: 'BAD_REQUEST', message: 'cells must be an array' }
+      }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  if (cells.length === 0) {
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: { total: 0, created: 0, updated: 0, errors: 0, results: [] }
+      }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  if (cells.length > 100) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: { code: 'BAD_REQUEST', message: 'Maximum 100 cells per bulk-sync request' }
+      }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // Get current max sequence
+  const { data: maxSeq } = await supabase
+    .from("cells")
+    .select("sequence")
+    .eq("tenant_id", tenantId)
+    .order("sequence", { ascending: false })
+    .limit(1)
+    .single();
+  let nextSequence = (maxSeq?.sequence ?? 0) + 1;
+
+  const results: any[] = [];
+  let created = 0;
+  let updated = 0;
+  let errors = 0;
+
+  for (const cell of cells) {
+    try {
+      // Validate required fields
+      if (!cell.external_id || !cell.external_source) {
+        results.push({
+          external_id: cell.external_id,
+          action: "error",
+          error: "external_id and external_source are required",
+        });
+        errors++;
+        continue;
+      }
+
+      if (!cell.name) {
+        results.push({
+          external_id: cell.external_id,
+          action: "error",
+          error: "name is required",
+        });
+        errors++;
+        continue;
+      }
+
+      // Check if exists
+      const { data: existing } = await supabase
+        .from("cells")
+        .select("id")
+        .eq("tenant_id", tenantId)
+        .eq("external_source", cell.external_source)
+        .eq("external_id", cell.external_id)
+        .is("deleted_at", null)
+        .maybeSingle();
+
+      const now = new Date().toISOString();
+
+      if (existing) {
+        // Update
+        const { data: updated_cell, error } = await supabase
+          .from("cells")
+          .update({
+            name: cell.name,
+            color: cell.color || '#3B82F6',
+            sequence: cell.sequence,
+            active: cell.active ?? true,
+            synced_at: now,
+            updated_at: now,
+          })
+          .eq("id", existing.id)
+          .select("id")
+          .single();
+
+        if (error) {
+          results.push({
+            external_id: cell.external_id,
+            action: "error",
+            error: error.message,
+          });
+          errors++;
+        } else {
+          results.push({
+            external_id: cell.external_id,
+            id: updated_cell.id,
+            action: "updated",
+          });
+          updated++;
+        }
+      } else {
+        // Create
+        const { data: new_cell, error } = await supabase
+          .from("cells")
+          .insert({
+            tenant_id: tenantId,
+            name: cell.name,
+            color: cell.color || '#3B82F6',
+            sequence: cell.sequence ?? nextSequence++,
+            active: cell.active ?? true,
+            external_id: cell.external_id,
+            external_source: cell.external_source,
+            synced_at: now,
+          })
+          .select("id")
+          .single();
+
+        if (error) {
+          results.push({
+            external_id: cell.external_id,
+            action: "error",
+            error: error.message,
+          });
+          errors++;
+        } else {
+          results.push({
+            external_id: cell.external_id,
+            id: new_cell.id,
+            action: "created",
+          });
+          created++;
+        }
+      }
+    } catch (err: any) {
+      results.push({
+        external_id: cell.external_id,
+        action: "error",
+        error: err.message || "Unknown error",
+      });
+      errors++;
+    }
+  }
+
+  // Log the import
+  await supabase.from("sync_imports").insert({
+    tenant_id: tenantId,
+    source: "api",
+    entity_type: "cells",
+    status: errors > 0 ? (created + updated > 0 ? "completed" : "failed") : "completed",
+    total_records: cells.length,
+    created_count: created,
+    updated_count: updated,
+    error_count: errors,
+    errors: errors > 0 ? results.filter(r => r.action === "error") : null,
+    started_at: new Date().toISOString(),
+    completed_at: new Date().toISOString(),
+  });
+
+  return new Response(
+    JSON.stringify({
+      success: true,
+      data: { total: cells.length, created, updated, errors, results }
+    }),
+    { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}

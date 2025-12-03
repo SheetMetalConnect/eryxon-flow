@@ -17,8 +17,13 @@ import {
   Sparkles,
   Calendar,
   GitBranch,
+  RefreshCw,
+  FileUp,
+  Database,
+  ArrowRightLeft,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Accordion,
@@ -154,6 +159,13 @@ export default function Help() {
             >
               <Sparkles className="h-4 w-4" />
               What's New
+            </TabsTrigger>
+            <TabsTrigger
+              value="erp-integration"
+              className="data-[state=active]:bg-white/10 rounded-none border-b-2 border-transparent data-[state=active]:border-primary gap-2 px-4 py-3"
+            >
+              <RefreshCw className="h-4 w-4" />
+              ERP Integration
             </TabsTrigger>
           </TabsList>
 
@@ -674,6 +686,292 @@ Effective Time = Total Time - Pause Time`}
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          {/* ERP Integration Tab */}
+          <TabsContent value="erp-integration" className="p-6">
+            <h2 className="text-2xl font-semibold mb-2">ERP Integration Guide</h2>
+            <p className="text-muted-foreground mb-6">
+              Sync data between Eryxon MES and your external ERP system (SAP, NetSuite, Odoo, etc.)
+            </p>
+
+            <Alert className="mb-6 bg-primary/10 border-primary/30">
+              <ArrowRightLeft className="h-4 w-4" />
+              <AlertTitle>Two-Way Sync Architecture</AlertTitle>
+              <AlertDescription>
+                Eryxon supports both <strong>REST API</strong> for real-time individual updates and <strong>CSV batch import</strong> for mass data loading.
+              </AlertDescription>
+            </Alert>
+
+            <h3 className="text-lg font-semibold mb-3">Integration Options</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              <Card className="border-white/10 bg-white/5">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Code className="h-5 w-5 text-primary" />
+                    <h4 className="font-semibold">REST API Sync</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">Real-time sync for individual records. Best for webhooks and event-driven updates.</p>
+                  <ul className="text-xs space-y-1">
+                    <li><code className="bg-black/30 px-1.5 py-0.5 rounded">PUT /api-jobs/sync</code> - Upsert single job</li>
+                    <li><code className="bg-black/30 px-1.5 py-0.5 rounded">POST /api-jobs/bulk-sync</code> - Batch up to 1000</li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border-white/10 bg-white/5">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FileUp className="h-5 w-5 text-primary" />
+                    <h4 className="font-semibold">CSV Batch Import</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">Upload CSV files for mass data import. Includes field mapping wizard.</p>
+                  <Link to="/admin/data-import" className="text-xs text-primary hover:underline flex items-center gap-1">
+                    Go to Data Import
+                    <ExternalLink className="h-3 w-3" />
+                  </Link>
+                </CardContent>
+              </Card>
+            </div>
+
+            <h3 className="text-lg font-semibold mb-3">API Sync Endpoints</h3>
+            <Accordion type="single" collapsible defaultValue="sync-1" className="space-y-2 mb-8">
+              <AccordionItem value="sync-1" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  <div className="flex items-center gap-2">
+                    <Database className="h-4 w-4 text-primary" />
+                    Syncing Jobs (Sales Orders)
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground space-y-4">
+                  <p>Use the <code className="bg-black/30 px-1.5 py-0.5 rounded text-xs">external_id</code> field to link jobs to your ERP system.</p>
+                  <div>
+                    <p className="font-medium text-foreground text-sm mb-2">Single Job Sync:</p>
+                    <pre className="bg-black/30 p-3 rounded-lg text-xs font-mono overflow-x-auto">
+{`PUT /api-jobs/sync
+{
+  "external_id": "SO-12345",
+  "external_source": "SAP",
+  "job_number": "JOB-2024-001",
+  "customer": "Acme Corp",
+  "due_date": "2024-12-31"
+}`}
+                    </pre>
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground text-sm mb-2">With Nested Parts & Operations:</p>
+                    <pre className="bg-black/30 p-3 rounded-lg text-xs font-mono overflow-x-auto">
+{`PUT /api-jobs/sync
+{
+  "external_id": "SO-12345",
+  "external_source": "SAP",
+  "job_number": "JOB-2024-001",
+  "parts": [{
+    "external_id": "SO-12345-10",
+    "part_number": "BRACKET-A",
+    "quantity": 25,
+    "operations": [{
+      "external_id": "SO-12345-10-010",
+      "operation_name": "Laser Cut",
+      "cell_name": "Cutting"
+    }]
+  }]
+}`}
+                    </pre>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="sync-2" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  <div className="flex items-center gap-2">
+                    <Database className="h-4 w-4 text-primary" />
+                    Bulk Sync (Up to 1000 Records)
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground space-y-4">
+                  <p>For batch operations, use the bulk-sync endpoint:</p>
+                  <pre className="bg-black/30 p-3 rounded-lg text-xs font-mono overflow-x-auto">
+{`POST /api-jobs/bulk-sync
+{
+  "jobs": [
+    { "external_id": "SO-001", "job_number": "JOB-001", ... },
+    { "external_id": "SO-002", "job_number": "JOB-002", ... },
+    ...up to 1000 records
+  ]
+}`}
+                  </pre>
+                  <p className="font-medium text-foreground text-sm mt-4 mb-2">Response includes individual results:</p>
+                  <pre className="bg-black/30 p-3 rounded-lg text-xs font-mono overflow-x-auto">
+{`{
+  "success": true,
+  "data": {
+    "total": 100,
+    "created": 75,
+    "updated": 23,
+    "errors": 2,
+    "results": [...]
+  }
+}`}
+                  </pre>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="sync-3" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  <div className="flex items-center gap-2">
+                    <Database className="h-4 w-4 text-primary" />
+                    Available Sync Endpoints
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left border-b border-white/10">
+                        <th className="pb-2">Entity</th>
+                        <th className="pb-2">Single Sync</th>
+                        <th className="pb-2">Bulk Sync</th>
+                      </tr>
+                    </thead>
+                    <tbody className="font-mono text-xs">
+                      <tr className="border-b border-white/5">
+                        <td className="py-2">Jobs</td>
+                        <td><code>PUT /api-jobs/sync</code></td>
+                        <td><code>POST /api-jobs/bulk-sync</code></td>
+                      </tr>
+                      <tr className="border-b border-white/5">
+                        <td className="py-2">Parts</td>
+                        <td><code>PUT /api-parts/sync</code></td>
+                        <td><code>POST /api-parts/bulk-sync</code></td>
+                      </tr>
+                      <tr className="border-b border-white/5">
+                        <td className="py-2">Operations</td>
+                        <td><code>PUT /api-operations/sync</code></td>
+                        <td><code>POST /api-operations/bulk-sync</code></td>
+                      </tr>
+                      <tr className="border-b border-white/5">
+                        <td className="py-2">Cells</td>
+                        <td><code>PUT /api-cells/sync</code></td>
+                        <td><code>POST /api-cells/bulk-sync</code></td>
+                      </tr>
+                      <tr>
+                        <td className="py-2">Resources</td>
+                        <td><code>PUT /api-resources/sync</code></td>
+                        <td><code>POST /api-resources/bulk-sync</code></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
+            <h3 className="text-lg font-semibold mb-3">CSV Import Guide</h3>
+            <Accordion type="single" collapsible className="space-y-2 mb-8">
+              <AccordionItem value="csv-1" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  <div className="flex items-center gap-2">
+                    <FileUp className="h-4 w-4 text-primary" />
+                    How to Import CSV Data
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground space-y-3">
+                  <ol className="space-y-2">
+                    <li className="flex gap-2">
+                      <span className="font-bold text-foreground">1.</span>
+                      <span>Navigate to <strong className="text-foreground">Admin → Data Import</strong></span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="font-bold text-foreground">2.</span>
+                      <span>Select the entity type (Jobs, Parts, Operations, etc.)</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="font-bold text-foreground">3.</span>
+                      <span>Download a template or upload your CSV file</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="font-bold text-foreground">4.</span>
+                      <span>Map your CSV columns to Eryxon fields</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="font-bold text-foreground">5.</span>
+                      <span>Preview validation results and fix any errors</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="font-bold text-foreground">6.</span>
+                      <span>Click "Start Import" to process your data</span>
+                    </li>
+                  </ol>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="csv-2" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-primary" />
+                    Required Fields by Entity
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <div className="space-y-4">
+                    <div>
+                      <p className="font-medium text-foreground text-sm mb-1">Jobs</p>
+                      <p className="text-xs"><code className="bg-black/30 px-1.5 py-0.5 rounded">job_number</code> (required), customer, due_date, priority, notes, external_id</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground text-sm mb-1">Parts</p>
+                      <p className="text-xs"><code className="bg-black/30 px-1.5 py-0.5 rounded">part_number</code>, <code className="bg-black/30 px-1.5 py-0.5 rounded">job_external_id</code> (required), material, quantity, notes, external_id</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground text-sm mb-1">Operations</p>
+                      <p className="text-xs"><code className="bg-black/30 px-1.5 py-0.5 rounded">operation_name</code>, <code className="bg-black/30 px-1.5 py-0.5 rounded">part_external_id</code>, <code className="bg-black/30 px-1.5 py-0.5 rounded">cell_name</code> (required), sequence, estimated_time_minutes</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground text-sm mb-1">Cells</p>
+                      <p className="text-xs"><code className="bg-black/30 px-1.5 py-0.5 rounded">name</code> (required), color, sequence, active, external_id</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground text-sm mb-1">Resources</p>
+                      <p className="text-xs"><code className="bg-black/30 px-1.5 py-0.5 rounded">name</code>, <code className="bg-black/30 px-1.5 py-0.5 rounded">type</code> (required), description, identifier, location, status, external_id</p>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
+            <h3 className="text-lg font-semibold mb-3 mt-8">Best Practices</h3>
+            <Card className="border-white/10 bg-white/5">
+              <CardContent className="p-4">
+                <ul className="space-y-2">
+                  {[
+                    "Always include external_id and external_source for sync operations",
+                    "Use bulk-sync for batch operations (up to 1000 records per request)",
+                    "Sync cells/work centers before syncing operations that reference them",
+                    "Use the CSV import wizard for initial data migration",
+                    "Implement webhooks to receive real-time updates back to your ERP",
+                  ].map((tip, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                      <span className="text-sm">{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            <div className="mt-6 flex gap-4">
+              <Link to="/admin/api-docs">
+                <Button variant="outline" className="gap-2">
+                  <Code className="h-4 w-4" />
+                  View Full API Docs
+                </Button>
+              </Link>
+              <Link to="/admin/data-import">
+                <Button variant="outline" className="gap-2">
+                  <FileUp className="h-4 w-4" />
+                  Go to Data Import
+                </Button>
+              </Link>
+            </div>
           </TabsContent>
         </Tabs>
       </Card>

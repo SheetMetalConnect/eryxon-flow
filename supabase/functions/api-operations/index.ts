@@ -103,7 +103,22 @@ serve(async (req) => {
     // Set tenant context for RLS
     await supabase.rpc("set_active_tenant", { p_tenant_id: tenantId });
 
-    // Route by HTTP method
+    // Check for sync endpoints
+    const url = new URL(req.url);
+    const pathSegments = url.pathname.split("/").filter(Boolean);
+    const lastSegment = pathSegments[pathSegments.length - 1];
+
+    // Route: PUT /api-operations/sync - Upsert by external_id
+    if (lastSegment === "sync" && req.method === "PUT") {
+      return await handleSyncOperation(req, supabase, tenantId);
+    }
+
+    // Route: POST /api-operations/bulk-sync - Bulk upsert
+    if (lastSegment === "bulk-sync" && req.method === "POST") {
+      return await handleBulkSyncOperations(req, supabase, tenantId);
+    }
+
+    // Route by HTTP method for standard CRUD
     switch (req.method) {
       case "GET":
         return await handleGetOperations(req, supabase, tenantId);
@@ -114,7 +129,7 @@ serve(async (req) => {
       case "DELETE":
         return await handleDeleteOperation(req, supabase, tenantId);
       default:
-        return handleMethodNotAllowed(["GET", "POST", "PATCH", "DELETE"]);
+        return handleMethodNotAllowed(["GET", "POST", "PATCH", "DELETE", "PUT"]);
     }
   } catch (error) {
     return handleError(error);
@@ -572,4 +587,396 @@ async function handleDeleteOperation(
     { message: "Operation deleted successfully", operation_id: operationId },
     200,
   );
+}
+
+/**
+ * PUT /api-operations/sync - Upsert operation by external_id
+ */
+async function handleSyncOperation(
+  req: Request,
+  supabase: any,
+  tenantId: string,
+): Promise<Response> {
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    throw new BadRequestError("Invalid JSON in request body");
+  }
+
+  // Validate required sync fields
+  if (!body.external_id) {
+    throw new BadRequestError("external_id is required for sync operations");
+  }
+
+  if (!body.external_source) {
+    throw new BadRequestError("external_source is required for sync operations");
+  }
+
+  if (!body.operation_name) {
+    throw new BadRequestError("operation_name is required");
+  }
+
+  // Resolve part_id - either by ID or by external_id
+  let partId = body.part_id;
+  if (!partId && body.part_external_id) {
+    const { data: part } = await supabase
+      .from("parts")
+      .select("id")
+      .eq("tenant_id", tenantId)
+      .eq("external_source", body.external_source)
+      .eq("external_id", body.part_external_id)
+      .is("deleted_at", null)
+      .maybeSingle();
+    partId = part?.id;
+  }
+
+  if (!partId) {
+    throw new BadRequestError("part_id or part_external_id is required");
+  }
+
+  // Resolve cell_id - either by ID or by name
+  let cellId = body.cell_id;
+  if (!cellId && body.cell_name) {
+    const { data: cell } = await supabase
+      .from("cells")
+      .select("id")
+      .eq("tenant_id", tenantId)
+      .eq("name", body.cell_name)
+      .maybeSingle();
+    cellId = cell?.id;
+  }
+
+  if (!cellId) {
+    throw new BadRequestError("cell_id or cell_name is required");
+  }
+
+  // Check if record exists by external_id
+  const { data: existing } = await supabase
+    .from("operations")
+    .select("id, status")
+    .eq("tenant_id", tenantId)
+    .eq("external_source", body.external_source)
+    .eq("external_id", body.external_id)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  const now = new Date().toISOString();
+
+  if (existing) {
+    // UPDATE existing record
+    const updates: any = {
+      part_id: partId,
+      cell_id: cellId,
+      operation_name: body.operation_name,
+      sequence: body.sequence || 1,
+      estimated_time: body.estimated_time_minutes || body.estimated_time || 0,
+      notes: body.notes,
+      synced_at: now,
+      updated_at: now,
+    };
+
+    // Only update status if explicitly provided
+    if (body.status && body.status !== existing.status) {
+      updates.status = body.status;
+    }
+
+    // Handle optional operator assignment
+    if (body.assigned_operator_id) {
+      updates.assigned_operator_id = body.assigned_operator_id;
+    }
+
+    const { data: operation, error } = await supabase
+      .from("operations")
+      .update(updates)
+      .eq("id", existing.id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update operation: ${error.message}`);
+    }
+
+    return createSuccessResponse({
+      action: "updated",
+      operation,
+    });
+  } else {
+    // CREATE new record
+    const { data: operation, error } = await supabase
+      .from("operations")
+      .insert({
+        tenant_id: tenantId,
+        part_id: partId,
+        cell_id: cellId,
+        operation_name: body.operation_name,
+        sequence: body.sequence || 1,
+        estimated_time: body.estimated_time_minutes || body.estimated_time || 0,
+        notes: body.notes,
+        status: body.status || "not_started",
+        assigned_operator_id: body.assigned_operator_id,
+        external_id: body.external_id,
+        external_source: body.external_source,
+        synced_at: now,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to create operation: ${error.message}`);
+    }
+
+    return createSuccessResponse({
+      action: "created",
+      operation,
+    }, 201);
+  }
+}
+
+/**
+ * POST /api-operations/bulk-sync - Bulk upsert operations
+ */
+async function handleBulkSyncOperations(
+  req: Request,
+  supabase: any,
+  tenantId: string,
+): Promise<Response> {
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    throw new BadRequestError("Invalid JSON in request body");
+  }
+
+  const { operations, options = {} } = body;
+
+  if (!Array.isArray(operations)) {
+    throw new BadRequestError("operations must be an array");
+  }
+
+  if (operations.length === 0) {
+    return createSuccessResponse({
+      total: 0,
+      created: 0,
+      updated: 0,
+      errors: 0,
+      results: [],
+    });
+  }
+
+  if (operations.length > 1000) {
+    throw new BadRequestError("Maximum 1000 operations per bulk-sync request");
+  }
+
+  // Pre-fetch part mappings for external IDs
+  const partExternalIds = [...new Set(operations.filter(o => o.part_external_id).map(o => o.part_external_id))];
+  const partMap = new Map<string, string>();
+
+  if (partExternalIds.length > 0) {
+    const { data: parts } = await supabase
+      .from("parts")
+      .select("id, external_id")
+      .eq("tenant_id", tenantId)
+      .in("external_id", partExternalIds)
+      .is("deleted_at", null);
+
+    if (parts) {
+      for (const part of parts) {
+        partMap.set(part.external_id, part.id);
+      }
+    }
+  }
+
+  // Pre-fetch cell mappings for names
+  const cellNames = [...new Set(operations.filter(o => o.cell_name).map(o => o.cell_name))];
+  const cellMap = new Map<string, string>();
+
+  if (cellNames.length > 0) {
+    const { data: cells } = await supabase
+      .from("cells")
+      .select("id, name")
+      .eq("tenant_id", tenantId)
+      .in("name", cellNames);
+
+    if (cells) {
+      for (const cell of cells) {
+        cellMap.set(cell.name, cell.id);
+      }
+    }
+  }
+
+  const results: any[] = [];
+  let created = 0;
+  let updated = 0;
+  let errors = 0;
+
+  for (const op of operations) {
+    try {
+      // Validate required fields
+      if (!op.external_id || !op.external_source) {
+        results.push({
+          external_id: op.external_id,
+          action: "error",
+          error: "external_id and external_source are required",
+        });
+        errors++;
+        continue;
+      }
+
+      if (!op.operation_name) {
+        results.push({
+          external_id: op.external_id,
+          action: "error",
+          error: "operation_name is required",
+        });
+        errors++;
+        continue;
+      }
+
+      // Resolve part_id
+      let partId = op.part_id;
+      if (!partId && op.part_external_id) {
+        partId = partMap.get(op.part_external_id);
+      }
+
+      if (!partId) {
+        results.push({
+          external_id: op.external_id,
+          action: "error",
+          error: "part_id or valid part_external_id is required",
+        });
+        errors++;
+        continue;
+      }
+
+      // Resolve cell_id
+      let cellId = op.cell_id;
+      if (!cellId && op.cell_name) {
+        cellId = cellMap.get(op.cell_name);
+      }
+
+      if (!cellId) {
+        results.push({
+          external_id: op.external_id,
+          action: "error",
+          error: "cell_id or valid cell_name is required",
+        });
+        errors++;
+        continue;
+      }
+
+      // Check if exists
+      const { data: existing } = await supabase
+        .from("operations")
+        .select("id")
+        .eq("tenant_id", tenantId)
+        .eq("external_source", op.external_source)
+        .eq("external_id", op.external_id)
+        .is("deleted_at", null)
+        .maybeSingle();
+
+      const now = new Date().toISOString();
+
+      if (existing) {
+        // Update
+        const { data: updated_op, error } = await supabase
+          .from("operations")
+          .update({
+            part_id: partId,
+            cell_id: cellId,
+            operation_name: op.operation_name,
+            sequence: op.sequence || 1,
+            estimated_time: op.estimated_time_minutes || op.estimated_time || 0,
+            notes: op.notes,
+            synced_at: now,
+            updated_at: now,
+          })
+          .eq("id", existing.id)
+          .select("id")
+          .single();
+
+        if (error) {
+          results.push({
+            external_id: op.external_id,
+            action: "error",
+            error: error.message,
+          });
+          errors++;
+        } else {
+          results.push({
+            external_id: op.external_id,
+            id: updated_op.id,
+            action: "updated",
+          });
+          updated++;
+        }
+      } else {
+        // Create
+        const { data: new_op, error } = await supabase
+          .from("operations")
+          .insert({
+            tenant_id: tenantId,
+            part_id: partId,
+            cell_id: cellId,
+            operation_name: op.operation_name,
+            sequence: op.sequence || 1,
+            estimated_time: op.estimated_time_minutes || op.estimated_time || 0,
+            notes: op.notes,
+            status: op.status || "not_started",
+            assigned_operator_id: op.assigned_operator_id,
+            external_id: op.external_id,
+            external_source: op.external_source,
+            synced_at: now,
+          })
+          .select("id")
+          .single();
+
+        if (error) {
+          results.push({
+            external_id: op.external_id,
+            action: "error",
+            error: error.message,
+          });
+          errors++;
+        } else {
+          results.push({
+            external_id: op.external_id,
+            id: new_op.id,
+            action: "created",
+          });
+          created++;
+        }
+      }
+    } catch (err: any) {
+      results.push({
+        external_id: op.external_id,
+        action: "error",
+        error: err.message || "Unknown error",
+      });
+      errors++;
+    }
+  }
+
+  // Log the import
+  await supabase.from("sync_imports").insert({
+    tenant_id: tenantId,
+    source: "api",
+    entity_type: "operations",
+    status: errors > 0 ? (created + updated > 0 ? "completed" : "failed") : "completed",
+    total_records: operations.length,
+    created_count: created,
+    updated_count: updated,
+    error_count: errors,
+    errors: errors > 0 ? results.filter(r => r.action === "error") : null,
+    started_at: new Date().toISOString(),
+    completed_at: new Date().toISOString(),
+  });
+
+  return createSuccessResponse({
+    total: operations.length,
+    created,
+    updated,
+    errors,
+    results,
+  });
 }

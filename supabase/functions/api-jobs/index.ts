@@ -91,7 +91,22 @@ serve(async (req) => {
     // Set tenant context for RLS
     await supabase.rpc("set_active_tenant", { p_tenant_id: tenantId });
 
-    // Route by HTTP method
+    // Check for sync endpoints
+    const url = new URL(req.url);
+    const pathSegments = url.pathname.split("/").filter(Boolean);
+    const lastSegment = pathSegments[pathSegments.length - 1];
+
+    // Route: PUT /api-jobs/sync - Upsert by external_id
+    if (lastSegment === "sync" && req.method === "PUT") {
+      return await handleSyncJob(req, supabase, tenantId);
+    }
+
+    // Route: POST /api-jobs/bulk-sync - Bulk upsert
+    if (lastSegment === "bulk-sync" && req.method === "POST") {
+      return await handleBulkSyncJobs(req, supabase, tenantId);
+    }
+
+    // Route by HTTP method for standard CRUD
     switch (req.method) {
       case "GET":
         return await handleGetJobs(req, supabase, tenantId);
@@ -102,7 +117,7 @@ serve(async (req) => {
       case "DELETE":
         return await handleDeleteJob(req, supabase, tenantId);
       default:
-        return handleMethodNotAllowed(["GET", "POST", "PATCH", "DELETE"]);
+        return handleMethodNotAllowed(["GET", "POST", "PATCH", "DELETE", "PUT"]);
     }
   } catch (error) {
     return handleError(error);
@@ -614,4 +629,487 @@ async function handleDeleteJob(
     { message: "Job deleted successfully", job_id: jobId },
     200,
   );
+}
+
+/**
+ * PUT /api-jobs/sync - Upsert job by external_id
+ * Creates or updates a job based on external_id from ERP system
+ */
+async function handleSyncJob(
+  req: Request,
+  supabase: any,
+  tenantId: string,
+): Promise<Response> {
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    throw new BadRequestError("Invalid JSON in request body");
+  }
+
+  // Validate required sync fields
+  if (!body.external_id) {
+    throw new BadRequestError("external_id is required for sync operations");
+  }
+
+  if (!body.external_source) {
+    throw new BadRequestError("external_source is required for sync operations");
+  }
+
+  if (!body.job_number) {
+    throw new BadRequestError("job_number is required");
+  }
+
+  // Check if record exists by external_id
+  const { data: existing } = await supabase
+    .from("jobs")
+    .select("id, job_number, status")
+    .eq("tenant_id", tenantId)
+    .eq("external_source", body.external_source)
+    .eq("external_id", body.external_id)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  const syncHash = await generateSyncHash(body);
+  const now = new Date().toISOString();
+
+  if (existing) {
+    // UPDATE existing record
+    const updates: any = {
+      job_number: body.job_number,
+      customer: body.customer_name || body.customer,
+      due_date: body.due_date,
+      priority: body.priority,
+      notes: body.notes || body.description,
+      metadata: body.metadata,
+      synced_at: now,
+      sync_hash: syncHash,
+      updated_at: now,
+    };
+
+    // Only update status if explicitly provided and different
+    if (body.status && body.status !== existing.status) {
+      updates.status = body.status;
+    }
+
+    const { data: job, error } = await supabase
+      .from("jobs")
+      .update(updates)
+      .eq("id", existing.id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update job: ${error.message}`);
+    }
+
+    // Sync nested parts if provided
+    if (body.parts && Array.isArray(body.parts)) {
+      await syncNestedParts(supabase, tenantId, job.id, body.parts, body.external_source);
+    }
+
+    return createSuccessResponse({
+      action: "updated",
+      job,
+    });
+  } else {
+    // Check plan limits
+    const jobQuotaCheck = await canCreateJob(supabase, tenantId);
+    if (!jobQuotaCheck.allowed) {
+      throw new PaymentRequiredError(
+        "job",
+        jobQuotaCheck.current || 0,
+        jobQuotaCheck.limit || 0,
+      );
+    }
+
+    // CREATE new record
+    const { data: job, error } = await supabase
+      .from("jobs")
+      .insert({
+        tenant_id: tenantId,
+        job_number: body.job_number,
+        customer: body.customer_name || body.customer,
+        due_date: body.due_date,
+        priority: body.priority || 0,
+        notes: body.notes || body.description,
+        metadata: body.metadata,
+        status: body.status || "not_started",
+        external_id: body.external_id,
+        external_source: body.external_source,
+        synced_at: now,
+        sync_hash: syncHash,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to create job: ${error.message}`);
+    }
+
+    // Create nested parts if provided
+    if (body.parts && Array.isArray(body.parts)) {
+      await syncNestedParts(supabase, tenantId, job.id, body.parts, body.external_source);
+    }
+
+    return createSuccessResponse({
+      action: "created",
+      job,
+    }, 201);
+  }
+}
+
+/**
+ * Sync nested parts for a job
+ */
+async function syncNestedParts(
+  supabase: any,
+  tenantId: string,
+  jobId: string,
+  parts: any[],
+  externalSource: string,
+): Promise<void> {
+  for (const part of parts) {
+    if (!part.external_id || !part.part_number) {
+      continue; // Skip parts without required fields
+    }
+
+    // Check if part exists
+    const { data: existingPart } = await supabase
+      .from("parts")
+      .select("id")
+      .eq("tenant_id", tenantId)
+      .eq("external_source", externalSource)
+      .eq("external_id", part.external_id)
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    const now = new Date().toISOString();
+    let partId: string;
+
+    if (existingPart) {
+      // Update part
+      const { data: updatedPart } = await supabase
+        .from("parts")
+        .update({
+          job_id: jobId,
+          part_number: part.part_number,
+          material: part.material || "Unknown",
+          quantity: part.quantity || 1,
+          notes: part.notes,
+          metadata: part.metadata,
+          synced_at: now,
+          updated_at: now,
+        })
+        .eq("id", existingPart.id)
+        .select("id")
+        .single();
+      partId = updatedPart?.id;
+    } else {
+      // Create part
+      const { data: newPart } = await supabase
+        .from("parts")
+        .insert({
+          tenant_id: tenantId,
+          job_id: jobId,
+          part_number: part.part_number,
+          material: part.material || "Unknown",
+          quantity: part.quantity || 1,
+          notes: part.notes,
+          metadata: part.metadata,
+          status: "not_started",
+          external_id: part.external_id,
+          external_source: externalSource,
+          synced_at: now,
+        })
+        .select("id")
+        .single();
+      partId = newPart?.id;
+    }
+
+    // Sync nested operations if provided
+    if (partId && part.operations && Array.isArray(part.operations)) {
+      await syncNestedOperations(supabase, tenantId, partId, part.operations, externalSource);
+    }
+  }
+}
+
+/**
+ * Sync nested operations for a part
+ */
+async function syncNestedOperations(
+  supabase: any,
+  tenantId: string,
+  partId: string,
+  operations: any[],
+  externalSource: string,
+): Promise<void> {
+  for (const op of operations) {
+    if (!op.external_id || !op.operation_name) {
+      continue; // Skip operations without required fields
+    }
+
+    // Lookup cell by name if provided
+    let cellId = op.cell_id;
+    if (!cellId && op.cell_name) {
+      const { data: cell } = await supabase
+        .from("cells")
+        .select("id")
+        .eq("tenant_id", tenantId)
+        .eq("name", op.cell_name)
+        .maybeSingle();
+      cellId = cell?.id;
+    }
+
+    if (!cellId) {
+      continue; // Skip if no valid cell
+    }
+
+    // Check if operation exists
+    const { data: existingOp } = await supabase
+      .from("operations")
+      .select("id")
+      .eq("tenant_id", tenantId)
+      .eq("external_source", externalSource)
+      .eq("external_id", op.external_id)
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    const now = new Date().toISOString();
+
+    if (existingOp) {
+      // Update operation
+      await supabase
+        .from("operations")
+        .update({
+          part_id: partId,
+          cell_id: cellId,
+          operation_name: op.operation_name,
+          sequence: op.sequence || 1,
+          estimated_time: op.estimated_time_minutes || op.estimated_time || 0,
+          notes: op.notes,
+          synced_at: now,
+          updated_at: now,
+        })
+        .eq("id", existingOp.id);
+    } else {
+      // Create operation
+      await supabase
+        .from("operations")
+        .insert({
+          tenant_id: tenantId,
+          part_id: partId,
+          cell_id: cellId,
+          operation_name: op.operation_name,
+          sequence: op.sequence || 1,
+          estimated_time: op.estimated_time_minutes || op.estimated_time || 0,
+          notes: op.notes,
+          status: "not_started",
+          external_id: op.external_id,
+          external_source: externalSource,
+          synced_at: now,
+        });
+    }
+  }
+}
+
+/**
+ * POST /api-jobs/bulk-sync - Bulk upsert jobs
+ */
+async function handleBulkSyncJobs(
+  req: Request,
+  supabase: any,
+  tenantId: string,
+): Promise<Response> {
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    throw new BadRequestError("Invalid JSON in request body");
+  }
+
+  const { jobs, options = {} } = body;
+
+  if (!Array.isArray(jobs)) {
+    throw new BadRequestError("jobs must be an array");
+  }
+
+  if (jobs.length === 0) {
+    return createSuccessResponse({
+      total: 0,
+      created: 0,
+      updated: 0,
+      errors: 0,
+      results: [],
+    });
+  }
+
+  if (jobs.length > 1000) {
+    throw new BadRequestError("Maximum 1000 jobs per bulk-sync request");
+  }
+
+  const results: any[] = [];
+  let created = 0;
+  let updated = 0;
+  let errors = 0;
+
+  for (const job of jobs) {
+    try {
+      // Validate required fields
+      if (!job.external_id || !job.external_source) {
+        results.push({
+          external_id: job.external_id,
+          action: "error",
+          error: "external_id and external_source are required",
+        });
+        errors++;
+        continue;
+      }
+
+      if (!job.job_number) {
+        results.push({
+          external_id: job.external_id,
+          action: "error",
+          error: "job_number is required",
+        });
+        errors++;
+        continue;
+      }
+
+      // Check if exists
+      const { data: existing } = await supabase
+        .from("jobs")
+        .select("id")
+        .eq("tenant_id", tenantId)
+        .eq("external_source", job.external_source)
+        .eq("external_id", job.external_id)
+        .is("deleted_at", null)
+        .maybeSingle();
+
+      const syncHash = await generateSyncHash(job);
+      const now = new Date().toISOString();
+
+      if (existing) {
+        // Update
+        const { data: updated_job, error } = await supabase
+          .from("jobs")
+          .update({
+            job_number: job.job_number,
+            customer: job.customer_name || job.customer,
+            due_date: job.due_date,
+            priority: job.priority,
+            notes: job.notes || job.description,
+            metadata: job.metadata,
+            synced_at: now,
+            sync_hash: syncHash,
+            updated_at: now,
+          })
+          .eq("id", existing.id)
+          .select("id")
+          .single();
+
+        if (error) {
+          results.push({
+            external_id: job.external_id,
+            action: "error",
+            error: error.message,
+          });
+          errors++;
+        } else {
+          // Sync nested parts if provided
+          if (job.parts && Array.isArray(job.parts)) {
+            await syncNestedParts(supabase, tenantId, updated_job.id, job.parts, job.external_source);
+          }
+          results.push({
+            external_id: job.external_id,
+            id: updated_job.id,
+            action: "updated",
+          });
+          updated++;
+        }
+      } else {
+        // Create
+        const { data: new_job, error } = await supabase
+          .from("jobs")
+          .insert({
+            tenant_id: tenantId,
+            job_number: job.job_number,
+            customer: job.customer_name || job.customer,
+            due_date: job.due_date,
+            priority: job.priority || 0,
+            notes: job.notes || job.description,
+            metadata: job.metadata,
+            status: job.status || "not_started",
+            external_id: job.external_id,
+            external_source: job.external_source,
+            synced_at: now,
+            sync_hash: syncHash,
+          })
+          .select("id")
+          .single();
+
+        if (error) {
+          results.push({
+            external_id: job.external_id,
+            action: "error",
+            error: error.message,
+          });
+          errors++;
+        } else {
+          // Create nested parts if provided
+          if (job.parts && Array.isArray(job.parts)) {
+            await syncNestedParts(supabase, tenantId, new_job.id, job.parts, job.external_source);
+          }
+          results.push({
+            external_id: job.external_id,
+            id: new_job.id,
+            action: "created",
+          });
+          created++;
+        }
+      }
+    } catch (err: any) {
+      results.push({
+        external_id: job.external_id,
+        action: "error",
+        error: err.message || "Unknown error",
+      });
+      errors++;
+    }
+  }
+
+  // Log the import
+  await supabase.from("sync_imports").insert({
+    tenant_id: tenantId,
+    source: "api",
+    entity_type: "jobs",
+    status: errors > 0 ? (created + updated > 0 ? "completed" : "failed") : "completed",
+    total_records: jobs.length,
+    created_count: created,
+    updated_count: updated,
+    error_count: errors,
+    errors: errors > 0 ? results.filter(r => r.action === "error") : null,
+    started_at: new Date().toISOString(),
+    completed_at: new Date().toISOString(),
+  });
+
+  return createSuccessResponse({
+    total: jobs.length,
+    created,
+    updated,
+    errors,
+    results,
+  });
+}
+
+/**
+ * Helper function to generate sync hash (using SHA-256 for Web Crypto API compatibility)
+ */
+async function generateSyncHash(payload: any): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(JSON.stringify(payload));
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  // Return first 32 chars (128 bits) for brevity, similar to MD5 output length
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("").substring(0, 32);
 }
