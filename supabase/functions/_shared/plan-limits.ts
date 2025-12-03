@@ -14,6 +14,23 @@
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+/**
+ * Check if running in self-hosted mode (unlimited usage)
+ */
+export function isSelfHostedMode(): boolean {
+  return Deno.env.get('ERYXON_SELF_HOSTED') === 'true';
+}
+
+/**
+ * Return an unlimited quota result (used in self-hosted mode)
+ */
+function unlimitedQuotaResult(): QuotaCheckResult {
+  return {
+    allowed: true,
+    remaining: -1, // -1 means unlimited
+  };
+}
+
 export interface PlanLimits {
   plan: 'free' | 'pro' | 'premium' | 'enterprise';
   max_jobs: number | null;
@@ -60,6 +77,11 @@ export async function canCreateJob(
   supabase: SupabaseClient,
   tenantId: string
 ): Promise<QuotaCheckResult> {
+  // Self-hosted mode: unlimited
+  if (isSelfHostedMode()) {
+    return unlimitedQuotaResult();
+  }
+
   const limits = await getTenantLimits(supabase, tenantId);
 
   if (!limits) {
@@ -104,6 +126,11 @@ export async function canCreateParts(
   tenantId: string,
   quantity: number = 1
 ): Promise<QuotaCheckResult> {
+  // Self-hosted mode: unlimited
+  if (isSelfHostedMode()) {
+    return unlimitedQuotaResult();
+  }
+
   const limits = await getTenantLimits(supabase, tenantId);
 
   if (!limits) {
@@ -235,6 +262,11 @@ export async function canUploadFile(
   tenantId: string,
   fileSizeMb: number
 ): Promise<QuotaCheckResult> {
+  // Self-hosted mode: unlimited
+  if (isSelfHostedMode()) {
+    return unlimitedQuotaResult();
+  }
+
   const limits = await getTenantLimits(supabase, tenantId);
 
   if (!limits) {
