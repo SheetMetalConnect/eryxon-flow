@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Building2, Save, Clock, Palette, Image, Crown } from 'lucide-react';
+import { Loader2, Building2, Save, Clock, Paintbrush, Crown, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
@@ -38,15 +38,16 @@ export default function OrganizationSettings() {
     factory_opening_time: '07:00',
     factory_closing_time: '17:00',
     auto_stop_tracking: false,
-    // Whitelabeling fields (premium only)
-    logo_url: '',
-    app_name: '',
-    primary_color: '',
-    favicon_url: '',
+    // Whitelabeling fields (premium feature)
+    whitelabel_enabled: false,
+    whitelabel_logo_url: '',
+    whitelabel_app_name: '',
+    whitelabel_primary_color: '',
+    whitelabel_favicon_url: '',
   });
 
-  // Check if tenant has premium features
-  const hasPremiumFeatures = tenant?.plan === 'premium';
+  // Check if tenant has access to whitelabeling (premium/enterprise only)
+  const canUseWhitelabeling = tenant && (tenant.plan === 'premium' || tenant.plan === 'enterprise');
 
   useEffect(() => {
     loadTenantDetails();
@@ -81,10 +82,11 @@ export default function OrganizationSettings() {
         factory_closing_time: formatTime(data.factory_closing_time) || '17:00',
         auto_stop_tracking: data.auto_stop_tracking || false,
         // Whitelabeling fields
-        logo_url: data.logo_url || '',
-        app_name: data.app_name || '',
-        primary_color: data.primary_color || '',
-        favicon_url: data.favicon_url || '',
+        whitelabel_enabled: data.whitelabel_enabled || false,
+        whitelabel_logo_url: data.whitelabel_logo_url || '',
+        whitelabel_app_name: data.whitelabel_app_name || '',
+        whitelabel_primary_color: data.whitelabel_primary_color || '',
+        whitelabel_favicon_url: data.whitelabel_favicon_url || '',
       });
     } catch (error: any) {
       console.error('Error loading tenant details:', error);
@@ -94,16 +96,16 @@ export default function OrganizationSettings() {
     }
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
 
     if (!tenant) return;
 
     setSaving(true);
 
     try {
-      // Build update object with whitelabeling fields only if premium
-      const updateData: Record<string, any> = {
+      // Build update object with base fields
+      const updateData: Record<string, unknown> = {
         name: formData.name,
         company_name: formData.company_name,
         timezone: formData.timezone,
@@ -113,12 +115,13 @@ export default function OrganizationSettings() {
         auto_stop_tracking: formData.auto_stop_tracking,
       };
 
-      // Only update whitelabeling fields for premium tenants
-      if (hasPremiumFeatures) {
-        updateData.logo_url = formData.logo_url || null;
-        updateData.app_name = formData.app_name || null;
-        updateData.primary_color = formData.primary_color || null;
-        updateData.favicon_url = formData.favicon_url || null;
+      // Only include whitelabeling fields for premium/enterprise plans
+      if (canUseWhitelabeling) {
+        updateData.whitelabel_enabled = formData.whitelabel_enabled;
+        updateData.whitelabel_logo_url = formData.whitelabel_logo_url || null;
+        updateData.whitelabel_app_name = formData.whitelabel_app_name || null;
+        updateData.whitelabel_primary_color = formData.whitelabel_primary_color || null;
+        updateData.whitelabel_favicon_url = formData.whitelabel_favicon_url || null;
       }
 
       const { error } = await supabase
@@ -297,136 +300,164 @@ export default function OrganizationSettings() {
             )}
           </CardContent>
         </Card>
+      </form>
 
-        {/* Whitelabeling Card - Premium Only */}
-        <Card className="glass-card">
-          <CardHeader>
+      {/* Whitelabeling Settings (Premium/Enterprise only) */}
+      <Card className="glass-card">
+        <CardHeader>
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Palette className="h-5 w-5" />
-              <CardTitle>{t('organizationSettings.whitelabeling.title', 'Whitelabeling')}</CardTitle>
-              <Crown className="h-4 w-4 text-yellow-500" />
+              <Paintbrush className="h-5 w-5" />
+              <CardTitle>Whitelabeling</CardTitle>
             </div>
-            <CardDescription>
-              {t('organizationSettings.whitelabeling.description', 'Customize your application branding (Premium feature)')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {!hasPremiumFeatures ? (
-              <div className="rounded-lg bg-muted/50 border border-border p-6 text-center">
-                <Crown className="h-12 w-12 mx-auto text-yellow-500 mb-3" />
-                <h3 className="text-lg font-semibold mb-2">
-                  {t('organizationSettings.whitelabeling.premiumRequired', 'Premium Feature')}
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {t('organizationSettings.whitelabeling.upgradeMessage', 'Upgrade to Premium to customize your application branding with custom logo, colors, and app name.')}
-                </p>
-                <Button variant="outline" size="sm">
-                  {t('organizationSettings.whitelabeling.upgradeCTA', 'Learn about Premium')}
-                </Button>
+            {!canUseWhitelabeling && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
+                <Crown className="h-3.5 w-3.5 text-amber-500" />
+                <span className="text-xs font-medium text-amber-500">Premium</span>
               </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-2 gap-4">
+            )}
+          </div>
+          <CardDescription>
+            Customize the application with your own branding
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {canUseWhitelabeling ? (
+            <>
+              {/* Enable Whitelabeling Toggle */}
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <Label htmlFor="whitelabel_enabled" className="text-base">
+                    Enable Whitelabeling
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Replace the default branding with your company's identity
+                  </p>
+                </div>
+                <Switch
+                  id="whitelabel_enabled"
+                  checked={formData.whitelabel_enabled}
+                  onCheckedChange={(checked) => setFormData({ ...formData, whitelabel_enabled: checked })}
+                />
+              </div>
+
+              {formData.whitelabel_enabled && (
+                <div className="space-y-4 pt-2">
+                  {/* Custom App Name */}
                   <div className="space-y-2">
-                    <Label htmlFor="app_name">
-                      {t('organizationSettings.whitelabeling.appName', 'Application Name')}
-                    </Label>
+                    <Label htmlFor="whitelabel_app_name">Custom Application Name</Label>
                     <Input
-                      id="app_name"
-                      value={formData.app_name}
-                      onChange={(e) => setFormData({ ...formData, app_name: e.target.value })}
-                      placeholder={t('organizationSettings.whitelabeling.appNamePlaceholder', 'My Company MES')}
+                      id="whitelabel_app_name"
+                      value={formData.whitelabel_app_name}
+                      onChange={(e) => setFormData({ ...formData, whitelabel_app_name: e.target.value })}
+                      placeholder="Your Company Name"
                     />
                     <p className="text-xs text-muted-foreground">
-                      {t('organizationSettings.whitelabeling.appNameHint', 'Displayed in the header and browser title')}
+                      Replaces "Sheet Metal Connect" in the navigation
                     </p>
                   </div>
 
+                  {/* Custom Logo URL */}
                   <div className="space-y-2">
-                    <Label htmlFor="primary_color">
-                      {t('organizationSettings.whitelabeling.primaryColor', 'Primary Color')}
-                    </Label>
+                    <Label htmlFor="whitelabel_logo_url">Logo URL</Label>
                     <div className="flex gap-2">
                       <Input
-                        id="primary_color"
-                        type="color"
-                        value={formData.primary_color || '#0080ff'}
-                        onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
-                        className="w-14 h-10 p-1 cursor-pointer"
+                        id="whitelabel_logo_url"
+                        value={formData.whitelabel_logo_url}
+                        onChange={(e) => setFormData({ ...formData, whitelabel_logo_url: e.target.value })}
+                        placeholder="https://yourcompany.com/logo.png"
                       />
+                      {formData.whitelabel_logo_url && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setFormData({ ...formData, whitelabel_logo_url: '' })}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Recommended: 36x36px or larger, PNG or SVG format
+                    </p>
+                    {formData.whitelabel_logo_url && (
+                      <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/50">
+                        <span className="text-sm text-muted-foreground">Preview:</span>
+                        <img
+                          src={formData.whitelabel_logo_url}
+                          alt="Logo preview"
+                          className="h-9 w-9 rounded-lg object-contain"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Custom Primary Color */}
+                  <div className="space-y-2">
+                    <Label htmlFor="whitelabel_primary_color">Primary Brand Color</Label>
+                    <div className="flex gap-2 items-center">
                       <Input
-                        value={formData.primary_color}
-                        onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
-                        placeholder="#0080ff"
+                        id="whitelabel_primary_color"
+                        type="text"
+                        value={formData.whitelabel_primary_color}
+                        onChange={(e) => setFormData({ ...formData, whitelabel_primary_color: e.target.value })}
+                        placeholder="#1e90ff"
                         className="flex-1"
+                      />
+                      <input
+                        type="color"
+                        value={formData.whitelabel_primary_color || '#1e90ff'}
+                        onChange={(e) => setFormData({ ...formData, whitelabel_primary_color: e.target.value })}
+                        className="h-10 w-14 rounded-md border cursor-pointer"
                       />
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {t('organizationSettings.whitelabeling.primaryColorHint', 'Used for buttons, links, and accents')}
+                      Used for the logo badge if no custom logo is set
                     </p>
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="logo_url">
-                    <div className="flex items-center gap-2">
-                      <Image className="h-4 w-4" />
-                      {t('organizationSettings.whitelabeling.logoUrl', 'Logo URL')}
-                    </div>
-                  </Label>
-                  <Input
-                    id="logo_url"
-                    type="url"
-                    value={formData.logo_url}
-                    onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
-                    placeholder="https://example.com/logo.png"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {t('organizationSettings.whitelabeling.logoUrlHint', 'Recommended size: 128x128px. Supports PNG, JPG, SVG.')}
-                  </p>
-                  {formData.logo_url && (
-                    <div className="mt-2 p-3 bg-muted rounded-lg inline-flex items-center gap-3">
-                      <span className="text-sm text-muted-foreground">{t('organizationSettings.whitelabeling.preview', 'Preview:')}</span>
-                      <img
-                        src={formData.logo_url}
-                        alt="Logo preview"
-                        className="h-10 w-10 object-contain rounded"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
+                  <div className="pt-4">
+                    <Button
+                      type="button"
+                      onClick={() => handleSave()}
+                      disabled={saving}
+                      className="cta-button gap-2"
+                    >
+                      {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                      <Save className="h-4 w-4" />
+                      Save Branding
+                    </Button>
+                  </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="favicon_url">
-                    {t('organizationSettings.whitelabeling.faviconUrl', 'Favicon URL')}
-                  </Label>
-                  <Input
-                    id="favicon_url"
-                    type="url"
-                    value={formData.favicon_url}
-                    onChange={(e) => setFormData({ ...formData, favicon_url: e.target.value })}
-                    placeholder="https://example.com/favicon.ico"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {t('organizationSettings.whitelabeling.faviconUrlHint', 'Recommended: 32x32px ICO or PNG file.')}
-                  </p>
-                </div>
-
-                <div className="pt-4">
-                  <Button type="submit" disabled={saving} className="cta-button gap-2">
-                    {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                    <Save className="h-4 w-4" />
-                    {t('organizationSettings.saveChanges')}
-                  </Button>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </form>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-6 space-y-4">
+              <div className="mx-auto w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center">
+                <Crown className="h-6 w-6 text-amber-500" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Whitelabeling is available on Premium and Enterprise plans.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Customize the application with your company logo, name, and brand colors.
+                </p>
+              </div>
+              <Button variant="outline" className="gap-2" asChild>
+                <a href="/admin/my-plan">
+                  <Crown className="h-4 w-4" />
+                  View Plans
+                </a>
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Subscription Info (Read-only for now) */}
       {tenant && (

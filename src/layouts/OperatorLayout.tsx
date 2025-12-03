@@ -33,8 +33,8 @@ import CurrentlyTimingWidget from "@/components/operator/CurrentlyTimingWidget";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { AppTour } from "@/components/onboarding";
 import { ROUTES } from "@/routes";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import SessionTrackingBar from "@/components/SessionTrackingBar";
-import { BrandLogo } from "@/components/BrandLogo";
 
 interface OperatorLayoutProps {
   children: React.ReactNode;
@@ -69,11 +69,7 @@ export const OperatorLayout: React.FC<OperatorLayoutProps> = ({ children }) => {
       >
         <div className="flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6">
           {/* Logo/Brand */}
-          <BrandLogo
-            showText={true}
-            size="md"
-            textClassName="hidden sm:block text-foreground"
-          />
+          <BrandLogo size="md" showName={true} />
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-2">

@@ -4,7 +4,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { BrandLogo } from "@/components/BrandLogo";
 import {
   LogOut,
   LayoutDashboard,
@@ -50,6 +49,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ROUTES } from "@/routes";
 import { useTranslation } from "react-i18next";
 import AnimatedBackground from "@/components/AnimatedBackground";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import SessionTrackingBar from "@/components/SessionTrackingBar";
 
 interface AdminLayoutProps {
@@ -264,10 +264,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     <div className="flex h-full flex-col">
       {/* Logo/Brand */}
       <div className="flex h-16 items-center border-b px-6">
-        <BrandLogo
-          showText={!collapsed}
-          size="md"
-        />
+        <BrandLogo size="md" showName={!collapsed} />
       </div>
 
       {/* Navigation */}

@@ -1072,8 +1072,6 @@
     "managePlan": "Plan verwalten",
     "hostedPlans": "Gehostete Pläne",
     "hostedPlansDescription": "Wir hosten alles auf Hetzner (EU). Sie zahlen für Hosting, Rechenleistung und Support.",
-    "alternatives": "Alternativen",
-    "alternativesDescription": "Volle Kontrolle benötigt oder spezielle Anforderungen?",
     "free": {
       "name": "Kostenlos",
       "price": "€0",
@@ -1119,59 +1117,10 @@
         "Zusätzlicher Speicher auf Anfrage"
       ]
     },
-    "enterprise": {
-      "name": "Enterprise",
-      "price": "Auf Anfrage",
-      "description": "Ihre Infrastruktur, wir deployen",
-      "features": [
-        "Single-Tenant-Deployment",
-        "Ihr Netzwerk oder dediziert gehostet",
-        "Unbegrenzte Aufträge, Teile, Speicher",
-        "Vollständiger API, Webhooks, MCP Server",
-        "SSO/SAML-Authentifizierung",
-        "White-Label inklusive",
-        "Dedizierter Support-Kanal",
-        "Individuelles SLA bei Bedarf"
-      ],
-      "cta": "Angebot anfordern"
-    },
-    "selfHosted": {
-      "name": "Self-Hosted",
-      "price": "€0",
-      "description": "Ihr Setup, Sie sind auf sich gestellt",
-      "features": [
-        "Herunterladen und selbst betreiben",
-        "Unbegrenzte Aufträge, Teile, Speicher",
-        "Vollständiger API, Webhooks, MCP Server",
-        "Quellcode unter BSL 1.1",
-        "Community-Support über Docs",
-        "GitHub Discussions",
-        "Kein offizieller Support"
-      ],
-      "cta": "Auf GitHub ansehen",
-      "note": "Für technische Benutzer, datenschutzbewusste Unternehmen, oder diejenigen, die ohnehin nicht zahlen werden. Kostet uns nichts."
-    },
     "perMonth": "/Monat",
     "perYear": "/Jahr",
     "billedMonthly": "Monatlich abgerechnet",
-    "billedAnnually": "Jährlich abgerechnet",
-    "howItWorks": {
-      "title": "Wie es funktioniert",
-      "selfServiceTitle": "Self-Service",
-      "selfServiceDescription": "Keine Onboarding-Gespräche. Keine Berater. Melden Sie sich an, konfigurieren Sie Ihre Stufen und Materialien, verbinden Sie Ihre API, und los. Nur Dokumentation und E-Mail-Support (Pro+).",
-      "upgradeTitle": "Wie Sie upgraden",
-      "upgradeDescription": "Bereit für ein Upgrade? Klicken Sie auf \"Upgrade anfordern\", um office@sheetmetalconnect.com zu mailen. Wir melden uns mit den nächsten Schritten.",
-      "usageTitle": "Nutzung & Limits",
-      "usageDescription": "Überwachen Sie Ihre Nutzung auf Ihrer Mein Plan-Seite. Sie sehen Echtzeit-Statistiken und Warnungen, wenn Sie sich Limits nähern."
-    },
-    "securityBanner": {
-      "title": "Enterprise-Sicherheit",
-      "description": "Kostenlos, Pro & Premium: Multi-Tenant-Architektur mit vollständiger Datenisolierung pro Mandant. Row-Level-Security erzwingt Trennung auf Datenbankebene. Enterprise: Single-Tenant-Deployment auf Ihrer Infrastruktur. Alle Stufen umfassen HTTPS, gehashte Passwörter, verschlüsselte API-Schlüssel und signierte URLs für Dateizugriff."
-    },
-    "whyHosted": {
-      "title": "Warum für Hosting bezahlen?",
-      "description": "Die meisten Metallverarbeiter sind keine DevOps-Leute. Sie werden nicht selbst hosten. Sie zahlen für Hosting, Rechenleistung und Support — nicht für die Software selbst."
-    }
+    "billedAnnually": "Jährlich abgerechnet"
   },
   "myPlan": {
     "title": "Mein Plan",
@@ -1198,8 +1147,6 @@
     "managePayment": "Zahlungsmethode verwalten",
     "manufacturingCells": "Fertigungszellen",
     "mostPopular": "Am beliebtesten",
-    "multiTenant": "Multi-Mandant",
-    "multiTenantDescription": "Gemeinsame Infrastruktur mit dedizierter Datenisolierung",
     "nextBillingDate": "Nächstes Abrechnungsdatum",
     "noSalesCalls": "Keine Vertriebsgespräche erforderlich",
     "operators": "Bediener",
@@ -1212,8 +1159,6 @@
     "planFeatures": "Plan-Funktionen",
     "readyToUpgrade": "Bereit für ein Upgrade?",
     "requestUpgrade": "Upgrade anfordern",
-    "singleTenant": "Single-Tenant",
-    "singleTenantDescription": "Dedizierte Infrastruktur für maximale Kontrolle und Sicherheit",
     "status": "Status",
     "storage": "Speicher",
     "subtitle": "Verwalten Sie Ihr Abonnement und Ihre Nutzung",

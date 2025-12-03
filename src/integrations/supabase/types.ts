@@ -2272,6 +2272,11 @@ export type Database = {
           trial_ends_at: string | null
           updated_at: string | null
           vat_number: string | null
+          whitelabel_app_name: string | null
+          whitelabel_enabled: boolean | null
+          whitelabel_favicon_url: string | null
+          whitelabel_logo_url: string | null
+          whitelabel_primary_color: string | null
           working_days_mask: number | null
         }
         Insert: {
@@ -2313,6 +2318,11 @@ export type Database = {
           trial_ends_at?: string | null
           updated_at?: string | null
           vat_number?: string | null
+          whitelabel_app_name?: string | null
+          whitelabel_enabled?: boolean | null
+          whitelabel_favicon_url?: string | null
+          whitelabel_logo_url?: string | null
+          whitelabel_primary_color?: string | null
           working_days_mask?: number | null
         }
         Update: {
@@ -2354,6 +2364,11 @@ export type Database = {
           trial_ends_at?: string | null
           updated_at?: string | null
           vat_number?: string | null
+          whitelabel_app_name?: string | null
+          whitelabel_enabled?: boolean | null
+          whitelabel_favicon_url?: string | null
+          whitelabel_logo_url?: string | null
+          whitelabel_primary_color?: string | null
           working_days_mask?: number | null
         }
         Relationships: []
@@ -2870,6 +2885,11 @@ export type Database = {
           name: string
           plan: Database["public"]["Enums"]["subscription_plan"]
           status: Database["public"]["Enums"]["subscription_status"]
+          whitelabel_enabled: boolean
+          whitelabel_logo_url: string | null
+          whitelabel_app_name: string | null
+          whitelabel_primary_color: string | null
+          whitelabel_favicon_url: string | null
         }[]
       }
       get_tenant_quota: {

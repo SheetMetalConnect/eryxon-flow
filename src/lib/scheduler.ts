@@ -288,7 +288,7 @@ export class SchedulerService {
         });
 
         const allScheduled: ScheduledOperation[] = [];
-        let globalStartDate = this.findNextWorkingDay(startDate);
+        const globalStartDate = this.findNextWorkingDay(startDate);
 
         for (const job of sortedJobs) {
             const jobOps = operationsByJob.get(job.id) || [];
