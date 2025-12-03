@@ -140,8 +140,8 @@ Deno.serve(async (req: Request) => {
     // Build invitation URL
     const invitationUrl = `${appUrl}/accept-invitation/${invitation.token}`
 
-    // Get tenant info
-    const tenantInfo = profile.tenants as { name: string; company_name: string } | null
+    // Get tenant info (tenants is joined as a single object from profiles)
+    const tenantInfo = (profile as any).tenants as { name: string; company_name: string } | null
     const organizationName = tenantInfo?.company_name || tenantInfo?.name || 'your organization'
     const inviterName = profile.full_name || user.email || 'A team member'
     const roleDisplay = role === 'admin' ? 'Administrator' : 'Operator'

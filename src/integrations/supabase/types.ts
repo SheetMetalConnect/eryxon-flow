@@ -268,14 +268,19 @@ export type Database = {
           capacity_hours_per_day: number | null
           color: string | null
           created_at: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           description: string | null
           enforce_wip_limit: boolean | null
+          external_id: string | null
+          external_source: string | null
           icon_name: string | null
           id: string
           image_url: string | null
           name: string
           sequence: number
           show_capacity_warning: boolean | null
+          synced_at: string | null
           tenant_id: string
           updated_at: string | null
           wip_limit: number | null
@@ -286,14 +291,19 @@ export type Database = {
           capacity_hours_per_day?: number | null
           color?: string | null
           created_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           enforce_wip_limit?: boolean | null
+          external_id?: string | null
+          external_source?: string | null
           icon_name?: string | null
           id?: string
           image_url?: string | null
           name: string
           sequence: number
           show_capacity_warning?: boolean | null
+          synced_at?: string | null
           tenant_id: string
           updated_at?: string | null
           wip_limit?: number | null
@@ -304,20 +314,33 @@ export type Database = {
           capacity_hours_per_day?: number | null
           color?: string | null
           created_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           enforce_wip_limit?: boolean | null
+          external_id?: string | null
+          external_source?: string | null
           icon_name?: string | null
           id?: string
           image_url?: string | null
           name?: string
           sequence?: number
           show_capacity_warning?: boolean | null
+          synced_at?: string | null
           tenant_id?: string
           updated_at?: string | null
           wip_limit?: number | null
           wip_warning_threshold?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cells_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       factory_calendar: {
         Row: {
@@ -781,6 +804,8 @@ export type Database = {
           created_at: string | null
           current_cell_id: string | null
           customer: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           delivery_address: string | null
           delivery_city: string | null
           delivery_country: string | null
@@ -789,6 +814,8 @@ export type Database = {
           delivery_postal_code: string | null
           due_date: string | null
           due_date_override: string | null
+          external_id: string | null
+          external_source: string | null
           id: string
           job_number: string
           metadata: Json | null
@@ -796,6 +823,8 @@ export type Database = {
           package_count: number | null
           search_vector: unknown
           status: Database["public"]["Enums"]["job_status"] | null
+          sync_hash: string | null
+          synced_at: string | null
           tenant_id: string
           total_volume_m3: number | null
           total_weight_kg: number | null
@@ -805,6 +834,8 @@ export type Database = {
           created_at?: string | null
           current_cell_id?: string | null
           customer?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           delivery_address?: string | null
           delivery_city?: string | null
           delivery_country?: string | null
@@ -813,6 +844,8 @@ export type Database = {
           delivery_postal_code?: string | null
           due_date?: string | null
           due_date_override?: string | null
+          external_id?: string | null
+          external_source?: string | null
           id?: string
           job_number: string
           metadata?: Json | null
@@ -820,6 +853,8 @@ export type Database = {
           package_count?: number | null
           search_vector?: unknown
           status?: Database["public"]["Enums"]["job_status"] | null
+          sync_hash?: string | null
+          synced_at?: string | null
           tenant_id: string
           total_volume_m3?: number | null
           total_weight_kg?: number | null
@@ -829,6 +864,8 @@ export type Database = {
           created_at?: string | null
           current_cell_id?: string | null
           customer?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           delivery_address?: string | null
           delivery_city?: string | null
           delivery_country?: string | null
@@ -837,6 +874,8 @@ export type Database = {
           delivery_postal_code?: string | null
           due_date?: string | null
           due_date_override?: string | null
+          external_id?: string | null
+          external_source?: string | null
           id?: string
           job_number?: string
           metadata?: Json | null
@@ -844,6 +883,8 @@ export type Database = {
           package_count?: number | null
           search_vector?: unknown
           status?: Database["public"]["Enums"]["job_status"] | null
+          sync_hash?: string | null
+          synced_at?: string | null
           tenant_id?: string
           total_volume_m3?: number | null
           total_weight_kg?: number | null
@@ -855,6 +896,13 @@ export type Database = {
             columns: ["current_cell_id"]
             isOneToOne: false
             referencedRelation: "cells"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1448,7 +1496,11 @@ export type Database = {
           completed_at: string | null
           completion_percentage: number | null
           created_at: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           estimated_time: number
+          external_id: string | null
+          external_source: string | null
           icon_name: string | null
           id: string
           metadata: Json | null
@@ -1462,6 +1514,7 @@ export type Database = {
           sequence: number
           setup_time: number | null
           status: Database["public"]["Enums"]["task_status"] | null
+          synced_at: string | null
           tenant_id: string
           updated_at: string | null
           wait_time: number | null
@@ -1474,7 +1527,11 @@ export type Database = {
           completed_at?: string | null
           completion_percentage?: number | null
           created_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           estimated_time: number
+          external_id?: string | null
+          external_source?: string | null
           icon_name?: string | null
           id?: string
           metadata?: Json | null
@@ -1488,6 +1545,7 @@ export type Database = {
           sequence: number
           setup_time?: number | null
           status?: Database["public"]["Enums"]["task_status"] | null
+          synced_at?: string | null
           tenant_id: string
           updated_at?: string | null
           wait_time?: number | null
@@ -1500,7 +1558,11 @@ export type Database = {
           completed_at?: string | null
           completion_percentage?: number | null
           created_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           estimated_time?: number
+          external_id?: string | null
+          external_source?: string | null
           icon_name?: string | null
           id?: string
           metadata?: Json | null
@@ -1514,11 +1576,19 @@ export type Database = {
           sequence?: number
           setup_time?: number | null
           status?: Database["public"]["Enums"]["task_status"] | null
+          synced_at?: string | null
           tenant_id?: string
           updated_at?: string | null
           wait_time?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "operations_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tasks_assigned_operator_id_fkey"
             columns: ["assigned_operator_id"]
@@ -1547,7 +1617,11 @@ export type Database = {
           cnc_program_name: string | null
           created_at: string | null
           current_cell_id: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           drawing_no: string | null
+          external_id: string | null
+          external_source: string | null
           file_paths: string[] | null
           height_mm: number | null
           id: string
@@ -1566,6 +1640,8 @@ export type Database = {
           quantity: number | null
           search_vector: unknown
           status: Database["public"]["Enums"]["job_status"] | null
+          sync_hash: string | null
+          synced_at: string | null
           tenant_id: string
           updated_at: string | null
           weight_kg: number | null
@@ -1575,7 +1651,11 @@ export type Database = {
           cnc_program_name?: string | null
           created_at?: string | null
           current_cell_id?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           drawing_no?: string | null
+          external_id?: string | null
+          external_source?: string | null
           file_paths?: string[] | null
           height_mm?: number | null
           id?: string
@@ -1594,6 +1674,8 @@ export type Database = {
           quantity?: number | null
           search_vector?: unknown
           status?: Database["public"]["Enums"]["job_status"] | null
+          sync_hash?: string | null
+          synced_at?: string | null
           tenant_id: string
           updated_at?: string | null
           weight_kg?: number | null
@@ -1603,7 +1685,11 @@ export type Database = {
           cnc_program_name?: string | null
           created_at?: string | null
           current_cell_id?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           drawing_no?: string | null
+          external_id?: string | null
+          external_source?: string | null
           file_paths?: string[] | null
           height_mm?: number | null
           id?: string
@@ -1622,6 +1708,8 @@ export type Database = {
           quantity?: number | null
           search_vector?: unknown
           status?: Database["public"]["Enums"]["job_status"] | null
+          sync_hash?: string | null
+          synced_at?: string | null
           tenant_id?: string
           updated_at?: string | null
           weight_kg?: number | null
@@ -1633,6 +1721,13 @@ export type Database = {
             columns: ["current_cell_id"]
             isOneToOne: false
             referencedRelation: "cells"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parts_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -1721,13 +1816,18 @@ export type Database = {
         Row: {
           active: boolean | null
           created_at: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           description: string | null
+          external_id: string | null
+          external_source: string | null
           id: string
           identifier: string | null
           location: string | null
           metadata: Json | null
           name: string
           status: string | null
+          synced_at: string | null
           tenant_id: string
           type: string
           updated_at: string | null
@@ -1735,13 +1835,18 @@ export type Database = {
         Insert: {
           active?: boolean | null
           created_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
+          external_id?: string | null
+          external_source?: string | null
           id?: string
           identifier?: string | null
           location?: string | null
           metadata?: Json | null
           name: string
           status?: string | null
+          synced_at?: string | null
           tenant_id: string
           type: string
           updated_at?: string | null
@@ -1749,18 +1854,31 @@ export type Database = {
         Update: {
           active?: boolean | null
           created_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
+          external_id?: string | null
+          external_source?: string | null
           id?: string
           identifier?: string | null
           location?: string | null
           metadata?: Json | null
           name?: string
           status?: string | null
+          synced_at?: string | null
           tenant_id?: string
           type?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "resources_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scrap_reasons: {
         Row: {
@@ -2281,6 +2399,11 @@ export type Database = {
           trial_ends_at: string | null
           updated_at: string | null
           vat_number: string | null
+          whitelabel_app_name: string | null
+          whitelabel_enabled: boolean | null
+          whitelabel_favicon_url: string | null
+          whitelabel_logo_url: string | null
+          whitelabel_primary_color: string | null
           working_days_mask: number | null
         }
         Insert: {
@@ -2322,6 +2445,11 @@ export type Database = {
           trial_ends_at?: string | null
           updated_at?: string | null
           vat_number?: string | null
+          whitelabel_app_name?: string | null
+          whitelabel_enabled?: boolean | null
+          whitelabel_favicon_url?: string | null
+          whitelabel_logo_url?: string | null
+          whitelabel_primary_color?: string | null
           working_days_mask?: number | null
         }
         Update: {
@@ -2363,6 +2491,11 @@ export type Database = {
           trial_ends_at?: string | null
           updated_at?: string | null
           vat_number?: string | null
+          whitelabel_app_name?: string | null
+          whitelabel_enabled?: boolean | null
+          whitelabel_favicon_url?: string | null
+          whitelabel_logo_url?: string | null
+          whitelabel_primary_color?: string | null
           working_days_mask?: number | null
         }
         Relationships: []
@@ -2728,6 +2861,7 @@ export type Database = {
         Args: { p_tenant_id: string }
         Returns: string
       }
+      generate_sync_hash: { Args: { payload: Json }; Returns: string }
       get_activity_logs: {
         Args: {
           p_action?: string
@@ -3086,7 +3220,7 @@ export type Database = {
         | "in_transit"
         | "delivered"
         | "cancelled"
-      subscription_plan: "free" | "pro" | "premium"
+      subscription_plan: "free" | "pro" | "premium" | "enterprise"
       subscription_status: "active" | "cancelled" | "suspended" | "trial"
       task_status: "not_started" | "in_progress" | "completed" | "on_hold"
       vehicle_type:
@@ -3277,7 +3411,7 @@ export const Constants = {
         "delivered",
         "cancelled",
       ],
-      subscription_plan: ["free", "pro", "premium"],
+      subscription_plan: ["free", "pro", "premium", "enterprise"],
       subscription_status: ["active", "cancelled", "suspended", "trial"],
       task_status: ["not_started", "in_progress", "completed", "on_hold"],
       vehicle_type: [
