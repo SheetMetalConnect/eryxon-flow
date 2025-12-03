@@ -1866,5 +1866,21 @@
     "noScrapData": "Nog geen afvalgegevens geregistreerd",
     "usage": "Gebruik",
     "scrapped": "Afgekeurd"
+  },
+  "sessionTracking": {
+    "currentlyTracking": "Momenteel aan het bijhouden",
+    "task": "Taak",
+    "elapsed": "verstreken",
+    "paused": "Gepauzeerd",
+    "pause": "Pauzeren",
+    "resume": "Hervatten",
+    "stop": "Stoppen",
+    "stopped": "Tijdregistratie gestopt",
+    "stopFailed": "Tijdregistratie stoppen mislukt",
+    "pauseFailed": "Tijdregistratie pauzeren mislukt",
+    "resumed": "Tijdregistratie hervat",
+    "resumeFailed": "Tijdregistratie hervatten mislukt",
+    "minimize": "Minimaliseren",
+    "moreOperations": "meer bewerking(en)"
   }
 }
