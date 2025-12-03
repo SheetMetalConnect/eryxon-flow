@@ -814,6 +814,41 @@
     "searchIssues": "Search issues...",
     "noIssues": "No issues found"
   },
+  "qrm": {
+    "dashboardTitle": "QRM Production Dashboard",
+    "dashboardSubtitle": "Real-time metrics for Quick Response Manufacturing performance.",
+    "last30Days": "Last 30 Days",
+    "refresh": "Refresh",
+    "mct": {
+      "title": "MCT Trend (Manufacturing Critical-path Time)",
+      "days": "Days",
+      "target": "Target"
+    },
+    "otp": {
+      "title": "Delivery Reliability (OTP)",
+      "onTime": "On Time"
+    },
+    "queueTime": {
+      "title": "Queue Time by Cell",
+      "hours": "Hours"
+    },
+    "cycleTime": {
+      "title": "Operation Cycle Time",
+      "minutes": "Minutes"
+    },
+    "wipAge": {
+      "title": "WIP Age Distribution",
+      "jobs": "Jobs"
+    },
+    "issueRate": {
+      "title": "Issue Rate by Category",
+      "rate": "Rate (%)"
+    },
+    "throughput": {
+      "title": "Throughput by Cell",
+      "units": "Units/Day"
+    }
+  },
   "stages": {
     "title": "Stage Configuration",
     "manageStages": "Manage stage configurations and workflow",
@@ -1833,6 +1868,41 @@
     "hoursPerDay": "Hours per Day",
     "hoursUnit": "hours",
     "hoursPerDayHelp": "Maximum work hours this cell can process per day. Used by the scheduler to allocate operations."
+  },
+  "qrm": {
+    "dashboardTitle": "QRM Production Dashboard",
+    "dashboardSubtitle": "Real-time metrics for Quick Response Manufacturing performance.",
+    "last30Days": "Last 30 Days",
+    "refresh": "Refresh",
+    "mct": {
+      "title": "MCT Trend (Manufacturing Critical-path Time)",
+      "days": "Days",
+      "target": "Target"
+    },
+    "otp": {
+      "title": "Delivery Reliability (OTP)",
+      "onTime": "On Time"
+    },
+    "queueTime": {
+      "title": "Queue Time by Cell",
+      "hours": "Hours"
+    },
+    "cycleTime": {
+      "title": "Operation Cycle Time",
+      "minutes": "Minutes"
+    },
+    "wipAge": {
+      "title": "WIP Age Distribution",
+      "jobs": "Jobs"
+    },
+    "issueRate": {
+      "title": "Issue Rate by Category",
+      "rate": "Rate (%)"
+    },
+    "throughput": {
+      "title": "Throughput by Cell",
+      "units": "Units/Day"
+    }
   },
   "calendar": {
     "title": "Factory Calendar",
