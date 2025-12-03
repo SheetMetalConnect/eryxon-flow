@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import SwaggerUI from "swagger-ui-react";
 import "swagger-ui-react/swagger-ui.css";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +19,13 @@ import {
   Terminal,
   Zap,
   FileJson,
-  PlayCircle
+  PlayCircle,
+  Download,
+  FileCode,
+  Link as LinkIcon,
+  Package,
+  FileUp,
+  HelpCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -34,6 +41,102 @@ export default function ApiDocs() {
       title: "Copied!",
       description: `${label} copied to clipboard`,
     });
+  };
+
+  const downloadSpec = async (format: 'json' | 'yaml') => {
+    try {
+      const response = await fetch('/openapi.json');
+      const spec = await response.json();
+
+      let content: string;
+      let filename: string;
+      let mimeType: string;
+
+      if (format === 'json') {
+        content = JSON.stringify(spec, null, 2);
+        filename = 'eryxon-flow-openapi.json';
+        mimeType = 'application/json';
+      } else {
+        // Convert JSON to YAML (simple conversion)
+        content = jsonToYaml(spec);
+        filename = 'eryxon-flow-openapi.yaml';
+        mimeType = 'application/x-yaml';
+      }
+
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Downloaded!",
+        description: `OpenAPI spec downloaded as ${filename}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to download spec",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Simple JSON to YAML converter (handles common cases)
+  const jsonToYaml = (obj: any, indent = 0): string => {
+    const spaces = '  '.repeat(indent);
+    let result = '';
+
+    if (Array.isArray(obj)) {
+      for (const item of obj) {
+        if (typeof item === 'object' && item !== null) {
+          result += `${spaces}-\n${jsonToYaml(item, indent + 1).replace(/^  /, '')}`;
+        } else {
+          result += `${spaces}- ${formatYamlValue(item)}\n`;
+        }
+      }
+    } else if (typeof obj === 'object' && obj !== null) {
+      for (const [key, value] of Object.entries(obj)) {
+        if (typeof value === 'object' && value !== null) {
+          if (Array.isArray(value) && value.length === 0) {
+            result += `${spaces}${key}: []\n`;
+          } else if (typeof value === 'object' && Object.keys(value).length === 0) {
+            result += `${spaces}${key}: {}\n`;
+          } else {
+            result += `${spaces}${key}:\n${jsonToYaml(value, indent + 1)}`;
+          }
+        } else {
+          result += `${spaces}${key}: ${formatYamlValue(value)}\n`;
+        }
+      }
+    }
+
+    return result;
+  };
+
+  const formatYamlValue = (value: any): string => {
+    if (value === null) return 'null';
+    if (value === undefined) return '';
+    if (typeof value === 'boolean') return value ? 'true' : 'false';
+    if (typeof value === 'number') return String(value);
+    if (typeof value === 'string') {
+      if (value.includes('\n') || value.includes(':') || value.includes('#') ||
+          value.includes('"') || value.includes("'") || value.startsWith(' ') ||
+          value.endsWith(' ') || /^[\d.]+$/.test(value) || value === '') {
+        return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`;
+      }
+      return value;
+    }
+    return String(value);
+  };
+
+  const openInSwaggerEditor = () => {
+    const specUrl = encodeURIComponent(`${window.location.origin}/openapi.json`);
+    window.open(`https://editor.swagger.io/?url=${specUrl}`, '_blank');
   };
 
   const codeExamples = {
@@ -231,8 +334,114 @@ apiClient.post('/api-jobs', jobData)
           </CardContent>
         </Card>
 
+        {/* Download & Tools Section */}
+        <Card className="border-blue-500/30 bg-gradient-to-r from-blue-500/5 to-purple-500/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Download className="h-5 w-5 text-blue-500" />
+              OpenAPI Specification
+            </CardTitle>
+            <CardDescription>
+              Download the spec to use with Swagger, Postman, or generate client SDKs
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              {/* Download JSON */}
+              <Button
+                variant="outline"
+                className="h-auto py-3 flex flex-col items-center gap-2"
+                onClick={() => downloadSpec('json')}
+              >
+                <FileJson className="h-5 w-5 text-orange-500" />
+                <div className="text-center">
+                  <div className="font-semibold text-sm">Download JSON</div>
+                  <div className="text-xs text-muted-foreground">OpenAPI 3.0 spec</div>
+                </div>
+              </Button>
+
+              {/* Download YAML */}
+              <Button
+                variant="outline"
+                className="h-auto py-3 flex flex-col items-center gap-2"
+                onClick={() => downloadSpec('yaml')}
+              >
+                <FileCode className="h-5 w-5 text-green-500" />
+                <div className="text-center">
+                  <div className="font-semibold text-sm">Download YAML</div>
+                  <div className="text-xs text-muted-foreground">Human-readable format</div>
+                </div>
+              </Button>
+
+              {/* Open in Swagger Editor */}
+              <Button
+                variant="outline"
+                className="h-auto py-3 flex flex-col items-center gap-2"
+                onClick={openInSwaggerEditor}
+              >
+                <ExternalLink className="h-5 w-5 text-blue-500" />
+                <div className="text-center">
+                  <div className="font-semibold text-sm">Swagger Editor</div>
+                  <div className="text-xs text-muted-foreground">Edit & validate online</div>
+                </div>
+              </Button>
+
+              {/* Copy Spec URL */}
+              <Button
+                variant="outline"
+                className="h-auto py-3 flex flex-col items-center gap-2"
+                onClick={() => copyToClipboard(`${window.location.origin}/openapi.json`, "Spec URL")}
+              >
+                <LinkIcon className="h-5 w-5 text-purple-500" />
+                <div className="text-center">
+                  <div className="font-semibold text-sm">Copy Spec URL</div>
+                  <div className="text-xs text-muted-foreground">Direct link to JSON</div>
+                </div>
+              </Button>
+            </div>
+
+            {/* Postman Import Instructions */}
+            <div className="mt-4 p-3 rounded-lg bg-muted/50 border">
+              <div className="flex items-start gap-3">
+                <Package className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                <div className="space-y-1">
+                  <div className="font-semibold text-sm">Import to Postman</div>
+                  <div className="text-xs text-muted-foreground">
+                    Open Postman → Import → Link → Paste: <code className="px-1.5 py-0.5 bg-background rounded text-[10px]">{window.location.origin}/openapi.json</code>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs mt-1"
+                    onClick={() => copyToClipboard(`${window.location.origin}/openapi.json`, "Postman import URL")}
+                  >
+                    <Copy className="h-3 w-3 mr-1" />
+                    Copy URL
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Related Resources */}
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link to="/admin/data-import">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <FileUp className="h-4 w-4" />
+                  CSV Import Wizard
+                </Button>
+              </Link>
+              <Link to="/help">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <HelpCircle className="h-4 w-4" />
+                  Help & Guides
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
         <Tabs defaultValue="quickstart" className="space-y-4">
-          <TabsList className="grid grid-cols-3 w-full md:w-auto md:inline-grid">
+          <TabsList className="grid grid-cols-4 w-full md:w-auto md:inline-grid">
             <TabsTrigger value="quickstart" className="flex items-center gap-2">
               <Rocket className="h-4 w-4" />
               Quick Start
@@ -241,9 +450,13 @@ apiClient.post('/api-jobs', jobData)
               <Code2 className="h-4 w-4" />
               Code Examples
             </TabsTrigger>
+            <TabsTrigger value="tryit" className="flex items-center gap-2">
+              <PlayCircle className="h-4 w-4" />
+              Try It Out
+            </TabsTrigger>
             <TabsTrigger value="reference" className="flex items-center gap-2">
               <FileJson className="h-4 w-4" />
-              API Reference
+              Full Reference
             </TabsTrigger>
           </TabsList>
 
@@ -479,28 +692,121 @@ apiClient.post('/api-jobs', jobData)
             </Card>
           </TabsContent>
 
-          {/* API Reference Tab */}
+          {/* Try It Out Tab - Interactive Testing */}
+          <TabsContent value="tryit" className="space-y-4">
+            <Card className="border-green-500/30">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <PlayCircle className="h-5 w-5 text-green-500" />
+                  Interactive API Testing
+                </CardTitle>
+                <CardDescription>
+                  Test API endpoints directly in your browser. No additional tools required!
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Alert className="bg-green-500/10 border-green-500/30">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <AlertTitle>How to Test</AlertTitle>
+                  <AlertDescription className="space-y-2">
+                    <ol className="list-decimal list-inside text-sm space-y-1 mt-2">
+                      <li>Click the <strong>"Authorize"</strong> button below (green lock icon)</li>
+                      <li>Enter your API key: <code className="px-1 py-0.5 bg-muted rounded text-xs">ery_live_xxxxx</code></li>
+                      <li>Expand any endpoint and click <strong>"Try it out"</strong></li>
+                      <li>Fill in parameters and click <strong>"Execute"</strong></li>
+                    </ol>
+                  </AlertDescription>
+                </Alert>
+
+                {/* Quick Test Endpoints */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <Card className="p-4 space-y-2 bg-muted/30">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/30">GET</Badge>
+                      <span className="font-mono text-sm">/api-stages</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Best endpoint to test your API key. Returns all production stages.</p>
+                  </Card>
+                  <Card className="p-4 space-y-2 bg-muted/30">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/30">GET</Badge>
+                      <span className="font-mono text-sm">/api-jobs</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">List all jobs with filtering. Test pagination with limit/offset.</p>
+                  </Card>
+                  <Card className="p-4 space-y-2 bg-muted/30">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">POST</Badge>
+                      <span className="font-mono text-sm">/api-jobs</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Create a new job. Includes example request body.</p>
+                  </Card>
+                  <Card className="p-4 space-y-2 bg-muted/30">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="bg-purple-500/10 text-purple-500 border-purple-500/30">PUT</Badge>
+                      <span className="font-mono text-sm">/api-jobs/sync</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">ERP sync endpoint. Upsert by external_id.</p>
+                  </Card>
+                </div>
+
+                <Separator />
+
+                <div className="swagger-container">
+                  <SwaggerUI
+                    url="/openapi.json"
+                    deepLinking={true}
+                    displayRequestDuration={true}
+                    filter={true}
+                    showExtensions={true}
+                    showCommonExtensions={true}
+                    persistAuthorization={true}
+                    tryItOutEnabled={true}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* API Reference Tab - Full Spec */}
           <TabsContent value="reference" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileJson className="h-5 w-5" />
-                  Interactive API Reference
+                  Complete API Reference
                 </CardTitle>
                 <CardDescription>
-                  Explore all endpoints and test them directly in your browser.
-                  Click "Authorize" and enter your API key to start testing.
+                  Full OpenAPI specification with all endpoints, schemas, and examples.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Alert className="mb-4">
-                  <PlayCircle className="h-4 w-4" />
-                  <AlertTitle>Try it out!</AlertTitle>
-                  <AlertDescription>
-                    Click "Authorize" in the panel below, enter your API key (with the <code>ery_live_</code> or <code>ery_test_</code> prefix),
-                    then click any endpoint to test it directly.
-                  </AlertDescription>
-                </Alert>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => downloadSpec('json')}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Download JSON
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => downloadSpec('yaml')}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Download YAML
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={openInSwaggerEditor}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Open in Swagger Editor
+                  </Button>
+                </div>
                 <div className="swagger-container">
                   <SwaggerUI
                     url="/openapi.json"
