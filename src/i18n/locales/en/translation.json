@@ -1477,7 +1477,34 @@
     "you": "YOU",
     "other": "Other",
     "youAreClockedOn": "You are currently clocked on this operation",
-    "bulletCard": "Rush Order - Bullet Card"
+    "bulletCard": "Rush Order - Bullet Card",
+    "resources": {
+      "title": "Required Resources",
+      "noResources": "No resources required",
+      "loading": "Loading resources...",
+      "resource": "resource",
+      "resources": "resources",
+      "location": "Location",
+      "status": {
+        "available": "Available",
+        "inUse": "In Use",
+        "maintenance": "Maintenance",
+        "retired": "Retired"
+      }
+    },
+    "assembly": {
+      "title": "Assembly Dependencies",
+      "warning": "Components Not Ready",
+      "warningDesc": "Some components are not yet complete",
+      "allComplete": "All Components Ready",
+      "componentsPending": "{{count}} component(s) pending",
+      "checkComponents": "Check components before starting assembly",
+      "partStatus": {
+        "notStarted": "Not Started",
+        "inProgress": "In Progress",
+        "completed": "Completed"
+      }
+    }
   },
   "activityMonitor": {
     "title": "Activity Monitor",
