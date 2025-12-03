@@ -20,6 +20,9 @@ export interface OperationWithDetails {
     parent_part_id: string | null;
     file_paths: string[] | null;
     image_paths: string[] | null;
+    drawing_no: string | null;
+    cnc_program_name: string | null;
+    is_bullet_card: boolean | null;
     job: {
       id: string;
       job_number: string;
@@ -57,6 +60,9 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
         parent_part_id,
         file_paths,
         image_paths,
+        drawing_no,
+        cnc_program_name,
+        is_bullet_card,
         job:jobs!inner(
           id,
           job_number,

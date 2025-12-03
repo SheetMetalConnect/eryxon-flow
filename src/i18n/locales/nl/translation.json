@@ -759,7 +759,17 @@
       "downloadFailedDescription": "Kan afbeelding niet downloaden. Probeer het opnieuw.",
       "storageUsed": "Opslag gebruikt",
       "addFailed": "Toevoegen van afbeeldingen mislukt"
-    }
+    },
+    "manufacturingInfo": "Productie Informatie",
+    "drawingNo": "Tekeningnummer",
+    "drawingNoPlaceholder": "bijv. TEK-2024-001",
+    "cncProgramName": "CNC Programmanaam",
+    "cncProgramPlaceholder": "bijv. PROG_12345",
+    "bulletCard": "Bullet Card (Spoedorder)",
+    "bulletCardDesc": "Markeer dit onderdeel als prioriteit spoedorder (QRM terminologie)",
+    "qrCodePreview": "QR Code Voorbeeld",
+    "qrCodeDesc": "Scan deze QR code bij de CNC machine om het programma te laden",
+    "fieldsUpdated": "Onderdeel velden succesvol bijgewerkt"
   },
   "operations": {
     "title": "Bewerkingen",
@@ -1605,7 +1615,8 @@
     "jobsFound": "opdrachten gevonden",
     "you": "JIJ",
     "other": "Ander",
-    "youAreClockedOn": "Je bent momenteel ingeklokt op deze bewerking"
+    "youAreClockedOn": "Je bent momenteel ingeklokt op deze bewerking",
+    "bulletCard": "Spoedorder - Bullet Card"
   },
   "activityMonitor": {
     "title": "Activiteitenmonitor",

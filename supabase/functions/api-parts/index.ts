@@ -151,6 +151,9 @@ async function handleGetParts(
       material_lot,
       material_supplier,
       material_cert_number,
+      drawing_no,
+      cnc_program_name,
+      is_bullet_card,
       job:jobs (
         id,
         job_number,
@@ -357,6 +360,9 @@ async function handleCreatePart(
       file_paths: body.file_paths,
       notes: body.notes || body.description,
       metadata: body.metadata,
+      drawing_no: body.drawing_no,
+      cnc_program_name: body.cnc_program_name,
+      is_bullet_card: body.is_bullet_card ?? false,
       status: "not_started",
     })
     .select()
@@ -404,6 +410,9 @@ async function handleUpdatePart(
     "material_cert_number",
     "current_cell_id",
     "material_id",
+    "drawing_no",
+    "cnc_program_name",
+    "is_bullet_card",
   ];
   const updates: any = {};
 

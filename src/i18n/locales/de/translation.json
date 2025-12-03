@@ -489,7 +489,17 @@
       "downloadFailedDescription": "Bild kann nicht heruntergeladen werden. Bitte versuchen Sie es erneut.",
       "storageUsed": "Speicher verwendet",
       "addFailed": "Hinzufügen von Bildern fehlgeschlagen"
-    }
+    },
+    "manufacturingInfo": "Fertigungsinformationen",
+    "drawingNo": "Zeichnungsnummer",
+    "drawingNoPlaceholder": "z.B. ZNR-2024-001",
+    "cncProgramName": "CNC-Programmname",
+    "cncProgramPlaceholder": "z.B. PROG_12345",
+    "bulletCard": "Bullet Card (Eilauftrag)",
+    "bulletCardDesc": "Dieses Teil als Prioritäts-Eilauftrag markieren (QRM-Terminologie)",
+    "qrCodePreview": "QR-Code Vorschau",
+    "qrCodeDesc": "Scannen Sie diesen QR-Code an der CNC-Maschine um das Programm zu laden",
+    "fieldsUpdated": "Teilefelder erfolgreich aktualisiert"
   },
   "operations": {
     "title": "Arbeitsgänge",
@@ -1332,7 +1342,11 @@
     "inBuffer": "Im Puffer",
     "expected": "Erwartet",
     "noActiveJobs": "Keine aktiven Aufträge",
-    "jobsFound": "Aufträge gefunden"
+    "jobsFound": "Aufträge gefunden",
+    "you": "SIE",
+    "other": "Andere",
+    "youAreClockedOn": "Sie sind derzeit bei diesem Arbeitsgang eingestempelt",
+    "bulletCard": "Eilauftrag - Bullet Card"
   },
   "activityMonitor": {
     "title": "Aktivitätsmonitor",

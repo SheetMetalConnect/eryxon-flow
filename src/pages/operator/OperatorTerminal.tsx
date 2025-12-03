@@ -203,6 +203,10 @@ export default function OperatorTerminal() {
             cellColor: op.cell.color || "#3b82f6",
             cellId: op.cell_id,
             currentSequence: op.sequence,
+            // New part fields
+            drawingNo: op.part.drawing_no,
+            cncProgramName: op.part.cnc_program_name,
+            isBulletCard: op.part.is_bullet_card,
         };
     };
 

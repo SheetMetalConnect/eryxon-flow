@@ -4,8 +4,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Play, Pause, Square, FileText, Box, AlertTriangle, CheckCircle2, Clock, Circle, Maximize2, X, ChevronDown, ChevronRight, PackageCheck } from 'lucide-react';
-import { STEPViewer } from '@/components/STEPViewer'; // Reusing existing viewer
+import { Play, Pause, Square, FileText, Box, AlertTriangle, CheckCircle2, Clock, Circle, Maximize2, X, ChevronDown, ChevronRight, PackageCheck, Zap } from 'lucide-react';
+import { CncProgramQrCode } from './CncProgramQrCode';
+import { STEPViewer } from '@/components/STEPViewer';
 import { PDFViewer } from '@/components/PDFViewer';
 import { OperationWithDetails } from '@/lib/database';
 import { cn } from '@/lib/utils';
@@ -18,6 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { IconDisplay } from '@/components/ui/icon-picker';
+import { useTranslation } from 'react-i18next';
 
 interface Substep {
     id: string;
@@ -41,6 +43,7 @@ interface DetailPanelProps {
 }
 
 export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl, operations = [], onDataRefresh }: DetailPanelProps) {
+    const { t } = useTranslation();
     const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
     const [isQuantityModalOpen, setIsQuantityModalOpen] = useState(false);
     const [fullscreenViewer, setFullscreenViewer] = useState<'3d' | 'pdf' | null>(null);
@@ -122,10 +125,21 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
 
             {/* Header Card - Compact */}
             <div className="p-3 border-b border-border bg-card">
+                {/* Bullet Card Alert Banner */}
+                {job.isBulletCard && (
+                    <div className="mb-2 -mx-3 -mt-3 px-3 py-1.5 bg-destructive/10 border-b border-destructive/30 flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-destructive animate-pulse" />
+                        <span className="text-xs font-bold text-destructive uppercase tracking-wider">{t('terminal.bulletCard')}</span>
+                    </div>
+                )}
+
                 <div className="flex justify-between items-start mb-1.5">
                     <div className="min-w-0 flex-1">
                         <h2 className="text-lg font-bold text-foreground truncate">{job.jobCode}</h2>
                         <p className="text-muted-foreground text-xs truncate">{job.description}</p>
+                        {job.drawingNo && (
+                            <p className="text-muted-foreground text-[10px]">{t('parts.drawingNo')}: {job.drawingNo}</p>
+                        )}
                     </div>
                     <div className="text-right shrink-0 ml-2">
                         <div className="text-base font-mono font-bold text-primary">{job.quantity} <span className="text-xs text-muted-foreground">pcs</span></div>
@@ -205,6 +219,22 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                     />
                 )}
             </div>
+
+            {/* CNC Program QR Code - Compact inline display */}
+            {job.cncProgramName && (
+                <div className="px-3 py-2 border-b border-border flex items-center gap-3">
+                    <div className="bg-white p-1.5 rounded border border-border shrink-0">
+                        <CncProgramQrCode
+                            programName={job.cncProgramName}
+                            size={56}
+                        />
+                    </div>
+                    <div className="min-w-0">
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{t('parts.cncProgramName')}</div>
+                        <p className="font-mono font-semibold text-sm text-foreground truncate">{job.cncProgramName}</p>
+                    </div>
+                </div>
+            )}
 
             {/* Main Content Tabs - Compact */}
             <div className="flex-1 min-h-0">
