@@ -145,7 +145,8 @@ export default function FactoryCalendar() {
     setLoading(false);
   };
 
-  const isDefaultWorkingDay = (date: Date): boolean => {
+  const isDefaultWorkingDay = (date: Date | null | undefined): boolean => {
+    if (!date || isNaN(date.getTime())) return false;
     // JavaScript: 0=Sunday, 1=Monday, ..., 6=Saturday
     // Our mask: Mon=1, Tue=2, Wed=4, Thu=8, Fri=16, Sat=32, Sun=64
     const jsDay = getDay(date);
@@ -153,12 +154,14 @@ export default function FactoryCalendar() {
     return (workingDaysMask & maskBits[jsDay]) !== 0;
   };
 
-  const getCalendarDay = (date: Date): CalendarDay | null => {
+  const getCalendarDay = (date: Date | null | undefined): CalendarDay | null => {
+    if (!date || isNaN(date.getTime())) return null;
     const dateStr = format(date, 'yyyy-MM-dd');
     return calendarDays.find(d => d.date === dateStr) || null;
   };
 
-  const getDayType = (date: Date): string => {
+  const getDayType = (date: Date | null | undefined): string => {
+    if (!date || isNaN(date.getTime())) return 'closure';
     const calDay = getCalendarDay(date);
     if (calDay) return calDay.day_type;
     return isDefaultWorkingDay(date) ? 'working' : 'closure';
@@ -630,7 +633,7 @@ export default function FactoryCalendar() {
           </div>
 
           <DialogFooter className="flex gap-2 pt-4">
-            {getCalendarDay(selectedDate!)?.id && (
+            {selectedDate && getCalendarDay(selectedDate)?.id && (
               <Button
                 variant="destructive"
                 onClick={handleDeleteClick}
