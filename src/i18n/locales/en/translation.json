@@ -1740,6 +1740,17 @@
         "inProgress": "In Progress",
         "completed": "Completed"
       }
+    },
+    "flowProgress": {
+      "loading": "Loading routing...",
+      "step": "Step",
+      "noLimit": "No limit",
+      "atCapacity": "At capacity",
+      "nearCapacity": "Near capacity",
+      "available": "Available",
+      "unknown": "Unknown",
+      "finalStep": "Final step",
+      "cannotProceed": "Cannot proceed - next cell at capacity"
     }
   },
   "activityMonitor": {

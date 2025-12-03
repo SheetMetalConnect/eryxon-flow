@@ -1497,6 +1497,17 @@
         "inProgress": "In Bearbeitung",
         "completed": "Abgeschlossen"
       }
+    },
+    "flowProgress": {
+      "loading": "Route wird geladen...",
+      "step": "Schritt",
+      "noLimit": "Kein Limit",
+      "atCapacity": "Kapazität erreicht",
+      "nearCapacity": "Fast voll",
+      "available": "Verfügbar",
+      "unknown": "Unbekannt",
+      "finalStep": "Letzter Schritt",
+      "cannotProceed": "Kann nicht fortfahren - nächste Zelle auf Kapazität"
     }
   },
   "activityMonitor": {
