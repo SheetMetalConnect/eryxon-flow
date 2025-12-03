@@ -21,7 +21,7 @@ interface Tenant {
   id: string;
   name: string;
   company_name: string | null;
-  plan: "free" | "pro" | "premium";
+  plan: "free" | "pro" | "premium" | "enterprise";
   status: "active" | "cancelled" | "suspended" | "trial";
   user_count: number;
   created_at: string;

@@ -41,7 +41,7 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
             <td className="px-2 py-1.5 text-sm font-medium text-foreground whitespace-nowrap">
                 <div className="flex items-center gap-2">
                     {job.isBulletCard && (
-                        <Zap className="w-3.5 h-3.5 text-destructive shrink-0" title={t('terminal.bulletCard')} />
+                        <Zap className="w-3.5 h-3.5 text-destructive shrink-0" />
                     )}
                     {job.isCurrentUserClocked && (
                         <Badge
