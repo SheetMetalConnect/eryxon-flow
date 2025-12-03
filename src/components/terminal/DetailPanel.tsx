@@ -2,8 +2,6 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { TerminalJob } from '@/types/terminal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { Play, Pause, Square, FileText, Box, AlertTriangle, CheckCircle2, Clock, Circle, Maximize2, X, ChevronDown, ChevronRight, PackageCheck, Zap } from 'lucide-react';
 import { CncProgramQrCode } from './CncProgramQrCode';
 import { STEPViewer } from '@/components/STEPViewer';
