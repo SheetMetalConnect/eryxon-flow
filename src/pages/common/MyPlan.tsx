@@ -34,8 +34,8 @@ const pricingTiers = [
       "250 parts per month",
       "500 MB storage",
       "Limited API access",
-      "No webhooks",
-      "No MCP server",
+      "Webhooks included",
+      "MCP server included",
       "Docs only",
     ],
   },
@@ -44,22 +44,22 @@ const pricingTiers = [
     name: "Pro",
     price: "€97",
     popular: true,
-    description: "Real usage, my infra, email support.",
+    description: "Real usage, email support.",
     features: [
       "500 jobs per month",
       "5,000 parts per month",
       "10 GB storage",
       "Full API access",
-      "Webhooks included",
-      "MCP server access",
-      "Email support",
+      "Webhooks",
+      "MCP server",
+      "Email support (no SLA)",
     ],
   },
   {
     id: "premium",
     name: "Premium",
     price: "€497",
-    description: "High limits, SSO, priority support. Still my infra.",
+    description: "High limits, SSO, priority support.",
     features: [
       "Fair use (high limits)",
       "100 GB storage",
@@ -68,21 +68,6 @@ const pricingTiers = [
       "SSO/SAML authentication",
       "White-label (optional)",
       "Priority email support",
-    ],
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    price: "Contact",
-    description: "Your network, I deploy, custom scope.",
-    features: [
-      "Unlimited jobs & parts",
-      "Your infrastructure",
-      "Your Supabase instance",
-      "SSO/SAML included",
-      "White-label included",
-      "Dedicated support",
-      "Custom SLA",
     ],
   },
 ];
@@ -384,20 +369,6 @@ export const MyPlan: React.FC = () => {
         </div>
       </div>
 
-      {/* Security & Architecture Notice */}
-      <Alert className="mt-6 bg-primary/10 border-primary/30">
-        <Info className="h-4 w-4" />
-        <AlertTitle className="font-semibold">
-          {currentPlan === "premium"
-            ? t("myPlan.singleTenant")
-            : t("myPlan.multiTenant")}
-        </AlertTitle>
-        <AlertDescription className="text-sm text-muted-foreground">
-          {currentPlan === "premium"
-            ? t("myPlan.singleTenantDescription")
-            : t("myPlan.multiTenantDescription")}
-        </AlertDescription>
-      </Alert>
     </div>
   );
 };
