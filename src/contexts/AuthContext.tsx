@@ -23,8 +23,14 @@ interface TenantInfo {
   id: string;
   name: string;
   company_name: string | null;
-  plan: "free" | "pro" | "premium";
+  plan: "free" | "pro" | "premium" | "enterprise";
   status: "active" | "cancelled" | "suspended" | "trial";
+  // Whitelabeling fields (premium feature)
+  whitelabel_enabled: boolean;
+  whitelabel_logo_url: string | null;
+  whitelabel_app_name: string | null;
+  whitelabel_primary_color: string | null;
+  whitelabel_favicon_url: string | null;
 }
 
 interface AuthContextType {

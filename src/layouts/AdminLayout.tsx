@@ -50,6 +50,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ROUTES } from "@/routes";
 import { useTranslation } from "react-i18next";
 import AnimatedBackground from "@/components/AnimatedBackground";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import SessionTrackingBar from "@/components/SessionTrackingBar";
 
 interface AdminLayoutProps {
@@ -264,14 +265,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     <div className="flex h-full flex-col">
       {/* Logo/Brand */}
       <div className="flex h-16 items-center border-b px-6">
-        <div className="flex items-center gap-2">
-          <Factory className="h-8 w-8 text-primary" strokeWidth={1.5} />
-          {!collapsed && (
-            <span className="text-lg font-bold hero-title">
-              Eryxon Flow
-            </span>
-          )}
-        </div>
+        <BrandLogo size="md" showName={!collapsed} />
       </div>
 
       {/* Navigation */}
