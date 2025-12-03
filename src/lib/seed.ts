@@ -19,5 +19,6 @@ export async function seedDemoData(tenantId: string) {
     includeTimeEntries: true,
     includeQuantityRecords: true,
     includeIssues: true,
+    includeCalendar: true,
   });
 }

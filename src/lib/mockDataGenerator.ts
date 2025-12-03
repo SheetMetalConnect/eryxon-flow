@@ -10,6 +10,7 @@ export interface MockDataOptions {
   includeTimeEntries?: boolean;
   includeQuantityRecords?: boolean;
   includeIssues?: boolean;
+  includeCalendar?: boolean;
 }
 
 /**
@@ -28,6 +29,7 @@ export async function generateMockData(
     includeTimeEntries: true,
     includeQuantityRecords: true,
     includeIssues: true,
+    includeCalendar: true,
   },
 ): Promise<{ success: boolean; error?: string }> {
   try {
@@ -157,6 +159,72 @@ export async function generateMockData(
       });
 
       console.log("✓ Created 6 QRM cells with WIP limits");
+    }
+
+    // Step 1.5: Seed Dutch holidays and factory calendar
+    if (options.includeCalendar) {
+      // Dutch holidays for 2025 and 2026
+      // Including Christmas/New Year closure period
+      const dutchHolidays = [
+        // 2025 Holidays
+        { date: '2025-01-01', day_type: 'holiday', name: 'Nieuwjaarsdag', capacity_multiplier: 0 },
+        { date: '2025-04-18', day_type: 'holiday', name: 'Goede Vrijdag', capacity_multiplier: 0 },
+        { date: '2025-04-20', day_type: 'holiday', name: 'Eerste Paasdag', capacity_multiplier: 0 },
+        { date: '2025-04-21', day_type: 'holiday', name: 'Tweede Paasdag', capacity_multiplier: 0 },
+        { date: '2025-04-26', day_type: 'holiday', name: 'Koningsdag', capacity_multiplier: 0, notes: 'Koningsdag valt op zondag, gevierd op zaterdag' },
+        { date: '2025-05-05', day_type: 'holiday', name: 'Bevrijdingsdag', capacity_multiplier: 0 },
+        { date: '2025-05-29', day_type: 'holiday', name: 'Hemelvaartsdag', capacity_multiplier: 0 },
+        { date: '2025-05-30', day_type: 'closure', name: 'Brugdag Hemelvaart', capacity_multiplier: 0, notes: 'Fabriek gesloten - brugdag' },
+        { date: '2025-06-08', day_type: 'holiday', name: 'Eerste Pinksterdag', capacity_multiplier: 0 },
+        { date: '2025-06-09', day_type: 'holiday', name: 'Tweede Pinksterdag', capacity_multiplier: 0 },
+        // Christmas / New Year period 2025-2026
+        { date: '2025-12-24', day_type: 'half_day', name: 'Kerstavond', capacity_multiplier: 0.5, opening_time: '08:00', closing_time: '12:00', notes: 'Fabriek sluit om 12:00' },
+        { date: '2025-12-25', day_type: 'holiday', name: 'Eerste Kerstdag', capacity_multiplier: 0 },
+        { date: '2025-12-26', day_type: 'holiday', name: 'Tweede Kerstdag', capacity_multiplier: 0 },
+        { date: '2025-12-29', day_type: 'closure', name: 'Kerstvakantie', capacity_multiplier: 0, notes: 'Fabriek gesloten tussen Kerst en Nieuwjaar' },
+        { date: '2025-12-30', day_type: 'closure', name: 'Kerstvakantie', capacity_multiplier: 0, notes: 'Fabriek gesloten tussen Kerst en Nieuwjaar' },
+        { date: '2025-12-31', day_type: 'half_day', name: 'Oudejaarsdag', capacity_multiplier: 0.5, opening_time: '08:00', closing_time: '12:00', notes: 'Fabriek sluit om 12:00' },
+        // 2026 Holidays
+        { date: '2026-01-01', day_type: 'holiday', name: 'Nieuwjaarsdag', capacity_multiplier: 0 },
+        { date: '2026-01-02', day_type: 'closure', name: 'Brugdag Nieuwjaar', capacity_multiplier: 0, notes: 'Fabriek gesloten - brugdag' },
+        { date: '2026-04-03', day_type: 'holiday', name: 'Goede Vrijdag', capacity_multiplier: 0 },
+        { date: '2026-04-05', day_type: 'holiday', name: 'Eerste Paasdag', capacity_multiplier: 0 },
+        { date: '2026-04-06', day_type: 'holiday', name: 'Tweede Paasdag', capacity_multiplier: 0 },
+        { date: '2026-04-27', day_type: 'holiday', name: 'Koningsdag', capacity_multiplier: 0 },
+        { date: '2026-05-05', day_type: 'holiday', name: 'Bevrijdingsdag', capacity_multiplier: 0 },
+        { date: '2026-05-14', day_type: 'holiday', name: 'Hemelvaartsdag', capacity_multiplier: 0 },
+        { date: '2026-05-15', day_type: 'closure', name: 'Brugdag Hemelvaart', capacity_multiplier: 0, notes: 'Fabriek gesloten - brugdag' },
+        { date: '2026-05-24', day_type: 'holiday', name: 'Eerste Pinksterdag', capacity_multiplier: 0 },
+        { date: '2026-05-25', day_type: 'holiday', name: 'Tweede Pinksterdag', capacity_multiplier: 0 },
+        { date: '2026-12-24', day_type: 'half_day', name: 'Kerstavond', capacity_multiplier: 0.5, opening_time: '08:00', closing_time: '12:00', notes: 'Fabriek sluit om 12:00' },
+        { date: '2026-12-25', day_type: 'holiday', name: 'Eerste Kerstdag', capacity_multiplier: 0 },
+        { date: '2026-12-26', day_type: 'holiday', name: 'Tweede Kerstdag', capacity_multiplier: 0 },
+        { date: '2026-12-28', day_type: 'closure', name: 'Kerstvakantie', capacity_multiplier: 0, notes: 'Fabriek gesloten tussen Kerst en Nieuwjaar' },
+        { date: '2026-12-29', day_type: 'closure', name: 'Kerstvakantie', capacity_multiplier: 0, notes: 'Fabriek gesloten tussen Kerst en Nieuwjaar' },
+        { date: '2026-12-30', day_type: 'closure', name: 'Kerstvakantie', capacity_multiplier: 0, notes: 'Fabriek gesloten tussen Kerst en Nieuwjaar' },
+        { date: '2026-12-31', day_type: 'half_day', name: 'Oudejaarsdag', capacity_multiplier: 0.5, opening_time: '08:00', closing_time: '12:00', notes: 'Fabriek sluit om 12:00' },
+      ];
+
+      const calendarEntries = dutchHolidays.map(holiday => ({
+        tenant_id: tenantId,
+        date: holiday.date,
+        day_type: holiday.day_type,
+        name: holiday.name,
+        opening_time: (holiday as any).opening_time || null,
+        closing_time: (holiday as any).closing_time || null,
+        capacity_multiplier: holiday.capacity_multiplier,
+        notes: (holiday as any).notes || null,
+      }));
+
+      const { error: calendarError } = await supabase
+        .from("factory_calendar")
+        .upsert(calendarEntries, { onConflict: 'tenant_id,date' });
+
+      if (calendarError) {
+        console.warn("Calendar seeding warning:", calendarError);
+      } else {
+        console.log(`✓ Seeded ${calendarEntries.length} Dutch holidays and factory closures`);
+      }
     }
 
     // Step 2: Create 6 Dutch operator profiles for shop floor use
@@ -2123,6 +2191,13 @@ export async function clearMockData(
       ]);
     if (profilesErr)
       console.warn("Demo operators deletion warning:", profilesErr);
+
+    // 17. Delete factory calendar entries (has tenant_id)
+    const { error: calendarErr } = await supabase
+      .from("factory_calendar")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (calendarErr) console.warn("Calendar deletion warning:", calendarErr);
 
     // Disable demo mode flag now that data is cleared
     const { error: demoModeError } = await supabase.rpc("disable_demo_mode", {
