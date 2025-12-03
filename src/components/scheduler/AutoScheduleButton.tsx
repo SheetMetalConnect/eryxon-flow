@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SchedulerService, CalendarDay } from "@/lib/scheduler";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 import { addMonths, format } from "date-fns";
 
 export function AutoScheduleButton() {
@@ -13,6 +14,7 @@ export function AutoScheduleButton() {
     const { toast } = useToast();
     const { t } = useTranslation();
     const { tenant } = useAuth();
+    const queryClient = useQueryClient();
 
     const handleSchedule = async () => {
         setLoading(true);
@@ -125,8 +127,14 @@ export function AutoScheduleButton() {
                 description: t("capacity.operationsScheduled", { count: updatedCount }),
             });
 
-            // Reload to show updated data
-            window.location.reload();
+            // Invalidate relevant queries to refresh data without full page reload
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["day-allocations"] }),
+                queryClient.invalidateQueries({ queryKey: ["operations-capacity"] }),
+                queryClient.invalidateQueries({ queryKey: ["factory-calendar"] }),
+                queryClient.invalidateQueries({ queryKey: ["operations"] }),
+                queryClient.invalidateQueries({ queryKey: ["jobs"] }),
+            ]);
 
         } catch (error: any) {
             console.error("Scheduling error:", error);

@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, startOfWeek, isSameDay, parseISO, getDay, isWithinInterval } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Loader2, CalendarOff, Sun } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarOff } from "lucide-react";
 import { AutoScheduleButton } from "@/components/scheduler/AutoScheduleButton";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,6 +15,8 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { CapacityMatrixSkeleton, CellSkeleton } from "@/components/capacity/CapacityMatrixSkeleton";
+import { CellScheduleDialog } from "@/components/capacity/CellScheduleDialog";
 
 interface CalendarDay {
     date: string;
@@ -31,25 +33,136 @@ interface DayAllocation {
     hours_allocated: number;
     operation?: {
         id: string;
-        name: string | null;
+        operation_name: string | null;
         part?: {
-            name: string;
+            part_number: string;
             job?: {
                 job_number: string;
-                customer_name: string | null;
+                customer: string | null;
             };
         };
     };
 }
 
+// Memoized cell component for better performance
+const CapacityCell = memo(function CapacityCell({
+    cellId,
+    cellName,
+    date,
+    hours,
+    percent,
+    capacity,
+    dayInfo,
+    allocations,
+    operations,
+    onClick,
+}: {
+    cellId: string;
+    cellName: string;
+    date: Date;
+    hours: number;
+    percent: number;
+    capacity: number;
+    dayInfo: { type: string; label: string | null; multiplier: number };
+    allocations: DayAllocation[];
+    operations: any[];
+    onClick: () => void;
+}) {
+    const items = allocations.length > 0 ? allocations : operations;
+
+    const getLoadColor = (percent: number, dayType: string) => {
+        if (dayType === 'holiday' || dayType === 'closure') {
+            return "bg-gray-200 text-gray-500 border-gray-300";
+        }
+        if (dayType === 'weekend') {
+            return "bg-gray-100 text-gray-400 border-gray-200";
+        }
+        if (percent === 0) return "bg-gray-50 text-gray-400 border-gray-200";
+        if (percent <= 50) return "bg-green-100 text-green-700 border-green-200";
+        if (percent <= 80) return "bg-yellow-100 text-yellow-700 border-yellow-200";
+        if (percent <= 100) return "bg-orange-100 text-orange-700 border-orange-200";
+        return "bg-red-100 text-red-700 border-red-200";
+    };
+
+    return (
+        <td className="p-1 text-center border-r last:border-r-0">
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <div
+                        className={`rounded-md p-2 text-xs font-medium transition-all cursor-pointer border hover:ring-2 hover:ring-primary/20 hover:scale-105 ${getLoadColor(percent, dayInfo.type)}`}
+                        onClick={onClick}
+                    >
+                        {dayInfo.type === 'holiday' || dayInfo.type === 'closure' ? (
+                            <div className="flex flex-col items-center">
+                                <CalendarOff className="h-4 w-4" />
+                                <span className="text-[10px]">Closed</span>
+                            </div>
+                        ) : dayInfo.type === 'weekend' ? (
+                            <div className="flex flex-col items-center">
+                                <span className="text-[10px]">Weekend</span>
+                            </div>
+                        ) : (
+                            <>
+                                {Math.round(percent)}%
+                                <div className="text-[10px] opacity-80">
+                                    {hours.toFixed(1)}h / {capacity}h
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                    <div className="space-y-1">
+                        <div className="font-semibold">
+                            {cellName} - {format(date, "MMM d")}
+                        </div>
+                        {dayInfo.label && (
+                            <div className="text-red-500">{dayInfo.label}</div>
+                        )}
+                        {capacity > 0 && (
+                            <div>
+                                {hours.toFixed(1)}h scheduled / {capacity}h capacity
+                            </div>
+                        )}
+                        {items.length > 0 && (
+                            <div className="border-t pt-1 mt-1">
+                                <div className="text-xs font-medium mb-1">Operations:</div>
+                                {items.slice(0, 3).map((item: any, idx: number) => (
+                                    <div key={idx} className="text-xs">
+                                        • {item.operation?.part?.job?.job_number || item.part?.job?.job_number || 'Job'}:
+                                        {' '}{item.operation?.operation_name || item.name || 'Operation'}
+                                        {item.hours_allocated ? ` (${item.hours_allocated}h)` : ''}
+                                    </div>
+                                ))}
+                                {items.length > 3 && (
+                                    <div className="text-xs text-muted-foreground">
+                                        +{items.length - 3} more
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        <div className="text-xs text-primary mt-2 font-medium">
+                            Click to manage schedule →
+                        </div>
+                    </div>
+                </TooltipContent>
+            </Tooltip>
+        </td>
+    );
+});
+
 export default function CapacityMatrix() {
     const { t } = useTranslation();
     const { tenant } = useAuth();
     const [startDate, setStartDate] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
+    const [selectedCell, setSelectedCell] = useState<any>(null);
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const [dialogOpen, setDialogOpen] = useState(false);
 
     // Working days mask from tenant (default Mon-Fri = 31)
     const workingDaysMask = (tenant as any)?.working_days_mask ?? 31;
 
+    // Fetch cells first (usually cached, fast)
     const { data: cells, isLoading: cellsLoading } = useQuery({
         queryKey: ["cells-capacity"],
         queryFn: async () => {
@@ -60,10 +173,12 @@ export default function CapacityMatrix() {
             if (error) throw error;
             return data as any[];
         },
+        staleTime: 5 * 60 * 1000, // 5 minutes
     });
 
+    // Fetch calendar data
     const { data: calendarDays, isLoading: calendarLoading } = useQuery({
-        queryKey: ["factory-calendar", startDate],
+        queryKey: ["factory-calendar", format(startDate, 'yyyy-MM-dd')],
         queryFn: async () => {
             const endDate = addDays(startDate, 14);
             const { data, error } = await supabase
@@ -74,10 +189,12 @@ export default function CapacityMatrix() {
             if (error) throw error;
             return (data || []) as CalendarDay[];
         },
+        staleTime: 60 * 1000, // 1 minute
     });
 
-    const { data: dayAllocations, isLoading: allocationsLoading } = useQuery({
-        queryKey: ["day-allocations", startDate],
+    // Fetch day allocations (main data source)
+    const { data: dayAllocations, isLoading: allocationsLoading, isFetching: allocationsFetching } = useQuery({
+        queryKey: ["day-allocations", format(startDate, 'yyyy-MM-dd')],
         queryFn: async () => {
             const endDate = addDays(startDate, 14);
             const { data, error } = await supabase
@@ -96,15 +213,15 @@ export default function CapacityMatrix() {
                 .gte("date", format(startDate, 'yyyy-MM-dd'))
                 .lte("date", format(endDate, 'yyyy-MM-dd'));
             if (error) throw error;
-            return (data || []) as any;
+            return (data || []) as DayAllocation[];
         },
+        staleTime: 30 * 1000, // 30 seconds
     });
 
     // Fallback: fetch operations with planned dates if no allocations
     const { data: operations, isLoading: opsLoading } = useQuery({
-        queryKey: ["operations-capacity", startDate],
+        queryKey: ["operations-capacity", format(startDate, 'yyyy-MM-dd')],
         queryFn: async () => {
-            const endDate = addDays(startDate, 14);
             const { data, error } = await supabase
                 .from("operations")
                 .select(`
@@ -115,42 +232,43 @@ export default function CapacityMatrix() {
                         job:jobs(job_number, customer_name)
                     )
                 `)
-                .not("status", "eq", "completed")
+                .neq("status", "completed")
                 .not("planned_start", "is", null);
 
             if (error) throw error;
             return data as any[];
         },
+        staleTime: 60 * 1000, // 1 minute
+        enabled: !dayAllocations || dayAllocations.length === 0, // Only fetch if no allocations
     });
 
     const daysToShow = 14;
-    const dates = Array.from({ length: daysToShow }, (_, i) => addDays(startDate, i));
+    const dates = useMemo(
+        () => Array.from({ length: daysToShow }, (_, i) => addDays(startDate, i)),
+        [startDate]
+    );
 
     // Check if a date is a default working day
-    const isDefaultWorkingDay = (date: Date): boolean => {
+    const isDefaultWorkingDay = useCallback((date: Date): boolean => {
         const jsDay = getDay(date);
         const maskBits = [64, 1, 2, 4, 8, 16, 32];
         return (workingDaysMask & maskBits[jsDay]) !== 0;
-    };
+    }, [workingDaysMask]);
+
+    // Memoized calendar lookup map
+    const calendarMap = useMemo(() => {
+        const map = new Map<string, CalendarDay>();
+        calendarDays?.forEach(day => map.set(day.date, day));
+        return map;
+    }, [calendarDays]);
 
     // Get calendar entry for a date
-    const getCalendarEntry = (date: Date): CalendarDay | null => {
-        if (!calendarDays) return null;
-        const dateStr = format(date, 'yyyy-MM-dd');
-        return calendarDays.find(d => d.date === dateStr) || null;
-    };
-
-    // Check if it's a working day
-    const isWorkingDay = (date: Date): boolean => {
-        const entry = getCalendarEntry(date);
-        if (entry) {
-            return entry.day_type === 'working' || entry.day_type === 'half_day';
-        }
-        return isDefaultWorkingDay(date);
-    };
+    const getCalendarEntry = useCallback((date: Date): CalendarDay | null => {
+        return calendarMap.get(format(date, 'yyyy-MM-dd')) || null;
+    }, [calendarMap]);
 
     // Get day type and label
-    const getDayInfo = (date: Date): { type: string; label: string | null; multiplier: number } => {
+    const getDayInfo = useCallback((date: Date): { type: string; label: string | null; multiplier: number } => {
         const entry = getCalendarEntry(date);
         if (entry) {
             return {
@@ -163,17 +281,26 @@ export default function CapacityMatrix() {
             return { type: 'weekend', label: null, multiplier: 0 };
         }
         return { type: 'working', label: null, multiplier: 1 };
-    };
+    }, [getCalendarEntry, isDefaultWorkingDay]);
+
+    // Memoized allocations by cell and date
+    const allocationsByCellDate = useMemo(() => {
+        const map = new Map<string, DayAllocation[]>();
+        dayAllocations?.forEach(a => {
+            const key = `${a.cell_id}-${a.date}`;
+            if (!map.has(key)) map.set(key, []);
+            map.get(key)!.push(a);
+        });
+        return map;
+    }, [dayAllocations]);
 
     // Get allocations for a cell on a date
-    const getAllocationsForCellDate = (cellId: string, date: Date): DayAllocation[] => {
-        if (!dayAllocations) return [];
-        const dateStr = format(date, 'yyyy-MM-dd');
-        return dayAllocations.filter(a => a.cell_id === cellId && a.date === dateStr);
-    };
+    const getAllocationsForCellDate = useCallback((cellId: string, date: Date): DayAllocation[] => {
+        return allocationsByCellDate.get(`${cellId}-${format(date, 'yyyy-MM-dd')}`) || [];
+    }, [allocationsByCellDate]);
 
     // Get operations for a cell on a date (fallback when no allocations)
-    const getOperationsForCellDate = (cellId: string, date: Date): any[] => {
+    const getOperationsForCellDate = useCallback((cellId: string, date: Date): any[] => {
         if (!operations) return [];
         return operations.filter(op => {
             if (op.cell_id !== cellId) return false;
@@ -186,13 +313,10 @@ export default function CapacityMatrix() {
                    isSameDay(opStart, date) ||
                    isSameDay(opEnd, date);
         });
-    };
+    }, [operations]);
 
     // Calculate load for a cell on a date
-    const getCellLoad = (cellId: string, date: Date) => {
-        if (!cells) return { hours: 0, percent: 0, capacity: 0 };
-
-        const cell = cells.find(c => c.id === cellId);
+    const getCellLoad = useCallback((cellId: string, date: Date, cell: any) => {
         if (!cell) return { hours: 0, percent: 0, capacity: 0 };
 
         const dayInfo = getDayInfo(date);
@@ -215,31 +339,33 @@ export default function CapacityMatrix() {
         const percent = capacity > 0 ? (totalHours / capacity) * 100 : 0;
 
         return { hours: totalHours, percent, capacity };
-    };
+    }, [getDayInfo, getAllocationsForCellDate, getOperationsForCellDate]);
 
-    const getLoadColor = (percent: number, dayType: string) => {
-        if (dayType === 'holiday' || dayType === 'closure') {
-            return "bg-gray-200 text-gray-500 border-gray-300";
-        }
-        if (dayType === 'weekend') {
-            return "bg-gray-100 text-gray-400 border-gray-200";
-        }
-        if (percent === 0) return "bg-gray-50 text-gray-400";
-        if (percent <= 50) return "bg-green-100 text-green-700 border-green-200";
-        if (percent <= 80) return "bg-yellow-100 text-yellow-700 border-yellow-200";
-        if (percent <= 100) return "bg-orange-100 text-orange-700 border-orange-200";
-        return "bg-red-100 text-red-700 border-red-200"; // Over capacity
-    };
+    const handleCellClick = useCallback((cell: any, date: Date) => {
+        setSelectedCell(cell);
+        setSelectedDate(date);
+        setDialogOpen(true);
+    }, []);
 
-    const isLoading = cellsLoading || calendarLoading || allocationsLoading || opsLoading;
+    const handleDialogDateChange = useCallback((newDate: Date) => {
+        setSelectedDate(newDate);
+    }, []);
 
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-screen">
-                <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-        );
+    // Show skeleton during initial load
+    const isInitialLoading = cellsLoading;
+
+    if (isInitialLoading) {
+        return <CapacityMatrixSkeleton rowCount={cells?.length || 6} />;
     }
+
+    // Get dialog data
+    const dialogAllocations = selectedCell && selectedDate
+        ? getAllocationsForCellDate(selectedCell.id, selectedDate)
+        : [];
+    const dialogDayInfo = selectedDate ? getDayInfo(selectedDate) : { type: 'working', label: null, multiplier: 1 };
+    const dialogLoad = selectedCell && selectedDate
+        ? getCellLoad(selectedCell.id, selectedDate, selectedCell)
+        : { hours: 0, percent: 0, capacity: 0 };
 
     return (
         <div className="p-6 space-y-6">
@@ -290,11 +416,11 @@ export default function CapacityMatrix() {
                 <CardHeader className="pb-2">
                     <CardTitle className="text-lg">{t("capacity.workloadOverview", "Workload Overview")}</CardTitle>
                     <CardDescription>
-                        Click on a cell to see scheduled operations
+                        Click on a cell to view and manage scheduled operations
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
-                    <TooltipProvider>
+                    <TooltipProvider delayDuration={200}>
                         <table className="w-full border-collapse">
                             <thead>
                                 <tr>
@@ -337,72 +463,35 @@ export default function CapacityMatrix() {
                                             </div>
                                         </td>
                                         {dates.map(date => {
-                                            const { hours, percent, capacity } = getCellLoad(cell.id, date);
                                             const dayInfo = getDayInfo(date);
+
+                                            // Show skeleton while allocations are loading/refetching
+                                            if (allocationsLoading) {
+                                                return (
+                                                    <td key={date.toISOString()} className="p-1 text-center border-r last:border-r-0">
+                                                        <CellSkeleton />
+                                                    </td>
+                                                );
+                                            }
+
+                                            const { hours, percent, capacity } = getCellLoad(cell.id, date, cell);
                                             const allocations = getAllocationsForCellDate(cell.id, date);
                                             const opsOnDate = getOperationsForCellDate(cell.id, date);
-                                            const items = allocations.length > 0 ? allocations : opsOnDate;
 
                                             return (
-                                                <td key={date.toISOString()} className="p-1 text-center border-r last:border-r-0">
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <div
-                                                                className={`rounded-md p-2 text-xs font-medium transition-colors cursor-pointer border ${getLoadColor(percent, dayInfo.type)}`}
-                                                            >
-                                                                {dayInfo.type === 'holiday' || dayInfo.type === 'closure' ? (
-                                                                    <div className="flex flex-col items-center">
-                                                                        <CalendarOff className="h-4 w-4" />
-                                                                        <span className="text-[10px]">Closed</span>
-                                                                    </div>
-                                                                ) : dayInfo.type === 'weekend' ? (
-                                                                    <div className="flex flex-col items-center">
-                                                                        <span className="text-[10px]">Weekend</span>
-                                                                    </div>
-                                                                ) : (
-                                                                    <>
-                                                                        {Math.round(percent)}%
-                                                                        <div className="text-[10px] opacity-80">
-                                                                            {hours.toFixed(1)}h / {capacity}h
-                                                                        </div>
-                                                                    </>
-                                                                )}
-                                                            </div>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent side="bottom" className="max-w-xs">
-                                                            <div className="space-y-1">
-                                                                <div className="font-semibold">
-                                                                    {cell.name} - {format(date, "MMM d")}
-                                                                </div>
-                                                                {dayInfo.label && (
-                                                                    <div className="text-red-500">{dayInfo.label}</div>
-                                                                )}
-                                                                {capacity > 0 && (
-                                                                    <div>
-                                                                        {hours.toFixed(1)}h scheduled / {capacity}h capacity
-                                                                    </div>
-                                                                )}
-                                                                {items.length > 0 && (
-                                                                    <div className="border-t pt-1 mt-1">
-                                                                        <div className="text-xs font-medium mb-1">Operations:</div>
-                                                                        {items.slice(0, 5).map((item: any, idx: number) => (
-                                                                            <div key={idx} className="text-xs">
-                                                                                • {item.operation?.part?.job?.job_number || item.part?.job?.job_number || 'Job'}:
-                                                                                {' '}{item.operation?.name || item.name || 'Operation'}
-                                                                                {item.hours_allocated ? ` (${item.hours_allocated}h)` : ''}
-                                                                            </div>
-                                                                        ))}
-                                                                        {items.length > 5 && (
-                                                                            <div className="text-xs text-muted-foreground">
-                                                                                +{items.length - 5} more
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </td>
+                                                <CapacityCell
+                                                    key={date.toISOString()}
+                                                    cellId={cell.id}
+                                                    cellName={cell.name}
+                                                    date={date}
+                                                    hours={hours}
+                                                    percent={percent}
+                                                    capacity={capacity}
+                                                    dayInfo={dayInfo}
+                                                    allocations={allocations}
+                                                    operations={opsOnDate}
+                                                    onClick={() => handleCellClick(cell, date)}
+                                                />
                                             );
                                         })}
                                     </tr>
@@ -412,6 +501,20 @@ export default function CapacityMatrix() {
                     </TooltipProvider>
                 </CardContent>
             </Card>
+
+            {/* Schedule Dialog */}
+            <CellScheduleDialog
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+                cell={selectedCell}
+                date={selectedDate}
+                allocations={dialogAllocations}
+                dayInfo={dialogDayInfo}
+                capacity={dialogLoad.capacity}
+                totalHours={dialogLoad.hours}
+                onDateChange={handleDialogDateChange}
+                startDate={startDate}
+            />
         </div>
     );
 }
