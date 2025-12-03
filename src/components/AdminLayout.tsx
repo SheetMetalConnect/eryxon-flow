@@ -49,12 +49,14 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { McpServerStatus } from "@/components/admin/McpServerStatus";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useTranslation } from "react-i18next";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
+  const { t } = useTranslation();
   const { profile, tenant, signOut } = useAuth();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
@@ -72,50 +74,50 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const mainNavItems = [
     {
       path: "/admin/dashboard",
-      label: "Dashboard",
+      label: t("navigation.dashboard"),
       icon: LayoutDashboard,
       exact: true,
     },
     {
       path: "/admin/jobs",
-      label: "Jobs",
+      label: t("navigation.jobs"),
       icon: Briefcase,
       activePaths: ["/admin/jobs"],
     },
     {
       path: "/admin/parts",
-      label: "Parts",
+      label: t("navigation.parts"),
       icon: Package,
       exact: true,
     },
     {
       path: "/admin/operations",
-      label: "Operations",
+      label: t("navigation.operations"),
       icon: Layers,
       exact: true,
     },
     {
       path: "/admin/assignments",
-      label: "Assignments",
+      label: t("navigation.assignments"),
       icon: UserCheck,
       exact: true,
     },
     {
       path: "/admin/issues",
-      label: "Issues",
+      label: t("navigation.issues"),
       icon: AlertCircle,
       exact: true,
       badge: pendingIssuesCount,
     },
     {
       path: "/admin/activity",
-      label: "Activity",
+      label: t("navigation.activity"),
       icon: Clock,
       exact: true,
     },
     {
       path: "/admin/capacity",
-      label: "Capacity",
+      label: t("navigation.capacity"),
       icon: CalendarClock,
       exact: true,
     },
@@ -125,25 +127,25 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const operatorViewItems = [
     {
       path: "/operator/work-queue",
-      label: "Work Queue",
+      label: t("navigation.workQueue"),
       icon: ListTodo,
       exact: true,
     },
     {
       path: "/operator/view",
-      label: "Operator View",
+      label: t("navigation.operatorView"),
       icon: Eye,
       exact: true,
     },
     {
       path: "/operator/my-activity",
-      label: "My Activity",
+      label: t("navigation.myActivity"),
       icon: Activity,
       exact: true,
     },
     {
       path: "/operator/my-issues",
-      label: "My Issues",
+      label: t("navigation.myIssues"),
       icon: Flag,
       exact: true,
     },
@@ -153,37 +155,37 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const configNavItems = [
     {
       path: "/admin/config/stages",
-      label: "Cells",
+      label: t("navigation.cells"),
       icon: Database,
       exact: true,
     },
     {
       path: "/admin/config/calendar",
-      label: "Calendar",
+      label: t("navigation.calendar"),
       icon: CalendarClock,
       exact: true,
     },
     {
       path: "/admin/config/materials",
-      label: "Materials",
+      label: t("navigation.materials"),
       icon: Wrench,
       exact: true,
     },
     {
       path: "/admin/config/resources",
-      label: "Resources",
+      label: t("navigation.resources"),
       icon: Wrench,
       exact: true,
     },
     {
       path: "/admin/config/users",
-      label: "Users",
+      label: t("navigation.users"),
       icon: Users,
       exact: true,
     },
     {
       path: "/admin/config/steps-templates",
-      label: "Templates",
+      label: t("navigation.templates"),
       icon: FileText,
       exact: true,
     },
@@ -193,43 +195,43 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const integrationsNavItems = [
     {
       path: "/admin/integrations",
-      label: "App Store",
+      label: t("navigation.appStore"),
       icon: Store,
       exact: true,
     },
     {
       path: "/admin/config/api-keys",
-      label: "API Keys",
+      label: t("navigation.apiKeys"),
       icon: Key,
       exact: true,
     },
     {
       path: "/admin/config/mcp-keys",
-      label: "MCP Keys",
+      label: t("navigation.mcpKeys"),
       icon: Key,
       exact: true,
     },
     {
       path: "/admin/config/mcp-server",
-      label: "MCP Server",
+      label: t("navigation.mcpServer"),
       icon: Code,
       exact: true,
     },
     {
       path: "/admin/config/webhooks",
-      label: "Webhooks",
+      label: t("navigation.webhooks"),
       icon: Webhook,
       exact: true,
     },
     {
       path: "/admin/data-export",
-      label: "Data Export",
+      label: t("navigation.dataExport"),
       icon: FileDown,
       exact: true,
     },
     {
       path: "/admin/api-docs",
-      label: "API Docs",
+      label: t("navigation.apiDocs"),
       icon: Code,
       exact: true,
     },
@@ -239,31 +241,31 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const accountNavItems = [
     {
       path: "/admin/my-plan",
-      label: "My Plan",
+      label: t("navigation.myPlan"),
       icon: CreditCard,
       exact: true,
     },
     {
       path: "/admin/pricing",
-      label: "Pricing",
+      label: t("navigation.pricing"),
       icon: DollarSign,
       exact: true,
     },
     {
       path: "/admin/settings",
-      label: "Settings",
+      label: t("navigation.settings"),
       icon: Settings,
       exact: true,
     },
     {
       path: "/admin/help",
-      label: "Help",
+      label: t("navigation.help"),
       icon: HelpCircle,
       exact: true,
     },
     {
       path: "/admin/about",
-      label: "About",
+      label: t("navigation.about"),
       icon: Info,
       exact: true,
     },
@@ -337,7 +339,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 className="w-full justify-start gap-2 font-medium text-muted-foreground h-7 text-xs"
               >
                 <Eye className="h-3.5 w-3.5" />
-                <span className="flex-1 text-left">Operator Views</span>
+                <span className="flex-1 text-left">{t("navigation.operatorViews")}</span>
                 <ChevronDown
                   className={cn(
                     "h-3 w-3 transition-transform",
@@ -384,7 +386,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 className="w-full justify-start gap-2 font-medium text-muted-foreground h-7 text-xs"
               >
                 <Settings className="h-3.5 w-3.5" />
-                <span className="flex-1 text-left">Configuration</span>
+                <span className="flex-1 text-left">{t("navigation.configuration")}</span>
                 <ChevronDown
                   className={cn(
                     "h-3 w-3 transition-transform",
@@ -431,7 +433,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 className="w-full justify-start gap-2 font-medium text-muted-foreground h-7 text-xs"
               >
                 <Plug className="h-3.5 w-3.5" />
-                <span className="flex-1 text-left">Integrations</span>
+                <span className="flex-1 text-left">{t("navigation.integrations")}</span>
                 <ChevronDown
                   className={cn(
                     "h-3 w-3 transition-transform",
@@ -478,7 +480,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 className="w-full justify-start gap-2 font-medium text-muted-foreground h-7 text-xs"
               >
                 <CreditCard className="h-3.5 w-3.5" />
-                <span className="flex-1 text-left">Account</span>
+                <span className="flex-1 text-left">{t("navigation.account")}</span>
                 <ChevronDown
                   className={cn(
                     "h-3 w-3 transition-transform",
@@ -558,7 +560,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           )}
         >
           <LogOut className="h-3.5 w-3.5" />
-          {!collapsed && "Sign Out"}
+          {!collapsed && t("auth.signOut")}
         </Button>
       </div>
 

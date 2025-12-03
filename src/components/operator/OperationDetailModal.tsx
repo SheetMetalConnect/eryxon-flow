@@ -7,6 +7,12 @@ import {
 } from "@/lib/database";
 import { useAuth } from "@/contexts/AuthContext";
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -14,7 +20,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,11 +42,11 @@ import {
   FileText,
   Eye,
   Wrench,
+  X,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import MetadataDisplay from "@/components/ui/MetadataDisplay";
 import { EnhancedMetadataDisplay } from "@/components/ui/EnhancedMetadataDisplay";
 import IssueForm from "./IssueForm";
 import { STEPViewer } from "@/components/STEPViewer";
@@ -257,380 +262,263 @@ export default function OperationDetailModal({
   const isOvertime = remainingTime < 0;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-2xl">
-            {operation.operation_name}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-6">
-          {/* Job & Part Info */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <div className="text-sm text-muted-foreground mb-1">
-                {t("operations.job")}
-              </div>
-              <div className="font-semibold">
-                {operation.part.job.job_number}
-              </div>
-              {operation.part.job.customer && (
-                <div className="text-sm text-muted-foreground">
-                  {operation.part.job.customer}
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-[600px] p-0 flex flex-col glass-card border-l border-white/10"
+      >
+        {/* Fixed Header */}
+        <div className="flex-shrink-0 border-b border-white/10 bg-background/95 backdrop-blur-sm">
+          <SheetHeader className="p-4">
+            <div className="flex items-start justify-between gap-3 pr-8">
+              <div className="flex-1 min-w-0">
+                <SheetTitle className="text-xl font-semibold truncate">
+                  {operation.operation_name}
+                </SheetTitle>
+                <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                  <span className="font-medium">{t("operations.job")} {operation.part.job.job_number}</span>
+                  <span>•</span>
+                  <span>{operation.part.part_number}</span>
                 </div>
-              )}
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground mb-1">
-                {t("operations.part")}
-              </div>
-              <div className="font-semibold">{operation.part.part_number}</div>
-              <div className="text-sm text-muted-foreground">
-                {operation.part.material} • {t("operations.qty")}:{" "}
-                {operation.part.quantity}
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Cell & Status */}
-          <div className="flex items-center gap-4">
-            <div>
-              <div className="text-sm text-muted-foreground mb-1">
-                {t("operations.cell")}
               </div>
               <Badge
                 style={{
-                  backgroundColor:
-                    operation.cell.color || "hsl(var(--cell-default))",
+                  backgroundColor: operation.cell.color || "hsl(var(--cell-default))",
                   color: "white",
                 }}
+                className="shrink-0"
               >
                 {operation.cell.name}
               </Badge>
             </div>
-            <div>
-              <div className="text-sm text-muted-foreground mb-1">
-                {t("operations.statusLabel")}
-              </div>
-              <Badge variant="outline" className="capitalize">
-                {operation.status.replace("_", " ")}
-              </Badge>
-            </div>
-          </div>
+          </SheetHeader>
 
-          {/* Time Info */}
-          <div className="grid grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
-            <div>
-              <div className="text-xs text-muted-foreground mb-1">
-                {t("operations.estimated")}
-              </div>
-              <div className="text-lg font-semibold flex items-center gap-1">
-                <Clock className="h-4 w-4" />
+          {/* Time Info Bar */}
+          <div className="grid grid-cols-3 gap-2 px-4 pb-3">
+            <div className="bg-muted/50 rounded-md p-2 text-center">
+              <div className="text-xs text-muted-foreground">{t("operations.estimated")}</div>
+              <div className="text-sm font-semibold flex items-center justify-center gap-1">
+                <Clock className="h-3 w-3" />
                 {operation.estimated_time}m
               </div>
             </div>
-            <div>
-              <div className="text-xs text-muted-foreground mb-1">
-                {t("operations.actual")}
-              </div>
-              <div className="text-lg font-semibold">
-                {operation.actual_time || 0}m
-              </div>
+            <div className="bg-muted/50 rounded-md p-2 text-center">
+              <div className="text-xs text-muted-foreground">{t("operations.actual")}</div>
+              <div className="text-sm font-semibold">{operation.actual_time || 0}m</div>
             </div>
-            <div>
-              <div className="text-xs text-muted-foreground mb-1">
-                {t("operations.remaining")}
-              </div>
-              <div
-                className={`text-lg font-semibold ${
-                  isOvertime ? "text-destructive" : ""
-                }`}
-              >
-                {isOvertime ? "+" : ""}
-                {Math.abs(remainingTime)}m
+            <div className="bg-muted/50 rounded-md p-2 text-center">
+              <div className="text-xs text-muted-foreground">{t("operations.remaining")}</div>
+              <div className={`text-sm font-semibold ${isOvertime ? "text-destructive" : ""}`}>
+                {isOvertime ? "+" : ""}{Math.abs(remainingTime)}m
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Due Date */}
-          {dueDate && (
-            <div>
-              <div className="text-sm text-muted-foreground mb-1">
-                {t("operations.dueDate")}
-              </div>
-              <div className="font-medium">
-                {format(new Date(dueDate), "PPP")}
-              </div>
-            </div>
-          )}
-
-          {/* Assembly Warning */}
-          {operation.part.parent_part_id && (
-            <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-lg">
-              <Package className="h-5 w-5 text-amber-600 mt-0.5" />
-              <div className="text-sm">
-                <div className="font-medium text-amber-900 dark:text-amber-100">
-                  {t("operations.assemblyPart")}
-                </div>
-                <div className="text-amber-700 dark:text-amber-300">
-                  {t("operations.assemblyWarning")}
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4 space-y-4">
+            {/* Job & Part Details */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-muted/30 rounded-md p-3">
+                <div className="text-xs text-muted-foreground mb-0.5">{t("operations.part")}</div>
+                <div className="font-medium text-sm">{operation.part.part_number}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {operation.part.material} • {t("operations.qty")}: {operation.part.quantity}
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Active Operator */}
-          {operation.active_time_entry && !isCurrentUserTiming && (
-            <div className="flex items-center gap-2 p-3 bg-active-work/10 border border-active-work/30 rounded-lg">
-              <AlertCircle className="h-5 w-5 text-active-work" />
-              <div className="text-sm">
-                <span className="font-medium">
-                  {operation.active_time_entry.operator.full_name}
-                </span>{" "}
-                {t("operations.currentlyWorking")}
+              <div className="bg-muted/30 rounded-md p-3">
+                <div className="text-xs text-muted-foreground mb-0.5">{t("operations.statusLabel")}</div>
+                <Badge variant="outline" className="capitalize text-xs">
+                  {operation.status.replace("_", " ")}
+                </Badge>
+                {dueDate && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {t("operations.dueDate")}: {format(new Date(dueDate), "MMM d, yyyy")}
+                  </div>
+                )}
               </div>
             </div>
-          )}
 
-          {/* Notes */}
-          {operation.notes && (
-            <div>
-              <div className="text-sm text-muted-foreground mb-1">
-                {t("operations.notes")}
+            {operation.part.job.customer && (
+              <div className="text-xs text-muted-foreground bg-muted/30 rounded-md px-3 py-2">
+                {operation.part.job.customer}
               </div>
-              <div className="text-sm p-3 bg-muted rounded">
-                {operation.notes}
-              </div>
-            </div>
-          )}
+            )}
 
-          {/* Operation Metadata (Process-specific settings) */}
-          {(operation as any).metadata && (
-            <EnhancedMetadataDisplay
-              metadata={(operation as any).metadata}
-              title="Process Settings"
-              showTypeIndicator={true}
-            />
-          )}
-
-          {/* Part Metadata */}
-          {(operation.part as any).metadata && (
-            <EnhancedMetadataDisplay
-              metadata={(operation.part as any).metadata}
-              title="Part Specifications"
-              showTypeIndicator={true}
-            />
-          )}
-
-          {/* Files Section */}
-          {operation.part.file_paths &&
-            operation.part.file_paths.length > 0 && (
-              <div>
-                <div className="text-sm text-muted-foreground mb-2">
-                  {t("operations.files")}
-                </div>
-                <div className="space-y-2">
-                  {operation.part.file_paths.map(
-                    (filePath: string, index: number) => {
-                      const fileName = filePath.split("/").pop() || "Unknown";
-                      const fileExt = filePath.split(".").pop()?.toLowerCase();
-                      const isSTEP = fileExt === "step" || fileExt === "stp";
-                      const isPDF = fileExt === "pdf";
-
-                      if (!isSTEP && !isPDF) return null;
-
-                      return (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between border rounded-md p-3 bg-muted/50"
-                        >
-                          <div className="flex items-center gap-3">
-                            {isSTEP ? (
-                              <Box className="h-5 w-5 text-blue-600" />
-                            ) : (
-                              <FileText className="h-5 w-5 text-red-600" />
-                            )}
-                            <div>
-                              <p className="font-medium text-sm">{fileName}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {isSTEP
-                                  ? t("operations.3dModel")
-                                  : t("operations.drawing")}
-                              </p>
-                            </div>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleViewFile(filePath)}
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            {t("operations.view")}
-                          </Button>
-                        </div>
-                      );
-                    },
-                  )}
+            {/* Assembly Warning */}
+            {operation.part.parent_part_id && (
+              <div className="flex items-start gap-2 p-2.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-md">
+                <Package className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                <div className="text-xs">
+                  <div className="font-medium text-amber-900 dark:text-amber-100">
+                    {t("operations.assemblyPart")}
+                  </div>
+                  <div className="text-amber-700 dark:text-amber-300">
+                    {t("operations.assemblyWarning")}
+                  </div>
                 </div>
               </div>
             )}
 
-          {/* Required Resources Section */}
-          {requiredResources.length > 0 && (
-            <div>
-              <div className="text-sm font-medium mb-3 flex items-center gap-2">
-                <Wrench className="h-5 w-5" />
-                {t("operations.requiredResources")}
+            {/* Active Operator */}
+            {operation.active_time_entry && !isCurrentUserTiming && (
+              <div className="flex items-center gap-2 p-2.5 bg-active-work/10 border border-active-work/30 rounded-md">
+                <AlertCircle className="h-4 w-4 text-active-work shrink-0" />
+                <div className="text-xs">
+                  <span className="font-medium">
+                    {operation.active_time_entry.operator.full_name}
+                  </span>{" "}
+                  {t("operations.currentlyWorking")}
+                </div>
               </div>
-              <div className="space-y-3">
-                {requiredResources.map((opResource: any) => (
-                  <div
-                    key={opResource.id}
-                    className="border rounded-lg p-4 bg-card"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Wrench className="h-4 w-4 text-orange-600" />
-                          <p className="font-semibold text-base">
-                            {opResource.resource.name}
-                          </p>
-                          {opResource.quantity > 1 && (
-                            <Badge variant="secondary" className="text-xs">
-                              {t("operations.qty")}: {opResource.quantity}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="text-xs text-muted-foreground space-y-1 ml-6">
-                          <p className="capitalize">
-                            <span className="font-medium">{t("operations.type")}:</span>{" "}
-                            {opResource.resource.type.replace("_", " ")}
-                          </p>
-                          {opResource.resource.identifier && (
-                            <p>
-                              <span className="font-medium">ID:</span> {opResource.resource.identifier}
-                            </p>
-                          )}
-                          {opResource.resource.location && (
-                            <p>
-                              <span className="font-medium">{t("operations.location")}:</span>{" "}
-                              {opResource.resource.location}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <Badge
-                        variant={
-                          opResource.resource.status === "available"
-                            ? "default"
-                            : opResource.resource.status === "in_use"
-                            ? "secondary"
-                            : opResource.resource.status === "maintenance"
-                            ? "destructive"
-                            : "outline"
-                        }
-                        className="text-xs capitalize"
-                      >
-                        {opResource.resource.status.replace("_", " ")}
-                      </Badge>
-                    </div>
+            )}
 
-                    {/* Resource-specific instructions */}
-                    {opResource.notes && (
-                      <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-md p-3 mb-3">
-                        <div className="flex items-start gap-2">
-                          <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="text-sm font-medium text-amber-900 dark:text-amber-100 mb-1">
-                              Instructions:
+            {/* Notes */}
+            {operation.notes && (
+              <div className="bg-muted/30 rounded-md p-3">
+                <div className="text-xs text-muted-foreground mb-1">{t("operations.notes")}</div>
+                <div className="text-sm">{operation.notes}</div>
+              </div>
+            )}
+
+            {/* Operation Metadata (Process-specific settings) */}
+            {(operation as any).metadata && (
+              <EnhancedMetadataDisplay
+                metadata={(operation as any).metadata}
+                title="Process Settings"
+                showTypeIndicator={true}
+                compact={true}
+              />
+            )}
+
+            {/* Required Resources Section */}
+            {requiredResources.length > 0 && (
+              <div>
+                <div className="text-xs font-medium mb-2 flex items-center gap-1.5 text-muted-foreground">
+                  <Wrench className="h-4 w-4" />
+                  {t("operations.requiredResources")}
+                </div>
+                <div className="space-y-2">
+                  {requiredResources.map((opResource: any) => (
+                    <div
+                      key={opResource.id}
+                      className="border rounded-md p-3 bg-card/50"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <p className="font-medium text-sm truncate">
+                              {opResource.resource.name}
                             </p>
-                            <p className="text-sm text-amber-800 dark:text-amber-200">
+                            {opResource.quantity > 1 && (
+                              <Badge variant="secondary" className="text-[10px] px-1 py-0">
+                                ×{opResource.quantity}
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground space-y-0.5">
+                            <p className="capitalize">{t("operations.type")}: {opResource.resource.type.replace("_", " ")}</p>
+                            {opResource.resource.identifier && (
+                              <p>ID: {opResource.resource.identifier}</p>
+                            )}
+                            {opResource.resource.location && (
+                              <p>{t("operations.location")}: {opResource.resource.location}</p>
+                            )}
+                          </div>
+                        </div>
+                        <Badge
+                          variant={
+                            opResource.resource.status === "available"
+                              ? "default"
+                              : opResource.resource.status === "in_use"
+                              ? "secondary"
+                              : opResource.resource.status === "maintenance"
+                              ? "destructive"
+                              : "outline"
+                          }
+                          className="text-[10px] capitalize shrink-0"
+                        >
+                          {opResource.resource.status.replace("_", " ")}
+                        </Badge>
+                      </div>
+
+                      {opResource.notes && (
+                        <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded p-2 mt-2">
+                          <div className="flex items-start gap-1.5">
+                            <AlertCircle className="h-3 w-3 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                            <p className="text-xs text-amber-800 dark:text-amber-200">
                               {opResource.notes}
                             </p>
                           </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {/* Resource metadata */}
-                    {opResource.resource.metadata && (
-                      <div className="mt-3">
-                        <EnhancedMetadataDisplay
-                          metadata={opResource.resource.metadata}
-                          compact={true}
-                          showTypeIndicator={false}
-                        />
-                      </div>
-                    )}
-                  </div>
-                ))}
+                      {opResource.resource.metadata && (
+                        <div className="mt-2">
+                          <EnhancedMetadataDisplay
+                            metadata={opResource.resource.metadata}
+                            compact={true}
+                            showTypeIndicator={false}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-
-          <Separator />
-
-          {/* Action Buttons */}
-          <div className="space-y-3">
-            {canReportIssue && (
-              <Button
-                onClick={() => setShowIssueForm(true)}
-                variant="outline"
-                size="lg"
-                className="w-full h-12 text-base gap-2 border-orange-500 text-orange-600 hover:bg-orange-50"
-              >
-                <AlertTriangle className="h-5 w-5" />
-                {t("operations.reportIssue")}
-              </Button>
             )}
 
-            <div className="flex gap-3">
-              {canStartTiming && (
-                <Button
-                  onClick={handleStartTiming}
-                  disabled={loading}
-                  size="lg"
-                  className="flex-1 h-14 text-lg gap-2"
-                  data-tour="start-timer"
-                >
-                  <Play className="h-5 w-5" />
-                  {t("operations.startTime")}
-                </Button>
-              )}
+            {/* Files Section */}
+            {operation.part.file_paths && operation.part.file_paths.length > 0 && (
+              <div>
+                <div className="text-xs font-medium mb-2 text-muted-foreground">
+                  {t("operations.files")}
+                </div>
+                <div className="space-y-1.5">
+                  {operation.part.file_paths.map((filePath: string, index: number) => {
+                    const fileName = filePath.split("/").pop() || "Unknown";
+                    const fileExt = filePath.split(".").pop()?.toLowerCase();
+                    const isSTEP = fileExt === "step" || fileExt === "stp";
+                    const isPDF = fileExt === "pdf";
 
-              {isCurrentUserTiming && (
-                <Button
-                  onClick={handleStopTiming}
-                  disabled={loading}
-                  variant="destructive"
-                  size="lg"
-                  className="flex-1 h-14 text-lg gap-2"
-                >
-                  <Square className="h-5 w-5" />
-                  {t("operations.stopTime")}
-                </Button>
-              )}
+                    if (!isSTEP && !isPDF) return null;
 
-              {canComplete && (
-                <Button
-                  onClick={handleComplete}
-                  disabled={loading}
-                  variant="default"
-                  size="lg"
-                  className="flex-1 h-14 text-lg gap-2 bg-completed hover:bg-completed/90"
-                >
-                  <CheckCircle className="h-5 w-5" />
-                  {t("operations.markComplete")}
-                </Button>
-              )}
-            </div>
-          </div>
+                    return (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between border rounded-md p-2 bg-muted/30"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          {isSTEP ? (
+                            <Box className="h-4 w-4 text-blue-600 shrink-0" />
+                          ) : (
+                            <FileText className="h-4 w-4 text-red-600 shrink-0" />
+                          )}
+                          <div className="min-w-0">
+                            <p className="font-medium text-xs truncate">{fileName}</p>
+                            <p className="text-[10px] text-muted-foreground">
+                              {isSTEP ? t("operations.3dModel") : t("operations.drawing")}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleViewFile(filePath)}
+                          className="h-7 text-xs shrink-0"
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          {t("operations.view")}
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-          {/* Substeps Section */}
-          <div className="mt-6">
+            {/* Substeps Section */}
             <SubstepsManager
               operationId={operation.id}
               operationName={operation.operation_name}
@@ -638,7 +526,72 @@ export default function OperationDetailModal({
             />
           </div>
         </div>
-      </DialogContent>
+
+        {/* Fixed Footer with Actions */}
+        <div className="flex-shrink-0 border-t border-white/10 p-4 bg-background/95 backdrop-blur-sm space-y-2">
+          {canReportIssue && (
+            <Button
+              onClick={() => setShowIssueForm(true)}
+              variant="outline"
+              size="sm"
+              className="w-full h-9 text-sm gap-1.5 border-orange-500 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950"
+            >
+              <AlertTriangle className="h-4 w-4" />
+              {t("operations.reportIssue")}
+            </Button>
+          )}
+
+          <div className="flex gap-2">
+            {canStartTiming && (
+              <Button
+                onClick={handleStartTiming}
+                disabled={loading}
+                size="lg"
+                className="flex-1 h-12 text-base gap-2"
+                data-tour="start-timer"
+              >
+                <Play className="h-5 w-5" />
+                {t("operations.startTime")}
+              </Button>
+            )}
+
+            {isCurrentUserTiming && (
+              <Button
+                onClick={handleStopTiming}
+                disabled={loading}
+                variant="destructive"
+                size="lg"
+                className="flex-1 h-12 text-base gap-2"
+              >
+                <Square className="h-5 w-5" />
+                {t("operations.stopTime")}
+              </Button>
+            )}
+
+            {canComplete && (
+              <Button
+                onClick={handleComplete}
+                disabled={loading}
+                variant="default"
+                size="lg"
+                className="flex-1 h-12 text-base gap-2 bg-completed hover:bg-completed/90"
+              >
+                <CheckCircle className="h-5 w-5" />
+                {t("operations.markComplete")}
+              </Button>
+            )}
+          </div>
+
+          <Button
+            onClick={() => onOpenChange(false)}
+            variant="ghost"
+            size="sm"
+            className="w-full h-8 text-xs text-muted-foreground"
+          >
+            {t("operations.close") || "Close"}
+          </Button>
+        </div>
+      </SheetContent>
 
       <IssueForm
         operationId={operation.id}
@@ -696,6 +649,6 @@ export default function OperationDetailModal({
           </div>
         </DialogContent>
       </Dialog>
-    </Dialog>
+    </Sheet>
   );
 }

@@ -5,20 +5,32 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Slider } from "@/components/ui/slider";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   ChevronLeft,
   ChevronRight,
   Loader2,
   Calendar as CalendarIcon,
-  Plus,
   Trash2,
   Sun,
   Moon,
-  Factory
+  Clock,
+  Percent,
+  Info
 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -32,35 +44,41 @@ import {
   addMonths,
   subMonths,
   getDay,
-  isWeekend,
   startOfWeek,
   endOfWeek
 } from "date-fns";
+import type { Database } from "@/integrations/supabase/types";
+
+// Use database types for consistency
+type FactoryCalendarRow = Database['public']['Tables']['factory_calendar']['Row'];
+type TenantRow = Database['public']['Tables']['tenants']['Row'];
+
+type DayType = 'working' | 'holiday' | 'closure' | 'half_day';
 
 interface CalendarDay {
   id?: string;
   tenant_id?: string;
   date: string;
-  day_type: 'working' | 'holiday' | 'closure' | 'half_day';
+  day_type: DayType;
   name: string | null;
   opening_time: string | null;
   closing_time: string | null;
-  capacity_multiplier: number;
+  capacity_multiplier: number | null;
   notes: string | null;
 }
 
-const DAY_TYPE_COLORS: Record<string, string> = {
-  working: 'bg-green-100 text-green-800 border-green-200',
-  holiday: 'bg-red-100 text-red-800 border-red-200',
-  closure: 'bg-gray-200 text-gray-800 border-gray-300',
-  half_day: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+const DAY_TYPE_COLORS: Record<DayType, string> = {
+  working: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800',
+  holiday: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800',
+  closure: 'bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600',
+  half_day: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800',
 };
 
-const DAY_TYPE_LABELS: Record<string, string> = {
-  working: 'Working',
-  holiday: 'Holiday',
-  closure: 'Closure',
-  half_day: 'Half Day',
+const DAY_TYPE_ICONS: Record<DayType, React.ReactNode> = {
+  working: <Sun className="h-3 w-3" />,
+  holiday: <Moon className="h-3 w-3" />,
+  closure: <Moon className="h-3 w-3" />,
+  half_day: <Clock className="h-3 w-3" />,
 };
 
 export default function FactoryCalendar() {
@@ -71,6 +89,7 @@ export default function FactoryCalendar() {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState<CalendarDay>({
     date: '',
@@ -84,7 +103,19 @@ export default function FactoryCalendar() {
 
   // Working days mask from tenant (Mon=1, Tue=2, Wed=4, Thu=8, Fri=16, Sat=32, Sun=64)
   // Default 31 = Mon-Fri
-  const workingDaysMask = (tenant as any)?.working_days_mask ?? 31;
+  const typedTenant = tenant as TenantRow | null;
+  const workingDaysMask = typedTenant?.working_days_mask ?? 31;
+
+  // Translation helpers for day types
+  const getDayTypeLabel = (type: DayType): string => {
+    const labels: Record<DayType, string> = {
+      working: t("calendar.dayTypes.working", "Working Day"),
+      holiday: t("calendar.dayTypes.holiday", "Holiday"),
+      closure: t("calendar.dayTypes.closure", "Closure"),
+      half_day: t("calendar.dayTypes.halfDay", "Half Day"),
+    };
+    return labels[type];
+  };
 
   useEffect(() => {
     if (profile?.tenant_id) {
@@ -108,7 +139,7 @@ export default function FactoryCalendar() {
 
     if (error) {
       console.error("Error loading calendar:", error);
-      toast.error("Failed to load calendar");
+      toast.error(t("calendar.messages.loadFailed", "Failed to load calendar"));
     } else {
       setCalendarDays((data || []) as CalendarDay[]);
     }
@@ -179,7 +210,7 @@ export default function FactoryCalendar() {
           .eq("id", existing.id);
 
         if (error) throw error;
-        toast.success("Calendar updated");
+        toast.success(t("calendar.messages.updated", "Calendar updated"));
       } else {
         // Insert new
         const { error } = await supabase
@@ -191,30 +222,35 @@ export default function FactoryCalendar() {
             name: formData.name || null,
             opening_time: formData.opening_time || null,
             closing_time: formData.closing_time || null,
-            capacity_multiplier: formData.capacity_multiplier,
+            capacity_multiplier: formData.capacity_multiplier ?? 0,
             notes: formData.notes || null,
           });
 
         if (error) throw error;
-        toast.success("Calendar entry added");
+        toast.success(t("calendar.messages.added", "Calendar entry added"));
       }
 
       setDialogOpen(false);
       loadCalendarDays();
     } catch (error: any) {
       console.error("Error saving calendar:", error);
-      toast.error(error.message || "Failed to save");
+      toast.error(error.message || t("calendar.messages.saveFailed", "Failed to save"));
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async () => {
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
     if (!selectedDate) return;
 
     const existing = getCalendarDay(selectedDate);
     if (!existing?.id) {
       setDialogOpen(false);
+      setDeleteDialogOpen(false);
       return;
     }
 
@@ -226,15 +262,21 @@ export default function FactoryCalendar() {
         .eq("id", existing.id);
 
       if (error) throw error;
-      toast.success("Calendar entry removed");
+      toast.success(t("calendar.messages.deleted", "Calendar entry removed"));
+      setDeleteDialogOpen(false);
       setDialogOpen(false);
       loadCalendarDays();
     } catch (error: any) {
       console.error("Error deleting:", error);
-      toast.error("Failed to delete");
+      toast.error(t("calendar.messages.deleteFailed", "Failed to delete"));
     } finally {
       setSaving(false);
     }
+  };
+
+  // Helper to get capacity multiplier with null handling
+  const getCapacityMultiplier = (): number => {
+    return formData.capacity_multiplier ?? 0;
   };
 
   // Get days for the calendar grid (including padding from prev/next months)
@@ -268,22 +310,25 @@ export default function FactoryCalendar() {
       <hr className="title-divider" />
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-3">
-        <Badge className={`${DAY_TYPE_COLORS.working} border`}>
-          <Sun className="h-3 w-3 mr-1" />
-          Working
-        </Badge>
-        <Badge className={`${DAY_TYPE_COLORS.holiday} border`}>
-          Holiday
-        </Badge>
-        <Badge className={`${DAY_TYPE_COLORS.closure} border`}>
-          <Moon className="h-3 w-3 mr-1" />
-          Closure
-        </Badge>
-        <Badge className={`${DAY_TYPE_COLORS.half_day} border`}>
-          Half Day
-        </Badge>
-      </div>
+      <Card className="glass-card">
+        <CardContent className="pt-4 pb-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground mr-2">
+              {t("calendar.legend", "Legend")}:
+            </span>
+            {(['working', 'holiday', 'closure', 'half_day'] as DayType[]).map((type) => (
+              <Badge
+                key={type}
+                variant="outline"
+                className={`${DAY_TYPE_COLORS[type]} border gap-1.5`}
+              >
+                {DAY_TYPE_ICONS[type]}
+                {getDayTypeLabel(type)}
+              </Badge>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Calendar Card */}
       <Card className="glass-card">
@@ -385,7 +430,13 @@ export default function FactoryCalendar() {
       {calendarDays.length > 0 && (
         <Card className="glass-card">
           <CardHeader>
-            <CardTitle className="text-lg">Special Days This Month</CardTitle>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              {t("calendar.specialDays", "Special Days This Month")}
+            </CardTitle>
+            <CardDescription>
+              {t("calendar.specialDaysDescription", "Custom calendar entries for this month")}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -394,11 +445,15 @@ export default function FactoryCalendar() {
                 .map(day => (
                   <div
                     key={day.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                    className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
                   >
-                    <div className="flex items-center gap-3">
-                      <Badge className={DAY_TYPE_COLORS[day.day_type]}>
-                        {DAY_TYPE_LABELS[day.day_type]}
+                    <div className="flex items-center gap-4">
+                      <Badge
+                        variant="outline"
+                        className={`${DAY_TYPE_COLORS[day.day_type as DayType]} gap-1.5`}
+                      >
+                        {DAY_TYPE_ICONS[day.day_type as DayType]}
+                        {getDayTypeLabel(day.day_type as DayType)}
                       </Badge>
                       <div>
                         <div className="font-medium">
@@ -407,14 +462,20 @@ export default function FactoryCalendar() {
                         {day.name && (
                           <div className="text-sm text-muted-foreground">{day.name}</div>
                         )}
+                        {day.capacity_multiplier !== null && day.capacity_multiplier !== undefined && (
+                          <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                            <Percent className="h-3 w-3" />
+                            {Math.round(day.capacity_multiplier * 100)}% {t("calendar.capacity", "capacity")}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
                       onClick={() => handleDateClick(new Date(day.date + 'T00:00:00'))}
                     >
-                      Edit
+                      {t("common.edit", "Edit")}
                     </Button>
                   </div>
                 ))}
@@ -425,19 +486,26 @@ export default function FactoryCalendar() {
 
       {/* Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="glass-card">
+        <DialogContent className="glass-card sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarIcon className="h-5 w-5" />
               {selectedDate && format(selectedDate, 'EEEE, MMMM d, yyyy')}
             </DialogTitle>
+            <DialogDescription>
+              {t("calendar.editDescription", "Configure this day's type and capacity settings")}
+            </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="space-y-5">
+            {/* Day Type Selection */}
             <div className="space-y-2">
-              <Label>Day Type</Label>
+              <Label className="text-sm font-medium">
+                {t("calendar.form.dayType", "Day Type")}
+              </Label>
               <Select
                 value={formData.day_type}
-                onValueChange={(value: any) => {
+                onValueChange={(value: DayType) => {
                   const multiplier = value === 'working' ? 1 :
                                     value === 'half_day' ? 0.5 : 0;
                   setFormData({
@@ -447,99 +515,178 @@ export default function FactoryCalendar() {
                   });
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="working">Working Day</SelectItem>
-                  <SelectItem value="holiday">Holiday (Closed)</SelectItem>
-                  <SelectItem value="closure">Planned Closure</SelectItem>
-                  <SelectItem value="half_day">Half Day</SelectItem>
+                  {(['working', 'holiday', 'closure', 'half_day'] as DayType[]).map((type) => (
+                    <SelectItem key={type} value={type}>
+                      <div className="flex items-center gap-2">
+                        {DAY_TYPE_ICONS[type]}
+                        <span>{getDayTypeLabel(type)}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
+            {/* Name / Description */}
             <div className="space-y-2">
-              <Label htmlFor="name">Name / Description</Label>
+              <Label htmlFor="name" className="text-sm font-medium">
+                {t("calendar.form.name", "Name / Description")}
+              </Label>
               <Input
                 id="name"
                 value={formData.name || ''}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g., Christmas, Factory Maintenance"
+                placeholder={t("calendar.form.namePlaceholder", "e.g., Christmas, Factory Maintenance")}
+                className="w-full"
               />
             </div>
 
-            {formData.day_type === 'half_day' && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="opening_time">Opening Time</Label>
-                  <Input
-                    id="opening_time"
-                    type="time"
-                    value={formData.opening_time || ''}
-                    onChange={(e) => setFormData({ ...formData, opening_time: e.target.value })}
-                  />
+            {/* Time Override for Half Day */}
+            {(formData.day_type === 'half_day' || formData.day_type === 'working') && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  {t("calendar.form.timeOverride", "Time Override")}
+                </Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="opening_time" className="text-xs text-muted-foreground">
+                      {t("calendar.form.openingTime", "Opening")}
+                    </Label>
+                    <Input
+                      id="opening_time"
+                      type="time"
+                      value={formData.opening_time || ''}
+                      onChange={(e) => setFormData({ ...formData, opening_time: e.target.value || null })}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="closing_time" className="text-xs text-muted-foreground">
+                      {t("calendar.form.closingTime", "Closing")}
+                    </Label>
+                    <Input
+                      id="closing_time"
+                      type="time"
+                      value={formData.closing_time || ''}
+                      onChange={(e) => setFormData({ ...formData, closing_time: e.target.value || null })}
+                      className="w-full"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="closing_time">Closing Time</Label>
-                  <Input
-                    id="closing_time"
-                    type="time"
-                    value={formData.closing_time || ''}
-                    onChange={(e) => setFormData({ ...formData, closing_time: e.target.value })}
-                  />
-                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t("calendar.form.timeHint", "Leave empty to use default factory hours")}
+                </p>
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label>Capacity Multiplier: {(formData.capacity_multiplier * 100).toFixed(0)}%</Label>
-              <Input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={formData.capacity_multiplier}
-                onChange={(e) => setFormData({ ...formData, capacity_multiplier: parseFloat(e.target.value) })}
+            {/* Capacity Slider */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <Percent className="h-4 w-4" />
+                  {t("calendar.form.capacity", "Capacity")}
+                </Label>
+                <Badge variant="outline" className="font-mono">
+                  {Math.round(getCapacityMultiplier() * 100)}%
+                </Badge>
+              </div>
+              <Slider
+                value={[getCapacityMultiplier() * 100]}
+                onValueChange={(value) => setFormData({
+                  ...formData,
+                  capacity_multiplier: value[0] / 100
+                })}
+                min={0}
+                max={100}
+                step={10}
+                className="w-full"
               />
-              <p className="text-xs text-muted-foreground">
-                0% = Factory closed, 50% = Half capacity, 100% = Full capacity
-              </p>
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>{t("calendar.form.closed", "Closed")}</span>
+                <span>{t("calendar.form.halfCapacity", "Half")}</span>
+                <span>{t("calendar.form.fullCapacity", "Full")}</span>
+              </div>
             </div>
 
+            {/* Notes */}
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes" className="text-sm font-medium">
+                {t("calendar.form.notes", "Notes")}
+              </Label>
               <Textarea
                 id="notes"
                 value={formData.notes || ''}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Additional notes..."
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value || null })}
+                placeholder={t("calendar.form.notesPlaceholder", "Additional notes...")}
                 rows={2}
+                className="resize-none"
               />
             </div>
-
-            <div className="flex gap-2 pt-4">
-              <Button
-                onClick={handleSave}
-                disabled={saving}
-                className="flex-1"
-              >
-                {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Save
-              </Button>
-              {getCalendarDay(selectedDate!)?.id && (
-                <Button
-                  variant="destructive"
-                  onClick={handleDelete}
-                  disabled={saving}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
           </div>
+
+          <DialogFooter className="flex gap-2 pt-4">
+            {getCalendarDay(selectedDate!)?.id && (
+              <Button
+                variant="destructive"
+                onClick={handleDeleteClick}
+                disabled={saving}
+                size="icon"
+                className="shrink-0"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              onClick={() => setDialogOpen(false)}
+              disabled={saving}
+              className="flex-1"
+            >
+              {t("common.cancel", "Cancel")}
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex-1"
+            >
+              {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {t("common.save", "Save")}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("calendar.deleteDialog.title", "Delete Calendar Entry")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("calendar.deleteDialog.description", "Are you sure you want to remove this calendar entry? The day will revert to default settings.")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saving}>
+              {t("common.cancel", "Cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={saving}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {t("common.delete", "Delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

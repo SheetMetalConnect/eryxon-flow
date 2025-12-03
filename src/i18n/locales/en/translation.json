@@ -127,6 +127,14 @@
     "dataExport": "Data Export",
     "shipping": "Shipping",
     "accountAndSupport": "Account & Support",
+    "account": "Account",
+    "activity": "Activity",
+    "capacity": "Capacity",
+    "cells": "Cells",
+    "calendar": "Calendar",
+    "appStore": "App Store",
+    "mcpKeys": "MCP Keys",
+    "mcpServer": "MCP Server",
     "sections": {
       "overview": "OVERVIEW",
       "operations": "OPERATIONS",
@@ -1740,5 +1748,21 @@
   "calendar": {
     "title": "Factory Calendar",
     "description": "Manage holidays, closures, and special working days"
+  },
+  "sessionTracking": {
+    "currentlyTracking": "Currently Tracking",
+    "task": "Task",
+    "elapsed": "elapsed",
+    "paused": "Paused",
+    "pause": "Pause",
+    "resume": "Resume",
+    "stop": "Stop",
+    "stopped": "Time tracking stopped",
+    "stopFailed": "Failed to stop time tracking",
+    "pauseFailed": "Failed to pause time tracking",
+    "resumed": "Time tracking resumed",
+    "resumeFailed": "Failed to resume time tracking",
+    "minimize": "Minimize",
+    "moreOperations": "more operation(s)"
   }
 }
