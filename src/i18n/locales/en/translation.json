@@ -859,7 +859,9 @@
       "title": "Cell Reliability Heatmap",
       "cell": "Cell",
       "week": "Week"
-    }
+    },
+    "loadError": "Failed to load QRM dashboard data",
+    "noData": "No QRM data available. Please ensure you have active jobs and operations."
   },
   "stages": {
     "title": "Stage Configuration",

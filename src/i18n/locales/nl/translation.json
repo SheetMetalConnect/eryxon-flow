@@ -1727,7 +1727,9 @@
       "title": "Cel Betrouwbaarheid Heatmap",
       "cell": "Cel",
       "week": "Week"
-    }
+    },
+    "loadError": "Fout bij laden van QRM dashboard gegevens",
+    "noData": "Geen QRM gegevens beschikbaar. Zorg ervoor dat u actieve orders en bewerkingen heeft."
   },
   "terminal": {
     "columns": {
