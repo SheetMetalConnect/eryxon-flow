@@ -493,7 +493,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="glass-card max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t("parts.partDetails")}: {part?.part_number}</DialogTitle>
         </DialogHeader>

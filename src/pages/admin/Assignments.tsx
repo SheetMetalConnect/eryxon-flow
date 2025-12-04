@@ -412,6 +412,15 @@ export default function Assignments() {
     },
   ], [t]);
 
+  // Calculate stats - must be before any conditional returns
+  const assignmentStats = useMemo(() => {
+    return {
+      totalAssignments: assignments.length,
+      availableParts: parts.length,
+      activeOperators: operators.length,
+    };
+  }, [assignments, parts, operators]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -422,16 +431,6 @@ export default function Assignments() {
 
   const selectedPartData = parts.find((p) => p.id === selectedPart);
   const selectedOperatorData = operators.find((o) => o.id === selectedOperator);
-
-  // Calculate stats
-  const assignmentStats = useMemo(() => {
-    return {
-      totalAssignments: assignments.length,
-      availableParts: parts.length,
-      activeOperators: operators.length,
-      assignedParts: assignments.length,
-    };
-  }, [assignments, parts, operators]);
 
   return (
     <div className="p-4 space-y-4">

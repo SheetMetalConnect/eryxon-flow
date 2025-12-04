@@ -437,7 +437,7 @@ export default function IssueQueue() {
         open={!!selectedIssue}
         onOpenChange={() => setSelectedIssue(null)}
       >
-        <DialogContent className="glass-card max-w-2xl">
+        <DialogContent className="glass-card max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t("issues.reviewIssue")}</DialogTitle>
           </DialogHeader>
