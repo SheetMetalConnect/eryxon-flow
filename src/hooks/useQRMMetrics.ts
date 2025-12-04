@@ -153,18 +153,104 @@ export function useNextCellCapacity(
 }
 
 /**
- * Hook to fetch part routing (commented out until SQL function is implemented)
+ * Hook to fetch part routing
  */
 export function usePartRouting(partId: string | null) {
-  const [routing] = useState<PartRouting>([]);
-  const [loading] = useState(false);
-  const [error] = useState<Error | null>(null);
+  const [routing, setRouting] = useState<PartRouting>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  // TODO: Implement when get_part_routing SQL function is created
-  // useEffect(() => {
-  //   if (!partId) return;
-  //   // Implementation here
-  // }, [partId]);
+  useEffect(() => {
+    if (!partId) {
+      setRouting([]);
+      return;
+    }
+
+    const fetchRouting = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const { data, error: rpcError } = await supabase.rpc(
+          "get_part_routing",
+          { p_part_id: partId }
+        );
+
+        if (rpcError) throw rpcError;
+
+        // Group operations by cell and aggregate counts
+        const cellMap = new Map<string, {
+          cell_id: string;
+          cell_name: string;
+          cell_color: string | null;
+          sequence: number;
+          operation_count: number;
+          completed_operations: number;
+        }>();
+
+        (data || []).forEach((op: {
+          cell_id: string;
+          cell_name: string;
+          sequence: number;
+          status: string;
+        }) => {
+          if (!op.cell_id) return;
+
+          const existing = cellMap.get(op.cell_id);
+
+          if (existing) {
+            existing.operation_count++;
+            if (op.status === 'completed') {
+              existing.completed_operations++;
+            }
+          } else {
+            cellMap.set(op.cell_id, {
+              cell_id: op.cell_id,
+              cell_name: op.cell_name || 'Unknown',
+              cell_color: null,
+              sequence: op.sequence,
+              operation_count: 1,
+              completed_operations: op.status === 'completed' ? 1 : 0,
+            });
+          }
+        });
+
+        // Convert to array and sort by sequence
+        const routingData = Array.from(cellMap.values())
+          .sort((a, b) => a.sequence - b.sequence);
+
+        setRouting(routingData);
+      } catch (err) {
+        setError(err as Error);
+        console.error("Error fetching part routing:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRouting();
+
+    // Subscribe to real-time updates on operations for this part
+    const channel = supabase
+      .channel(`part-routing-${partId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "operations",
+          filter: `part_id=eq.${partId}`,
+        },
+        () => {
+          fetchRouting();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [partId]);
 
   return { routing, loading, error };
 }
