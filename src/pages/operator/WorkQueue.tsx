@@ -50,9 +50,8 @@ export default function WorkQueue() {
 
   useEffect(() => {
     if (!profile?.tenant_id) return;
-
     loadData();
-    setupRealtimeSubscriptions();
+    return setupRealtimeSubscriptions();
   }, [profile?.tenant_id]);
 
   const loadData = async () => {

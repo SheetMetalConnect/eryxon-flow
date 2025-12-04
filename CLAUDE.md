@@ -75,7 +75,8 @@ Work until the goal is **fully achieved**:
 - [Task Management](#task-management)
 - [Code Quality Standards](#code-quality-standards)
 - [File Structure Reference](#file-structure-reference)
-- [Common Patterns](#common-patterns)
+
+**For technical code patterns and examples, see [docs/CODING_PATTERNS.md](docs/CODING_PATTERNS.md).**
 
 ---
 
@@ -667,123 +668,17 @@ import Auth from "./pages/auth/Auth";
 
 ---
 
-## Common Patterns
+## Coding Patterns
 
-### Page Layout (Admin Pages)
+For detailed code patterns and technical examples, see **[docs/CODING_PATTERNS.md](docs/CODING_PATTERNS.md)**.
 
-**Always use the standardized admin components:**
-
-```tsx
-import { useTranslation } from 'react-i18next';
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
-import { PageStatsRow } from '@/components/admin/PageStatsRow';
-import { DataTable } from '@/components/ui/data-table/DataTable';
-import { Plus, Briefcase, PlayCircle, CheckCircle2 } from 'lucide-react';
-
-export default function NewPage() {
-  const { t } = useTranslation();
-  const { data, isLoading } = useMyDataHook();
-
-  return (
-    <div className="p-4 space-y-4">
-      {/* Header - use AdminPageHeader component */}
-      <AdminPageHeader
-        title={t('newFeature.title')}
-        description={t('newFeature.description')}
-        action={{
-          label: t('newFeature.create'),
-          onClick: () => navigate('/admin/new'),
-          icon: Plus,
-        }}
-      />
-
-      {/* Stats Row - 3-4 key metrics */}
-      <PageStatsRow
-        stats={[
-          { label: t('newFeature.total'), value: data?.length || 0, icon: Briefcase, color: 'primary' },
-          { label: t('newFeature.active'), value: activeCount, icon: PlayCircle, color: 'warning' },
-          { label: t('newFeature.completed'), value: completedCount, icon: CheckCircle2, color: 'success' },
-        ]}
-      />
-
-      {/* Content - DataTable in glass-card */}
-      <div className="glass-card p-4">
-        <DataTable
-          columns={columns}
-          data={data || []}
-          filterableColumns={filterableColumns}
-          searchPlaceholder={t('newFeature.search')}
-          emptyMessage={t('newFeature.noResults')}
-          loading={isLoading}
-          onRowClick={(row) => setSelectedId(row.id)}  {/* Row click opens modal */}
-        />
-      </div>
-
-      {/* Detail Modal - opens on row click */}
-      {selectedId && (
-        <DetailModal id={selectedId} onClose={() => setSelectedId(null)} />
-      )}
-    </div>
-  );
-}
-```
-
-**UX Best Practices:**
-- **Row click** = Opens detail modal (primary action)
-- **Three-dot menu** = Additional actions (edit, delete) - only when needed
-- Never add redundant "View" action column
-
-### Data Fetching Hook
-
-```tsx
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-
-export function useJobs(tenantId: string) {
-  return useQuery({
-    queryKey: ['jobs', tenantId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('jobs')
-        .select(`
-          *,
-          parts (
-            id,
-            part_number,
-            operations (*)
-          )
-        `)
-        .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!tenantId
-  });
-}
-```
-
-### Toast Notifications
-
-```tsx
-import { toast } from 'sonner';
-import { useTranslation } from 'react-i18next';
-
-function Component() {
-  const { t } = useTranslation();
-
-  const handleSuccess = () => {
-    toast.success(t('jobs.createSuccess'));
-  };
-
-  const handleError = (error: Error) => {
-    toast.error(t('common.error'), {
-      description: error.message
-    });
-  };
-}
-```
+Key patterns documented there:
+- Supabase types modular architecture
+- Realtime subscription cleanup (memory leak prevention)
+- Data fetching with React Query
+- Admin page layout components
+- Toast notifications
+- TypeScript patterns
 
 ---
 

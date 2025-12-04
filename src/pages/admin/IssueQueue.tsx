@@ -72,10 +72,9 @@ export default function IssueQueue() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    if (profile?.tenant_id) {
-      loadIssues();
-      setupRealtime();
-    }
+    if (!profile?.tenant_id) return;
+    loadIssues();
+    return setupRealtime();
   }, [profile?.tenant_id, statusFilter, severityFilter, searchQuery]);
 
   // Load signed URLs for issue images

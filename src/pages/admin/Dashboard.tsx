@@ -130,9 +130,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!profile?.tenant_id) return;
-
     loadData();
-    setupRealtimeSubscription();
+    return setupRealtimeSubscription();
   }, [profile?.tenant_id]);
 
   const loadData = async () => {

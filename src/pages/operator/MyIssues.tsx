@@ -37,10 +37,9 @@ export default function MyIssues() {
   const [imageUrls, setImageUrls] = useState<string[]>([]);
 
   useEffect(() => {
-    if (profile?.id) {
-      loadIssues();
-      setupRealtime();
-    }
+    if (!profile?.id) return;
+    loadIssues();
+    return setupRealtime();
   }, [profile?.id]);
 
   // Load signed URLs for issue images
