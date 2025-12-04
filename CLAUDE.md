@@ -357,18 +357,22 @@ src/
 │   ├── admin/          # Admin-specific components
 │   ├── operator/       # Operator terminal components
 │   ├── ui/             # shadcn/ui base components
-│   └── shared/         # Cross-cutting components
-├── pages/              # Route pages
+│   └── Layout.tsx      # Role-based layout router
+├── pages/              # Route pages (with barrel exports)
 │   ├── admin/          # Admin pages
-│   ├── operator/       # Operator pages
-│   └── common/         # Shared pages (auth, etc.)
+│   │   ├── config/     # Config pages (Stages, Users, etc.)
+│   │   └── analytics/  # Analytics pages (OEE, QRM, etc.)
+│   ├── auth/           # Auth pages (Auth, AcceptInvitation)
+│   ├── operator/       # Operator pages (WorkQueue, etc.)
+│   └── common/         # Shared pages (MyPlan, Pricing, Help, etc.)
 ├── hooks/              # Custom React hooks
 ├── lib/                # Utility libraries
 ├── integrations/       # Supabase client
 ├── i18n/               # Localization
-│   └── locales/        # Translation files
+│   └── locales/        # Translation files (en, nl, de)
 ├── styles/             # Global styles
 │   └── design-system.css
+├── routes.ts           # Centralized route definitions
 └── theme/              # Theme provider
 ```
 
@@ -549,19 +553,66 @@ function JobCard({ job, onEdit, onDelete }: JobCardProps) {
 |------|---------|
 | `docs/DESIGN_SYSTEM.md` | Design guidelines (READ FIRST for UI work) |
 | `src/styles/design-system.css` | CSS tokens and classes |
+| `src/routes.ts` | Centralized route definitions |
 | `src/integrations/supabase/client.ts` | Supabase client |
 | `src/integrations/supabase/types.ts` | Database types |
 | `src/i18n/locales/*/translation.json` | Translations (EN/NL/DE) |
 | `src/components/ui/*` | shadcn/ui components |
 | `src/theme/ThemeProvider.tsx` | Theme (dark/light/auto) |
 
+### Page Organization
+
+Pages are organized by role with barrel exports (`index.ts`):
+
+```
+src/pages/
+├── admin/
+│   ├── config/           # Config pages
+│   │   ├── index.ts      # Barrel export
+│   │   ├── Stages.tsx
+│   │   ├── Materials.tsx
+│   │   └── Users.tsx     # etc.
+│   ├── analytics/        # Analytics pages
+│   │   ├── index.ts      # Barrel export
+│   │   └── OEEAnalytics.tsx  # etc.
+│   └── Dashboard.tsx     # Other admin pages
+├── auth/
+│   ├── index.ts          # Barrel export
+│   ├── Auth.tsx
+│   └── AcceptInvitation.tsx
+├── operator/
+│   ├── index.ts          # Barrel export
+│   └── WorkQueue.tsx     # etc.
+└── common/
+    ├── index.ts          # Barrel export
+    ├── MyPlan.tsx
+    ├── Pricing.tsx
+    └── Help.tsx          # etc.
+```
+
 ### Adding New Files
 
 Follow existing patterns:
-- **Page**: `src/pages/admin/NewFeaturePage.tsx`
+- **Admin page**: `src/pages/admin/NewFeature.tsx`
+- **Config page**: `src/pages/admin/config/NewConfig.tsx` (add to barrel export)
+- **Common page**: `src/pages/common/NewPage.tsx` (add to barrel export)
 - **Component**: `src/components/admin/NewFeatureComponent.tsx`
 - **Hook**: `src/hooks/useNewFeature.ts`
 - **Type**: Add to `src/integrations/supabase/types.ts`
+
+### Import Pattern
+
+Use barrel exports for cleaner imports:
+
+```tsx
+// Good - use barrel exports
+import { Auth, AcceptInvitation } from "./pages/auth";
+import { ApiKeys, Materials, Users } from "./pages/admin/config";
+import { MyPlan, Pricing, Help } from "./pages/common";
+
+// Avoid - direct file imports (unless not in barrel)
+import Auth from "./pages/auth/Auth";
+```
 
 ---
 

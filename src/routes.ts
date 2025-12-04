@@ -50,28 +50,12 @@ export const ROUTES = {
   },
 
   COMMON: {
-    API_DOCS: "/api-docs",
-    PRICING: "/pricing",
-    MY_PLAN: "/my-plan",
-    BILLING_COMING_SOON: "/billing/coming-soon",
-    HELP: "/help",
-    ABOUT: "/about",
+    API_DOCS: "/admin/api-docs",
+    PRICING: "/admin/pricing",
+    MY_PLAN: "/admin/my-plan",
+    HELP: "/admin/help",
+    ABOUT: "/admin/about",
+    PRIVACY_POLICY: "/privacy-policy",
+    TERMS_OF_SERVICE: "/terms-of-service",
   },
-
-  // Legacy redirects
-  LEGACY: {
-    WORK_QUEUE: "/work-queue",
-    MY_ACTIVITY: "/my-activity",
-    MY_ISSUES: "/my-issues",
-    OPERATOR_VIEW: "/operator-view",
-    DASHBOARD: "/dashboard",
-    STAGES: "/admin/stages",
-    MATERIALS: "/admin/materials",
-    RESOURCES: "/admin/resources",
-    USERS: "/admin/users",
-    API_DOCS: "/api-docs",
-    PRICING: "/pricing",
-    MY_PLAN: "/my-plan",
-    HELP: "/help",
-  }
 } as const;

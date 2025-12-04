@@ -7,26 +7,18 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ThemeProvider } from "./theme/ThemeProvider";
 import { NotificationToastProvider } from "./components/NotificationToastProvider";
 import { McpActivityToasts } from "./components/admin/McpActivityToasts";
-import Auth from "./pages/Auth";
-import AcceptInvitation from "./pages/AcceptInvitation";
-import WorkQueue from "./pages/operator/WorkQueue";
-import MyActivity from "./pages/operator/MyActivity";
-import MyIssues from "./pages/operator/MyIssues";
-import OperatorTerminal from "./pages/operator/OperatorTerminal";
+// Auth pages
+import { Auth, AcceptInvitation } from "./pages/auth";
+
+// Operator pages
+import { WorkQueue, MyActivity, MyIssues, OperatorTerminal, OperatorView } from "./pages/operator";
+
+// Admin pages
 import Dashboard from "./pages/admin/Dashboard";
 import IssueQueue from "./pages/admin/IssueQueue";
-import ConfigStages from "./pages/admin/ConfigStages";
 import FactoryCalendar from "./pages/admin/FactoryCalendar";
-import ConfigMaterials from "./pages/admin/ConfigMaterials";
-import ConfigResources from "./pages/admin/ConfigResources";
-import ConfigUsers from "./pages/admin/ConfigUsers";
-import ConfigScrapReasons from "./pages/admin/ConfigScrapReasons";
 import OrganizationSettings from "./pages/admin/OrganizationSettings";
 import Assignments from "./pages/admin/Assignments";
-import ConfigApiKeys from "./pages/admin/ConfigApiKeys";
-import ConfigMcpKeys from "./pages/admin/ConfigMcpKeys";
-import ConfigWebhooks from "./pages/admin/ConfigWebhooks";
-import ConfigMqttPublishers from "./pages/admin/ConfigMqttPublishers";
 import McpServerSettings from "./pages/admin/McpServerSettings";
 import DataExport from "./pages/admin/DataExport";
 import DataImport from "./pages/admin/DataImport";
@@ -41,19 +33,43 @@ import IntegrationsMarketplace from "./pages/admin/IntegrationsMarketplace";
 import Shipments from "./pages/admin/Shipments";
 import StepsTemplatesView from "./pages/admin/StepsTemplatesView";
 import AnalyticsDashboard from "./pages/admin/Analytics";
-import OEEAnalytics from "./pages/admin/analytics/OEEAnalytics";
-import ReliabilityAnalytics from "./pages/admin/analytics/ReliabilityAnalytics";
-import QRMAnalytics from "./pages/admin/analytics/QRMAnalytics";
-import QRMDashboard from "./pages/admin/analytics/QRMDashboard";
-import JobsAnalytics from "./pages/admin/analytics/JobsAnalytics";
-import QualityAnalytics from "./pages/admin/analytics/QualityAnalytics";
-import ApiDocs from "./pages/ApiDocs";
-import Pricing from "./pages/Pricing";
-import { MyPlan } from "./pages/MyPlan";
-import Help from "./pages/common/Help";
-import About from "./pages/About";
-import PrivacyPolicy from "./pages/common/PrivacyPolicy";
-import TermsOfService from "./pages/common/TermsOfService";
+
+// Admin config pages
+import {
+  ApiKeys as ConfigApiKeys,
+  Materials as ConfigMaterials,
+  McpKeys as ConfigMcpKeys,
+  MqttPublishers as ConfigMqttPublishers,
+  Resources as ConfigResources,
+  ScrapReasons as ConfigScrapReasons,
+  Stages as ConfigStages,
+  Users as ConfigUsers,
+  Webhooks as ConfigWebhooks,
+} from "./pages/admin/config";
+
+// Admin analytics pages
+import {
+  OEEAnalytics,
+  ReliabilityAnalytics,
+  QRMAnalytics,
+  QRMDashboard,
+  JobsAnalytics,
+  QualityAnalytics,
+} from "./pages/admin/analytics";
+
+// Common pages
+import {
+  ApiDocs,
+  Pricing,
+  MyPlan,
+  Help,
+  About,
+  PrivacyPolicy,
+  TermsOfService,
+  SubscriptionBlocked,
+} from "./pages/common";
+
+// Other pages
 import NotFound from "./pages/NotFound";
 import { OnboardingWizard } from "./components/onboarding";
 import Layout from "./components/Layout";
