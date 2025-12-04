@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { Plus, Edit2, Save, X, CheckCircle2, Clock, Circle } from "lucide-react";
+import { Plus, Edit2, Save, X, CheckCircle2, Clock, Circle, Truck, MapPin, Package, Weight } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
@@ -95,6 +95,15 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
       customer: editedJob.customer,
       notes: editedJob.notes,
       metadata: editedJob.metadata,
+      // Delivery fields
+      delivery_address: editedJob.delivery_address || null,
+      delivery_city: editedJob.delivery_city || null,
+      delivery_postal_code: editedJob.delivery_postal_code || null,
+      delivery_country: editedJob.delivery_country || null,
+      // Shipping calculations
+      total_weight_kg: editedJob.total_weight_kg ? parseFloat(editedJob.total_weight_kg) : null,
+      total_volume_m3: editedJob.total_volume_m3 ? parseFloat(editedJob.total_volume_m3) : null,
+      package_count: editedJob.package_count ? parseInt(editedJob.package_count) : null,
     });
   };
 
@@ -214,6 +223,142 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
               />
             ) : (
               <p className="mt-1 text-sm text-muted-foreground">{job?.notes || t("jobs.noNotes")}</p>
+            )}
+          </div>
+
+          {/* Delivery Information */}
+          <div className="border border-white/10 rounded-xl p-4 bg-[rgba(17,25,40,0.3)] backdrop-blur-sm">
+            <Label className="text-sm font-semibold flex items-center gap-2 mb-3">
+              <Truck className="h-4 w-4" />
+              {t("jobs.deliveryInfo")}
+            </Label>
+
+            {isEditing ? (
+              <div className="space-y-4">
+                {/* Delivery Address */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="col-span-2">
+                    <Label className="text-xs text-muted-foreground">{t("jobs.deliveryAddress")}</Label>
+                    <Input
+                      value={editedJob.delivery_address || ""}
+                      onChange={(e) => setEditedJob({ ...editedJob, delivery_address: e.target.value })}
+                      placeholder={t("jobs.deliveryAddressPlaceholder")}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">{t("jobs.deliveryCity")}</Label>
+                    <Input
+                      value={editedJob.delivery_city || ""}
+                      onChange={(e) => setEditedJob({ ...editedJob, delivery_city: e.target.value })}
+                      placeholder={t("jobs.deliveryCityPlaceholder")}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">{t("jobs.deliveryPostalCode")}</Label>
+                    <Input
+                      value={editedJob.delivery_postal_code || ""}
+                      onChange={(e) => setEditedJob({ ...editedJob, delivery_postal_code: e.target.value })}
+                      placeholder={t("jobs.deliveryPostalCodePlaceholder")}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">{t("jobs.deliveryCountry")}</Label>
+                    <Input
+                      value={editedJob.delivery_country || "NL"}
+                      onChange={(e) => setEditedJob({ ...editedJob, delivery_country: e.target.value })}
+                      placeholder="NL"
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+
+                {/* Shipping Details */}
+                <div className="grid grid-cols-3 gap-3 pt-2 border-t border-white/5">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">{t("jobs.totalWeightKg")}</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={editedJob.total_weight_kg || ""}
+                      onChange={(e) => setEditedJob({ ...editedJob, total_weight_kg: e.target.value })}
+                      placeholder="0.00"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">{t("jobs.totalVolumeM3")}</Label>
+                    <Input
+                      type="number"
+                      step="0.001"
+                      min="0"
+                      value={editedJob.total_volume_m3 || ""}
+                      onChange={(e) => setEditedJob({ ...editedJob, total_volume_m3: e.target.value })}
+                      placeholder="0.000"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">{t("jobs.packageCount")}</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={editedJob.package_count || ""}
+                      onChange={(e) => setEditedJob({ ...editedJob, package_count: e.target.value })}
+                      placeholder="1"
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {/* Display mode - Address */}
+                {(job?.delivery_address || job?.delivery_city || job?.delivery_postal_code) ? (
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div className="text-sm">
+                      {job?.delivery_address && <p>{job.delivery_address}</p>}
+                      <p className="text-muted-foreground">
+                        {[job?.delivery_postal_code, job?.delivery_city, job?.delivery_country].filter(Boolean).join(", ")}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    {t("jobs.noDeliveryAddress")}
+                  </p>
+                )}
+
+                {/* Display mode - Shipping details */}
+                <div className="flex gap-4 text-sm">
+                  {job?.total_weight_kg && (
+                    <div className="flex items-center gap-1.5">
+                      <Weight className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>{job.total_weight_kg} kg</span>
+                    </div>
+                  )}
+                  {job?.total_volume_m3 && (
+                    <div className="flex items-center gap-1.5">
+                      <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>{job.total_volume_m3} m³</span>
+                    </div>
+                  )}
+                  {job?.package_count && (
+                    <div className="flex items-center gap-1.5">
+                      <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>{job.package_count} {t("jobs.packages")}</span>
+                    </div>
+                  )}
+                  {!job?.total_weight_kg && !job?.total_volume_m3 && !job?.package_count && (
+                    <p className="text-muted-foreground">{t("jobs.noShippingDetails")}</p>
+                  )}
+                </div>
+              </div>
             )}
           </div>
 

@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect } from "react";
-import { Plus, Save, X, Upload, Eye, Trash2, Box, FileText, AlertTriangle, Package, ChevronRight, Wrench, Image as ImageIcon, Zap, QrCode } from "lucide-react";
+import { Plus, Save, X, Upload, Eye, Trash2, Box, FileText, AlertTriangle, Package, ChevronRight, Wrench, Image as ImageIcon, Zap, QrCode, Truck, Ruler } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useToast } from "@/hooks/use-toast";
 import { STEPViewer } from "@/components/STEPViewer";
@@ -72,6 +72,12 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
   const [isBulletCard, setIsBulletCard] = useState<boolean>(false);
   const [hasChanges, setHasChanges] = useState<boolean>(false);
 
+  // Shipping fields state
+  const [weightKg, setWeightKg] = useState<string>("");
+  const [lengthMm, setLengthMm] = useState<string>("");
+  const [widthMm, setWidthMm] = useState<string>("");
+  const [heightMm, setHeightMm] = useState<string>("");
+
   // Upload hook with progress tracking and quota validation
   const {
     progress: uploadProgress,
@@ -117,6 +123,11 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       setDrawingNo(part.drawing_no || "");
       setCncProgramName(part.cnc_program_name || "");
       setIsBulletCard(part.is_bullet_card || false);
+      // Shipping fields
+      setWeightKg(part.weight_kg?.toString() || "");
+      setLengthMm(part.length_mm?.toString() || "");
+      setWidthMm(part.width_mm?.toString() || "");
+      setHeightMm(part.height_mm?.toString() || "");
       setHasChanges(false);
     }
   }, [part]);
@@ -130,6 +141,11 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           drawing_no: drawingNo || null,
           cnc_program_name: cncProgramName || null,
           is_bullet_card: isBulletCard,
+          // Shipping fields
+          weight_kg: weightKg ? parseFloat(weightKg) : null,
+          length_mm: lengthMm ? parseFloat(lengthMm) : null,
+          width_mm: widthMm ? parseFloat(widthMm) : null,
+          height_mm: heightMm ? parseFloat(heightMm) : null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", partId);
@@ -640,6 +656,108 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                         {t("parts.qrCodeDesc")}
                       </p>
                     </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Shipping Info - Weight and Dimensions */}
+          <div className="border rounded-lg p-4 bg-muted/30">
+            <div className="flex items-center justify-between mb-4">
+              <Label className="text-lg flex items-center gap-2">
+                <Truck className="h-5 w-5" />
+                {t("parts.shippingInfo")}
+              </Label>
+              {hasChanges && (
+                <Button
+                  size="sm"
+                  onClick={() => updatePartFieldsMutation.mutate()}
+                  disabled={updatePartFieldsMutation.isPending}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {updatePartFieldsMutation.isPending ? t("common.saving") : t("common.saveChanges")}
+                </Button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {/* Weight */}
+              <div>
+                <Label htmlFor="weight-kg">{t("parts.weightKg")}</Label>
+                <Input
+                  id="weight-kg"
+                  type="number"
+                  step="0.001"
+                  min="0"
+                  value={weightKg}
+                  onChange={(e) => handleFieldChange(setWeightKg, e.target.value)}
+                  placeholder={t("parts.weightKgPlaceholder")}
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Dimensions Header */}
+              <div className="col-span-2 mt-2">
+                <Label className="text-sm flex items-center gap-2 text-muted-foreground">
+                  <Ruler className="h-4 w-4" />
+                  {t("parts.dimensions")} (mm)
+                </Label>
+              </div>
+
+              {/* Length */}
+              <div>
+                <Label htmlFor="length-mm">{t("parts.lengthMm")}</Label>
+                <Input
+                  id="length-mm"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={lengthMm}
+                  onChange={(e) => handleFieldChange(setLengthMm, e.target.value)}
+                  placeholder={t("parts.lengthPlaceholder")}
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Width */}
+              <div>
+                <Label htmlFor="width-mm">{t("parts.widthMm")}</Label>
+                <Input
+                  id="width-mm"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={widthMm}
+                  onChange={(e) => handleFieldChange(setWidthMm, e.target.value)}
+                  placeholder={t("parts.widthPlaceholder")}
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Height */}
+              <div>
+                <Label htmlFor="height-mm">{t("parts.heightMm")}</Label>
+                <Input
+                  id="height-mm"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={heightMm}
+                  onChange={(e) => handleFieldChange(setHeightMm, e.target.value)}
+                  placeholder={t("parts.heightPlaceholder")}
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Volume calculation display */}
+              {lengthMm && widthMm && heightMm && (
+                <div className="col-span-2 p-3 border rounded-md bg-card">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">{t("parts.calculatedVolume")}</span>
+                    <span className="font-mono font-medium">
+                      {((parseFloat(lengthMm) * parseFloat(widthMm) * parseFloat(heightMm)) / 1000000000).toFixed(6)} m³
+                    </span>
                   </div>
                 </div>
               )}
