@@ -1979,7 +1979,33 @@
     "jobsSubtitle": "Track job status, deadlines, and quality metrics",
     "qualityTitle": "Quality Analytics",
     "qualitySubtitle": "Monitor yield rates, scrap, and issue metrics",
-    "noQualityData": "No quality data available yet. Start recording production to see metrics."
+    "noQualityData": "No quality data available yet. Start recording production to see metrics.",
+    "noOEEData": "No OEE data available yet. Complete operations to see efficiency metrics.",
+    "noReliabilityData": "No reliability data available yet. Complete operations with planned dates to see metrics.",
+    "noData": "No data available",
+    "noTrendData": "No trend data available for this period"
+  },
+  "oee": {
+    "breakdown": "OEE Breakdown",
+    "availability": "Availability",
+    "performance": "Performance",
+    "quality": "Quality",
+    "operationStates": "Operation States",
+    "trend": "OEE Trend",
+    "byCell": "OEE by Cell"
+  },
+  "reliability": {
+    "summary": "Reliability Summary",
+    "totalOperations": "Total Operations",
+    "onTime": "On Time",
+    "late": "Late",
+    "avgDelay": "Avg Delay",
+    "minutes": "min",
+    "onTimePerformance": "On-Time Performance",
+    "onTimePercent": "On-Time %",
+    "avgDelayTrend": "Average Delay Trend",
+    "delayMin": "Delay (min)",
+    "byCell": "Reliability by Cell"
   },
   "capacity": {
     "title": "Capacity Matrix",
