@@ -1276,6 +1276,85 @@ Smooth floating animation for gradient orbs.
 
 ---
 
+## Admin Page Layout
+
+All admin pages follow a standardized layout pattern for consistency. Use the provided components.
+
+### Page Structure
+
+```tsx
+<div className="p-4 space-y-4">
+  <AdminPageHeader />      {/* Title, description, action button */}
+  <PageStatsRow />         {/* 3-4 key metrics */}
+  <div className="glass-card p-4">
+    <DataTable />          {/* Main content */}
+  </div>
+</div>
+```
+
+### AdminPageHeader
+
+Located: `src/components/admin/AdminPageHeader.tsx`
+
+Provides consistent page headers with:
+- `text-2xl` gradient title
+- `text-sm` muted description
+- Optional CTA button on right
+- `title-divider` below
+
+```tsx
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+
+<AdminPageHeader
+  title={t("jobs.title")}
+  description={t("jobs.subtitle")}
+  action={{
+    label: t("jobs.createJob"),
+    onClick: () => navigate("/admin/jobs/new"),
+    icon: Plus,
+  }}
+>
+  {/* Optional extra children before action button */}
+</AdminPageHeader>
+```
+
+### PageStatsRow
+
+Located: `src/components/admin/PageStatsRow.tsx`
+
+Compact row of 3-4 key metrics using design tokens.
+
+```tsx
+import { PageStatsRow } from "@/components/admin/PageStatsRow";
+
+<PageStatsRow
+  stats={[
+    { label: t("jobs.total"), value: 42, icon: Briefcase, color: "primary" },
+    { label: t("jobs.inProgress"), value: 12, icon: PlayCircle, color: "warning" },
+    { label: t("jobs.completed"), value: 28, icon: CheckCircle2, color: "success" },
+    { label: t("jobs.overdue"), value: 2, icon: AlertCircle, color: "error" },
+  ]}
+/>
+```
+
+**Color options:** `primary`, `success`, `warning`, `error`, `info`, `muted`
+
+### UX Best Practices
+
+| Pattern | Implementation |
+|---------|----------------|
+| **Row click** | Opens detail modal (primary action) |
+| **Three-dot menu** | Additional actions (edit, delete, etc.) |
+| **Context menu** | Power user alternative |
+| **Filters** | Use DataTable's built-in faceted filters |
+
+**Never:**
+- Add separate "View" action column when row click exists
+- Use different spacing/typography across pages
+- Hardcode strings (always use `t()` with fallback)
+
+---
+
 ## Best Practices
 
 ### ✅ Do

@@ -558,6 +558,8 @@ function JobCard({ job, onEdit, onDelete }: JobCardProps) {
 | `src/integrations/supabase/types.ts` | Database types |
 | `src/i18n/locales/*/translation.json` | Translations (EN/NL/DE) |
 | `src/components/ui/*` | shadcn/ui components |
+| `src/components/admin/AdminPageHeader.tsx` | Standardized page header |
+| `src/components/admin/PageStatsRow.tsx` | Stats row component |
 | `src/theme/ThemeProvider.tsx` | Theme (dark/light/auto) |
 
 ### Page Organization
@@ -618,41 +620,69 @@ import Auth from "./pages/auth/Auth";
 
 ## Common Patterns
 
-### Page Layout
+### Page Layout (Admin Pages)
+
+**Always use the standardized admin components:**
 
 ```tsx
 import { useTranslation } from 'react-i18next';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { PageStatsRow } from '@/components/admin/PageStatsRow';
+import { DataTable } from '@/components/ui/data-table/DataTable';
+import { Plus, Briefcase, PlayCircle, CheckCircle2 } from 'lucide-react';
 
 export default function NewPage() {
   const { t } = useTranslation();
+  const { data, isLoading } = useMyDataHook();
 
   return (
     <div className="p-4 space-y-4">
-      {/* Header */}
-      <div>
-        <div className="flex justify-between items-center mb-1">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
-            {t('newFeature.title')}
-          </h1>
-          <Button className="cta-button">
-            {t('newFeature.action')}
-          </Button>
-        </div>
-        <p className="text-muted-foreground text-sm">
-          {t('newFeature.description')}
-        </p>
-      </div>
+      {/* Header - use AdminPageHeader component */}
+      <AdminPageHeader
+        title={t('newFeature.title')}
+        description={t('newFeature.description')}
+        action={{
+          label: t('newFeature.create'),
+          onClick: () => navigate('/admin/new'),
+          icon: Plus,
+        }}
+      />
 
-      <hr className="title-divider" />
+      {/* Stats Row - 3-4 key metrics */}
+      <PageStatsRow
+        stats={[
+          { label: t('newFeature.total'), value: data?.length || 0, icon: Briefcase, color: 'primary' },
+          { label: t('newFeature.active'), value: activeCount, icon: PlayCircle, color: 'warning' },
+          { label: t('newFeature.completed'), value: completedCount, icon: CheckCircle2, color: 'success' },
+        ]}
+      />
 
-      {/* Content */}
+      {/* Content - DataTable in glass-card */}
       <div className="glass-card p-4">
-        {/* Page content */}
+        <DataTable
+          columns={columns}
+          data={data || []}
+          filterableColumns={filterableColumns}
+          searchPlaceholder={t('newFeature.search')}
+          emptyMessage={t('newFeature.noResults')}
+          loading={isLoading}
+          onRowClick={(row) => setSelectedId(row.id)}  {/* Row click opens modal */}
+        />
       </div>
+
+      {/* Detail Modal - opens on row click */}
+      {selectedId && (
+        <DetailModal id={selectedId} onClose={() => setSelectedId(null)} />
+      )}
     </div>
   );
 }
 ```
+
+**UX Best Practices:**
+- **Row click** = Opens detail modal (primary action)
+- **Three-dot menu** = Additional actions (edit, delete) - only when needed
+- Never add redundant "View" action column
 
 ### Data Fetching Hook
 
