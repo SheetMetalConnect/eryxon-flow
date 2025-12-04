@@ -1449,7 +1449,7 @@
     "contactSales": "Contact Sales",
     "managePlan": "Manage Plan",
     "hostedPlans": "Hosted Plans",
-    "hostedPlansDescription": "We host everything on Hetzner (EU). You pay for hosting, compute, and support.",
+    "hostedPlansDescription": "Fully managed cloud service hosted in the EU. We take care of everything.",
     "free": {
       "name": "Free",
       "price": "€0",
