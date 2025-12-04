@@ -376,7 +376,7 @@ export function TemplatesManager() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <div className="text-sm text-muted-foreground">
-          {templates.length} {t("templates")}
+          {templates.length} {t("Templates")}
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
