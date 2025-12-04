@@ -391,6 +391,13 @@
     "mcpServer": "MCP-server",
     "mqttPublishers": "MQTT Publishers",
     "shipping": "Verzending",
+    "dataImport": "Gegevensimport",
+    "analytics": "Analyses",
+    "qrmDashboard": "QRM Dashboard",
+    "jobsAnalytics": "Orderanalyses",
+    "qualityAnalytics": "Kwaliteitsanalyses",
+    "oeeAnalytics": "OEE Analyses",
+    "reliabilityAnalytics": "Betrouwbaarheidsanalyses",
     "sections": {
       "overview": "OVERZICHT",
       "operations": "BEWERKINGEN",
@@ -1984,7 +1991,22 @@
     "totalScrapped": "Totaal afgekeurd",
     "noScrapData": "Nog geen afvalgegevens geregistreerd",
     "usage": "Gebruik",
-    "scrapped": "Afgekeurd"
+    "scrapped": "Afgekeurd",
+    "issuesByStatus": "Problemen per status",
+    "issuesBySeverity": "Problemen per ernst",
+    "pending": "In afwachting",
+    "inProgress": "Bezig",
+    "total": "Totaal",
+    "high": "Hoog",
+    "medium": "Gemiddeld",
+    "low": "Laag"
+  },
+  "analytics": {
+    "jobsTitle": "Orderanalyses",
+    "jobsSubtitle": "Volg orderstatus, deadlines en kwaliteitsmetrieken",
+    "qualityTitle": "Kwaliteitsanalyses",
+    "qualitySubtitle": "Monitor opbrengsten, afval en probleemmetrieken",
+    "noQualityData": "Nog geen kwaliteitsgegevens beschikbaar. Begin met productieregistratie om metrieken te zien."
   },
   "sessionTracking": {
     "currentlyTracking": "Momenteel aan het bijhouden",

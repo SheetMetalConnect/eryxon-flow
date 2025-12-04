@@ -151,6 +151,13 @@
     "mcpServer": "MCP-Server",
     "mqttPublishers": "MQTT-Publisher",
     "shipping": "Versand",
+    "dataImport": "Datenimport",
+    "analytics": "Analysen",
+    "qrmDashboard": "QRM-Dashboard",
+    "jobsAnalytics": "Auftragsanalysen",
+    "qualityAnalytics": "Qualitätsanalysen",
+    "oeeAnalytics": "OEE-Analysen",
+    "reliabilityAnalytics": "Zuverlässigkeitsanalysen",
     "sections": {
       "overview": "ÜBERSICHT",
       "operations": "ARBEITSGÄNGE",
@@ -1714,7 +1721,22 @@
     "totalScrapped": "Gesamt verschrottet",
     "noScrapData": "Noch keine Ausschussdaten erfasst",
     "usage": "Verwendung",
-    "scrapped": "Verschrottet"
+    "scrapped": "Verschrottet",
+    "issuesByStatus": "Probleme nach Status",
+    "issuesBySeverity": "Probleme nach Schweregrad",
+    "pending": "Ausstehend",
+    "inProgress": "In Bearbeitung",
+    "total": "Gesamt",
+    "high": "Hoch",
+    "medium": "Mittel",
+    "low": "Niedrig"
+  },
+  "analytics": {
+    "jobsTitle": "Auftragsanalysen",
+    "jobsSubtitle": "Verfolgen Sie Auftragsstatus, Fristen und Qualitätsmetriken",
+    "qualityTitle": "Qualitätsanalysen",
+    "qualitySubtitle": "Überwachen Sie Ausbeute, Ausschuss und Problemmetriken",
+    "noQualityData": "Noch keine Qualitätsdaten verfügbar. Beginnen Sie mit der Produktionserfassung, um Metriken zu sehen."
   },
   "sessionTracking": {
     "currentlyTracking": "Aktuelle Zeiterfassung",

@@ -44,6 +44,8 @@ export const ROUTES = {
       RELIABILITY: "/admin/analytics/reliability",
       QRM: "/admin/analytics/qrm",
       QRM_DASHBOARD: "/admin/analytics/qrm-dashboard",
+      JOBS: "/admin/analytics/jobs",
+      QUALITY: "/admin/analytics/quality",
     }
   },
 

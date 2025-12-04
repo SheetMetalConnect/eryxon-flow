@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import {
     AreaChart,
     Area,
@@ -11,15 +11,13 @@ import {
     BarChart,
     Bar,
     Cell,
-    ComposedChart,
-    Line,
     PieChart,
     Pie,
 } from "recharts";
 import { useTranslation } from "react-i18next";
 import { QRMDashboardMetrics } from "@/hooks/useQRMDashboardMetrics";
 
-// --- Colors from Design System ---
+// --- Centralized Chart Styling (Design System) ---
 const COLORS = {
     primary: "hsl(var(--brand-primary))",
     success: "hsl(var(--color-success))",
@@ -30,19 +28,51 @@ const COLORS = {
     grid: "rgba(255,255,255,0.1)",
 };
 
+// Centralized tooltip style for consistency
+const TOOLTIP_STYLE = {
+    contentStyle: {
+        backgroundColor: "hsl(var(--card))",
+        borderColor: "hsl(var(--border))",
+        color: "hsl(var(--foreground))",
+        borderRadius: "8px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+    },
+    cursor: { fill: "rgba(255,255,255,0.05)" },
+};
+
+// Centralized axis styling
+const AXIS_STYLE = {
+    stroke: COLORS.muted,
+    fontSize: 12,
+    tickLine: false,
+    axisLine: false,
+};
+
+// WIP Age gradient colors
+const AGE_COLORS = [
+    COLORS.success, // 0-2 days
+    COLORS.info,    // 3-5 days
+    COLORS.warning, // 6-10 days
+    COLORS.error,   // >10 days
+];
+
 // --- MCT Chart ---
-export const MCTChart = ({ data }: { data: QRMDashboardMetrics["mct"] }) => {
+export const MCTChart = memo(({ data }: { data: QRMDashboardMetrics["mct"] }) => {
     const { t } = useTranslation();
 
     return (
-        <div className="h-full w-full">
+        <div className="h-full w-full" role="img" aria-label={t("qrm.mct.title")}>
             <div className="mb-4 flex items-baseline gap-2">
                 <span className="text-3xl font-bold">{data.current.toFixed(1)}</span>
                 <span className="text-sm text-muted-foreground">{t("qrm.mct.days")}</span>
             </div>
             <div className="h-[200px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data.trend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <AreaChart
+                        data={data.trend}
+                        margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                        accessibilityLayer
+                    >
                         <defs>
                             <linearGradient id="colorMct" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="5%" stopColor={COLORS.primary} stopOpacity={0.3} />
@@ -76,26 +106,26 @@ export const MCTChart = ({ data }: { data: QRMDashboardMetrics["mct"] }) => {
                             fillOpacity={1}
                             fill="url(#colorMct)"
                             strokeWidth={2}
+                            name={t("qrm.mct.title")}
                         />
                     </AreaChart>
                 </ResponsiveContainer>
             </div>
         </div>
     );
+});
+
+// Helper to get color based on performance value
+const getPerformanceColor = (value: number) => {
+    if (value >= 95) return COLORS.success;
+    if (value >= 85) return COLORS.warning;
+    return COLORS.error;
 };
 
 // --- OTP Gauge ---
-export const OTPGauge = ({ data }: { data: QRMDashboardMetrics["otp"] }) => {
+export const OTPGauge = memo(({ data }: { data: QRMDashboardMetrics["otp"] }) => {
     const { t } = useTranslation();
-
-    // Calculate color based on value
-    const getColor = (value: number) => {
-        if (value >= 95) return COLORS.success;
-        if (value >= 85) return COLORS.warning;
-        return COLORS.error;
-    };
-
-    const color = getColor(data.current);
+    const color = getPerformanceColor(data.current);
 
     // Data for the semi-circle gauge
     const gaugeData = [
@@ -104,10 +134,10 @@ export const OTPGauge = ({ data }: { data: QRMDashboardMetrics["otp"] }) => {
     ];
 
     return (
-        <div className="h-full w-full flex flex-col items-center justify-center relative">
+        <div className="h-full w-full flex flex-col items-center justify-center relative" role="img" aria-label={`${t("qrm.otp.title")}: ${data.current.toFixed(1)}%`}>
             <div className="h-[180px] w-full relative">
                 <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
+                    <PieChart accessibilityLayer>
                         <Pie
                             data={gaugeData}
                             cx="50%"
@@ -119,6 +149,7 @@ export const OTPGauge = ({ data }: { data: QRMDashboardMetrics["otp"] }) => {
                             paddingAngle={0}
                             dataKey="value"
                             stroke="none"
+                            name={t("qrm.otp.title")}
                         >
                             <Cell key="value" fill={color} />
                             <Cell key="remainder" fill={COLORS.grid} />
@@ -133,26 +164,27 @@ export const OTPGauge = ({ data }: { data: QRMDashboardMetrics["otp"] }) => {
             {/* Mini Trend Line */}
             <div className="h-[40px] w-full px-8 mt-[-20px]">
                 <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data.trend}>
+                    <AreaChart data={data.trend} accessibilityLayer>
                         <Area type="monotone" dataKey="value" stroke={color} fill="none" strokeWidth={2} />
                     </AreaChart>
                 </ResponsiveContainer>
             </div>
         </div>
     );
-};
+});
 
 // --- Queue Time Chart ---
-export const QueueTimeChart = ({ data }: { data: QRMDashboardMetrics["queueTime"] }) => {
+export const QueueTimeChart = memo(({ data }: { data: QRMDashboardMetrics["queueTime"] }) => {
     const { t } = useTranslation();
 
     return (
-        <div className="h-full w-full">
+        <div className="h-full w-full" role="img" aria-label={t("qrm.queueTime.title")}>
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                     data={data.byCell}
                     layout="vertical"
                     margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+                    accessibilityLayer
                 >
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={COLORS.grid} />
                     <XAxis type="number" hide />
@@ -161,13 +193,9 @@ export const QueueTimeChart = ({ data }: { data: QRMDashboardMetrics["queueTime"
                         type="category"
                         width={100}
                         tick={{ fill: COLORS.muted, fontSize: 12 }}
-                        axisLine={false}
-                        tickLine={false}
+                        {...AXIS_STYLE}
                     />
-                    <Tooltip
-                        cursor={{ fill: "rgba(255,255,255,0.05)" }}
-                        contentStyle={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
-                    />
+                    <Tooltip {...TOOLTIP_STYLE} />
                     <Bar dataKey="avgQueueTime" name={t("qrm.queueTime.hours")} radius={[0, 4, 4, 0]} barSize={20}>
                         {data.byCell.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={index === 0 ? COLORS.error : COLORS.info} />
@@ -177,56 +205,49 @@ export const QueueTimeChart = ({ data }: { data: QRMDashboardMetrics["queueTime"
             </ResponsiveContainer>
         </div>
     );
-};
+});
 
-// --- Cycle Time Chart (Range Bar simulated with ComposedChart) ---
-export const CycleTimeChart = ({ data }: { data: QRMDashboardMetrics["cycleTime"] }) => {
+// --- Cycle Time Chart ---
+export const CycleTimeChart = memo(({ data }: { data: QRMDashboardMetrics["cycleTime"] }) => {
     const { t } = useTranslation();
 
-    // Transform data for range visualization
-    // We'll use a bar for the range (min to max) and a line or scatter for median
-    // Actually, Recharts doesn't support box plots natively well.
-    // We can use a stacked bar approach: [transparent (min), bar (max-min)]
-    // But to show median, we might need a custom shape or composed chart.
-
-    // Simplified approach: Bar chart showing Median, with Error Bars for Min/Max? 
-    // Or just a simple bar chart of Median for now to keep it clean, maybe with a "range" tooltip.
-
     return (
-        <div className="h-full w-full">
+        <div className="h-full w-full" role="img" aria-label={t("qrm.cycleTime.title")}>
             <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.byOperation} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                <BarChart
+                    data={data.byOperation}
+                    margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+                    accessibilityLayer
+                >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={COLORS.grid} />
-                    <XAxis dataKey="operationType" stroke={COLORS.muted} fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke={COLORS.muted} fontSize={12} tickLine={false} axisLine={false} />
+                    <XAxis dataKey="operationType" {...AXIS_STYLE} />
+                    <YAxis {...AXIS_STYLE} />
                     <Tooltip
-                        contentStyle={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
-                        formatter={(value: number, name: string, props: any) => {
-                            if (name === "median") return [`${value} min`, "Median"];
-                            return [`${value} min`, name];
+                        {...TOOLTIP_STYLE}
+                        formatter={(value: number, name: string) => {
+                            if (name === "median") return [`${value} ${t("qrm.cycleTime.minutes")}`, t("qrm.cycleTime.median")];
+                            return [`${value} ${t("qrm.cycleTime.minutes")}`, name];
                         }}
                     />
-                    <Bar dataKey="median" fill={COLORS.primary} radius={[4, 4, 0, 0]} barSize={30} name="Median (min)" />
+                    <Bar
+                        dataKey="median"
+                        fill={COLORS.primary}
+                        radius={[4, 4, 0, 0]}
+                        barSize={30}
+                        name={t("qrm.cycleTime.median")}
+                    />
                 </BarChart>
             </ResponsiveContainer>
         </div>
     );
-};
+});
 
 // --- WIP Age Chart ---
-export const WIPAgeChart = ({ data }: { data: QRMDashboardMetrics["wipAge"] }) => {
+export const WIPAgeChart = memo(({ data }: { data: QRMDashboardMetrics["wipAge"] }) => {
     const { t } = useTranslation();
 
-    // Gradient colors for age buckets
-    const AGE_COLORS = [
-        "hsl(var(--color-success))", // 0-2 days
-        "hsl(var(--color-info))",    // 3-5 days
-        "hsl(var(--color-warning))", // 6-10 days
-        "hsl(var(--color-error))",   // >10 days
-    ];
-
     return (
-        <div className="h-full w-full flex flex-col justify-center">
+        <div className="h-full w-full flex flex-col justify-center" role="img" aria-label={`${t("qrm.wipAge.title")}: ${data.totalWip} ${t("qrm.wipAge.jobs")}`}>
             <div className="mb-2 flex justify-between items-end px-2">
                 <span className="text-sm text-muted-foreground">{t("qrm.wipAge.jobs")}</span>
                 <span className="text-2xl font-bold">{data.totalWip}</span>
@@ -237,6 +258,7 @@ export const WIPAgeChart = ({ data }: { data: QRMDashboardMetrics["wipAge"] }) =
                         data={data.distribution}
                         layout="vertical"
                         margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+                        accessibilityLayer
                     >
                         <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={COLORS.grid} />
                         <XAxis type="number" hide />
@@ -245,14 +267,10 @@ export const WIPAgeChart = ({ data }: { data: QRMDashboardMetrics["wipAge"] }) =
                             type="category"
                             width={50}
                             tick={{ fill: COLORS.muted, fontSize: 12 }}
-                            axisLine={false}
-                            tickLine={false}
+                            {...AXIS_STYLE}
                         />
-                        <Tooltip
-                            cursor={{ fill: "rgba(255,255,255,0.05)" }}
-                            contentStyle={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
-                        />
-                        <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={24}>
+                        <Tooltip {...TOOLTIP_STYLE} />
+                        <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={24} name={t("qrm.wipAge.jobs")}>
                             {data.distribution.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={AGE_COLORS[index % AGE_COLORS.length]} />
                             ))}
@@ -262,16 +280,21 @@ export const WIPAgeChart = ({ data }: { data: QRMDashboardMetrics["wipAge"] }) =
             </div>
         </div>
     );
-};
+});
 
 // --- Issue Rate Chart ---
-export const IssueRateChart = ({ data }: { data: QRMDashboardMetrics["issueRate"] }) => {
+export const IssueRateChart = memo(({ data }: { data: QRMDashboardMetrics["issueRate"] }) => {
     const { t } = useTranslation();
 
     return (
-        <div className="h-full w-full">
+        <div className="h-full w-full" role="img" aria-label={t("qrm.issueRate.title")}>
             <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.byCategory} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+                <BarChart
+                    data={data.byCategory}
+                    layout="vertical"
+                    margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+                    accessibilityLayer
+                >
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={COLORS.grid} />
                     <XAxis type="number" hide />
                     <YAxis
@@ -279,53 +302,51 @@ export const IssueRateChart = ({ data }: { data: QRMDashboardMetrics["issueRate"
                         type="category"
                         width={80}
                         tick={{ fill: COLORS.muted, fontSize: 12 }}
-                        axisLine={false}
-                        tickLine={false}
+                        {...AXIS_STYLE}
                     />
-                    <Tooltip
-                        cursor={{ fill: "rgba(255,255,255,0.05)" }}
-                        contentStyle={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
-                    />
+                    <Tooltip {...TOOLTIP_STYLE} />
                     <Bar dataKey="rate" name={t("qrm.issueRate.rate")} radius={[0, 4, 4, 0]} barSize={20} fill={COLORS.warning} />
                 </BarChart>
             </ResponsiveContainer>
         </div>
     );
-};
+});
 
 // --- Reliability Heatmap ---
-export const ReliabilityHeatmap = ({ data }: { data: QRMDashboardMetrics["reliability"] }) => {
+export const ReliabilityHeatmap = memo(({ data }: { data: QRMDashboardMetrics["reliability"] }) => {
     const { t } = useTranslation();
 
     // Helper to get color based on reliability score
     const getCellColor = (value: number) => {
-        if (value >= 95) return "hsl(var(--color-success))";
-        if (value >= 90) return "hsl(var(--color-info))";
-        if (value >= 80) return "hsl(var(--color-warning))";
-        return "hsl(var(--color-error))";
+        if (value >= 95) return COLORS.success;
+        if (value >= 90) return COLORS.info;
+        if (value >= 80) return COLORS.warning;
+        return COLORS.error;
     };
 
     return (
-        <div className="h-full w-full overflow-auto">
+        <div className="h-full w-full overflow-auto" role="table" aria-label={t("qrm.reliability.title")}>
             <table className="w-full text-sm">
                 <thead>
                     <tr>
-                        <th className="text-left font-medium text-muted-foreground pb-2">{t("qrm.reliability.cell")}</th>
+                        <th className="text-left font-medium text-muted-foreground pb-2" scope="col">{t("qrm.reliability.cell")}</th>
                         {data.periodLabels.map((label, i) => (
-                            <th key={i} className="text-center font-medium text-muted-foreground pb-2 text-xs">{label}</th>
+                            <th key={i} className="text-center font-medium text-muted-foreground pb-2 text-xs" scope="col">{label}</th>
                         ))}
                     </tr>
                 </thead>
                 <tbody>
                     {data.heatmap.map((row, i) => (
                         <tr key={i} className="border-b border-border/50 last:border-0">
-                            <td className="py-2 font-medium">{row.cellName}</td>
+                            <th className="py-2 font-medium text-left" scope="row">{row.cellName}</th>
                             {row.values.map((val, j) => (
                                 <td key={j} className="py-2 text-center">
                                     <div
-                                        className="inline-flex items-center justify-center w-8 h-8 rounded-md text-xs font-bold text-white"
+                                        className="inline-flex items-center justify-center w-8 h-8 rounded-md text-xs font-bold text-white transition-transform hover:scale-110"
                                         style={{ backgroundColor: getCellColor(val) }}
-                                        title={`${val}%`}
+                                        title={`${row.cellName}: ${val}% ${t("qrm.reliability.title")}`}
+                                        role="cell"
+                                        aria-label={`${row.cellName} ${data.periodLabels[j]}: ${val}%`}
                                     >
                                         {val}
                                     </div>
@@ -337,23 +358,23 @@ export const ReliabilityHeatmap = ({ data }: { data: QRMDashboardMetrics["reliab
             </table>
         </div>
     );
-};
+});
 
 // --- Throughput Chart ---
-export const ThroughputChart = ({ data }: { data: QRMDashboardMetrics["throughput"] }) => {
+export const ThroughputChart = memo(({ data }: { data: QRMDashboardMetrics["throughput"] }) => {
     const { t } = useTranslation();
 
     return (
-        <div className="h-full w-full overflow-y-auto pr-2 custom-scrollbar">
+        <div className="h-full w-full overflow-y-auto pr-2 custom-scrollbar" role="list" aria-label={t("qrm.throughput.title")}>
             <div className="space-y-4">
                 {data.byCell.map((cell, index) => (
-                    <div key={index} className="flex items-center gap-4">
+                    <div key={index} className="flex items-center gap-4" role="listitem">
                         <div className="w-24 text-sm font-medium text-muted-foreground truncate" title={cell.cellName}>
                             {cell.cellName}
                         </div>
-                        <div className="flex-1 h-8">
+                        <div className="flex-1 h-8" aria-hidden="true">
                             <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={cell.trend.map((val, i) => ({ i, val }))}>
+                                <AreaChart data={cell.trend.map((val, i) => ({ i, val }))} accessibilityLayer>
                                     <defs>
                                         <linearGradient id={`grad-${index}`} x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor={COLORS.success} stopOpacity={0.3} />
@@ -366,15 +387,16 @@ export const ThroughputChart = ({ data }: { data: QRMDashboardMetrics["throughpu
                                         stroke={COLORS.success}
                                         fill={`url(#grad-${index})`}
                                         strokeWidth={1.5}
+                                        name={t("qrm.throughput.units")}
                                     />
                                     <Tooltip
-                                        contentStyle={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
-                                        formatter={(value: number) => [`${value} units`, "Throughput"]}
+                                        {...TOOLTIP_STYLE}
+                                        formatter={(value: number) => [`${value} ${t("qrm.throughput.units")}`, t("qrm.throughput.title")]}
                                     />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
-                        <div className="w-16 text-right font-bold text-sm">
+                        <div className="w-16 text-right font-bold text-sm" aria-label={`${cell.cellName}: ${cell.current} ${t("qrm.throughput.unitsPerDay")}`}>
                             {cell.current} <span className="text-xs font-normal text-muted-foreground">u/d</span>
                         </div>
                     </div>
@@ -382,4 +404,14 @@ export const ThroughputChart = ({ data }: { data: QRMDashboardMetrics["throughpu
             </div>
         </div>
     );
-};
+});
+
+// Add display names for debugging
+MCTChart.displayName = "MCTChart";
+OTPGauge.displayName = "OTPGauge";
+QueueTimeChart.displayName = "QueueTimeChart";
+CycleTimeChart.displayName = "CycleTimeChart";
+WIPAgeChart.displayName = "WIPAgeChart";
+IssueRateChart.displayName = "IssueRateChart";
+ReliabilityHeatmap.displayName = "ReliabilityHeatmap";
+ThroughputChart.displayName = "ThroughputChart";
