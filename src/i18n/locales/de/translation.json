@@ -1221,6 +1221,7 @@
   },
   "myPlan": {
     "title": "Mein Plan",
+    "comingSoon": "Demnächst",
     "comingSoonTitle": "Abonnementverwaltung kommt bald",
     "comingSoonSubtitle": "Professionelle Abonnementfunktionen werden finalisiert",
     "comingSoonDescription": "Wir entwickeln ein umfassendes Abonnementverwaltungssystem. Derzeit sind alle Funktionen kostenlos verfügbar.",

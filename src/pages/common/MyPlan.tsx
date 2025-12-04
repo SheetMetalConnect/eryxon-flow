@@ -23,11 +23,11 @@ import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { useSubscription } from "@/hooks/useSubscription";
 
-const pricingTiers = [
+const getPricingTiers = (t: (key: string) => string) => [
   {
     id: "free",
     name: "Free",
-    price: "€0",
+    price: t("myPlan.comingSoon"),
     description: "Try it. Very limited.",
     features: [
       "25 jobs per month",
@@ -42,7 +42,7 @@ const pricingTiers = [
   {
     id: "pro",
     name: "Pro",
-    price: "€97",
+    price: t("myPlan.comingSoon"),
     popular: true,
     description: "Real usage, email support.",
     features: [
@@ -58,7 +58,7 @@ const pricingTiers = [
   {
     id: "premium",
     name: "Premium",
-    price: "€497",
+    price: t("myPlan.comingSoon"),
     description: "High limits, SSO, priority support.",
     features: [
       "Fair use (high limits)",
@@ -117,6 +117,7 @@ export const MyPlan: React.FC = () => {
   }
 
   const currentPlan = subscription?.plan || "free";
+  const pricingTiers = getPricingTiers(t);
   const currentTier = pricingTiers.find((tier) => tier.id === currentPlan);
 
   const getPlanGradient = (plan: string) => {

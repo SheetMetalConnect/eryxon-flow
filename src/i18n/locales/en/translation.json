@@ -1502,6 +1502,7 @@
   },
   "myPlan": {
     "title": "My Plan",
+    "comingSoon": "Coming Soon",
     "comingSoonTitle": "Subscription Management Coming Soon",
     "comingSoonSubtitle": "Professional subscription features are being finalized",
     "comingSoonDescription": "We're building a comprehensive subscription management system. Currently, all features are available for free.",
