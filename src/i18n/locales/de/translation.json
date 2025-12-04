@@ -1457,7 +1457,9 @@
       "title": "Zellen Zuverlässigkeit Heatmap",
       "cell": "Zelle",
       "week": "Woche"
-    }
+    },
+    "loadError": "Fehler beim Laden der QRM-Dashboard-Daten",
+    "noData": "Keine QRM-Daten verfügbar. Bitte stellen Sie sicher, dass Sie aktive Aufträge und Arbeitsgänge haben."
   },
   "terminal": {
     "columns": {

@@ -23,12 +23,39 @@ const QRMDashboard = () => {
   const navigate = useNavigate();
   const [dateRange, setDateRange] = useState(30);
 
-  const { data: metrics, isLoading, refetch } = useQRMDashboardMetrics(dateRange);
+  const { data: metrics, isLoading, isError, error, isFetching, refetch } = useQRMDashboardMetrics(dateRange);
 
-  if (isLoading || !metrics) {
+  // Show loading only when actually fetching
+  if (isLoading || isFetching) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Show error state
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <p className="text-destructive">{t("common.error")}: {error?.message || t("qrm.loadError")}</p>
+        <Button variant="outline" onClick={() => navigate(ROUTES.ADMIN.ANALYTICS.ROOT)}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          {t("common.goBack")}
+        </Button>
+      </div>
+    );
+  }
+
+  // Handle case where data is not available (query might be disabled)
+  if (!metrics) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <p className="text-muted-foreground">{t("qrm.noData")}</p>
+        <Button variant="outline" onClick={() => navigate(ROUTES.ADMIN.ANALYTICS.ROOT)}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          {t("common.goBack")}
+        </Button>
       </div>
     );
   }
