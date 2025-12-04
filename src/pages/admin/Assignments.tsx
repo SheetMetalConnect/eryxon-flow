@@ -90,10 +90,9 @@ export default function Assignments() {
   });
 
   useEffect(() => {
-    if (profile?.tenant_id) {
-      loadData();
-      setupRealtime();
-    }
+    if (!profile?.tenant_id) return;
+    loadData();
+    return setupRealtime();
   }, [profile?.tenant_id]);
 
   const loadData = async () => {
