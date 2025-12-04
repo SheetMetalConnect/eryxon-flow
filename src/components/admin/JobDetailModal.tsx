@@ -95,15 +95,11 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
       customer: editedJob.customer,
       notes: editedJob.notes,
       metadata: editedJob.metadata,
-      // Delivery fields
+      // Delivery address fields only (weight/volume come from parts)
       delivery_address: editedJob.delivery_address || null,
       delivery_city: editedJob.delivery_city || null,
       delivery_postal_code: editedJob.delivery_postal_code || null,
       delivery_country: editedJob.delivery_country || null,
-      // Shipping calculations
-      total_weight_kg: editedJob.total_weight_kg ? parseFloat(editedJob.total_weight_kg) : null,
-      total_volume_m3: editedJob.total_volume_m3 ? parseFloat(editedJob.total_volume_m3) : null,
-      package_count: editedJob.package_count ? parseInt(editedJob.package_count) : null,
     });
   };
 
@@ -274,45 +270,6 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                     />
                   </div>
                 </div>
-
-                {/* Shipping Details */}
-                <div className="grid grid-cols-3 gap-3 pt-2 border-t border-white/5">
-                  <div>
-                    <Label className="text-xs text-muted-foreground">{t("jobs.totalWeightKg")}</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={editedJob.total_weight_kg || ""}
-                      onChange={(e) => setEditedJob({ ...editedJob, total_weight_kg: e.target.value })}
-                      placeholder="0.00"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">{t("jobs.totalVolumeM3")}</Label>
-                    <Input
-                      type="number"
-                      step="0.001"
-                      min="0"
-                      value={editedJob.total_volume_m3 || ""}
-                      onChange={(e) => setEditedJob({ ...editedJob, total_volume_m3: e.target.value })}
-                      placeholder="0.000"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">{t("jobs.packageCount")}</Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={editedJob.package_count || ""}
-                      onChange={(e) => setEditedJob({ ...editedJob, package_count: e.target.value })}
-                      placeholder="1"
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
               </div>
             ) : (
               <div className="space-y-3">
@@ -334,30 +291,39 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                   </p>
                 )}
 
-                {/* Display mode - Shipping details */}
-                <div className="flex gap-4 text-sm">
-                  {job?.total_weight_kg && (
-                    <div className="flex items-center gap-1.5">
-                      <Weight className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span>{job.total_weight_kg} kg</span>
-                    </div>
-                  )}
-                  {job?.total_volume_m3 && (
-                    <div className="flex items-center gap-1.5">
-                      <Package className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span>{job.total_volume_m3} m³</span>
-                    </div>
-                  )}
-                  {job?.package_count && (
-                    <div className="flex items-center gap-1.5">
-                      <Package className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span>{job.package_count} {t("jobs.packages")}</span>
-                    </div>
-                  )}
-                  {!job?.total_weight_kg && !job?.total_volume_m3 && !job?.package_count && (
-                    <p className="text-muted-foreground">{t("jobs.noShippingDetails")}</p>
-                  )}
-                </div>
+                {/* Aggregated weight/volume from parts (read-only) */}
+                {job?.parts && job.parts.length > 0 && (() => {
+                  const totalWeight = job.parts.reduce((sum: number, part: any) =>
+                    sum + ((part.weight_kg || 0) * (part.quantity || 1)), 0);
+                  const totalVolume = job.parts.reduce((sum: number, part: any) => {
+                    if (part.length_mm && part.width_mm && part.height_mm) {
+                      const volumeM3 = (part.length_mm * part.width_mm * part.height_mm) / 1000000000;
+                      return sum + (volumeM3 * (part.quantity || 1));
+                    }
+                    return sum;
+                  }, 0);
+
+                  if (totalWeight > 0 || totalVolume > 0) {
+                    return (
+                      <div className="flex gap-4 text-sm pt-2 border-t border-white/5">
+                        {totalWeight > 0 && (
+                          <div className="flex items-center gap-1.5">
+                            <Weight className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span>{totalWeight.toFixed(2)} kg</span>
+                            <span className="text-xs text-muted-foreground">({t("jobs.fromParts")})</span>
+                          </div>
+                        )}
+                        {totalVolume > 0 && (
+                          <div className="flex items-center gap-1.5">
+                            <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span>{totalVolume.toFixed(6)} m³</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             )}
           </div>

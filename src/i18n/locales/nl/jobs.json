@@ -67,7 +67,21 @@
     "low": "Laag",
     "medium": "Gemiddeld",
     "high": "Hoog",
-    "critical": "Kritiek"
+    "critical": "Kritiek",
+    "deliveryInfo": "Leveringsinformatie",
+    "deliveryAddress": "Afleveradres",
+    "deliveryAddressPlaceholder": "Straat en huisnummer",
+    "deliveryCity": "Stad",
+    "deliveryCityPlaceholder": "bijv. Rotterdam",
+    "deliveryPostalCode": "Postcode",
+    "deliveryPostalCodePlaceholder": "bijv. 3011 AB",
+    "deliveryCountry": "Land",
+    "totalWeightKg": "Totaal gewicht (kg)",
+    "totalVolumeM3": "Totaal volume (m³)",
+    "packageCount": "Aantal pakketten",
+    "packages": "pakketten",
+    "noDeliveryAddress": "Geen afleveradres ingesteld",
+    "fromParts": "van onderdelen"
   },
   "parts": {
     "title": "Onderdelenbeheer",
@@ -200,7 +214,18 @@
     "bulletCardDesc": "Markeer dit onderdeel als prioriteit spoedorder (QRM terminologie)",
     "qrCodePreview": "QR Code Voorbeeld",
     "qrCodeDesc": "Scan deze QR code bij de CNC machine om het programma te laden",
-    "fieldsUpdated": "Onderdeel velden succesvol bijgewerkt"
+    "fieldsUpdated": "Onderdeel velden succesvol bijgewerkt",
+    "shippingInfo": "Verzendgegevens",
+    "weightKg": "Gewicht (kg)",
+    "weightKgPlaceholder": "bijv. 2,5",
+    "dimensions": "Afmetingen",
+    "lengthMm": "Lengte (mm)",
+    "lengthPlaceholder": "bijv. 500",
+    "widthMm": "Breedte (mm)",
+    "widthPlaceholder": "bijv. 300",
+    "heightMm": "Hoogte (mm)",
+    "heightPlaceholder": "bijv. 50",
+    "calculatedVolume": "Berekend Volume"
   },
   "operations": {
     "title": "Bewerkingen",
