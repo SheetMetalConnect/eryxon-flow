@@ -237,7 +237,21 @@
     "widthPlaceholder": "e.g., 300",
     "heightMm": "Height (mm)",
     "heightPlaceholder": "e.g., 50",
-    "calculatedVolume": "Calculated Volume"
+    "calculatedVolume": "Calculated Volume",
+    "cadViewer": {
+      "dimensions": "Dimensions",
+      "showDimensions": "Show Dimensions",
+      "hideDimensions": "Hide Dimensions",
+      "boundingBox": "Bounding Box",
+      "length": "Length",
+      "width": "Width",
+      "height": "Height",
+      "measuredFromCad": "Measured from CAD",
+      "highlightFeatures": "Highlight Features",
+      "showFeatures": "Show Features",
+      "hideFeatures": "Hide Features",
+      "featuresDesc": "Highlight bends, holes, and cuts"
+    }
   },
   "operations": {
     "title": "Operations",

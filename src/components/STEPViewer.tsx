@@ -9,9 +9,20 @@ import {
   Boxes,
   Loader2,
   Box,
-  Hexagon
+  Hexagon,
+  Ruler,
+  Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
+
+// Interface for calculated dimensions
+interface ModelDimensions {
+  x: number;
+  y: number;
+  z: number;
+  center: THREE.Vector3;
+}
 
 // Extend Window interface for occt-import-js
 declare global {
@@ -27,6 +38,8 @@ interface STEPViewerProps {
 }
 
 export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
+  const { t } = useTranslation();
+
   // State
   const [stepLoading, setStepLoading] = useState(false);
   const [loadingError, setLoadingError] = useState<string | null>(null);
@@ -36,6 +49,9 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
   const [explosionFactor, setExplosionFactor] = useState(1);
   const [gridVisible, setGridVisible] = useState(true);
   const [edgesVisible, setEdgesVisible] = useState(true);
+  const [showDimensions, setShowDimensions] = useState(false);
+  const [showFeatures, setShowFeatures] = useState(false);
+  const [dimensions, setDimensions] = useState<ModelDimensions | null>(null);
 
   // Three.js refs
   const containerRef = useRef<HTMLDivElement>(null);
@@ -55,6 +71,10 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
     baseDistances: [] as number[],
     initialized: false,
   });
+
+  // Dimension lines and feature highlight refs
+  const dimensionLinesRef = useRef<THREE.Group | null>(null);
+  const originalMaterialsRef = useRef<THREE.Material[]>([]);
 
   // Load occt-import-js library from CDN
   useEffect(() => {
@@ -321,6 +341,14 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
           edgesRef.current.push(edges);
         }
 
+        // Store original materials for feature highlighting
+        originalMaterialsRef.current = meshesRef.current.map(mesh =>
+          (mesh.material as THREE.Material).clone()
+        );
+
+        // Calculate dimensions
+        calculateDimensions();
+
         // Fit camera to view
         fitCameraToMeshes();
         updateGridSize();
@@ -512,6 +540,376 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
     setEdgesVisible(!edgesVisible);
   };
 
+  // Calculate dimensions from bounding box
+  const calculateDimensions = useCallback(() => {
+    if (meshesRef.current.length === 0) return;
+
+    const box = new THREE.Box3();
+    meshesRef.current.forEach((mesh) => box.expandByObject(mesh));
+
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+
+    // Dimensions in mm (assuming model units are mm)
+    setDimensions({
+      x: Math.round(size.x * 100) / 100,
+      y: Math.round(size.y * 100) / 100,
+      z: Math.round(size.z * 100) / 100,
+      center: center,
+    });
+  }, []);
+
+  // Create dimension visualization lines in 3D
+  const createDimensionVisualization = useCallback(() => {
+    if (!sceneRef.current || !dimensions) return;
+
+    // Remove existing dimension lines
+    if (dimensionLinesRef.current) {
+      sceneRef.current.remove(dimensionLinesRef.current);
+      dimensionLinesRef.current.traverse((child) => {
+        if (child instanceof THREE.Line || child instanceof THREE.Mesh) {
+          child.geometry?.dispose();
+          if (Array.isArray(child.material)) {
+            child.material.forEach(m => m.dispose());
+          } else if (child.material) {
+            child.material.dispose();
+          }
+        }
+      });
+    }
+
+    const group = new THREE.Group();
+    group.name = 'dimensionLines';
+
+    const box = new THREE.Box3();
+    meshesRef.current.forEach((mesh) => box.expandByObject(mesh));
+    const min = box.min;
+    const max = box.max;
+
+    // Offset for dimension lines (outside the model)
+    const offset = Math.max(dimensions.x, dimensions.y, dimensions.z) * 0.15;
+
+    // Colors for each axis - matching design system
+    const colors = {
+      x: 0x4a9eff, // Blue - X axis
+      y: 0x34a853, // Green - Y axis
+      z: 0xfbbc05, // Yellow - Z axis
+    };
+
+    // Create dimension line helper
+    const createDimensionLine = (
+      start: THREE.Vector3,
+      end: THREE.Vector3,
+      color: number,
+      label: string
+    ) => {
+      const lineGroup = new THREE.Group();
+
+      // Main dimension line
+      const lineMaterial = new THREE.LineBasicMaterial({
+        color,
+        linewidth: 2,
+        transparent: true,
+        opacity: 0.9,
+      });
+
+      const lineGeometry = new THREE.BufferGeometry().setFromPoints([start, end]);
+      const line = new THREE.Line(lineGeometry, lineMaterial);
+      lineGroup.add(line);
+
+      // End caps (small perpendicular lines)
+      const capLength = offset * 0.3;
+      const direction = new THREE.Vector3().subVectors(end, start).normalize();
+      const perpendicular = new THREE.Vector3();
+
+      // Find a perpendicular vector
+      if (Math.abs(direction.y) < 0.9) {
+        perpendicular.crossVectors(direction, new THREE.Vector3(0, 1, 0)).normalize();
+      } else {
+        perpendicular.crossVectors(direction, new THREE.Vector3(1, 0, 0)).normalize();
+      }
+
+      // Start cap
+      const startCap1 = start.clone().add(perpendicular.clone().multiplyScalar(capLength / 2));
+      const startCap2 = start.clone().sub(perpendicular.clone().multiplyScalar(capLength / 2));
+      const startCapGeometry = new THREE.BufferGeometry().setFromPoints([startCap1, startCap2]);
+      const startCap = new THREE.Line(startCapGeometry, lineMaterial);
+      lineGroup.add(startCap);
+
+      // End cap
+      const endCap1 = end.clone().add(perpendicular.clone().multiplyScalar(capLength / 2));
+      const endCap2 = end.clone().sub(perpendicular.clone().multiplyScalar(capLength / 2));
+      const endCapGeometry = new THREE.BufferGeometry().setFromPoints([endCap1, endCap2]);
+      const endCap = new THREE.Line(endCapGeometry, lineMaterial);
+      lineGroup.add(endCap);
+
+      // Arrow heads
+      const arrowLength = offset * 0.2;
+      const arrowWidth = offset * 0.08;
+
+      // Arrow at start pointing outward
+      const arrowStartDir = direction.clone().negate();
+      const arrow1 = start.clone().add(direction.clone().multiplyScalar(arrowLength));
+      const arrowGeom1 = new THREE.BufferGeometry().setFromPoints([
+        start,
+        arrow1.clone().add(perpendicular.clone().multiplyScalar(arrowWidth)),
+        arrow1.clone().sub(perpendicular.clone().multiplyScalar(arrowWidth)),
+        start,
+      ]);
+      const arrowMesh1 = new THREE.Line(arrowGeom1, lineMaterial);
+      lineGroup.add(arrowMesh1);
+
+      // Arrow at end pointing outward
+      const arrow2 = end.clone().sub(direction.clone().multiplyScalar(arrowLength));
+      const arrowGeom2 = new THREE.BufferGeometry().setFromPoints([
+        end,
+        arrow2.clone().add(perpendicular.clone().multiplyScalar(arrowWidth)),
+        arrow2.clone().sub(perpendicular.clone().multiplyScalar(arrowWidth)),
+        end,
+      ]);
+      const arrowMesh2 = new THREE.Line(arrowGeom2, lineMaterial);
+      lineGroup.add(arrowMesh2);
+
+      return lineGroup;
+    };
+
+    // X dimension (along bottom, offset in -Z direction)
+    const xStart = new THREE.Vector3(min.x, min.y, min.z - offset);
+    const xEnd = new THREE.Vector3(max.x, min.y, min.z - offset);
+    group.add(createDimensionLine(xStart, xEnd, colors.x, `${dimensions.x} mm`));
+
+    // Extension lines for X
+    const xExtMaterial = new THREE.LineBasicMaterial({ color: colors.x, transparent: true, opacity: 0.4 });
+    const xExt1Geom = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(min.x, min.y, min.z),
+      new THREE.Vector3(min.x, min.y, min.z - offset * 1.2),
+    ]);
+    group.add(new THREE.Line(xExt1Geom, xExtMaterial));
+    const xExt2Geom = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(max.x, min.y, min.z),
+      new THREE.Vector3(max.x, min.y, min.z - offset * 1.2),
+    ]);
+    group.add(new THREE.Line(xExt2Geom, xExtMaterial));
+
+    // Y dimension (along left side, offset in -X direction)
+    const yStart = new THREE.Vector3(min.x - offset, min.y, min.z);
+    const yEnd = new THREE.Vector3(min.x - offset, max.y, min.z);
+    group.add(createDimensionLine(yStart, yEnd, colors.y, `${dimensions.y} mm`));
+
+    // Extension lines for Y
+    const yExtMaterial = new THREE.LineBasicMaterial({ color: colors.y, transparent: true, opacity: 0.4 });
+    const yExt1Geom = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(min.x, min.y, min.z),
+      new THREE.Vector3(min.x - offset * 1.2, min.y, min.z),
+    ]);
+    group.add(new THREE.Line(yExt1Geom, yExtMaterial));
+    const yExt2Geom = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(min.x, max.y, min.z),
+      new THREE.Vector3(min.x - offset * 1.2, max.y, min.z),
+    ]);
+    group.add(new THREE.Line(yExt2Geom, yExtMaterial));
+
+    // Z dimension (along back edge, offset in -X direction)
+    const zStart = new THREE.Vector3(min.x - offset, min.y, min.z);
+    const zEnd = new THREE.Vector3(min.x - offset, min.y, max.z);
+    group.add(createDimensionLine(zStart, zEnd, colors.z, `${dimensions.z} mm`));
+
+    // Extension lines for Z
+    const zExtMaterial = new THREE.LineBasicMaterial({ color: colors.z, transparent: true, opacity: 0.4 });
+    const zExt1Geom = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(min.x, min.y, min.z),
+      new THREE.Vector3(min.x - offset * 1.2, min.y, min.z),
+    ]);
+    group.add(new THREE.Line(zExt1Geom, zExtMaterial));
+    const zExt2Geom = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(min.x, min.y, max.z),
+      new THREE.Vector3(min.x - offset * 1.2, min.y, max.z),
+    ]);
+    group.add(new THREE.Line(zExt2Geom, zExtMaterial));
+
+    sceneRef.current.add(group);
+    dimensionLinesRef.current = group;
+  }, [dimensions]);
+
+  // Toggle dimension display
+  const toggleDimensionDisplay = useCallback(() => {
+    if (!showDimensions) {
+      createDimensionVisualization();
+    } else if (dimensionLinesRef.current && sceneRef.current) {
+      sceneRef.current.remove(dimensionLinesRef.current);
+      dimensionLinesRef.current = null;
+    }
+    setShowDimensions(!showDimensions);
+  }, [showDimensions, createDimensionVisualization]);
+
+  // Apply curvature-based feature highlighting
+  const applyFeatureHighlighting = useCallback(() => {
+    meshesRef.current.forEach((mesh, index) => {
+      const geometry = mesh.geometry;
+
+      // Compute vertex normals if not present
+      if (!geometry.attributes.normal) {
+        geometry.computeVertexNormals();
+      }
+
+      const normals = geometry.attributes.normal;
+      const positions = geometry.attributes.position;
+
+      if (!normals || !positions) return;
+
+      // Calculate curvature estimation based on normal variation
+      const vertexCount = positions.count;
+      const curvatures = new Float32Array(vertexCount);
+
+      // Build vertex neighbor map using indices
+      const neighborMap = new Map<number, Set<number>>();
+
+      if (geometry.index) {
+        const indices = geometry.index.array;
+        for (let i = 0; i < indices.length; i += 3) {
+          const a = indices[i];
+          const b = indices[i + 1];
+          const c = indices[i + 2];
+
+          if (!neighborMap.has(a)) neighborMap.set(a, new Set());
+          if (!neighborMap.has(b)) neighborMap.set(b, new Set());
+          if (!neighborMap.has(c)) neighborMap.set(c, new Set());
+
+          neighborMap.get(a)!.add(b).add(c);
+          neighborMap.get(b)!.add(a).add(c);
+          neighborMap.get(c)!.add(a).add(b);
+        }
+      }
+
+      // Calculate curvature as normal deviation from neighbors
+      const normalVec = new THREE.Vector3();
+      const neighborNormal = new THREE.Vector3();
+
+      for (let i = 0; i < vertexCount; i++) {
+        normalVec.set(
+          normals.getX(i),
+          normals.getY(i),
+          normals.getZ(i)
+        );
+
+        const neighbors = neighborMap.get(i);
+        if (!neighbors || neighbors.size === 0) {
+          curvatures[i] = 0;
+          continue;
+        }
+
+        let totalDeviation = 0;
+        neighbors.forEach(neighborIdx => {
+          neighborNormal.set(
+            normals.getX(neighborIdx),
+            normals.getY(neighborIdx),
+            normals.getZ(neighborIdx)
+          );
+          // Angle between normals (1 - dot product gives deviation)
+          const dot = normalVec.dot(neighborNormal);
+          totalDeviation += 1 - Math.abs(dot);
+        });
+
+        curvatures[i] = totalDeviation / neighbors.size;
+      }
+
+      // Normalize curvatures
+      let maxCurvature = 0;
+      for (let i = 0; i < vertexCount; i++) {
+        if (curvatures[i] > maxCurvature) maxCurvature = curvatures[i];
+      }
+
+      // Create vertex colors based on curvature
+      const colors = new Float32Array(vertexCount * 3);
+
+      // Get base color from original material
+      const originalMaterial = originalMaterialsRef.current[index] as THREE.MeshStandardMaterial;
+      const baseColor = originalMaterial?.color || new THREE.Color(0x4a90e2);
+
+      // Color scheme:
+      // Flat surfaces (low curvature): original color
+      // Curved surfaces (high curvature): highlight colors
+      // - Medium curvature (bends): Orange
+      // - High curvature (holes, edges): Magenta/Purple
+
+      for (let i = 0; i < vertexCount; i++) {
+        const normalizedCurvature = maxCurvature > 0 ? curvatures[i] / maxCurvature : 0;
+
+        let r, g, b;
+
+        if (normalizedCurvature < 0.15) {
+          // Flat - use base color
+          r = baseColor.r;
+          g = baseColor.g;
+          b = baseColor.b;
+        } else if (normalizedCurvature < 0.4) {
+          // Medium curvature (bends) - orange/amber gradient
+          const t = (normalizedCurvature - 0.15) / 0.25;
+          r = baseColor.r + (1.0 - baseColor.r) * t * 0.8;
+          g = baseColor.g + (0.6 - baseColor.g) * t * 0.8;
+          b = baseColor.b * (1 - t * 0.7);
+        } else {
+          // High curvature (holes, sharp edges) - magenta/purple
+          const t = Math.min((normalizedCurvature - 0.4) / 0.6, 1);
+          r = 0.8 + t * 0.2;
+          g = 0.2;
+          b = 0.6 + t * 0.4;
+        }
+
+        colors[i * 3] = r;
+        colors[i * 3 + 1] = g;
+        colors[i * 3 + 2] = b;
+      }
+
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+      // Update material to use vertex colors
+      const newMaterial = new THREE.MeshStandardMaterial({
+        vertexColors: true,
+        side: THREE.DoubleSide,
+        metalness: 0.2,
+        roughness: 0.5,
+        flatShading: false,
+      });
+
+      mesh.material = newMaterial;
+    });
+  }, []);
+
+  // Remove feature highlighting (restore original materials)
+  const removeFeatureHighlighting = useCallback(() => {
+    meshesRef.current.forEach((mesh, index) => {
+      if (originalMaterialsRef.current[index]) {
+        // Dispose current material
+        if (mesh.material) {
+          if (Array.isArray(mesh.material)) {
+            mesh.material.forEach(m => m.dispose());
+          } else {
+            mesh.material.dispose();
+          }
+        }
+
+        // Restore original material clone
+        mesh.material = originalMaterialsRef.current[index].clone();
+
+        // Remove vertex colors attribute if present
+        if (mesh.geometry.attributes.color) {
+          mesh.geometry.deleteAttribute('color');
+        }
+      }
+    });
+  }, []);
+
+  // Toggle feature highlighting
+  const toggleFeatureHighlight = useCallback(() => {
+    if (!showFeatures) {
+      applyFeatureHighlighting();
+    } else {
+      removeFeatureHighlighting();
+    }
+    setShowFeatures(!showFeatures);
+  }, [showFeatures, applyFeatureHighlighting, removeFeatureHighlighting]);
+
   return (
     <div className="flex flex-col h-full w-full bg-background">
       {/* Compact Toolbar */}
@@ -593,11 +991,146 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
             </span>
           </div>
         )}
+
+        <div className="w-px h-4 bg-border mx-0.5" />
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleDimensionDisplay}
+          disabled={stepLoading || meshesRef.current.length === 0 || !dimensions}
+          className={cn("h-7 w-7 p-0", showDimensions && "bg-primary/20 text-primary")}
+          title={showDimensions ? t('parts.cadViewer.hideDimensions') : t('parts.cadViewer.showDimensions')}
+        >
+          <Ruler className="h-3.5 w-3.5" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleFeatureHighlight}
+          disabled={stepLoading || meshesRef.current.length === 0}
+          className={cn("h-7 w-7 p-0", showFeatures && "bg-primary/20 text-primary")}
+          title={showFeatures ? t('parts.cadViewer.hideFeatures') : t('parts.cadViewer.showFeatures')}
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+        </Button>
       </div>
 
       {/* 3D Viewer Container */}
       <div className="flex-1 relative bg-[#1e1e2e]">
         <div ref={containerRef} className="absolute inset-0" />
+
+        {/* Dimension Overlay Panel */}
+        {showDimensions && dimensions && (
+          <div className="absolute top-3 right-3 z-10">
+            <div className="glass-card p-3 min-w-[180px]">
+              <div className="flex items-center gap-2 mb-2.5">
+                <Ruler className="h-4 w-4 text-primary" />
+                <span className="text-xs font-semibold text-foreground">
+                  {t('parts.cadViewer.boundingBox')}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {/* X Dimension */}
+                <div className="flex items-center justify-between gap-3 group">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-sm flex items-center justify-center text-[8px] font-bold text-white"
+                      style={{ backgroundColor: '#4a9eff' }}
+                    >
+                      X
+                    </div>
+                    <span className="text-[11px] text-muted-foreground">
+                      {t('parts.cadViewer.length')}
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono font-semibold text-foreground tabular-nums">
+                    {dimensions.x.toFixed(2)}
+                    <span className="text-muted-foreground ml-0.5">mm</span>
+                  </span>
+                </div>
+
+                {/* Y Dimension */}
+                <div className="flex items-center justify-between gap-3 group">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-sm flex items-center justify-center text-[8px] font-bold text-white"
+                      style={{ backgroundColor: '#34a853' }}
+                    >
+                      Y
+                    </div>
+                    <span className="text-[11px] text-muted-foreground">
+                      {t('parts.cadViewer.height')}
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono font-semibold text-foreground tabular-nums">
+                    {dimensions.y.toFixed(2)}
+                    <span className="text-muted-foreground ml-0.5">mm</span>
+                  </span>
+                </div>
+
+                {/* Z Dimension */}
+                <div className="flex items-center justify-between gap-3 group">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-sm flex items-center justify-center text-[8px] font-bold text-white"
+                      style={{ backgroundColor: '#fbbc05' }}
+                    >
+                      Z
+                    </div>
+                    <span className="text-[11px] text-muted-foreground">
+                      {t('parts.cadViewer.width')}
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono font-semibold text-foreground tabular-nums">
+                    {dimensions.z.toFixed(2)}
+                    <span className="text-muted-foreground ml-0.5">mm</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-border/50 my-2.5" />
+
+              {/* Source indicator */}
+              <div className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                <span className="text-[10px] text-muted-foreground">
+                  {t('parts.cadViewer.measuredFromCad')}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Feature Highlight Legend */}
+        {showFeatures && (
+          <div className="absolute bottom-3 right-3 z-10">
+            <div className="glass-card p-2.5 min-w-[160px]">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <span className="text-[10px] font-semibold text-foreground">
+                  {t('parts.cadViewer.highlightFeatures')}
+                </span>
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#4a90e2' }} />
+                  <span className="text-[10px] text-muted-foreground">Flat surfaces</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#ff9933' }} />
+                  <span className="text-[10px] text-muted-foreground">Bends / Curves</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#cc33cc' }} />
+                  <span className="text-[10px] text-muted-foreground">Holes / Sharp edges</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Loading Overlay */}
         {stepLoading && (
