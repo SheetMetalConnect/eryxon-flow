@@ -9,6 +9,7 @@ import { ChevronLeft, ChevronRight, CalendarOff } from "lucide-react";
 import { AutoScheduleButton } from "@/components/scheduler/AutoScheduleButton";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import {
     Tooltip,
     TooltipContent,
@@ -368,55 +369,50 @@ export default function CapacityMatrix() {
         : { hours: 0, percent: 0, capacity: 0 };
 
     return (
-        <div className="p-6 space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold">{t("capacity.title", "Capacity Matrix")}</h1>
-                    <p className="text-muted-foreground">
-                        {t("capacity.description", "View and manage cell capacity across dates")}
-                    </p>
+        <div className="p-4 space-y-4">
+            <AdminPageHeader
+                title={t("capacity.title", "Capacity Matrix")}
+                description={t("capacity.description", "View and manage cell capacity across dates")}
+            >
+                <AutoScheduleButton />
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" size="icon" onClick={() => setStartDate(d => addDays(d, -7))}>
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span className="font-medium min-w-[180px] text-center text-sm">
+                        {format(startDate, "MMM d")} - {format(addDays(startDate, daysToShow - 1), "MMM d, yyyy")}
+                    </span>
+                    <Button variant="outline" size="icon" onClick={() => setStartDate(d => addDays(d, 7))}>
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
                 </div>
-                <div className="flex items-center gap-4">
-                    <AutoScheduleButton />
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" size="icon" onClick={() => setStartDate(d => addDays(d, -7))}>
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <span className="font-medium min-w-[180px] text-center">
-                            {format(startDate, "MMM d")} - {format(addDays(startDate, daysToShow - 1), "MMM d, yyyy")}
-                        </span>
-                        <Button variant="outline" size="icon" onClick={() => setStartDate(d => addDays(d, 7))}>
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
-                    </div>
-                </div>
-            </div>
+            </AdminPageHeader>
 
             {/* Legend */}
             <div className="flex flex-wrap gap-2">
                 <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
-                    0-50% Capacity
+                    {t("capacity.load050", "0-50%")}
                 </Badge>
                 <Badge variant="outline" className="bg-yellow-100 text-yellow-700 border-yellow-200">
-                    50-80% Capacity
+                    {t("capacity.load5080", "50-80%")}
                 </Badge>
                 <Badge variant="outline" className="bg-orange-100 text-orange-700 border-orange-200">
-                    80-100% Capacity
+                    {t("capacity.load80100", "80-100%")}
                 </Badge>
                 <Badge variant="outline" className="bg-red-100 text-red-700 border-red-200">
-                    Over Capacity
+                    {t("capacity.overCapacity", "Over Capacity")}
                 </Badge>
                 <Badge variant="outline" className="bg-gray-200 text-gray-500 border-gray-300">
                     <CalendarOff className="h-3 w-3 mr-1" />
-                    Holiday/Closure
+                    {t("capacity.holidayClosure", "Holiday/Closure")}
                 </Badge>
             </div>
 
-            <Card>
+            <Card className="glass-card">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-lg">{t("capacity.workloadOverview", "Workload Overview")}</CardTitle>
                     <CardDescription>
-                        Click on a cell to view and manage scheduled operations
+                        {t("capacity.clickToManage", "Click on a cell to view and manage scheduled operations")}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="overflow-x-auto">

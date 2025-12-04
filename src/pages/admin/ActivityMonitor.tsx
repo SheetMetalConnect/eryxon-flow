@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
@@ -20,7 +19,6 @@ import {
 } from "@/components/ui/select";
 import {
   Activity,
-  User,
   Search,
   RefreshCw,
   Download,
@@ -46,6 +44,8 @@ import {
   Server,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { PageStatsRow } from "@/components/admin/PageStatsRow";
 
 interface ActivityLog {
   id: string;
@@ -321,94 +321,27 @@ export const ActivityMonitor: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-8">
-      {/* Header Section */}
-      <div>
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
-          {t("activityMonitor.title")}
-        </h1>
-        <p className="text-muted-foreground text-lg">
-          {t("activityMonitor.description")}
-        </p>
-      </div>
+    <div className="p-4 space-y-4">
+      <AdminPageHeader
+        title={t("activityMonitor.title")}
+        description={t("activityMonitor.description")}
+        action={{
+          label: t("common.export", "Export"),
+          onClick: handleExport,
+          icon: Download,
+        }}
+      />
 
-      <hr className="title-divider" />
-
-      {/* Statistics Cards */}
+      {/* Statistics Row */}
       {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="glass-card transition-smooth hover:scale-[1.02]">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-[hsl(var(--brand-primary))]/10">
-                  <Activity className="h-6 w-6 text-[hsl(var(--brand-primary))]" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold">
-                    {stats.total_activities || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Total Activities (24h)
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card transition-smooth hover:scale-[1.02]">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-[hsl(var(--color-success))]/10">
-                  <Users className="h-6 w-6 text-[hsl(var(--color-success))]" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold">
-                    {stats.unique_users || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Active Users (24h)
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card transition-smooth hover:scale-[1.02]">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-[hsl(var(--color-info))]/10">
-                  <Plus className="h-6 w-6 text-[hsl(var(--color-info))]" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold">
-                    {stats.activities_by_action?.create || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Created (24h)
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card transition-smooth hover:scale-[1.02]">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-[hsl(var(--color-warning))]/10">
-                  <Edit className="h-6 w-6 text-[hsl(var(--color-warning))]" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold">
-                    {stats.activities_by_action?.update || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Updated (24h)
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <PageStatsRow
+          stats={[
+            { label: t("activityMonitor.totalActivities", "Total Activities (24h)"), value: stats.total_activities || 0, icon: Activity, color: "primary" },
+            { label: t("activityMonitor.activeUsers", "Active Users (24h)"), value: stats.unique_users || 0, icon: Users, color: "success" },
+            { label: t("activityMonitor.created", "Created (24h)"), value: stats.activities_by_action?.create || 0, icon: Plus, color: "info" },
+            { label: t("activityMonitor.updated", "Updated (24h)"), value: stats.activities_by_action?.update || 0, icon: Edit, color: "warning" },
+          ]}
+        />
       )}
 
       {/* Filters and Controls */}
@@ -419,7 +352,7 @@ export const ActivityMonitor: React.FC = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search activities..."
+                  placeholder={t("activityMonitor.searchActivities", "Search activities...")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
@@ -430,13 +363,13 @@ export const ActivityMonitor: React.FC = () => {
             <div className="md:col-span-2">
               <Select value={filterAction} onValueChange={setFilterAction}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All Actions" />
+                  <SelectValue placeholder={t("activityMonitor.allActions", "All Actions")} />
                 </SelectTrigger>
                 <SelectContent className="glass-card">
-                  <SelectItem value="all">All Actions</SelectItem>
+                  <SelectItem value="all">{t("activityMonitor.allActions", "All Actions")}</SelectItem>
                   {uniqueActions.map((action) => (
                     <SelectItem key={action} value={action}>
-                      {action.charAt(0).toUpperCase() + action.slice(1)}
+                      {t(`activityMonitor.actions.${action}`, action.charAt(0).toUpperCase() + action.slice(1))}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -446,13 +379,13 @@ export const ActivityMonitor: React.FC = () => {
             <div className="md:col-span-2">
               <Select value={filterEntityType} onValueChange={setFilterEntityType}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All Entities" />
+                  <SelectValue placeholder={t("activityMonitor.allEntities", "All Entities")} />
                 </SelectTrigger>
                 <SelectContent className="glass-card">
-                  <SelectItem value="all">All Entities</SelectItem>
+                  <SelectItem value="all">{t("activityMonitor.allEntities", "All Entities")}</SelectItem>
                   {uniqueEntityTypes.map((type) => (
                     <SelectItem key={type} value={type}>
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                      {t(`activityMonitor.entities.${type}`, type.charAt(0).toUpperCase() + type.slice(1))}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -465,10 +398,10 @@ export const ActivityMonitor: React.FC = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="glass-card">
-                  <SelectItem value="25">Last 25</SelectItem>
-                  <SelectItem value="50">Last 50</SelectItem>
-                  <SelectItem value="100">Last 100</SelectItem>
-                  <SelectItem value="200">Last 200</SelectItem>
+                  <SelectItem value="25">{t("activityMonitor.last", "Last")} 25</SelectItem>
+                  <SelectItem value="50">{t("activityMonitor.last", "Last")} 50</SelectItem>
+                  <SelectItem value="100">{t("activityMonitor.last", "Last")} 100</SelectItem>
+                  <SelectItem value="200">{t("activityMonitor.last", "Last")} 200</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -481,14 +414,11 @@ export const ActivityMonitor: React.FC = () => {
                   onCheckedChange={setAutoRefresh}
                 />
                 <Label htmlFor="auto-refresh" className="text-sm">
-                  Auto-refresh
+                  {t("activityMonitor.autoRefresh", "Auto-refresh")}
                 </Label>
               </div>
               <Button onClick={loadData} variant="ghost" size="icon">
                 <RefreshCw className="h-4 w-4" />
-              </Button>
-              <Button onClick={handleExport} variant="ghost" size="icon">
-                <Download className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -499,23 +429,23 @@ export const ActivityMonitor: React.FC = () => {
       <Card className="glass-card">
         <div className="p-4 border-b border-border-subtle">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold">Recent Activity</h2>
+            <h2 className="text-lg font-semibold">{t("activityMonitor.recentActivity", "Recent Activity")}</h2>
             <Badge variant="outline" className="bg-white/5">
-              {activities.length} events
+              {activities.length} {t("activityMonitor.events", "events")}
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Last updated: {lastUpdate.toLocaleTimeString()}
-            {autoRefresh && " (auto-refreshing every 10s)"}
+            {t("activityMonitor.lastUpdated", "Last updated")}: {lastUpdate.toLocaleTimeString()}
+            {autoRefresh && ` (${t("activityMonitor.autoRefreshing", "auto-refreshing every 10s")})`}
           </p>
         </div>
 
         <div className="divide-y divide-border-subtle">
           {activities.length === 0 ? (
             <div className="py-16 text-center">
-              <p className="text-muted-foreground mb-2">No activities found</p>
+              <p className="text-muted-foreground mb-2">{t("activityMonitor.noActivities", "No activities found")}</p>
               <p className="text-sm text-muted-foreground">
-                Try adjusting your filters or search query
+                {t("activityMonitor.tryAdjusting", "Try adjusting your filters or search query")}
               </p>
             </div>
           ) : (
@@ -596,7 +526,7 @@ export const ActivityMonitor: React.FC = () => {
         {activities.length >= limit && (
           <div className="p-4 border-t border-border-subtle text-center">
             <Button onClick={() => setLimit(limit + 50)} variant="outline">
-              Load More
+              {t("common.loadMore", "Load More")}
             </Button>
           </div>
         )}
