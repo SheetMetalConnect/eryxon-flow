@@ -54,7 +54,7 @@ export function useQRMDashboardMetrics(dateRange: number = 30) {
                 .from("jobs")
                 .select("created_at, updated_at, due_date, status")
                 .eq("tenant_id", profile.tenant_id)
-                .or(`updated_at.gte.${startDate},status.eq.in_progress,status.eq.pending`);
+                .or(`updated_at.gte.${startDate},status.eq.in_progress,status.eq.not_started`);
 
             if (jobsError) throw jobsError;
 
@@ -185,7 +185,7 @@ export function useQRMDashboardMetrics(dateRange: number = 30) {
             }).slice(0, 8);
 
             // WIP Age
-            const activeJobs = jobs?.filter(j => j.status === 'in_progress' || j.status === 'pending') || [];
+            const activeJobs = jobs?.filter(j => j.status === 'in_progress' || j.status === 'not_started') || [];
             const wipBuckets = { "0-2d": 0, "3-5d": 0, "6-10d": 0, ">10d": 0 };
             activeJobs.forEach(j => {
                 const age = (new Date().getTime() - new Date(j.created_at).getTime()) / (1000 * 60 * 60 * 24);
