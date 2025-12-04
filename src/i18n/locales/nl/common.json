@@ -47,7 +47,10 @@
     "validationError": "Validatiefout",
     "stopping": "Stoppen...",
     "yes": "Ja",
-    "no": "Nee"
+    "no": "Nee",
+    "optional": "optioneel",
+    "done": "Gereed",
+    "creating": "Aanmaken..."
   },
   "forms": {
     "required": "Dit veld is verplicht",

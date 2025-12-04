@@ -49,7 +49,9 @@
     "viewDetails": "View Details",
     "optional": "optional",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "done": "Done",
+    "creating": "Creating..."
   },
   "forms": {
     "required": "This field is required",
