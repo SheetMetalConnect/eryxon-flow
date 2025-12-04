@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { Plus, Edit2, Save, X, CheckCircle2, Clock, Circle } from "lucide-react";
+import { Plus, Edit2, Save, X, CheckCircle2, Clock, Circle, Truck, MapPin, Package, Weight } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
@@ -95,6 +95,11 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
       customer: editedJob.customer,
       notes: editedJob.notes,
       metadata: editedJob.metadata,
+      // Delivery address fields only (weight/volume come from parts)
+      delivery_address: editedJob.delivery_address || null,
+      delivery_city: editedJob.delivery_city || null,
+      delivery_postal_code: editedJob.delivery_postal_code || null,
+      delivery_country: editedJob.delivery_country || null,
     });
   };
 
@@ -214,6 +219,112 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
               />
             ) : (
               <p className="mt-1 text-sm text-muted-foreground">{job?.notes || t("jobs.noNotes")}</p>
+            )}
+          </div>
+
+          {/* Delivery Information */}
+          <div className="border border-white/10 rounded-xl p-4 bg-[rgba(17,25,40,0.3)] backdrop-blur-sm">
+            <Label className="text-sm font-semibold flex items-center gap-2 mb-3">
+              <Truck className="h-4 w-4" />
+              {t("jobs.deliveryInfo")}
+            </Label>
+
+            {isEditing ? (
+              <div className="space-y-4">
+                {/* Delivery Address */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="col-span-2">
+                    <Label className="text-xs text-muted-foreground">{t("jobs.deliveryAddress")}</Label>
+                    <Input
+                      value={editedJob.delivery_address || ""}
+                      onChange={(e) => setEditedJob({ ...editedJob, delivery_address: e.target.value })}
+                      placeholder={t("jobs.deliveryAddressPlaceholder")}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">{t("jobs.deliveryCity")}</Label>
+                    <Input
+                      value={editedJob.delivery_city || ""}
+                      onChange={(e) => setEditedJob({ ...editedJob, delivery_city: e.target.value })}
+                      placeholder={t("jobs.deliveryCityPlaceholder")}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">{t("jobs.deliveryPostalCode")}</Label>
+                    <Input
+                      value={editedJob.delivery_postal_code || ""}
+                      onChange={(e) => setEditedJob({ ...editedJob, delivery_postal_code: e.target.value })}
+                      placeholder={t("jobs.deliveryPostalCodePlaceholder")}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">{t("jobs.deliveryCountry")}</Label>
+                    <Input
+                      value={editedJob.delivery_country || "NL"}
+                      onChange={(e) => setEditedJob({ ...editedJob, delivery_country: e.target.value })}
+                      placeholder="NL"
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {/* Display mode - Address */}
+                {(job?.delivery_address || job?.delivery_city || job?.delivery_postal_code) ? (
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div className="text-sm">
+                      {job?.delivery_address && <p>{job.delivery_address}</p>}
+                      <p className="text-muted-foreground">
+                        {[job?.delivery_postal_code, job?.delivery_city, job?.delivery_country].filter(Boolean).join(", ")}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    {t("jobs.noDeliveryAddress")}
+                  </p>
+                )}
+
+                {/* Aggregated weight/volume from parts (read-only) */}
+                {job?.parts && job.parts.length > 0 && (() => {
+                  const totalWeight = job.parts.reduce((sum: number, part: any) =>
+                    sum + ((part.weight_kg || 0) * (part.quantity || 1)), 0);
+                  const totalVolume = job.parts.reduce((sum: number, part: any) => {
+                    if (part.length_mm && part.width_mm && part.height_mm) {
+                      const volumeM3 = (part.length_mm * part.width_mm * part.height_mm) / 1000000000;
+                      return sum + (volumeM3 * (part.quantity || 1));
+                    }
+                    return sum;
+                  }, 0);
+
+                  if (totalWeight > 0 || totalVolume > 0) {
+                    return (
+                      <div className="flex gap-4 text-sm pt-2 border-t border-white/5">
+                        {totalWeight > 0 && (
+                          <div className="flex items-center gap-1.5">
+                            <Weight className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span>{totalWeight.toFixed(2)} kg</span>
+                            <span className="text-xs text-muted-foreground">({t("jobs.fromParts")})</span>
+                          </div>
+                        )}
+                        {totalVolume > 0 && (
+                          <div className="flex items-center gap-1.5">
+                            <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span>{totalVolume.toFixed(6)} m³</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
             )}
           </div>
 

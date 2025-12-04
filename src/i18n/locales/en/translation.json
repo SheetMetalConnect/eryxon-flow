@@ -498,7 +498,21 @@
     "jobOnHold": "Job has been put on hold",
     "jobResumed": "Job has been resumed",
     "resumeJob": "Resume Job",
-    "putOnHold": "Put On Hold"
+    "putOnHold": "Put On Hold",
+    "deliveryInfo": "Delivery Information",
+    "deliveryAddress": "Delivery Address",
+    "deliveryAddressPlaceholder": "Street and number",
+    "deliveryCity": "City",
+    "deliveryCityPlaceholder": "e.g., Rotterdam",
+    "deliveryPostalCode": "Postal Code",
+    "deliveryPostalCodePlaceholder": "e.g., 3011 AB",
+    "deliveryCountry": "Country",
+    "totalWeightKg": "Total Weight (kg)",
+    "totalVolumeM3": "Total Volume (m³)",
+    "packageCount": "Package Count",
+    "packages": "packages",
+    "noDeliveryAddress": "No delivery address set",
+    "noShippingDetails": "No shipping details set"
   },
   "parts": {
     "title": "Parts Management",
@@ -631,7 +645,18 @@
     "bulletCardDesc": "Mark this part as a priority rush order (QRM terminology)",
     "qrCodePreview": "QR Code Preview",
     "qrCodeDesc": "Scan this QR code at the CNC machine to load the program",
-    "fieldsUpdated": "Part fields updated successfully"
+    "fieldsUpdated": "Part fields updated successfully",
+    "shippingInfo": "Shipping Information",
+    "weightKg": "Weight (kg)",
+    "weightKgPlaceholder": "e.g., 2.5",
+    "dimensions": "Dimensions",
+    "lengthMm": "Length (mm)",
+    "lengthPlaceholder": "e.g., 500",
+    "widthMm": "Width (mm)",
+    "widthPlaceholder": "e.g., 300",
+    "heightMm": "Height (mm)",
+    "heightPlaceholder": "e.g., 50",
+    "calculatedVolume": "Calculated Volume"
   },
   "operations": {
     "title": "Operations",

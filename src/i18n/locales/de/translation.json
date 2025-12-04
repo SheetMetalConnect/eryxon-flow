@@ -374,7 +374,21 @@
     "low": "Niedrig",
     "medium": "Mittel",
     "high": "Hoch",
-    "critical": "Kritisch"
+    "critical": "Kritisch",
+    "deliveryInfo": "Lieferinformationen",
+    "deliveryAddress": "Lieferadresse",
+    "deliveryAddressPlaceholder": "Straße und Hausnummer",
+    "deliveryCity": "Stadt",
+    "deliveryCityPlaceholder": "z.B. München",
+    "deliveryPostalCode": "Postleitzahl",
+    "deliveryPostalCodePlaceholder": "z.B. 80331",
+    "deliveryCountry": "Land",
+    "totalWeightKg": "Gesamtgewicht (kg)",
+    "totalVolumeM3": "Gesamtvolumen (m³)",
+    "packageCount": "Paketanzahl",
+    "packages": "Pakete",
+    "noDeliveryAddress": "Keine Lieferadresse festgelegt",
+    "noShippingDetails": "Keine Versanddetails festgelegt"
   },
   "parts": {
     "title": "Teileverwaltung",
@@ -507,7 +521,18 @@
     "bulletCardDesc": "Dieses Teil als Prioritäts-Eilauftrag markieren (QRM-Terminologie)",
     "qrCodePreview": "QR-Code Vorschau",
     "qrCodeDesc": "Scannen Sie diesen QR-Code an der CNC-Maschine um das Programm zu laden",
-    "fieldsUpdated": "Teilefelder erfolgreich aktualisiert"
+    "fieldsUpdated": "Teilefelder erfolgreich aktualisiert",
+    "shippingInfo": "Versandinformationen",
+    "weightKg": "Gewicht (kg)",
+    "weightKgPlaceholder": "z.B. 2,5",
+    "dimensions": "Abmessungen",
+    "lengthMm": "Länge (mm)",
+    "lengthPlaceholder": "z.B. 500",
+    "widthMm": "Breite (mm)",
+    "widthPlaceholder": "z.B. 300",
+    "heightMm": "Höhe (mm)",
+    "heightPlaceholder": "z.B. 50",
+    "calculatedVolume": "Berechnetes Volumen"
   },
   "operations": {
     "title": "Arbeitsgänge",

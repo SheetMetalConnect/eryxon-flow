@@ -46,6 +46,7 @@ import {
   Gauge,
   Target,
   TrendingUp,
+  Truck,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -126,6 +127,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       path: "/admin/capacity",
       label: t("navigation.capacity"),
       icon: CalendarClock,
+      exact: true,
+    },
+    {
+      path: "/admin/shipping",
+      label: t("navigation.shipping"),
+      icon: Truck,
       exact: true,
     },
   ];
