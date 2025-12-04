@@ -1445,7 +1445,7 @@
     "contactSales": "Contact verkoop",
     "managePlan": "Abonnement beheren",
     "hostedPlans": "Gehoste abonnementen",
-    "hostedPlansDescription": "Wij hosten alles op Hetzner (EU). U betaalt voor hosting, rekenkracht en ondersteuning.",
+    "hostedPlansDescription": "Volledig beheerde clouddienst gehost in de EU. Wij regelen alles.",
     "free": {
       "name": "Gratis",
       "price": "€0",
@@ -1499,6 +1499,7 @@
   "myPlan": {
     "title": "Mijn abonnement",
     "subtitle": "Beheer uw abonnement en gebruik",
+    "comingSoon": "Binnenkort",
     "comingSoonTitle": "Abonnementsbeheer komt binnenkort",
     "comingSoonSubtitle": "Professionele abonnementsfuncties worden afgerond",
     "comingSoonDescription": "We bouwen een uitgebreid abonnementsbeheer systeem. Momenteel zijn alle functies gratis beschikbaar.",

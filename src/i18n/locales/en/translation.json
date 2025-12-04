@@ -1455,7 +1455,7 @@
     "contactSales": "Contact Sales",
     "managePlan": "Manage Plan",
     "hostedPlans": "Hosted Plans",
-    "hostedPlansDescription": "We host everything on Hetzner (EU). You pay for hosting, compute, and support.",
+    "hostedPlansDescription": "Fully managed cloud service hosted in the EU. We take care of everything.",
     "free": {
       "name": "Free",
       "price": "€0",
@@ -1508,6 +1508,7 @@
   },
   "myPlan": {
     "title": "My Plan",
+    "comingSoon": "Coming Soon",
     "comingSoonTitle": "Subscription Management Coming Soon",
     "comingSoonSubtitle": "Professional subscription features are being finalized",
     "comingSoonDescription": "We're building a comprehensive subscription management system. Currently, all features are available for free.",
