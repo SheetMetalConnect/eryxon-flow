@@ -406,7 +406,26 @@
     "issueClosed": "Problem geschlossen",
     "deleteConfirm": "Möchten Sie dieses Problem wirklich löschen?",
     "searchIssues": "Probleme suchen...",
-    "noIssues": "Keine Probleme gefunden"
+    "noIssues": "Keine Probleme gefunden",
+    "issueType": "Problemtyp",
+    "type": {
+      "general": "Allgemeines Problem",
+      "ncr": "Nichtkonformität (NCR)"
+    },
+    "ncrCategory": "NCR-Kategorie",
+    "selectNcrCategory": "Kategorie auswählen",
+    "ncrCategories": {
+      "materialDefect": "Materialfehler",
+      "dimensional": "Maßabweichung",
+      "surfaceFinish": "Oberflächenbeschaffenheit",
+      "processError": "Prozessfehler",
+      "other": "Sonstiges"
+    },
+    "affectedQuantity": "Betroffene Menge",
+    "affectedQuantityPlaceholder": "Anzahl der betroffenen Teile",
+    "shortfallAlert": "Produktionsunterschreitung erkannt. Bitte geben Sie Details an, warum die Zielmenge nicht erreicht wurde.",
+    "shortfallContext": "Produktionsunterschreitung melden",
+    "shortfallDescPlaceholder": "Was hat das Erreichen der Zielmenge verhindert?"
   },
   "jobCreate": {
     "title": "Neuen Auftrag erstellen",

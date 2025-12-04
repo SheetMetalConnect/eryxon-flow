@@ -425,7 +425,26 @@
     "issueClosed": "Issue closed",
     "deleteConfirm": "Are you sure you want to delete this issue?",
     "searchIssues": "Search issues...",
-    "noIssues": "No issues found"
+    "noIssues": "No issues found",
+    "issueType": "Issue Type",
+    "type": {
+      "general": "General Issue",
+      "ncr": "Non-Conformance (NCR)"
+    },
+    "ncrCategory": "NCR Category",
+    "selectNcrCategory": "Select category",
+    "ncrCategories": {
+      "materialDefect": "Material Defect",
+      "dimensional": "Dimensional Issue",
+      "surfaceFinish": "Surface Finish",
+      "processError": "Process Error",
+      "other": "Other"
+    },
+    "affectedQuantity": "Affected Quantity",
+    "affectedQuantityPlaceholder": "Number of parts affected",
+    "shortfallAlert": "Production shortfall detected. Please provide details about why the target quantity was not met.",
+    "shortfallContext": "Report production shortfall issue",
+    "shortfallDescPlaceholder": "What prevented reaching the target quantity?"
   },
   "jobCreate": {
     "title": "Create New Job",

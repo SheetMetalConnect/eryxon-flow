@@ -45,6 +45,7 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
     const { t } = useTranslation();
     const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
     const [isQuantityModalOpen, setIsQuantityModalOpen] = useState(false);
+    const [issuePrefilledData, setIssuePrefilledData] = useState<{ affectedQuantity?: number; isShortfall?: boolean } | null>(null);
     const [fullscreenViewer, setFullscreenViewer] = useState<'3d' | 'pdf' | null>(null);
     const [substepsByOperation, setSubstepsByOperation] = useState<Record<string, Substep[]>>({});
     const [expandedOperations, setExpandedOperations] = useState<Set<string>>(new Set());
@@ -161,21 +162,20 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                             <Play className="w-3.5 h-3.5 mr-1.5" /> Start
                         </Button>
                     ) : (
-                        <>
-                            <Button onClick={onPause} variant="outline" size="sm" className="flex-1 border-border text-foreground hover:bg-accent h-8 text-xs">
-                                <Pause className="w-3.5 h-3.5 mr-1.5" /> Pause
-                            </Button>
-                            <Button 
-                                onClick={() => setIsQuantityModalOpen(true)} 
-                                variant="outline" 
-                                size="sm" 
-                                className="border-primary text-primary hover:bg-primary/10 h-8 text-xs px-2"
-                                title="Record Production Quantities"
-                            >
-                                <PackageCheck className="w-3.5 h-3.5" />
-                            </Button>
-                        </>
+                        <Button onClick={onPause} variant="outline" size="sm" className="flex-1 border-border text-foreground hover:bg-accent h-8 text-xs">
+                            <Pause className="w-3.5 h-3.5 mr-1.5" /> Pause
+                        </Button>
                     )}
+                    {/* Count Parts - Always visible */}
+                    <Button
+                        onClick={() => setIsQuantityModalOpen(true)}
+                        variant="outline"
+                        size="sm"
+                        className="border-primary text-primary hover:bg-primary/10 h-8 text-xs px-2"
+                        title={t('production.reportTitle', 'Record Production Quantities')}
+                    >
+                        <PackageCheck className="w-3.5 h-3.5" />
+                    </Button>
                     {(job.status === 'in_progress' || job.isCurrentUserClocked) && !job.activeTimeEntryId && (
                         <Button
                             onClick={onComplete}
@@ -191,8 +191,11 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setIsIssueModalOpen(true)}
-                        title="Report Issue"
+                        onClick={() => {
+                            setIssuePrefilledData(null);
+                            setIsIssueModalOpen(true);
+                        }}
+                        title={t('issues.reportIssue', 'Report Issue')}
                         className="border-amber-200 text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:border-amber-800 dark:text-amber-400 dark:hover:bg-amber-950/30 h-8 w-8 p-0"
                     >
                         <AlertTriangle className="w-3.5 h-3.5" />
@@ -403,8 +406,15 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
             <IssueForm
                 operationId={job.operationId}
                 open={isIssueModalOpen}
-                onOpenChange={setIsIssueModalOpen}
-                onSuccess={() => setIsIssueModalOpen(false)}
+                onOpenChange={(open) => {
+                    setIsIssueModalOpen(open);
+                    if (!open) setIssuePrefilledData(null);
+                }}
+                onSuccess={() => {
+                    setIsIssueModalOpen(false);
+                    setIssuePrefilledData(null);
+                }}
+                prefilledData={issuePrefilledData}
             />
 
             {/* Production Quantity Modal */}
@@ -418,6 +428,13 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                 onSuccess={() => {
                     setIsQuantityModalOpen(false);
                     onDataRefresh?.();
+                }}
+                onFileIssue={(shortfallQuantity) => {
+                    setIssuePrefilledData({
+                        affectedQuantity: shortfallQuantity,
+                        isShortfall: true
+                    });
+                    setIsIssueModalOpen(true);
                 }}
             />
 

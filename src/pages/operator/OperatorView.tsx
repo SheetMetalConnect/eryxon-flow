@@ -121,6 +121,7 @@ export default function OperatorView() {
   const [fullscreenViewer, setFullscreenViewer] = useState<"pdf" | "3d" | null>(null);
   const [isQuantityModalOpen, setIsQuantityModalOpen] = useState<boolean>(false);
   const [isIssueFormOpen, setIsIssueFormOpen] = useState<boolean>(false);
+  const [issuePrefilledData, setIssuePrefilledData] = useState<{ affectedQuantity?: number; isShortfall?: boolean } | null>(null);
 
   // Panel collapse states
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState<boolean>(false);
@@ -1065,7 +1066,11 @@ export default function OperatorView() {
             }
             loadOperations(selectedJobId);
           }}
-          onFileIssue={() => {
+          onFileIssue={(shortfallQuantity) => {
+            setIssuePrefilledData({
+              affectedQuantity: shortfallQuantity,
+              isShortfall: true
+            });
             setIsIssueFormOpen(true);
           }}
         />
@@ -1076,8 +1081,15 @@ export default function OperatorView() {
         <IssueForm
           operationId={selectedOperation.id}
           open={isIssueFormOpen}
-          onOpenChange={setIsIssueFormOpen}
-          onSuccess={() => loadOperations(selectedJobId)}
+          onOpenChange={(open) => {
+            setIsIssueFormOpen(open);
+            if (!open) setIssuePrefilledData(null);
+          }}
+          onSuccess={() => {
+            loadOperations(selectedJobId);
+            setIssuePrefilledData(null);
+          }}
+          prefilledData={issuePrefilledData}
         />
       )}
     </div>
