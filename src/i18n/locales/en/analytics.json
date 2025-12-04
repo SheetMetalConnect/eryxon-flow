@@ -1,0 +1,128 @@
+{
+  "qrm": {
+    "dashboardTitle": "QRM Production Dashboard",
+    "dashboardSubtitle": "Real-time metrics for Quick Response Manufacturing performance.",
+    "last30Days": "Last 30 Days",
+    "refresh": "Refresh",
+    "mct": {
+      "title": "MCT Trend (Manufacturing Critical-path Time)",
+      "days": "Days",
+      "target": "Target"
+    },
+    "otp": {
+      "title": "Delivery Reliability (OTP)",
+      "onTime": "On Time"
+    },
+    "queueTime": {
+      "title": "Queue Time by Cell",
+      "hours": "Hours"
+    },
+    "cycleTime": {
+      "title": "Operation Cycle Time",
+      "minutes": "Minutes"
+    },
+    "wipAge": {
+      "title": "WIP Age Distribution",
+      "jobs": "Jobs"
+    },
+    "issueRate": {
+      "title": "Issue Rate by Category",
+      "rate": "Rate (%)"
+    },
+    "throughput": {
+      "title": "Throughput by Cell",
+      "units": "Units/Day"
+    }
+  },
+  "analytics": {
+    "jobsTitle": "Jobs Analytics",
+    "jobsSubtitle": "Track job status, deadlines, and quality metrics",
+    "qualityTitle": "Quality Analytics",
+    "qualitySubtitle": "Monitor yield rates, scrap, and issue metrics",
+    "noQualityData": "No quality data available yet. Start recording production to see metrics.",
+    "noOEEData": "No OEE data available yet. Complete operations to see efficiency metrics.",
+    "noReliabilityData": "No reliability data available yet. Complete operations with planned dates to see metrics.",
+    "noData": "No data available",
+    "noTrendData": "No trend data available for this period"
+  },
+  "oee": {
+    "breakdown": "OEE Breakdown",
+    "availability": "Availability",
+    "performance": "Performance",
+    "quality": "Quality",
+    "operationStates": "Operation States",
+    "trend": "OEE Trend",
+    "byCell": "OEE by Cell"
+  },
+  "reliability": {
+    "summary": "Reliability Summary",
+    "totalOperations": "Total Operations",
+    "onTime": "On Time",
+    "late": "Late",
+    "avgDelay": "Avg Delay",
+    "minutes": "min",
+    "onTimePerformance": "On-Time Performance",
+    "onTimePercent": "On-Time %",
+    "avgDelayTrend": "Average Delay Trend",
+    "delayMin": "Delay (min)",
+    "byCell": "Reliability by Cell"
+  },
+  "quality": {
+    "dashboardTitle": "Quality Overview",
+    "partsQuality": "Parts Quality Overview",
+    "yieldRate": "Yield Rate",
+    "totalProduced": "Produced",
+    "goodParts": "Good",
+    "scrap": "Scrap",
+    "rework": "Rework",
+    "openIssues": "Open Issues",
+    "critical": "Critical",
+    "topScrapReasons": "Top Scrap Reasons",
+    "scrapByCategory": "Scrap by Category",
+    "totalIssues": "Total Issues",
+    "criticalPending": "Critical Pending",
+    "highPending": "High Pending",
+    "resolved": "Resolved",
+    "resolutionRate": "Resolution Rate",
+    "bySeverity": "Issues by Severity",
+    "byStatus": "Issues by Status",
+    "totalReasons": "Total Reasons",
+    "activeReasons": "Active",
+    "usedReasons": "Used",
+    "unusedReasons": "Unused",
+    "timesUsed": "Times Used",
+    "totalScrapped": "Total Scrapped",
+    "noScrapData": "No scrap data recorded yet",
+    "usage": "Usage",
+    "scrapped": "Scrapped",
+    "issuesByStatus": "Issues by Status",
+    "issuesBySeverity": "Issues by Severity",
+    "pending": "Pending",
+    "inProgress": "In Progress",
+    "total": "Total",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  },
+  "capacity": {
+    "title": "Capacity Matrix",
+    "autoSchedule": "Auto Schedule",
+    "workloadOverview": "Workload Overview",
+    "cell": "Cell",
+    "capacity": "Capacity",
+    "scheduled": "Scheduled",
+    "utilization": "Utilization",
+    "schedulingComplete": "Scheduling Complete",
+    "schedulingFailed": "Scheduling Failed",
+    "operationsScheduled": "Successfully scheduled {{count}} operations.",
+    "description": "View and manage cell capacity across dates",
+    "schedulingCapacity": "Scheduling Capacity",
+    "hoursPerDay": "Hours per Day",
+    "hoursUnit": "hours",
+    "hoursPerDayHelp": "Maximum work hours this cell can process per day. Used by the scheduler to allocate operations."
+  },
+  "calendar": {
+    "title": "Factory Calendar",
+    "description": "Manage holidays, closures, and special working days"
+  }
+}

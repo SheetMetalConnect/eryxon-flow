@@ -1,0 +1,123 @@
+{
+  "workQueue": {
+    "filtersAndControls": "Filters & besturing",
+    "statistics": "Statistieken",
+    "total": "Totaal",
+    "inProgress": "Bezig",
+    "completed": "Voltooid",
+    "notStarted": "Niet gestart",
+    "materials": "Materialen",
+    "allMaterials": "Alle materialen",
+    "status": "Status",
+    "allStatuses": "Alle statussen",
+    "notStartedStatus": "Niet gestart",
+    "inProgressStatus": "Bezig",
+    "completedStatus": "Voltooid",
+    "dueDate": "Vervaldatum",
+    "allDates": "Alle datums",
+    "overdue": "Achterstallig",
+    "dueToday": "Vandaag verwacht",
+    "dueThisWeek": "Deze week verwacht",
+    "sortBy": "Sorteren op",
+    "sequence": "Volgorde",
+    "dueDateSort": "Vervaldatum",
+    "estimatedTime": "Geschatte tijd",
+    "assignedToMe": "Aan mij toegewezen",
+    "showCompleted": "Voltooide tonen",
+    "cellVisibility": "Celzichtbaarheid",
+    "searchPlaceholder": "Zoeken op opdracht, onderdeel, bewerking of klant...",
+    "switchToCompact": "Overschakelen naar compacte weergave",
+    "switchToDetailed": "Overschakelen naar gedetailleerde weergave",
+    "noOperations": "Geen bewerkingen",
+    "operations": "bewerkingen",
+    "operation": "bewerking",
+    "failedToLoad": "Werkwachtrij laden mislukt"
+  },
+  "terminal": {
+    "columns": {
+      "jobNumber": "Opdrachtnr.",
+      "partNumber": "Onderdeelnr.",
+      "operation": "Bewerking",
+      "cell": "Cel",
+      "material": "Materiaal",
+      "quantity": "Aantal",
+      "hours": "Uren",
+      "dueDate": "Vervaldatum",
+      "files": "Bestanden"
+    },
+    "inProcess": "In bewerking",
+    "inBuffer": "In buffer",
+    "expected": "Verwacht",
+    "noActiveJobs": "Geen actieve opdrachten",
+    "jobsFound": "opdrachten gevonden",
+    "you": "JIJ",
+    "other": "Ander",
+    "youAreClockedOn": "Je bent momenteel ingeklokt op deze bewerking",
+    "bulletCard": "Spoedorder - Bullet Card",
+    "resources": {
+      "title": "Benodigde Gereedschappen",
+      "noResources": "Geen gereedschappen nodig",
+      "loading": "Gereedschappen laden...",
+      "resource": "gereedschap",
+      "resources": "gereedschappen",
+      "location": "Locatie",
+      "status": {
+        "available": "Beschikbaar",
+        "inUse": "In gebruik",
+        "maintenance": "Onderhoud",
+        "retired": "Buiten gebruik"
+      }
+    },
+    "assembly": {
+      "title": "Samenstelling Afhankelijkheden",
+      "warning": "Componenten Niet Gereed",
+      "warningDesc": "Sommige componenten zijn nog niet voltooid",
+      "allComplete": "Alle Componenten Gereed",
+      "componentsPending": "{{count}} component(en) wachtend",
+      "checkComponents": "Controleer componenten voor montage",
+      "partStatus": {
+        "notStarted": "Niet gestart",
+        "inProgress": "In bewerking",
+        "completed": "Voltooid"
+      }
+    },
+    "flowProgress": {
+      "loading": "Route laden...",
+      "step": "Stap",
+      "noLimit": "Geen limiet",
+      "atCapacity": "Op capaciteit",
+      "nearCapacity": "Bijna vol",
+      "available": "Beschikbaar",
+      "unknown": "Onbekend",
+      "finalStep": "Laatste stap",
+      "cannotProceed": "Kan niet doorgaan - volgende cel op capaciteit"
+    }
+  },
+  "sessionTracking": {
+    "currentlyTracking": "Momenteel aan het bijhouden",
+    "task": "Taak",
+    "elapsed": "verstreken",
+    "paused": "Gepauzeerd",
+    "pause": "Pauzeren",
+    "resume": "Hervatten",
+    "stop": "Stoppen",
+    "stopped": "Tijdregistratie gestopt",
+    "stopFailed": "Tijdregistratie stoppen mislukt",
+    "pauseFailed": "Tijdregistratie pauzeren mislukt",
+    "resumed": "Tijdregistratie hervat",
+    "resumeFailed": "Tijdregistratie hervatten mislukt",
+    "minimize": "Minimaliseren",
+    "moreOperations": "meer bewerking(en)"
+  },
+  "production": {
+    "reportTitle": "Productie Melden",
+    "target": "Doel",
+    "remaining": "resterend",
+    "done": "klaar",
+    "targetReached": "Doel bereikt!",
+    "report": "Melden",
+    "enterGoodParts": "Voer goede onderdelen in",
+    "recorded": "{{count}} goede onderdelen geregistreerd",
+    "shortfallPrompt": "{{count}} onder doel. Probleem melden?"
+  }
+}

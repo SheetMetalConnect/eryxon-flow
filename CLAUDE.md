@@ -213,37 +213,50 @@ This is a multi-tenant SaaS application with Row-Level Security (RLS):
 
 ## Localization Requirements
 
-### Translation Key Structure
+### Modular Namespace Structure
 
-Follow the existing nested structure in locale files:
+Translations are split into **namespace files** for better AI agent collaboration and reduced context window usage. Each namespace file is small enough to be read and edited efficiently.
 
-```json
-{
-  "navigation": {
-    "dashboard": "Dashboard",
-    "jobs": "Jobs"
-  },
-  "jobs": {
-    "title": "Job Management",
-    "createJob": "Create Job",
-    "status": {
-      "active": "Active",
-      "completed": "Completed"
-    }
-  }
-}
+**Namespace files location:**
 ```
+src/i18n/locales/
+├── en/
+│   ├── common.json        # Shared: Actions, Cancel, forms, notifications, modals, time
+│   ├── auth.json          # Authentication, legal, onboarding, subscription
+│   ├── navigation.json    # Sidebar and navigation items
+│   ├── admin.json         # Dashboard, settings, users, activity, pricing, myPlan
+│   ├── operator.json      # WorkQueue, terminal, session tracking, production
+│   ├── jobs.json          # Jobs, parts, operations, issues
+│   ├── config.json        # Stages, materials, resources, assignments
+│   ├── integrations.json  # API keys, webhooks, MQTT, data import/export
+│   ├── analytics.json     # QRM, OEE, quality, reliability, capacity
+│   └── shipping.json      # Shipping module
+├── nl/                    # Dutch (same structure)
+└── de/                    # German (same structure)
+```
+
+### Which Namespace to Edit
+
+| Feature Area | Namespace File | Key Examples |
+|--------------|----------------|--------------|
+| Common UI elements | `common.json` | `common.save`, `forms.required`, `notifications.success` |
+| Login, signup, legal | `auth.json` | `auth.signIn`, `legal.privacyPolicy`, `onboarding.welcome` |
+| Sidebar, menus | `navigation.json` | `navigation.dashboard`, `navigation.jobs` |
+| Admin pages | `admin.json` | `dashboard.title`, `settings.demoData`, `users.createUser` |
+| Operator terminal | `operator.json` | `workQueue.total`, `terminal.columns`, `production.target` |
+| Jobs/Parts/Operations | `jobs.json` | `jobs.createJob`, `parts.addPart`, `operations.stage` |
+| Configuration | `config.json` | `stages.createStage`, `materials.title`, `resources.name` |
+| Integrations | `integrations.json` | `apiKeys.createKey`, `webhooks.title`, `mqtt.brokerUrl` |
+| Analytics | `analytics.json` | `qrm.dashboardTitle`, `oee.availability`, `quality.yieldRate` |
+| Shipping | `shipping.json` | `shipping.createShipment`, `shipping.status.delivered` |
 
 ### Adding New Translations
 
 When adding any user-facing text:
 
-1. **Identify the appropriate namespace** (navigation, jobs, parts, common, etc.)
-2. **Add to ALL three locale files:**
-   - `src/i18n/locales/en/translation.json`
-   - `src/i18n/locales/nl/translation.json`
-   - `src/i18n/locales/de/translation.json`
-3. **Use the translation in code:**
+1. **Identify the correct namespace file** based on feature area (see table above)
+2. **Add to ALL three languages** (en, nl, de)
+3. **Use nested keys** for organization
 
 ```tsx
 const { t } = useTranslation();
@@ -258,6 +271,23 @@ const { t } = useTranslation();
 <p>{t('dashboard.activeWorkers', { count: 5 })}</p>
 ```
 
+### Translation Key Structure
+
+Follow the existing nested structure within each namespace file:
+
+```json
+{
+  "jobs": {
+    "title": "Job Management",
+    "createJob": "Create Job",
+    "status": {
+      "active": "Active",
+      "completed": "Completed"
+    }
+  }
+}
+```
+
 ### What Must Be Localized
 
 - All UI labels and buttons
@@ -268,6 +298,16 @@ const { t } = useTranslation();
 - Form field labels
 - Table column headers
 - Status badges
+
+### Re-splitting Translations (Maintenance)
+
+If you need to reorganize the namespaces, run:
+
+```bash
+node scripts/split-translations.js
+```
+
+This script reads the namespace mappings and regenerates all namespace files from the source.
 
 ---
 
@@ -429,8 +469,8 @@ Before completing any feature:
 ### Adding a New Navigation Item
 
 ```tsx
-// 1. Add translation keys
-// src/i18n/locales/en/translation.json
+// 1. Add translation keys to navigation.json for all languages
+// src/i18n/locales/en/navigation.json
 {
   "navigation": {
     "newFeature": "New Feature"
@@ -556,7 +596,16 @@ function JobCard({ job, onEdit, onDelete }: JobCardProps) {
 | `src/routes.ts` | Centralized route definitions |
 | `src/integrations/supabase/client.ts` | Supabase client |
 | `src/integrations/supabase/types.ts` | Database types |
-| `src/i18n/locales/*/translation.json` | Translations (EN/NL/DE) |
+| `src/i18n/locales/*/common.json` | Common translations (forms, notifications, time) |
+| `src/i18n/locales/*/auth.json` | Auth & onboarding translations |
+| `src/i18n/locales/*/navigation.json` | Navigation translations |
+| `src/i18n/locales/*/admin.json` | Admin page translations |
+| `src/i18n/locales/*/operator.json` | Operator terminal translations |
+| `src/i18n/locales/*/jobs.json` | Jobs, parts, operations translations |
+| `src/i18n/locales/*/config.json` | Config translations (stages, materials) |
+| `src/i18n/locales/*/integrations.json` | Integration translations (API, webhooks) |
+| `src/i18n/locales/*/analytics.json` | Analytics translations (QRM, OEE) |
+| `src/i18n/locales/*/shipping.json` | Shipping module translations |
 | `src/components/ui/*` | shadcn/ui components |
 | `src/components/admin/AdminPageHeader.tsx` | Standardized page header |
 | `src/components/admin/PageStatsRow.tsx` | Stats row component |
@@ -746,7 +795,7 @@ Before completing ANY task, verify:
 - [ ] **No hardcoded strings** - All text uses translation keys
 - [ ] **No hardcoded metrics** - All numbers are fetched
 - [ ] **Design system compliance** - Using centralized classes
-- [ ] **Translations complete** - Keys added to EN/NL/DE
+- [ ] **Translations complete** - Keys added to correct namespace file for all 3 languages
 - [ ] **Navigation updated** - Menu items added if needed
 - [ ] **Modular code** - Reusable hooks and components
 - [ ] **TypeScript strict** - No `any` types
