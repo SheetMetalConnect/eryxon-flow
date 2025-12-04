@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Loader2, Mail, UserPlus, Users, Trash2, Clock, Link2, Copy } from "lucide-react";
+import { Plus, Edit, Loader2, Mail, UserPlus, Users, Trash2, Clock, Link2, Copy, Bot, Key } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table/DataTable";
@@ -59,6 +59,16 @@ export default function ConfigUsers() {
     pin: "",
   });
   const [creatingOperator, setCreatingOperator] = useState(false);
+
+  // Machine worker form
+  const [machineDialogOpen, setMachineDialogOpen] = useState(false);
+  const [machineForm, setMachineForm] = useState({
+    name: "",
+    machine_id: "",
+    description: "",
+  });
+  const [creatingMachine, setCreatingMachine] = useState(false);
+  const [createdMachineApiKey, setCreatedMachineApiKey] = useState<string | null>(null);
 
   useEffect(() => {
     if (!profile?.tenant_id) return;
@@ -197,6 +207,56 @@ export default function ConfigUsers() {
     } finally {
       setCreatingOperator(false);
     }
+  };
+
+  const handleCreateMachine = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!machineForm.name.trim()) {
+      toast.error("Please enter machine name");
+      return;
+    }
+
+    if (!machineForm.machine_id.trim()) {
+      toast.error("Please enter machine ID");
+      return;
+    }
+
+    setCreatingMachine(true);
+    setCreatedMachineApiKey(null);
+
+    try {
+      const { data, error } = await supabase.rpc('create_machine_worker' as any, {
+        p_name: machineForm.name,
+        p_machine_id: machineForm.machine_id,
+        p_description: machineForm.description || null,
+      });
+
+      if (error) throw error;
+
+      // The function returns profile_id and api_key
+      if (data && data.length > 0) {
+        const { api_key } = data[0];
+        setCreatedMachineApiKey(api_key);
+        toast.success(`Machine worker created: ${machineForm.machine_id}`);
+      }
+
+      loadUsers();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create machine worker");
+      console.error("Error creating machine worker:", error);
+    } finally {
+      setCreatingMachine(false);
+    }
+  };
+
+  const resetMachineForm = () => {
+    setMachineForm({
+      name: "",
+      machine_id: "",
+      description: "",
+    });
+    setCreatedMachineApiKey(null);
   };
 
   const resetForm = () => {
@@ -556,6 +616,146 @@ export default function ConfigUsers() {
           </CardContent>
         </Card>
 
+        {/* Create Machine Worker */}
+        <Card className="glass-card border-blue-500/20 hover:border-blue-500/40 transition-colors">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-blue-500/10">
+                <Bot className="h-5 w-5 text-blue-500" />
+              </div>
+              {t("users.createMachine")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              {t("users.createMachineDescription")}
+            </p>
+            <Dialog open={machineDialogOpen} onOpenChange={(open) => {
+              setMachineDialogOpen(open);
+              if (!open) resetMachineForm();
+            }}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full gap-2">
+                  <Bot className="h-4 w-4" />
+                  {t("users.createMachineNow")}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-card max-w-md">
+                <DialogHeader>
+                  <DialogTitle>{t("users.createMachineTitle")}</DialogTitle>
+                  <DialogDescription>
+                    {t("users.createMachineSubtitle")}
+                  </DialogDescription>
+                </DialogHeader>
+
+                {createdMachineApiKey ? (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg space-y-3">
+                      <div className="flex items-center gap-2 text-green-500">
+                        <Key className="h-5 w-5" />
+                        <span className="font-semibold">{t("users.machineCreatedSuccess")}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {t("users.machineApiKeyWarning")}
+                      </p>
+                      <div className="p-3 bg-background/50 rounded font-mono text-sm break-all">
+                        {createdMachineApiKey}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full gap-2"
+                        onClick={() => {
+                          navigator.clipboard.writeText(createdMachineApiKey);
+                          toast.success(t("users.apiKeyCopied"));
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                        {t("users.copyApiKey")}
+                      </Button>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        resetMachineForm();
+                        setMachineDialogOpen(false);
+                      }}
+                    >
+                      {t("common.done")}
+                    </Button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleCreateMachine} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="machine_name">{t("users.machineName")} *</Label>
+                      <Input
+                        id="machine_name"
+                        value={machineForm.name}
+                        onChange={(e) => setMachineForm({ ...machineForm, name: e.target.value })}
+                        placeholder={t("users.machineNamePlaceholder")}
+                        required
+                        className="bg-[rgba(17,25,40,0.75)] border-white/10"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="machine_id">{t("users.machineId")} *</Label>
+                      <Input
+                        id="machine_id"
+                        value={machineForm.machine_id}
+                        onChange={(e) => setMachineForm({ ...machineForm, machine_id: e.target.value })}
+                        placeholder={t("users.machineIdPlaceholder")}
+                        required
+                        className="bg-[rgba(17,25,40,0.75)] border-white/10"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="machine_description">
+                        {t("users.machineDescription")}{' '}
+                        <span className="text-muted-foreground text-xs">({t("common.optional")})</span>
+                      </Label>
+                      <Input
+                        id="machine_description"
+                        value={machineForm.description}
+                        onChange={(e) => setMachineForm({ ...machineForm, description: e.target.value })}
+                        placeholder={t("users.machineDescriptionPlaceholder")}
+                        className="bg-[rgba(17,25,40,0.75)] border-white/10"
+                      />
+                    </div>
+
+                    <div className="p-3 bg-muted/10 rounded-lg text-sm text-muted-foreground">
+                      {t("users.machineApiKeyNote")}
+                    </div>
+
+                    <Button
+                      type="submit"
+                      className="w-full cta-button gap-2"
+                      disabled={creatingMachine}
+                    >
+                      {creatingMachine ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          {t("common.creating")}
+                        </>
+                      ) : (
+                        <>
+                          <Bot className="h-4 w-4" />
+                          {t("users.createMachineWorker")}
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                )}
+              </DialogContent>
+            </Dialog>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Second row for advanced options */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Advanced User Creation */}
         <Card className="glass-card border-muted/30 hover:border-muted/50 transition-colors">
           <CardHeader className="pb-3">
@@ -563,12 +763,12 @@ export default function ConfigUsers() {
               <div className="p-2 rounded-lg bg-muted/10">
                 <Plus className="h-5 w-5 text-muted-foreground" />
               </div>
-              Advanced Options
+              {t("users.advancedOptions")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Create users with custom settings and machine accounts.
+              {t("users.advancedOptionsDescription")}
             </p>
             <Dialog open={dialogOpen} onOpenChange={(open) => {
               setDialogOpen(open);

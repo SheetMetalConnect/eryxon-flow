@@ -46,7 +46,10 @@
     "success": "Erfolg",
     "validationError": "Validierungsfehler",
     "yes": "Ja",
-    "no": "Nein"
+    "no": "Nein",
+    "optional": "optional",
+    "done": "Fertig",
+    "creating": "Erstellen..."
   },
   "forms": {
     "required": "Dieses Feld ist erforderlich",
