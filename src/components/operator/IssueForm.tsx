@@ -1,21 +1,29 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { Camera } from "lucide-react";
+import { Camera, AlertTriangle, Package } from "lucide-react";
 import { triggerIssueCreatedWebhook } from "@/lib/webhooks";
 import { useTranslation } from "react-i18next";
+
+interface PrefilledData {
+  affectedQuantity?: number;
+  isShortfall?: boolean;
+}
 
 interface IssueFormProps {
   operationId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  prefilledData?: PrefilledData | null;
 }
 
 interface IssueCategory {
@@ -25,7 +33,10 @@ interface IssueCategory {
   severity_default: "low" | "medium" | "high" | "critical";
 }
 
-export default function IssueForm({ operationId, open, onOpenChange, onSuccess }: IssueFormProps) {
+type IssueType = "general" | "ncr";
+type NcrCategory = "material_defect" | "dimensional" | "surface_finish" | "process_error" | "other";
+
+export default function IssueForm({ operationId, open, onOpenChange, onSuccess, prefilledData }: IssueFormProps) {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -34,12 +45,24 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess }
   const [severity, setSeverity] = useState<"low" | "medium" | "high" | "critical">("medium");
   const [description, setDescription] = useState("");
   const [files, setFiles] = useState<FileList | null>(null);
+  const [issueType, setIssueType] = useState<IssueType>("general");
+  const [ncrCategory, setNcrCategory] = useState<NcrCategory | "">("");
+  const [affectedQuantity, setAffectedQuantity] = useState<number | "">("");
+
+  const isShortfall = prefilledData?.isShortfall ?? false;
 
   useEffect(() => {
     if (open) {
       fetchCategories();
+      // Pre-fill affected quantity from production shortfall
+      if (prefilledData?.affectedQuantity) {
+        setAffectedQuantity(prefilledData.affectedQuantity);
+        setIssueType("ncr");
+        setNcrCategory("process_error");
+        setSeverity("high");
+      }
     }
-  }, [open]);
+  }, [open, prefilledData]);
 
   const fetchCategories = async () => {
     try {
@@ -121,7 +144,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess }
         ? `[${selectedCategory.code}] ${description.trim()}`
         : description.trim();
 
-      // Create issue
+      // Create issue with all fields
       const createdAt = new Date().toISOString();
       const { error } = await supabase.from("issues").insert({
         id: issueId,
@@ -131,6 +154,9 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess }
         description: fullDescription,
         severity,
         image_paths: imagePaths.length > 0 ? imagePaths : null,
+        issue_type: issueType,
+        ncr_category: issueType === "ncr" && ncrCategory ? ncrCategory : null,
+        affected_quantity: affectedQuantity !== "" ? affectedQuantity : null,
       });
 
       if (error) throw error;
@@ -172,6 +198,9 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess }
     setSeverity("medium");
     setDescription("");
     setFiles(null);
+    setIssueType("general");
+    setNcrCategory("");
+    setAffectedQuantity("");
   };
 
   const handleClose = () => {
@@ -183,12 +212,77 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess }
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t("issues.reportIssue", "Report Issue")}</DialogTitle>
+          {isShortfall && (
+            <DialogDescription className="sr-only">
+              {t("issues.shortfallContext", "Report production shortfall issue")}
+            </DialogDescription>
+          )}
         </DialogHeader>
 
+        {/* Shortfall Alert Banner */}
+        {isShortfall && (
+          <Alert className="border-amber-500/50 bg-amber-500/10">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-700 dark:text-amber-400">
+              {t("issues.shortfallAlert", "Production shortfall detected. Please provide details about why the target quantity was not met.")}
+            </AlertDescription>
+          </Alert>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Issue Type */}
+          <div>
+            <Label htmlFor="issueType">{t("issues.issueType", "Issue Type")}</Label>
+            <Select value={issueType} onValueChange={(v: IssueType) => setIssueType(v)}>
+              <SelectTrigger id="issueType" className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="general">{t("issues.type.general", "General Issue")}</SelectItem>
+                <SelectItem value="ncr">{t("issues.type.ncr", "Non-Conformance (NCR)")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* NCR Category - only shown for NCR type */}
+          {issueType === "ncr" && (
+            <div>
+              <Label htmlFor="ncrCategory">{t("issues.ncrCategory", "NCR Category")}</Label>
+              <Select value={ncrCategory} onValueChange={(v: NcrCategory) => setNcrCategory(v)}>
+                <SelectTrigger id="ncrCategory" className="mt-1">
+                  <SelectValue placeholder={t("issues.selectNcrCategory", "Select category")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="material_defect">{t("issues.ncrCategories.materialDefect", "Material Defect")}</SelectItem>
+                  <SelectItem value="dimensional">{t("issues.ncrCategories.dimensional", "Dimensional Issue")}</SelectItem>
+                  <SelectItem value="surface_finish">{t("issues.ncrCategories.surfaceFinish", "Surface Finish")}</SelectItem>
+                  <SelectItem value="process_error">{t("issues.ncrCategories.processError", "Process Error")}</SelectItem>
+                  <SelectItem value="other">{t("issues.ncrCategories.other", "Other")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Affected Quantity */}
+          <div>
+            <Label htmlFor="affectedQuantity" className="flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              {t("issues.affectedQuantity", "Affected Quantity")}
+            </Label>
+            <Input
+              id="affectedQuantity"
+              type="number"
+              min="0"
+              value={affectedQuantity}
+              onChange={(e) => setAffectedQuantity(e.target.value ? parseInt(e.target.value) : "")}
+              placeholder={t("issues.affectedQuantityPlaceholder", "Number of parts affected")}
+              className="mt-1"
+            />
+          </div>
+
           {/* Category selector - only if categories exist in DB */}
           {hasCategories && (
             <div>
@@ -226,12 +320,14 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess }
 
           {/* Description */}
           <div>
-            <Label htmlFor="description">{t("issues.description", "Description")}</Label>
+            <Label htmlFor="description">{t("issues.description", "Description")} *</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={t("issues.describeIssue", "Describe the issue...")}
+              placeholder={isShortfall
+                ? t("issues.shortfallDescPlaceholder", "What prevented reaching the target quantity?")
+                : t("issues.describeIssue", "Describe the issue...")}
               rows={4}
               className="mt-1"
               required

@@ -16,7 +16,7 @@ interface ProductionQuantityModalProps {
   partNumber: string;
   plannedQuantity?: number;
   onSuccess: (quantityGood: number, shouldStopTime: boolean) => void;
-  onFileIssue?: () => void;
+  onFileIssue?: (shortfallQuantity: number) => void;
 }
 
 export default function ProductionQuantityModal({
@@ -102,9 +102,9 @@ export default function ProductionQuantityModal({
 
       toast.success(t("production.recorded", "{{count}} good parts recorded", { count: quantityGood }));
 
-      // Open issue form if requested
+      // Open issue form if requested with shortfall quantity
       if (fileIssue && onFileIssue) {
-        onFileIssue();
+        onFileIssue(remaining);
       }
 
       onSuccess(quantityGood, targetAchieved);

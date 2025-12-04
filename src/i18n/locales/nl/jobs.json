@@ -406,7 +406,26 @@
     "issueClosed": "Probleem gesloten",
     "deleteConfirm": "Weet u zeker dat u dit probleem wilt verwijderen?",
     "searchIssues": "Problemen zoeken...",
-    "noIssues": "Geen problemen gevonden"
+    "noIssues": "Geen problemen gevonden",
+    "issueType": "Probleem Type",
+    "type": {
+      "general": "Algemeen Probleem",
+      "ncr": "Non-Conformiteit (NCR)"
+    },
+    "ncrCategory": "NCR Categorie",
+    "selectNcrCategory": "Selecteer categorie",
+    "ncrCategories": {
+      "materialDefect": "Materiaal Defect",
+      "dimensional": "Maatafwijking",
+      "surfaceFinish": "Oppervlakteafwerking",
+      "processError": "Procesfout",
+      "other": "Overig"
+    },
+    "affectedQuantity": "Getroffen Aantal",
+    "affectedQuantityPlaceholder": "Aantal getroffen onderdelen",
+    "shortfallAlert": "Productie tekort gedetecteerd. Geef details over waarom het doelbedrag niet is behaald.",
+    "shortfallContext": "Meld productie tekort probleem",
+    "shortfallDescPlaceholder": "Wat verhinderde het behalen van de doelhoeveelheid?"
   },
   "jobCreate": {
     "title": "Nieuwe Order Aanmaken",
