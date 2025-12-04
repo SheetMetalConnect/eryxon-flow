@@ -41,6 +41,11 @@ import {
   Info,
   Factory,
   CalendarClock,
+  BarChart3,
+  Radio,
+  Gauge,
+  Target,
+  TrendingUp,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -63,6 +68,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [operatorViewsOpen, setOperatorViewsOpen] = useState(false);
+  const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
   const [integrationsOpen, setIntegrationsOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -122,10 +128,38 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       icon: CalendarClock,
       exact: true,
     },
+  ];
+
+  // Analytics - Production insights and metrics
+  const analyticsNavItems = [
     {
       path: "/admin/analytics/qrm-dashboard",
-      label: "QRM Analytics",
+      label: t("navigation.qrmDashboard"),
       icon: Activity,
+      exact: true,
+    },
+    {
+      path: "/admin/analytics/jobs",
+      label: t("navigation.jobsAnalytics"),
+      icon: Briefcase,
+      exact: true,
+    },
+    {
+      path: "/admin/analytics/quality",
+      label: t("navigation.qualityAnalytics"),
+      icon: Target,
+      exact: true,
+    },
+    {
+      path: "/admin/analytics/oee",
+      label: t("navigation.oeeAnalytics"),
+      icon: Gauge,
+      exact: true,
+    },
+    {
+      path: "/admin/analytics/reliability",
+      label: t("navigation.reliabilityAnalytics"),
+      icon: TrendingUp,
       exact: true,
     },
   ];
@@ -228,6 +262,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       path: "/admin/config/webhooks",
       label: t("navigation.webhooks"),
       icon: Webhook,
+      exact: true,
+    },
+    {
+      path: "/admin/config/mqtt-publishers",
+      label: t("navigation.mqttPublishers"),
+      icon: Radio,
       exact: true,
     },
     {
@@ -363,6 +403,53 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-0.5 pl-3">
               {operatorViewItems.map((item) => {
+                const isItemActive = item.exact
+                  ? isActive(item.path)
+                  : location.pathname.startsWith(item.path);
+
+                return (
+                  <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}>
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start gap-2 nav-item-hover h-7 text-xs",
+                        isItemActive && "nav-item-active"
+                      )}
+                      size="sm"
+                    >
+                      <item.icon className="h-3.5 w-3.5 shrink-0" />
+                      <span>{item.label}</span>
+                    </Button>
+                  </Link>
+                );
+              })}
+            </CollapsibleContent>
+          </Collapsible>
+        )}
+
+        {!collapsed && <Separator className="my-2" />}
+
+        {/* Analytics Section - Collapsible */}
+        {!collapsed && (
+          <Collapsible open={analyticsOpen} onOpenChange={setAnalyticsOpen} className="space-y-0.5">
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2 font-medium text-muted-foreground h-7 text-xs"
+              >
+                <BarChart3 className="h-3.5 w-3.5" />
+                <span className="flex-1 text-left">{t("navigation.analytics")}</span>
+                <ChevronDown
+                  className={cn(
+                    "h-3 w-3 transition-transform",
+                    analyticsOpen && "rotate-180"
+                  )}
+                />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-0.5 pl-3">
+              {analyticsNavItems.map((item) => {
                 const isItemActive = item.exact
                   ? isActive(item.path)
                   : location.pathname.startsWith(item.path);

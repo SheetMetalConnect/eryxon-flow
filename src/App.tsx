@@ -45,6 +45,8 @@ import OEEAnalytics from "./pages/admin/analytics/OEEAnalytics";
 import ReliabilityAnalytics from "./pages/admin/analytics/ReliabilityAnalytics";
 import QRMAnalytics from "./pages/admin/analytics/QRMAnalytics";
 import QRMDashboard from "./pages/admin/analytics/QRMDashboard";
+import JobsAnalytics from "./pages/admin/analytics/JobsAnalytics";
+import QualityAnalytics from "./pages/admin/analytics/QualityAnalytics";
 import ApiDocs from "./pages/ApiDocs";
 import Pricing from "./pages/Pricing";
 import { MyPlan } from "./pages/MyPlan";
@@ -517,6 +519,28 @@ function AppRoutes() {
           <ProtectedRoute adminOnly>
             <Layout>
               <QRMDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/analytics/jobs"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <JobsAnalytics />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/analytics/quality"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <QualityAnalytics />
             </Layout>
           </ProtectedRoute>
         }
