@@ -122,7 +122,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="glass-card max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="glass-card max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex justify-between items-start gap-4">
             <DialogTitle className="text-xl flex items-center gap-2">
