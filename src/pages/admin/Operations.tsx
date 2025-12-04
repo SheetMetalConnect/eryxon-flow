@@ -6,7 +6,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Eye, Download, Wrench } from "lucide-react";
+import { Loader2, Download, Wrench, PlayCircle, CheckCircle2, UserCheck } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { PageStatsRow } from "@/components/admin/PageStatsRow";
 import { DataTable } from "@/components/ui/data-table/DataTable";
 import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
 import type { DataTableFilterableColumn } from "@/components/ui/data-table/DataTable";
@@ -36,6 +39,7 @@ interface Operation {
 }
 
 export const Operations: React.FC = () => {
+  const { t } = useTranslation();
   const [selectedOperationId, setSelectedOperationId] = useState<string | null>(null);
   const { profile } = useAuth();
   const navigate = useNavigate();
@@ -281,25 +285,6 @@ export const Operations: React.FC = () => {
         return value.includes(row.getValue(id));
       },
     },
-    {
-      id: "actions",
-      header: "Actions",
-      cell: ({ row }) => {
-        return (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedOperationId(row.original.id);
-            }}
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-        );
-      },
-    },
   ], [navigate]);
 
   const uniqueCells = useMemo(() =>
@@ -333,6 +318,17 @@ export const Operations: React.FC = () => {
     },
   ], [uniqueCells]);
 
+  // Calculate stats
+  const operationStats = useMemo(() => {
+    if (!operations) return { total: 0, inProgress: 0, completed: 0, assigned: 0 };
+    return {
+      total: operations.length,
+      inProgress: operations.filter((o: Operation) => o.status === "in_progress").length,
+      completed: operations.filter((o: Operation) => o.status === "completed").length,
+      assigned: operations.filter((o: Operation) => o.assigned_name !== null).length,
+    };
+  }, [operations]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -343,39 +339,38 @@ export const Operations: React.FC = () => {
 
   return (
     <div className="p-4 space-y-4">
-      <div>
-        <div className="flex justify-between items-center mb-1">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
-            Operations
-          </h1>
-          <Button onClick={handleExport} className="cta-button">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-        </div>
-        <p className="text-muted-foreground text-sm">
-          Monitor all manufacturing operations across cells and jobs
-        </p>
-      </div>
+      <AdminPageHeader
+        title={t("operations.title", "Operations")}
+        description={t("operations.subtitle", "Monitor all manufacturing operations across cells and jobs")}
+        action={{
+          label: t("common.export", "Export"),
+          onClick: handleExport,
+          icon: Download,
+        }}
+      />
 
-      <hr className="title-divider" />
-
-      <div className="informational-text text-sm py-2">
-        <Wrench className="inline h-4 w-4 mr-1.5 text-primary" />
-        <strong>{operations.length} operations</strong> across all work centers and manufacturing cells
-      </div>
+      {/* Stats Row */}
+      <PageStatsRow
+        stats={[
+          { label: t("operations.total", "Total Operations"), value: operationStats.total, icon: Wrench, color: "primary" },
+          { label: t("operations.inProgress", "In Progress"), value: operationStats.inProgress, icon: PlayCircle, color: "warning" },
+          { label: t("operations.completed", "Completed"), value: operationStats.completed, icon: CheckCircle2, color: "success" },
+          { label: t("operations.assigned", "Assigned"), value: operationStats.assigned, icon: UserCheck, color: "info" },
+        ]}
+      />
 
       <div className="glass-card p-4">
         <DataTable
           columns={columns}
           data={operations}
           filterableColumns={filterableColumns}
-          searchPlaceholder="Search by part, operation, operator..."
-          emptyMessage="No operations match the current filters"
+          searchPlaceholder={t("operations.searchPlaceholder", "Search by part, operation, operator...")}
+          emptyMessage={t("operations.noResults", "No operations match the current filters")}
           loading={isLoading}
           pageSize={50}
           pageSizeOptions={[20, 50, 100, 200]}
           searchDebounce={250}
+          onRowClick={(operation) => setSelectedOperationId(operation.id)}
         />
       </div>
 

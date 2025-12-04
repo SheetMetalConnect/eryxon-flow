@@ -18,7 +18,12 @@ import {
   CheckCircle2,
   PauseCircle,
   Layers,
+  Briefcase,
+  PlayCircle,
+  AlertCircle,
 } from "lucide-react";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { PageStatsRow } from "@/components/admin/PageStatsRow";
 import { format, isBefore, addDays, isAfter } from "date-fns";
 import JobDetailModal from "@/components/admin/JobDetailModal";
 import DueDateOverrideModal from "@/components/admin/DueDateOverrideModal";
@@ -450,24 +455,42 @@ export default function Jobs() {
     },
   ], [t]);
 
+  // Calculate stats
+  const jobStats = useMemo(() => {
+    if (!jobs) return { total: 0, active: 0, completed: 0, overdue: 0 };
+    const today = new Date();
+    return {
+      total: jobs.length,
+      active: jobs.filter((j: JobData) => j.status === "in_progress").length,
+      completed: jobs.filter((j: JobData) => j.status === "completed").length,
+      overdue: jobs.filter((j: JobData) => {
+        const dueDate = new Date(j.due_date_override || j.due_date);
+        return isBefore(dueDate, today) && j.status !== "completed";
+      }).length,
+    };
+  }, [jobs]);
+
   return (
     <div className="p-4 space-y-4">
-      {/* Header */}
-      <div>
-        <div className="flex justify-between items-center mb-1">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
-            {t("jobs.title")}
-          </h1>
-          <Button onClick={() => navigate("/admin/jobs/new")} className="cta-button">
-            <Plus className="mr-2 h-4 w-4" /> {t("jobs.createJob")}
-          </Button>
-        </div>
-        <p className="text-muted-foreground text-sm">
-          {t("jobs.subtitle", "Manage all jobs, track progress, and monitor deadlines")}
-        </p>
-      </div>
+      <AdminPageHeader
+        title={t("jobs.title")}
+        description={t("jobs.subtitle", "Manage all jobs, track progress, and monitor deadlines")}
+        action={{
+          label: t("jobs.createJob"),
+          onClick: () => navigate("/admin/jobs/new"),
+          icon: Plus,
+        }}
+      />
 
-      <hr className="title-divider" />
+      {/* Stats Row */}
+      <PageStatsRow
+        stats={[
+          { label: t("jobs.totalJobs", "Total Jobs"), value: jobStats.total, icon: Briefcase, color: "primary" },
+          { label: t("jobs.inProgress", "In Progress"), value: jobStats.active, icon: PlayCircle, color: "warning" },
+          { label: t("jobs.completedJobs", "Completed"), value: jobStats.completed, icon: CheckCircle2, color: "success" },
+          { label: t("jobs.overdueJobs", "Overdue"), value: jobStats.overdue, icon: AlertCircle, color: jobStats.overdue > 0 ? "error" : "muted" },
+        ]}
+      />
 
       {/* Jobs Table */}
       <div className="glass-card p-4">

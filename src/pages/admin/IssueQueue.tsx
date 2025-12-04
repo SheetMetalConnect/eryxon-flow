@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
+import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,32 +10,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import {
   AlertCircle,
   CheckCircle,
   XCircle,
-  Activity,
   Clock,
   AlertTriangle,
   AlertOctagon,
-  TrendingUp,
-  BarChart3,
-  CircleDot,
+  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { PageStatsRow } from "@/components/admin/PageStatsRow";
+import { DataTable } from "@/components/ui/data-table/DataTable";
+import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
+import type { DataTableFilterableColumn } from "@/components/ui/data-table/DataTable";
 
 interface Issue {
   id: string;
@@ -211,14 +205,128 @@ export default function IssueQueue() {
     }
   };
 
-  const severityColors = {
+  const severityColors: Record<string, string> = {
     low: "bg-severity-low",
     medium: "bg-severity-medium",
     high: "bg-severity-high",
     critical: "bg-severity-critical",
   };
 
-  const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+  const getSeverityBadge = (severity: string) => (
+    <Badge className={cn("text-xs", severityColors[severity] || "bg-muted")}>
+      {t(`issues.severity.${severity}`, severity)}
+    </Badge>
+  );
+
+  const getStatusBadge = (status: string) => {
+    const statusStyles: Record<string, string> = {
+      pending: "bg-[hsl(var(--color-warning))]/20 text-[hsl(var(--color-warning))]",
+      approved: "bg-[hsl(var(--color-success))]/20 text-[hsl(var(--color-success))]",
+      rejected: "bg-[hsl(var(--color-error))]/20 text-[hsl(var(--color-error))]",
+      closed: "bg-muted text-muted-foreground",
+    };
+    return (
+      <Badge className={cn("text-xs", statusStyles[status] || "bg-muted")}>
+        {t(`issues.status.${status}`, status)}
+      </Badge>
+    );
+  };
+
+  // Table columns
+  const columns: ColumnDef<Issue>[] = useMemo(() => [
+    {
+      accessorKey: "severity",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("issues.severityLabel", "Severity")} />
+      ),
+      cell: ({ row }) => getSeverityBadge(row.getValue("severity")),
+      filterFn: (row, id, value) => value.includes(row.getValue(id)),
+    },
+    {
+      id: "job",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("common.job", "Job")} />
+      ),
+      cell: ({ row }) => (
+        <span className="font-medium">{row.original.operation?.part?.job?.job_number || "-"}</span>
+      ),
+    },
+    {
+      id: "part",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("common.part", "Part")} />
+      ),
+      cell: ({ row }) => row.original.operation?.part?.part_number || "-",
+    },
+    {
+      id: "operation",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("common.operation", "Operation")} />
+      ),
+      cell: ({ row }) => row.original.operation?.operation_name || "-",
+    },
+    {
+      accessorKey: "description",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("issues.description", "Description")} />
+      ),
+      cell: ({ row }) => (
+        <span className="line-clamp-1 max-w-[200px]">{row.getValue("description")}</span>
+      ),
+    },
+    {
+      id: "reporter",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("issues.reporter", "Reporter")} />
+      ),
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">{row.original.creator?.full_name || "-"}</span>
+      ),
+    },
+    {
+      accessorKey: "created_at",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("common.date", "Date")} />
+      ),
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">
+          {format(new Date(row.getValue("created_at")), "MMM d, yyyy")}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("common.status", "Status")} />
+      ),
+      cell: ({ row }) => getStatusBadge(row.getValue("status")),
+      filterFn: (row, id, value) => value.includes(row.getValue(id)),
+    },
+  ], [t]);
+
+  // Filterable columns
+  const filterableColumns: DataTableFilterableColumn[] = useMemo(() => [
+    {
+      id: "severity",
+      title: t("issues.severityLabel", "Severity"),
+      options: [
+        { label: t("issues.severity.critical"), value: "critical" },
+        { label: t("issues.severity.high"), value: "high" },
+        { label: t("issues.severity.medium"), value: "medium" },
+        { label: t("issues.severity.low"), value: "low" },
+      ],
+    },
+    {
+      id: "status",
+      title: t("common.status", "Status"),
+      options: [
+        { label: t("issues.status.pending"), value: "pending" },
+        { label: t("issues.status.approved"), value: "approved" },
+        { label: t("issues.status.rejected"), value: "rejected" },
+        { label: t("issues.status.closed"), value: "closed" },
+      ],
+    },
+  ], [t]);
 
   // State for all issues (unfiltered) for analytics
   const [allIssues, setAllIssues] = useState<Issue[]>([]);
@@ -289,311 +397,40 @@ export default function IssueQueue() {
   }
 
   return (
-    <div className="space-y-8 p-6">
-      <div>
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
-          {t("issues.issueQueue")}
-        </h1>
-        <p className="text-muted-foreground text-lg">
-          {issues.length} {t("issues.pendingIssue", { count: issues.length })}
-        </p>
+    <div className="p-4 space-y-4">
+      <AdminPageHeader
+        title={t("issues.issueQueue")}
+        description={t("issues.subtitle", "Review and manage quality issues reported from the shop floor")}
+      />
+
+      {/* Stats Row */}
+      <PageStatsRow
+        stats={[
+          { label: t("issues.totalIssues", "Total Issues"), value: analytics.total, icon: AlertCircle, color: "primary" },
+          { label: t("issues.status.pending"), value: analytics.byStatus.pending, icon: Clock, color: analytics.byStatus.pending > 0 ? "warning" : "muted" },
+          { label: t("issues.criticalPending", "Critical"), value: analytics.criticalPending, icon: AlertOctagon, color: analytics.criticalPending > 0 ? "error" : "muted" },
+          { label: t("issues.resolved", "Resolved"), value: analytics.byStatus.approved + analytics.byStatus.closed, icon: CheckCircle, color: "success" },
+        ]}
+      />
+
+      {/* Issues Table */}
+      <div className="glass-card p-4">
+        <DataTable
+          columns={columns}
+          data={issues}
+          filterableColumns={filterableColumns}
+          searchPlaceholder={t("issues.searchPlaceholder", "Search issues...")}
+          emptyMessage={t("issues.noIssuesFound", "No issues found")}
+          loading={loading}
+          pageSize={20}
+          pageSizeOptions={[10, 20, 50, 100]}
+          searchDebounce={250}
+          onRowClick={(issue) => {
+            setSelectedIssue(issue);
+            setResolutionNotes("");
+          }}
+        />
       </div>
-
-      <hr className="title-divider" />
-
-      {/* Analytics Dashboard */}
-      {analytics.total > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          {/* Total Issues */}
-          <Card className="glass-card transition-smooth hover:scale-[1.02]">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-[hsl(var(--brand-primary))]/10">
-                  <BarChart3 className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
-                </div>
-                <div>
-                  <div className="text-xl font-bold">{analytics.total}</div>
-                  <div className="text-xs text-muted-foreground">{t("quality.totalIssues", "Total Issues")}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Pending */}
-          <Card className={cn(
-            "glass-card transition-smooth hover:scale-[1.02]",
-            analytics.byStatus.pending > 0 && "border-[hsl(var(--color-warning))]/30"
-          )}>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-[hsl(var(--color-warning))]/10">
-                  <Clock className="h-4 w-4 text-[hsl(var(--color-warning))]" />
-                </div>
-                <div>
-                  <div className={cn(
-                    "text-xl font-bold",
-                    analytics.byStatus.pending > 0 && "text-[hsl(var(--color-warning))]"
-                  )}>{analytics.byStatus.pending}</div>
-                  <div className="text-xs text-muted-foreground">{t("issues.status.pending")}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Critical */}
-          <Card className={cn(
-            "glass-card transition-smooth hover:scale-[1.02]",
-            analytics.criticalPending > 0 && "border-[hsl(var(--color-error))]/30"
-          )}>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-[hsl(var(--color-error))]/10">
-                  <AlertOctagon className="h-4 w-4 text-[hsl(var(--color-error))]" />
-                </div>
-                <div>
-                  <div className={cn(
-                    "text-xl font-bold",
-                    analytics.criticalPending > 0 && "text-[hsl(var(--color-error))]"
-                  )}>{analytics.criticalPending}</div>
-                  <div className="text-xs text-muted-foreground">{t("quality.criticalPending", "Critical Pending")}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* High Priority */}
-          <Card className={cn(
-            "glass-card transition-smooth hover:scale-[1.02]",
-            analytics.highPending > 0 && "border-[hsl(var(--severity-high))]/30"
-          )}>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-[hsl(var(--severity-high))]/10">
-                  <AlertTriangle className="h-4 w-4 text-[hsl(var(--severity-high))]" />
-                </div>
-                <div>
-                  <div className={cn(
-                    "text-xl font-bold",
-                    analytics.highPending > 0 && "text-[hsl(var(--severity-high))]"
-                  )}>{analytics.highPending}</div>
-                  <div className="text-xs text-muted-foreground">{t("quality.highPending", "High Pending")}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Resolved */}
-          <Card className="glass-card transition-smooth hover:scale-[1.02]">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-[hsl(var(--color-success))]/10">
-                  <CheckCircle className="h-4 w-4 text-[hsl(var(--color-success))]" />
-                </div>
-                <div>
-                  <div className="text-xl font-bold text-[hsl(var(--color-success))]">
-                    {analytics.byStatus.approved + analytics.byStatus.closed}
-                  </div>
-                  <div className="text-xs text-muted-foreground">{t("quality.resolved", "Resolved")}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Resolution Rate */}
-          <Card className="glass-card transition-smooth hover:scale-[1.02]">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-[hsl(var(--color-info))]/10">
-                  <TrendingUp className="h-4 w-4 text-[hsl(var(--color-info))]" />
-                </div>
-                <div>
-                  <div className={cn(
-                    "text-xl font-bold",
-                    analytics.resolutionRate >= 80 ? "text-[hsl(var(--color-success))]" :
-                    analytics.resolutionRate >= 50 ? "text-[hsl(var(--color-warning))]" :
-                    "text-[hsl(var(--color-error))]"
-                  )}>{analytics.resolutionRate.toFixed(0)}%</div>
-                  <div className="text-xs text-muted-foreground">{t("quality.resolutionRate", "Resolution Rate")}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Severity & Status Breakdown */}
-      {analytics.total > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* By Severity */}
-          <Card className="glass-card">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Activity className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
-                {t("quality.bySeverity", "Issues by Severity")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="space-y-2">
-                {[
-                  { key: "critical", label: t("issues.severity.critical"), color: "bg-severity-critical", value: analytics.bySeverity.critical },
-                  { key: "high", label: t("issues.severity.high"), color: "bg-severity-high", value: analytics.bySeverity.high },
-                  { key: "medium", label: t("issues.severity.medium"), color: "bg-severity-medium", value: analytics.bySeverity.medium },
-                  { key: "low", label: t("issues.severity.low"), color: "bg-severity-low", value: analytics.bySeverity.low },
-                ].map((item) => (
-                  <div key={item.key} className="flex items-center gap-3">
-                    <div className="w-20 text-xs text-muted-foreground">{item.label}</div>
-                    <div className="flex-1 h-4 bg-muted/30 rounded-full overflow-hidden">
-                      <div
-                        className={cn("h-full rounded-full", item.color)}
-                        style={{ width: `${analytics.total > 0 ? (item.value / analytics.total) * 100 : 0}%` }}
-                      />
-                    </div>
-                    <div className="w-8 text-xs font-medium text-right">{item.value}</div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* By Status */}
-          <Card className="glass-card">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <CircleDot className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
-                {t("quality.byStatus", "Issues by Status")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="space-y-2">
-                {[
-                  { key: "pending", label: t("issues.status.pending"), color: "bg-[hsl(var(--color-warning))]", value: analytics.byStatus.pending },
-                  { key: "approved", label: t("issues.status.approved"), color: "bg-[hsl(var(--color-success))]", value: analytics.byStatus.approved },
-                  { key: "rejected", label: t("issues.status.rejected"), color: "bg-[hsl(var(--color-error))]", value: analytics.byStatus.rejected },
-                  { key: "closed", label: t("issues.status.closed"), color: "bg-muted-foreground", value: analytics.byStatus.closed },
-                ].map((item) => (
-                  <div key={item.key} className="flex items-center gap-3">
-                    <div className="w-20 text-xs text-muted-foreground">{item.label}</div>
-                    <div className="flex-1 h-4 bg-muted/30 rounded-full overflow-hidden">
-                      <div
-                        className={cn("h-full rounded-full", item.color)}
-                        style={{ width: `${analytics.total > 0 ? (item.value / analytics.total) * 100 : 0}%` }}
-                      />
-                    </div>
-                    <div className="w-8 text-xs font-medium text-right">{item.value}</div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <Label htmlFor="search" className="mb-2 block">
-            {t('Search')}
-          </Label>
-          <Input
-            id="search"
-            placeholder={t('issues.searchByJobPartOperation')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="status-filter" className="mb-2 block">
-            {t('Status')}
-          </Label>
-          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
-            <SelectTrigger id="status-filter">
-              <SelectValue placeholder={t('issues.filterByStatus')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('issues.allStatuses')}</SelectItem>
-              <SelectItem value="pending">{t('issues.status.pending')}</SelectItem>
-              <SelectItem value="approved">{t('issues.status.approved')}</SelectItem>
-              <SelectItem value="rejected">{t('issues.status.rejected')}</SelectItem>
-              <SelectItem value="closed">{t('issues.status.closed')}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label htmlFor="severity-filter" className="mb-2 block">
-            {t('issues.severityLabel')}
-          </Label>
-          <Select value={severityFilter} onValueChange={(v) => setSeverityFilter(v as any)}>
-            <SelectTrigger id="severity-filter">
-              <SelectValue placeholder={t('issues.filterBySeverity')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('issues.allSeverities')}</SelectItem>
-              <SelectItem value="critical">{t('issues.severity.critical')}</SelectItem>
-              <SelectItem value="high">{t('issues.severity.high')}</SelectItem>
-              <SelectItem value="medium">{t('issues.severity.medium')}</SelectItem>
-              <SelectItem value="low">{t('issues.severity.low')}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {issues.length === 0 ? (
-        <Card className="glass-card p-12 text-center">
-          <CheckCircle className="h-12 w-12 mx-auto mb-4 text-success" />
-          <h3 className="text-lg font-medium mb-2">
-            {t("issues.noPendingIssues")}
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            {t("issues.allIssuesReviewed")}
-          </p>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {issues.map((issue) => (
-            <Card
-              key={issue.id}
-              className="glass-card p-4 cursor-pointer hover:shadow-xl hover:scale-105 transition-all hover:border-white/20"
-              onClick={() => {
-                setSelectedIssue(issue);
-                setResolutionNotes("");
-              }}
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge
-                      className={
-                        severityColors[
-                        issue.severity as keyof typeof severityColors
-                        ]
-                      }
-                    >
-                      {t(`issues.severity.${issue.severity}`)}
-                    </Badge>
-                  </div>
-                  <div className="font-medium mb-1">
-                    {issue.operation.part.job.job_number} •{" "}
-                    {issue.operation.part.part_number} •{" "}
-                    {issue.operation.operation_name}
-                  </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-                    {issue.description}
-                  </p>
-                  <div className="text-xs text-muted-foreground">
-                    {t("issues.reportedBy", {
-                      name: issue.creator.full_name,
-                      date: format(new Date(issue.created_at), "MMM d, yyyy"),
-                    })}
-                  </div>
-                </div>
-                <Button size="sm">{t("issues.review")}</Button>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
 
       {/* Review Modal */}
       <Dialog

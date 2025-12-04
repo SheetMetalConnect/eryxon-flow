@@ -11,8 +11,13 @@ import {
   Box,
   FileText,
   Eye,
+  Layers,
+  PlayCircle,
+  CheckCircle2,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { PageStatsRow } from "@/components/admin/PageStatsRow";
 import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
 import {
@@ -403,20 +408,35 @@ export default function Parts() {
     },
   ], [t, materials, jobs]);
 
+  // Calculate stats
+  const partStats = useMemo(() => {
+    if (!parts) return { total: 0, active: 0, completed: 0, assemblies: 0 };
+    return {
+      total: parts.length,
+      active: parts.filter((p: PartData) => p.status === "in_progress").length,
+      completed: parts.filter((p: PartData) => p.status === "completed").length,
+      assemblies: parts.filter((p: PartData) => p.has_children).length,
+    };
+  }, [parts]);
+
   return (
-    <div className="p-6 space-y-8">
-        <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
-            {t("parts.title")}
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            {t("parts.subtitle")}
-          </p>
-        </div>
+    <div className="p-4 space-y-4">
+      <AdminPageHeader
+        title={t("parts.title")}
+        description={t("parts.subtitle")}
+      />
 
-        <hr className="title-divider" />
+      {/* Stats Row */}
+      <PageStatsRow
+        stats={[
+          { label: t("parts.totalParts", "Total Parts"), value: partStats.total, icon: Package, color: "primary" },
+          { label: t("parts.inProgress", "In Progress"), value: partStats.active, icon: PlayCircle, color: "warning" },
+          { label: t("parts.completed", "Completed"), value: partStats.completed, icon: CheckCircle2, color: "success" },
+          { label: t("parts.assemblies", "Assemblies"), value: partStats.assemblies, icon: Layers, color: "info" },
+        ]}
+      />
 
-        <div className="glass-card p-6">
+      <div className="glass-card p-4">
           <DataTable
             columns={columns}
             data={parts || []}

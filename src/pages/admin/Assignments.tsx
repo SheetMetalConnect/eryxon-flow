@@ -22,7 +22,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, UserCheck, X, UserPlus, ArrowRight, Users } from "lucide-react";
+import { Loader2, UserCheck, X, UserPlus, ArrowRight, Users, Package, UserCog } from "lucide-react";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { PageStatsRow } from "@/components/admin/PageStatsRow";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -421,17 +423,31 @@ export default function Assignments() {
   const selectedPartData = parts.find((p) => p.id === selectedPart);
   const selectedOperatorData = operators.find((o) => o.id === selectedOperator);
 
-  return (
-    <div className="container max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
-          {t("assignments.title")}
-        </h1>
-        <p className="text-muted-foreground text-base sm:text-lg">{t("assignments.description")}</p>
-      </div>
+  // Calculate stats
+  const assignmentStats = useMemo(() => {
+    return {
+      totalAssignments: assignments.length,
+      availableParts: parts.length,
+      activeOperators: operators.length,
+      assignedParts: assignments.length,
+    };
+  }, [assignments, parts, operators]);
 
-      <hr className="title-divider" />
+  return (
+    <div className="p-4 space-y-4">
+      <AdminPageHeader
+        title={t("assignments.title")}
+        description={t("assignments.description")}
+      />
+
+      {/* Stats Row */}
+      <PageStatsRow
+        stats={[
+          { label: t("assignments.totalAssignments", "Total Assignments"), value: assignmentStats.totalAssignments, icon: UserCheck, color: "primary" },
+          { label: t("assignments.availableParts", "Available Parts"), value: assignmentStats.availableParts, icon: Package, color: "info" },
+          { label: t("assignments.activeOperators", "Active Operators"), value: assignmentStats.activeOperators, icon: UserCog, color: "success" },
+        ]}
+      />
 
       {/* Assignment Interface */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
