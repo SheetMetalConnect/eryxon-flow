@@ -136,5 +136,26 @@
   },
   "languageSwitcher": {
     "selectLanguage": "Select Language"
+  },
+  "globalSearch": {
+    "title": "Global Search",
+    "placeholder": "Search jobs, parts, resources, materials, operators, issues...",
+    "initialHint": "Search across your entire workspace",
+    "searchFields": "Searches in job numbers, customers, part numbers, materials, names, and more",
+    "keyboardHint": "Use ↑↓ arrows to navigate, Enter to select, Esc to close",
+    "noResults": "No results found for",
+    "openSearch": "Search",
+    "typeLabels": {
+      "job": "Jobs",
+      "part": "Parts",
+      "operation": "Operations",
+      "user": "Operators",
+      "issue": "Issues",
+      "resource": "Resources",
+      "material": "Materials"
+    },
+    "shortcuts": {
+      "open": "Open search"
+    }
   }
 }
