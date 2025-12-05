@@ -1018,7 +1018,7 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
       </div>
 
       {/* 3D Viewer Container */}
-      <div className="flex-1 relative bg-[#1e1e2e]">
+      <div className="flex-1 relative bg-surface">
         <div ref={containerRef} className="absolute inset-0" />
 
         {/* Dimension Overlay Panel */}
@@ -1035,10 +1035,7 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
                 {/* X Dimension */}
                 <div className="flex items-center justify-between gap-3 group">
                   <div className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-sm flex items-center justify-center text-[8px] font-bold text-white"
-                      style={{ backgroundColor: '#4a9eff' }}
-                    >
+                    <div className="w-3 h-3 rounded-sm flex items-center justify-center text-[8px] font-bold text-white bg-[hsl(var(--brand-primary-light))]">
                       X
                     </div>
                     <span className="text-[11px] text-muted-foreground">
@@ -1054,10 +1051,7 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
                 {/* Y Dimension */}
                 <div className="flex items-center justify-between gap-3 group">
                   <div className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-sm flex items-center justify-center text-[8px] font-bold text-white"
-                      style={{ backgroundColor: '#34a853' }}
-                    >
+                    <div className="w-3 h-3 rounded-sm flex items-center justify-center text-[8px] font-bold text-white bg-[hsl(var(--color-success))]">
                       Y
                     </div>
                     <span className="text-[11px] text-muted-foreground">
@@ -1073,10 +1067,7 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
                 {/* Z Dimension */}
                 <div className="flex items-center justify-between gap-3 group">
                   <div className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-sm flex items-center justify-center text-[8px] font-bold text-white"
-                      style={{ backgroundColor: '#fbbc05' }}
-                    >
+                    <div className="w-3 h-3 rounded-sm flex items-center justify-center text-[8px] font-bold text-black bg-[hsl(var(--color-warning))]">
                       Z
                     </div>
                     <span className="text-[11px] text-muted-foreground">
@@ -1116,16 +1107,16 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
               </div>
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#4a90e2' }} />
-                  <span className="text-[10px] text-muted-foreground">Flat surfaces</span>
+                  <div className="w-2.5 h-2.5 rounded-full bg-primary" />
+                  <span className="text-[10px] text-muted-foreground">{t('parts.cadViewer.flatSurfaces')}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#ff9933' }} />
-                  <span className="text-[10px] text-muted-foreground">Bends / Curves</span>
+                  <div className="w-2.5 h-2.5 rounded-full bg-[hsl(var(--status-on-hold))]" />
+                  <span className="text-[10px] text-muted-foreground">{t('parts.cadViewer.bendsCurves')}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#cc33cc' }} />
-                  <span className="text-[10px] text-muted-foreground">Holes / Sharp edges</span>
+                  <div className="w-2.5 h-2.5 rounded-full bg-[hsl(var(--stage-bending))]" />
+                  <span className="text-[10px] text-muted-foreground">{t('parts.cadViewer.holesEdges')}</span>
                 </div>
               </div>
             </div>
@@ -1137,7 +1128,7 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
           <div className="absolute inset-0 flex items-center justify-center bg-background/90 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-2">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <p className="text-xs text-muted-foreground">Loading 3D model...</p>
+              <p className="text-xs text-muted-foreground">{t('parts.cadViewer.loading')}</p>
             </div>
           </div>
         )}

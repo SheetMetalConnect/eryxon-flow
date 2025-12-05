@@ -238,7 +238,11 @@
       "highlightFeatures": "Merkmale Hervorheben",
       "showFeatures": "Merkmale Anzeigen",
       "hideFeatures": "Merkmale Ausblenden",
-      "featuresDesc": "Biegungen, Löcher und Ausschnitte hervorheben"
+      "featuresDesc": "Biegungen, Löcher und Ausschnitte hervorheben",
+      "flatSurfaces": "Flache Oberflächen",
+      "bendsCurves": "Biegungen / Kurven",
+      "holesEdges": "Löcher / Scharfe Kanten",
+      "loading": "3D-Modell wird geladen..."
     }
   },
   "operations": {

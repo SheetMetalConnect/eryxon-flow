@@ -250,7 +250,11 @@
       "highlightFeatures": "Highlight Features",
       "showFeatures": "Show Features",
       "hideFeatures": "Hide Features",
-      "featuresDesc": "Highlight bends, holes, and cuts"
+      "featuresDesc": "Highlight bends, holes, and cuts",
+      "flatSurfaces": "Flat surfaces",
+      "bendsCurves": "Bends / Curves",
+      "holesEdges": "Holes / Sharp edges",
+      "loading": "Loading 3D model..."
     }
   },
   "operations": {
