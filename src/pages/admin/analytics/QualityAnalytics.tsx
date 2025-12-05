@@ -219,15 +219,15 @@ export default function QualityAnalytics() {
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="text-xs text-muted-foreground">{t("quality.inProgress")}</div>
+                  <div className="text-xs text-muted-foreground">{t("quality.approved")}</div>
                   <div className="text-xl font-bold text-[hsl(var(--color-info))]">
-                    {qualityMetrics.issueMetrics.inProgress}
+                    {qualityMetrics.issueMetrics.approved}
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="text-xs text-muted-foreground">{t("quality.resolved")}</div>
+                  <div className="text-xs text-muted-foreground">{t("quality.closed")}</div>
                   <div className="text-xl font-bold text-[hsl(var(--color-success))]">
-                    {qualityMetrics.issueMetrics.resolved}
+                    {qualityMetrics.issueMetrics.closed}
                   </div>
                 </div>
                 <div className="space-y-1">

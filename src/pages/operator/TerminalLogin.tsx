@@ -96,7 +96,7 @@ export default function TerminalLogin() {
     try {
       // Call the verify_operator_pin RPC function to validate credentials
       const { data, error: rpcError } = await supabase.rpc(
-        "verify_operator_pin",
+        "verify_operator_pin" as any,
         {
           p_employee_id: employeeId.trim(),
           p_pin: pin,
@@ -110,15 +110,17 @@ export default function TerminalLogin() {
         return;
       }
 
-      if (!data || !data.success) {
-        setError(data?.error || t("terminalLogin.invalidCredentials"));
+      const result = data as { success?: boolean; error?: string; tenant_id?: string } | null;
+
+      if (!result || !result.success) {
+        setError(result?.error || t("terminalLogin.invalidCredentials"));
         setPin("");
         return;
       }
 
       // PIN verified successfully - sign in using the terminal email pattern
       // Operators created with PIN have an auto-generated email: {employee_id}@terminal.{tenant_id}.local
-      const terminalEmail = `${employeeId.toLowerCase()}@terminal.${data.tenant_id}.local`;
+      const terminalEmail = `${employeeId.toLowerCase()}@terminal.${result.tenant_id}.local`;
 
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: terminalEmail,

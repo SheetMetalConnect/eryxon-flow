@@ -107,7 +107,7 @@ describe('utils - Edge Cases', () => {
   });
 
   it('handles numeric inputs gracefully', () => {
-    // @ts-expect-error - testing invalid input
-    expect(cn(123)).toBe('123');
+    // cn actually converts numbers to strings via clsx
+    expect(cn(123 as unknown as string)).toBe('123');
   });
 });

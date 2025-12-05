@@ -251,10 +251,12 @@ describe('useSubscription', () => {
     it('returns true for free plan', async () => {
       const { supabase } = await import('../integrations/supabase/client');
       vi.mocked(supabase.rpc).mockImplementationOnce(() =>
-        Promise.resolve({
-          data: [{ plan: 'free', status: 'active' }],
-          error: null,
-        })
+        ({
+          then: (cb: any) => cb({
+            data: [{ plan: 'free', status: 'active' }],
+            error: null,
+          }),
+        }) as any
       );
 
       const { result } = renderHook(() => useSubscription(), {
@@ -316,10 +318,12 @@ describe('useSubscription', () => {
     it('handles API errors gracefully', async () => {
       const { supabase } = await import('../integrations/supabase/client');
       vi.mocked(supabase.rpc).mockImplementationOnce(() =>
-        Promise.resolve({
-          data: null,
-          error: { message: 'API Error', code: '500' },
-        })
+        ({
+          then: (cb: any) => cb({
+            data: null,
+            error: { message: 'API Error', code: '500' },
+          }),
+        }) as any
       );
 
       const { result } = renderHook(() => useSubscription(), {
