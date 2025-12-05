@@ -132,5 +132,26 @@
   },
   "languageSwitcher": {
     "selectLanguage": "Taal selecteren"
+  },
+  "globalSearch": {
+    "title": "Globaal zoeken",
+    "placeholder": "Zoek orders, onderdelen, resources, materialen, operators, problemen...",
+    "initialHint": "Zoek door uw hele werkruimte",
+    "searchFields": "Zoekt in ordernummers, klanten, onderdeelnummers, materialen, namen en meer",
+    "keyboardHint": "Gebruik ↑↓ pijlen om te navigeren, Enter om te selecteren, Esc om te sluiten",
+    "noResults": "Geen resultaten gevonden voor",
+    "openSearch": "Zoeken",
+    "typeLabels": {
+      "job": "Orders",
+      "part": "Onderdelen",
+      "operation": "Bewerkingen",
+      "user": "Operators",
+      "issue": "Problemen",
+      "resource": "Resources",
+      "material": "Materialen"
+    },
+    "shortcuts": {
+      "open": "Zoeken openen"
+    }
   }
 }

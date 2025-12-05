@@ -131,5 +131,26 @@
   },
   "languageSwitcher": {
     "selectLanguage": "Sprache auswählen"
+  },
+  "globalSearch": {
+    "title": "Globale Suche",
+    "placeholder": "Aufträge, Teile, Ressourcen, Materialien, Bediener, Probleme suchen...",
+    "initialHint": "Durchsuchen Sie Ihren gesamten Arbeitsbereich",
+    "searchFields": "Sucht in Auftragsnummern, Kunden, Teilenummern, Materialien, Namen und mehr",
+    "keyboardHint": "Verwenden Sie ↑↓ Pfeile zum Navigieren, Enter zum Auswählen, Esc zum Schließen",
+    "noResults": "Keine Ergebnisse gefunden für",
+    "openSearch": "Suchen",
+    "typeLabels": {
+      "job": "Aufträge",
+      "part": "Teile",
+      "operation": "Arbeitsgänge",
+      "user": "Bediener",
+      "issue": "Probleme",
+      "resource": "Ressourcen",
+      "material": "Materialien"
+    },
+    "shortcuts": {
+      "open": "Suche öffnen"
+    }
   }
 }

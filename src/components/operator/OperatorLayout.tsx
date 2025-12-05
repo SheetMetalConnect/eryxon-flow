@@ -20,6 +20,7 @@ import {
   Building2,
   Gauge,
   Factory,
+  Search,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -29,6 +30,7 @@ import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { AppTour } from '@/components/onboarding';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import { cn } from '@/lib/utils';
+import { GlobalSearch, SearchTriggerButton } from '@/components/GlobalSearch';
 
 interface OperatorLayoutProps {
   children: React.ReactNode;
@@ -39,6 +41,7 @@ export const OperatorLayout = ({ children }: OperatorLayoutProps) => {
   const { profile, tenant, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const navItems = [
     { path: '/operator/work-queue', label: t('navigation.workQueue'), icon: ListChecks },
@@ -66,6 +69,9 @@ export const OperatorLayout = ({ children }: OperatorLayoutProps) => {
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-1.5">
+              {/* Search Button */}
+              <SearchTriggerButton onClick={() => setSearchOpen(true)} compact />
+
               {/* Theme & Language Switchers */}
               <ThemeToggle variant="dropdown" />
               <LanguageSwitcher />
@@ -193,6 +199,9 @@ export const OperatorLayout = ({ children }: OperatorLayoutProps) => {
         {/* Onboarding Tour - only show if not completed */}
         {profile && !(profile as any).tour_completed && <AppTour userRole="operator" />}
       </div>
+
+      {/* Global Search Modal */}
+      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 };

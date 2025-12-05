@@ -47,6 +47,7 @@ import {
   Target,
   TrendingUp,
   Truck,
+  Search,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -57,6 +58,7 @@ import AnimatedBackground from "@/components/AnimatedBackground";
 import { McpServerStatus } from "@/components/admin/McpServerStatus";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useTranslation } from "react-i18next";
+import { GlobalSearch, SearchTriggerButton } from "@/components/GlobalSearch";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -73,6 +75,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [configOpen, setConfigOpen] = useState(false);
   const [integrationsOpen, setIntegrationsOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const { count: pendingIssuesCount } = usePendingIssuesCount();
 
   const isActive = (path: string) => location.pathname === path;
@@ -343,6 +346,39 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </span>
           )}
         </div>
+      </div>
+
+      {/* Global Search Button */}
+      <div className="px-2 py-2 border-b border-border-subtle">
+        {collapsed ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSearchOpen(true)}
+            className="w-full h-8 justify-center p-0"
+            title={t("globalSearch.openSearch")}
+          >
+            <Search className="h-4 w-4" />
+          </Button>
+        ) : (
+          <button
+            onClick={() => setSearchOpen(true)}
+            className={cn(
+              "flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md",
+              "bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20",
+              "transition-all duration-150",
+              "text-muted-foreground hover:text-foreground",
+              "text-xs"
+            )}
+          >
+            <Search className="h-3.5 w-3.5" />
+            <span className="flex-1 text-left">{t("globalSearch.openSearch")}</span>
+            <div className="flex items-center gap-0.5">
+              <kbd className="px-1 py-0.5 text-[9px] font-medium bg-white/10 border border-white/10 rounded">⌘</kbd>
+              <kbd className="px-1 py-0.5 text-[9px] font-medium bg-white/10 border border-white/10 rounded">K</kbd>
+            </div>
+          </button>
+        )}
       </div>
 
       {/* Navigation - Compact */}
@@ -740,6 +776,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         </main>
       </div>
+
+      {/* Global Search Modal */}
+      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }

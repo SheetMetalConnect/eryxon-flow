@@ -2,9 +2,11 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
+export type SearchResultType = 'job' | 'part' | 'operation' | 'user' | 'issue' | 'resource' | 'material';
+
 export interface SearchResult {
   id: string;
-  type: 'job' | 'part' | 'operation' | 'user' | 'issue';
+  type: SearchResultType;
   title: string;
   subtitle: string;
   description?: string;
@@ -21,11 +23,15 @@ export interface SearchResult {
     dueDate?: string;
     email?: string;
     role?: string;
+    resourceType?: string;
+    location?: string;
+    identifier?: string;
+    color?: string;
   };
 }
 
 export interface SearchFilters {
-  types?: ('job' | 'part' | 'operation' | 'user' | 'issue')[];
+  types?: SearchResultType[];
   statuses?: string[];
   limit?: number;
 }
@@ -231,6 +237,68 @@ export function useGlobalSearch() {
     }));
   }, [profile?.tenant_id]);
 
+  const searchResources = useCallback(async (query: string, limit = 10): Promise<SearchResult[]> => {
+    if (!profile?.tenant_id) return [];
+
+    const { data: resources, error } = await supabase
+      .from('resources')
+      .select('id, name, type, description, identifier, location, active, status')
+      .eq('tenant_id', profile.tenant_id)
+      .or(`name.ilike.%${query}%,type.ilike.%${query}%,description.ilike.%${query}%,identifier.ilike.%${query}%,location.ilike.%${query}%`)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error searching resources:', error);
+      return [];
+    }
+
+    return (resources || []).map((resource) => ({
+      id: resource.id,
+      type: 'resource' as const,
+      title: resource.name,
+      subtitle: `${resource.type}${resource.location ? ` • ${resource.location}` : ''}`,
+      description: resource.description || undefined,
+      path: `/admin/config/resources`,
+      status: resource.active ? 'active' : 'inactive',
+      metadata: {
+        resourceType: resource.type,
+        location: resource.location || undefined,
+        identifier: resource.identifier || undefined,
+      },
+    }));
+  }, [profile?.tenant_id]);
+
+  const searchMaterials = useCallback(async (query: string, limit = 10): Promise<SearchResult[]> => {
+    if (!profile?.tenant_id) return [];
+
+    const { data: materials, error } = await supabase
+      .from('materials')
+      .select('id, name, description, color, active')
+      .eq('tenant_id', profile.tenant_id)
+      .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error searching materials:', error);
+      return [];
+    }
+
+    return (materials || []).map((material) => ({
+      id: material.id,
+      type: 'material' as const,
+      title: material.name,
+      subtitle: material.description || 'No description',
+      description: material.active ? 'Active' : 'Inactive',
+      path: `/admin/config/materials`,
+      status: material.active ? 'active' : 'inactive',
+      metadata: {
+        color: material.color || undefined,
+      },
+    }));
+  }, [profile?.tenant_id]);
+
   const search = useCallback(async (
     query: string,
     filters?: SearchFilters
@@ -244,7 +312,7 @@ export function useGlobalSearch() {
 
     try {
       const limit = filters?.limit || 10;
-      const types = filters?.types || ['job', 'part', 'operation', 'user', 'issue'];
+      const types = filters?.types || ['job', 'part', 'operation', 'user', 'issue', 'resource', 'material'];
 
       const searchPromises: Promise<SearchResult[]>[] = [];
 
@@ -262,6 +330,12 @@ export function useGlobalSearch() {
       }
       if (types.includes('issue')) {
         searchPromises.push(searchIssues(query, limit));
+      }
+      if (types.includes('resource')) {
+        searchPromises.push(searchResources(query, limit));
+      }
+      if (types.includes('material')) {
+        searchPromises.push(searchMaterials(query, limit));
       }
 
       const results = await Promise.all(searchPromises);
@@ -283,7 +357,7 @@ export function useGlobalSearch() {
     } finally {
       setLoading(false);
     }
-  }, [profile?.tenant_id, searchJobs, searchParts, searchOperations, searchUsers, searchIssues]);
+  }, [profile?.tenant_id, searchJobs, searchParts, searchOperations, searchUsers, searchIssues, searchResources, searchMaterials]);
 
   return {
     search,
