@@ -7,7 +7,8 @@
 [![License: BSL 1.1](https://img.shields.io/badge/License-BSL_1.1-blue?style=for-the-badge)](LICENSE)
 [![React](https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Supabase](https://img.shields.io/badge/Supabase-2.80.0-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Vite](https://img.shields.io/badge/Vite-7.2.6-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
+[![Supabase](https://img.shields.io/badge/Supabase-2.86.2-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 
 </div>
 
@@ -70,7 +71,7 @@ Additional documentation:
 
 ## 🏗️ Tech Stack
 
-- **Frontend**: React 18, TypeScript, Vite, TailwindCSS
+- **Frontend**: React 18, TypeScript 5.8, Vite 7, TailwindCSS 3
 - **UI**: shadcn/ui (54+ components), Material-UI, Lucide icons
 - **State**: React Query, React Context
 - **Backend**: Supabase (PostgreSQL, Realtime, Edge Functions, Storage)
