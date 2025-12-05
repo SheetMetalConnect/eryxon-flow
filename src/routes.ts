@@ -4,6 +4,7 @@ export const ROUTES = {
   ROOT: "/",
 
   OPERATOR: {
+    TERMINAL_LOGIN: "/operator/login",
     WORK_QUEUE: "/operator/work-queue",
     MY_ACTIVITY: "/operator/my-activity",
     MY_ISSUES: "/operator/my-issues",
