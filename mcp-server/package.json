@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
-    "@supabase/supabase-js": "^2.80.0",
+    "@supabase/supabase-js": "^2.86.2",
     "openai": "^4.70.0"
   },
   "devDependencies": {
