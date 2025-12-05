@@ -115,7 +115,7 @@ export function useOEEMetrics(dateRange: number = 30) {
       const statusCounts = {
         completed: operations?.filter(o => o.status === "completed").length || 0,
         in_progress: operations?.filter(o => o.status === "in_progress").length || 0,
-        pending: operations?.filter(o => o.status === "pending" || o.status === "not_started").length || 0,
+        pending: operations?.filter(o => o.status === "not_started").length || 0,
         on_hold: operations?.filter(o => o.status === "on_hold").length || 0,
       };
       const totalOps = Object.values(statusCounts).reduce((a, b) => a + b, 0) || 1;

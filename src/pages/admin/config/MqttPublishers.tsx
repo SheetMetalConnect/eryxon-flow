@@ -43,7 +43,7 @@ interface MqttLog {
   mqtt_publisher_id: string;
   event_type: string;
   topic: string;
-  payload: Record<string, unknown>;
+  payload: unknown;
   success: boolean;
   error_message: string | null;
   latency_ms: number | null;

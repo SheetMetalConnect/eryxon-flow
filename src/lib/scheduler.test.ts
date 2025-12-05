@@ -13,11 +13,19 @@ const createMockCells = () => [
     capacity_hours_per_day: 8,
     color: '#3b82f6',
     created_at: '2025-01-01T00:00:00Z',
+    updated_at: '2025-01-01T00:00:00Z',
     description: 'Assembly cell',
     enforce_wip_limit: false,
     show_capacity_warning: true,
     wip_limit: 10,
     wip_warning_threshold: 8,
+    deleted_at: null,
+    deleted_by: null,
+    external_id: null,
+    external_source: null,
+    synced_at: null,
+    icon_name: null,
+    image_url: null,
   },
   {
     id: 'cell-2',
@@ -28,11 +36,19 @@ const createMockCells = () => [
     capacity_hours_per_day: 6,
     color: '#ef4444',
     created_at: '2025-01-01T00:00:00Z',
+    updated_at: '2025-01-01T00:00:00Z',
     description: 'Welding cell',
     enforce_wip_limit: true,
     show_capacity_warning: true,
     wip_limit: 5,
     wip_warning_threshold: 4,
+    deleted_at: null,
+    deleted_by: null,
+    external_id: null,
+    external_source: null,
+    synced_at: null,
+    icon_name: null,
+    image_url: null,
   },
 ];
 
@@ -49,11 +65,10 @@ const createMockOperation = (overrides: Partial<{
   cell_id: 'cell_id' in overrides ? overrides.cell_id : 'cell-1',
   operation_name: 'Test Operation',
   sequence: overrides.sequence ?? 10,
-  estimated_time: 'estimated_time' in overrides ? overrides.estimated_time : 60, // 60 minutes = 1 hour
-  actual_time: null,
+  estimated_time: 'estimated_time' in overrides ? overrides.estimated_time : 60,
+  actual_time: 0,
   status: 'not_started' as const,
-  assigned_to: null,
-  started_at: null,
+  assigned_operator_id: null,
   completed_at: null,
   notes: null,
   metadata: null,
@@ -61,6 +76,55 @@ const createMockOperation = (overrides: Partial<{
   planned_end: null,
   completion_percentage: 0,
   created_at: '2025-01-01T00:00:00Z',
+  updated_at: '2025-01-01T00:00:00Z',
+  deleted_at: null,
+  deleted_by: null,
+  external_id: null,
+  external_source: null,
+  synced_at: null,
+  setup_time: 0,
+  run_time_per_unit: 0,
+  wait_time: 0,
+  changeover_time: 0,
+  icon_name: null,
+  search_vector: null,
+});
+
+// Mock job data factory
+const createMockJob = (overrides: Partial<{
+  id: string;
+  due_date: string | null;
+  customer: string;
+  job_number: string;
+}> = {}) => ({
+  id: overrides.id ?? 'job-1',
+  tenant_id: 'tenant-1',
+  job_number: overrides.job_number ?? 'JOB-001',
+  customer: overrides.customer ?? 'Customer A',
+  due_date: 'due_date' in overrides ? overrides.due_date : '2025-01-15T00:00:00Z',
+  due_date_override: null,
+  status: 'not_started' as const,
+  notes: null,
+  metadata: null,
+  created_at: '2025-01-01T00:00:00Z',
+  updated_at: '2025-01-01T00:00:00Z',
+  current_cell_id: null,
+  deleted_at: null,
+  deleted_by: null,
+  external_id: null,
+  external_source: null,
+  synced_at: null,
+  sync_hash: null,
+  delivery_address: null,
+  delivery_city: null,
+  delivery_country: null,
+  delivery_lat: null,
+  delivery_lng: null,
+  delivery_postal_code: null,
+  package_count: null,
+  total_volume_m3: null,
+  total_weight_kg: null,
+  search_vector: null,
 });
 
 describe('SchedulerService', () => {
@@ -322,30 +386,8 @@ describe('SchedulerService', () => {
   describe('scheduleJobs', () => {
     it('sorts jobs by due date', () => {
       const jobs = [
-        {
-          id: 'job-1',
-          tenant_id: 'tenant-1',
-          job_number: 'JOB-001',
-          customer: 'Customer A',
-          due_date: '2025-02-01T00:00:00Z',
-          due_date_override: null,
-          status: 'not_started' as const,
-          notes: null,
-          metadata: null,
-          created_at: '2025-01-01T00:00:00Z',
-        },
-        {
-          id: 'job-2',
-          tenant_id: 'tenant-1',
-          job_number: 'JOB-002',
-          customer: 'Customer B',
-          due_date: '2025-01-15T00:00:00Z', // Earlier due date
-          due_date_override: null,
-          status: 'not_started' as const,
-          notes: null,
-          metadata: null,
-          created_at: '2025-01-01T00:00:00Z',
-        },
+        createMockJob({ id: 'job-1', job_number: 'JOB-001', customer: 'Customer A', due_date: '2025-02-01T00:00:00Z' }),
+        createMockJob({ id: 'job-2', job_number: 'JOB-002', customer: 'Customer B', due_date: '2025-01-15T00:00:00Z' }),
       ];
 
       const operationsByJob = new Map([
@@ -362,18 +404,7 @@ describe('SchedulerService', () => {
 
     it('handles jobs with no due date', () => {
       const jobs = [
-        {
-          id: 'job-1',
-          tenant_id: 'tenant-1',
-          job_number: 'JOB-001',
-          customer: 'Customer A',
-          due_date: null,
-          due_date_override: null,
-          status: 'not_started' as const,
-          notes: null,
-          metadata: null,
-          created_at: '2025-01-01T00:00:00Z',
-        },
+        createMockJob({ id: 'job-1', due_date: null }),
       ];
 
       const operationsByJob = new Map([
@@ -388,18 +419,7 @@ describe('SchedulerService', () => {
 
     it('skips jobs with no operations', () => {
       const jobs = [
-        {
-          id: 'job-1',
-          tenant_id: 'tenant-1',
-          job_number: 'JOB-001',
-          customer: 'Customer A',
-          due_date: '2025-01-15T00:00:00Z',
-          due_date_override: null,
-          status: 'not_started' as const,
-          notes: null,
-          metadata: null,
-          created_at: '2025-01-01T00:00:00Z',
-        },
+        createMockJob({ id: 'job-1' }),
       ];
 
       const operationsByJob = new Map<string, any[]>(); // Empty map
@@ -412,18 +432,7 @@ describe('SchedulerService', () => {
 
     it('sequences operations within a job', () => {
       const jobs = [
-        {
-          id: 'job-1',
-          tenant_id: 'tenant-1',
-          job_number: 'JOB-001',
-          customer: 'Customer A',
-          due_date: '2025-01-15T00:00:00Z',
-          due_date_override: null,
-          status: 'not_started' as const,
-          notes: null,
-          metadata: null,
-          created_at: '2025-01-01T00:00:00Z',
-        },
+        createMockJob({ id: 'job-1' }),
       ];
 
       const operationsByJob = new Map([
