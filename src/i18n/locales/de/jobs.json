@@ -225,7 +225,25 @@
     "widthPlaceholder": "z.B. 300",
     "heightMm": "Höhe (mm)",
     "heightPlaceholder": "z.B. 50",
-    "calculatedVolume": "Berechnetes Volumen"
+    "calculatedVolume": "Berechnetes Volumen",
+    "cadViewer": {
+      "dimensions": "Abmessungen",
+      "showDimensions": "Abmessungen Anzeigen",
+      "hideDimensions": "Abmessungen Ausblenden",
+      "boundingBox": "Begrenzungsrahmen",
+      "length": "Länge",
+      "width": "Breite",
+      "height": "Höhe",
+      "measuredFromCad": "Aus CAD gemessen",
+      "highlightFeatures": "Merkmale Hervorheben",
+      "showFeatures": "Merkmale Anzeigen",
+      "hideFeatures": "Merkmale Ausblenden",
+      "featuresDesc": "Biegungen, Löcher und Ausschnitte hervorheben",
+      "flatSurfaces": "Flache Oberflächen",
+      "bendsCurves": "Biegungen / Kurven",
+      "holesEdges": "Löcher / Scharfe Kanten",
+      "loading": "3D-Modell wird geladen..."
+    }
   },
   "operations": {
     "title": "Arbeitsgänge",

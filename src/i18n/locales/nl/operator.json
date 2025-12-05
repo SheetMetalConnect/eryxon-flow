@@ -119,5 +119,26 @@
     "enterGoodParts": "Voer goede onderdelen in",
     "recorded": "{{count}} goede onderdelen geregistreerd",
     "shortfallPrompt": "{{count}} onder doel. Probleem melden?"
+  },
+  "terminalLogin": {
+    "welcome": "OPERATOR TERMINAL",
+    "terminalAccess": "Werkvloer Toegang",
+    "enterEmployeeId": "Voer Je Personeelsnummer In",
+    "employeeIdHint": "Scan je badge of typ je ID hieronder",
+    "employeeId": "Personeelsnummer",
+    "employeeIdPlaceholder": "bijv. EMP001",
+    "continue": "Doorgaan",
+    "enterPin": "Voer Je PIN In",
+    "pinHint": "Voer je 4-6 cijferige PIN-code in",
+    "login": "Inklokken",
+    "back": "Terug",
+    "clear": "WIS",
+    "verifying": "Gegevens controleren...",
+    "invalidCredentials": "Ongeldig personeelsnummer of PIN. Probeer opnieuw.",
+    "loginFailed": "Inloggen mislukt. Neem contact op met je leidinggevende.",
+    "unexpectedError": "Er is een onverwachte fout opgetreden. Probeer opnieuw.",
+    "adminLogin": "Beheerder Login",
+    "helpText": "Hulp nodig? Neem contact op met je leidinggevende of de IT-afdeling.",
+    "footerText": "Eryxon MES - Productie Uitvoering Systeem"
   }
 }

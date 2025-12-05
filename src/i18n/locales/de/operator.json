@@ -119,5 +119,26 @@
     "enterGoodParts": "Gutteile eingeben",
     "recorded": "{{count}} Gutteile erfasst",
     "shortfallPrompt": "{{count}} unter Ziel. Problem melden?"
+  },
+  "terminalLogin": {
+    "welcome": "BEDIENER-TERMINAL",
+    "terminalAccess": "Werkhalle Zugang",
+    "enterEmployeeId": "Mitarbeiternummer eingeben",
+    "employeeIdHint": "Badge scannen oder ID unten eingeben",
+    "employeeId": "Mitarbeiternummer",
+    "employeeIdPlaceholder": "z.B. EMP001",
+    "continue": "Weiter",
+    "enterPin": "PIN eingeben",
+    "pinHint": "4-6 stellige PIN eingeben",
+    "login": "Einstempeln",
+    "back": "Zurück",
+    "clear": "LÖSCH",
+    "verifying": "Anmeldedaten werden überprüft...",
+    "invalidCredentials": "Ungültige Mitarbeiternummer oder PIN. Bitte erneut versuchen.",
+    "loginFailed": "Anmeldung fehlgeschlagen. Bitte wenden Sie sich an Ihren Vorgesetzten.",
+    "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten. Bitte erneut versuchen.",
+    "adminLogin": "Admin-Login",
+    "helpText": "Brauchen Sie Hilfe? Wenden Sie sich an Ihren Vorgesetzten oder die IT-Abteilung.",
+    "footerText": "Eryxon MES - Fertigungsmanagementsystem"
   }
 }

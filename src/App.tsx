@@ -11,7 +11,7 @@ import { McpActivityToasts } from "./components/admin/McpActivityToasts";
 import { Auth, AcceptInvitation } from "./pages/auth";
 
 // Operator pages
-import { WorkQueue, MyActivity, MyIssues, OperatorTerminal, OperatorView } from "./pages/operator";
+import { WorkQueue, MyActivity, MyIssues, OperatorTerminal, OperatorView, TerminalLogin } from "./pages/operator";
 
 // Admin pages
 import Dashboard from "./pages/admin/Dashboard";
@@ -116,6 +116,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/auth" element={<Auth />} />
+      <Route path="/operator/login" element={<TerminalLogin />} />
       <Route path="/accept-invitation/:token" element={<AcceptInvitation />} />
 
       <Route

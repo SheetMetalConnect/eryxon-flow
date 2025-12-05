@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, ArrowRight, Factory, CheckCircle2, Info } from "lucide-react";
+import { Loader2, ArrowRight, Factory, CheckCircle2, Info, Monitor } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { Link } from "react-router-dom";
+import { ROUTES } from "@/routes";
 
 export default function Auth() {
   const { t } = useTranslation();
@@ -300,6 +301,22 @@ export default function Auth() {
             <div className="mt-4 pt-4 border-t border-white/10">
               <p className="text-xs text-muted-foreground text-center">
                 {t("auth.comingSoonNotice")}
+              </p>
+            </div>
+          )}
+
+          {/* Terminal Login Link */}
+          {isLogin && (
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <Link
+                to={ROUTES.OPERATOR.TERMINAL_LOGIN}
+                className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Monitor className="h-4 w-4" />
+                <span>{t("auth.terminalLogin")}</span>
+              </Link>
+              <p className="text-xs text-muted-foreground/60 text-center mt-1">
+                {t("auth.terminalLoginHint")}
               </p>
             </div>
           )}

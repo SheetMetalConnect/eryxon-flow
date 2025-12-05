@@ -225,7 +225,25 @@
     "widthPlaceholder": "bijv. 300",
     "heightMm": "Hoogte (mm)",
     "heightPlaceholder": "bijv. 50",
-    "calculatedVolume": "Berekend Volume"
+    "calculatedVolume": "Berekend Volume",
+    "cadViewer": {
+      "dimensions": "Afmetingen",
+      "showDimensions": "Afmetingen Tonen",
+      "hideDimensions": "Afmetingen Verbergen",
+      "boundingBox": "Omhullende Doos",
+      "length": "Lengte",
+      "width": "Breedte",
+      "height": "Hoogte",
+      "measuredFromCad": "Gemeten uit CAD",
+      "highlightFeatures": "Kenmerken Markeren",
+      "showFeatures": "Kenmerken Tonen",
+      "hideFeatures": "Kenmerken Verbergen",
+      "featuresDesc": "Markeer buigingen, gaten en uitsparingen",
+      "flatSurfaces": "Vlakke oppervlakken",
+      "bendsCurves": "Buigingen / Rondingen",
+      "holesEdges": "Gaten / Scherpe randen",
+      "loading": "3D-model laden..."
+    }
   },
   "operations": {
     "title": "Bewerkingen",

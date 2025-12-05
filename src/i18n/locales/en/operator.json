@@ -119,5 +119,26 @@
     "enterGoodParts": "Enter good parts made",
     "recorded": "{{count}} good parts recorded",
     "shortfallPrompt": "{{count}} short of target. File an issue?"
+  },
+  "terminalLogin": {
+    "welcome": "OPERATOR TERMINAL",
+    "terminalAccess": "Shop Floor Access",
+    "enterEmployeeId": "Enter Your Employee ID",
+    "employeeIdHint": "Scan your badge or type your ID below",
+    "employeeId": "Employee ID",
+    "employeeIdPlaceholder": "e.g., EMP001",
+    "continue": "Continue",
+    "enterPin": "Enter Your PIN",
+    "pinHint": "Enter your 4-6 digit PIN code",
+    "login": "Clock In",
+    "back": "Back",
+    "clear": "CLR",
+    "verifying": "Verifying credentials...",
+    "invalidCredentials": "Invalid employee ID or PIN. Please try again.",
+    "loginFailed": "Login failed. Please contact your supervisor.",
+    "unexpectedError": "An unexpected error occurred. Please try again.",
+    "adminLogin": "Admin Login",
+    "helpText": "Need help? Contact your supervisor or the IT department.",
+    "footerText": "Eryxon MES - Manufacturing Execution System"
   }
 }
