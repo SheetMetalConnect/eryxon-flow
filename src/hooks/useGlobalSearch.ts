@@ -185,7 +185,7 @@ export function useGlobalSearch() {
       title: user.full_name || user.username,
       subtitle: `${user.email} • ${user.role}`,
       description: user.active ? 'Active' : 'Inactive',
-      path: `/admin/users`,
+      path: `/admin/config/users`,
       metadata: {
         email: user.email,
         role: user.role,
