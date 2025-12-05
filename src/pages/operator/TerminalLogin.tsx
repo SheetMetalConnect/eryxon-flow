@@ -94,7 +94,7 @@ export default function TerminalLogin() {
     setError(null);
 
     try {
-      // Call the verify_operator_pin RPC function
+      // Call the verify_operator_pin RPC function to validate credentials
       const { data, error: rpcError } = await supabase.rpc(
         "verify_operator_pin",
         {
@@ -111,32 +111,30 @@ export default function TerminalLogin() {
       }
 
       if (!data || !data.success) {
-        setError(t("terminalLogin.invalidCredentials"));
+        setError(data?.error || t("terminalLogin.invalidCredentials"));
         setPin("");
         return;
       }
 
-      // PIN verified - sign in with the returned session token
-      if (data.access_token && data.refresh_token) {
-        const { error: sessionError } = await supabase.auth.setSession({
-          access_token: data.access_token,
-          refresh_token: data.refresh_token,
-        });
+      // PIN verified successfully - sign in using the terminal email pattern
+      // Operators created with PIN have an auto-generated email: {employee_id}@terminal.{tenant_id}.local
+      const terminalEmail = `${employeeId.toLowerCase()}@terminal.${data.tenant_id}.local`;
 
-        if (sessionError) {
-          console.error("Session error:", sessionError);
-          setError(t("terminalLogin.loginFailed"));
-          setPin("");
-          return;
-        }
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: terminalEmail,
+        password: pin,
+      });
 
-        // Navigate to operator work queue
-        navigate(ROUTES.OPERATOR.WORK_QUEUE);
-      } else {
-        // Fallback: if no token returned, show success message
+      if (signInError) {
+        console.error("Terminal sign-in error:", signInError);
+        // If terminal email doesn't work, suggest admin login
         setError(t("terminalLogin.loginFailed"));
         setPin("");
+        return;
       }
+
+      // Successfully logged in - navigate to operator work queue
+      navigate(ROUTES.OPERATOR.WORK_QUEUE);
     } catch (err) {
       console.error("Login error:", err);
       setError(t("terminalLogin.unexpectedError"));
