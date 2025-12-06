@@ -13,6 +13,7 @@ export { substepsModule } from "./substeps.js";
 export { dashboardModule } from "./dashboard.js";
 export { chatModule } from "./chat.js";
 export { erpSyncModule } from "./erp-sync.js";
+export { agentBatchModule } from "./agent-batch.js";
 
 // Export registry
 export { ToolRegistry, createToolRegistry } from "./registry.js";
@@ -27,6 +28,7 @@ import { substepsModule } from "./substeps.js";
 import { dashboardModule } from "./dashboard.js";
 import { chatModule } from "./chat.js";
 import { erpSyncModule } from "./erp-sync.js";
+import { agentBatchModule } from "./agent-batch.js";
 import { ToolRegistry } from "./registry.js";
 
 /**
@@ -42,6 +44,7 @@ export const allModules = [
   dashboardModule,
   chatModule,
   erpSyncModule,
+  agentBatchModule,
 ];
 
 /**
