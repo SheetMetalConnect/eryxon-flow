@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -318,6 +319,16 @@ export const Operations: React.FC = () => {
     },
   ], [uniqueCells]);
 
+  // Responsive column visibility - hide less important columns on mobile
+  const { columnVisibility, isMobile } = useResponsiveColumns([
+    { id: "operation_name", alwaysVisible: true },
+    { id: "part_number", alwaysVisible: true },
+    { id: "job_number", hideBelow: "md" },      // Hide on mobile
+    { id: "cell", hideBelow: "lg" },            // Hide on mobile/tablet
+    { id: "assigned_name", hideBelow: "md" },   // Hide on mobile
+    { id: "status", alwaysVisible: true },
+  ]);
+
   // Calculate stats
   const operationStats = useMemo(() => {
     if (!operations) return { total: 0, inProgress: 0, completed: 0, assigned: 0 };
@@ -359,7 +370,7 @@ export const Operations: React.FC = () => {
         ]}
       />
 
-      <div className="glass-card p-4">
+      <div className="glass-card p-2 sm:p-4">
         <DataTable
           columns={columns}
           data={operations}
@@ -367,10 +378,12 @@ export const Operations: React.FC = () => {
           searchPlaceholder={t("operations.searchPlaceholder", "Search by part, operation, operator...")}
           emptyMessage={t("operations.noResults", "No operations match the current filters")}
           loading={isLoading}
-          pageSize={50}
+          pageSize={isMobile ? 20 : 50}
           pageSizeOptions={[20, 50, 100, 200]}
           searchDebounce={250}
           onRowClick={(operation) => setSelectedOperationId(operation.id)}
+          columnVisibility={columnVisibility}
+          maxHeight={isMobile ? "calc(100vh - 320px)" : "calc(100vh - 280px)"}
         />
       </div>
 

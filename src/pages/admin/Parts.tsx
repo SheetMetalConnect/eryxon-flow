@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
+import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import PartDetailModal from "@/components/admin/PartDetailModal";
@@ -408,6 +409,19 @@ export default function Parts() {
     },
   ], [t, materials, jobs]);
 
+  // Responsive column visibility - hide less important columns on mobile
+  const { columnVisibility, isMobile } = useResponsiveColumns([
+    { id: "part_number", alwaysVisible: true },
+    { id: "type", hideBelow: "lg" },           // Hide on mobile/tablet
+    { id: "job_number", alwaysVisible: true },
+    { id: "material", hideBelow: "md" },       // Hide on mobile
+    { id: "status", alwaysVisible: true },
+    { id: "cell", hideBelow: "lg" },           // Hide on mobile/tablet
+    { id: "operations_count", hideBelow: "md" }, // Hide on mobile
+    { id: "files", hideBelow: "md" },          // Hide on mobile
+    { id: "actions", alwaysVisible: true },
+  ]);
+
   // Calculate stats
   const partStats = useMemo(() => {
     if (!parts) return { total: 0, active: 0, completed: 0, assemblies: 0 };
@@ -436,47 +450,50 @@ export default function Parts() {
         ]}
       />
 
-      <div className="glass-card p-4">
-          <DataTable
-            columns={columns}
-            data={parts || []}
-            filterableColumns={filterableColumns}
-            searchPlaceholder={t("parts.searchByPartNumber")}
-            loading={isLoading}
-            pageSize={20}
-            emptyMessage={t("parts.noPartsFound")}
-            searchDebounce={200}
-          />
-        </div>
+      <div className="glass-card p-2 sm:p-4">
+        <DataTable
+          columns={columns}
+          data={parts || []}
+          filterableColumns={filterableColumns}
+          searchPlaceholder={t("parts.searchByPartNumber")}
+          loading={isLoading}
+          pageSize={isMobile ? 10 : 20}
+          emptyMessage={t("parts.noPartsFound")}
+          searchDebounce={200}
+          columnVisibility={columnVisibility}
+          onRowClick={(row) => setSelectedPartId(row.id)}
+          maxHeight={isMobile ? "calc(100vh - 320px)" : "calc(100vh - 280px)"}
+        />
+      </div>
 
-        {selectedPartId && (
-          <PartDetailModal
-            partId={selectedPartId}
-            onClose={() => setSelectedPartId(null)}
-            onUpdate={() => refetch()}
-          />
-        )}
+      {selectedPartId && (
+        <PartDetailModal
+          partId={selectedPartId}
+          onClose={() => setSelectedPartId(null)}
+          onUpdate={() => refetch()}
+        />
+      )}
 
-        {/* File Viewer Dialog */}
-        <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
-          <DialogContent className="glass-card max-w-7xl max-h-[90vh]">
-            <DialogHeader>
-              <DialogTitle className="text-xl flex items-center gap-2">
-                {currentFileType === "step" && <Box className="h-5 w-5 text-primary" />}
-                {currentFileType === "pdf" && <FileText className="h-5 w-5 text-destructive" />}
-                {currentFileTitle}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="w-full h-[75vh] rounded-lg overflow-hidden border border-white/10">
-              {currentFileType === "step" && currentFileUrl && (
-                <STEPViewer url={currentFileUrl} />
-              )}
-              {currentFileType === "pdf" && currentFileUrl && (
-                <PDFViewer url={currentFileUrl} />
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+      {/* File Viewer Dialog - Responsive */}
+      <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
+        <DialogContent className="glass-card w-full h-[100dvh] sm:h-[90vh] sm:max-w-6xl flex flex-col p-0 rounded-none sm:rounded-lg inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
+          <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">
+            <DialogTitle className="text-sm sm:text-base pr-8 flex items-center gap-2">
+              {currentFileType === "step" && <Box className="h-4 w-4 text-primary" />}
+              {currentFileType === "pdf" && <FileText className="h-4 w-4 text-destructive" />}
+              <span className="truncate">{currentFileTitle}</span>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden min-h-0 rounded-lg border border-white/10 m-2 sm:m-4">
+            {currentFileType === "step" && currentFileUrl && (
+              <STEPViewer url={currentFileUrl} />
+            )}
+            {currentFileType === "pdf" && currentFileUrl && (
+              <PDFViewer url={currentFileUrl} />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -133,6 +133,10 @@ interface DataTableProps<TData, TValue> {
   maxHeight?: string;
   /** Debounce delay for search in ms (default: 200ms) */
   searchDebounce?: number;
+  /** Initial column visibility state (can be controlled externally for responsive columns) */
+  columnVisibility?: VisibilityState;
+  /** Callback when column visibility changes */
+  onColumnVisibilityChange?: (visibility: VisibilityState) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -155,12 +159,18 @@ export function DataTable<TData, TValue>({
   striped = false,
   maxHeight = "calc(100vh - 280px)", // Default max height for viewport fitting
   searchDebounce = 200, // Debounce search for performance
+  columnVisibility: controlledColumnVisibility,
+  onColumnVisibilityChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [internalColumnVisibility, setInternalColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState("");
+
+  // Use controlled or internal visibility state
+  const columnVisibility = controlledColumnVisibility ?? internalColumnVisibility;
+  const setColumnVisibility = onColumnVisibilityChange ?? setInternalColumnVisibility;
 
   // Debounce the global filter for better performance
   const debouncedGlobalFilter = useDebounce(globalFilter, searchDebounce);
