@@ -127,24 +127,24 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="glass-card max-w-3xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="glass-card sm:max-w-2xl lg:max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex justify-between items-start gap-4">
-            <DialogTitle className="text-xl flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+            <DialogTitle className="text-lg sm:text-xl flex items-center gap-2">
               {t("jobs.jobDetails")}: {job?.job_number}
             </DialogTitle>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {isEditing ? (
                 <>
-                  <Button size="sm" onClick={handleSave} className="h-8">
+                  <Button size="sm" onClick={handleSave} className="h-8 flex-1 sm:flex-none">
                     <Save className="h-3.5 w-3.5 mr-1.5" /> {t("common.save")}
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => setIsEditing(false)} className="h-8">
+                  <Button size="sm" variant="outline" onClick={() => setIsEditing(false)} className="h-8 flex-1 sm:flex-none">
                     <X className="h-3.5 w-3.5 mr-1.5" /> {t("common.cancel")}
                   </Button>
                 </>
               ) : (
-                <Button size="sm" onClick={handleEdit} className="h-8">
+                <Button size="sm" onClick={handleEdit} className="h-8 w-full sm:w-auto">
                   <Edit2 className="h-3.5 w-3.5 mr-1.5" /> {t("common.edit")}
                 </Button>
               )}
@@ -153,8 +153,8 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Job Info */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Job Info - Responsive grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <Label className="text-xs text-muted-foreground uppercase tracking-wide">{t("jobs.customer")}</Label>
               {isEditing ? (
@@ -231,9 +231,9 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
 
             {isEditing ? (
               <div className="space-y-4">
-                {/* Delivery Address */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="col-span-2">
+                {/* Delivery Address - Responsive grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="sm:col-span-2">
                     <Label className="text-xs text-muted-foreground">{t("jobs.deliveryAddress")}</Label>
                     <Input
                       value={editedJob.delivery_address || ""}
@@ -333,7 +333,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
             <div>
               <Label className="text-sm font-semibold">{t("jobs.customMetadata")}</Label>
               <div className="mt-2 border border-white/10 rounded-xl p-3 bg-[rgba(17,25,40,0.5)] backdrop-blur-sm">
-                <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
                   {Object.entries(job.metadata).map(([key, value]) => (
                     <div key={key} className="flex items-baseline gap-2">
                       <dt className="text-xs text-muted-foreground uppercase tracking-wide min-w-fit">{key}:</dt>
@@ -445,8 +445,8 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                               </div>
                             </div>
 
-                            {/* Timing Info */}
-                            <div className="grid grid-cols-4 gap-2 text-xs text-muted-foreground ml-7">
+                            {/* Timing Info - Responsive grid, hidden on mobile for space */}
+                            <div className="hidden sm:grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-muted-foreground ml-7">
                               <div>
                                 <span className="font-semibold">{t("capacity.scheduled")}:</span> {operation.planned_start ? format(new Date(operation.planned_start), 'MMM d') : '-'}
                               </div>

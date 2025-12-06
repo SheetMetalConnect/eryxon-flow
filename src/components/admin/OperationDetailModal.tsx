@@ -290,15 +290,15 @@ export default function OperationDetailModal({
   return (
     <>
       <Dialog open onOpenChange={onClose}>
-        <DialogContent className="glass-card max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="glass-card sm:max-w-xl lg:max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl flex items-center gap-2">
-              <Wrench className="h-5 w-5 text-primary" />
-              {operation?.operation_name}
+            <DialogTitle className="text-lg sm:text-xl flex items-center gap-2">
+              <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <span className="truncate">{operation?.operation_name}</span>
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {/* Status & Cell Row */}
             <div className="flex flex-wrap items-center gap-3">
               {getStatusBadge(operation?.status)}
@@ -318,18 +318,18 @@ export default function OperationDetailModal({
             </div>
 
             {/* Part & Job Info */}
-            <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-muted/30 border border-border/50">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg bg-muted/30 border border-border/50">
               <div>
                 <Label className="text-xs text-muted-foreground">Part</Label>
-                <div className="font-medium">#{operation?.parts?.part_number}</div>
+                <div className="font-medium text-sm sm:text-base">#{operation?.parts?.part_number}</div>
                 <div className="text-xs text-muted-foreground">
                   {operation?.parts?.material} · Qty: {operation?.parts?.quantity}
                 </div>
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">Job</Label>
-                <div className="font-medium">JOB-{operation?.parts?.jobs?.job_number}</div>
-                <div className="text-xs text-muted-foreground">
+                <div className="font-medium text-sm sm:text-base">JOB-{operation?.parts?.jobs?.job_number}</div>
+                <div className="text-xs text-muted-foreground truncate">
                   {operation?.parts?.jobs?.customer}
                 </div>
               </div>
@@ -544,13 +544,13 @@ export default function OperationDetailModal({
         </DialogContent>
       </Dialog>
 
-      {/* File Viewer Dialog */}
+      {/* File Viewer Dialog - Full screen on mobile */}
       <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
-        <DialogContent className="glass-card max-w-6xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>{currentFileTitle}</DialogTitle>
+        <DialogContent className="glass-card w-full h-[100dvh] sm:h-[90vh] sm:max-w-6xl flex flex-col p-0 rounded-none sm:rounded-lg inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
+          <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">
+            <DialogTitle className="text-sm sm:text-base pr-8 truncate">{currentFileTitle}</DialogTitle>
           </DialogHeader>
-          <div className="w-full h-[70vh] rounded-lg overflow-hidden border border-white/10">
+          <div className="flex-1 overflow-hidden min-h-0 rounded-lg border border-white/10 m-2 sm:m-4">
             {currentFileType === "step" && currentFileUrl && <STEPViewer url={currentFileUrl} />}
             {currentFileType === "pdf" && currentFileUrl && <PDFViewer url={currentFileUrl} />}
           </div>

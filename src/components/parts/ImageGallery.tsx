@@ -277,7 +277,7 @@ export function ImageGallery({
         ))}
       </div>
 
-      {/* Lightbox Dialog */}
+      {/* Lightbox Dialog - Full screen on mobile */}
       <Dialog
         open={selectedImageIndex !== null}
         onOpenChange={(open) => {
@@ -287,17 +287,18 @@ export function ImageGallery({
           }
         }}
       >
-        <DialogContent className="max-w-screen-lg h-[90vh] p-0">
-          <DialogHeader className="absolute top-0 left-0 right-0 z-10 bg-background/95 backdrop-blur p-4 border-b">
-            <DialogTitle className="truncate">
+        <DialogContent className="w-full h-[100dvh] sm:h-[90vh] sm:max-w-screen-lg p-0 rounded-none sm:rounded-lg inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
+          <DialogHeader className="absolute top-0 left-0 right-0 z-10 bg-background/95 backdrop-blur p-3 sm:p-4 border-b">
+            <DialogTitle className="truncate text-sm sm:text-base pr-24 sm:pr-32">
               {selectedImageIndex !== null && images[selectedImageIndex]?.name}
             </DialogTitle>
-            <div className="flex gap-2 absolute right-4 top-4">
-              {/* Zoom controls */}
+            <div className="flex gap-1 sm:gap-2 absolute right-3 sm:right-4 top-3 sm:top-4">
+              {/* Zoom controls - hidden on mobile for touch gestures */}
               <Button
                 size="icon"
                 variant="outline"
                 onClick={() => setZoom((prev) => Math.max(0.5, prev - 0.25))}
+                className="h-8 w-8 sm:h-10 sm:w-10 hidden sm:flex"
               >
                 <ZoomOut className="h-4 w-4" />
               </Button>
@@ -305,6 +306,7 @@ export function ImageGallery({
                 size="icon"
                 variant="outline"
                 onClick={() => setZoom((prev) => Math.min(3, prev + 0.25))}
+                className="h-8 w-8 sm:h-10 sm:w-10 hidden sm:flex"
               >
                 <ZoomIn className="h-4 w-4" />
               </Button>
@@ -316,6 +318,7 @@ export function ImageGallery({
                   selectedImageIndex !== null &&
                   handleDownload(images[selectedImageIndex])
                 }
+                className="h-8 w-8 sm:h-10 sm:w-10"
               >
                 <Download className="h-4 w-4" />
               </Button>
@@ -323,49 +326,49 @@ export function ImageGallery({
           </DialogHeader>
 
           {/* Image viewer */}
-          <div className="relative flex-1 overflow-auto flex items-center justify-center bg-black/10 mt-16">
+          <div className="relative flex-1 overflow-auto flex items-center justify-center bg-black/10 mt-14 sm:mt-16">
             {selectedImageIndex !== null && images[selectedImageIndex]?.url && (
               <img
                 src={images[selectedImageIndex].url}
                 alt={images[selectedImageIndex].name}
-                className="max-w-full max-h-full object-contain transition-transform"
+                className="max-w-full max-h-full object-contain transition-transform touch-pinch-zoom"
                 style={{ transform: `scale(${zoom})` }}
               />
             )}
 
-            {/* Navigation buttons */}
+            {/* Navigation buttons - larger on mobile for touch */}
             {images.length > 1 && (
               <>
                 <Button
                   size="icon"
                   variant="outline"
-                  className="absolute left-4 top-1/2 -translate-y-1/2"
+                  className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 h-10 w-10 sm:h-10 sm:w-10"
                   onClick={() =>
                     setSelectedImageIndex((prev) =>
                       prev === null || prev === 0 ? images.length - 1 : prev - 1
                     )
                   }
                 >
-                  <ChevronLeft className="h-6 w-6" />
+                  <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
                 </Button>
                 <Button
                   size="icon"
                   variant="outline"
-                  className="absolute right-4 top-1/2 -translate-y-1/2"
+                  className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 h-10 w-10 sm:h-10 sm:w-10"
                   onClick={() =>
                     setSelectedImageIndex((prev) =>
                       prev === null ? 0 : (prev + 1) % images.length
                     )
                   }
                 >
-                  <ChevronRight className="h-6 w-6" />
+                  <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
                 </Button>
               </>
             )}
           </div>
 
           {/* Image counter */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/95 backdrop-blur px-4 py-2 rounded-full text-sm">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/95 backdrop-blur px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm">
             {selectedImageIndex !== null && `${selectedImageIndex + 1} / ${images.length}`}
           </div>
         </DialogContent>

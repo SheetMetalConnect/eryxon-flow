@@ -16,9 +16,9 @@ interface AdminPageHeaderProps {
 /**
  * Standardized admin page header component.
  * Provides consistent styling across all admin pages:
- * - text-2xl gradient title
+ * - Responsive title (xl on mobile, 2xl on larger screens)
  * - text-sm muted description
- * - Optional CTA button on right
+ * - Optional CTA button (full-width on mobile, inline on larger screens)
  * - title-divider below
  */
 export function AdminPageHeader({
@@ -30,16 +30,20 @@ export function AdminPageHeader({
   const ActionIcon = action?.icon;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       <div>
-        <div className="flex justify-between items-center mb-1">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+        {/* Header row - stacks on mobile, inline on larger screens */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4 mb-1">
+          <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
             {title}
           </h1>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {children}
             {action && (
-              <Button onClick={action.onClick} className="cta-button">
+              <Button
+                onClick={action.onClick}
+                className="cta-button w-full sm:w-auto justify-center"
+              >
                 {ActionIcon && <ActionIcon className="mr-2 h-4 w-4" />}
                 {action.label}
               </Button>
@@ -47,7 +51,7 @@ export function AdminPageHeader({
           </div>
         </div>
         {description && (
-          <p className="text-muted-foreground text-sm">{description}</p>
+          <p className="text-muted-foreground text-xs sm:text-sm">{description}</p>
         )}
       </div>
       <hr className="title-divider" />

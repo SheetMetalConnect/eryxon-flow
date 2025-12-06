@@ -509,14 +509,14 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="glass-card max-w-3xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="glass-card sm:max-w-2xl lg:max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t("parts.partDetails")}: {part?.part_number}</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">{t("parts.partDetails")}: {part?.part_number}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Part Info */}
-          <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-4 sm:space-y-6">
+          {/* Part Info - Responsive grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
             <div>
               <Label>{t("jobs.jobNumber")}</Label>
               <p className="mt-1 font-medium">{part?.job?.job_number}</p>
@@ -574,10 +574,10 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           </div>
 
           {/* Manufacturing Fields - Drawing No, CNC Program, Bullet Card */}
-          <div className="border rounded-lg p-4 bg-muted/30">
-            <div className="flex items-center justify-between mb-4">
-              <Label className="text-lg flex items-center gap-2">
-                <QrCode className="h-5 w-5" />
+          <div className="border rounded-lg p-3 sm:p-4 bg-muted/30">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+              <Label className="text-base sm:text-lg flex items-center gap-2">
+                <QrCode className="h-4 w-4 sm:h-5 sm:w-5" />
                 {t("parts.manufacturingInfo")}
               </Label>
               {hasChanges && (
@@ -585,6 +585,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   size="sm"
                   onClick={() => updatePartFieldsMutation.mutate()}
                   disabled={updatePartFieldsMutation.isPending}
+                  className="w-full sm:w-auto"
                 >
                   <Save className="h-4 w-4 mr-2" />
                   {updatePartFieldsMutation.isPending ? t("common.saving") : t("common.saveChanges")}
@@ -592,7 +593,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {/* Drawing Number */}
               <div>
                 <Label htmlFor="drawing-no">{t("parts.drawingNo")}</Label>
@@ -618,15 +619,15 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               </div>
 
               {/* Bullet Card Toggle */}
-              <div className="col-span-2">
-                <div className="flex items-center justify-between p-3 border rounded-md bg-card">
-                  <div className="flex items-center gap-3">
-                    <Zap className={`h-5 w-5 ${isBulletCard ? 'text-destructive' : 'text-muted-foreground'}`} />
-                    <div>
-                      <Label htmlFor="bullet-card" className="cursor-pointer">
+              <div className="sm:col-span-2">
+                <div className="flex items-center justify-between p-3 border rounded-md bg-card gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <Zap className={`h-4 w-4 sm:h-5 sm:w-5 shrink-0 ${isBulletCard ? 'text-destructive' : 'text-muted-foreground'}`} />
+                    <div className="min-w-0">
+                      <Label htmlFor="bullet-card" className="cursor-pointer text-sm">
                         {t("parts.bulletCard")}
                       </Label>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground hidden sm:block">
                         {t("parts.bulletCardDesc")}
                       </p>
                     </div>
@@ -641,18 +642,19 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
               {/* QR Code Preview */}
               {cncProgramName && (
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <Label>{t("parts.qrCodePreview")}</Label>
-                  <div className="mt-2 flex items-center gap-4 p-3 border rounded-md bg-white">
+                  <div className="mt-2 flex items-center gap-3 sm:gap-4 p-3 border rounded-md bg-white">
                     <QRCodeSVG
                       value={cncProgramName}
-                      size={80}
+                      size={60}
                       level="M"
                       includeMargin={false}
+                      className="shrink-0 sm:w-20 sm:h-20"
                     />
-                    <div>
-                      <p className="font-mono font-bold text-foreground">{cncProgramName}</p>
-                      <p className="text-xs text-muted-foreground">
+                    <div className="min-w-0">
+                      <p className="font-mono font-bold text-foreground text-sm sm:text-base truncate">{cncProgramName}</p>
+                      <p className="text-xs text-muted-foreground hidden sm:block">
                         {t("parts.qrCodeDesc")}
                       </p>
                     </div>
@@ -663,10 +665,10 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           </div>
 
           {/* Shipping Info - Weight and Dimensions */}
-          <div className="border rounded-lg p-4 bg-muted/30">
-            <div className="flex items-center justify-between mb-4">
-              <Label className="text-lg flex items-center gap-2">
-                <Truck className="h-5 w-5" />
+          <div className="border rounded-lg p-3 sm:p-4 bg-muted/30">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+              <Label className="text-base sm:text-lg flex items-center gap-2">
+                <Truck className="h-4 w-4 sm:h-5 sm:w-5" />
                 {t("parts.shippingInfo")}
               </Label>
               {hasChanges && (
@@ -674,6 +676,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   size="sm"
                   onClick={() => updatePartFieldsMutation.mutate()}
                   disabled={updatePartFieldsMutation.isPending}
+                  className="w-full sm:w-auto"
                 >
                   <Save className="h-4 w-4 mr-2" />
                   {updatePartFieldsMutation.isPending ? t("common.saving") : t("common.saveChanges")}
@@ -681,7 +684,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {/* Weight */}
               <div>
                 <Label htmlFor="weight-kg">{t("parts.weightKg")}</Label>
@@ -698,7 +701,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               </div>
 
               {/* Dimensions Header */}
-              <div className="col-span-2 mt-2">
+              <div className="sm:col-span-2 mt-2">
                 <Label className="text-sm flex items-center gap-2 text-muted-foreground">
                   <Ruler className="h-4 w-4" />
                   {t("parts.dimensions")} (mm)
@@ -752,10 +755,10 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
               {/* Volume calculation display */}
               {lengthMm && widthMm && heightMm && (
-                <div className="col-span-2 p-3 border rounded-md bg-card">
-                  <div className="flex items-center justify-between">
+                <div className="sm:col-span-2 p-3 border rounded-md bg-card">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                     <span className="text-sm text-muted-foreground">{t("parts.calculatedVolume")}</span>
-                    <span className="font-mono font-medium">
+                    <span className="font-mono font-medium text-sm sm:text-base">
                       {((parseFloat(lengthMm) * parseFloat(widthMm) * parseFloat(heightMm)) / 1000000000).toFixed(6)} m³
                     </span>
                   </div>
@@ -1049,9 +1052,9 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
             {/* Add Operation Form */}
             {addingOperation && (
-              <div className="border rounded-lg p-4 mb-4 bg-alert-info-bg border-alert-info-border">
-                <h4 className="font-semibold mb-3">{t("operations.newOperation")}</h4>
-                <div className="grid grid-cols-2 gap-3">
+              <div className="border rounded-lg p-3 sm:p-4 mb-4 bg-alert-info-bg border-alert-info-border">
+                <h4 className="font-semibold mb-3 text-sm sm:text-base">{t("operations.newOperation")}</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <Label>{t("operations.operationName")} *</Label>
                     <Input
@@ -1107,7 +1110,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                       }
                     />
                   </div>
-                  <div className="col-span-2">
+                  <div className="sm:col-span-2">
                     <Label>{t("operations.notes")}</Label>
                     <Textarea
                       value={newOperation.notes}
@@ -1119,7 +1122,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   </div>
 
                   {/* Resource Linking Section */}
-                  <div className="col-span-2">
+                  <div className="sm:col-span-2">
                     <div className="flex items-center gap-2 mb-2">
                       <Wrench className="h-4 w-4 text-orange-600" />
                       <Label>{t("operations.requiredResourcesOptional")}</Label>
@@ -1193,7 +1196,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                                   <X className="h-3 w-3" />
                                 </Button>
                               </div>
-                              <div className="grid grid-cols-2 gap-2">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <div>
                                   <Label className="text-xs">{t("operations.quantity")}</Label>
                                   <Input
@@ -1295,13 +1298,13 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         </div>
       </DialogContent>
 
-      {/* File Viewer Dialog */}
+      {/* File Viewer Dialog - Full screen on mobile */}
       <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
-        <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0">
-          <DialogHeader className="px-6 py-4 border-b">
-            <DialogTitle>{currentFileTitle}</DialogTitle>
+        <DialogContent className="w-full h-[100dvh] sm:h-[90vh] sm:max-w-6xl flex flex-col p-0 rounded-none sm:rounded-lg inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
+          <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">
+            <DialogTitle className="text-sm sm:text-base pr-8 truncate">{currentFileTitle}</DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden min-h-0">
             {currentFileUrl && currentFileType === "step" && (
               <STEPViewer url={currentFileUrl} title={currentFileTitle} />
             )}
