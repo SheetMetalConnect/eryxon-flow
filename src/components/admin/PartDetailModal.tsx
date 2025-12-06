@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useEffect } from "react";
 import { Plus, Save, X, Upload, Eye, Trash2, Box, FileText, AlertTriangle, Package, ChevronRight, Wrench, Image as ImageIcon, Zap, QrCode, Truck, Ruler } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
@@ -507,184 +508,164 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     );
   }
 
+  // Calculate operations count
+  const operationsCount = operations?.length || 0;
+  const completedOps = operations?.filter((op: any) => op.status === "completed").length || 0;
+  const filesCount = (part?.file_paths?.length || 0) + (part?.image_paths?.length || 0);
+
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="glass-card sm:max-w-2xl lg:max-w-3xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-lg sm:text-xl">{t("parts.partDetails")}: {part?.part_number}</DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-4 sm:space-y-6">
-          {/* Part Info - Responsive grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+      <DialogContent className="sm:max-w-2xl lg:max-w-3xl max-h-[85vh] overflow-hidden flex flex-col p-0">
+        {/* Header */}
+        <div className="px-4 sm:px-6 py-4 border-b bg-muted/30">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
             <div>
-              <Label>{t("jobs.jobNumber")}</Label>
-              <p className="mt-1 font-medium">{part?.job?.job_number}</p>
+              <DialogTitle className="text-lg sm:text-xl font-semibold">
+                {t("parts.partDetails")}: #{part?.part_number}
+              </DialogTitle>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {part?.job?.job_number} · {part?.job?.customer}
+              </p>
             </div>
-
-            <div>
-              <Label>{t("jobs.customer")}</Label>
-              <p className="mt-1 font-medium">{part?.job?.customer}</p>
-            </div>
-
-            <div>
-              <Label>{t("parts.material")}</Label>
-              <p className="mt-1 font-medium">{part?.material}</p>
-            </div>
-
-            <div>
-              <Label>{t("parts.quantity")}</Label>
-              <p className="mt-1 font-medium">{part?.quantity}</p>
-            </div>
-
-            <div>
-              <Label>{t("parts.status.title")}</Label>
-              <div className="mt-1">
-                <Badge>
-                  {part?.status === "not_started" && t("parts.status.notStarted")}
-                  {part?.status === "in_progress" && t("parts.status.inProgress")}
-                  {part?.status === "completed" && t("parts.status.completed")}
-                  {!["not_started", "in_progress", "completed"].includes(part?.status || "") &&
-                    part?.status?.replace("_", " ").toUpperCase()}
-                </Badge>
-              </div>
-            </div>
-
-            <div>
-              <Label>{t("parts.currentCell")}</Label>
-              <div className="mt-1">
-                {(() => {
-                  const cell = (cells || []).find((c: any) => c.id === (part as any)?.current_cell_id);
-                  return cell ? (
-                    <Badge
-                      variant="outline"
-                      style={{
-                        borderColor: cell.color || undefined,
-                        backgroundColor: `${cell.color || "#999"}20`,
-                      }}
-                    >
-                      {cell.name}
-                    </Badge>
-                  ) : (
-                    <span className="text-muted-foreground text-sm">{t("parts.notStarted")}</span>
-                  );
-                })()}
-              </div>
-            </div>
-          </div>
-
-          {/* Manufacturing Fields - Drawing No, CNC Program, Bullet Card */}
-          <div className="border rounded-lg p-3 sm:p-4 bg-muted/30">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-              <Label className="text-base sm:text-lg flex items-center gap-2">
-                <QrCode className="h-4 w-4 sm:h-5 sm:w-5" />
-                {t("parts.manufacturingInfo")}
-              </Label>
+            <div className="flex items-center gap-2">
+              <Badge className={`
+                ${part?.status === 'completed' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : ''}
+                ${part?.status === 'in_progress' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' : ''}
+                ${part?.status === 'not_started' ? 'bg-slate-500/10 text-slate-600 border-slate-500/20' : ''}
+              `} variant="outline">
+                {part?.status === "not_started" && t("parts.status.notStarted")}
+                {part?.status === "in_progress" && t("parts.status.inProgress")}
+                {part?.status === "completed" && t("parts.status.completed")}
+              </Badge>
               {hasChanges && (
                 <Button
                   size="sm"
                   onClick={() => updatePartFieldsMutation.mutate()}
                   disabled={updatePartFieldsMutation.isPending}
-                  className="w-full sm:w-auto"
+                  className="h-8"
                 >
-                  <Save className="h-4 w-4 mr-2" />
-                  {updatePartFieldsMutation.isPending ? t("common.saving") : t("common.saveChanges")}
+                  <Save className="h-3.5 w-3.5 mr-1.5" />
+                  {updatePartFieldsMutation.isPending ? t("common.saving") : t("common.save")}
                 </Button>
               )}
             </div>
+          </div>
+        </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              {/* Drawing Number */}
-              <div>
-                <Label htmlFor="drawing-no">{t("parts.drawingNo")}</Label>
-                <Input
-                  id="drawing-no"
-                  value={drawingNo}
-                  onChange={(e) => handleFieldChange(setDrawingNo, e.target.value)}
-                  placeholder={t("parts.drawingNoPlaceholder")}
-                  className="mt-1"
-                />
-              </div>
+        {/* Tabs */}
+        <Tabs defaultValue="details" className="flex-1 flex flex-col overflow-hidden">
+          <div className="px-4 sm:px-6 border-b">
+            <TabsList className="h-10 w-full justify-start bg-transparent p-0 gap-4 overflow-x-auto">
+              <TabsTrigger value="details" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 shrink-0">
+                {t("common.details", "Details")}
+              </TabsTrigger>
+              <TabsTrigger value="operations" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 shrink-0">
+                {t("operations.title")} ({operationsCount})
+              </TabsTrigger>
+              <TabsTrigger value="files" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 shrink-0">
+                {t("parts.files", "Files")} ({filesCount})
+              </TabsTrigger>
+              <TabsTrigger value="shipping" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 shrink-0">
+                {t("parts.shippingInfo", "Shipping")}
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-              {/* CNC Program Name */}
-              <div>
-                <Label htmlFor="cnc-program">{t("parts.cncProgramName")}</Label>
-                <Input
-                  id="cnc-program"
-                  value={cncProgramName}
-                  onChange={(e) => handleFieldChange(setCncProgramName, e.target.value)}
-                  placeholder={t("parts.cncProgramPlaceholder")}
-                  className="mt-1"
-                />
-              </div>
-
-              {/* Bullet Card Toggle */}
-              <div className="sm:col-span-2">
-                <div className="flex items-center justify-between p-3 border rounded-md bg-card gap-3">
-                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <Zap className={`h-4 w-4 sm:h-5 sm:w-5 shrink-0 ${isBulletCard ? 'text-destructive' : 'text-muted-foreground'}`} />
-                    <div className="min-w-0">
-                      <Label htmlFor="bullet-card" className="cursor-pointer text-sm">
-                        {t("parts.bulletCard")}
-                      </Label>
-                      <p className="text-xs text-muted-foreground hidden sm:block">
-                        {t("parts.bulletCardDesc")}
-                      </p>
-                    </div>
+          <div className="flex-1 overflow-y-auto">
+            {/* Details Tab */}
+            <TabsContent value="details" className="p-4 sm:p-6 space-y-5 m-0">
+              {/* Key Info Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="p-3 rounded-lg bg-muted/50 border">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("parts.material")}</p>
+                  <p className="mt-1 font-semibold text-sm">{part?.material || '-'}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/50 border">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("parts.quantity")}</p>
+                  <p className="mt-1 font-semibold text-sm">{part?.quantity}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/50 border">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("operations.title")}</p>
+                  <p className="mt-1 font-semibold text-sm">{completedOps}/{operationsCount}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/50 border">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("parts.currentCell")}</p>
+                  <div className="mt-1">
+                    {(() => {
+                      const cell = (cells || []).find((c: any) => c.id === (part as any)?.current_cell_id);
+                      return cell ? (
+                        <Badge variant="outline" style={{ borderColor: cell.color, backgroundColor: `${cell.color}20` }}>
+                          {cell.name}
+                        </Badge>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">-</span>
+                      );
+                    })()}
                   </div>
-                  <Switch
-                    id="bullet-card"
-                    checked={isBulletCard}
-                    onCheckedChange={(checked) => handleFieldChange(setIsBulletCard, checked)}
-                  />
                 </div>
               </div>
 
-              {/* QR Code Preview */}
-              {cncProgramName && (
-                <div className="sm:col-span-2">
-                  <Label>{t("parts.qrCodePreview")}</Label>
-                  <div className="mt-2 flex items-center gap-3 sm:gap-4 p-3 border rounded-md bg-white">
-                    <QRCodeSVG
-                      value={cncProgramName}
-                      size={60}
-                      level="M"
-                      includeMargin={false}
-                      className="shrink-0 sm:w-20 sm:h-20"
+              {/* Routing Visualization */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2">{t("qrm.routing")}</h3>
+                <div className="border rounded-lg p-3 bg-muted/20">
+                  <RoutingVisualization routing={routing} loading={routingLoading} />
+                </div>
+              </div>
+
+              {/* Manufacturing Info */}
+              <div className="border rounded-lg p-4 bg-muted/20">
+                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                  <QrCode className="h-4 w-4" />
+                  {t("parts.manufacturingInfo")}
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="drawing-no" className="text-xs text-muted-foreground">{t("parts.drawingNo")}</Label>
+                    <Input
+                      id="drawing-no"
+                      value={drawingNo}
+                      onChange={(e) => handleFieldChange(setDrawingNo, e.target.value)}
+                      placeholder={t("parts.drawingNoPlaceholder")}
+                      className="mt-1"
                     />
-                    <div className="min-w-0">
-                      <p className="font-mono font-bold text-foreground text-sm sm:text-base truncate">{cncProgramName}</p>
-                      <p className="text-xs text-muted-foreground hidden sm:block">
-                        {t("parts.qrCodeDesc")}
-                      </p>
-                    </div>
                   </div>
+                  <div>
+                    <Label htmlFor="cnc-program" className="text-xs text-muted-foreground">{t("parts.cncProgramName")}</Label>
+                    <Input
+                      id="cnc-program"
+                      value={cncProgramName}
+                      onChange={(e) => handleFieldChange(setCncProgramName, e.target.value)}
+                      placeholder={t("parts.cncProgramPlaceholder")}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div className="sm:col-span-2 flex items-center justify-between p-3 border rounded-md bg-card">
+                    <div className="flex items-center gap-2">
+                      <Zap className={`h-4 w-4 ${isBulletCard ? 'text-destructive' : 'text-muted-foreground'}`} />
+                      <Label htmlFor="bullet-card" className="cursor-pointer text-sm">{t("parts.bulletCard")}</Label>
+                    </div>
+                    <Switch id="bullet-card" checked={isBulletCard} onCheckedChange={(checked) => handleFieldChange(setIsBulletCard, checked)} />
+                  </div>
+                  {cncProgramName && (
+                    <div className="sm:col-span-2 flex items-center gap-4 p-3 border rounded-md bg-white">
+                      <QRCodeSVG value={cncProgramName} size={64} level="M" includeMargin={false} />
+                      <div>
+                        <p className="font-mono font-bold text-foreground">{cncProgramName}</p>
+                        <p className="text-xs text-muted-foreground">{t("parts.qrCodeDesc")}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
 
-          {/* Shipping Info - Weight and Dimensions */}
-          <div className="border rounded-lg p-3 sm:p-4 bg-muted/30">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-              <Label className="text-base sm:text-lg flex items-center gap-2">
-                <Truck className="h-4 w-4 sm:h-5 sm:w-5" />
-                {t("parts.shippingInfo")}
-              </Label>
-              {hasChanges && (
-                <Button
-                  size="sm"
-                  onClick={() => updatePartFieldsMutation.mutate()}
-                  disabled={updatePartFieldsMutation.isPending}
-                  className="w-full sm:w-auto"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {updatePartFieldsMutation.isPending ? t("common.saving") : t("common.saveChanges")}
-                </Button>
-              )}
-            </div>
+              {/* Issues Summary */}
+              <IssuesSummarySection partId={partId} />
+            </TabsContent>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            {/* Shipping Tab */}
+            <TabsContent value="shipping" className="p-4 sm:p-6 space-y-4 m-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Weight */}
               <div>
                 <Label htmlFor="weight-kg">{t("parts.weightKg")}</Label>

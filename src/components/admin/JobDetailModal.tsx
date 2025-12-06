@@ -11,8 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { useState } from "react";
-import { Plus, Edit2, Save, X, CheckCircle2, Clock, Circle, Truck, MapPin, Package, Weight } from "lucide-react";
+import { Plus, Edit2, Save, X, CheckCircle2, Clock, Circle, Truck, MapPin, Package, Weight, ChevronDown, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
@@ -125,364 +131,333 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
     );
   }
 
+  // Calculate summary stats
+  const partsCount = job?.parts?.length || 0;
+  const operationsCount = job?.parts?.reduce((sum: number, p: any) => sum + (p.operations?.length || 0), 0) || 0;
+  const completedOps = job?.parts?.reduce((sum: number, p: any) =>
+    sum + (p.operations?.filter((op: any) => op.status === "completed").length || 0), 0) || 0;
+
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="glass-card sm:max-w-2xl lg:max-w-3xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl lg:max-w-3xl max-h-[85vh] overflow-hidden flex flex-col p-0">
+        {/* Header */}
+        <div className="px-4 sm:px-6 py-4 border-b bg-muted/30">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
-            <DialogTitle className="text-lg sm:text-xl flex items-center gap-2">
-              {t("jobs.jobDetails")}: {job?.job_number}
-            </DialogTitle>
-            <div className="flex gap-2 flex-wrap">
+            <div>
+              <DialogTitle className="text-lg sm:text-xl font-semibold">
+                {t("jobs.jobDetails")}: {job?.job_number}
+              </DialogTitle>
+              <p className="text-sm text-muted-foreground mt-0.5">{job?.customer}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge className={`
+                ${job?.status === 'completed' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : ''}
+                ${job?.status === 'in_progress' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' : ''}
+                ${job?.status === 'not_started' ? 'bg-slate-500/10 text-slate-600 border-slate-500/20' : ''}
+              `} variant="outline">
+                {job?.status?.replace("_", " ").toUpperCase()}
+              </Badge>
               {isEditing ? (
                 <>
-                  <Button size="sm" onClick={handleSave} className="h-8 flex-1 sm:flex-none">
+                  <Button size="sm" onClick={handleSave} className="h-8">
                     <Save className="h-3.5 w-3.5 mr-1.5" /> {t("common.save")}
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => setIsEditing(false)} className="h-8 flex-1 sm:flex-none">
-                    <X className="h-3.5 w-3.5 mr-1.5" /> {t("common.cancel")}
+                  <Button size="sm" variant="outline" onClick={() => setIsEditing(false)} className="h-8">
+                    <X className="h-3.5 w-3.5" />
                   </Button>
                 </>
               ) : (
-                <Button size="sm" onClick={handleEdit} className="h-8 w-full sm:w-auto">
+                <Button size="sm" variant="outline" onClick={handleEdit} className="h-8">
                   <Edit2 className="h-3.5 w-3.5 mr-1.5" /> {t("common.edit")}
                 </Button>
               )}
             </div>
           </div>
-        </DialogHeader>
+        </div>
 
-        <div className="space-y-4">
-          {/* Job Info - Responsive grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <Label className="text-xs text-muted-foreground uppercase tracking-wide">{t("jobs.customer")}</Label>
-              {isEditing ? (
-                <Input
-                  value={editedJob.customer}
-                  onChange={(e) => setEditedJob({ ...editedJob, customer: e.target.value })}
-                  className="mt-1.5"
-                />
-              ) : (
-                <p className="mt-1.5 font-semibold text-sm">{job?.customer}</p>
-              )}
-            </div>
+        {/* Content with Tabs */}
+        <Tabs defaultValue="overview" className="flex-1 flex flex-col overflow-hidden">
+          <div className="px-4 sm:px-6 border-b">
+            <TabsList className="h-10 w-full justify-start bg-transparent p-0 gap-4">
+              <TabsTrigger value="overview" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3">
+                {t("common.overview", "Overview")}
+              </TabsTrigger>
+              <TabsTrigger value="parts" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3">
+                {t("jobs.parts")} ({partsCount})
+              </TabsTrigger>
+              <TabsTrigger value="delivery" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3">
+                {t("jobs.deliveryInfo", "Delivery")}
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-            <div>
-              <Label className="text-xs text-muted-foreground uppercase tracking-wide">{t("jobs.status")}</Label>
-              <div className="mt-1.5">
-                <Badge className={`
-                  ${job?.status === 'completed' ? 'bg-status-completed text-white' : ''}
-                  ${job?.status === 'in_progress' ? 'bg-status-active text-black' : ''}
-                  ${job?.status === 'not_started' ? 'bg-status-pending text-white' : ''}
-                  text-xs font-medium
-                `}>
-                  {job?.status?.replace("_", " ").toUpperCase()}
-                </Badge>
+          <div className="flex-1 overflow-y-auto">
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="p-4 sm:p-6 space-y-5 m-0">
+              {/* Key Info Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="p-3 rounded-lg bg-muted/50 border">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("jobs.dueDate")}</p>
+                  <p className="mt-1 font-semibold text-sm">
+                    {format(new Date(job?.due_date_override || job?.due_date), "MMM dd, yyyy")}
+                  </p>
+                  {job?.due_date_override && (
+                    <Badge variant="outline" className="mt-1 text-[10px] py-0 h-4">{t("jobs.overridden")}</Badge>
+                  )}
+                </div>
+                <div className="p-3 rounded-lg bg-muted/50 border">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("jobs.parts")}</p>
+                  <p className="mt-1 font-semibold text-sm">{partsCount}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/50 border">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("jobs.operations", "Operations")}</p>
+                  <p className="mt-1 font-semibold text-sm">{completedOps}/{operationsCount}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/50 border">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("jobs.created")}</p>
+                  <p className="mt-1 font-semibold text-sm">{format(new Date(job?.created_at), "MMM dd")}</p>
+                </div>
               </div>
-            </div>
 
-            <div>
-              <Label className="text-xs text-muted-foreground uppercase tracking-wide">{t("jobs.dueDate")}</Label>
-              <p className="mt-1.5 font-medium text-sm">
-                {format(new Date(job?.due_date_override || job?.due_date), "MMM dd, yyyy")}
-                {job?.due_date_override && (
-                  <Badge variant="outline" className="ml-2 text-xs py-0 h-5">
-                    {t("jobs.overridden")}
-                  </Badge>
+              {/* Operations Flow */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2">{t("qrm.operationsFlow", "Operations Flow")}</h3>
+                <div className="border rounded-lg p-3 bg-muted/20">
+                  <OperationsFlowVisualization routing={routing} loading={routingLoading} />
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2">{t("jobs.notes")}</h3>
+                {isEditing ? (
+                  <Textarea
+                    value={editedJob.notes || ""}
+                    onChange={(e) => setEditedJob({ ...editedJob, notes: e.target.value })}
+                    rows={3}
+                    className="bg-background"
+                  />
+                ) : (
+                  <p className="text-sm text-muted-foreground bg-muted/30 rounded-lg p-3 border">
+                    {job?.notes || t("jobs.noNotes")}
+                  </p>
                 )}
-              </p>
-            </div>
+              </div>
 
-            <div>
-              <Label className="text-xs text-muted-foreground uppercase tracking-wide">{t("jobs.created")}</Label>
-              <p className="mt-1.5 text-sm">{format(new Date(job?.created_at), "MMM dd, yyyy HH:mm")}</p>
-            </div>
-          </div>
+              {/* Metadata */}
+              {job?.metadata && Object.keys(job.metadata).length > 0 && (
+                <Collapsible>
+                  <CollapsibleTrigger className="flex items-center gap-2 text-sm font-semibold hover:text-primary transition-colors">
+                    <ChevronRight className="h-4 w-4 transition-transform duration-200 [[data-state=open]>&]:rotate-90" />
+                    {t("jobs.customMetadata")} ({Object.keys(job.metadata).length})
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2">
+                    <div className="border rounded-lg p-3 bg-muted/20">
+                      <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                        {Object.entries(job.metadata).map(([key, value]) => (
+                          <div key={key} className="flex items-baseline gap-2">
+                            <dt className="text-xs text-muted-foreground uppercase tracking-wide">{key}:</dt>
+                            <dd className="font-medium">{String(value)}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
 
-          {/* Routing Visualization */}
-          <div>
-            <Label className="text-sm font-semibold">{t("qrm.operationsFlow", "Operations Flow")}</Label>
-            <div className="mt-2 border border-white/10 rounded-xl p-3 bg-[rgba(17,25,40,0.5)] backdrop-blur-sm">
-              <OperationsFlowVisualization routing={routing} loading={routingLoading} />
-            </div>
-          </div>
+              {/* Issues Summary */}
+              <IssuesSummarySection jobId={jobId} />
+            </TabsContent>
 
-          {/* Notes */}
-          <div>
-            <Label>{t("jobs.notes")}</Label>
-            {isEditing ? (
-              <Textarea
-                value={editedJob.notes || ""}
-                onChange={(e) => setEditedJob({ ...editedJob, notes: e.target.value })}
-                rows={3}
-              />
-            ) : (
-              <p className="mt-1 text-sm text-muted-foreground">{job?.notes || t("jobs.noNotes")}</p>
-            )}
-          </div>
+            {/* Parts Tab */}
+            <TabsContent value="parts" className="p-4 sm:p-6 space-y-3 m-0">
+              {job?.parts?.map((part: any) => {
+                const partCompletedOps = part.operations?.filter((op: any) => op.status === "completed").length || 0;
+                const partTotalOps = part.operations?.length || 0;
 
-          {/* Delivery Information */}
-          <div className="border border-white/10 rounded-xl p-4 bg-[rgba(17,25,40,0.3)] backdrop-blur-sm">
-            <Label className="text-sm font-semibold flex items-center gap-2 mb-3">
-              <Truck className="h-4 w-4" />
-              {t("jobs.deliveryInfo")}
-            </Label>
+                return (
+                  <div key={part.id} className="border rounded-lg overflow-hidden">
+                    {/* Part Header */}
+                    <div className="flex items-center justify-between p-3 bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <div>
+                          <h4 className="font-semibold text-sm">#{part.part_number}</h4>
+                          <p className="text-xs text-muted-foreground">
+                            {part.material} · Qty: {part.quantity}
+                          </p>
+                        </div>
+                        <div className="flex gap-1.5">
+                          {part.parent_part_id && (
+                            <Badge variant="outline" className="text-[10px] py-0 h-5">{t("parts.assembly")}</Badge>
+                          )}
+                          <PartIssueBadge partId={part.id} size="sm" />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">{partCompletedOps}/{partTotalOps} ops</span>
+                        <Badge className={`text-[10px] py-0.5 h-5
+                          ${part.status === 'completed' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : ''}
+                          ${part.status === 'in_progress' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' : ''}
+                          ${part.status === 'not_started' ? 'bg-slate-500/10 text-slate-600 border-slate-500/20' : ''}
+                        `} variant="outline">
+                          {part.status?.replace("_", " ")}
+                        </Badge>
+                      </div>
+                    </div>
 
-            {isEditing ? (
-              <div className="space-y-4">
-                {/* Delivery Address - Responsive grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Operations List - Simplified */}
+                    {part.operations && part.operations.length > 0 && (
+                      <div className="divide-y">
+                        {part.operations.map((operation: any, index: number) => {
+                          const isCompleted = operation.status === "completed";
+                          const isInProgress = operation.status === "in_progress";
+                          const cellColor = operation.cell?.color || '#6B7280';
+
+                          return (
+                            <div key={operation.id} className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted/20 transition-colors">
+                              {/* Status Icon */}
+                              {isCompleted ? (
+                                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                              ) : isInProgress ? (
+                                <Clock className="h-4 w-4 text-blue-500 shrink-0" />
+                              ) : (
+                                <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                              )}
+
+                              {/* Sequence */}
+                              <span className="text-xs text-muted-foreground w-6 shrink-0">{index + 1}.</span>
+
+                              {/* Cell Badge */}
+                              <div
+                                className="px-2 py-0.5 rounded text-xs font-medium shrink-0"
+                                style={{ backgroundColor: `${cellColor}15`, color: cellColor }}
+                              >
+                                {operation.cell?.name || 'No cell'}
+                              </div>
+
+                              {/* Operation Name */}
+                              <span className={`flex-1 truncate ${isCompleted ? 'text-muted-foreground' : ''}`}>
+                                {operation.operation_name}
+                              </span>
+
+                              {/* Resource Badge */}
+                              <ResourceCountBadge operationId={operation.id} />
+
+                              {/* Time (desktop only) */}
+                              <span className="text-xs text-muted-foreground hidden md:block w-16 text-right">
+                                {operation.estimated_time || 0}m
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </TabsContent>
+
+            {/* Delivery Tab */}
+            <TabsContent value="delivery" className="p-4 sm:p-6 space-y-4 m-0">
+              {isEditing ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
-                    <Label className="text-xs text-muted-foreground">{t("jobs.deliveryAddress")}</Label>
+                    <Label>{t("jobs.deliveryAddress")}</Label>
                     <Input
                       value={editedJob.delivery_address || ""}
                       onChange={(e) => setEditedJob({ ...editedJob, delivery_address: e.target.value })}
                       placeholder={t("jobs.deliveryAddressPlaceholder")}
-                      className="mt-1"
+                      className="mt-1.5"
                     />
                   </div>
                   <div>
-                    <Label className="text-xs text-muted-foreground">{t("jobs.deliveryCity")}</Label>
+                    <Label>{t("jobs.deliveryCity")}</Label>
                     <Input
                       value={editedJob.delivery_city || ""}
                       onChange={(e) => setEditedJob({ ...editedJob, delivery_city: e.target.value })}
-                      placeholder={t("jobs.deliveryCityPlaceholder")}
-                      className="mt-1"
+                      className="mt-1.5"
                     />
                   </div>
                   <div>
-                    <Label className="text-xs text-muted-foreground">{t("jobs.deliveryPostalCode")}</Label>
+                    <Label>{t("jobs.deliveryPostalCode")}</Label>
                     <Input
                       value={editedJob.delivery_postal_code || ""}
                       onChange={(e) => setEditedJob({ ...editedJob, delivery_postal_code: e.target.value })}
-                      placeholder={t("jobs.deliveryPostalCodePlaceholder")}
-                      className="mt-1"
+                      className="mt-1.5"
                     />
                   </div>
                   <div>
-                    <Label className="text-xs text-muted-foreground">{t("jobs.deliveryCountry")}</Label>
+                    <Label>{t("jobs.deliveryCountry")}</Label>
                     <Input
                       value={editedJob.delivery_country || "NL"}
                       onChange={(e) => setEditedJob({ ...editedJob, delivery_country: e.target.value })}
-                      placeholder="NL"
-                      className="mt-1"
+                      className="mt-1.5"
                     />
                   </div>
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {/* Display mode - Address */}
-                {(job?.delivery_address || job?.delivery_city || job?.delivery_postal_code) ? (
-                  <div className="flex items-start gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div className="text-sm">
-                      {job?.delivery_address && <p>{job.delivery_address}</p>}
-                      <p className="text-muted-foreground">
-                        {[job?.delivery_postal_code, job?.delivery_city, job?.delivery_country].filter(Boolean).join(", ")}
-                      </p>
+              ) : (
+                <>
+                  {/* Address Display */}
+                  <div className="border rounded-lg p-4 bg-muted/20">
+                    <div className="flex items-start gap-3">
+                      <MapPin className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
+                      {(job?.delivery_address || job?.delivery_city) ? (
+                        <div>
+                          {job?.delivery_address && <p className="font-medium">{job.delivery_address}</p>}
+                          <p className="text-sm text-muted-foreground">
+                            {[job?.delivery_postal_code, job?.delivery_city, job?.delivery_country].filter(Boolean).join(", ")}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground">{t("jobs.noDeliveryAddress")}</p>
+                      )}
                     </div>
                   </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    {t("jobs.noDeliveryAddress")}
-                  </p>
-                )}
 
-                {/* Aggregated weight/volume from parts (read-only) */}
-                {job?.parts && job.parts.length > 0 && (() => {
-                  const totalWeight = job.parts.reduce((sum: number, part: any) =>
-                    sum + ((part.weight_kg || 0) * (part.quantity || 1)), 0);
-                  const totalVolume = job.parts.reduce((sum: number, part: any) => {
-                    if (part.length_mm && part.width_mm && part.height_mm) {
-                      const volumeM3 = (part.length_mm * part.width_mm * part.height_mm) / 1000000000;
-                      return sum + (volumeM3 * (part.quantity || 1));
+                  {/* Weight/Volume Summary */}
+                  {job?.parts && job.parts.length > 0 && (() => {
+                    const totalWeight = job.parts.reduce((sum: number, part: any) =>
+                      sum + ((part.weight_kg || 0) * (part.quantity || 1)), 0);
+                    const totalVolume = job.parts.reduce((sum: number, part: any) => {
+                      if (part.length_mm && part.width_mm && part.height_mm) {
+                        const volumeM3 = (part.length_mm * part.width_mm * part.height_mm) / 1000000000;
+                        return sum + (volumeM3 * (part.quantity || 1));
+                      }
+                      return sum;
+                    }, 0);
+
+                    if (totalWeight > 0 || totalVolume > 0) {
+                      return (
+                        <div className="grid grid-cols-2 gap-4">
+                          {totalWeight > 0 && (
+                            <div className="border rounded-lg p-4 bg-muted/20">
+                              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                <Weight className="h-4 w-4" />
+                                <span className="text-xs uppercase tracking-wide">{t("parts.totalWeight", "Total Weight")}</span>
+                              </div>
+                              <p className="text-xl font-semibold">{totalWeight.toFixed(2)} kg</p>
+                            </div>
+                          )}
+                          {totalVolume > 0 && (
+                            <div className="border rounded-lg p-4 bg-muted/20">
+                              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                <Package className="h-4 w-4" />
+                                <span className="text-xs uppercase tracking-wide">{t("parts.totalVolume", "Total Volume")}</span>
+                              </div>
+                              <p className="text-xl font-semibold">{totalVolume.toFixed(4)} m³</p>
+                            </div>
+                          )}
+                        </div>
+                      );
                     }
-                    return sum;
-                  }, 0);
-
-                  if (totalWeight > 0 || totalVolume > 0) {
-                    return (
-                      <div className="flex gap-4 text-sm pt-2 border-t border-white/5">
-                        {totalWeight > 0 && (
-                          <div className="flex items-center gap-1.5">
-                            <Weight className="h-3.5 w-3.5 text-muted-foreground" />
-                            <span>{totalWeight.toFixed(2)} kg</span>
-                            <span className="text-xs text-muted-foreground">({t("jobs.fromParts")})</span>
-                          </div>
-                        )}
-                        {totalVolume > 0 && (
-                          <div className="flex items-center gap-1.5">
-                            <Package className="h-3.5 w-3.5 text-muted-foreground" />
-                            <span>{totalVolume.toFixed(6)} m³</span>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
-              </div>
-            )}
+                    return null;
+                  })()}
+                </>
+              )}
+            </TabsContent>
           </div>
-
-          {/* Metadata */}
-          {job?.metadata && Object.keys(job.metadata).length > 0 && (
-            <div>
-              <Label className="text-sm font-semibold">{t("jobs.customMetadata")}</Label>
-              <div className="mt-2 border border-white/10 rounded-xl p-3 bg-[rgba(17,25,40,0.5)] backdrop-blur-sm">
-                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                  {Object.entries(job.metadata).map(([key, value]) => (
-                    <div key={key} className="flex items-baseline gap-2">
-                      <dt className="text-xs text-muted-foreground uppercase tracking-wide min-w-fit">{key}:</dt>
-                      <dd className="font-medium">{String(value)}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </div>
-            </div>
-          )}
-
-          {/* NCRs / Issues Summary */}
-          <IssuesSummarySection jobId={jobId} />
-
-          {/* Parts and Tasks */}
-          <div>
-            <Label className="text-sm font-semibold">{t("jobs.parts")} ({job?.parts?.length || 0})</Label>
-            <div className="mt-2 space-y-3">
-              {job?.parts?.map((part: any) => (
-                <div key={part.id} className="border border-white/10 rounded-xl p-3 bg-[rgba(17,25,40,0.3)] backdrop-blur-sm">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="space-y-1">
-                      <h4 className="font-semibold text-sm">{t("parts.partNumber")}# {part.part_number}</h4>
-                      <p className="text-xs text-muted-foreground">
-                        {t("parts.material")}: {part.material} | {t("parts.quantity")}: {part.quantity}
-                      </p>
-                      <div className="flex gap-1.5 mt-1">
-                        {part.parent_part_id && (
-                          <Badge variant="outline" className="text-xs py-0 h-5">
-                            {t("parts.assembly")}
-                          </Badge>
-                        )}
-                        <PartIssueBadge partId={part.id} size="sm" />
-                      </div>
-                    </div>
-                    <Badge className={`
-                      ${part.status === 'completed' ? 'bg-status-completed text-white' : ''}
-                      ${part.status === 'in_progress' ? 'bg-status-active text-black' : ''}
-                      ${part.status === 'not_started' ? 'bg-status-pending text-white' : ''}
-                      text-xs font-medium py-0.5 h-6
-                    `}>
-                      {part.status?.replace("_", " ")}
-                    </Badge>
-                  </div>
-
-                  {/* Operations */}
-                  <div className="mt-2">
-                    <Label className="text-xs text-muted-foreground uppercase tracking-wide">
-                      {t("jobs.operations", "Operations")} ({part.operations?.length || 0})
-                    </Label>
-                    <div className="mt-1.5 space-y-1.5">
-                      {part.operations?.map((operation: any, index: number) => {
-                        const isCompleted = operation.status === "completed";
-                        const isInProgress = operation.status === "in_progress";
-                        const cellColor = operation.cell?.color || '#6B7280';
-                        const completedCount = part.operations.filter((op: any) => op.status === "completed").length;
-                        const totalCount = part.operations.length;
-
-                        return (
-                          <div
-                            key={operation.id}
-                            className={`
-                              flex items-center justify-between p-2 rounded-lg text-xs
-                              border border-white/5 transition-all duration-200
-                              ${isCompleted
-                                ? 'bg-[rgba(52,168,83,0.05)]'
-                                : isInProgress
-                                  ? 'bg-[rgba(30,144,255,0.08)]'
-                                  : 'bg-[rgba(255,255,255,0.02)]'}
-                            `}
-                          >
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              {/* Status indicator */}
-                              <div className="flex-shrink-0">
-                                {isCompleted ? (
-                                  <CheckCircle2 className="h-3.5 w-3.5 text-status-completed" />
-                                ) : isInProgress ? (
-                                  <Clock className="h-3.5 w-3.5 text-brand-primary" />
-                                ) : (
-                                  <Circle className="h-3.5 w-3.5 text-muted-foreground/50" />
-                                )}
-                              </div>
-
-                              {/* Operation number and cell */}
-                              <div className="flex items-center gap-1.5 flex-shrink-0">
-                                <span className="font-semibold text-muted-foreground text-[10px]">
-                                  {index + 1}/{totalCount}
-                                </span>
-                                <div
-                                  className="px-1.5 py-0.5 rounded text-[10px] font-medium whitespace-nowrap"
-                                  style={{
-                                    backgroundColor: `${cellColor}15`,
-                                    color: cellColor,
-                                    borderLeft: `2px solid ${cellColor}`,
-                                  }}
-                                >
-                                  {operation.cell?.name}
-                                </div>
-                              </div>
-
-                              {/* Operation name */}
-                              <span className={`font-medium truncate ${isCompleted ? 'text-muted-foreground/70' : ''}`}>
-                                {operation.operation_name}
-                              </span>
-
-                              {/* Resource count badge */}
-                              <div className="flex-shrink-0">
-                                <ResourceCountBadge operationId={operation.id} />
-                              </div>
-                            </div>
-
-                            {/* Timing Info - Responsive grid, hidden on mobile for space */}
-                            <div className="hidden sm:grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-muted-foreground ml-7">
-                              <div>
-                                <span className="font-semibold">{t("capacity.scheduled")}:</span> {operation.planned_start ? format(new Date(operation.planned_start), 'MMM d') : '-'}
-                              </div>
-                              <div>
-                                <span className="font-semibold">Setup:</span> {operation.setup_time || 0}m
-                              </div>
-                              <div>
-                                <span className="font-semibold">Run:</span> {operation.run_time_per_unit || 0}m/u
-                              </div>
-                              <div>
-                                <span className="font-semibold">Est Total:</span> {operation.estimated_time || 0}m
-                              </div>
-                            </div>
-
-                            {/* Compact status badge */}
-                            <Badge
-                              className={`
-                                ml-2 flex-shrink-0 text-[10px] px-2 py-0 h-5 font-medium
-                                ${isCompleted ? 'bg-status-completed/20 text-status-completed border-status-completed/30' : ''}
-                                ${isInProgress ? 'bg-brand-primary/20 text-brand-primary border-brand-primary/30' : ''}
-                                ${!isCompleted && !isInProgress ? 'bg-muted/50 text-muted-foreground border-muted' : ''}
-                              `}
-                              variant="outline"
-                            >
-                              {isCompleted ? '✓' : isInProgress ? '⟳' : '○'}
-                            </Badge>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
