@@ -52,6 +52,59 @@
     "warningMessage": "Kopieer deze sleutel nu. U kunt deze later niet meer zien.",
     "createdAt": "Aangemaakt op"
   },
+  "erpSync": {
+    "title": "ERP-synchronisatie",
+    "description": "Synchroniseer gegevens tussen Eryxon MES en uw externe ERP-systeem",
+    "unifiedEndpoint": "Uniforme ERP-synchronisatie",
+    "unifiedEndpointDesc": "Geoptimaliseerde bulksynchronisatie met wijzigingsdetectie",
+    "previewChanges": "Wijzigingen bekijken",
+    "previewChangesDesc": "Bekijk wat er zou veranderen zonder wijzigingen aan te brengen",
+    "executeSync": "Synchronisatie uitvoeren",
+    "executeSyncDesc": "Synchroniseer jobs, onderdelen en resources in één verzoek",
+    "syncHistory": "Synchronisatiegeschiedenis",
+    "syncHistoryDesc": "Bekijk synchronisatiegeschiedenis en statistieken",
+    "diffEndpoint": "POST /api-erp-sync/diff",
+    "syncEndpoint": "POST /api-erp-sync/sync",
+    "statusEndpoint": "GET /api-erp-sync/status",
+    "features": {
+      "changeDetection": "Wijzigingsdetectie",
+      "changeDetectionDesc": "Ongewijzigde records overslaan via sync_hash vergelijking",
+      "batchOperations": "Batchbewerkingen",
+      "batchOperationsDesc": "Synchroniseer meerdere entiteiten in één verzoek",
+      "webhookEvents": "Webhook-events",
+      "webhookEventsDesc": "Automatische webhook-verzending na synchronisatie",
+      "detailedResults": "Gedetailleerde resultaten",
+      "detailedResultsDesc": "Status per record met foutdetails"
+    },
+    "status": {
+      "create": "Wordt aangemaakt",
+      "update": "Wordt bijgewerkt",
+      "unchanged": "Ongewijzigd",
+      "error": "Fout",
+      "created": "Aangemaakt",
+      "updated": "Bijgewerkt",
+      "skipped": "Overgeslagen"
+    },
+    "options": {
+      "skipUnchanged": "Ongewijzigd overslaan",
+      "skipUnchangedDesc": "Records met ongewijzigde sync_hash overslaan",
+      "continueOnError": "Doorgaan bij fout",
+      "continueOnErrorDesc": "Doorgaan met synchroniseren als er een fout optreedt",
+      "recordHistory": "Geschiedenis opslaan",
+      "recordHistoryDesc": "Synchronisatie loggen in geschiedenistabel"
+    },
+    "summary": {
+      "totalEntities": "Totaal entiteiten",
+      "totalRecords": "Totaal records",
+      "toCreate": "Aan te maken",
+      "toUpdate": "Bij te werken",
+      "totalCreated": "Totaal aangemaakt",
+      "totalUpdated": "Totaal bijgewerkt",
+      "totalSkipped": "Totaal overgeslagen",
+      "totalErrors": "Totaal fouten",
+      "durationMs": "Duur (ms)"
+    }
+  },
   "webhooks": {
     "title": "Webhook-configuratie",
     "actions": "Acties",

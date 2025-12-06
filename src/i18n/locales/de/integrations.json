@@ -52,6 +52,59 @@
     "warningMessage": "Kopieren Sie diesen Schlüssel jetzt. Sie können ihn später nicht mehr sehen.",
     "createdAt": "Erstellt am"
   },
+  "erpSync": {
+    "title": "ERP-Synchronisation",
+    "description": "Synchronisieren Sie Daten zwischen Eryxon MES und Ihrem externen ERP-System",
+    "unifiedEndpoint": "Einheitliche ERP-Synchronisation",
+    "unifiedEndpointDesc": "Optimierte Massensynchronisation mit Änderungserkennung",
+    "previewChanges": "Änderungen anzeigen",
+    "previewChangesDesc": "Prüfen Sie, was sich ändern würde, ohne Änderungen vorzunehmen",
+    "executeSync": "Synchronisation ausführen",
+    "executeSyncDesc": "Synchronisieren Sie Jobs, Teile und Ressourcen in einer Anfrage",
+    "syncHistory": "Synchronisationsverlauf",
+    "syncHistoryDesc": "Synchronisationsverlauf und Statistiken anzeigen",
+    "diffEndpoint": "POST /api-erp-sync/diff",
+    "syncEndpoint": "POST /api-erp-sync/sync",
+    "statusEndpoint": "GET /api-erp-sync/status",
+    "features": {
+      "changeDetection": "Änderungserkennung",
+      "changeDetectionDesc": "Unveränderte Datensätze durch sync_hash-Vergleich überspringen",
+      "batchOperations": "Stapeloperationen",
+      "batchOperationsDesc": "Mehrere Entitäten in einer Anfrage synchronisieren",
+      "webhookEvents": "Webhook-Ereignisse",
+      "webhookEventsDesc": "Automatischer Webhook-Versand nach Synchronisation",
+      "detailedResults": "Detaillierte Ergebnisse",
+      "detailedResultsDesc": "Status pro Datensatz mit Fehlerdetails"
+    },
+    "status": {
+      "create": "Wird erstellt",
+      "update": "Wird aktualisiert",
+      "unchanged": "Unverändert",
+      "error": "Fehler",
+      "created": "Erstellt",
+      "updated": "Aktualisiert",
+      "skipped": "Übersprungen"
+    },
+    "options": {
+      "skipUnchanged": "Unveränderte überspringen",
+      "skipUnchangedDesc": "Datensätze mit unverändertem sync_hash überspringen",
+      "continueOnError": "Bei Fehler fortfahren",
+      "continueOnErrorDesc": "Synchronisation bei Fehlern fortsetzen",
+      "recordHistory": "Verlauf aufzeichnen",
+      "recordHistoryDesc": "Synchronisation in Verlaufstabelle protokollieren"
+    },
+    "summary": {
+      "totalEntities": "Entitäten gesamt",
+      "totalRecords": "Datensätze gesamt",
+      "toCreate": "Zu erstellen",
+      "toUpdate": "Zu aktualisieren",
+      "totalCreated": "Gesamt erstellt",
+      "totalUpdated": "Gesamt aktualisiert",
+      "totalSkipped": "Gesamt übersprungen",
+      "totalErrors": "Gesamt Fehler",
+      "durationMs": "Dauer (ms)"
+    }
+  },
   "webhooks": {
     "title": "Webhook-Konfiguration",
     "actions": "Aktionen",

@@ -704,14 +704,30 @@ Effective Time = Total Time - Pause Time`}
             </Alert>
 
             <h3 className="text-lg font-semibold mb-3">Integration Options</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              <Card className="border-primary/30 bg-primary/5">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ArrowRightLeft className="h-5 w-5 text-primary" />
+                    <h4 className="font-semibold">Unified ERP Sync</h4>
+                    <Badge variant="secondary" className="ml-auto text-xs">New</Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">Optimized bulk sync with change detection. Preview changes before syncing.</p>
+                  <ul className="text-xs space-y-1">
+                    <li><code className="bg-black/30 px-1.5 py-0.5 rounded">POST /api-erp-sync/diff</code> - Preview changes</li>
+                    <li><code className="bg-black/30 px-1.5 py-0.5 rounded">POST /api-erp-sync/sync</code> - Execute sync</li>
+                    <li><code className="bg-black/30 px-1.5 py-0.5 rounded">GET /api-erp-sync/status</code> - Sync history</li>
+                  </ul>
+                </CardContent>
+              </Card>
+
               <Card className="border-white/10 bg-white/5">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Code className="h-5 w-5 text-primary" />
-                    <h4 className="font-semibold">REST API Sync</h4>
+                    <h4 className="font-semibold">Entity Sync</h4>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-3">Real-time sync for individual records. Best for webhooks and event-driven updates.</p>
+                  <p className="text-sm text-muted-foreground mb-3">Per-entity sync endpoints for individual records or bulk operations.</p>
                   <ul className="text-xs space-y-1">
                     <li><code className="bg-black/30 px-1.5 py-0.5 rounded">PUT /api-jobs/sync</code> - Upsert single job</li>
                     <li><code className="bg-black/30 px-1.5 py-0.5 rounded">POST /api-jobs/bulk-sync</code> - Batch up to 1000</li>
@@ -734,8 +750,148 @@ Effective Time = Total Time - Pause Time`}
               </Card>
             </div>
 
-            <h3 className="text-lg font-semibold mb-3">API Sync Endpoints</h3>
-            <Accordion type="single" collapsible defaultValue="sync-1" className="space-y-2 mb-8">
+            <h3 className="text-lg font-semibold mb-3">Unified ERP Sync API</h3>
+            <Alert className="mb-4 bg-green-500/10 border-green-500/30">
+              <CheckCircle className="h-4 w-4" />
+              <AlertTitle>Recommended for ERP Integrations</AlertTitle>
+              <AlertDescription>
+                The unified <code className="bg-black/30 px-1.5 py-0.5 rounded text-xs">/api-erp-sync</code> endpoint is optimized for ERP systems with change detection, batch operations, and detailed status reporting.
+              </AlertDescription>
+            </Alert>
+            <Accordion type="single" collapsible defaultValue="unified-1" className="space-y-2 mb-8">
+              <AccordionItem value="unified-1" className="border border-primary/20 rounded-lg px-4 bg-primary/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  <div className="flex items-center gap-2">
+                    <ArrowRightLeft className="h-4 w-4 text-primary" />
+                    Preview Changes (Diff)
+                    <Badge variant="secondary" className="ml-2 text-xs">New</Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground space-y-4">
+                  <p>Check what would change <strong>without</strong> modifying data. Perfect for incremental sync validation.</p>
+                  <pre className="bg-black/30 p-3 rounded-lg text-xs font-mono overflow-x-auto">
+{`POST /api-erp-sync/diff
+{
+  "jobs": [
+    { "external_id": "SO-001", "external_source": "SAP", "job_number": "JOB-001" },
+    { "external_id": "SO-002", "external_source": "SAP", "job_number": "JOB-002" }
+  ],
+  "parts": [...],
+  "resources": [...]
+}`}
+                  </pre>
+                  <p className="font-medium text-foreground text-sm mt-4 mb-2">Response shows status for each record:</p>
+                  <pre className="bg-black/30 p-3 rounded-lg text-xs font-mono overflow-x-auto">
+{`{
+  "summary": { "total_to_create": 1, "total_to_update": 1, "total_unchanged": 0 },
+  "entities": {
+    "jobs": {
+      "records": [
+        { "external_id": "SO-001", "status": "create" },
+        { "external_id": "SO-002", "status": "update", "changes": ["customer: Old -> New"] }
+      ]
+    }
+  }
+}`}
+                  </pre>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="unified-2" className="border border-primary/20 rounded-lg px-4 bg-primary/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  <div className="flex items-center gap-2">
+                    <RefreshCw className="h-4 w-4 text-primary" />
+                    Execute Sync
+                    <Badge variant="secondary" className="ml-2 text-xs">New</Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground space-y-4">
+                  <p>Sync jobs, parts, and resources in a single request. Skips unchanged records automatically.</p>
+                  <pre className="bg-black/30 p-3 rounded-lg text-xs font-mono overflow-x-auto">
+{`POST /api-erp-sync/sync
+{
+  "jobs": [
+    {
+      "external_id": "SO-12345",
+      "external_source": "SAP",
+      "job_number": "JOB-2024-001",
+      "customer_name": "Acme Corp",
+      "due_date": "2024-12-31"
+    }
+  ],
+  "parts": [
+    {
+      "external_id": "SO-12345-10",
+      "external_source": "SAP",
+      "job_external_id": "SO-12345",
+      "part_number": "BRACKET-A",
+      "material": "Steel 1018",
+      "quantity": 25
+    }
+  ],
+  "options": {
+    "skip_unchanged": true,
+    "continue_on_error": true
+  }
+}`}
+                  </pre>
+                  <p className="font-medium text-foreground text-sm mt-4 mb-2">Response includes detailed results:</p>
+                  <pre className="bg-black/30 p-3 rounded-lg text-xs font-mono overflow-x-auto">
+{`{
+  "summary": {
+    "total_created": 1, "total_updated": 0,
+    "total_skipped": 0, "total_errors": 0,
+    "duration_ms": 245
+  },
+  "entities": {
+    "jobs": { "created": 1, "results": [...] },
+    "parts": { "created": 1, "results": [...] }
+  }
+}`}
+                  </pre>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="unified-3" className="border border-primary/20 rounded-lg px-4 bg-primary/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-primary" />
+                    Sync Status & History
+                    <Badge variant="secondary" className="ml-2 text-xs">New</Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground space-y-4">
+                  <p>View sync history and statistics for auditing and troubleshooting.</p>
+                  <pre className="bg-black/30 p-3 rounded-lg text-xs font-mono overflow-x-auto">
+{`GET /api-erp-sync/status?entity_type=jobs&limit=10`}
+                  </pre>
+                  <p className="font-medium text-foreground text-sm mt-4 mb-2">Response includes stats and history:</p>
+                  <pre className="bg-black/30 p-3 rounded-lg text-xs font-mono overflow-x-auto">
+{`{
+  "stats": {
+    "total_syncs": 15,
+    "successful": 14,
+    "failed": 1,
+    "total_created": 150,
+    "total_updated": 45
+  },
+  "history": [
+    {
+      "source": "api_erp_sync",
+      "entity_type": "jobs",
+      "status": "completed",
+      "created_count": 10,
+      "completed_at": "2024-12-06T10:30:00Z"
+    }
+  ]
+}`}
+                  </pre>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
+            <h3 className="text-lg font-semibold mb-3">Per-Entity Sync Endpoints</h3>
+            <Accordion type="single" collapsible className="space-y-2 mb-8">
               <AccordionItem value="sync-1" className="border border-white/10 rounded-lg px-4 bg-white/5">
                 <AccordionTrigger className="font-semibold hover:no-underline">
                   <div className="flex items-center gap-2">
@@ -825,6 +981,11 @@ Effective Time = Total Time - Pause Time`}
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
+                  <Alert className="mb-4 bg-primary/10 border-primary/30">
+                    <AlertDescription className="text-xs">
+                      <strong>Tip:</strong> Use <code className="bg-black/30 px-1 rounded">/api-erp-sync</code> for multi-entity sync with change detection. Use per-entity endpoints below for simpler single-entity operations.
+                    </AlertDescription>
+                  </Alert>
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-left border-b border-white/10">
@@ -834,6 +995,10 @@ Effective Time = Total Time - Pause Time`}
                       </tr>
                     </thead>
                     <tbody className="font-mono text-xs">
+                      <tr className="border-b border-primary/20 bg-primary/5">
+                        <td className="py-2 font-semibold">All (Unified)</td>
+                        <td colSpan={2}><code>POST /api-erp-sync/sync</code> <span className="text-primary">(Recommended)</span></td>
+                      </tr>
                       <tr className="border-b border-white/5">
                         <td className="py-2">Jobs</td>
                         <td><code>PUT /api-jobs/sync</code></td>

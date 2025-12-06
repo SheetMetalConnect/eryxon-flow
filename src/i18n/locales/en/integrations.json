@@ -52,6 +52,59 @@
     "warningMessage": "Copy this key now. You won't be able to see it again.",
     "createdAt": "Created At"
   },
+  "erpSync": {
+    "title": "ERP Sync",
+    "description": "Sync data between Eryxon MES and your external ERP system",
+    "unifiedEndpoint": "Unified ERP Sync",
+    "unifiedEndpointDesc": "Optimized bulk sync with change detection",
+    "previewChanges": "Preview Changes",
+    "previewChangesDesc": "Check what would change without making modifications",
+    "executeSync": "Execute Sync",
+    "executeSyncDesc": "Sync jobs, parts, and resources in a single request",
+    "syncHistory": "Sync History",
+    "syncHistoryDesc": "View sync history and statistics",
+    "diffEndpoint": "POST /api-erp-sync/diff",
+    "syncEndpoint": "POST /api-erp-sync/sync",
+    "statusEndpoint": "GET /api-erp-sync/status",
+    "features": {
+      "changeDetection": "Change Detection",
+      "changeDetectionDesc": "Skip unchanged records via sync_hash comparison",
+      "batchOperations": "Batch Operations",
+      "batchOperationsDesc": "Sync multiple entities in a single request",
+      "webhookEvents": "Webhook Events",
+      "webhookEventsDesc": "Automatic webhook dispatch on sync completion",
+      "detailedResults": "Detailed Results",
+      "detailedResultsDesc": "Per-record status with error details"
+    },
+    "status": {
+      "create": "Will Create",
+      "update": "Will Update",
+      "unchanged": "Unchanged",
+      "error": "Error",
+      "created": "Created",
+      "updated": "Updated",
+      "skipped": "Skipped"
+    },
+    "options": {
+      "skipUnchanged": "Skip Unchanged",
+      "skipUnchangedDesc": "Skip records with unchanged sync_hash",
+      "continueOnError": "Continue on Error",
+      "continueOnErrorDesc": "Continue syncing if an error occurs",
+      "recordHistory": "Record History",
+      "recordHistoryDesc": "Log sync to history table"
+    },
+    "summary": {
+      "totalEntities": "Total Entities",
+      "totalRecords": "Total Records",
+      "toCreate": "To Create",
+      "toUpdate": "To Update",
+      "totalCreated": "Total Created",
+      "totalUpdated": "Total Updated",
+      "totalSkipped": "Total Skipped",
+      "totalErrors": "Total Errors",
+      "durationMs": "Duration (ms)"
+    }
+  },
   "webhooks": {
     "title": "Webhook Configuration",
     "actions": "Actions",
