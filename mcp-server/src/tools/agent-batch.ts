@@ -25,30 +25,26 @@ const tools: Tool[] = [
   {
     name: "batch_update_parts",
     description:
-      "Update multiple parts at once. Scope by customer name, job_id, job_number, or explicit part IDs. Useful for setting bullet cards on all parts of an order.",
+      "Update multiple parts within a SINGLE ORDER (job). Use job_id or job_number to scope. For bullet cards, use prioritize_job instead. DO NOT use customer scope for bullet cards.",
     inputSchema: {
       type: "object",
       properties: {
         scope: {
           type: "object",
-          description: "Define which parts to update (pick one scope method)",
+          description: "Define which parts to update - must specify a job",
           properties: {
-            customer: {
-              type: "string",
-              description: "Update all parts for this customer name",
-            },
             job_id: {
               type: "string",
-              description: "Update all parts in this job (UUID)",
+              description: "Update parts in this job (UUID) - REQUIRED for bullet card updates",
             },
             job_number: {
               type: "string",
-              description: "Update all parts in job with this job_number",
+              description: "Update parts in job with this job_number",
             },
             part_ids: {
               type: "array",
               items: { type: "string" },
-              description: "Explicit list of part IDs to update",
+              description: "Explicit list of part IDs to update (within a job)",
             },
           },
         },
@@ -58,7 +54,7 @@ const tools: Tool[] = [
           properties: {
             is_bullet_card: {
               type: "boolean",
-              description: "QRM bullet card flag - indicates rush/priority",
+              description: "QRM bullet card flag - use prioritize_job tool instead for this",
             },
             status: {
               type: "string",
@@ -77,7 +73,7 @@ const tools: Tool[] = [
         },
         filter: {
           type: "object",
-          description: "Additional filters to narrow scope",
+          description: "Filter which parts within the job to update",
           properties: {
             status: {
               type: "string",
@@ -87,6 +83,10 @@ const tools: Tool[] = [
             exclude_completed: {
               type: "boolean",
               description: "Exclude completed parts (default: true)",
+            },
+            due_before: {
+              type: "string",
+              description: "Only parts from jobs due before this date (YYYY-MM-DD)",
             },
           },
         },
@@ -552,6 +552,152 @@ const tools: Tool[] = [
             start: { type: "string", description: "Start date (YYYY-MM-DD)" },
             end: { type: "string", description: "End date (YYYY-MM-DD)" },
           },
+        },
+      },
+    },
+  },
+
+  // Shipping Planner Tool
+  {
+    name: "plan_shipping",
+    description:
+      "Plan shipping by finding parts due soon, consolidation opportunities by customer, and suggest reschedules. Essential for shipping planners.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        due_within_days: {
+          type: "number",
+          description: "Find parts/jobs due within this many days (default: 7)",
+        },
+        customer: {
+          type: "string",
+          description: "Focus on specific customer",
+        },
+        group_by_customer: {
+          type: "boolean",
+          description: "Group results by customer for consolidation (default: true)",
+        },
+        include_near_complete: {
+          type: "boolean",
+          description: "Include jobs >80% complete that could be expedited (default: true)",
+        },
+        min_completion_for_expedite: {
+          type: "number",
+          description: "Minimum completion % to consider for expediting (default: 80)",
+        },
+        show_consolidation_opportunities: {
+          type: "boolean",
+          description: "Show which jobs could ship together (default: true)",
+        },
+      },
+    },
+  },
+
+  // Find Consolidation Opportunities Tool
+  {
+    name: "find_shipping_consolidation",
+    description:
+      "Find jobs that could be consolidated into the same shipment. Groups by customer, destination, and timing.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        customer: {
+          type: "string",
+          description: "Focus on specific customer",
+        },
+        destination_city: {
+          type: "string",
+          description: "Filter by destination city",
+        },
+        date_range: {
+          type: "object",
+          description: "Due date range to consider",
+          properties: {
+            start: { type: "string", description: "Start date (YYYY-MM-DD)" },
+            end: { type: "string", description: "End date (YYYY-MM-DD)" },
+          },
+        },
+        include_in_progress: {
+          type: "boolean",
+          description: "Include in-progress jobs that might complete soon (default: true)",
+        },
+        max_days_spread: {
+          type: "number",
+          description: "Max days between due dates to consider consolidatable (default: 5)",
+        },
+      },
+    },
+  },
+
+  // Get Parts Due Soon Tool
+  {
+    name: "get_parts_due_soon",
+    description:
+      "Find parts that are due soon, showing completion status and what's blocking them. Critical for planning.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        due_within_days: {
+          type: "number",
+          description: "Parts due within this many days (default: 7)",
+        },
+        customer: {
+          type: "string",
+          description: "Filter by customer",
+        },
+        include_blocking_ops: {
+          type: "boolean",
+          description: "Show which operations are blocking completion (default: true)",
+        },
+        status_filter: {
+          type: "array",
+          items: { type: "string" },
+          description: "Filter by status (default: not_started, in_progress)",
+        },
+        sort_by: {
+          type: "string",
+          enum: ["due_date", "completion_percentage", "customer"],
+          description: "Sort results by (default: due_date)",
+        },
+        limit: {
+          type: "number",
+          description: "Max results (default: 50)",
+        },
+      },
+    },
+  },
+
+  // Suggest Reschedule Tool
+  {
+    name: "suggest_reschedule",
+    description:
+      "Analyze a job/part and suggest reschedule options based on capacity and shipping needs.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        job_id: {
+          type: "string",
+          description: "Job to analyze",
+        },
+        job_number: {
+          type: "string",
+          description: "Job number (alternative to job_id)",
+        },
+        part_id: {
+          type: "string",
+          description: "Specific part to analyze",
+        },
+        target_date: {
+          type: "string",
+          description: "Desired completion date (YYYY-MM-DD)",
+        },
+        consider_capacity: {
+          type: "boolean",
+          description: "Check cell capacity when suggesting (default: true)",
+        },
+        consolidate_with_customer: {
+          type: "boolean",
+          description: "Look for other customer jobs to consolidate (default: true)",
         },
       },
     },
@@ -1846,6 +1992,604 @@ const getCellCapacity: ToolHandler = async (args, supabase) => {
   }
 };
 
+/**
+ * Plan Shipping Handler
+ * Find parts due soon, consolidation opportunities, and suggest actions
+ */
+const planShipping: ToolHandler = async (args, supabase) => {
+  try {
+    const {
+      due_within_days,
+      customer,
+      group_by_customer,
+      include_near_complete,
+      min_completion_for_expedite,
+      show_consolidation_opportunities,
+    } = args as {
+      due_within_days?: number;
+      customer?: string;
+      group_by_customer?: boolean;
+      include_near_complete?: boolean;
+      min_completion_for_expedite?: number;
+      show_consolidation_opportunities?: boolean;
+    };
+
+    const days = due_within_days ?? 7;
+    const minCompletion = min_completion_for_expedite ?? 80;
+    const shouldGroupByCustomer = group_by_customer ?? true;
+    const shouldIncludeNearComplete = include_near_complete ?? true;
+    const shouldShowConsolidation = show_consolidation_opportunities ?? true;
+
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() + days);
+    const cutoffStr = cutoffDate.toISOString().split("T")[0];
+
+    // Fetch jobs with parts and due dates
+    let query = supabase
+      .from("jobs")
+      .select(`
+        id,
+        job_number,
+        customer,
+        due_date,
+        status,
+        delivery_city,
+        delivery_address,
+        parts (
+          id,
+          part_number,
+          status
+        )
+      `)
+      .is("deleted_at", null)
+      .lte("due_date", cutoffStr)
+      .order("due_date");
+
+    if (customer) {
+      query = query.ilike("customer", `%${customer}%`);
+    }
+
+    const { data: jobs, error } = await query;
+    if (error) throw error;
+
+    // Enrich with completion data
+    const enrichedJobs = (jobs || []).map((job: any) => {
+      const totalParts = job.parts?.length || 0;
+      const completedParts = job.parts?.filter((p: any) => p.status === "completed").length || 0;
+      const completion = totalParts > 0 ? Math.round((completedParts / totalParts) * 100) : 0;
+      return {
+        id: job.id,
+        job_number: job.job_number,
+        customer: job.customer,
+        due_date: job.due_date,
+        status: job.status,
+        delivery_city: job.delivery_city,
+        completion_percentage: completion,
+        total_parts: totalParts,
+        completed_parts: completedParts,
+        ready_to_ship: completion === 100,
+        can_expedite: shouldIncludeNearComplete && completion >= minCompletion && completion < 100,
+      };
+    });
+
+    // Separate into categories
+    const readyToShip = enrichedJobs.filter((j: any) => j.ready_to_ship);
+    const canExpedite = enrichedJobs.filter((j: any) => j.can_expedite);
+    const notReady = enrichedJobs.filter((j: any) => !j.ready_to_ship && !j.can_expedite);
+
+    // Group by customer for consolidation
+    let consolidationGroups: any[] = [];
+    if (shouldShowConsolidation && shouldGroupByCustomer) {
+      const customerMap = new Map<string, any[]>();
+      for (const job of [...readyToShip, ...canExpedite]) {
+        const key = job.customer?.toLowerCase() || "unknown";
+        const existing = customerMap.get(key) || [];
+        existing.push(job);
+        customerMap.set(key, existing);
+      }
+
+      consolidationGroups = Array.from(customerMap.entries())
+        .filter(([_, jobs]) => jobs.length > 1)
+        .map(([customerName, customerJobs]) => ({
+          customer: customerName,
+          jobs_count: customerJobs.length,
+          all_ready: customerJobs.every((j: any) => j.ready_to_ship),
+          jobs: customerJobs.map((j: any) => ({
+            job_number: j.job_number,
+            due_date: j.due_date,
+            completion: j.completion_percentage,
+            ready: j.ready_to_ship,
+          })),
+          recommendation: customerJobs.every((j: any) => j.ready_to_ship)
+            ? "Ship together now"
+            : `Wait for ${customerJobs.filter((j: any) => !j.ready_to_ship).length} job(s) to complete for consolidation`,
+        }));
+    }
+
+    return jsonResponse(
+      {
+        summary: {
+          due_within_days: days,
+          total_jobs: enrichedJobs.length,
+          ready_to_ship: readyToShip.length,
+          can_expedite: canExpedite.length,
+          not_ready: notReady.length,
+          consolidation_opportunities: consolidationGroups.length,
+        },
+        ready_to_ship: readyToShip,
+        can_expedite: canExpedite,
+        not_ready: notReady,
+        consolidation_opportunities: consolidationGroups,
+      },
+      `Found ${readyToShip.length} ready, ${canExpedite.length} can expedite, ${consolidationGroups.length} consolidation opportunities`,
+    );
+  } catch (error) {
+    return errorResponse(error);
+  }
+};
+
+/**
+ * Find Shipping Consolidation Handler
+ * Group jobs that could ship together by customer/destination
+ */
+const findShippingConsolidation: ToolHandler = async (args, supabase) => {
+  try {
+    const { customer, destination_city, date_range, include_in_progress, max_days_spread } = args as {
+      customer?: string;
+      destination_city?: string;
+      date_range?: { start?: string; end?: string };
+      include_in_progress?: boolean;
+      max_days_spread?: number;
+    };
+
+    const shouldIncludeInProgress = include_in_progress ?? true;
+    const maxSpread = max_days_spread ?? 5;
+
+    // Build query
+    let query = supabase
+      .from("jobs")
+      .select(`
+        id,
+        job_number,
+        customer,
+        due_date,
+        status,
+        delivery_city,
+        delivery_address,
+        total_weight_kg,
+        parts (id, status)
+      `)
+      .is("deleted_at", null)
+      .order("customer")
+      .order("due_date");
+
+    if (customer) {
+      query = query.ilike("customer", `%${customer}%`);
+    }
+    if (destination_city) {
+      query = query.ilike("delivery_city", `%${destination_city}%`);
+    }
+    if (date_range?.start) {
+      query = query.gte("due_date", date_range.start);
+    }
+    if (date_range?.end) {
+      query = query.lte("due_date", date_range.end);
+    }
+
+    const { data: jobs, error } = await query;
+    if (error) throw error;
+
+    // Enrich with completion
+    const enrichedJobs = (jobs || []).map((job: any) => {
+      const totalParts = job.parts?.length || 0;
+      const completedParts = job.parts?.filter((p: any) => p.status === "completed").length || 0;
+      const completion = totalParts > 0 ? Math.round((completedParts / totalParts) * 100) : 0;
+      return {
+        id: job.id,
+        job_number: job.job_number,
+        customer: job.customer,
+        due_date: job.due_date,
+        delivery_city: job.delivery_city,
+        status: job.status,
+        completion_percentage: completion,
+        total_weight_kg: job.total_weight_kg,
+        is_ready: completion === 100,
+        is_in_progress: job.status === "in_progress" && completion < 100,
+      };
+    });
+
+    // Filter based on status
+    const eligibleJobs = enrichedJobs.filter((j: any) => {
+      if (j.is_ready) return true;
+      if (shouldIncludeInProgress && j.is_in_progress) return true;
+      return false;
+    });
+
+    // Group by customer + city
+    const groups = new Map<string, any[]>();
+    for (const job of eligibleJobs) {
+      const key = `${(job.customer || "").toLowerCase()}|${(job.delivery_city || "").toLowerCase()}`;
+      const existing = groups.get(key) || [];
+      existing.push(job);
+      groups.set(key, existing);
+    }
+
+    // Build consolidation recommendations
+    const consolidations = Array.from(groups.entries())
+      .filter(([_, groupJobs]) => groupJobs.length > 1)
+      .map(([key, groupJobs]) => {
+        const [customerKey, cityKey] = key.split("|");
+        const dueDates = groupJobs.map((j: any) => new Date(j.due_date).getTime());
+        const minDate = new Date(Math.min(...dueDates));
+        const maxDate = new Date(Math.max(...dueDates));
+        const daySpread = Math.ceil((maxDate.getTime() - minDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        const allReady = groupJobs.every((j: any) => j.is_ready);
+        const totalWeight = groupJobs.reduce((sum: number, j: any) => sum + (j.total_weight_kg || 0), 0);
+
+        return {
+          customer: groupJobs[0].customer,
+          delivery_city: groupJobs[0].delivery_city || "Unknown",
+          jobs_count: groupJobs.length,
+          date_range: {
+            earliest: minDate.toISOString().split("T")[0],
+            latest: maxDate.toISOString().split("T")[0],
+            days_spread: daySpread,
+          },
+          all_ready: allReady,
+          ready_count: groupJobs.filter((j: any) => j.is_ready).length,
+          total_weight_kg: totalWeight,
+          consolidatable: daySpread <= maxSpread,
+          jobs: groupJobs.map((j: any) => ({
+            job_number: j.job_number,
+            due_date: j.due_date,
+            completion: j.completion_percentage,
+            ready: j.is_ready,
+          })),
+          recommendation: allReady
+            ? `Ship all ${groupJobs.length} jobs together to ${groupJobs[0].delivery_city || "destination"}`
+            : daySpread <= maxSpread
+              ? `Wait for ${groupJobs.filter((j: any) => !j.is_ready).length} job(s) to complete - within ${maxSpread}-day window`
+              : `Date spread too wide (${daySpread} days) - consider shipping in batches`,
+        };
+      })
+      .sort((a, b) => b.jobs_count - a.jobs_count);
+
+    return jsonResponse(
+      {
+        total_eligible_jobs: eligibleJobs.length,
+        consolidation_groups: consolidations.length,
+        groups: consolidations,
+        single_job_shipments: eligibleJobs.length - consolidations.reduce((sum, g) => sum + g.jobs_count, 0),
+      },
+      `Found ${consolidations.length} consolidation opportunities across ${eligibleJobs.length} jobs`,
+    );
+  } catch (error) {
+    return errorResponse(error);
+  }
+};
+
+/**
+ * Get Parts Due Soon Handler
+ * Find parts due soon with completion status and blocking operations
+ */
+const getPartsDueSoon: ToolHandler = async (args, supabase) => {
+  try {
+    const { due_within_days, customer, include_blocking_ops, status_filter, sort_by, limit } = args as {
+      due_within_days?: number;
+      customer?: string;
+      include_blocking_ops?: boolean;
+      status_filter?: string[];
+      sort_by?: string;
+      limit?: number;
+    };
+
+    const days = due_within_days ?? 7;
+    const shouldIncludeBlocking = include_blocking_ops ?? true;
+    const statusesToInclude = status_filter || ["not_started", "in_progress"];
+    const maxResults = limit ?? 50;
+
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() + days);
+    const cutoffStr = cutoffDate.toISOString().split("T")[0];
+
+    // Fetch parts with job due dates
+    let query = supabase
+      .from("parts")
+      .select(`
+        id,
+        part_number,
+        quantity,
+        status,
+        is_bullet_card,
+        jobs!inner (
+          id,
+          job_number,
+          customer,
+          due_date,
+          status
+        ),
+        operations (
+          id,
+          operation_name,
+          sequence,
+          status,
+          cell_id,
+          estimated_time
+        )
+      `)
+      .is("deleted_at", null)
+      .in("status", statusesToInclude)
+      .lte("jobs.due_date", cutoffStr)
+      .limit(maxResults);
+
+    if (customer) {
+      query = query.ilike("jobs.customer", `%${customer}%`);
+    }
+
+    const { data: parts, error } = await query;
+    if (error) throw error;
+
+    // Enrich with blocking info
+    const enrichedParts = (parts || []).map((part: any) => {
+      const ops = part.operations || [];
+      const totalOps = ops.length;
+      const completedOps = ops.filter((o: any) => o.status === "completed").length;
+      const inProgressOps = ops.filter((o: any) => o.status === "in_progress");
+      const pendingOps = ops.filter((o: any) => o.status === "not_started" || o.status === "pending");
+
+      // Find next blocking operation (first non-completed in sequence)
+      const sortedOps = [...ops].sort((a: any, b: any) => (a.sequence || 0) - (b.sequence || 0));
+      const nextBlockingOp = sortedOps.find((o: any) => o.status !== "completed");
+
+      const result: any = {
+        id: part.id,
+        part_number: part.part_number,
+        quantity: part.quantity,
+        status: part.status,
+        is_bullet_card: part.is_bullet_card,
+        job_number: part.jobs.job_number,
+        customer: part.jobs.customer,
+        due_date: part.jobs.due_date,
+        days_until_due: Math.ceil(
+          (new Date(part.jobs.due_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+        ),
+        progress: {
+          total_operations: totalOps,
+          completed: completedOps,
+          in_progress: inProgressOps.length,
+          pending: pendingOps.length,
+          percentage: totalOps > 0 ? Math.round((completedOps / totalOps) * 100) : 0,
+        },
+      };
+
+      if (shouldIncludeBlocking && nextBlockingOp) {
+        result.blocking_operation = {
+          id: nextBlockingOp.id,
+          name: nextBlockingOp.operation_name,
+          sequence: nextBlockingOp.sequence,
+          status: nextBlockingOp.status,
+          estimated_time: nextBlockingOp.estimated_time,
+        };
+      }
+
+      return result;
+    });
+
+    // Sort results
+    const sortedParts = [...enrichedParts].sort((a, b) => {
+      switch (sort_by) {
+        case "completion_percentage":
+          return b.progress.percentage - a.progress.percentage;
+        case "customer":
+          return (a.customer || "").localeCompare(b.customer || "");
+        case "due_date":
+        default:
+          return a.days_until_due - b.days_until_due;
+      }
+    });
+
+    // Summary
+    const overdue = sortedParts.filter((p) => p.days_until_due < 0);
+    const dueSoon = sortedParts.filter((p) => p.days_until_due >= 0 && p.days_until_due <= 3);
+    const bulletCards = sortedParts.filter((p) => p.is_bullet_card);
+
+    return jsonResponse(
+      {
+        summary: {
+          total_parts: sortedParts.length,
+          overdue: overdue.length,
+          due_within_3_days: dueSoon.length,
+          bullet_cards: bulletCards.length,
+          due_within_days: days,
+        },
+        parts: sortedParts,
+        alerts: {
+          overdue_parts: overdue.map((p) => ({
+            part_number: p.part_number,
+            job_number: p.job_number,
+            days_overdue: Math.abs(p.days_until_due),
+            completion: p.progress.percentage,
+          })),
+        },
+      },
+      `Found ${sortedParts.length} parts due within ${days} days (${overdue.length} overdue)`,
+    );
+  } catch (error) {
+    return errorResponse(error);
+  }
+};
+
+/**
+ * Suggest Reschedule Handler
+ * Analyze job/part and suggest reschedule options based on capacity
+ */
+const suggestReschedule: ToolHandler = async (args, supabase) => {
+  try {
+    const { job_id, job_number, part_id, target_date, consider_capacity, consolidate_with_customer } = args as {
+      job_id?: string;
+      job_number?: string;
+      part_id?: string;
+      target_date?: string;
+      consider_capacity?: boolean;
+      consolidate_with_customer?: boolean;
+    };
+
+    const shouldConsiderCapacity = consider_capacity ?? true;
+    const shouldConsolidate = consolidate_with_customer ?? true;
+
+    // Find job
+    let job: any = null;
+    if (job_id || job_number) {
+      let jobQuery = supabase.from("jobs").select("*, parts(id, part_number, status)").is("deleted_at", null);
+      if (job_id) {
+        jobQuery = jobQuery.eq("id", job_id);
+      } else {
+        jobQuery = jobQuery.eq("job_number", job_number);
+      }
+      const { data, error } = await jobQuery.single();
+      if (error) throw error;
+      job = data;
+    } else if (part_id) {
+      const { data: part, error: partError } = await supabase
+        .from("parts")
+        .select("*, jobs(*)")
+        .eq("id", part_id)
+        .single();
+      if (partError) throw partError;
+      job = part.jobs;
+    }
+
+    if (!job) {
+      return errorResponse(new Error("Must specify job_id, job_number, or part_id"));
+    }
+
+    // Get operations for capacity analysis
+    const partIds = part_id ? [part_id] : (job.parts || []).map((p: any) => p.id);
+    const { data: operations } = await supabase
+      .from("operations")
+      .select("id, cell_id, status, estimated_time, planned_start, planned_end")
+      .in("part_id", partIds)
+      .neq("status", "completed")
+      .is("deleted_at", null);
+
+    // Analyze capacity if requested
+    let capacityAnalysis: any = null;
+    if (shouldConsiderCapacity && operations && operations.length > 0) {
+      const cellIds = [...new Set(operations.map((o: any) => o.cell_id).filter(Boolean))];
+
+      if (cellIds.length > 0) {
+        const { data: cells } = await supabase.from("cells").select("id, name, wip_limit").in("id", cellIds);
+
+        // Get current WIP for each cell
+        const { data: wipCounts } = await supabase
+          .from("operations")
+          .select("cell_id")
+          .in("cell_id", cellIds)
+          .in("status", ["in_progress", "not_started"]);
+
+        const wipByCell = new Map<string, number>();
+        for (const op of wipCounts || []) {
+          wipByCell.set(op.cell_id, (wipByCell.get(op.cell_id) || 0) + 1);
+        }
+
+        capacityAnalysis = (cells || []).map((cell: any) => ({
+          cell_name: cell.name,
+          wip_limit: cell.wip_limit,
+          current_wip: wipByCell.get(cell.id) || 0,
+          available_capacity: cell.wip_limit ? cell.wip_limit - (wipByCell.get(cell.id) || 0) : null,
+          bottleneck: cell.wip_limit && (wipByCell.get(cell.id) || 0) >= cell.wip_limit,
+        }));
+      }
+    }
+
+    // Find consolidation opportunities
+    let consolidationOptions: any[] = [];
+    if (shouldConsolidate && job.customer) {
+      const { data: customerJobs } = await supabase
+        .from("jobs")
+        .select("id, job_number, due_date, status")
+        .ilike("customer", job.customer)
+        .neq("id", job.id)
+        .is("deleted_at", null)
+        .neq("status", "completed")
+        .order("due_date")
+        .limit(5);
+
+      consolidationOptions = (customerJobs || []).map((cj: any) => ({
+        job_number: cj.job_number,
+        due_date: cj.due_date,
+        status: cj.status,
+        days_difference: Math.ceil(
+          (new Date(cj.due_date).getTime() - new Date(job.due_date).getTime()) / (1000 * 60 * 60 * 24),
+        ),
+      }));
+    }
+
+    // Generate suggestions
+    const suggestions: any[] = [];
+    const currentDue = new Date(job.due_date);
+    const targetDt = target_date ? new Date(target_date) : null;
+
+    // Check if there are bottlenecks
+    const bottlenecks = capacityAnalysis?.filter((c: any) => c.bottleneck) || [];
+    if (bottlenecks.length > 0) {
+      suggestions.push({
+        type: "capacity_constraint",
+        message: `${bottlenecks.length} cell(s) at capacity: ${bottlenecks.map((b: any) => b.cell_name).join(", ")}`,
+        recommendation: "Consider shifting to lower-demand time slots or prioritizing this job",
+      });
+    }
+
+    // Check for consolidation
+    const nearbyJobs = consolidationOptions.filter((cj: any) => Math.abs(cj.days_difference) <= 5);
+    if (nearbyJobs.length > 0) {
+      suggestions.push({
+        type: "consolidation_opportunity",
+        message: `${nearbyJobs.length} other ${job.customer} job(s) due within 5 days`,
+        recommendation: `Consider aligning with ${nearbyJobs[0].job_number} (due ${nearbyJobs[0].due_date})`,
+        nearby_jobs: nearbyJobs,
+      });
+    }
+
+    // Target date feasibility
+    if (targetDt) {
+      const daysDiff = Math.ceil((targetDt.getTime() - currentDue.getTime()) / (1000 * 60 * 60 * 24));
+      const remainingOps = operations?.length || 0;
+      const totalEstTime = operations?.reduce((sum: number, o: any) => sum + (o.estimated_time || 0), 0) || 0;
+
+      suggestions.push({
+        type: "target_date_analysis",
+        current_due: job.due_date,
+        target_date: target_date,
+        days_change: daysDiff,
+        remaining_operations: remainingOps,
+        estimated_hours_remaining: totalEstTime,
+        feasibility: daysDiff > 0 ? "likely_feasible" : totalEstTime < Math.abs(daysDiff) * 8 ? "challenging" : "unlikely",
+      });
+    }
+
+    return jsonResponse(
+      {
+        job: {
+          id: job.id,
+          job_number: job.job_number,
+          customer: job.customer,
+          current_due_date: job.due_date,
+          status: job.status,
+        },
+        remaining_operations: operations?.length || 0,
+        capacity_analysis: capacityAnalysis,
+        consolidation_options: consolidationOptions,
+        suggestions,
+      },
+      `Reschedule analysis for job ${job.job_number}`,
+    );
+  } catch (error) {
+    return errorResponse(error);
+  }
+};
+
 // ============================================================================
 // Module Export
 // ============================================================================
@@ -1863,6 +2607,10 @@ const handlers = new Map<string, ToolHandler>([
   ["manage_shipment", manageShipment],
   ["get_jobs_ready_for_shipping", getJobsReadyForShipping],
   ["get_cell_capacity", getCellCapacity],
+  ["plan_shipping", planShipping],
+  ["find_shipping_consolidation", findShippingConsolidation],
+  ["get_parts_due_soon", getPartsDueSoon],
+  ["suggest_reschedule", suggestReschedule],
 ]);
 
 export const agentBatchModule: ToolModule = {
