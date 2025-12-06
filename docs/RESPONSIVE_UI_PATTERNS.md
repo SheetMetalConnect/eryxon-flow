@@ -2,13 +2,15 @@
 
 This document describes the responsive design patterns and SaaS-style UI conventions used throughout Eryxon MES.
 
+The app is designed to work **equally well on all screen sizes** - desktop, tablet, and mobile. It is not mobile-first or desktop-first, but rather **responsive and adaptive** to provide the best experience on each device.
+
 ---
 
 ## Table of Contents
 
 - [SaaS-Style Modal Patterns](#saas-style-modal-patterns)
 - [Responsive Data Tables](#responsive-data-tables)
-- [Mobile-First Design](#mobile-first-design)
+- [Adaptive Layouts](#adaptive-layouts)
 - [Component Reference](#component-reference)
 
 ---
@@ -192,12 +194,19 @@ Pass column visibility to the DataTable component:
 
 ---
 
-## Mobile-First Design
+## Adaptive Layouts
+
+The UI adapts to provide optimal experiences across all device sizes.
 
 ### Modal Behavior
 
-- **Mobile**: Full-screen bottom sheet with slide-up animation
-- **Desktop**: Centered modal with zoom animation
+Modals adapt their presentation based on available screen space:
+
+| Screen Size | Behavior |
+|-------------|----------|
+| Mobile (<640px) | Full-screen or bottom sheet style |
+| Tablet (640-1024px) | Centered modal, medium width |
+| Desktop (>1024px) | Centered modal, larger width |
 
 ```tsx
 <DialogContent className="
@@ -211,7 +220,7 @@ Pass column visibility to the DataTable component:
 
 ### File Viewer Dialog
 
-Full-screen on mobile, modal on desktop:
+Adapts to screen size for optimal viewing:
 
 ```tsx
 <DialogContent className="
@@ -226,9 +235,9 @@ Full-screen on mobile, modal on desktop:
 ">
 ```
 
-### Responsive Padding
+### Responsive Spacing
 
-Use responsive padding on containers:
+Spacing adjusts based on available screen real estate:
 
 ```tsx
 <div className="glass-card p-2 sm:p-4">
@@ -236,16 +245,9 @@ Use responsive padding on containers:
 </div>
 ```
 
-### Touch Targets
+### Touch-Friendly Targets
 
-Minimum touch target size of 44px for mobile:
-
-```css
-.touch-target {
-  min-height: 44px;
-  min-width: 44px;
-}
-```
+Interactive elements maintain adequate touch targets (44px minimum) on all devices for accessibility and usability.
 
 ---
 
@@ -279,12 +281,13 @@ Minimum touch target size of 44px for mobile:
 
 ## Design Principles
 
-1. **Scannability** - Users find information quickly via organized tabs and stat grids
-2. **Focus** - One context at a time via tabbed interfaces
-3. **Density** - More data in less space without feeling cramped
-4. **Consistency** - Same patterns across all modals and pages
-5. **Progressive Disclosure** - Show essential data first, details on demand
-6. **100% Data Coverage** - All data accessible, just optimized for display size
+1. **Equal Device Support** - Works equally well on desktop, tablet, and mobile
+2. **Scannability** - Users find information quickly via organized tabs and stat grids
+3. **Focus** - One context at a time via tabbed interfaces
+4. **Density** - Appropriate data density for each screen size
+5. **Consistency** - Same patterns across all modals and pages
+6. **Progressive Disclosure** - Show essential data first, details on demand
+7. **100% Data Coverage** - All data accessible on every device, presentation adapts to screen size
 
 ---
 
