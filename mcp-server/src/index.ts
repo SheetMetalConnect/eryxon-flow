@@ -11,7 +11,7 @@
  * - types/ - Shared TypeScript types
  * - utils/ - Utility functions (supabase client, response helpers)
  *
- * @version 2.1.0
+ * @version 2.2.0
  * @see https://github.com/SheetMetalConnect/eryxon-flow/tree/main/mcp-server
  */
 
@@ -37,14 +37,14 @@ const toolRegistry = createConfiguredRegistry();
 
 // Log startup info
 const stats = toolRegistry.getStats();
-console.error(`Eryxon Flow MCP Server v2.1.0`);
-console.error(`Loaded ${stats.totalTools} tools from 8 modules`);
+console.error(`Eryxon Flow MCP Server v2.2.0`);
+console.error(`Loaded ${stats.totalTools} tools from 9 modules`);
 
 // Create MCP server instance
 const server = new Server(
   {
     name: "eryxon-flow-mcp",
-    version: "2.1.0",
+    version: "2.2.0",
   },
   {
     capabilities: {
