@@ -1,7 +1,7 @@
 import { OperationWithDetails } from "@/lib/database";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, User, Package, AlertTriangle } from "lucide-react";
+import { Clock, User, Package, AlertTriangle, UserCheck } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,9 +14,19 @@ interface OperationCardProps {
   operation: OperationWithDetails;
   onUpdate: () => void;
   compact?: boolean;
+  /** Whether this operation's part is assigned to the active shop floor operator */
+  assignedToMe?: boolean;
+  /** Name of the admin who made the assignment */
+  assignedByName?: string;
 }
 
-export default function OperationCard({ operation, onUpdate, compact = false }: OperationCardProps) {
+export default function OperationCard({
+  operation,
+  onUpdate,
+  compact = false,
+  assignedToMe = false,
+  assignedByName,
+}: OperationCardProps) {
   const { t } = useTranslation();
   const [showDetail, setShowDetail] = useState(false);
   const { profile } = useAuth();
@@ -25,7 +35,8 @@ export default function OperationCard({ operation, onUpdate, compact = false }: 
   const dueDate = operation.part.job.due_date_override || operation.part.job.due_date;
   const remainingTime = operation.estimated_time - (operation.actual_time || 0);
   const isOvertime = remainingTime < 0;
-  const isAssignedToMe = operation.assigned_operator_id === profile?.id;
+  // Check both profile-based assignment AND shop floor operator assignment
+  const isAssignedToMe = operation.assigned_operator_id === profile?.id || assignedToMe;
 
   const statusColors = {
     not_started: "bg-status-pending",
@@ -147,8 +158,11 @@ export default function OperationCard({ operation, onUpdate, compact = false }: 
 
         {/* Assignment Badge */}
         {isAssignedToMe && (
-          <Badge variant="secondary" className="text-xs mb-2">
-            {t("operations.assignedToYou")}
+          <Badge variant="secondary" className="text-xs mb-2 flex items-center gap-1 w-fit bg-primary/10 text-primary border-primary/20">
+            <UserCheck className="h-3 w-3" />
+            {assignedByName
+              ? t("operations.assignedByAdmin", { name: assignedByName })
+              : t("operations.assignedToYou")}
           </Badge>
         )}
 

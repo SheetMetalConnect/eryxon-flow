@@ -256,6 +256,7 @@
     "actualTime": "Werkelijke tijd",
     "assignedTo": "Toegewezen aan",
     "assignedToYou": "Aan u toegewezen",
+    "assignedByAdmin": "Toegewezen door {{name}}",
     "notAssigned": "Niet toegewezen",
     "sequence": "Volgorde",
     "startTime": "Starttijd",

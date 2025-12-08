@@ -256,6 +256,7 @@
     "actualTime": "Istzeit",
     "assignedTo": "Zugewiesen an",
     "assignedToYou": "Ihnen zugewiesen",
+    "assignedByAdmin": "Zugewiesen von {{name}}",
     "notAssigned": "Nicht zugewiesen",
     "sequence": "Reihenfolge",
     "startTime": "Startzeit",

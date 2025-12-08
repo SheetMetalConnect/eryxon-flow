@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, UserCheck, X, UserPlus, ArrowRight, Users, Package, UserCog, IdCard, Info } from "lucide-react";
+import { Loader2, UserCheck, X, UserPlus, ArrowRight, Users, Package, UserCog, IdCard } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { PageStatsRow } from "@/components/admin/PageStatsRow";
 import { toast } from "sonner";
@@ -63,7 +63,8 @@ interface ShopFloorOperator {
 interface Assignment {
   id: string;
   part_id: string;
-  operator_id: string;
+  operator_id: string | null;
+  shop_floor_operator_id: string | null;
   created_at: string;
   part: {
     part_number: string;
@@ -73,7 +74,11 @@ interface Assignment {
   };
   operator: {
     full_name: string;
-  };
+  } | null;
+  shop_floor_operator: {
+    full_name: string;
+    employee_id: string;
+  } | null;
   assigned_by_user: {
     full_name: string;
   };
@@ -88,6 +93,7 @@ export default function Assignments() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [selectedPart, setSelectedPart] = useState<string>("");
   const [selectedOperator, setSelectedOperator] = useState<string>("");
+  const [operatorType, setOperatorType] = useState<"shop_floor" | "profile">("shop_floor");
   const [loading, setLoading] = useState(true);
   const [assigning, setAssigning] = useState(false);
   const [createOperatorOpen, setCreateOperatorOpen] = useState(false);
@@ -194,7 +200,7 @@ export default function Assignments() {
         }
       }
 
-      // Load current assignments
+      // Load current assignments (both profile-based and shop floor operator assignments)
       const { data: assignmentsData } = await supabase
         .from("assignments")
         .select(
@@ -202,12 +208,14 @@ export default function Assignments() {
           id,
           part_id,
           operator_id,
+          shop_floor_operator_id,
           created_at,
           part:parts!inner(
             part_number,
             job:jobs!inner(job_number)
           ),
           operator:profiles!assignments_operator_id_fkey(full_name),
+          shop_floor_operator:operators!assignments_shop_floor_operator_id_fkey(full_name, employee_id),
           assigned_by_user:profiles!assignments_assigned_by_fkey(full_name)
         `,
         )
@@ -257,28 +265,44 @@ export default function Assignments() {
       const part = parts.find((p) => p.id === selectedPart);
       if (!part) return;
 
-      // Create assignment
-      const { error: assignError } = await supabase.from("assignments").insert({
+      // Create assignment based on operator type
+      const assignmentData: any = {
         tenant_id: profile.tenant_id,
-        operator_id: selectedOperator,
         part_id: selectedPart,
-        job_id: (part.job as any).id,
+        job_id: (part.job as any)?.id || null,
         assigned_by: profile.id,
         status: "assigned",
-      });
+      };
+
+      if (operatorType === "shop_floor") {
+        assignmentData.shop_floor_operator_id = selectedOperator;
+        assignmentData.operator_id = null;
+      } else {
+        assignmentData.operator_id = selectedOperator;
+        assignmentData.shop_floor_operator_id = null;
+      }
+
+      const { error: assignError } = await supabase.from("assignments").insert(assignmentData);
 
       if (assignError) throw assignError;
 
-      // Update all operations in this part
-      const { error: operationError } = await supabase
-        .from("operations")
-        .update({ assigned_operator_id: selectedOperator })
-        .eq("part_id", selectedPart)
-        .eq("tenant_id", profile.tenant_id);
+      // Only update operations with operator_id if it's a profile-based operator
+      if (operatorType === "profile") {
+        const { error: operationError } = await supabase
+          .from("operations")
+          .update({ assigned_operator_id: selectedOperator })
+          .eq("part_id", selectedPart)
+          .eq("tenant_id", profile.tenant_id);
 
-      if (operationError) throw operationError;
+        if (operationError) throw operationError;
+      }
 
-      toast.success(t("assignments.assignedSuccessfully"));
+      // Get assigned operator name for success message
+      const operatorName = operatorType === "shop_floor"
+        ? shopFloorOperators.find(o => o.id === selectedOperator)?.full_name
+        : operators.find(o => o.id === selectedOperator)?.full_name;
+
+      toast.success(t("assignments.assignedToOperator", { name: operatorName }));
       setSelectedPart("");
       setSelectedOperator("");
       loadData();
@@ -391,9 +415,19 @@ export default function Assignments() {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t("assignments.assignedTo")} />
       ),
-      cell: ({ row }) => (
-        <Badge variant="secondary" className="text-xs">{row.original.operator.full_name}</Badge>
-      ),
+      cell: ({ row }) => {
+        const assignment = row.original;
+        const operatorName = assignment.shop_floor_operator?.full_name || assignment.operator?.full_name || t("common.unknown");
+        const employeeId = assignment.shop_floor_operator?.employee_id;
+        return (
+          <div className="flex flex-col gap-0.5">
+            <Badge variant="secondary" className="text-xs w-fit">{operatorName}</Badge>
+            {employeeId && (
+              <span className="text-xs text-muted-foreground font-mono">{employeeId}</span>
+            )}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "assigned_by_user.full_name",
@@ -532,19 +566,19 @@ export default function Assignments() {
                 <DialogTrigger asChild>
                   <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
                     <UserPlus className="h-3 w-3" />
-                    New
+                    {t("common.new")}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="glass-card max-w-md">
                   <DialogHeader>
-                    <DialogTitle>Create New Operator</DialogTitle>
+                    <DialogTitle>{t("assignments.createOperator")}</DialogTitle>
                     <DialogDescription>
-                      Quickly create an operator with PIN login.
+                      {t("assignments.createOperatorDescription")}
                     </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleCreateOperator} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="op_full_name">Full Name *</Label>
+                      <Label htmlFor="op_full_name">{t("common.fullName")} *</Label>
                       <Input
                         id="op_full_name"
                         value={operatorForm.full_name}
@@ -557,20 +591,20 @@ export default function Assignments() {
 
                     <div className="space-y-2">
                       <Label htmlFor="op_employee_id">
-                        Employee ID{' '}
-                        <span className="text-muted-foreground text-xs">(optional)</span>
+                        {t("assignments.employeeId")}{' '}
+                        <span className="text-muted-foreground text-xs">({t("common.optional")})</span>
                       </Label>
                       <Input
                         id="op_employee_id"
                         value={operatorForm.employee_id}
                         onChange={(e) => setOperatorForm({ ...operatorForm, employee_id: e.target.value })}
-                        placeholder="Auto-generated if empty"
+                        placeholder={t("assignments.autoGenerated")}
                         className="bg-[rgba(17,25,40,0.75)] border-white/10"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="op_pin">PIN (4-6 digits) *</Label>
+                      <Label htmlFor="op_pin">{t("assignments.pinLabel")} *</Label>
                       <Input
                         id="op_pin"
                         type="password"
@@ -583,7 +617,7 @@ export default function Assignments() {
                         className="bg-[rgba(17,25,40,0.75)] border-white/10"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Operators will use Employee ID + PIN to login
+                        {t("assignments.pinDescription")}
                       </p>
                     </div>
 
@@ -591,12 +625,12 @@ export default function Assignments() {
                       {creatingOperator ? (
                         <>
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          Creating...
+                          {t("common.creating")}
                         </>
                       ) : (
                         <>
                           <UserPlus className="h-4 w-4" />
-                          Create Operator
+                          {t("assignments.createOperator")}
                         </>
                       )}
                     </Button>
@@ -606,44 +640,119 @@ export default function Assignments() {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Select value={selectedOperator} onValueChange={setSelectedOperator}>
-              <SelectTrigger className="bg-[rgba(17,25,40,0.75)] border-white/10">
-                <SelectValue placeholder={t("assignments.selectOperator")} />
-              </SelectTrigger>
-              <SelectContent>
-                {operators.length === 0 ? (
-                  <div className="p-2 text-sm text-muted-foreground text-center">
-                    No active operators found
-                  </div>
-                ) : (
-                  operators.map((op) => (
-                    <SelectItem key={op.id} value={op.id}>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{op.full_name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {op._assignmentCount} assigned • {op._activeEntryCount} active
-                        </span>
+            {/* Operator type toggle */}
+            <div className="flex gap-1 p-1 bg-muted/30 rounded-lg">
+              <Button
+                variant={operatorType === "shop_floor" ? "secondary" : "ghost"}
+                size="sm"
+                className="flex-1 h-8 text-xs gap-1"
+                onClick={() => { setOperatorType("shop_floor"); setSelectedOperator(""); }}
+              >
+                <IdCard className="h-3 w-3" />
+                {t("assignments.shopFloor")}
+              </Button>
+              <Button
+                variant={operatorType === "profile" ? "secondary" : "ghost"}
+                size="sm"
+                className="flex-1 h-8 text-xs gap-1"
+                onClick={() => { setOperatorType("profile"); setSelectedOperator(""); }}
+              >
+                <UserCog className="h-3 w-3" />
+                {t("assignments.userAccount")}
+              </Button>
+            </div>
+
+            {/* Shop Floor Operators dropdown */}
+            {operatorType === "shop_floor" && (
+              <>
+                <Select value={selectedOperator} onValueChange={setSelectedOperator}>
+                  <SelectTrigger className="bg-[rgba(17,25,40,0.75)] border-white/10">
+                    <SelectValue placeholder={t("assignments.selectShopFloorOperator")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {shopFloorOperators.length === 0 ? (
+                      <div className="p-2 text-sm text-muted-foreground text-center">
+                        {t("assignments.noShopFloorOperators")}
                       </div>
-                    </SelectItem>
-                  ))
+                    ) : (
+                      shopFloorOperators.map((op) => (
+                        <SelectItem key={op.id} value={op.id}>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{op.full_name}</span>
+                            <span className="text-xs text-muted-foreground font-mono">
+                              {op.employee_id}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                {selectedOperator && operatorType === "shop_floor" && (
+                  <div className="p-3 border rounded-lg bg-muted/10 space-y-1">
+                    {(() => {
+                      const sfOp = shopFloorOperators.find(o => o.id === selectedOperator);
+                      return sfOp ? (
+                        <>
+                          <div className="text-sm font-medium">{sfOp.full_name}</div>
+                          <div className="text-xs text-muted-foreground font-mono">
+                            {t("assignments.employeeId")}: {sfOp.employee_id}
+                          </div>
+                          <Badge variant="outline" className="text-xs mt-1 bg-amber-500/10 text-amber-500 border-amber-500/30">
+                            <IdCard className="h-3 w-3 mr-1" />
+                            {t("assignments.pinBased")}
+                          </Badge>
+                        </>
+                      ) : null;
+                    })()}
+                  </div>
                 )}
-              </SelectContent>
-            </Select>
-            {selectedOperatorData && (
-              <div className="p-3 border rounded-lg bg-muted/10 space-y-1">
-                <div className="text-sm font-medium">{selectedOperatorData.full_name}</div>
-                <div className="text-xs text-muted-foreground">
-                  ID: {selectedOperatorData.username}
-                </div>
-                <div className="flex gap-2 mt-2">
-                  <Badge variant="outline" className="text-xs">
-                    {selectedOperatorData._assignmentCount} {t("assignments.assigned")}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    {selectedOperatorData._activeEntryCount} {t("assignments.active")}
-                  </Badge>
-                </div>
-              </div>
+              </>
+            )}
+
+            {/* Profile-based operators dropdown */}
+            {operatorType === "profile" && (
+              <>
+                <Select value={selectedOperator} onValueChange={setSelectedOperator}>
+                  <SelectTrigger className="bg-[rgba(17,25,40,0.75)] border-white/10">
+                    <SelectValue placeholder={t("assignments.selectOperator")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {operators.length === 0 ? (
+                      <div className="p-2 text-sm text-muted-foreground text-center">
+                        {t("assignments.noActiveOperators")}
+                      </div>
+                    ) : (
+                      operators.map((op) => (
+                        <SelectItem key={op.id} value={op.id}>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{op.full_name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {op._assignmentCount} {t("assignments.assigned")} • {op._activeEntryCount} {t("assignments.active")}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                {selectedOperatorData && operatorType === "profile" && (
+                  <div className="p-3 border rounded-lg bg-muted/10 space-y-1">
+                    <div className="text-sm font-medium">{selectedOperatorData.full_name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      ID: {selectedOperatorData.username}
+                    </div>
+                    <div className="flex gap-2 mt-2">
+                      <Badge variant="outline" className="text-xs">
+                        {selectedOperatorData._assignmentCount} {t("assignments.assigned")}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {selectedOperatorData._activeEntryCount} {t("assignments.active")}
+                      </Badge>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
@@ -710,40 +819,6 @@ export default function Assignments() {
         </CardContent>
       </Card>
 
-      {/* Shop Floor Operators Info */}
-      {shopFloorOperators.length > 0 && (
-        <Card className="glass-card border-amber-500/20">
-          <CardHeader>
-            <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
-              <IdCard className="h-5 w-5 text-amber-500" />
-              {t("assignments.shopFloorOperators", "Shop Floor Operators")} ({shopFloorOperators.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-start gap-3 p-3 bg-muted/20 rounded-lg mb-4">
-              <Info className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-muted-foreground">
-                <p>
-                  {t("assignments.shopFloorInfo", "Shop floor operators use PIN-based login at shared terminals. They don't need individual job assignments - they can pick up any available work from the work queue.")}
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {shopFloorOperators.map((op) => (
-                <div key={op.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg border border-border-subtle">
-                  <div className="p-2 rounded-lg bg-amber-500/10">
-                    <IdCard className="h-4 w-4 text-amber-500" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{op.full_name}</p>
-                    <p className="text-xs text-muted-foreground font-mono">{op.employee_id}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
