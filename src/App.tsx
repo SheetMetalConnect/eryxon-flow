@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,74 +9,81 @@ import { OperatorProvider } from "./contexts/OperatorContext";
 import { ThemeProvider } from "./theme/ThemeProvider";
 import { NotificationToastProvider } from "./components/NotificationToastProvider";
 import { McpActivityToasts } from "./components/admin/McpActivityToasts";
-// Auth pages
-import { Auth, AcceptInvitation } from "./pages/auth";
-
-// Operator pages
-import { WorkQueue, MyActivity, MyIssues, OperatorView, TerminalLogin } from "./pages/operator";
-
-// Admin pages
-import Dashboard from "./pages/admin/Dashboard";
-import IssueQueue from "./pages/admin/IssueQueue";
-import FactoryCalendar from "./pages/admin/FactoryCalendar";
-import OrganizationSettings from "./pages/admin/OrganizationSettings";
-import Assignments from "./pages/admin/Assignments";
-import McpServerSettings from "./pages/admin/McpServerSettings";
-import DataExport from "./pages/admin/DataExport";
-import DataImport from "./pages/admin/DataImport";
-import Jobs from "./pages/admin/Jobs";
-import JobCreate from "./pages/admin/JobCreate";
-import Parts from "./pages/admin/Parts";
-import { ActivityMonitor } from "./pages/admin/ActivityMonitor";
-import CapacityMatrix from "./pages/admin/CapacityMatrix";
-import { Operations } from "./pages/admin/Operations";
-import { Settings } from "./pages/admin/Settings";
-import IntegrationsMarketplace from "./pages/admin/IntegrationsMarketplace";
-import Shipments from "./pages/admin/Shipments";
-import StepsTemplatesView from "./pages/admin/StepsTemplatesView";
-import AnalyticsDashboard from "./pages/admin/AnalyticsDashboard";
-
-// Admin config pages
-import {
-  ApiKeys as ConfigApiKeys,
-  Materials as ConfigMaterials,
-  McpKeys as ConfigMcpKeys,
-  MqttPublishers as ConfigMqttPublishers,
-  Resources as ConfigResources,
-  ScrapReasons as ConfigScrapReasons,
-  Stages as ConfigStages,
-  Users as ConfigUsers,
-  Webhooks as ConfigWebhooks,
-} from "./pages/admin/config";
-
-// Admin analytics pages
-import {
-  OEEAnalytics,
-  ReliabilityAnalytics,
-  QRMAnalytics,
-  QRMDashboard,
-  JobsAnalytics,
-  QualityAnalytics,
-} from "./pages/admin/analytics";
-
-// Common pages
-import {
-  ApiDocs,
-  Pricing,
-  MyPlan,
-  Help,
-  About,
-  PrivacyPolicy,
-  TermsOfService,
-  SubscriptionBlocked,
-} from "./pages/common";
-
-// Other pages
-import NotFound from "./pages/NotFound";
-import { OnboardingWizard } from "./components/onboarding";
+import { ErrorBoundary, PageLoadingFallback } from "./components/ErrorBoundary";
 import Layout from "./components/Layout";
 import { Loader2 } from "lucide-react";
 import { queryClient } from "./lib/queryClient";
+
+// ============================================================================
+// LAZY LOADED PAGES - Code splitting for better initial bundle size
+// ============================================================================
+
+// Auth pages (eagerly loaded as they're the entry point)
+import { Auth, AcceptInvitation } from "./pages/auth";
+import { TerminalLogin } from "./pages/operator";
+
+// Operator pages - lazy loaded
+const WorkQueue = lazy(() => import("./pages/operator/WorkQueue"));
+const MyActivity = lazy(() => import("./pages/operator/MyActivity"));
+const MyIssues = lazy(() => import("./pages/operator/MyIssues"));
+const OperatorView = lazy(() => import("./pages/operator/OperatorView"));
+
+// Admin pages - lazy loaded
+const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
+const IssueQueue = lazy(() => import("./pages/admin/IssueQueue"));
+const FactoryCalendar = lazy(() => import("./pages/admin/FactoryCalendar"));
+const OrganizationSettings = lazy(() => import("./pages/admin/OrganizationSettings"));
+const Assignments = lazy(() => import("./pages/admin/Assignments"));
+const McpServerSettings = lazy(() => import("./pages/admin/McpServerSettings"));
+const DataExport = lazy(() => import("./pages/admin/DataExport"));
+const DataImport = lazy(() => import("./pages/admin/DataImport"));
+const Jobs = lazy(() => import("./pages/admin/Jobs"));
+const JobCreate = lazy(() => import("./pages/admin/JobCreate"));
+const Parts = lazy(() => import("./pages/admin/Parts"));
+const ActivityMonitor = lazy(() => import("./pages/admin/ActivityMonitor").then(m => ({ default: m.ActivityMonitor })));
+const CapacityMatrix = lazy(() => import("./pages/admin/CapacityMatrix"));
+const Operations = lazy(() => import("./pages/admin/Operations").then(m => ({ default: m.Operations })));
+const Settings = lazy(() => import("./pages/admin/Settings").then(m => ({ default: m.Settings })));
+const IntegrationsMarketplace = lazy(() => import("./pages/admin/IntegrationsMarketplace"));
+const Shipments = lazy(() => import("./pages/admin/Shipments"));
+const StepsTemplatesView = lazy(() => import("./pages/admin/StepsTemplatesView"));
+const AnalyticsDashboard = lazy(() => import("./pages/admin/AnalyticsDashboard"));
+
+// Admin config pages - lazy loaded
+const ConfigApiKeys = lazy(() => import("./pages/admin/config/ApiKeys"));
+const ConfigMaterials = lazy(() => import("./pages/admin/config/Materials"));
+const ConfigMcpKeys = lazy(() => import("./pages/admin/config/McpKeys"));
+const ConfigMqttPublishers = lazy(() => import("./pages/admin/config/MqttPublishers"));
+const ConfigResources = lazy(() => import("./pages/admin/config/Resources"));
+const ConfigScrapReasons = lazy(() => import("./pages/admin/config/ScrapReasons"));
+const ConfigStages = lazy(() => import("./pages/admin/config/Stages"));
+const ConfigUsers = lazy(() => import("./pages/admin/config/Users"));
+const ConfigWebhooks = lazy(() => import("./pages/admin/config/Webhooks"));
+
+// Admin analytics pages - lazy loaded
+const OEEAnalytics = lazy(() => import("./pages/admin/analytics/OEEAnalytics"));
+const ReliabilityAnalytics = lazy(() => import("./pages/admin/analytics/ReliabilityAnalytics"));
+const QRMAnalytics = lazy(() => import("./pages/admin/analytics/QRMAnalytics"));
+const QRMDashboard = lazy(() => import("./pages/admin/analytics/QRMDashboard"));
+const JobsAnalytics = lazy(() => import("./pages/admin/analytics/JobsAnalytics"));
+const QualityAnalytics = lazy(() => import("./pages/admin/analytics/QualityAnalytics"));
+
+// Common pages - lazy loaded
+const ApiDocs = lazy(() => import("./pages/common/ApiDocs"));
+const Pricing = lazy(() => import("./pages/common/Pricing"));
+const MyPlan = lazy(() => import("./pages/common/MyPlan"));
+const Help = lazy(() => import("./pages/common/Help"));
+const About = lazy(() => import("./pages/common/About"));
+const PrivacyPolicy = lazy(() => import("./pages/common/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/common/TermsOfService"));
+
+// Other pages
+const NotFound = lazy(() => import("./pages/NotFound"));
+const OnboardingWizard = lazy(() => import("./components/onboarding").then(m => ({ default: m.OnboardingWizard })));
+
+// ============================================================================
+// ROUTE PROTECTION
+// ============================================================================
 
 // SECURITY NOTE: This route protection is for UI convenience only.
 // Actual authorization is enforced server-side via RLS policies.
@@ -103,6 +111,27 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
   return <>{children}</>;
 }
 
+// ============================================================================
+// ROUTE WRAPPER WITH SUSPENSE
+// ============================================================================
+
+/**
+ * Wraps a lazy-loaded page with Suspense and ErrorBoundary
+ */
+function LazyRoute({ children }: { children: React.ReactNode }) {
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<PageLoadingFallback />}>
+        {children}
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+
+// ============================================================================
+// APP ROUTES
+// ============================================================================
+
 function AppRoutes() {
   const { profile, loading } = useAuth();
 
@@ -124,7 +153,9 @@ function AppRoutes() {
         path="/onboarding"
         element={
           <ProtectedRoute>
-            <OnboardingWizard />
+            <LazyRoute>
+              <OnboardingWizard />
+            </LazyRoute>
           </ProtectedRoute>
         }
       />
@@ -151,7 +182,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <WorkQueue />
+              <LazyRoute>
+                <WorkQueue />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -162,7 +195,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <MyActivity />
+              <LazyRoute>
+                <MyActivity />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -173,7 +208,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <MyIssues />
+              <LazyRoute>
+                <MyIssues />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -184,7 +221,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <OperatorView />
+              <LazyRoute>
+                <OperatorView />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -202,7 +241,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <Dashboard />
+              <LazyRoute>
+                <Dashboard />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -216,7 +257,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <ConfigStages />
+              <LazyRoute>
+                <ConfigStages />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -227,7 +270,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <FactoryCalendar />
+              <LazyRoute>
+                <FactoryCalendar />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -238,7 +283,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <ConfigMaterials />
+              <LazyRoute>
+                <ConfigMaterials />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -249,7 +296,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <ConfigResources />
+              <LazyRoute>
+                <ConfigResources />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -260,7 +309,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <ConfigUsers />
+              <LazyRoute>
+                <ConfigUsers />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -271,7 +322,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <OrganizationSettings />
+              <LazyRoute>
+                <OrganizationSettings />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -282,7 +335,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <ConfigScrapReasons />
+              <LazyRoute>
+                <ConfigScrapReasons />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -293,7 +348,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <IssueQueue />
+              <LazyRoute>
+                <IssueQueue />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -304,7 +361,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <Assignments />
+              <LazyRoute>
+                <Assignments />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -315,7 +374,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <ConfigApiKeys />
+              <LazyRoute>
+                <ConfigApiKeys />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -326,7 +387,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <ConfigWebhooks />
+              <LazyRoute>
+                <ConfigWebhooks />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -337,7 +400,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <ConfigMqttPublishers />
+              <LazyRoute>
+                <ConfigMqttPublishers />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -348,7 +413,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <ConfigMcpKeys />
+              <LazyRoute>
+                <ConfigMcpKeys />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -359,7 +426,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <McpServerSettings />
+              <LazyRoute>
+                <McpServerSettings />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -370,7 +439,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <DataExport />
+              <LazyRoute>
+                <DataExport />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -381,7 +452,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <DataImport />
+              <LazyRoute>
+                <DataImport />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -392,7 +465,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <Jobs />
+              <LazyRoute>
+                <Jobs />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -403,7 +478,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <JobCreate />
+              <LazyRoute>
+                <JobCreate />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -414,7 +491,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <Parts />
+              <LazyRoute>
+                <Parts />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -425,7 +504,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <ActivityMonitor />
+              <LazyRoute>
+                <ActivityMonitor />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -436,7 +517,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <CapacityMatrix />
+              <LazyRoute>
+                <CapacityMatrix />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -447,7 +530,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <Operations />
+              <LazyRoute>
+                <Operations />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -458,7 +543,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <Settings />
+              <LazyRoute>
+                <Settings />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -469,7 +556,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <IntegrationsMarketplace />
+              <LazyRoute>
+                <IntegrationsMarketplace />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -480,7 +569,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <Shipments />
+              <LazyRoute>
+                <Shipments />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -492,7 +583,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <AnalyticsDashboard />
+              <LazyRoute>
+                <AnalyticsDashboard />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -503,7 +596,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <OEEAnalytics />
+              <LazyRoute>
+                <OEEAnalytics />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -514,7 +609,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <ReliabilityAnalytics />
+              <LazyRoute>
+                <ReliabilityAnalytics />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -525,7 +622,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <QRMAnalytics />
+              <LazyRoute>
+                <QRMAnalytics />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -536,7 +635,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <QRMDashboard />
+              <LazyRoute>
+                <QRMDashboard />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -547,7 +648,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <JobsAnalytics />
+              <LazyRoute>
+                <JobsAnalytics />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -558,7 +661,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <QualityAnalytics />
+              <LazyRoute>
+                <QualityAnalytics />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -569,7 +674,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <StepsTemplatesView />
+              <LazyRoute>
+                <StepsTemplatesView />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -580,7 +687,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <ApiDocs />
+              <LazyRoute>
+                <ApiDocs />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -591,7 +700,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <Pricing />
+              <LazyRoute>
+                <Pricing />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -602,7 +713,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <Layout>
-              <MyPlan />
+              <LazyRoute>
+                <MyPlan />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -613,7 +726,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <Help />
+              <LazyRoute>
+                <Help />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -624,7 +739,9 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <About />
+              <LazyRoute>
+                <About />
+              </LazyRoute>
             </Layout>
           </ProtectedRoute>
         }
@@ -635,7 +752,9 @@ function AppRoutes() {
         path="/privacy-policy"
         element={
           <Layout>
-            <PrivacyPolicy />
+            <LazyRoute>
+              <PrivacyPolicy />
+            </LazyRoute>
           </Layout>
         }
       />
@@ -644,7 +763,9 @@ function AppRoutes() {
         path="/terms-of-service"
         element={
           <Layout>
-            <TermsOfService />
+            <LazyRoute>
+              <TermsOfService />
+            </LazyRoute>
           </Layout>
         }
       />
@@ -659,7 +780,11 @@ function AppRoutes() {
       <Route path="/my-plan" element={<Navigate to="/admin/my-plan" replace />} />
       <Route path="/help" element={<Navigate to="/admin/help" replace />} />
 
-      <Route path="*" element={<NotFound />} />
+      <Route path="*" element={
+        <LazyRoute>
+          <NotFound />
+        </LazyRoute>
+      } />
     </Routes>
   );
 }
@@ -675,7 +800,9 @@ const App = () => (
             <OperatorProvider>
               <NotificationToastProvider>
                 <McpActivityToasts />
-                <AppRoutes />
+                <ErrorBoundary>
+                  <AppRoutes />
+                </ErrorBoundary>
               </NotificationToastProvider>
             </OperatorProvider>
           </AuthProvider>
