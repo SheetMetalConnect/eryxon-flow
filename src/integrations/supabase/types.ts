@@ -44,12 +44,12 @@ export type {
   DatabaseEnums,
   DatabaseViews,
   DatabaseFunctions,
-} from './types'
+} from './types/index'
 
-export { EnumConstants } from './types'
+export { EnumConstants } from './types/index'
 
 // Backward compatibility: Export Constants in the original format
-import { EnumConstants } from './types'
+import { EnumConstants } from './types/index'
 
 export const Constants = {
   public: {
