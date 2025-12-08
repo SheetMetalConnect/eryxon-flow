@@ -1,7 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import { encode as hexEncode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
 
+// Hash function using Web Crypto API (compatible with Edge Functions)
+async function hashApiKey(apiKey: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(apiKey);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  return new TextDecoder().decode(hexEncode(new Uint8Array(hashBuffer)));
+}
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -156,7 +163,7 @@ serve(async (req) => {
     const keyPrefix = apiKey.substring(0, 12);
 
     // Hash the API key with bcrypt
-    const keyHash = await bcrypt.hash(apiKey, bcrypt.genSaltSync(10));
+    const keyHash = await hashApiKey(apiKey);
 
     // Store in database
     const { data: createdKey, error } = await supabase
