@@ -158,5 +158,29 @@
     "clockedIn": "Clocked In",
     "clockOut": "Clock Out",
     "noOperatorSelected": "No operator selected"
+  },
+  "operatorView": {
+    "shopFloor": "Shop Floor",
+    "selectJob": "Select a Job",
+    "selectJobToStart": "Select a job to start working",
+    "tapToClose": "Tap to close",
+    "tapToExpand": "Tap to expand",
+    "openFullscreen": "Open fullscreen",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "noFiles": "No files available",
+    "currentOperation": "Current Operation",
+    "part": "Part",
+    "qty": "Qty",
+    "material": "Material",
+    "overdue": "Overdue since",
+    "operations": "Operations",
+    "substeps": "Substeps",
+    "start": "Start",
+    "stop": "Stop",
+    "done": "Done",
+    "issue": "Issue",
+    "recordQty": "Record Qty",
+    "recordQuantity": "Record production quantity"
   }
 }

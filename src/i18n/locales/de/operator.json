@@ -158,5 +158,29 @@
     "clockedIn": "Eingestempelt",
     "clockOut": "Ausstempeln",
     "noOperatorSelected": "Kein Bediener ausgewählt"
+  },
+  "operatorView": {
+    "shopFloor": "Werkhalle",
+    "selectJob": "Auftrag auswählen",
+    "selectJobToStart": "Wählen Sie einen Auftrag zum Starten",
+    "tapToClose": "Tippen zum Schließen",
+    "tapToExpand": "Tippen zum Vergrößern",
+    "openFullscreen": "Vollbild öffnen",
+    "expand": "Erweitern",
+    "collapse": "Einklappen",
+    "noFiles": "Keine Dateien verfügbar",
+    "currentOperation": "Aktueller Arbeitsgang",
+    "part": "Teil",
+    "qty": "Menge",
+    "material": "Material",
+    "overdue": "Überfällig seit",
+    "operations": "Arbeitsgänge",
+    "substeps": "Unterschritte",
+    "start": "Start",
+    "stop": "Stopp",
+    "done": "Fertig",
+    "issue": "Problem",
+    "recordQty": "Erfassen",
+    "recordQuantity": "Produktionsmenge erfassen"
   }
 }

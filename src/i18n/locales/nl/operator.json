@@ -158,5 +158,29 @@
     "clockedIn": "Ingeklokt",
     "clockOut": "Uitklokken",
     "noOperatorSelected": "Geen operator geselecteerd"
+  },
+  "operatorView": {
+    "shopFloor": "Werkvloer",
+    "selectJob": "Selecteer een Opdracht",
+    "selectJobToStart": "Selecteer een opdracht om te beginnen",
+    "tapToClose": "Tik om te sluiten",
+    "tapToExpand": "Tik om te vergroten",
+    "openFullscreen": "Open volledig scherm",
+    "expand": "Uitklappen",
+    "collapse": "Inklappen",
+    "noFiles": "Geen bestanden beschikbaar",
+    "currentOperation": "Huidige Bewerking",
+    "part": "Onderdeel",
+    "qty": "Aantal",
+    "material": "Materiaal",
+    "overdue": "Achterstallig sinds",
+    "operations": "Bewerkingen",
+    "substeps": "Substappen",
+    "start": "Start",
+    "stop": "Stop",
+    "done": "Gereed",
+    "issue": "Probleem",
+    "recordQty": "Registreer",
+    "recordQuantity": "Registreer productie aantal"
   }
 }
