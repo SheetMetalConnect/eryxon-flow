@@ -122,12 +122,27 @@ export async function startTimeTracking(
   operatorId: string,
   tenantId: string
 ) {
-  // Check for existing active time entries for this operator
+  // Check for existing active time entries for this operation specifically
+  const { data: existingForOperation } = await supabase
+    .from("time_entries")
+    .select("id")
+    .eq("operation_id", operationId)
+    .eq("operator_id", operatorId)
+    .is("end_time", null);
+
+  // Prevent duplicate entries for same operation (race condition protection)
+  if (existingForOperation && existingForOperation.length > 0) {
+    console.log("Time entry already exists for this operation, skipping duplicate");
+    return; // Silently succeed - entry already exists
+  }
+
+  // Check for existing active time entries for this operator on OTHER operations
   const { data: activeEntries } = await supabase
     .from("time_entries")
     .select("id, operation_id, operations(operation_name)")
     .eq("operator_id", operatorId)
     .eq("tenant_id", tenantId)
+    .neq("operation_id", operationId) // Exclude current operation
     .is("end_time", null);
 
   if (activeEntries && activeEntries.length > 0) {
@@ -169,7 +184,19 @@ export async function startTimeTracking(
   const startedAt = new Date().toISOString();
   const isNewStart = operation.status === "not_started";
 
-  // Create time entry
+  // Create time entry - use a lock by checking again right before insert
+  const { data: doubleCheck } = await supabase
+    .from("time_entries")
+    .select("id")
+    .eq("operation_id", operationId)
+    .eq("operator_id", operatorId)
+    .is("end_time", null);
+
+  if (doubleCheck && doubleCheck.length > 0) {
+    console.log("Time entry created by concurrent request, skipping");
+    return;
+  }
+
   const { error: timeError } = await supabase.from("time_entries").insert({
     operation_id: operationId,
     operator_id: operatorId,
@@ -274,16 +301,34 @@ export async function startTimeTracking(
 }
 
 export async function stopTimeTracking(operationId: string, operatorId: string) {
-  // Find active time entry
-  const { data: entry } = await supabase
+  // Find active time entries (may be multiple due to race conditions)
+  const { data: entries } = await supabase
     .from("time_entries")
     .select("id, start_time, is_paused")
     .eq("operation_id", operationId)
     .eq("operator_id", operatorId)
     .is("end_time", null)
-    .single();
+    .order("start_time", { ascending: false });
 
-  if (!entry) throw new Error("No active time entry found");
+  if (!entries || entries.length === 0) throw new Error("No active time entry found");
+
+  // Use the most recent entry
+  const entry = entries[0];
+
+  // If there are duplicates, close them all
+  if (entries.length > 1) {
+    console.log(`Found ${entries.length} duplicate time entries, closing all`);
+    const now = new Date();
+    for (let i = 1; i < entries.length; i++) {
+      const dupEntry = entries[i];
+      const startTime = new Date(dupEntry.start_time);
+      const duration = Math.round((now.getTime() - startTime.getTime()) / 1000);
+      await supabase
+        .from("time_entries")
+        .update({ end_time: now.toISOString(), duration })
+        .eq("id", dupEntry.id);
+    }
+  }
 
   // If paused, close the current pause
   if (entry.is_paused) {

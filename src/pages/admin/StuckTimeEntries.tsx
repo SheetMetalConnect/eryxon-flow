@@ -1,10 +1,9 @@
-import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Square, AlertTriangle } from "lucide-react";
+import { Clock, Square, AlertTriangle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -43,7 +42,7 @@ export default function StuckTimeEntries() {
       if (error) throw error;
       return data;
     },
-    refetchInterval: 5000, // Refresh every 5 seconds
+    refetchInterval: 5000,
   });
 
   // Mutation to force stop a time entry
@@ -80,19 +79,73 @@ export default function StuckTimeEntries() {
     },
   });
 
+  // Mutation to stop all entries
+  const stopAllMutation = useMutation({
+    mutationFn: async () => {
+      if (!stuckEntries || stuckEntries.length === 0) return 0;
+      
+      const now = new Date();
+      let stoppedCount = 0;
+
+      for (const entry of stuckEntries) {
+        const startTime = new Date(entry.start_time);
+        const durationSeconds = Math.floor((now.getTime() - startTime.getTime()) / 1000);
+
+        const { error } = await supabase
+          .from("time_entries")
+          .update({
+            end_time: now.toISOString(),
+            duration: durationSeconds,
+          })
+          .eq("id", entry.id);
+
+        if (!error) stoppedCount++;
+      }
+      
+      return stoppedCount;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ["stuck-time-entries"] });
+      toast.success(`Stopped ${count} time entries`);
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to stop entries: ${error.message}`);
+    },
+  });
+
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="p-6 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
     <div className="p-6 space-y-4">
-      <div className="flex items-center gap-2">
-        <AlertTriangle className="h-6 w-6 text-yellow-500" />
-        <h1 className="text-2xl font-bold">Stuck Time Entries</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="h-6 w-6 text-yellow-500" />
+          <h1 className="text-2xl font-bold">Stuck Time Entries</h1>
+          {stuckEntries && stuckEntries.length > 0 && (
+            <Badge variant="destructive">{stuckEntries.length}</Badge>
+          )}
+        </div>
+        {stuckEntries && stuckEntries.length > 1 && (
+          <Button
+            variant="destructive"
+            onClick={() => stopAllMutation.mutate()}
+            disabled={stopAllMutation.isPending}
+            className="gap-2"
+          >
+            {stopAllMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Square className="h-4 w-4" />
+            )}
+            Stop All ({stuckEntries.length})
+          </Button>
+        )}
       </div>
       
       <p className="text-muted-foreground">
