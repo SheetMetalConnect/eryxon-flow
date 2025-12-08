@@ -313,10 +313,10 @@ export default function Assignments() {
     try {
       const employeeId = operatorForm.employee_id.trim() || `OPR-${Date.now().toString().slice(-6)}`;
 
-      const { error } = await supabase.rpc('create_operator_with_pin' as any, {
-        p_full_name: operatorForm.full_name,
-        p_employee_id: employeeId || null,
+      const { data, error } = await supabase.rpc('create_operator_with_pin' as any, {
+        p_full_name: operatorForm.full_name.trim(),
         p_pin: operatorForm.pin,
+        p_employee_id: employeeId || undefined,
       });
 
       if (error) throw error;
