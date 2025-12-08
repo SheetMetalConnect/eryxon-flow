@@ -138,7 +138,25 @@
     "loginFailed": "Inloggen mislukt. Neem contact op met je leidinggevende.",
     "unexpectedError": "Er is een onverwachte fout opgetreden. Probeer opnieuw.",
     "adminLogin": "Beheerder Login",
+    "adminDashboard": "Beheerder Dashboard",
     "helpText": "Hulp nodig? Neem contact op met je leidinggevende of de IT-afdeling.",
-    "footerText": "Eryxon MES - Productie Uitvoering Systeem"
+    "footerText": "Eryxon MES - Productie Uitvoering Systeem",
+    "authRequired": "Authenticatie Vereist",
+    "authRequiredDesc": "Log in met je terminal account om toegang te krijgen tot de werkvloer.",
+    "goToLogin": "Ga naar Login",
+    "currentOperator": "Huidige Operator",
+    "continueAs": "Doorgaan als",
+    "switchOperator": "Operator Wisselen",
+    "switchToAnother": "Wissel naar Andere Operator",
+    "accountLocked": "Account Tijdelijk Geblokkeerd",
+    "tryAgainIn": "Probeer opnieuw over {{minutes}} minuut/minuten",
+    "attemptsRemaining": "{{count}} poging(en) resterend"
+  },
+  "operator": {
+    "switchOperator": "Operator Wisselen",
+    "selectOperator": "Operator Selecteren",
+    "clockedIn": "Ingeklokt",
+    "clockOut": "Uitklokken",
+    "noOperatorSelected": "Geen operator geselecteerd"
   }
 }

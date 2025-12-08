@@ -21,16 +21,21 @@ import {
   Gauge,
   Factory,
   Search,
+  RefreshCw,
+  UserCheck,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOperator } from '@/contexts/OperatorContext';
 import CurrentlyTimingWidget from './CurrentlyTimingWidget';
+import { OperatorSwitcher, ActiveOperatorBadge } from './OperatorSwitcher';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { AppTour } from '@/components/onboarding';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import { cn } from '@/lib/utils';
 import { GlobalSearch, SearchTriggerButton } from '@/components/GlobalSearch';
+import { ROUTES } from '@/routes';
 
 interface OperatorLayoutProps {
   children: React.ReactNode;
@@ -39,13 +44,14 @@ interface OperatorLayoutProps {
 export const OperatorLayout = ({ children }: OperatorLayoutProps) => {
   const { t } = useTranslation();
   const { profile, tenant, signOut } = useAuth();
+  const { activeOperator } = useOperator();
   const location = useLocation();
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
 
   const navItems = [
     { path: '/operator/work-queue', label: t('navigation.workQueue'), icon: ListChecks },
-    { path: '/operator/view', label: 'Operator View', icon: Gauge },
+    { path: '/operator/view', label: t('navigation.operatorView'), icon: Gauge },
     { path: '/operator/my-activity', label: t('navigation.myActivity'), icon: Clock },
     { path: '/operator/my-issues', label: t('navigation.myIssues'), icon: Flag },
   ];
@@ -69,6 +75,16 @@ export const OperatorLayout = ({ children }: OperatorLayoutProps) => {
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-1.5">
+              {/* Active Operator Badge - Desktop */}
+              <div className="hidden sm:block">
+                <ActiveOperatorBadge />
+              </div>
+
+              {/* Operator Switcher - Mobile */}
+              <div className="sm:hidden">
+                <OperatorSwitcher variant="compact" />
+              </div>
+
               {/* Search Button */}
               <SearchTriggerButton onClick={() => setSearchOpen(true)} compact />
 
@@ -103,6 +119,26 @@ export const OperatorLayout = ({ children }: OperatorLayoutProps) => {
                     </>
                   )}
 
+                  {/* Active Operator Info */}
+                  {activeOperator && (
+                    <>
+                      <div className="px-2 py-1.5 bg-green-500/5 border-b border-green-500/20">
+                        <div className="flex items-center gap-1.5">
+                          <UserCheck className="h-3.5 w-3.5 text-green-500" />
+                          <div>
+                            <span className="text-xs font-bold text-green-500 block">
+                              {activeOperator.full_name}
+                            </span>
+                            <span className="text-[10px] text-green-500/70 font-mono">
+                              {activeOperator.employee_id}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <DropdownMenuSeparator className="bg-border-subtle" />
+                    </>
+                  )}
+
                   {/* User Info - Compact */}
                   <div className="px-2 py-1.5">
                     <div className="text-xs font-semibold">{profile?.full_name}</div>
@@ -114,12 +150,21 @@ export const OperatorLayout = ({ children }: OperatorLayoutProps) => {
 
                   <DropdownMenuSeparator className="bg-border-subtle" />
 
+                  {/* Quick Switch Operator */}
+                  <DropdownMenuItem
+                    onClick={() => navigate(ROUTES.OPERATOR.LOGIN)}
+                    className="gap-1.5 cursor-pointer focus:bg-white/5 text-xs"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    {t('operator.switchOperator')}
+                  </DropdownMenuItem>
+
                   <DropdownMenuItem
                     onClick={() => navigate('/help')}
                     className="gap-1.5 cursor-pointer focus:bg-white/5 text-xs"
                   >
                     <HelpCircle className="h-3.5 w-3.5" />
-                    Help & Docs
+                    {t('common.helpAndDocs')}
                   </DropdownMenuItem>
 
                   <DropdownMenuItem

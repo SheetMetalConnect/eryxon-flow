@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { OperatorProvider } from "./contexts/OperatorContext";
 import { ThemeProvider } from "./theme/ThemeProvider";
 import { NotificationToastProvider } from "./components/NotificationToastProvider";
 import { McpActivityToasts } from "./components/admin/McpActivityToasts";
@@ -671,10 +672,12 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <NotificationToastProvider>
-              <McpActivityToasts />
-              <AppRoutes />
-            </NotificationToastProvider>
+            <OperatorProvider>
+              <NotificationToastProvider>
+                <McpActivityToasts />
+                <AppRoutes />
+              </NotificationToastProvider>
+            </OperatorProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

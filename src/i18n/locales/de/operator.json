@@ -138,7 +138,25 @@
     "loginFailed": "Anmeldung fehlgeschlagen. Bitte wenden Sie sich an Ihren Vorgesetzten.",
     "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten. Bitte erneut versuchen.",
     "adminLogin": "Admin-Login",
+    "adminDashboard": "Admin-Dashboard",
     "helpText": "Brauchen Sie Hilfe? Wenden Sie sich an Ihren Vorgesetzten oder die IT-Abteilung.",
-    "footerText": "Eryxon MES - Fertigungsmanagementsystem"
+    "footerText": "Eryxon MES - Fertigungsmanagementsystem",
+    "authRequired": "Authentifizierung erforderlich",
+    "authRequiredDesc": "Melden Sie sich mit Ihrem Terminal-Konto an, um Zugang zur Werkhalle zu erhalten.",
+    "goToLogin": "Zur Anmeldung",
+    "currentOperator": "Aktueller Bediener",
+    "continueAs": "Weiter als",
+    "switchOperator": "Bediener wechseln",
+    "switchToAnother": "Zu anderem Bediener wechseln",
+    "accountLocked": "Konto vorübergehend gesperrt",
+    "tryAgainIn": "Erneut versuchen in {{minutes}} Minute(n)",
+    "attemptsRemaining": "{{count}} Versuch(e) verbleibend"
+  },
+  "operator": {
+    "switchOperator": "Bediener wechseln",
+    "selectOperator": "Bediener auswählen",
+    "clockedIn": "Eingestempelt",
+    "clockOut": "Ausstempeln",
+    "noOperatorSelected": "Kein Bediener ausgewählt"
   }
 }
