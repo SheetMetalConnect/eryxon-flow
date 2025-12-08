@@ -53,6 +53,7 @@
     "qualityAnalytics": "Qualitätsanalysen",
     "oeeAnalytics": "OEE-Analysen",
     "reliabilityAnalytics": "Zuverlässigkeitsanalysen",
+    "backToAdmin": "Zurück zur Admin",
     "sections": {
       "overview": "ÜBERSICHT",
       "operations": "ARBEITSGÄNGE",

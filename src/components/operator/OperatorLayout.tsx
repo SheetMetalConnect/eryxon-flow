@@ -39,9 +39,10 @@ import { ROUTES } from '@/routes';
 
 interface OperatorLayoutProps {
   children: React.ReactNode;
+  showBackToAdmin?: boolean;
 }
 
-export const OperatorLayout = ({ children }: OperatorLayoutProps) => {
+export const OperatorLayout = ({ children, showBackToAdmin = false }: OperatorLayoutProps) => {
   const { t } = useTranslation();
   const { profile, tenant, signOut } = useAuth();
   const { activeOperator } = useOperator();
@@ -65,12 +66,26 @@ export const OperatorLayout = ({ children }: OperatorLayoutProps) => {
         {/* Top Header - Glass Morphism - Compact */}
         <header className="sticky top-0 z-50 w-full glass-card border-b border-border-subtle">
           <div className="flex items-center justify-between h-12 px-3 sm:px-4">
-            {/* Left: Tenant/Company Name */}
+            {/* Left: Back to Admin or Tenant/Company Name */}
             <div className="flex items-center gap-2 min-w-0">
-              <Building2 className="h-5 w-5 text-primary shrink-0" />
-              <span className="text-sm font-bold truncate max-w-[120px] sm:max-w-[200px]">
-                {tenant?.company_name || tenant?.name || t('app.name')}
-              </span>
+              {showBackToAdmin ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/admin/dashboard')}
+                  className="gap-1.5 text-xs h-8"
+                >
+                  <Factory className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t('navigation.backToAdmin', 'Back to Admin')}</span>
+                </Button>
+              ) : (
+                <>
+                  <Building2 className="h-5 w-5 text-primary shrink-0" />
+                  <span className="text-sm font-bold truncate max-w-[120px] sm:max-w-[200px]">
+                    {tenant?.company_name || tenant?.name || t('app.name')}
+                  </span>
+                </>
+              )}
             </div>
 
             {/* Center: Active Operator - Always visible and prominent */}

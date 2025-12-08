@@ -1,5 +1,6 @@
-// Role-based layout routing
+// Role-based layout routing with path awareness
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocation } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
 import { OperatorLayout } from "@/components/operator/OperatorLayout";
 
@@ -11,18 +12,26 @@ interface LayoutProps {
 // Server-side RLS policies enforce actual data access permissions.
 export default function Layout({ children }: LayoutProps) {
   const { profile, loading } = useAuth();
+  const location = useLocation();
 
   // Show nothing while loading to prevent layout flicker
   if (loading || !profile) {
     return null;
   }
 
-  // UI-only: Route to appropriate layout based on user role
-  // This provides better UX but provides ZERO security
+  // Check if current path is an operator view path
+  const isOperatorPath = location.pathname.startsWith("/operator/");
+
+  // Use operator layout for operator paths (both for operators and admins viewing operator screens)
+  if (isOperatorPath) {
+    return <OperatorLayout showBackToAdmin={profile.role === "admin"}>{children}</OperatorLayout>;
+  }
+
+  // Use admin layout for admin paths (only admins should reach these via route protection)
   if (profile.role === "admin") {
     return <AdminLayout>{children}</AdminLayout>;
   }
 
-  // Default to operator layout for operator role
+  // Default to operator layout for non-admin users on non-operator paths
   return <OperatorLayout>{children}</OperatorLayout>;
 }
