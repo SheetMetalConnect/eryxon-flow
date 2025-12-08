@@ -50,6 +50,10 @@
       "description": "Endpoints for syncing data with external ERP systems (SAP, NetSuite, Odoo, etc.). Use external_id for upsert operations."
     },
     {
+      "name": "Unified ERP Sync",
+      "description": "Optimized unified endpoint for ERP integrations. Supports multi-entity sync with change detection, batch operations, and detailed status reporting."
+    },
+    {
       "name": "Resources",
       "description": "Manage tools, fixtures, molds, and equipment used in manufacturing operations."
     }
@@ -1159,6 +1163,156 @@
           }
         }
       }
+    },
+    "/api-erp-sync/diff": {
+      "post": {
+        "tags": ["Unified ERP Sync"],
+        "summary": "Preview sync changes (diff)",
+        "description": "Check what would change when syncing data from ERP without making any modifications. Returns status for each record (create, update, unchanged, error). Use this for incremental sync validation before executing.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnifiedSyncRequest"
+              },
+              "examples": {
+                "multi_entity": {
+                  "summary": "Check multiple entity types",
+                  "value": {
+                    "jobs": [
+                      { "external_id": "SO-001", "external_source": "SAP", "job_number": "JOB-001", "customer_name": "Acme Corp" },
+                      { "external_id": "SO-002", "external_source": "SAP", "job_number": "JOB-002", "customer_name": "Beta Inc" }
+                    ],
+                    "parts": [
+                      { "external_id": "SO-001-10", "external_source": "SAP", "job_external_id": "SO-001", "part_number": "BRACKET-A", "quantity": 25 }
+                    ],
+                    "resources": [
+                      { "external_id": "TOOL-001", "external_source": "SAP", "name": "CNC Mill #1", "type": "machine" }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Diff results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnifiedDiffResponse"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequestError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    },
+    "/api-erp-sync/sync": {
+      "post": {
+        "tags": ["Unified ERP Sync"],
+        "summary": "Execute unified sync",
+        "description": "Sync jobs, parts, and resources in a single request. Automatically skips unchanged records via sync_hash comparison. Supports batch operations with detailed results per record.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnifiedSyncRequest"
+              },
+              "examples": {
+                "full_sync": {
+                  "summary": "Sync jobs with parts",
+                  "value": {
+                    "jobs": [
+                      {
+                        "external_id": "SO-12345",
+                        "external_source": "SAP",
+                        "job_number": "JOB-2024-001",
+                        "customer_name": "Acme Corp",
+                        "due_date": "2024-12-31"
+                      }
+                    ],
+                    "parts": [
+                      {
+                        "external_id": "SO-12345-10",
+                        "external_source": "SAP",
+                        "job_external_id": "SO-12345",
+                        "part_number": "BRACKET-A",
+                        "material": "Steel 1018",
+                        "quantity": 25
+                      }
+                    ],
+                    "options": {
+                      "skip_unchanged": true,
+                      "continue_on_error": true,
+                      "record_history": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sync completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnifiedSyncResponse"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequestError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    },
+    "/api-erp-sync/status": {
+      "get": {
+        "tags": ["Unified ERP Sync"],
+        "summary": "Get sync status and history",
+        "description": "View sync history and statistics for auditing and troubleshooting.",
+        "parameters": [
+          {
+            "name": "entity_type",
+            "in": "query",
+            "description": "Filter by entity type",
+            "schema": { "type": "string", "enum": ["jobs", "parts", "resources", "operations"] }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "description": "Filter by sync source",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of records (default: 20, max: 100)",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sync status and history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncStatusResponse"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
     }
   },
   "components": {
@@ -1928,6 +2082,203 @@
               { "external_id": "SO-002", "id": "uuid-2", "action": "updated" },
               { "external_id": "SO-003", "id": "uuid-3", "action": "created" }
             ]
+          }
+        }
+      },
+      "UnifiedSyncRequest": {
+        "type": "object",
+        "description": "Unified ERP sync request supporting multiple entity types",
+        "properties": {
+          "jobs": {
+            "type": "array",
+            "description": "Jobs to sync",
+            "items": {
+              "type": "object",
+              "required": ["external_id", "external_source", "job_number"],
+              "properties": {
+                "external_id": { "type": "string", "description": "ERP system ID" },
+                "external_source": { "type": "string", "description": "ERP system name (e.g., SAP, NetSuite)" },
+                "job_number": { "type": "string" },
+                "customer_name": { "type": "string" },
+                "due_date": { "type": "string", "format": "date" },
+                "priority": { "type": "integer" },
+                "notes": { "type": "string" },
+                "metadata": { "type": "object" }
+              }
+            }
+          },
+          "parts": {
+            "type": "array",
+            "description": "Parts to sync",
+            "items": {
+              "type": "object",
+              "required": ["external_id", "external_source", "part_number"],
+              "properties": {
+                "external_id": { "type": "string" },
+                "external_source": { "type": "string" },
+                "job_id": { "type": "string", "format": "uuid", "description": "Internal job UUID" },
+                "job_external_id": { "type": "string", "description": "Parent job's external_id" },
+                "part_number": { "type": "string" },
+                "material": { "type": "string" },
+                "quantity": { "type": "integer" },
+                "notes": { "type": "string" },
+                "metadata": { "type": "object" }
+              }
+            }
+          },
+          "resources": {
+            "type": "array",
+            "description": "Resources to sync",
+            "items": {
+              "type": "object",
+              "required": ["external_id", "external_source", "name", "type"],
+              "properties": {
+                "external_id": { "type": "string" },
+                "external_source": { "type": "string" },
+                "name": { "type": "string" },
+                "type": { "type": "string" },
+                "description": { "type": "string" },
+                "identifier": { "type": "string" },
+                "location": { "type": "string" },
+                "metadata": { "type": "object" }
+              }
+            }
+          },
+          "options": {
+            "type": "object",
+            "description": "Sync options",
+            "properties": {
+              "skip_unchanged": { "type": "boolean", "default": true, "description": "Skip records with unchanged sync_hash" },
+              "continue_on_error": { "type": "boolean", "default": true, "description": "Continue syncing if an error occurs" },
+              "record_history": { "type": "boolean", "default": true, "description": "Log sync to sync_imports table" }
+            }
+          },
+          "source": { "type": "string", "description": "Source identifier for webhook events" }
+        }
+      },
+      "UnifiedDiffResponse": {
+        "type": "object",
+        "description": "Response from diff endpoint showing what would change",
+        "properties": {
+          "summary": {
+            "type": "object",
+            "properties": {
+              "total_entities": { "type": "integer" },
+              "total_records": { "type": "integer" },
+              "total_to_create": { "type": "integer" },
+              "total_to_update": { "type": "integer" },
+              "total_unchanged": { "type": "integer" },
+              "total_errors": { "type": "integer" }
+            }
+          },
+          "entities": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "entity_type": { "type": "string" },
+                "total": { "type": "integer" },
+                "to_create": { "type": "integer" },
+                "to_update": { "type": "integer" },
+                "unchanged": { "type": "integer" },
+                "errors": { "type": "integer" },
+                "records": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "external_id": { "type": "string" },
+                      "external_source": { "type": "string" },
+                      "status": { "type": "string", "enum": ["create", "update", "unchanged", "error"] },
+                      "existing_id": { "type": "string", "format": "uuid" },
+                      "changes": { "type": "array", "items": { "type": "string" } },
+                      "error": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "UnifiedSyncResponse": {
+        "type": "object",
+        "description": "Response from sync endpoint with detailed results",
+        "properties": {
+          "summary": {
+            "type": "object",
+            "properties": {
+              "total_entities": { "type": "integer" },
+              "total_records": { "type": "integer" },
+              "total_created": { "type": "integer" },
+              "total_updated": { "type": "integer" },
+              "total_skipped": { "type": "integer" },
+              "total_errors": { "type": "integer" },
+              "duration_ms": { "type": "integer" }
+            }
+          },
+          "entities": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "total": { "type": "integer" },
+                "created": { "type": "integer" },
+                "updated": { "type": "integer" },
+                "skipped": { "type": "integer" },
+                "errors": { "type": "integer" },
+                "duration_ms": { "type": "integer" },
+                "results": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "external_id": { "type": "string" },
+                      "id": { "type": "string", "format": "uuid" },
+                      "action": { "type": "string", "enum": ["created", "updated", "skipped", "error"] },
+                      "error": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "SyncStatusResponse": {
+        "type": "object",
+        "description": "Sync status and history response",
+        "properties": {
+          "stats": {
+            "type": "object",
+            "properties": {
+              "total_syncs": { "type": "integer" },
+              "successful": { "type": "integer" },
+              "failed": { "type": "integer" },
+              "total_created": { "type": "integer" },
+              "total_updated": { "type": "integer" },
+              "total_errors": { "type": "integer" }
+            }
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string", "format": "uuid" },
+                "source": { "type": "string" },
+                "entity_type": { "type": "string" },
+                "status": { "type": "string", "enum": ["pending", "processing", "completed", "failed"] },
+                "total_records": { "type": "integer" },
+                "created_count": { "type": "integer" },
+                "updated_count": { "type": "integer" },
+                "skipped_count": { "type": "integer" },
+                "error_count": { "type": "integer" },
+                "errors": { "type": "object" },
+                "started_at": { "type": "string", "format": "date-time" },
+                "completed_at": { "type": "string", "format": "date-time" }
+              }
+            }
           }
         }
       }
