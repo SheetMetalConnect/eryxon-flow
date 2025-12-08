@@ -20,7 +20,9 @@ Feature Branches → main branch
                          ↓
                 4. Build & Push Docker Image
                          ↓
-                5. Create GitHub Release
+                5. SSH Deploy to Hetzner
+                         ↓
+                6. Create GitHub Release
 ```
 
 ## Environments
@@ -67,6 +69,9 @@ Feature Branches → main branch
 | `VITE_SUPABASE_ANON_KEY_PROD` | Supabase anon key |
 | `SUPABASE_PROJECT_REF_PROD` | Supabase project ref |
 | `SUPABASE_ACCESS_TOKEN` | Supabase CLI token |
+| `HETZNER_HOST` | Server IP address |
+| `HETZNER_USER` | Server user (usually `root`) |
+| `HETZNER_SSH_KEY` | Private SSH key (PEM format) |
 
 ---
 
@@ -229,8 +234,5 @@ Caddyfile             # Caddy config
 
 # Ready for production release
 # Actions → Release → Run workflow
-# Docker image built and pushed to GHCR
-
-# Deploy to Hetzner
-ssh root@server "cd /opt/eryxon-flow && docker compose pull && docker compose up -d"
+# Docker image built, pushed, and deployed automatically to Hetzner
 ```

@@ -145,12 +145,38 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Step 5: Create GitHub release
-  create-release:
-    name: 5. Create Release
+  # Step 5: Deploy to Hetzner via SSH
+  deploy:
+    name: 5. Deploy to Hetzner
     runs-on: ubuntu-latest
     needs: build-and-push
     if: needs.build-and-push.result == 'success'
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          script: |
+            cd /opt/eryxon-flow
+            
+            # Pull new image
+            docker compose pull
+            
+            # Restart services
+            docker compose up -d --remove-orphans
+            
+            # Cleanup old images
+            docker image prune -f
+
+
+  # Step 6: Create GitHub release
+  create-release:
+    name: 6. Create Release
+    runs-on: ubuntu-latest
+    needs: [build-and-push, deploy]
+    if: needs.build-and-push.result == 'success' && needs.deploy.result == 'success'
     permissions:
       contents: write
     steps:
