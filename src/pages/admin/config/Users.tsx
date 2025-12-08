@@ -28,11 +28,22 @@ interface UserProfile {
   is_machine: boolean;
 }
 
+interface Operator {
+  id: string;
+  employee_id: string;
+  full_name: string;
+  active: boolean;
+  locked_until: string | null;
+  last_login_at: string | null;
+  created_at: string;
+}
+
 export default function ConfigUsers() {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const { invitations, createInvitation, cancelInvitation, loading: invitationsLoading } = useInvitations();
   const [users, setUsers] = useState<UserProfile[]>([]);
+  const [operators, setOperators] = useState<Operator[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
@@ -73,6 +84,7 @@ export default function ConfigUsers() {
   useEffect(() => {
     if (!profile?.tenant_id) return;
     loadUsers();
+    loadOperators();
   }, [profile?.tenant_id]);
 
   const loadUsers = async () => {
@@ -88,6 +100,14 @@ export default function ConfigUsers() {
       setUsers(data);
     }
     setLoading(false);
+  };
+
+  const loadOperators = async () => {
+    const { data, error } = await supabase.rpc('list_operators' as any);
+
+    if (!error && data) {
+      setOperators(data as Operator[]);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -199,7 +219,7 @@ export default function ConfigUsers() {
         employee_id: "",
         pin: "",
       });
-      loadUsers();
+      loadOperators();
     } catch (error: any) {
       toast.error(error.message || "Failed to create operator");
       console.error("Error creating operator:", error);
@@ -931,6 +951,52 @@ export default function ConfigUsers() {
                       <Trash2 className="h-4 w-4" />
                       Cancel
                     </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* PIN-Based Operators */}
+      {operators.length > 0 && (
+        <Card className="glass-card border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center gap-2">
+              <UserPlus className="h-5 w-5 text-primary" />
+              Shop Floor Operators ({operators.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              PIN-based operators for shared shop floor terminals. These operators login with Employee ID + PIN.
+            </p>
+            <div className="space-y-2">
+              {operators.map((op) => (
+                <div key={op.id} className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border-subtle">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <UserPlus className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{op.full_name}</p>
+                      <p className="text-sm text-muted-foreground font-mono">{op.employee_id}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {op.locked_until && new Date(op.locked_until) > new Date() ? (
+                      <Badge variant="destructive" className="text-xs">Locked</Badge>
+                    ) : op.active ? (
+                      <Badge variant="default" className="text-xs bg-green-500/20 text-green-400 border-green-500/30">Active</Badge>
+                    ) : (
+                      <Badge variant="secondary" className="text-xs">Inactive</Badge>
+                    )}
+                    {op.last_login_at && (
+                      <span className="text-xs text-muted-foreground">
+                        Last login: {new Date(op.last_login_at).toLocaleDateString()}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
