@@ -53,6 +53,7 @@
     "qualityAnalytics": "Kwaliteitsanalyses",
     "oeeAnalytics": "OEE Analyses",
     "reliabilityAnalytics": "Betrouwbaarheidsanalyses",
+    "backToAdmin": "Terug naar beheer",
     "sections": {
       "overview": "OVERZICHT",
       "operations": "BEWERKINGEN",

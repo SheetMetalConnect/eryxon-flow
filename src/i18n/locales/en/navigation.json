@@ -53,6 +53,7 @@
     "qualityAnalytics": "Quality Analytics",
     "oeeAnalytics": "OEE Analytics",
     "reliabilityAnalytics": "Reliability Analytics",
+    "backToAdmin": "Back to Admin",
     "sections": {
       "overview": "OVERVIEW",
       "operations": "OPERATIONS",
