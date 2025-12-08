@@ -128,7 +128,11 @@
     "machineCreatedSuccess": "Maschinen-Arbeiter erstellt!",
     "machineApiKeyWarning": "Speichern Sie diesen API-Schlüssel jetzt - er wird NICHT erneut angezeigt!",
     "copyApiKey": "API-Schlüssel kopieren",
-    "apiKeyCopied": "API-Schlüssel in Zwischenablage kopiert"
+    "apiKeyCopied": "API-Schlüssel in Zwischenablage kopiert",
+    "shopFloorOperators": "Werkstatt-Bediener",
+    "shopFloorOperatorsDescription": "PIN-basierte Bediener für gemeinsam genutzte Werkstatt-Terminals. Diese Bediener melden sich mit Mitarbeiternummer + PIN an.",
+    "operatorLocked": "Gesperrt",
+    "lastLogin": "Letzte Anmeldung"
   },
   "activityMonitor": {
     "title": "Aktivitätsmonitor",

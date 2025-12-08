@@ -365,7 +365,11 @@
     "machineCreatedSuccess": "Machine-werker aangemaakt!",
     "machineApiKeyWarning": "Sla deze API-sleutel nu op - deze wordt NIET opnieuw getoond!",
     "copyApiKey": "API-sleutel kopiëren",
-    "apiKeyCopied": "API-sleutel gekopieerd naar klembord"
+    "apiKeyCopied": "API-sleutel gekopieerd naar klembord",
+    "shopFloorOperators": "Werkvloer Operators",
+    "shopFloorOperatorsDescription": "PIN-gebaseerde operators voor gedeelde werkvloerterminals. Deze operators loggen in met Personeelsnummer + PIN.",
+    "operatorLocked": "Geblokkeerd",
+    "lastLogin": "Laatste login"
   },
   "activityMonitor": {
     "title": "Activiteitenmonitor",

@@ -215,7 +215,11 @@
     "machineCreatedSuccess": "Machine worker created!",
     "machineApiKeyWarning": "Save this API key now - it will NOT be shown again!",
     "copyApiKey": "Copy API Key",
-    "apiKeyCopied": "API key copied to clipboard"
+    "apiKeyCopied": "API key copied to clipboard",
+    "shopFloorOperators": "Shop Floor Operators",
+    "shopFloorOperatorsDescription": "PIN-based operators for shared shop floor terminals. These operators login with Employee ID + PIN.",
+    "operatorLocked": "Locked",
+    "lastLogin": "Last login"
   },
   "activityMonitor": {
     "title": "Activity Monitor",
