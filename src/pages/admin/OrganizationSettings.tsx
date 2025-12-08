@@ -33,6 +33,7 @@ export default function OrganizationSettings() {
   const [formData, setFormData] = useState({
     name: '',
     company_name: '',
+    abbreviation: '',
     timezone: 'UTC',
     billing_email: '',
     factory_opening_time: '07:00',
@@ -76,6 +77,7 @@ export default function OrganizationSettings() {
       setFormData({
         name: data.name || '',
         company_name: data.company_name || '',
+        abbreviation: (data as any).abbreviation || '',
         timezone: data.timezone || 'UTC',
         billing_email: data.billing_email || '',
         factory_opening_time: formatTime(data.factory_opening_time) || '07:00',
@@ -108,6 +110,7 @@ export default function OrganizationSettings() {
       const updateData: Record<string, unknown> = {
         name: formData.name,
         company_name: formData.company_name,
+        abbreviation: formData.abbreviation.toUpperCase() || null,
         timezone: formData.timezone,
         billing_email: formData.billing_email,
         factory_opening_time: formData.factory_opening_time + ':00',
@@ -194,6 +197,21 @@ export default function OrganizationSettings() {
                   onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
                   placeholder="Acme Manufacturing"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="abbreviation">Abbreviation (Employee ID Prefix)</Label>
+                <Input
+                  id="abbreviation"
+                  value={formData.abbreviation}
+                  onChange={(e) => setFormData({ ...formData, abbreviation: e.target.value.toUpperCase().slice(0, 5) })}
+                  placeholder="VMC"
+                  maxLength={5}
+                  className="uppercase"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Used for auto-generated employee IDs (e.g., VMC0001, VMC0002)
+                </p>
               </div>
             </div>
 
