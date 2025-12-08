@@ -2954,15 +2954,6 @@ export type Database = {
             Returns: string
           }
         | {
-            Args: {
-              p_employee_id: string
-              p_full_name: string
-              p_pin: string
-              p_role?: Database["public"]["Enums"]["app_role"]
-            }
-            Returns: string
-          }
-        | {
             Args: { p_employee_id?: string; p_full_name: string; p_pin: string }
             Returns: {
               employee_id: string
