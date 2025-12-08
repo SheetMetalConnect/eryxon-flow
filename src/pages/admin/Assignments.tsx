@@ -315,9 +315,8 @@ export default function Assignments() {
 
       const { error } = await supabase.rpc('create_operator_with_pin' as any, {
         p_full_name: operatorForm.full_name,
-        p_employee_id: employeeId,
+        p_employee_id: employeeId || null,
         p_pin: operatorForm.pin,
-        p_role: 'operator',
       });
 
       if (error) throw error;
