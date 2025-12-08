@@ -69,24 +69,32 @@ Deno.serve(async (req: Request) => {
       )
     }
 
-    // Initialize Supabase client with user's auth
+    // Initialize Supabase client with service role for user verification
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: { Authorization: authHeader }
-      }
-    })
+    // Extract the JWT token from the auth header
+    const token = authHeader.replace('Bearer ', '')
 
-    // Get current user info for the email
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    // Create admin client for user verification
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
+
+    // Verify the user's token
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token)
     if (userError || !user) {
+      console.error('User verification failed:', userError)
       return new Response(
         JSON.stringify({ error: 'Unable to verify user' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    // Create client with user context for RLS operations
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      global: {
+        headers: { Authorization: authHeader }
+      }
+    })
 
     // Get inviter's profile and tenant info
     const { data: profile, error: profileError } = await supabase
