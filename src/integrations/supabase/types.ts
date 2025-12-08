@@ -2489,6 +2489,7 @@ export type Database = {
       }
       tenants: {
         Row: {
+          abbreviation: string | null
           auto_stop_tracking: boolean | null
           billing_country_code: string | null
           billing_email: string | null
@@ -2511,6 +2512,7 @@ export type Database = {
           max_parts_per_month: number | null
           max_storage_gb: number | null
           name: string
+          next_operator_number: number | null
           onboarding_completed_at: string | null
           payment_failed_at: string | null
           plan: Database["public"]["Enums"]["subscription_plan"]
@@ -2535,6 +2537,7 @@ export type Database = {
           working_days_mask: number | null
         }
         Insert: {
+          abbreviation?: string | null
           auto_stop_tracking?: boolean | null
           billing_country_code?: string | null
           billing_email?: string | null
@@ -2557,6 +2560,7 @@ export type Database = {
           max_parts_per_month?: number | null
           max_storage_gb?: number | null
           name: string
+          next_operator_number?: number | null
           onboarding_completed_at?: string | null
           payment_failed_at?: string | null
           plan?: Database["public"]["Enums"]["subscription_plan"]
@@ -2581,6 +2585,7 @@ export type Database = {
           working_days_mask?: number | null
         }
         Update: {
+          abbreviation?: string | null
           auto_stop_tracking?: boolean | null
           billing_country_code?: string | null
           billing_email?: string | null
@@ -2603,6 +2608,7 @@ export type Database = {
           max_parts_per_month?: number | null
           max_storage_gb?: number | null
           name?: string
+          next_operator_number?: number | null
           onboarding_completed_at?: string | null
           payment_failed_at?: string | null
           plan?: Database["public"]["Enums"]["subscription_plan"]
@@ -2956,6 +2962,14 @@ export type Database = {
             }
             Returns: string
           }
+        | {
+            Args: { p_employee_id?: string; p_full_name: string; p_pin: string }
+            Returns: {
+              employee_id: string
+              message: string
+              profile_id: string
+            }[]
+          }
       delete_tenant_data: { Args: { p_tenant_id: string }; Returns: Json }
       delete_user_account: { Args: never; Returns: Json }
       disable_demo_mode: { Args: { p_tenant_id: string }; Returns: undefined }
@@ -2991,6 +3005,10 @@ export type Database = {
         Returns: string
       }
       generate_sync_hash: { Args: { payload: Json }; Returns: string }
+      generate_tenant_abbreviation: {
+        Args: { p_name: string }
+        Returns: string
+      }
       get_activity_logs: {
         Args: {
           p_action?: string
