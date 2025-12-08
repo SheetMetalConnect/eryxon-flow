@@ -89,26 +89,34 @@ Deno.serve(async (req: Request) => {
       )
     }
 
-    // Create client with user context for RLS operations
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      global: {
-        headers: { Authorization: authHeader }
-      }
-    })
-
-    // Get inviter's profile and tenant info
-    const { data: profile, error: profileError } = await supabase
+    // Get inviter's profile and tenant info using admin client (bypasses RLS)
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('full_name, tenant_id, tenants(name, company_name)')
+      .select('full_name, tenant_id')
       .eq('id', user.id)
       .single()
 
     if (profileError || !profile) {
+      console.error('Profile fetch error:', profileError)
       return new Response(
         JSON.stringify({ error: 'Unable to get user profile' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    // Get tenant info separately
+    const { data: tenantInfo } = await supabaseAdmin
+      .from('tenants')
+      .select('name, company_name')
+      .eq('id', profile.tenant_id)
+      .single()
+
+    // Create client with user context for RLS operations (for invitation RPC)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      global: {
+        headers: { Authorization: authHeader }
+      }
+    })
 
     // Create invitation using RPC
     const { data: invitationId, error: invitationError } = await supabase.rpc('create_invitation', {
@@ -148,8 +156,6 @@ Deno.serve(async (req: Request) => {
     // Build invitation URL
     const invitationUrl = `${appUrl}/accept-invitation/${invitation.token}`
 
-    // Get tenant info (tenants is joined as a single object from profiles)
-    const tenantInfo = (profile as any).tenants as { name: string; company_name: string } | null
     const organizationName = tenantInfo?.company_name || tenantInfo?.name || 'your organization'
     const inviterName = profile.full_name || user.email || 'A team member'
     const roleDisplay = role === 'admin' ? 'Administrator' : 'Operator'
