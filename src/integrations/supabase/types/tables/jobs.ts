@@ -463,7 +463,8 @@ export type AssignmentsTable = {
     created_at: string | null
     id: string
     job_id: string | null
-    operator_id: string
+    operator_id: string | null
+    shop_floor_operator_id: string | null
     part_id: string | null
     status: DatabaseEnums["assignment_status"] | null
     tenant_id: string
@@ -474,7 +475,8 @@ export type AssignmentsTable = {
     created_at?: string | null
     id?: string
     job_id?: string | null
-    operator_id: string
+    operator_id?: string | null
+    shop_floor_operator_id?: string | null
     part_id?: string | null
     status?: DatabaseEnums["assignment_status"] | null
     tenant_id: string
@@ -485,7 +487,8 @@ export type AssignmentsTable = {
     created_at?: string | null
     id?: string
     job_id?: string | null
-    operator_id?: string
+    operator_id?: string | null
+    shop_floor_operator_id?: string | null
     part_id?: string | null
     status?: DatabaseEnums["assignment_status"] | null
     tenant_id?: string
@@ -511,6 +514,13 @@ export type AssignmentsTable = {
       columns: ["operator_id"]
       isOneToOne: false
       referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },
+    {
+      foreignKeyName: "assignments_shop_floor_operator_id_fkey"
+      columns: ["shop_floor_operator_id"]
+      isOneToOne: false
+      referencedRelation: "operators"
       referencedColumns: ["id"]
     },
     {

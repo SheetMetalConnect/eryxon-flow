@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchOperationsWithDetails, OperationWithDetails } from "@/lib/database";
 import OperationCard from "@/components/operator/OperationCard";
@@ -9,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Search, Filter, Eye, EyeOff, LayoutGrid, List } from "lucide-react";
+import { Loader2, Search, Filter, Eye, EyeOff, LayoutGrid, List, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -21,6 +22,13 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { isAfter, isBefore, addDays, startOfToday, endOfToday } from "date-fns";
+import { useTranslation } from "react-i18next";
+
+// Operator assignment info for parts
+interface PartAssignment {
+  part_id: string;
+  assigned_by_name: string;
+}
 
 const getStageClass = (cellName: string) => {
   const name = cellName.toLowerCase();
@@ -33,7 +41,9 @@ const getStageClass = (cellName: string) => {
 };
 
 export default function WorkQueue() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
+  const { activeOperator } = useOperator();
   const [operations, setOperations] = useState<OperationWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMaterial, setSelectedMaterial] = useState<string>("all");
@@ -47,12 +57,13 @@ export default function WorkQueue() {
   const [showCompleted, setShowCompleted] = useState<boolean>(true);
   const [viewMode, setViewMode] = useState<"detailed" | "compact">("detailed");
   const [showFilters, setShowFilters] = useState<boolean>(false);
+  const [myAssignments, setMyAssignments] = useState<PartAssignment[]>([]);
 
   useEffect(() => {
     if (!profile?.tenant_id) return;
     loadData();
     return setupRealtimeSubscriptions();
-  }, [profile?.tenant_id]);
+  }, [profile?.tenant_id, activeOperator?.id]);
 
   const loadData = async () => {
     if (!profile?.tenant_id) return;
@@ -70,6 +81,33 @@ export default function WorkQueue() {
 
       setOperations(operationsData);
       if (cellsData.data) setCells(cellsData.data);
+
+      // Load assignments for the active shop floor operator
+      if (activeOperator?.id) {
+        const { data: assignmentsData } = await supabase
+          .from("assignments")
+          .select(`
+            part_id,
+            assigned_by_user:profiles!assignments_assigned_by_fkey(full_name)
+          `)
+          .eq("tenant_id", profile.tenant_id)
+          .eq("shop_floor_operator_id", activeOperator.id)
+          .eq("status", "assigned");
+
+        if (assignmentsData) {
+          setMyAssignments(
+            assignmentsData
+              .filter((a): a is { part_id: string; assigned_by_user: { full_name: string } } =>
+                a.part_id !== null && a.assigned_by_user !== null)
+              .map(a => ({
+                part_id: a.part_id,
+                assigned_by_name: a.assigned_by_user.full_name,
+              }))
+          );
+        }
+      } else {
+        setMyAssignments([]);
+      }
     } catch (error) {
       console.error("Error loading data:", error);
       toast.error("Failed to load work queue");
@@ -202,6 +240,13 @@ export default function WorkQueue() {
     }
     return 0;
   });
+
+  // Create a map of part_id -> assignment info for quick lookup
+  const assignmentsByPartId = useMemo(() => {
+    const map = new Map<string, PartAssignment>();
+    myAssignments.forEach(a => map.set(a.part_id, a));
+    return map;
+  }, [myAssignments]);
 
   // Group operations by cell
   const operationsByCell = cells
@@ -419,14 +464,19 @@ export default function WorkQueue() {
                       No operations
                     </div>
                   ) : (
-                    operations.map((operation) => (
-                      <OperationCard
-                        key={operation.id}
-                        operation={operation}
-                        onUpdate={loadData}
-                        compact={viewMode === "compact"}
-                      />
-                    ))
+                    operations.map((operation) => {
+                      const assignment = assignmentsByPartId.get(operation.part.id);
+                      return (
+                        <OperationCard
+                          key={operation.id}
+                          operation={operation}
+                          onUpdate={loadData}
+                          compact={viewMode === "compact"}
+                          assignedToMe={!!assignment}
+                          assignedByName={assignment?.assigned_by_name}
+                        />
+                      );
+                    })
                   )}
                 </div>
               </div>
