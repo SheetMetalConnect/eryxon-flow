@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
+import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -455,6 +456,17 @@ export default function Jobs() {
     },
   ], [t]);
 
+  // Responsive column visibility - hide less important columns on mobile
+  const { columnVisibility, isMobile } = useResponsiveColumns([
+    { id: "job_number", alwaysVisible: true },
+    { id: "due_date", alwaysVisible: true },
+    { id: "status", alwaysVisible: true },
+    { id: "flow", hideBelow: "lg" },      // Hide on mobile/tablet
+    { id: "details", hideBelow: "md" },   // Hide on mobile
+    { id: "files", hideBelow: "md" },     // Hide on mobile
+    { id: "actions", alwaysVisible: true },
+  ]);
+
   // Calculate stats
   const jobStats = useMemo(() => {
     if (!jobs) return { total: 0, active: 0, completed: 0, overdue: 0 };
@@ -493,18 +505,20 @@ export default function Jobs() {
       />
 
       {/* Jobs Table */}
-      <div className="glass-card p-4">
+      <div className="glass-card p-2 sm:p-4">
         <DataTable
           columns={columns}
           data={jobs || []}
           filterableColumns={filterableColumns}
           searchPlaceholder={t("jobs.searchJobs")}
           loading={isLoading}
-          pageSize={20}
+          pageSize={isMobile ? 10 : 20}
           emptyMessage={t("jobs.noJobsFound") || "No jobs found."}
           searchDebounce={200}
           onRowClick={(row) => setSelectedJobId(row.id)}
           compact={true}
+          columnVisibility={columnVisibility}
+          maxHeight={isMobile ? "calc(100vh - 320px)" : "calc(100vh - 280px)"}
         />
       </div>
 
@@ -526,13 +540,13 @@ export default function Jobs() {
         />
       )}
 
-      {/* File Viewer Dialog */}
+      {/* File Viewer Dialog - Responsive */}
       <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
-        <DialogContent className="glass-card max-w-7xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle className="text-xl">{currentFileTitle}</DialogTitle>
+        <DialogContent className="glass-card w-full h-[100dvh] sm:h-[90vh] sm:max-w-6xl flex flex-col p-0 rounded-none sm:rounded-lg inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
+          <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">
+            <DialogTitle className="text-sm sm:text-base pr-8 truncate">{currentFileTitle}</DialogTitle>
           </DialogHeader>
-          <div className="w-full h-[75vh] rounded-lg overflow-hidden border border-white/10">
+          <div className="flex-1 overflow-hidden min-h-0 rounded-lg border border-white/10 m-2 sm:m-4">
             {currentFileType === "step" && currentFileUrl && (
               <STEPViewer url={currentFileUrl} />
             )}

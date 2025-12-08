@@ -49,11 +49,17 @@ const colorClasses = {
 
 /**
  * Compact stats row for admin pages.
- * Displays 3-4 key metrics in a horizontal row.
+ * Displays 3-4 key metrics in a responsive grid.
+ * Mobile: 2 columns, Tablet+: up to 4 columns
  */
 export function PageStatsRow({ stats, className }: PageStatsRowProps) {
   return (
-    <div className={cn("grid gap-3", className)} style={{ gridTemplateColumns: `repeat(${Math.min(stats.length, 4)}, 1fr)` }}>
+    <div className={cn(
+      "grid gap-2 sm:gap-3",
+      // Responsive grid: 2 cols on mobile, up to 4 on larger screens
+      "grid-cols-2 md:grid-cols-4",
+      className
+    )}>
       {stats.map((stat, index) => {
         const colors = colorClasses[stat.color || "muted"];
         const Icon = stat.icon;
@@ -62,19 +68,19 @@ export function PageStatsRow({ stats, className }: PageStatsRowProps) {
           <div
             key={index}
             className={cn(
-              "glass-card p-3 flex items-center gap-3 transition-all",
-              stat.onClick && "cursor-pointer hover:scale-[1.02] hover:shadow-lg"
+              "glass-card p-2 sm:p-3 flex items-center gap-2 sm:gap-3 transition-all",
+              stat.onClick && "cursor-pointer hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
             )}
             onClick={stat.onClick}
           >
-            <div className={cn("p-2 rounded-lg shrink-0", colors.bg)}>
-              <Icon className={cn("h-4 w-4", colors.text)} />
+            <div className={cn("p-1.5 sm:p-2 rounded-lg shrink-0", colors.bg)}>
+              <Icon className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4", colors.text)} />
             </div>
-            <div className="min-w-0">
-              <div className={cn("text-lg font-bold leading-none", colors.value)}>
+            <div className="min-w-0 flex-1">
+              <div className={cn("text-base sm:text-lg font-bold leading-none", colors.value)}>
                 {stat.value}
               </div>
-              <div className="text-xs text-muted-foreground truncate mt-0.5">
+              <div className="text-[10px] sm:text-xs text-muted-foreground truncate mt-0.5">
                 {stat.label}
               </div>
             </div>
