@@ -746,9 +746,11 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                 </div>
               )}
             </div>
-          </div>
+            </TabsContent>
 
-          {/* Routing Visualization */}
+            {/* Operations Tab */}
+            <TabsContent value="operations" className="p-4 sm:p-6 space-y-5 m-0">
+              {/* Routing Visualization */}
           <div>
             <Label className="text-lg">{t("qrm.routing")}</Label>
             <div className="mt-3 border rounded-lg p-4 bg-muted">
@@ -1276,7 +1278,9 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               )}
             </div>
           </div>
-        </div>
+            </TabsContent>
+          </div>
+        </Tabs>
       </DialogContent>
 
       {/* File Viewer Dialog - Full screen on mobile */}
