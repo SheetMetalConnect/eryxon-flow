@@ -65,26 +65,34 @@ export const OperatorLayout = ({ children }: OperatorLayoutProps) => {
         {/* Top Header - Glass Morphism - Compact */}
         <header className="sticky top-0 z-50 w-full glass-card border-b border-border-subtle">
           <div className="flex items-center justify-between h-12 px-3 sm:px-4">
-            {/* Logo/Brand */}
-            <div className="flex items-center gap-2">
-              <Factory className="h-6 w-6 text-primary" strokeWidth={1.5} />
-              <span className="hidden sm:block text-sm font-bold hero-title">
-                {t('app.name')}
+            {/* Left: Tenant/Company Name */}
+            <div className="flex items-center gap-2 min-w-0">
+              <Building2 className="h-5 w-5 text-primary shrink-0" />
+              <span className="text-sm font-bold truncate max-w-[120px] sm:max-w-[200px]">
+                {tenant?.company_name || tenant?.name || t('app.name')}
               </span>
+            </div>
+
+            {/* Center: Active Operator - Always visible and prominent */}
+            <div className="flex items-center gap-2">
+              {activeOperator ? (
+                <div className="flex items-center gap-2 px-2 sm:px-3 py-1 rounded-full bg-green-500/10 border border-green-500/30">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0" />
+                  <UserCheck className="h-3.5 w-3.5 text-green-500 shrink-0 hidden sm:block" />
+                  <span className="text-xs font-bold text-green-500 truncate max-w-[80px] sm:max-w-[120px]">
+                    {activeOperator.full_name}
+                  </span>
+                  <span className="text-[10px] text-green-500/70 font-mono hidden sm:block">
+                    {activeOperator.employee_id}
+                  </span>
+                </div>
+              ) : (
+                <OperatorSwitcher variant="button" className="h-8" />
+              )}
             </div>
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-1.5">
-              {/* Active Operator Badge - Desktop */}
-              <div className="hidden sm:block">
-                <ActiveOperatorBadge />
-              </div>
-
-              {/* Operator Switcher - Mobile */}
-              <div className="sm:hidden">
-                <OperatorSwitcher variant="compact" />
-              </div>
-
               {/* Search Button */}
               <SearchTriggerButton onClick={() => setSearchOpen(true)} compact />
 

@@ -145,7 +145,7 @@ export default function OperatorView() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { profile, tenant } = useAuth();
-  const { activeOperator, verifyAndSwitchOperator, clearActiveOperator } = useOperator();
+  const { activeOperator, isLoading: operatorLoading, verifyAndSwitchOperator, clearActiveOperator } = useOperator();
   const operatorId = activeOperator?.id || profile?.id;
 
   // Responsive breakpoints
@@ -153,8 +153,8 @@ export default function OperatorView() {
   const isTablet = useMediaQuery("(min-width: 640px) and (max-width: 1023px)");
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
-  // Operator login state
-  const [showOperatorLogin, setShowOperatorLogin] = useState(!activeOperator);
+  // Operator login state - initialize as false, will be set after operatorLoading completes
+  const [showOperatorLogin, setShowOperatorLogin] = useState(false);
   const [employeeId, setEmployeeId] = useState("");
   const [pin, setPin] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
@@ -192,10 +192,12 @@ export default function OperatorView() {
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Update operator login visibility when activeOperator changes
+  // Update operator login visibility when activeOperator changes (only after loading completes)
   useEffect(() => {
-    setShowOperatorLogin(!activeOperator);
-  }, [activeOperator]);
+    if (!operatorLoading) {
+      setShowOperatorLogin(!activeOperator);
+    }
+  }, [activeOperator, operatorLoading]);
 
   // Load jobs
   useEffect(() => {
@@ -853,7 +855,8 @@ export default function OperatorView() {
     );
   }
 
-  if (loading && !jobs.length) {
+  // Show loading spinner while operator context is loading or jobs are loading
+  if (operatorLoading || (loading && !jobs.length)) {
     return (
       <>
         <AnimatedBackground />

@@ -4,11 +4,12 @@ import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Square } from "lucide-react";
+import { Clock, Square, ChevronDown, ChevronUp } from "lucide-react";
 import { stopTimeTracking } from "@/lib/database";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 interface ActiveEntry {
   id: string;
@@ -32,6 +33,7 @@ export default function CurrentlyTimingWidget() {
   const operatorId = activeOperator?.id || profile?.id;
   const [activeEntries, setActiveEntries] = useState<ActiveEntry[]>([]);
   const [, setTick] = useState(0);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const loadActiveEntries = useCallback(async () => {
     if (!operatorId) return;
@@ -108,37 +110,71 @@ export default function CurrentlyTimingWidget() {
   if (activeEntries.length === 0) return null;
 
   return (
-    <Card className="p-4 bg-active-work/5 border-active-work/30">
-      <div className="flex items-center gap-2 mb-3">
-        <Clock className="h-5 w-5 text-active-work" />
-        <h3 className="font-semibold">{t("operations.currentlyTiming")}</h3>
-      </div>
-      <div className="space-y-2">
-        {activeEntries.map((entry) => (
-          <div
-            key={entry.id}
-            className="flex items-center justify-between p-3 bg-background rounded-lg border"
-          >
-            <div className="flex-1 min-w-0">
-              <div className="font-medium truncate">{entry.operation.operation_name}</div>
-              <div className="text-sm text-muted-foreground">
-                {t("operations.job")} {entry.operation.part.job.job_number} • {entry.operation.part.part_number}
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {t("operations.started")} {formatDistanceToNow(new Date(entry.start_time), { addSuffix: true })}
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleStop(entry.operation_id)}
-              className="gap-2 ml-4"
+    <Card className="bg-active-work/5 border-active-work/30 overflow-hidden">
+      {/* Header - always visible, clickable to toggle */}
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="w-full flex items-center justify-between p-3 hover:bg-active-work/10 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <Clock className="h-4 w-4 text-active-work animate-pulse" />
+          <span className="font-semibold text-sm">{t("operations.currentlyTiming")}</span>
+          <span className="text-xs text-active-work bg-active-work/20 px-1.5 py-0.5 rounded-full">
+            {activeEntries.length}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {/* Show first entry summary when collapsed */}
+          {isCollapsed && activeEntries[0] && (
+            <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+              {activeEntries[0].operation.operation_name}
+            </span>
+          )}
+          {isCollapsed ? (
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+          )}
+        </div>
+      </button>
+
+      {/* Content - collapsible */}
+      <div
+        className={cn(
+          "transition-all duration-200 ease-in-out overflow-hidden",
+          isCollapsed ? "max-h-0 opacity-0" : "max-h-[500px] opacity-100"
+        )}
+      >
+        <div className="px-3 pb-3 space-y-2">
+          {activeEntries.map((entry) => (
+            <div
+              key={entry.id}
+              className="flex items-center justify-between p-3 bg-background rounded-lg border"
             >
-              <Square className="h-4 w-4" />
-              {t("operations.stop")}
-            </Button>
-          </div>
-        ))}
+              <div className="flex-1 min-w-0">
+                <div className="font-medium truncate text-sm">{entry.operation.operation_name}</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("operations.job")} {entry.operation.part.job.job_number} • {entry.operation.part.part_number}
+                </div>
+                <div className="text-[10px] text-muted-foreground mt-1">
+                  {t("operations.started")} {formatDistanceToNow(new Date(entry.start_time), { addSuffix: true })}
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleStop(entry.operation_id);
+                }}
+                className="gap-1.5 ml-3 h-8 text-xs"
+              >
+                <Square className="h-3 w-3" />
+                {t("operations.stop")}
+              </Button>
+            </div>
+          ))}
+        </div>
       </div>
     </Card>
   );

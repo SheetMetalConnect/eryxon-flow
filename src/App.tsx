@@ -184,7 +184,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <OperatorTerminal />
+              <OperatorView />
             </Layout>
           </ProtectedRoute>
         }
