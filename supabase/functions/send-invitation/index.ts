@@ -82,9 +82,12 @@ Deno.serve(async (req: Request) => {
     // Verify the user's token
     const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token)
     if (userError || !user) {
-      console.error('User verification failed:', userError)
+      console.error('User verification failed:', userError?.message || 'No user found')
       return new Response(
-        JSON.stringify({ error: 'Unable to verify user' }),
+        JSON.stringify({ 
+          error: 'Session expired. Please refresh the page and try again.',
+          details: userError?.message 
+        }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }

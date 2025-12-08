@@ -54,10 +54,15 @@ export function useInvitations() {
     }
 
     try {
-      // Get the current session for auth
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('Not authenticated');
+      // Get the current session for auth - refresh if needed
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        // Try to refresh the session
+        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError || !refreshData.session) {
+          toast.error('Session expired. Please log in again.');
+          throw new Error('Session expired');
+        }
       }
 
       // Call the Edge Function to create invitation and send email
@@ -70,7 +75,13 @@ export function useInvitations() {
       });
 
       if (funcError) {
-        throw new Error(funcError.message || 'Failed to create invitation');
+        // Parse the error message if it's JSON
+        let errorMessage = funcError.message || 'Failed to create invitation';
+        try {
+          const parsed = JSON.parse(errorMessage);
+          errorMessage = parsed.error || errorMessage;
+        } catch { /* ignore parsing errors */ }
+        throw new Error(errorMessage);
       }
 
       const result = funcData;
