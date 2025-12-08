@@ -138,7 +138,25 @@
     "loginFailed": "Login failed. Please contact your supervisor.",
     "unexpectedError": "An unexpected error occurred. Please try again.",
     "adminLogin": "Admin Login",
+    "adminDashboard": "Admin Dashboard",
     "helpText": "Need help? Contact your supervisor or the IT department.",
-    "footerText": "Eryxon MES - Manufacturing Execution System"
+    "footerText": "Eryxon MES - Manufacturing Execution System",
+    "authRequired": "Authentication Required",
+    "authRequiredDesc": "Please log in with your terminal account to access the shop floor.",
+    "goToLogin": "Go to Login",
+    "currentOperator": "Current Operator",
+    "continueAs": "Continue as",
+    "switchOperator": "Switch Operator",
+    "switchToAnother": "Switch to Another Operator",
+    "accountLocked": "Account Temporarily Locked",
+    "tryAgainIn": "Try again in {{minutes}} minute(s)",
+    "attemptsRemaining": "{{count}} attempt(s) remaining"
+  },
+  "operator": {
+    "switchOperator": "Switch Operator",
+    "selectOperator": "Select Operator",
+    "clockedIn": "Clocked In",
+    "clockOut": "Clock Out",
+    "noOperatorSelected": "No operator selected"
   }
 }

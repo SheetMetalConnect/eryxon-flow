@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
     fetchOperationsWithDetails,
@@ -29,6 +30,8 @@ interface Cell {
 export default function OperatorTerminal() {
     const { t } = useTranslation();
     const { profile } = useAuth();
+    const { activeOperator } = useOperator();
+    const operatorId = activeOperator?.id || profile?.id;
     const [operations, setOperations] = useState<OperationWithDetails[]>([]);
     const [cells, setCells] = useState<Cell[]>([]);
     const [selectedCellId, setSelectedCellId] = useState<string>(() => localStorage.getItem("operator_selected_cell") || "all");
@@ -197,7 +200,7 @@ export default function OperatorTerminal() {
             activeTimeEntryId: op.active_time_entry?.id,
             activeOperatorId: op.active_time_entry?.operator_id,
             activeOperatorName: op.active_time_entry?.operator?.full_name,
-            isCurrentUserClocked: op.active_time_entry?.operator_id === profile?.id,
+            isCurrentUserClocked: op.active_time_entry?.operator_id === operatorId,
             notes: op.notes,
             cellName: op.cell.name,
             cellColor: op.cell.color || "#3b82f6",
@@ -210,7 +213,7 @@ export default function OperatorTerminal() {
         };
     };
 
-    const allJobs = useMemo(() => operations.map(mapOperationToJob), [operations, profile?.id]);
+    const allJobs = useMemo(() => operations.map(mapOperationToJob), [operations, operatorId]);
 
     // Filter by Cell
     const filteredJobs = useMemo(() => {
@@ -282,9 +285,9 @@ export default function OperatorTerminal() {
 
     // Actions
     const handleStart = async () => {
-        if (!selectedJob || !profile) return;
+        if (!selectedJob || !operatorId || !profile?.tenant_id) return;
         try {
-            await startTimeTracking(selectedJob.operationId, profile.id, profile.tenant_id);
+            await startTimeTracking(selectedJob.operationId, operatorId, profile.tenant_id);
             toast.success(`Started: ${selectedJob.currentOp}`);
             // Data will reload via subscription
         } catch (error: any) {
@@ -293,9 +296,9 @@ export default function OperatorTerminal() {
     };
 
     const handlePause = async () => {
-        if (!selectedJob || !profile) return;
+        if (!selectedJob || !operatorId) return;
         try {
-            await stopTimeTracking(selectedJob.operationId, profile.id);
+            await stopTimeTracking(selectedJob.operationId, operatorId);
             toast.success("Operation paused");
         } catch (error: any) {
             toast.error(error.message || "Failed to pause");
@@ -303,9 +306,9 @@ export default function OperatorTerminal() {
     };
 
     const handleComplete = async () => {
-        if (!selectedJob || !profile) return;
+        if (!selectedJob || !operatorId || !profile?.tenant_id) return;
         try {
-            await completeOperation(selectedJob.operationId, profile.tenant_id, profile.id);
+            await completeOperation(selectedJob.operationId, profile.tenant_id, operatorId);
             toast.success("Operation completed");
             setSelectedJobId(null); // Deselect
         } catch (error: any) {

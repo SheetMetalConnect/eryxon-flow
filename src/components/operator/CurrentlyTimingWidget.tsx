@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,11 +28,13 @@ interface ActiveEntry {
 export default function CurrentlyTimingWidget() {
   const { t } = useTranslation();
   const { profile } = useAuth();
+  const { activeOperator } = useOperator();
+  const operatorId = activeOperator?.id || profile?.id;
   const [activeEntries, setActiveEntries] = useState<ActiveEntry[]>([]);
   const [, setTick] = useState(0);
 
   const loadActiveEntries = useCallback(async () => {
-    if (!profile?.id) return;
+    if (!operatorId) return;
 
     const { data, error } = await supabase
       .from("time_entries")
@@ -49,16 +52,16 @@ export default function CurrentlyTimingWidget() {
         )
       `
       )
-      .eq("operator_id", profile.id)
+      .eq("operator_id", operatorId)
       .is("end_time", null);
 
     if (!error && data) {
       setActiveEntries(data as any);
     }
-  }, [profile?.id]);
+  }, [operatorId]);
 
   useEffect(() => {
-    if (!profile?.id) return;
+    if (!operatorId) return;
 
     loadActiveEntries();
 
@@ -76,7 +79,7 @@ export default function CurrentlyTimingWidget() {
           event: "*",
           schema: "public",
           table: "time_entries",
-          filter: `operator_id=eq.${profile.id}`,
+          filter: `operator_id=eq.${operatorId}`,
         },
         () => {
           loadActiveEntries();
@@ -88,13 +91,13 @@ export default function CurrentlyTimingWidget() {
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
-  }, [profile?.id, loadActiveEntries]);
+  }, [operatorId, loadActiveEntries]);
 
   const handleStop = async (operationId: string) => {
-    if (!profile?.id) return;
+    if (!operatorId) return;
 
     try {
-      await stopTimeTracking(operationId, profile.id);
+      await stopTimeTracking(operationId, operatorId);
       toast.success(t("operations.timeTrackingStopped"));
       loadActiveEntries();
     } catch (error: any) {

@@ -50,7 +50,8 @@
     "no": "Nee",
     "optional": "optioneel",
     "done": "Gereed",
-    "creating": "Aanmaken..."
+    "creating": "Aanmaken...",
+    "helpAndDocs": "Help & Documentatie"
   },
   "forms": {
     "required": "Dit veld is verplicht",

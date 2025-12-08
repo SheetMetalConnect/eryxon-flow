@@ -305,18 +305,15 @@ export default function Auth() {
             </div>
           )}
 
-          {/* Terminal Login Link */}
+          {/* Shop Floor Terminal Info */}
           {isLogin && (
             <div className="mt-4 pt-4 border-t border-white/10">
-              <Link
-                to={ROUTES.OPERATOR.TERMINAL_LOGIN}
-                className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <Monitor className="h-4 w-4" />
-                <span>{t("auth.terminalLogin")}</span>
-              </Link>
-              <p className="text-xs text-muted-foreground/60 text-center mt-1">
-                {t("auth.terminalLoginHint")}
+                <span>{t("auth.shopFloorTerminal")}</span>
+              </div>
+              <p className="text-xs text-muted-foreground/60 text-center mt-2 leading-relaxed">
+                {t("auth.shopFloorTerminalHint")}
               </p>
             </div>
           )}

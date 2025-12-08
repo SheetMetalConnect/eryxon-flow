@@ -51,7 +51,8 @@
     "yes": "Yes",
     "no": "No",
     "done": "Done",
-    "creating": "Creating..."
+    "creating": "Creating...",
+    "helpAndDocs": "Help & Docs"
   },
   "forms": {
     "required": "This field is required",
