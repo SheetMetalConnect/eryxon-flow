@@ -4,7 +4,6 @@ import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchOperationsWithDetails, OperationWithDetails } from "@/lib/database";
 import OperationCard from "@/components/operator/OperationCard";
-import CurrentlyTimingWidget from "@/components/operator/CurrentlyTimingWidget";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -272,9 +271,6 @@ export default function WorkQueue() {
   return (
     <>
       <div className="space-y-4">
-        {/* Currently Timing Widget */}
-        <CurrentlyTimingWidget />
-
         {/* Stats Card */}
         <Card className="glass-card p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
