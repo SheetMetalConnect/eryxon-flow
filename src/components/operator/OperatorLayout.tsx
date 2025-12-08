@@ -210,37 +210,14 @@ export const OperatorLayout = ({ children, showBackToAdmin = false }: OperatorLa
           </div>
         </div>
 
-        {/* Desktop Navigation Tabs - Hidden on mobile - Compact */}
-        <div className="hidden sm:block sticky top-[calc(3rem+theme(spacing.12))] z-30 border-b border-border-subtle glass-card">
-          <div className="flex gap-0.5 px-4 py-1.5">
-            {navItems.map((item) => (
-              <Button
-                key={item.path}
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(item.path)}
-                className={cn(
-                  "gap-1.5 transition-base h-7 text-xs px-2.5",
-                  isActive(item.path)
-                    ? "nav-item-active"
-                    : "nav-item-hover"
-                )}
-              >
-                <item.icon className="h-3.5 w-3.5" />
-                {item.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {/* Main Content - Reduced padding */}
-        <main className="flex-1 px-3 sm:px-4 py-3 sm:py-4 pb-16 sm:pb-4">
+        {/* Main Content */}
+        <main className="flex-1 px-3 sm:px-4 py-3 sm:py-4 pb-20">
           {children}
         </main>
 
-        {/* Mobile Bottom Navigation - Fixed - Compact */}
-        <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border-subtle glass-card">
-          <div className="grid grid-cols-4 h-14">
+        {/* Bottom Navigation - Fixed for all screen sizes */}
+        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border-subtle glass-card">
+          <div className="grid grid-cols-4 h-14 max-w-lg mx-auto">
             {navItems.map((item) => (
               <button
                 key={item.path}
@@ -252,9 +229,9 @@ export const OperatorLayout = ({ children, showBackToAdmin = false }: OperatorLa
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <item.icon className={cn("h-4 w-4", isActive(item.path) && "text-primary")} />
+                <item.icon className={cn("h-5 w-5", isActive(item.path) && "text-primary")} />
                 <span className={cn(
-                  "text-[10px]",
+                  "text-[10px] sm:text-xs",
                   isActive(item.path) ? "font-semibold" : "font-medium"
                 )}>
                   {item.label}
