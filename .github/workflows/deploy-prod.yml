@@ -1,12 +1,14 @@
-name: Build Production Image
+name: CI / Build Production Image
 
-# Manual trigger only - use workflow_dispatch to build on demand
+# Tests run automatically on push to main
+# Docker build only runs when manually triggered
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   test:
@@ -31,6 +33,8 @@ jobs:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
     needs: test
+    # Only run on manual trigger
+    if: github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
       packages: write
