@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import { useOperator } from "../../contexts/OperatorContext";
 import { supabase } from "../../integrations/supabase/client";
 import {
   startTimeTracking,
@@ -108,6 +109,8 @@ interface Operation {
 export default function OperatorView() {
   const { t } = useTranslation();
   const { profile } = useAuth();
+  const { activeOperator } = useOperator();
+  const operatorId = activeOperator?.id || profile?.id;
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string>("");
   const [operations, setOperations] = useState<Operation[]>([]);
@@ -379,10 +382,10 @@ export default function OperatorView() {
   };
 
   const handleStartTracking = async () => {
-    if (!selectedOperation || !profile) return;
+    if (!selectedOperation || !operatorId || !profile?.tenant_id) return;
 
     try {
-      await startTimeTracking(selectedOperation.id, profile.id, profile.tenant_id);
+      await startTimeTracking(selectedOperation.id, operatorId, profile.tenant_id);
       await loadOperations(selectedJobId);
     } catch (error: any) {
       console.error("Error starting time tracking:", error);
@@ -391,10 +394,10 @@ export default function OperatorView() {
   };
 
   const handleStopTracking = async () => {
-    if (!selectedOperation || !profile || !activeTimeEntry) return;
+    if (!selectedOperation || !operatorId || !activeTimeEntry) return;
 
     try {
-      await stopTimeTracking(selectedOperation.id, profile.id);
+      await stopTimeTracking(selectedOperation.id, operatorId);
       await loadOperations(selectedJobId);
     } catch (error) {
       console.error("Error stopping time tracking:", error);
@@ -402,7 +405,7 @@ export default function OperatorView() {
   };
 
   const handleCompleteOperation = async () => {
-    if (!selectedOperation || !profile) return;
+    if (!selectedOperation || !operatorId || !profile?.tenant_id) return;
 
     if (activeTimeEntry) {
       alert("Please stop time tracking before completing the operation");
@@ -410,7 +413,7 @@ export default function OperatorView() {
     }
 
     try {
-      await completeOperation(selectedOperation.id, profile.tenant_id, profile.id);
+      await completeOperation(selectedOperation.id, profile.tenant_id, operatorId);
       await loadOperations(selectedJobId);
     } catch (error) {
       console.error("Error completing operation:", error);
@@ -1010,14 +1013,14 @@ export default function OperatorView() {
                               {op.actual_time || 0}/{op.estimated_time}m
                             </span>
                             {op.active_time_entry &&
-                              op.active_time_entry.operator_id === profile?.id && (
+                              op.active_time_entry.operator_id === operatorId && (
                                 <Badge className="h-4 text-[8px] px-1 animate-pulse">
                                   <Clock className="h-2 w-2 mr-0.5" />
                                   {t("terminal.you")}
                                 </Badge>
                               )}
                             {op.active_time_entry &&
-                              op.active_time_entry.operator_id !== profile?.id && (
+                              op.active_time_entry.operator_id !== operatorId && (
                                 <Clock className="h-2.5 w-2.5 text-yellow-500" />
                               )}
                           </div>

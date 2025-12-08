@@ -6,6 +6,7 @@ import {
   completeOperation,
 } from "@/lib/database";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOperator } from "@/contexts/OperatorContext";
 import {
   Sheet,
   SheetContent,
@@ -69,6 +70,8 @@ export default function OperationDetailModal({
 }: OperationDetailModalProps) {
   const { t } = useTranslation();
   const { profile } = useAuth();
+  const { activeOperator } = useOperator();
+  const operatorId = activeOperator?.id || profile?.id;
   const [loading, setLoading] = useState(false);
   const [showIssueForm, setShowIssueForm] = useState(false);
   const [showAssemblyWarning, setShowAssemblyWarning] = useState(false);
@@ -82,7 +85,7 @@ export default function OperationDetailModal({
   const [requiredResources, setRequiredResources] = useState<any[]>([]);
 
   const isCurrentUserTiming =
-    operation.active_time_entry?.operator_id === profile?.id;
+    operation.active_time_entry?.operator_id === operatorId;
   const canStartTiming =
     !operation.active_time_entry && operation.status !== "completed";
   const canComplete =
@@ -141,7 +144,7 @@ export default function OperationDetailModal({
   };
 
   const handleStartTiming = async () => {
-    if (!profile?.id || !profile?.tenant_id) return;
+    if (!operatorId || !profile?.tenant_id) return;
 
     // Check assembly dependencies first
     const canProceed = await checkAssemblyDependencies();
@@ -149,7 +152,7 @@ export default function OperationDetailModal({
 
     setLoading(true);
     try {
-      await startTimeTracking(operation.id, profile.id, profile.tenant_id);
+      await startTimeTracking(operation.id, operatorId, profile.tenant_id);
       toast.success(t("operations.timeTrackingStarted"));
       onUpdate();
     } catch (error: any) {
@@ -161,11 +164,11 @@ export default function OperationDetailModal({
 
   const handleStartAnyway = async () => {
     setShowAssemblyWarning(false);
-    if (!profile?.id || !profile?.tenant_id) return;
+    if (!operatorId || !profile?.tenant_id) return;
 
     setLoading(true);
     try {
-      await startTimeTracking(operation.id, profile.id, profile.tenant_id);
+      await startTimeTracking(operation.id, operatorId, profile.tenant_id);
       toast.success(t("operations.timeTrackingStarted"));
       onUpdate();
     } catch (error: any) {
@@ -176,11 +179,11 @@ export default function OperationDetailModal({
   };
 
   const handleStopTiming = async () => {
-    if (!profile?.id) return;
+    if (!operatorId) return;
 
     setLoading(true);
     try {
-      await stopTimeTracking(operation.id, profile.id);
+      await stopTimeTracking(operation.id, operatorId);
       toast.success(t("operations.timeTrackingStopped"));
       onUpdate();
     } catch (error: any) {

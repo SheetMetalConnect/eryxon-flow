@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOperator } from "@/contexts/OperatorContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -39,6 +40,9 @@ type NcrCategory = "material_defect" | "dimensional" | "surface_finish" | "proce
 export default function IssueForm({ operationId, open, onOpenChange, onSuccess, prefilledData }: IssueFormProps) {
   const { t } = useTranslation();
   const { profile } = useAuth();
+  const { activeOperator } = useOperator();
+  const operatorId = activeOperator?.id || profile?.id;
+  const operatorName = activeOperator?.full_name || profile?.full_name || 'Unknown';
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<IssueCategory[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
@@ -95,7 +99,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!profile?.id || !profile?.tenant_id || !description.trim()) return;
+    if (!operatorId || !profile?.tenant_id || !description.trim()) return;
     if (loading) return;
 
     setLoading(true);
@@ -150,7 +154,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
         id: issueId,
         tenant_id: profile.tenant_id,
         operation_id: operationId,
-        created_by: profile.id,
+        created_by: operatorId,
         description: fullDescription,
         severity,
         image_paths: imagePaths.length > 0 ? imagePaths : null,
@@ -172,8 +176,8 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
           part_number: operation.part.part_number,
           job_id: operation.part.job.id,
           job_number: operation.part.job.job_number,
-          created_by: profile.id,
-          operator_name: profile.full_name || 'Unknown',
+          created_by: operatorId,
+          operator_name: operatorName,
           severity,
           description: fullDescription,
           created_at: createdAt,

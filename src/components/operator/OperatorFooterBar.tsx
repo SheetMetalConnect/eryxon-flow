@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Clock, Square, Pause, Play, AlertTriangle } from "lucide-react";
@@ -30,7 +31,11 @@ interface PauseData {
 
 export default function OperatorFooterBar() {
   const { profile } = useAuth();
+  const { activeOperator } = useOperator();
   const navigate = useNavigate();
+
+  // Use activeOperator if available, otherwise fall back to profile (for non-terminal contexts)
+  const operatorId = activeOperator?.id || profile?.id;
   const [activeEntry, setActiveEntry] = useState<ActiveEntry | null>(null);
   const [currentPause, setCurrentPause] = useState<PauseData | null>(null);
   const [, setTick] = useState(0);
@@ -50,7 +55,7 @@ export default function OperatorFooterBar() {
   };
 
   const loadActiveEntry = useCallback(async () => {
-    if (!profile?.id) return;
+    if (!operatorId) return;
 
     const { data, error } = await supabase
       .from("time_entries")
@@ -69,7 +74,7 @@ export default function OperatorFooterBar() {
         )
       `
       )
-      .eq("operator_id", profile.id)
+      .eq("operator_id", operatorId)
       .is("end_time", null)
       .maybeSingle();
 
@@ -86,10 +91,10 @@ export default function OperatorFooterBar() {
       setActiveEntry(null);
       setCurrentPause(null);
     }
-  }, [profile?.id]);
+  }, [operatorId]);
 
   useEffect(() => {
-    if (!profile?.id) return;
+    if (!operatorId) return;
 
     loadActiveEntry();
 
@@ -107,7 +112,7 @@ export default function OperatorFooterBar() {
           event: "*",
           schema: "public",
           table: "time_entries",
-          filter: `operator_id=eq.${profile.id}`,
+          filter: `operator_id=eq.${operatorId}`,
         },
         () => {
           loadActiveEntry();
@@ -119,14 +124,14 @@ export default function OperatorFooterBar() {
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
-  }, [profile?.id, loadActiveEntry]);
+  }, [operatorId, loadActiveEntry]);
 
   const handleStop = async () => {
-    if (!profile?.id || !activeEntry) return;
+    if (!operatorId || !activeEntry) return;
 
     setLoading(true);
     try {
-      await stopTimeTracking(activeEntry.operation_id, profile.id);
+      await stopTimeTracking(activeEntry.operation_id, operatorId);
       toast.success("Time tracking stopped");
       loadActiveEntry();
     } catch (error: any) {
@@ -137,7 +142,7 @@ export default function OperatorFooterBar() {
   };
 
   const handlePause = async () => {
-    if (!profile?.id || !activeEntry) return;
+    if (!operatorId || !activeEntry) return;
 
     setLoading(true);
     try {
@@ -152,7 +157,7 @@ export default function OperatorFooterBar() {
   };
 
   const handleResume = async () => {
-    if (!profile?.id || !activeEntry) return;
+    if (!operatorId || !activeEntry) return;
 
     setLoading(true);
     try {

@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Clock, Square, Pause, Play, ChevronUp, ChevronDown, X } from "lucide-react";
@@ -31,6 +32,8 @@ interface PauseData {
 export default function SessionTrackingBar() {
   const { t } = useTranslation();
   const { profile } = useAuth();
+  const { activeOperator } = useOperator();
+  const operatorId = activeOperator?.id || profile?.id;
   const [activeEntries, setActiveEntries] = useState<ActiveEntry[]>([]);
   const [currentPauses, setCurrentPauses] = useState<Record<string, PauseData>>({});
   const [elapsedSeconds, setElapsedSeconds] = useState<Record<string, number>>({});
@@ -66,7 +69,7 @@ export default function SessionTrackingBar() {
   };
 
   const loadActiveEntries = useCallback(async () => {
-    if (!profile?.id) return;
+    if (!operatorId) return;
 
     const { data, error } = await supabase
       .from("time_entries")
@@ -85,7 +88,7 @@ export default function SessionTrackingBar() {
         )
       `
       )
-      .eq("operator_id", profile.id)
+      .eq("operator_id", operatorId)
       .is("end_time", null);
 
     if (!error && data) {
@@ -99,7 +102,7 @@ export default function SessionTrackingBar() {
       setActiveEntries([]);
       setCurrentPauses({});
     }
-  }, [profile?.id, dismissed]);
+  }, [operatorId, dismissed]);
 
   // Calculate elapsed time for each entry
   useEffect(() => {
@@ -129,7 +132,7 @@ export default function SessionTrackingBar() {
   }, [activeEntries, currentPauses]);
 
   useEffect(() => {
-    if (!profile?.id) return;
+    if (!operatorId) return;
 
     loadActiveEntries();
 
@@ -142,7 +145,7 @@ export default function SessionTrackingBar() {
           event: "*",
           schema: "public",
           table: "time_entries",
-          filter: `operator_id=eq.${profile.id}`,
+          filter: `operator_id=eq.${operatorId}`,
         },
         () => {
           loadActiveEntries();
@@ -153,14 +156,14 @@ export default function SessionTrackingBar() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile?.id, loadActiveEntries]);
+  }, [operatorId, loadActiveEntries]);
 
   const handleStop = async (entry: ActiveEntry) => {
-    if (!profile?.id) return;
+    if (!operatorId) return;
 
     setLoading(prev => ({ ...prev, [entry.id]: true }));
     try {
-      await stopTimeTracking(entry.operation_id, profile.id);
+      await stopTimeTracking(entry.operation_id, operatorId);
       toast.success(t("sessionTracking.stopped"));
       loadActiveEntries();
     } catch (error: any) {
@@ -171,7 +174,7 @@ export default function SessionTrackingBar() {
   };
 
   const handlePause = async (entry: ActiveEntry) => {
-    if (!profile?.id) return;
+    if (!operatorId) return;
 
     setLoading(prev => ({ ...prev, [entry.id]: true }));
     try {
@@ -186,7 +189,7 @@ export default function SessionTrackingBar() {
   };
 
   const handleResume = async (entry: ActiveEntry) => {
-    if (!profile?.id) return;
+    if (!operatorId) return;
 
     setLoading(prev => ({ ...prev, [entry.id]: true }));
     try {

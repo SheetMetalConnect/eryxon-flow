@@ -318,6 +318,45 @@ export default function Help() {
               </AccordionItem>
             </Accordion>
 
+            <h3 className="text-lg font-semibold mb-3 mt-8">Shop Floor Terminals</h3>
+            <Accordion type="single" collapsible className="space-y-2 mb-8">
+              <AccordionItem value="terminal-1" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  Shared Terminal Login (PIN)
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-3">
+                    Shared factory terminals use a two-step login:
+                  </p>
+                  <ol className="space-y-2 mb-4">
+                    <li><strong className="text-foreground">1. Terminal Account</strong> - Admin logs in with the shop floor account</li>
+                    <li><strong className="text-foreground">2. Operator PIN</strong> - Operators clock in with their Employee ID + PIN</li>
+                  </ol>
+                  <Alert className="bg-primary/10 border-primary/30">
+                    <AlertDescription>
+                      Your Employee ID and PIN are provided by your admin. PINs are 4-6 digits.
+                    </AlertDescription>
+                  </Alert>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="terminal-2" className="border border-white/10 rounded-lg px-4 bg-white/5">
+                <AccordionTrigger className="font-semibold hover:no-underline">
+                  Switching Operators
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-3">
+                    You can quickly switch operators without logging out of the terminal:
+                  </p>
+                  <ul className="space-y-2">
+                    <li><strong className="text-foreground">Header Badge</strong> - Click your name in the header to see who's clocked in</li>
+                    <li><strong className="text-foreground">Switch Operator</strong> - Click "Switch Operator" to enter a different Employee ID + PIN</li>
+                    <li><strong className="text-foreground">Time Attribution</strong> - All time tracking and issues are attributed to the active operator</li>
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
             <h3 className="text-lg font-semibold mb-3 mt-8">Tips for Operators</h3>
             <Card className="border-white/10 bg-white/5">
               <CardContent className="p-4">
@@ -443,7 +482,11 @@ export default function Help() {
                     </div>
                     <div>
                       <p className="font-medium text-foreground text-sm">Users</p>
-                      <p className="text-sm">Create operator and admin accounts</p>
+                      <p className="text-sm">Create admin accounts with email login</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground text-sm">Operators</p>
+                      <p className="text-sm">Create shop floor operators with Employee ID + PIN login</p>
                     </div>
                     <div>
                       <p className="font-medium text-foreground text-sm">API Keys</p>
