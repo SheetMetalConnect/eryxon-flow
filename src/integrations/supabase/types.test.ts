@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { EnumConstants, Constants } from './types'
+import { EnumConstants, Constants } from './types/index'
 import type {
   Database,
   Tables,
@@ -13,7 +13,7 @@ import type {
   Enums,
   DatabaseEnums,
   Json,
-} from './types'
+} from './types/index'
 
 describe('Supabase Types Module', () => {
   describe('EnumConstants', () => {
