@@ -1,9 +1,8 @@
 name: Build Production Image
 
-# Auto-build on push to main (no deploy, just build)
+# Manual trigger only - use workflow_dispatch to build on demand
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
