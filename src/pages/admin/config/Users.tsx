@@ -965,12 +965,12 @@ export default function ConfigUsers() {
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
               <UserPlus className="h-5 w-5 text-primary" />
-              Shop Floor Operators ({operators.length})
+              {t("users.shopFloorOperators")} ({operators.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              PIN-based operators for shared shop floor terminals. These operators login with Employee ID + PIN.
+              {t("users.shopFloorOperatorsDescription")}
             </p>
             <div className="space-y-2">
               {operators.map((op) => (
@@ -986,15 +986,15 @@ export default function ConfigUsers() {
                   </div>
                   <div className="flex items-center gap-3">
                     {op.locked_until && new Date(op.locked_until) > new Date() ? (
-                      <Badge variant="destructive" className="text-xs">Locked</Badge>
+                      <Badge variant="destructive" className="text-xs">{t("users.operatorLocked")}</Badge>
                     ) : op.active ? (
-                      <Badge variant="default" className="text-xs bg-green-500/20 text-green-400 border-green-500/30">Active</Badge>
+                      <Badge variant="default" className="text-xs bg-green-500/20 text-green-400 border-green-500/30">{t("users.active")}</Badge>
                     ) : (
-                      <Badge variant="secondary" className="text-xs">Inactive</Badge>
+                      <Badge variant="secondary" className="text-xs">{t("users.inactive")}</Badge>
                     )}
                     {op.last_login_at && (
                       <span className="text-xs text-muted-foreground">
-                        Last login: {new Date(op.last_login_at).toLocaleDateString()}
+                        {t("users.lastLogin")}: {new Date(op.last_login_at).toLocaleDateString()}
                       </span>
                     )}
                   </div>
