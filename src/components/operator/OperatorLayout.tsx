@@ -52,7 +52,7 @@ export const OperatorLayout = ({ children, showBackToAdmin = false }: OperatorLa
 
   const navItems = [
     { path: '/operator/work-queue', label: t('navigation.workQueue'), icon: ListChecks },
-    { path: '/operator/view', label: t('navigation.operatorView'), icon: Gauge },
+    { path: '/operator/view', label: t('navigation.terminalView', 'Terminal View'), icon: Gauge },
     { path: '/operator/my-activity', label: t('navigation.myActivity'), icon: Clock },
     { path: '/operator/my-issues', label: t('navigation.myIssues'), icon: Flag },
   ];
@@ -264,8 +264,8 @@ export const OperatorLayout = ({ children, showBackToAdmin = false }: OperatorLa
           </div>
         </nav>
 
-        {/* Onboarding Tour - only show if not completed */}
-        {profile && !(profile as any).tour_completed && <AppTour userRole="operator" />}
+        {/* Onboarding Tour - only show if not completed and tour_completed is explicitly false */}
+        {profile && (profile as any).tour_completed === false && <AppTour userRole="operator" />}
       </div>
 
       {/* Global Search Modal */}

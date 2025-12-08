@@ -181,13 +181,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const operatorViewItems = [
     {
       path: "/operator/work-queue",
-      label: t("navigation.workQueue"),
+      label: t("navigation.qrmView", "QRM View"),
       icon: ListTodo,
       exact: true,
     },
     {
       path: "/operator/view",
-      label: t("navigation.operatorView"),
+      label: t("navigation.terminalView", "Terminal View"),
       icon: Eye,
       exact: true,
     },
