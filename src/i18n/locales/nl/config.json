@@ -157,6 +157,10 @@
     "removed": "Toewijzing succesvol verwijderd",
     "selectBoth": "Selecteer zowel een onderdeel als een operator",
     "selectOperator": "Selecteer operator",
-    "selectPart": "Selecteer onderdeel"
+    "selectPart": "Selecteer onderdeel",
+    "totalAssignments": "Totaal toewijzingen",
+    "activeOperators": "Actieve operators",
+    "shopFloorOperators": "Werkvloer operators",
+    "shopFloorInfo": "Werkvloer operators gebruiken PIN-gebaseerde login op gedeelde terminals. Ze hebben geen individuele werktoewijzingen nodig - ze kunnen elk beschikbaar werk uit de werkwachtrij oppakken."
   }
 }

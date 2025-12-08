@@ -157,6 +157,10 @@
     "removed": "Zuweisung erfolgreich entfernt",
     "selectBoth": "Bitte wählen Sie sowohl ein Teil als auch einen Bediener",
     "selectOperator": "Bediener auswählen",
-    "selectPart": "Teil auswählen"
+    "selectPart": "Teil auswählen",
+    "totalAssignments": "Zuweisungen gesamt",
+    "activeOperators": "Aktive Bediener",
+    "shopFloorOperators": "Werkstatt-Bediener",
+    "shopFloorInfo": "Werkstatt-Bediener verwenden PIN-basierte Anmeldung an gemeinsamen Terminals. Sie benötigen keine individuellen Arbeitszuweisungen - sie können jede verfügbare Arbeit aus der Warteschlange aufnehmen."
   }
 }

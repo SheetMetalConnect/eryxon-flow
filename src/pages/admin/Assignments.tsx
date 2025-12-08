@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, UserCheck, X, UserPlus, ArrowRight, Users, Package, UserCog } from "lucide-react";
+import { Loader2, UserCheck, X, UserPlus, ArrowRight, Users, Package, UserCog, IdCard, Info } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { PageStatsRow } from "@/components/admin/PageStatsRow";
 import { toast } from "sonner";
@@ -52,6 +52,14 @@ interface Operator {
   _activeEntryCount?: number;
 }
 
+interface ShopFloorOperator {
+  id: string;
+  employee_id: string;
+  full_name: string;
+  active: boolean;
+  last_login_at: string | null;
+}
+
 interface Assignment {
   id: string;
   part_id: string;
@@ -76,6 +84,7 @@ export default function Assignments() {
   const { profile } = useAuth();
   const [parts, setParts] = useState<Part[]>([]);
   const [operators, setOperators] = useState<Operator[]>([]);
+  const [shopFloorOperators, setShopFloorOperators] = useState<ShopFloorOperator[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [selectedPart, setSelectedPart] = useState<string>("");
   const [selectedOperator, setSelectedOperator] = useState<string>("");
@@ -165,6 +174,24 @@ export default function Assignments() {
           }),
         );
         setOperators(operatorsWithCounts);
+      }
+
+      // Load shop floor operators (PIN-based)
+      try {
+        const { data: sfOperators, error: sfError } = await supabase.rpc('list_operators' as any);
+        if (!sfError && sfOperators) {
+          setShopFloorOperators((sfOperators as ShopFloorOperator[]).filter(op => op.active));
+        }
+      } catch {
+        // Fallback to direct query
+        const { data: directSf } = await supabase
+          .from('operators')
+          .select('id, employee_id, full_name, active, last_login_at')
+          .eq('active', true)
+          .order('full_name');
+        if (directSf) {
+          setShopFloorOperators(directSf as ShopFloorOperator[]);
+        }
       }
 
       // Load current assignments
@@ -416,8 +443,9 @@ export default function Assignments() {
       totalAssignments: assignments.length,
       availableParts: parts.length,
       activeOperators: operators.length,
+      shopFloorOperators: shopFloorOperators.length,
     };
-  }, [assignments, parts, operators]);
+  }, [assignments, parts, operators, shopFloorOperators]);
 
   if (loading) {
     return (
@@ -443,6 +471,7 @@ export default function Assignments() {
           { label: t("assignments.totalAssignments", "Total Assignments"), value: assignmentStats.totalAssignments, icon: UserCheck, color: "primary" },
           { label: t("assignments.availableParts", "Available Parts"), value: assignmentStats.availableParts, icon: Package, color: "info" },
           { label: t("assignments.activeOperators", "Active Operators"), value: assignmentStats.activeOperators, icon: UserCog, color: "success" },
+          { label: t("assignments.shopFloorOperators", "Shop Floor Operators"), value: assignmentStats.shopFloorOperators, icon: IdCard, color: "warning" },
         ]}
       />
 
@@ -680,6 +709,41 @@ export default function Assignments() {
           )}
         </CardContent>
       </Card>
+
+      {/* Shop Floor Operators Info */}
+      {shopFloorOperators.length > 0 && (
+        <Card className="glass-card border-amber-500/20">
+          <CardHeader>
+            <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
+              <IdCard className="h-5 w-5 text-amber-500" />
+              {t("assignments.shopFloorOperators", "Shop Floor Operators")} ({shopFloorOperators.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-start gap-3 p-3 bg-muted/20 rounded-lg mb-4">
+              <Info className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-muted-foreground">
+                <p>
+                  {t("assignments.shopFloorInfo", "Shop floor operators use PIN-based login at shared terminals. They don't need individual job assignments - they can pick up any available work from the work queue.")}
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {shopFloorOperators.map((op) => (
+                <div key={op.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg border border-border-subtle">
+                  <div className="p-2 rounded-lg bg-amber-500/10">
+                    <IdCard className="h-4 w-4 text-amber-500" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">{op.full_name}</p>
+                    <p className="text-xs text-muted-foreground font-mono">{op.employee_id}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
