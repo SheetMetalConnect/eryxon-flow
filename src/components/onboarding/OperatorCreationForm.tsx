@@ -58,9 +58,8 @@ export function OperatorCreationForm() {
     try {
       const { data, error } = await supabase.rpc('create_operator_with_pin' as any, {
         p_full_name: fullName,
-        p_employee_id: finalEmployeeId,
+        p_employee_id: finalEmployeeId || null,
         p_pin: pin,
-        p_role: 'operator',
       });
 
       if (error) throw error;
