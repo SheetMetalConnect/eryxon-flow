@@ -720,15 +720,31 @@
    ============================================================================ */
 
 @layer components {
-  /* Glass card pattern - Beautiful depth - Antigravity spec: blur(16px) saturate(180%) */
+  /* Glass card pattern - Beautiful depth - Antigravity spec
+   * 2025 Best Practices:
+   * - @supports fallback for browsers without backdrop-filter
+   * - CSS containment for performance
+   * - Mobile-optimized blur values (see responsive section)
+   * - prefers-reduced-transparency support (see accessibility section)
+   */
   .glass-card {
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    background-color: rgba(17, 25, 40, 0.75);
+    /* Fallback for browsers without backdrop-filter support */
+    background-color: rgba(17, 25, 40, 0.92);
     border-radius: var(--radius-xl);
     border: 1px solid rgba(255, 255, 255, 0.125);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     transition: var(--transition-smooth);
+    /* CSS containment for performance */
+    contain: layout style paint;
+  }
+
+  /* Enhanced glass effect when backdrop-filter is supported */
+  @supports (backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px)) {
+    .glass-card {
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      background-color: rgba(17, 25, 40, 0.75);
+    }
   }
 
   .glass-card:hover {
@@ -738,9 +754,15 @@
 
   /* Light mode glass card - improved contrast */
   :root.light .glass-card {
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(255, 255, 255, 0.95);
     border: 1px solid rgba(0, 0, 0, 0.12);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+
+  @supports (backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px)) {
+    :root.light .glass-card {
+      background-color: rgba(255, 255, 255, 0.9);
+    }
   }
 
   :root.light .glass-card:hover {
@@ -1931,5 +1953,99 @@
 
   .safe-area-top {
     padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* ============================================================================
+   GLASSMORPHISM ACCESSIBILITY (2025 Best Practices)
+   ============================================================================ */
+
+/* Respect user preference for reduced transparency
+ * Provides solid backgrounds for users who find glass effects distracting
+ * or have difficulty reading text on translucent backgrounds
+ */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-color: rgba(17, 25, 40, 0.98) !important;
+  }
+
+  :root.light .glass-card {
+    background-color: rgba(255, 255, 255, 0.98) !important;
+  }
+
+  .onboarding-card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-color: rgba(17, 25, 40, 0.98) !important;
+  }
+
+  :root.light .onboarding-card {
+    background-color: rgba(255, 255, 255, 0.98) !important;
+  }
+
+  .sidebar-glass {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-color: rgba(17, 25, 40, 0.98) !important;
+  }
+
+  :root.light .sidebar-glass {
+    background-color: rgba(255, 255, 255, 0.98) !important;
+  }
+
+  /* Hide animated background orbs */
+  .gradient-orb {
+    display: none !important;
+  }
+}
+
+/* ============================================================================
+   GLASSMORPHISM MOBILE PERFORMANCE (2025 Best Practices)
+   ============================================================================ */
+
+/* Reduce blur values on mobile for better performance
+ * backdrop-filter is GPU-intensive; lower blur values reduce strain
+ * Recommended: 6-8px on mobile vs 16px on desktop
+ */
+@media (max-width: 640px) {
+  .glass-card {
+    backdrop-filter: blur(8px) saturate(160%);
+    -webkit-backdrop-filter: blur(8px) saturate(160%);
+  }
+
+  .onboarding-card {
+    backdrop-filter: blur(8px) saturate(160%);
+    -webkit-backdrop-filter: blur(8px) saturate(160%);
+  }
+
+  .sidebar-glass {
+    backdrop-filter: blur(8px) saturate(160%);
+    -webkit-backdrop-filter: blur(8px) saturate(160%);
+  }
+
+  /* Reduce gradient orb complexity on mobile */
+  .gradient-orb {
+    filter: blur(60px);
+    opacity: 0.3;
+  }
+}
+
+/* Tablet: intermediate blur values */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .glass-card {
+    backdrop-filter: blur(12px) saturate(170%);
+    -webkit-backdrop-filter: blur(12px) saturate(170%);
+  }
+
+  .onboarding-card {
+    backdrop-filter: blur(12px) saturate(170%);
+    -webkit-backdrop-filter: blur(12px) saturate(170%);
+  }
+
+  .sidebar-glass {
+    backdrop-filter: blur(12px) saturate(170%);
+    -webkit-backdrop-filter: blur(12px) saturate(170%);
   }
 }
