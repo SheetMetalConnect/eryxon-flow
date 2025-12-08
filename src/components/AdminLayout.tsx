@@ -48,7 +48,9 @@ import {
   TrendingUp,
   Truck,
   Search,
+  Building2,
 } from "lucide-react";
+import { TenantSwitcher } from "@/components/admin/TenantSwitcher";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -76,6 +78,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [integrationsOpen, setIntegrationsOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [tenantSwitcherOpen, setTenantSwitcherOpen] = useState(false);
   const { count: pendingIssuesCount } = usePendingIssuesCount();
 
   const isActive = (path: string) => location.pathname === path;
@@ -661,15 +664,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* User Profile & Sign Out - Compact */}
       <div className="border-t border-border-subtle p-2 space-y-1.5">
-        {/* Compact Tenant Info */}
+        {/* Compact Tenant Info - Clickable for root admins */}
         {!collapsed && tenant && (
-          <div className="tenant-info-compact">
-            <Factory className="h-3.5 w-3.5 text-primary shrink-0" />
+          <button
+            onClick={() => profile?.is_root_admin && setTenantSwitcherOpen(true)}
+            disabled={!profile?.is_root_admin}
+            className={cn(
+              "tenant-info-compact w-full",
+              profile?.is_root_admin && "cursor-pointer hover:bg-white/5 rounded-md transition-colors"
+            )}
+          >
+            <Building2 className="h-3.5 w-3.5 text-primary shrink-0" />
             <span className="tenant-name">{tenant.company_name || tenant.name}</span>
             <Badge variant="secondary" className="tenant-badge capitalize">
               {tenant.plan}
             </Badge>
-          </div>
+          </button>
         )}
         {/* Compact User Info */}
         {!collapsed && profile && (
@@ -779,6 +789,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Global Search Modal */}
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+
+      {/* Tenant Switcher Modal (Root Admin Only) */}
+      <TenantSwitcher open={tenantSwitcherOpen} onClose={() => setTenantSwitcherOpen(false)} />
     </>
   );
 }
