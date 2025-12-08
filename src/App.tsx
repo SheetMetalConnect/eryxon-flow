@@ -12,7 +12,7 @@ import { McpActivityToasts } from "./components/admin/McpActivityToasts";
 import { Auth, AcceptInvitation } from "./pages/auth";
 
 // Operator pages
-import { WorkQueue, MyActivity, MyIssues, OperatorTerminal, OperatorView, TerminalLogin } from "./pages/operator";
+import { WorkQueue, MyActivity, MyIssues, OperatorView, TerminalLogin } from "./pages/operator";
 
 // Admin pages
 import Dashboard from "./pages/admin/Dashboard";
@@ -33,7 +33,7 @@ import { Settings } from "./pages/admin/Settings";
 import IntegrationsMarketplace from "./pages/admin/IntegrationsMarketplace";
 import Shipments from "./pages/admin/Shipments";
 import StepsTemplatesView from "./pages/admin/StepsTemplatesView";
-import AnalyticsDashboard from "./pages/admin/Analytics";
+import AnalyticsDashboard from "./pages/admin/AnalyticsDashboard";
 
 // Admin config pages
 import {
