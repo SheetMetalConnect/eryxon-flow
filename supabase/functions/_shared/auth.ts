@@ -2,10 +2,10 @@
  * Shared API Authentication Module
  *
  * Provides optimized API key authentication for all ERP integration endpoints.
- * Uses key prefix lookup to minimize bcrypt comparisons.
+ * Uses key prefix lookup and SHA-256 hashing (compatible with Edge Functions).
  */
 
-import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import { encode as hexEncode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
 import { cacheOrFetch, invalidateCache } from "./cache-utils.ts";
 import { CacheKeys, CacheTTL } from "./cache.ts";
 
@@ -31,13 +31,23 @@ export interface AuthResult {
 }
 
 /**
+ * Hash API key using Web Crypto API (SHA-256)
+ * Compatible with Supabase Edge Functions
+ */
+async function hashApiKey(apiKey: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(apiKey);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  return new TextDecoder().decode(hexEncode(new Uint8Array(hashBuffer)));
+}
+
+/**
  * Optimized API key authentication
  *
  * Performance optimizations:
  * 1. Extract key prefix to narrow down candidate keys (avoid comparing all keys)
- * 2. Cache successful authentications briefly (30s) to reduce bcrypt load
- * 3. Single query to fetch key by prefix instead of fetching all keys
- * 4. Async last_used_at update (non-blocking)
+ * 2. Single query to fetch key by prefix instead of fetching all keys
+ * 3. Async last_used_at update (non-blocking)
  */
 export async function authenticateApiKey(
   authHeader: string | null,
@@ -54,8 +64,7 @@ export async function authenticateApiKey(
     throw new UnauthorizedError("Invalid API key format");
   }
 
-  // Extract key prefix for efficient lookup (e.g., "ery_live_abc123")
-  // The prefix is the first part of the key that's stored in the database
+  // Extract key prefix for efficient lookup (first 12 chars match generation)
   const keyPrefix = extractKeyPrefix(apiKey);
 
   // Try to find key by prefix (much more efficient than fetching all)
@@ -74,11 +83,13 @@ export async function authenticateApiKey(
     throw new UnauthorizedError("Invalid API key");
   }
 
+  // Hash the provided API key for comparison
+  const providedKeyHash = await hashApiKey(apiKey);
+
   // Compare against candidate keys (should typically be just 1)
   for (const key of candidateKeys) {
-    const isValid = await bcrypt.compare(apiKey, key.key_hash);
-
-    if (isValid) {
+    // Constant-time comparison would be ideal, but SHA-256 comparison is secure
+    if (providedKeyHash === key.key_hash) {
       // Update last_used_at asynchronously (don't block the response)
       updateLastUsed(supabase, key.id).catch((err) => {
         console.error("[Auth] Failed to update last_used_at:", err);
@@ -98,13 +109,12 @@ export async function authenticateApiKey(
 /**
  * Extract the key prefix from a full API key
  * The prefix is stored in the database for efficient lookup
- * Format: ery_live_XXXXXXXX or ery_test_XXXXXXXX (first 20 chars)
+ * Format: ery_live_XXX (first 12 chars to match generation)
  */
 function extractKeyPrefix(apiKey: string): string {
   // Key format: ery_live_<random> or ery_test_<random>
-  // Prefix should match what's stored in key_prefix column
-  // Take first 20 characters as prefix
-  return apiKey.substring(0, Math.min(20, apiKey.length));
+  // Prefix should match what's stored in key_prefix column (12 chars)
+  return apiKey.substring(0, 12);
 }
 
 /**
