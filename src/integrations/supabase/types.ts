@@ -1740,6 +1740,57 @@ export type Database = {
           },
         ]
       }
+      operators: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          created_by: string | null
+          employee_id: string
+          full_name: string
+          id: string
+          pin_hash: string
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          employee_id: string
+          full_name: string
+          id?: string
+          pin_hash: string
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          employee_id?: string
+          full_name?: string
+          id?: string
+          pin_hash?: string
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operators_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operators_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       parts: {
         Row: {
           cnc_program_name: string | null
@@ -2958,7 +3009,7 @@ export type Database = {
             Returns: {
               employee_id: string
               message: string
-              profile_id: string
+              operator_id: string
             }[]
           }
       delete_tenant_data: { Args: { p_tenant_id: string }; Returns: Json }
@@ -3309,6 +3360,15 @@ export type Database = {
           key_id: string
           rate_limit: number
           tenant_id: string
+        }[]
+      }
+      verify_operator_pin: {
+        Args: { p_employee_id: string; p_pin: string }
+        Returns: {
+          employee_id: string
+          full_name: string
+          operator_id: string
+          verified: boolean
         }[]
       }
     }
