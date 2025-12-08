@@ -19,21 +19,19 @@ describe('useInfiniteScroll', () => {
     };
 
     // Create a proper constructor mock for IntersectionObserver
-    class MockIntersectionObserver implements IntersectionObserver {
-      readonly root: Element | Document | null = null;
-      readonly rootMargin: string = '';
-      readonly thresholds: ReadonlyArray<number> = [];
-
-      constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
-        observerCallback = callback;
-        observerOptions = options || {};
-      }
-
-      observe = mockObserver.observe;
-      unobserve = mockObserver.unobserve;
-      disconnect = mockObserver.disconnect;
-      takeRecords = vi.fn().mockReturnValue([]);
-    }
+    const MockIntersectionObserver = vi.fn().mockImplementation((callback: IntersectionObserverCallback, options?: IntersectionObserverInit) => {
+      observerCallback = callback;
+      observerOptions = options || {};
+      return {
+        root: null,
+        rootMargin: '',
+        thresholds: [],
+        observe: mockObserver.observe,
+        unobserve: mockObserver.unobserve,
+        disconnect: mockObserver.disconnect,
+        takeRecords: vi.fn().mockReturnValue([]),
+      };
+    });
 
     vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
   });

@@ -5,6 +5,7 @@ export const ROUTES = {
 
   OPERATOR: {
     TERMINAL_LOGIN: "/operator/login",
+    LOGIN: "/operator/login", // Alias for TERMINAL_LOGIN
     WORK_QUEUE: "/operator/work-queue",
     MY_ACTIVITY: "/operator/my-activity",
     MY_ISSUES: "/operator/my-issues",

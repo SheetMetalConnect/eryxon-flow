@@ -44,6 +44,17 @@ export type { Tables, TablesInsert, TablesUpdate, Enums, CompositeTypes } from '
 export type { DatabaseEnums } from './enums'
 export { EnumConstants } from './enums'
 
+// Backward compatibility: Constants.public.Enums structure
+export const Constants = {
+  public: {
+    Enums: {} as typeof import('./enums').EnumConstants
+  }
+} as const
+
+// Initialize Constants at runtime
+import { EnumConstants as EC } from './enums'
+;(Constants.public as any).Enums = EC
+
 // Re-export all table types for direct access if needed
 export * from './tables'
 
