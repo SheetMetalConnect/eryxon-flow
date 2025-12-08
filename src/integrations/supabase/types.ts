@@ -2933,6 +2933,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_invitation: {
+        Args: { p_token: string; p_user_id: string }
+        Returns: boolean
+      }
       acknowledge_demo_mode: {
         Args: { p_tenant_id: string }
         Returns: undefined
@@ -2951,6 +2955,7 @@ export type Database = {
           reason: string
         }[]
       }
+      cancel_invitation: { Args: { p_invitation_id: string }; Returns: boolean }
       check_jobs_due_soon: { Args: never; Returns: number }
       check_mcp_tool_permission: {
         Args: { p_key_id: string; p_tool_name: string }

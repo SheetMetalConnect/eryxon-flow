@@ -61,27 +61,19 @@ export function useInvitations() {
       }
 
       // Call the Edge Function to create invitation and send email
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-invitation`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({
-            email,
-            role,
-            tenant_id: profile.tenant_id,
-          }),
-        }
-      );
+      const { data: funcData, error: funcError } = await supabase.functions.invoke('send-invitation', {
+        body: {
+          email,
+          role,
+          tenant_id: profile.tenant_id,
+        },
+      });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to create invitation');
+      if (funcError) {
+        throw new Error(funcError.message || 'Failed to create invitation');
       }
+
+      const result = funcData;
 
       if (result.email_sent) {
         toast.success(`Invitation sent to ${email}`);
