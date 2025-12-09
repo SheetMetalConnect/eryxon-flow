@@ -974,15 +974,12 @@ const prioritizeJob: ToolHandler = async (args, supabase) => {
     }
 
     // Find job
-    let jobQuery = supabase.from("jobs").select("id, job_number, customer");
-    if (job_id) {
-      jobQuery = jobQuery.eq("id", job_id);
-    } else {
-      jobQuery = jobQuery.eq("job_number", job_number);
-    }
-    jobQuery = jobQuery.is("deleted_at", null).single();
-
-    const { data: job, error: jobError } = await jobQuery;
+    const { data: job, error: jobError } = await supabase
+      .from("jobs")
+      .select("id, job_number, customer")
+      .eq(job_id ? "id" : "job_number", job_id || job_number)
+      .is("deleted_at", null)
+      .single();
     if (jobError) throw jobError;
     if (!job) return errorResponse(new Error("Job not found"));
 
@@ -1085,9 +1082,11 @@ const fetchPartsByCustomer: ToolHandler = async (args, supabase) => {
     if (error) throw error;
 
     // Group by job for better agent readability
+    // Note: jobs is an object (not array) due to !inner join
     const jobsMap = new Map<string, any>();
-    for (const part of data || []) {
-      const jobId = part.jobs.id;
+    for (const part of (data || []) as any[]) {
+      const jobId = part.jobs?.id;
+      if (!jobId) continue;
       if (!jobsMap.has(jobId)) {
         jobsMap.set(jobId, {
           ...part.jobs,
@@ -1405,15 +1404,16 @@ const checkResourceAvailability: ToolHandler = async (args, supabase) => {
         .in("operations.status", ["in_progress", "not_started"]);
 
       if (usage) {
-        for (const u of usage) {
+        // Note: operations, parts, jobs are objects due to !inner joins
+        for (const u of usage as any[]) {
           const existing = usageMap.get(u.resource_id) || [];
           existing.push({
-            operation_id: u.operations.id,
-            operation_name: u.operations.operation_name,
-            status: u.operations.status,
+            operation_id: u.operations?.id,
+            operation_name: u.operations?.operation_name,
+            status: u.operations?.status,
             quantity: u.quantity,
-            job_number: u.operations.parts.jobs.job_number,
-            customer: u.operations.parts.jobs.customer,
+            job_number: u.operations?.parts?.jobs?.job_number,
+            customer: u.operations?.parts?.jobs?.customer,
           });
           usageMap.set(u.resource_id, existing);
         }
@@ -1624,18 +1624,19 @@ const getShippingStatus: ToolHandler = async (args, supabase) => {
     if (error) throw error;
 
     // Summary by status
+    // Note: Cast to any[] due to complex nested select causing type parser issues
     const byStatus = new Map<string, number>();
-    for (const s of shipments || []) {
+    for (const s of (shipments || []) as any[]) {
       byStatus.set(s.status, (byStatus.get(s.status) || 0) + 1);
     }
 
     return jsonResponse(
       {
-        total: shipments?.length || 0,
+        total: (shipments as any[])?.length || 0,
         by_status: Object.fromEntries(byStatus),
-        shipments: shipments || [],
+        shipments: (shipments || []) as any[],
       },
-      `Found ${shipments?.length || 0} shipments`,
+      `Found ${(shipments as any[])?.length || 0} shipments`,
     );
   } catch (error) {
     return errorResponse(error);

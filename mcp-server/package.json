@@ -1,6 +1,6 @@
 {
   "name": "eryxon-flow-mcp-server",
-  "version": "2.1.0",
+  "version": "2.3.0",
   "description": "MCP Server for Eryxon Flow MES",
   "type": "module",
   "main": "dist/index.js",

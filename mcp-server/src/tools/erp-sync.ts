@@ -518,10 +518,11 @@ const erpSyncDiff: ToolHandler = async (args, supabase) => {
 
 const erpSyncExecute: ToolHandler = async (args, supabase) => {
   try {
+    const inputOptions = args.options as { skip_unchanged?: boolean; continue_on_error?: boolean; record_history?: boolean } | undefined;
     const options = {
-      skip_unchanged: args.options?.skip_unchanged ?? true,
-      continue_on_error: args.options?.continue_on_error ?? true,
-      record_history: args.options?.record_history ?? true,
+      skip_unchanged: inputOptions?.skip_unchanged ?? true,
+      continue_on_error: inputOptions?.continue_on_error ?? true,
+      record_history: inputOptions?.record_history ?? true,
     };
 
     const results: any = {};
