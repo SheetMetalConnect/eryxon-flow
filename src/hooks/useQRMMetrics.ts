@@ -39,7 +39,7 @@ export function useCellQRMMetrics(
       );
 
       if (rpcError) throw rpcError;
-      setMetrics(data as CellQRMMetrics);
+      setMetrics(data as unknown as CellQRMMetrics);
     } catch (err) {
       setError(err as Error);
       logger.error("Failed to fetch cell QRM metrics", err, {
@@ -138,7 +138,7 @@ export function useNextCellCapacity(
       );
 
       if (rpcError) throw rpcError;
-      setCapacity(data as NextCellCapacity);
+      setCapacity(data as unknown as NextCellCapacity);
     } catch (err) {
       setError(err as Error);
       logger.error("Failed to check next cell capacity", err, {

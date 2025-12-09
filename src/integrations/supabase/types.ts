@@ -125,6 +125,51 @@ export type Database = {
         }
         Relationships: []
       }
+      api_usage_logs: {
+        Row: {
+          api_key_id: string | null
+          created_at: string | null
+          date: string
+          id: string
+          requests_count: number | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          requests_count?: number | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          requests_count?: number | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_usage_logs_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_usage_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assignments: {
         Row: {
           assigned_by: string
@@ -2731,6 +2776,8 @@ export type Database = {
       tenants: {
         Row: {
           abbreviation: string | null
+          api_requests_reset_at: string | null
+          api_requests_today: number | null
           auto_stop_tracking: boolean | null
           billing_country_code: string | null
           billing_email: string | null
@@ -2779,6 +2826,8 @@ export type Database = {
         }
         Insert: {
           abbreviation?: string | null
+          api_requests_reset_at?: string | null
+          api_requests_today?: number | null
           auto_stop_tracking?: boolean | null
           billing_country_code?: string | null
           billing_email?: string | null
@@ -2827,6 +2876,8 @@ export type Database = {
         }
         Update: {
           abbreviation?: string | null
+          api_requests_reset_at?: string | null
+          api_requests_today?: number | null
           auto_stop_tracking?: boolean | null
           billing_country_code?: string | null
           billing_email?: string | null
@@ -3277,6 +3328,15 @@ export type Database = {
           unique_users: number
         }[]
       }
+      get_api_usage_stats: {
+        Args: { p_tenant_id?: string }
+        Returns: {
+          daily_limit: number
+          reset_at: string
+          this_month_requests: number
+          today_requests: number
+        }[]
+      }
       get_cell_qrm_metrics: {
         Args: { cell_id_param: string; tenant_id_param: string }
         Returns: Json
@@ -3459,6 +3519,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_api_usage: {
+        Args: { p_api_key_id?: string; p_tenant_id: string }
+        Returns: number
       }
       is_demo_mode: { Args: { p_tenant_id: string }; Returns: boolean }
       is_root_admin: { Args: never; Returns: boolean }

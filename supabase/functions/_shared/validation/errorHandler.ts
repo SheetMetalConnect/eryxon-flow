@@ -203,13 +203,13 @@ export function handleError(error: unknown): Response {
   // Rate limit errors (429)
   if (error instanceof RateLimitError) {
     const rateLimitHeaders = getRateLimitHeaders(error.rateLimitResult);
-    const body: ApiErrorResponse = {
+    const body = {
       success: false,
       error: {
         code: "RATE_LIMIT_EXCEEDED",
         message: error.message,
         statusCode: 429,
-        details: {
+        rateLimitInfo: {
           remaining: error.rateLimitResult.remaining,
           resetAt: new Date(error.rateLimitResult.resetAt).toISOString(),
           retryAfter: error.rateLimitResult.retryAfter,
