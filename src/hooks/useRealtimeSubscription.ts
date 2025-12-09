@@ -146,8 +146,8 @@ export function useRealtimeSubscription(options: RealtimeSubscriptionOptions): v
       }
 
       channel = channel.on(
-        'postgres_changes',
-        config,
+        'postgres_changes' as any,
+        config as any,
         (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
           logger.debug('Realtime change received', {
             operation: 'useRealtimeSubscription',

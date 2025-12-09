@@ -73,7 +73,7 @@ const getPricingTiers = (t: (key: string) => string) => [
   },
 ];
 
-export const MyPlan: React.FC = () => {
+const MyPlan: React.FC = () => {
   const { t } = useTranslation();
   const {
     subscription,
@@ -406,3 +406,5 @@ export const MyPlan: React.FC = () => {
     </div>
   );
 };
+
+export default MyPlan;

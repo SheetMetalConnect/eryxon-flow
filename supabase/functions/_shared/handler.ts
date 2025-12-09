@@ -101,6 +101,7 @@ export function createApiHandler(
         tenantId: "",
         apiKeyId: "",
         keyPrefix: "",
+        plan: "free",
       };
 
       // Authenticate unless public endpoint
