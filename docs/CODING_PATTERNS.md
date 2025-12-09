@@ -271,6 +271,172 @@ import Auth from "./pages/auth/Auth";
 
 ---
 
+## Error Handling with AppError
+
+Use the centralized error utilities for consistent error handling:
+
+```tsx
+import { AppError, ErrorCode, getErrorMessage, fromSupabaseError } from '@/lib/errors';
+import { logger } from '@/lib/logger';
+
+// Convert Supabase errors to AppError
+const { data, error } = await supabase.from('jobs').select('*');
+if (error) {
+  throw fromSupabaseError(error, { operation: 'fetchJobs' });
+}
+
+// Safe error message extraction
+try {
+  await someOperation();
+} catch (error) {
+  const message = getErrorMessage(error); // Always returns string
+  logger.error('Operation failed', error, { operation: 'myOperation' });
+  toast.error(message);
+}
+
+// User-friendly error messages
+const appError = fromSupabaseError(error);
+toast.error(appError.toUserMessage()); // "The requested resource was not found."
+```
+
+For detailed error handling patterns, see [docs/ERROR_HANDLING.md](./ERROR_HANDLING.md).
+
+---
+
+## Structured Logging
+
+Use the logger for consistent, context-aware logging:
+
+```tsx
+import { logger, createScopedLogger } from '@/lib/logger';
+
+// Basic logging with context
+logger.info('Job created', {
+  operation: 'createJob',
+  entityType: 'job',
+  entityId: jobId,
+  tenantId,
+});
+
+logger.error('Failed to update operation', error, {
+  operation: 'updateOperation',
+  entityId: operationId,
+});
+
+// Scoped logger for hooks/components
+const log = createScopedLogger({
+  operation: 'useJobOperations',
+  entityType: 'job',
+});
+
+log.info('Fetching job data');
+log.error('Failed to fetch', error);
+
+// Performance timing
+const data = await logger.timedAsync('fetchMetrics', async () => {
+  return await fetchAllMetrics();
+});
+```
+
+---
+
+## Realtime Subscriptions with Filtering
+
+**Always filter subscriptions to reduce scope and prevent cascade refetches:**
+
+```tsx
+import { useDebouncedCallback } from '@/hooks/useDebounce';
+
+// GOOD - filtered by tenant_id with debouncing
+useEffect(() => {
+  if (!tenantId) return;
+
+  const debouncedFetch = useDebouncedCallback(fetchData, 200);
+
+  const channel = supabase
+    .channel(`operations-${tenantId}`)
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'operations',
+      filter: `tenant_id=eq.${tenantId}`, // Filter to reduce scope
+    }, () => {
+      debouncedFetch(); // Debounce to prevent cascade
+    })
+    .subscribe();
+
+  return () => channel.unsubscribe();
+}, [tenantId]);
+
+// BAD - no filter, triggers on ALL operations across all tenants
+.on('postgres_changes', {
+  event: '*',
+  schema: 'public',
+  table: 'operations',
+  // No filter - will trigger on every operation change!
+}, () => fetchData())
+```
+
+**Or use the reusable subscription hook:**
+
+```tsx
+import { useRealtimeSubscription, useTenantSubscription } from '@/hooks/useRealtimeSubscription';
+
+// Tenant-scoped subscription
+useTenantSubscription(
+  'operations',
+  tenantId,
+  () => refetch(),
+  { debounceMs: 200 }
+);
+
+// Multiple tables
+useRealtimeSubscription({
+  channelName: 'production-updates',
+  tables: [
+    { table: 'operations', filter: `cell_id=eq.${cellId}` },
+    { table: 'time_entries', filter: `tenant_id=eq.${tenantId}` },
+  ],
+  onDataChange: handleUpdate,
+  debounceMs: 300,
+});
+```
+
+---
+
+## QueryKeys and Cache Management
+
+Use the QueryKeys factory for consistent cache keys:
+
+```tsx
+import { QueryKeys, StaleTime, CacheTime } from '@/lib/queryClient';
+import { invalidateOperationCaches } from '@/lib/cacheInvalidation';
+
+// Query with standard key
+const { data } = useQuery({
+  queryKey: QueryKeys.jobs.all(tenantId),
+  queryFn: fetchJobs,
+  staleTime: StaleTime.SHORT, // 30 seconds
+});
+
+// Invalidate related caches on mutation
+const mutation = useMutation({
+  mutationFn: updateOperation,
+  onSuccess: () => {
+    invalidateOperationCaches(queryClient, tenantId, operationId, cellId);
+  },
+});
+```
+
+**Stale time presets:**
+- `StaleTime.VERY_SHORT` - 10s (active operations, work queue)
+- `StaleTime.SHORT` - 30s (job lists, default)
+- `StaleTime.MEDIUM` - 2min (cell configurations)
+- `StaleTime.LONG` - 5min (user profiles)
+- `StaleTime.VERY_LONG` - 15min (app settings)
+
+---
+
 ## Quick Reference Commands
 
 ```bash

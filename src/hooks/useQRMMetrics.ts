@@ -1,37 +1,13 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
-import { getErrorMessage } from "@/lib/errors";
+import { useDebouncedCallback } from "@/hooks/useDebounce";
 import type {
   CellQRMMetrics,
   NextCellCapacity,
   PartRouting,
   JobRouting,
 } from "@/types/qrm";
-
-/**
- * Debounce utility to prevent cascade refetches
- */
-function useDebouncedCallback<T extends (...args: unknown[]) => void>(
-  callback: T,
-  delay: number
-): T {
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const callbackRef = useRef(callback);
-  callbackRef.current = callback;
-
-  return useCallback(
-    ((...args: unknown[]) => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      timeoutRef.current = setTimeout(() => {
-        callbackRef.current(...args);
-      }, delay);
-    }) as T,
-    [delay]
-  );
-}
 
 /**
  * Hook to fetch QRM metrics for a specific cell
