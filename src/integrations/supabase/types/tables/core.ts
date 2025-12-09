@@ -52,6 +52,11 @@ export type TenantsTable = {
     whitelabel_logo_url: string | null
     whitelabel_primary_color: string | null
     working_days_mask: number | null
+    // SSO fields (premium feature)
+    sso_enabled: boolean | null
+    sso_provider: string | null
+    sso_domain: string | null
+    sso_enforce_only: boolean | null
   }
   Insert: {
     abbreviation?: string | null
@@ -98,6 +103,11 @@ export type TenantsTable = {
     whitelabel_logo_url?: string | null
     whitelabel_primary_color?: string | null
     working_days_mask?: number | null
+    // SSO fields (premium feature)
+    sso_enabled?: boolean | null
+    sso_provider?: string | null
+    sso_domain?: string | null
+    sso_enforce_only?: boolean | null
   }
   Update: {
     abbreviation?: string | null
@@ -144,6 +154,11 @@ export type TenantsTable = {
     whitelabel_logo_url?: string | null
     whitelabel_primary_color?: string | null
     working_days_mask?: number | null
+    // SSO fields (premium feature)
+    sso_enabled?: boolean | null
+    sso_provider?: string | null
+    sso_domain?: string | null
+    sso_enforce_only?: boolean | null
   }
   Relationships: []
 }

@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Loader2, Building2, Save, Clock, Paintbrush, Crown, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { SSOSettings } from '@/components/admin/SSOSettings';
 
 const TIMEZONES = [
   'UTC',
@@ -476,6 +477,9 @@ export default function OrganizationSettings() {
           )}
         </CardContent>
       </Card>
+
+      {/* SSO Settings (Premium/Enterprise only) */}
+      <SSOSettings onSave={loadTenantDetails} />
 
       {/* Subscription Info (Read-only for now) */}
       {tenant && (

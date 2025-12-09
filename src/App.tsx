@@ -19,7 +19,7 @@ import { queryClient } from "./lib/queryClient";
 // ============================================================================
 
 // Auth pages (eagerly loaded as they're the entry point)
-import { Auth, AcceptInvitation } from "./pages/auth";
+import { Auth, AcceptInvitation, AuthCallback } from "./pages/auth";
 import { TerminalLogin } from "./pages/operator";
 
 // Operator pages - lazy loaded
@@ -146,6 +146,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/auth" element={<Auth />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/operator/login" element={<TerminalLogin />} />
       <Route path="/accept-invitation/:token" element={<AcceptInvitation />} />
 

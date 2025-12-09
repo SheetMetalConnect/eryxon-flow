@@ -31,6 +31,11 @@ interface TenantInfo {
   whitelabel_app_name: string | null;
   whitelabel_primary_color: string | null;
   whitelabel_favicon_url: string | null;
+  // SSO fields (premium feature)
+  sso_enabled: boolean;
+  sso_provider: string | null;
+  sso_domain: string | null;
+  sso_enforce_only: boolean;
 }
 
 interface AuthContextType {
@@ -41,6 +46,8 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, userData: Partial<Profile> & { company_name?: string }) => Promise<{ error: Error | null; data?: any }>;
+  signInWithMicrosoft: () => Promise<{ error: Error | null }>;
+  signInWithGoogle: () => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   switchTenant: (tenantId: string) => Promise<void>;
   refreshTenant: () => Promise<void>;
@@ -130,6 +137,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           whitelabel_app_name: tenantData.whitelabel_app_name ?? null,
           whitelabel_primary_color: tenantData.whitelabel_primary_color ?? null,
           whitelabel_favicon_url: tenantData.whitelabel_favicon_url ?? null,
+          // SSO fields
+          sso_enabled: tenantData.sso_enabled ?? false,
+          sso_provider: tenantData.sso_provider ?? null,
+          sso_domain: tenantData.sso_domain ?? null,
+          sso_enforce_only: tenantData.sso_enforce_only ?? false,
         });
       }
     } catch (error) {
@@ -171,6 +183,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
+      });
+      return { error };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
+
+  const signInWithMicrosoft = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'azure',
+        options: {
+          scopes: 'email profile openid',
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      return { error };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          scopes: 'email profile openid',
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
       return { error };
     } catch (error) {
@@ -225,6 +267,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         signIn,
         signUp,
+        signInWithMicrosoft,
+        signInWithGoogle,
         signOut,
         switchTenant,
         refreshTenant
