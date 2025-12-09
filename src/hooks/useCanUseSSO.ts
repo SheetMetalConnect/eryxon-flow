@@ -17,24 +17,20 @@ export function useCanUseSSO() {
   }, [tenant?.plan]);
 
   const ssoEnabled = useMemo(() => {
-    if (!tenant) return false;
-    return (tenant as any).sso_enabled === true;
-  }, [tenant]);
+    return tenant?.sso_enabled ?? false;
+  }, [tenant?.sso_enabled]);
 
   const ssoProvider = useMemo(() => {
-    if (!tenant) return null;
-    return (tenant as any).sso_provider as string | null;
-  }, [tenant]);
+    return tenant?.sso_provider ?? null;
+  }, [tenant?.sso_provider]);
 
   const ssoDomain = useMemo(() => {
-    if (!tenant) return null;
-    return (tenant as any).sso_domain as string | null;
-  }, [tenant]);
+    return tenant?.sso_domain ?? null;
+  }, [tenant?.sso_domain]);
 
   const ssoEnforceOnly = useMemo(() => {
-    if (!tenant) return false;
-    return (tenant as any).sso_enforce_only === true;
-  }, [tenant]);
+    return tenant?.sso_enforce_only ?? false;
+  }, [tenant?.sso_enforce_only]);
 
   return {
     /** Whether the tenant is on a plan that supports Enterprise SSO */

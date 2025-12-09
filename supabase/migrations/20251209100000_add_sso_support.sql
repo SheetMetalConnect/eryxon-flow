@@ -7,12 +7,74 @@ ALTER TABLE tenants ADD COLUMN IF NOT EXISTS sso_provider TEXT; -- 'microsoft', 
 ALTER TABLE tenants ADD COLUMN IF NOT EXISTS sso_domain TEXT; -- e.g., 'company.com' for domain-based login
 ALTER TABLE tenants ADD COLUMN IF NOT EXISTS sso_enforce_only BOOLEAN DEFAULT false; -- disable password login when true
 
--- Create enum type for SSO providers if it doesn't exist
-DO $$ BEGIN
-  CREATE TYPE sso_provider_type AS ENUM ('microsoft', 'google', 'saml');
-EXCEPTION
-  WHEN duplicate_object THEN null;
-END $$;
+-- Add comment for documentation
+COMMENT ON COLUMN tenants.sso_enabled IS 'Whether SSO is enabled for this tenant (premium/enterprise only)';
+COMMENT ON COLUMN tenants.sso_provider IS 'SSO provider: microsoft, google, or saml';
+COMMENT ON COLUMN tenants.sso_domain IS 'Email domain for automatic SSO routing (e.g., company.com)';
+COMMENT ON COLUMN tenants.sso_enforce_only IS 'When true, password login is disabled - SSO only';
+
+-- Update get_tenant_info to include SSO fields
+CREATE OR REPLACE FUNCTION public.get_tenant_info()
+RETURNS TABLE (
+  id UUID,
+  name TEXT,
+  company_name TEXT,
+  plan subscription_plan,
+  status subscription_status,
+  whitelabel_enabled BOOLEAN,
+  whitelabel_logo_url TEXT,
+  whitelabel_app_name TEXT,
+  whitelabel_primary_color TEXT,
+  whitelabel_favicon_url TEXT,
+  sso_enabled BOOLEAN,
+  sso_provider TEXT,
+  sso_domain TEXT,
+  sso_enforce_only BOOLEAN
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_tenant_id UUID;
+BEGIN
+  -- Get the tenant ID for the current user
+  SELECT p.tenant_id INTO v_tenant_id
+  FROM profiles p
+  WHERE p.id = auth.uid();
+
+  -- Check for active tenant override (for root admins)
+  IF EXISTS (
+    SELECT 1 FROM profiles
+    WHERE id = auth.uid()
+    AND is_root_admin = true
+    AND active_tenant_id IS NOT NULL
+  ) THEN
+    SELECT active_tenant_id INTO v_tenant_id
+    FROM profiles
+    WHERE id = auth.uid();
+  END IF;
+
+  RETURN QUERY
+  SELECT
+    t.id,
+    t.name,
+    t.company_name,
+    t.plan,
+    t.status,
+    COALESCE(t.whitelabel_enabled, false),
+    t.whitelabel_logo_url,
+    t.whitelabel_app_name,
+    t.whitelabel_primary_color,
+    t.whitelabel_favicon_url,
+    COALESCE(t.sso_enabled, false),
+    t.sso_provider,
+    t.sso_domain,
+    COALESCE(t.sso_enforce_only, false)
+  FROM tenants t
+  WHERE t.id = v_tenant_id;
+END;
+$$;
 
 -- Function to check if tenant can use SSO (premium/enterprise only)
 CREATE OR REPLACE FUNCTION can_use_sso(p_tenant_id UUID DEFAULT NULL)
@@ -90,12 +152,6 @@ BEGIN
     AND t.status = 'active';
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Add comment for documentation
-COMMENT ON COLUMN tenants.sso_enabled IS 'Whether SSO is enabled for this tenant (premium/enterprise only)';
-COMMENT ON COLUMN tenants.sso_provider IS 'SSO provider: microsoft, google, or saml';
-COMMENT ON COLUMN tenants.sso_domain IS 'Email domain for automatic SSO routing (e.g., company.com)';
-COMMENT ON COLUMN tenants.sso_enforce_only IS 'When true, password login is disabled - SSO only';
 
 -- Grant execute permissions on new functions
 GRANT EXECUTE ON FUNCTION can_use_sso(UUID) TO authenticated;
