@@ -10,6 +10,7 @@ import { Download, Archive, FileJson, FileSpreadsheet, Loader2 } from "lucide-re
 import Papa from "papaparse";
 import JSZip from "jszip";
 import { useTranslation } from "react-i18next";
+import { getSupabaseFunctionsUrl } from "@/lib/api-config";
 
 const EXPORTABLE_ENTITIES = [
   { id: 'jobs', label: 'Jobs', description: 'All manufacturing jobs' },
@@ -72,9 +73,8 @@ export default function DataExport() {
 
       // Call export API
       const entities = selectedEntities.join(',');
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://vatgianzotsurljznsry.supabase.co';
       const response = await fetch(
-        `${supabaseUrl}/functions/v1/api-export?entities=${entities}&format=${exportFormat}`,
+        `${getSupabaseFunctionsUrl()}/api-export?entities=${entities}&format=${exportFormat}`,
         {
           method: 'GET',
           headers: {

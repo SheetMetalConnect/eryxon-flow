@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Loader2, Server, CheckCircle2, XCircle, AlertCircle, Copy } from "lucide-react";
+import { Loader2, Server, CheckCircle2, XCircle, AlertCircle, Copy, Lock } from "lucide-react";
+import { getSupabaseUrl } from "@/lib/api-config";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -77,7 +78,11 @@ export default function McpServerSettings() {
       }
 
       if (data) {
-        setConfig(data as McpConfig);
+        // Always use the environment URL, not the stored one
+        setConfig({
+          ...(data as McpConfig),
+          supabase_url: getSupabaseUrl(),
+        });
       } else {
         // Initialize default config for new tenants
         setConfig({
@@ -85,7 +90,7 @@ export default function McpServerSettings() {
           server_name: "eryxon-flow-mcp",
           server_version: "2.1.0",
           enabled: true,
-          supabase_url: import.meta.env.VITE_SUPABASE_URL || "",
+          supabase_url: getSupabaseUrl(),
           features: {
             logging: true,
             healthCheck: true,
@@ -384,23 +389,21 @@ export default function McpServerSettings() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="supabase_url">Supabase URL</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="supabase_url"
-                      value={config.supabase_url}
-                      onChange={(e) =>
-                        setConfig({ ...config, supabase_url: e.target.value })
-                      }
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => copyToClipboard(config.supabase_url)}
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
+                  <Label htmlFor="supabase_url">Backend Connection</Label>
+                  <div className="flex gap-2 items-center">
+                    <div className="flex-1 flex items-center gap-2 px-3 py-2 border rounded-md bg-muted/50">
+                      <Lock className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        Configured via environment
+                      </span>
+                      <Badge variant="outline" className="ml-auto text-xs">
+                        {config.supabase_url ? "Connected" : "Not configured"}
+                      </Badge>
+                    </div>
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    The backend URL is securely configured through environment variables.
+                  </p>
                 </div>
               </div>
 

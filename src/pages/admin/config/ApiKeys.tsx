@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table/DataTable";
 import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
+import { getPublicApiUrl, getSupabaseFunctionsUrl } from "@/lib/api-config";
 
 interface ApiKey {
   id: string;
@@ -78,7 +79,7 @@ export default function ConfigApiKeys() {
       if (!session) throw new Error('Not authenticated');
 
       const response = await fetch(
-        `https://vatgianzotsurljznsry.supabase.co/functions/v1/api-key-generate`,
+        `${getSupabaseFunctionsUrl()}/api-key-generate`,
         {
           method: 'POST',
           headers: {
@@ -386,7 +387,7 @@ export default function ConfigApiKeys() {
                   <div className="flex-1">
                     <p className="text-sm font-medium">Base URL</p>
                     <code className="text-xs bg-muted px-2 py-1 rounded block break-all">
-                      https://vatgianzotsurljznsry.supabase.co/functions/v1
+                      {getPublicApiUrl()}
                     </code>
                   </div>
                 </div>

@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { getSupabaseFunctionsUrl } from "@/lib/api-config";
 
 // Reuse the same event types as webhooks for consistency
 export type MqttEvent =
@@ -52,10 +53,8 @@ export async function triggerMqttPublish(
       return { success: false, error: 'Not authenticated' };
     }
 
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://vatgianzotsurljznsry.supabase.co';
-
     const response = await fetch(
-      `${supabaseUrl}/functions/v1/mqtt-publish`,
+      `${getSupabaseFunctionsUrl()}/mqtt-publish`,
       {
         method: 'POST',
         headers: {

@@ -28,12 +28,12 @@ import {
   HelpCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getPublicApiUrl } from "@/lib/api-config";
 
 export default function ApiDocs() {
   const { toast } = useToast();
   const [apiKey, setApiKey] = useState("");
-  const baseUrl = import.meta.env.VITE_SUPABASE_URL?.replace('/supabase', '') || "https://vatgianzotsurljznsry.supabase.co";
-  const apiBaseUrl = `${baseUrl}/functions/v1`;
+  const apiBaseUrl = getPublicApiUrl();
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);

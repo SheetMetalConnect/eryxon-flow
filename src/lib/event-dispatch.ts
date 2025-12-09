@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { getSupabaseFunctionsUrl } from "@/lib/api-config";
 
 /**
  * Centralized Event Dispatch System
@@ -194,10 +195,8 @@ async function dispatchToWebhooks(
       return { success: false, error: 'Not authenticated' };
     }
 
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://vatgianzotsurljznsry.supabase.co';
-
     const response = await fetch(
-      `${supabaseUrl}/functions/v1/webhook-dispatch`,
+      `${getSupabaseFunctionsUrl()}/webhook-dispatch`,
       {
         method: 'POST',
         headers: {
@@ -242,10 +241,8 @@ async function dispatchToMqtt(
       return { success: false, error: 'Not authenticated' };
     }
 
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://vatgianzotsurljznsry.supabase.co';
-
     const response = await fetch(
-      `${supabaseUrl}/functions/v1/mqtt-publish`,
+      `${getSupabaseFunctionsUrl()}/mqtt-publish`,
       {
         method: 'POST',
         headers: {

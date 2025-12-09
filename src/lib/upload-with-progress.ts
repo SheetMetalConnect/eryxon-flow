@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { getSupabaseUrl, getSupabaseAnonKey } from '@/lib/api-config';
 
 export interface UploadProgressCallback {
   (loaded: number, total: number, percentage: number): void;
@@ -34,9 +35,9 @@ export async function uploadFileWithProgress(
   const { onProgress, signal } = options;
 
   try {
-    // Use the actual Supabase project URL and anon key
-    const supabaseUrl = 'https://vatgianzotsurljznsry.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhdGdpYW56b3RzdXJsanpuc3J5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI2OTA2MDksImV4cCI6MjA3ODI2NjYwOX0.7AjzaZjAMcygsMiPbI8w43F00JDU6hlpOWlbejOAZS0';
+    // Use environment-configured Supabase URL and key
+    const supabaseUrl = getSupabaseUrl();
+    const supabaseKey = getSupabaseAnonKey();
 
     // Get the current session for auth
     const { data: { session } } = await supabase.auth.getSession();

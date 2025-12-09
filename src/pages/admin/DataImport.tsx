@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import Papa from "papaparse";
 import { useTranslation } from "react-i18next";
+import { getSupabaseFunctionsUrl } from "@/lib/api-config";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -306,7 +307,6 @@ export default function DataImport() {
       if (!session) throw new Error('Not authenticated');
 
       const transformedData = transformData();
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://vatgianzotsurljznsry.supabase.co';
 
       // Chunk data into batches of 100
       const BATCH_SIZE = 100;
@@ -324,7 +324,7 @@ export default function DataImport() {
         const batch = batches[i];
 
         const response = await fetch(
-          `${supabaseUrl}/functions/v1${entityConfig.endpoint}`,
+          `${getSupabaseFunctionsUrl()}${entityConfig.endpoint}`,
           {
             method: 'POST',
             headers: {

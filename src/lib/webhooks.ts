@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { getSupabaseFunctionsUrl } from "@/lib/api-config";
 
 export type WebhookEvent =
   // Job lifecycle events
@@ -50,11 +51,8 @@ export async function triggerWebhook(
       return { success: false, error: 'Not authenticated' };
     }
 
-    // Get Supabase URL from environment or construct from current origin
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://vatgianzotsurljznsry.supabase.co';
-    
     const response = await fetch(
-      `${supabaseUrl}/functions/v1/webhook-dispatch`,
+      `${getSupabaseFunctionsUrl()}/webhook-dispatch`,
       {
         method: 'POST',
         headers: {
