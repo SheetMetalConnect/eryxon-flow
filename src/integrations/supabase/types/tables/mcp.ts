@@ -259,8 +259,64 @@ export type McpServerLogsTable = {
   ]
 }
 
+export type McpEndpointsTable = {
+  Row: {
+    id: string
+    tenant_id: string
+    name: string
+    token_hash: string
+    token_prefix: string
+    enabled: boolean
+    created_at: string | null
+    created_by: string | null
+    last_used_at: string | null
+    usage_count: number
+  }
+  Insert: {
+    id?: string
+    tenant_id: string
+    name: string
+    token_hash: string
+    token_prefix: string
+    enabled?: boolean
+    created_at?: string | null
+    created_by?: string | null
+    last_used_at?: string | null
+    usage_count?: number
+  }
+  Update: {
+    id?: string
+    tenant_id?: string
+    name?: string
+    token_hash?: string
+    token_prefix?: string
+    enabled?: boolean
+    created_at?: string | null
+    created_by?: string | null
+    last_used_at?: string | null
+    usage_count?: number
+  }
+  Relationships: [
+    {
+      foreignKeyName: "mcp_endpoints_tenant_id_fkey"
+      columns: ["tenant_id"]
+      isOneToOne: false
+      referencedRelation: "tenants"
+      referencedColumns: ["id"]
+    },
+    {
+      foreignKeyName: "mcp_endpoints_created_by_fkey"
+      columns: ["created_by"]
+      isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },
+  ]
+}
+
 export type McpTables = {
   mcp_authentication_keys: McpAuthenticationKeysTable
+  mcp_endpoints: McpEndpointsTable
   mcp_key_usage_logs: McpKeyUsageLogsTable
   mcp_server_config: McpServerConfigTable
   mcp_server_health: McpServerHealthTable

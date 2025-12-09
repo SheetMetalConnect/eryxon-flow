@@ -1193,6 +1193,60 @@ export type Database = {
           },
         ]
       }
+      mcp_endpoints: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          enabled: boolean | null
+          id: string
+          last_used_at: string | null
+          name: string
+          tenant_id: string
+          token_hash: string
+          token_prefix: string
+          usage_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          enabled?: boolean | null
+          id?: string
+          last_used_at?: string | null
+          name: string
+          tenant_id: string
+          token_hash: string
+          token_prefix: string
+          usage_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          enabled?: boolean | null
+          id?: string
+          last_used_at?: string | null
+          name?: string
+          tenant_id?: string
+          token_hash?: string
+          token_prefix?: string
+          usage_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcp_endpoints_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mcp_endpoints_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mcp_key_usage_logs: {
         Row: {
           created_at: string | null
@@ -3224,6 +3278,15 @@ export type Database = {
         }
         Returns: string
       }
+      create_mcp_endpoint: {
+        Args: { p_name: string; p_tenant_id?: string }
+        Returns: {
+          endpoint_id: string
+          endpoint_name: string
+          token: string
+          token_prefix: string
+        }[]
+      }
       create_notification: {
         Args: {
           p_link?: string
@@ -3241,6 +3304,14 @@ export type Database = {
       }
       create_operator_with_pin:
         | {
+            Args: { p_employee_id?: string; p_full_name: string; p_pin: string }
+            Returns: {
+              employee_id: string
+              message: string
+              operator_id: string
+            }[]
+          }
+        | {
             Args: {
               p_employee_id: string
               p_full_name: string
@@ -3249,14 +3320,6 @@ export type Database = {
               p_tenant_id: string
             }
             Returns: string
-          }
-        | {
-            Args: { p_employee_id?: string; p_full_name: string; p_pin: string }
-            Returns: {
-              employee_id: string
-              message: string
-              operator_id: string
-            }[]
           }
       delete_tenant_data: { Args: { p_tenant_id: string }; Returns: Json }
       delete_user_account: { Args: never; Returns: Json }
@@ -3592,6 +3655,15 @@ export type Database = {
         Args: { p_notification_id: string }
         Returns: undefined
       }
+      regenerate_mcp_token: {
+        Args: { p_endpoint_id: string }
+        Returns: {
+          endpoint_id: string
+          endpoint_name: string
+          token: string
+          token_prefix: string
+        }[]
+      }
       reset_monthly_parts_counters: {
         Args: never
         Returns: {
@@ -3662,6 +3734,15 @@ export type Database = {
           key_id: string
           rate_limit: number
           tenant_id: string
+        }[]
+      }
+      validate_mcp_token: {
+        Args: { p_token: string }
+        Returns: {
+          endpoint_id: string
+          endpoint_name: string
+          tenant_id: string
+          valid: boolean
         }[]
       }
       verify_operator_pin: {
