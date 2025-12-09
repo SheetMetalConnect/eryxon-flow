@@ -3,11 +3,14 @@
  *
  * Provides optimized API key authentication for all ERP integration endpoints.
  * Uses key prefix lookup and SHA-256 hashing (compatible with Edge Functions).
+ * Includes plan-based rate limiting.
  */
 
 import { encode as hexEncode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
 import { cacheOrFetch, invalidateCache } from "./cache-utils.ts";
 import { CacheKeys, CacheTTL } from "./cache.ts";
+import { checkRateLimit, RateLimitResult } from "./rate-limiter.ts";
+import { getRateLimitConfig } from "./plan-limits.ts";
 
 // Custom error classes
 export class UnauthorizedError extends Error {
@@ -24,10 +27,21 @@ export class ForbiddenError extends Error {
   }
 }
 
+export class RateLimitError extends Error {
+  public rateLimitResult: RateLimitResult;
+
+  constructor(message: string, result: RateLimitResult) {
+    super(message);
+    this.name = "RateLimitError";
+    this.rateLimitResult = result;
+  }
+}
+
 export interface AuthResult {
   tenantId: string;
   apiKeyId: string;
   keyPrefix: string;
+  plan: 'free' | 'pro' | 'premium' | 'enterprise';
 }
 
 /**
@@ -67,10 +81,10 @@ export async function authenticateApiKey(
   // Extract key prefix for efficient lookup (first 12 chars match generation)
   const keyPrefix = extractKeyPrefix(apiKey);
 
-  // Try to find key by prefix (much more efficient than fetching all)
+  // Try to find key by prefix with tenant plan (much more efficient than fetching all)
   const { data: candidateKeys, error: fetchError } = await supabase
     .from("api_keys")
-    .select("id, key_hash, tenant_id, key_prefix")
+    .select("id, key_hash, tenant_id, key_prefix, tenants!inner(plan)")
     .eq("active", true)
     .eq("key_prefix", keyPrefix);
 
@@ -95,10 +109,14 @@ export async function authenticateApiKey(
         console.error("[Auth] Failed to update last_used_at:", err);
       });
 
+      // Extract plan from joined tenant data
+      const plan = (key as any).tenants?.plan || 'free';
+
       return {
         tenantId: key.tenant_id,
         apiKeyId: key.id,
         keyPrefix: key.key_prefix,
+        plan: plan as 'free' | 'pro' | 'premium' | 'enterprise',
       };
     }
   }
@@ -130,7 +148,7 @@ async function updateLastUsed(supabase: any, keyId: string): Promise<void> {
 
 /**
  * Authenticate and set tenant context for RLS
- * Convenience wrapper that combines auth and context setting
+ * Convenience wrapper that combines auth, rate limiting, and context setting
  */
 export async function authenticateAndSetContext(
   req: Request,
@@ -141,8 +159,41 @@ export async function authenticateAndSetContext(
     supabase,
   );
 
+  // Check rate limit based on plan
+  const rateLimitConfig = getRateLimitConfig(authResult.plan);
+
+  // Skip rate limiting for enterprise (unlimited)
+  if (rateLimitConfig.maxRequests !== null) {
+    const rateLimitResult = await checkRateLimit(
+      `tenant:${authResult.tenantId}`,
+      {
+        maxRequests: rateLimitConfig.maxRequests,
+        windowMs: rateLimitConfig.windowMs,
+        keyPrefix: 'api',
+      }
+    );
+
+    if (!rateLimitResult.allowed) {
+      throw new RateLimitError(
+        `Rate limit exceeded. Your ${authResult.plan} plan allows ${rateLimitConfig.maxRequests} requests per day. ` +
+        `Please upgrade your plan or wait until the limit resets.`,
+        rateLimitResult
+      );
+    }
+  }
+
   // Set tenant context for RLS
   await supabase.rpc("set_active_tenant", { p_tenant_id: authResult.tenantId });
+
+  // Log API usage asynchronously (don't block the response)
+  supabase
+    .rpc("increment_api_usage", {
+      p_tenant_id: authResult.tenantId,
+      p_api_key_id: authResult.apiKeyId,
+    })
+    .catch((err: Error) => {
+      console.error("[Auth] Failed to log API usage:", err);
+    });
 
   return authResult;
 }

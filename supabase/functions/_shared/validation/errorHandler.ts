@@ -8,6 +8,8 @@ import {
   ApiSuccessResponse,
   ValidationResult,
 } from "./types.ts";
+import { RateLimitError } from "../auth.ts";
+import { getRateLimitHeaders } from "../rate-limiter.ts";
 
 /**
  * Custom error classes
@@ -196,6 +198,33 @@ export function handleError(error: unknown): Response {
         limit: error.limit,
       },
     );
+  }
+
+  // Rate limit errors (429)
+  if (error instanceof RateLimitError) {
+    const rateLimitHeaders = getRateLimitHeaders(error.rateLimitResult);
+    const body: ApiErrorResponse = {
+      success: false,
+      error: {
+        code: "RATE_LIMIT_EXCEEDED",
+        message: error.message,
+        statusCode: 429,
+        details: {
+          remaining: error.rateLimitResult.remaining,
+          resetAt: new Date(error.rateLimitResult.resetAt).toISOString(),
+          retryAfter: error.rateLimitResult.retryAfter,
+        },
+      },
+    };
+
+    return new Response(JSON.stringify(body), {
+      status: 429,
+      headers: {
+        ...corsHeaders,
+        ...rateLimitHeaders,
+        "Content-Type": "application/json",
+      },
+    });
   }
 
   // Bad request errors (400)

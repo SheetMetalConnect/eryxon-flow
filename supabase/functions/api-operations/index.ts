@@ -19,7 +19,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 import {
   createSuccessResponse,
@@ -32,55 +31,13 @@ import {
   UnauthorizedError,
   BadRequestError,
 } from "../_shared/validation/errorHandler.ts";
+import { authenticateAndSetContext } from "../_shared/auth.ts";
 import { OperationValidator } from "../_shared/validation/validators/OperationValidator.ts";
 import {
   collectOperationForeignKeys,
   fetchValidIds,
 } from "../_shared/validation/fkValidator.ts";
 import type { ValidationContext } from "../_shared/validation/types.ts";
-
-async function authenticateApiKey(
-  authHeader: string | null,
-  supabase: any,
-): Promise<string> {
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    throw new UnauthorizedError("Missing or invalid authorization header");
-  }
-
-  const apiKey = authHeader.substring(7);
-
-  if (!apiKey.startsWith("ery_live_") && !apiKey.startsWith("ery_test_")) {
-    throw new UnauthorizedError("Invalid API key format");
-  }
-
-  const { data: keys } = await supabase
-    .from("api_keys")
-    .select("id, tenant_id")
-    .eq("active", true);
-
-  if (!keys || keys.length === 0) {
-    throw new UnauthorizedError("No active API keys found");
-  }
-
-  for (const key of keys) {
-    const { data: fullKey } = await supabase
-      .from("api_keys")
-      .select("key_hash, tenant_id")
-      .eq("id", key.id)
-      .single();
-
-    if (fullKey && (await bcrypt.compare(apiKey, fullKey.key_hash))) {
-      await supabase
-        .from("api_keys")
-        .update({ last_used_at: new Date().toISOString() })
-        .eq("id", key.id);
-
-      return fullKey.tenant_id;
-    }
-  }
-
-  throw new UnauthorizedError("Invalid API key");
-}
 
 serve(async (req) => {
   // Handle OPTIONS (CORS preflight)
@@ -94,14 +51,8 @@ serve(async (req) => {
   );
 
   try {
-    // Authenticate
-    const tenantId = await authenticateApiKey(
-      req.headers.get("authorization"),
-      supabase,
-    );
-
-    // Set tenant context for RLS
-    await supabase.rpc("set_active_tenant", { p_tenant_id: tenantId });
+    // Authenticate and set tenant context for RLS
+    const { tenantId } = await authenticateAndSetContext(req, supabase);
 
     // Check for sync endpoints
     const url = new URL(req.url);

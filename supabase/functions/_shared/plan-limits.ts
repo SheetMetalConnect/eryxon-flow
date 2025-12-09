@@ -158,36 +158,44 @@ export function getApiAccessLevel(plan: 'free' | 'pro' | 'premium' | 'enterprise
 
 /**
  * Get rate limit configuration based on plan
+ *
+ * Conservative daily limits (MVP - can increase later):
+ * - Free: 100 requests/day (very limited for evaluation)
+ * - Pro: 1,000 requests/day (production use)
+ * - Premium: 10,000 requests/day (fair use high-volume)
+ * - Enterprise: No limit (custom infrastructure)
  */
 export function getRateLimitConfig(plan: 'free' | 'pro' | 'premium' | 'enterprise'): {
-  maxRequests: number;
+  maxRequests: number | null;  // null = unlimited
   windowMs: number;
 } {
+  const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
   switch (plan) {
     case 'free':
       return {
-        maxRequests: 60,      // 60 requests per hour
-        windowMs: 60 * 60 * 1000,
+        maxRequests: 100,      // 100 requests per day
+        windowMs: ONE_DAY_MS,
       };
     case 'pro':
       return {
-        maxRequests: 1000,    // 1000 requests per hour
-        windowMs: 60 * 60 * 1000,
+        maxRequests: 1000,     // 1,000 requests per day
+        windowMs: ONE_DAY_MS,
       };
     case 'premium':
       return {
-        maxRequests: 5000,    // 5000 requests per hour (priority)
-        windowMs: 60 * 60 * 1000,
+        maxRequests: 10000,    // 10,000 requests per day (fair use)
+        windowMs: ONE_DAY_MS,
       };
     case 'enterprise':
       return {
-        maxRequests: 10000,   // 10000 requests per hour (dedicated)
-        windowMs: 60 * 60 * 1000,
+        maxRequests: null,     // Unlimited
+        windowMs: ONE_DAY_MS,
       };
     default:
       return {
-        maxRequests: 60,
-        windowMs: 60 * 60 * 1000,
+        maxRequests: 100,      // Default to free tier
+        windowMs: ONE_DAY_MS,
       };
   }
 }

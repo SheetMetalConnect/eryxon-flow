@@ -12,6 +12,7 @@ import {
   Briefcase,
   Package,
   Users,
+  Zap,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -77,6 +78,7 @@ export const MyPlan: React.FC = () => {
   const {
     subscription,
     usageStats,
+    apiUsageStats,
     loading,
     error,
     getPlanDisplayName,
@@ -273,6 +275,37 @@ export const MyPlan: React.FC = () => {
                   className="h-2 [&>div]:bg-blue-500"
                 />
               </div>
+
+              {/* API Usage */}
+              {apiUsageStats && (
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">{t("myPlan.apiRequests")}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {apiUsageStats.today_requests} /{" "}
+                      {apiUsageStats.daily_limit || "∞"} {t("myPlan.today")}
+                    </span>
+                  </div>
+                  <Progress
+                    value={getUsagePercentage(
+                      apiUsageStats.today_requests,
+                      apiUsageStats.daily_limit
+                    )}
+                    className={cn(
+                      "h-2",
+                      isAtLimit(apiUsageStats.today_requests, apiUsageStats.daily_limit)
+                        ? "[&>div]:bg-destructive"
+                        : "[&>div]:bg-orange-500"
+                    )}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {apiUsageStats.this_month_requests.toLocaleString()} {t("myPlan.requestsThisMonth")}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 

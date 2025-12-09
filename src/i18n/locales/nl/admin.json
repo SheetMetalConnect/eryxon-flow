@@ -553,6 +553,13 @@
     "upgradePlan": "Abonnement upgraden",
     "usage": "Gebruik",
     "usageThisMonth": "Gebruik deze maand",
-    "users": "Gebruikers"
+    "users": "Gebruikers",
+    "apiRequests": "API Verzoeken",
+    "today": "vandaag",
+    "requestsThisMonth": "verzoeken deze maand",
+    "upgradeRequest": {
+      "subject": "Upgrade Aanvraag: {{planName}}",
+      "body": "Hallo,\n\nIk wil graag upgraden naar het {{planName}} abonnement.\n\nHuidig Abonnement: {{currentPlan}}\nTenant ID: {{tenantId}}\n\nBedankt!"
+    }
   }
 }

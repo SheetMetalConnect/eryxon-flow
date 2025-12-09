@@ -27,10 +27,18 @@ export interface TenantUsageStats {
   total_admins: number;
 }
 
+export interface ApiUsageStats {
+  today_requests: number;
+  this_month_requests: number;
+  reset_at: string;
+  daily_limit: number | null;
+}
+
 export const useSubscription = () => {
   const { profile } = useAuth();
   const [subscription, setSubscription] = useState<TenantSubscription | null>(null);
   const [usageStats, setUsageStats] = useState<TenantUsageStats | null>(null);
+  const [apiUsageStats, setApiUsageStats] = useState<ApiUsageStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,6 +71,17 @@ export const useSubscription = () => {
 
         if (statsData && statsData.length > 0) {
           setUsageStats(statsData[0] as any);
+        }
+
+        // Fetch API usage statistics
+        const { data: apiData, error: apiError } = await supabase
+          .rpc('get_api_usage_stats' as any);
+
+        if (apiError) {
+          console.warn('API usage stats not available:', apiError);
+          // Don't throw - API usage stats are optional
+        } else if (apiData && apiData.length > 0) {
+          setApiUsageStats(apiData[0] as any);
         }
       } catch (err) {
         console.error('Error fetching subscription:', err);
@@ -110,6 +129,7 @@ export const useSubscription = () => {
   return {
     subscription,
     usageStats,
+    apiUsageStats,
     loading,
     error,
     getPlanDisplayName,
