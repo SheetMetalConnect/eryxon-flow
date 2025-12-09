@@ -15,9 +15,9 @@ Additional Use Grant: You may make use of the Licensed Work, provided that
                       that is Competing with any offering of the Licensor.
 
                       A Production Use is Competing if it offers to third
-                      parties access to the Licensed Work in a manner that
-                      competes with or substitutes for the Licensor's own
-                      commercial hosting offering of the Licensed Work.
+                      parties access to the Licensed Work as a hosted SaaS
+                      in a manner that competes with or substitutes for the
+                      Licensor's own commercial hosting offering.
 
                       For clarity, the following uses are expressly permitted:
 
@@ -28,9 +28,13 @@ Additional Use Grant: You may make use of the Licensed Work, provided that
                          evaluation, and educational purposes
 
                       3. Offering consulting, integration, or customization
-                         services built around the Licensed Work
+                         services to help others with their own self-hosted
+                         instances of the Licensed Work
 
                       4. Creating derivative works for your own internal use
+
+                      5. Forking and modifying for your own manufacturing
+                         operations - each shop is unique
 
 Change Date:          Four years from the date the Licensed Work is published
 

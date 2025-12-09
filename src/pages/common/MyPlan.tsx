@@ -5,13 +5,12 @@ import { useTranslation } from "react-i18next";
 import {
   CheckCircle,
   TrendingUp,
-  Mail,
   Info,
-  ArrowUpRight,
+  ExternalLink,
   Cloud,
   Briefcase,
   Package,
-  Users,
+  Server,
   Zap,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,59 +18,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { useSubscription } from "@/hooks/useSubscription";
-
-const getPricingTiers = (t: (key: string) => string) => [
-  {
-    id: "free",
-    name: "Free",
-    price: t("myPlan.comingSoon"),
-    description: "Try it. Very limited.",
-    features: [
-      "25 jobs per month",
-      "250 parts per month",
-      "500 MB storage",
-      "Limited API access",
-      "Webhooks included",
-      "MCP server included",
-      "Docs only",
-    ],
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    price: t("myPlan.comingSoon"),
-    popular: true,
-    description: "Real usage, email support.",
-    features: [
-      "500 jobs per month",
-      "5,000 parts per month",
-      "10 GB storage",
-      "Full API access",
-      "Webhooks",
-      "MCP server",
-      "Email support (no SLA)",
-    ],
-  },
-  {
-    id: "premium",
-    name: "Premium",
-    price: t("myPlan.comingSoon"),
-    description: "High limits, SSO, priority support.",
-    features: [
-      "Fair use (high limits)",
-      "100 GB storage",
-      "Full API access",
-      "Webhooks + MCP server",
-      "SSO/SAML authentication",
-      "White-label (optional)",
-      "Priority email support",
-    ],
-  },
-];
 
 const MyPlan: React.FC = () => {
   const { t } = useTranslation();
@@ -81,26 +30,9 @@ const MyPlan: React.FC = () => {
     apiUsageStats,
     loading,
     error,
-    getPlanDisplayName,
     getUsagePercentage,
     isAtLimit,
   } = useSubscription();
-
-  const handleUpgradeRequest = (planName: string) => {
-    const subject = encodeURIComponent(
-      t("myPlan.upgradeRequest.subject", { planName })
-    );
-    const body = encodeURIComponent(
-      t("myPlan.upgradeRequest.body", {
-        planName,
-        currentPlan: subscription
-          ? getPlanDisplayName(subscription.plan)
-          : t("myPlan.unknown"),
-        tenantId: subscription?.tenant_id || "N/A",
-      })
-    );
-    window.location.href = `mailto:office@sheetmetalconnect.com?subject=${subject}&body=${body}`;
-  };
 
   if (loading) {
     return (
@@ -119,19 +51,7 @@ const MyPlan: React.FC = () => {
   }
 
   const currentPlan = subscription?.plan || "free";
-  const pricingTiers = getPricingTiers(t);
-  const currentTier = pricingTiers.find((tier) => tier.id === currentPlan);
-
-  const getPlanGradient = (plan: string) => {
-    switch (plan) {
-      case "premium":
-        return "from-purple-600 to-violet-700";
-      case "pro":
-        return "from-violet-500 to-indigo-600";
-      default:
-        return "from-primary to-primary/80";
-    }
-  };
+  const isSelfHosted = currentPlan === "self_hosted" || !subscription?.max_jobs;
 
   return (
     <div className="pb-8">
@@ -141,45 +61,46 @@ const MyPlan: React.FC = () => {
         <p className="text-muted-foreground">{t("myPlan.subtitle")}</p>
       </div>
 
-      {/* Current Plan Overview */}
+      {/* Current Plan Banner */}
       <Card
         className={cn(
           "mb-6 overflow-hidden border-0",
           "bg-gradient-to-br",
-          getPlanGradient(currentPlan)
+          isSelfHosted ? "from-green-600 to-emerald-700" : "from-primary to-primary/80"
         )}
       >
         <CardContent className="p-6 text-white">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-2xl font-bold">
-                  {currentTier?.name || t("myPlan.unknown")} {t("myPlan.plan")}
-                </h2>
-                {currentTier?.popular && (
-                  <Badge className="bg-white/20 text-white border-0 hover:bg-white/30">
-                    {t("myPlan.mostPopular")}
-                  </Badge>
+                {isSelfHosted ? (
+                  <Server className="h-6 w-6" />
+                ) : (
+                  <Cloud className="h-6 w-6" />
                 )}
+                <h2 className="text-2xl font-bold">
+                  {isSelfHosted ? t("myPlan.selfHosted") : t("myPlan.hostedDemo")}
+                </h2>
               </div>
-              <p className="text-white/90 mb-3">{currentTier?.description}</p>
-              <div className="text-4xl font-bold">
-                {currentTier?.price || "€0"}
-                <span className="text-lg font-normal text-white/80 ml-2">
-                  {t("myPlan.perMonth")}
-                </span>
-              </div>
+              <p className="text-white/90">
+                {isSelfHosted
+                  ? t("myPlan.selfHostedDescription")
+                  : t("myPlan.hostedDemoDescription")}
+              </p>
             </div>
-            {currentPlan !== "premium" && (
+            {!isSelfHosted && (
               <Button
-                size="lg"
-                onClick={() =>
-                  handleUpgradeRequest(currentPlan === "free" ? "Pro" : "Premium")
-                }
+                asChild
                 className="bg-white text-primary hover:bg-white/90 font-semibold"
               >
-                <ArrowUpRight className="mr-2 h-5 w-5" />
-                {t("myPlan.upgradePlan")}
+                <a
+                  href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/docs/SELF_HOSTING_GUIDE.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Server className="mr-2 h-4 w-4" />
+                  {t("myPlan.goSelfHosted")}
+                </a>
               </Button>
             )}
           </div>
@@ -347,62 +268,69 @@ const MyPlan: React.FC = () => {
           </div>
         </div>
 
-        {/* Plan Features & Upgrade Options */}
+        {/* Self-Host Info */}
         <div className="space-y-6">
-          {/* Current Plan Features */}
-          <Card className="glass-card">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg">{t("myPlan.planFeatures")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {currentTier?.features.map((feature, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-
-          {/* Upgrade Info */}
-          {currentPlan !== "premium" && (
+          {!isSelfHosted && (
             <Card className="glass-card border-primary/30 bg-primary/5">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <Info className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold">{t("myPlan.readyToUpgrade")}</h3>
+                  <Server className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold">{t("myPlan.unlimitedWithSelfHost")}</h3>
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">
-                  {currentPlan === "free"
-                    ? t("myPlan.upgradeFromFree")
-                    : t("myPlan.upgradeFromPro")}
+                  {t("myPlan.selfHostBenefits")}
                 </p>
-                <Separator className="my-4 bg-white/10" />
-                <p className="text-xs text-muted-foreground mb-4">
-                  {t("myPlan.contactToUpgrade")}
-                </p>
-                <Button
-                  className="w-full cta-button"
-                  onClick={() =>
-                    handleUpgradeRequest(
-                      currentPlan === "free" ? "Pro" : "Premium"
-                    )
-                  }
-                >
-                  <Mail className="mr-2 h-4 w-4" />
-                  {t("myPlan.requestUpgrade")}
+                <ul className="space-y-2 mb-4">
+                  {[
+                    t("myPlan.benefit.unlimitedJobs"),
+                    t("myPlan.benefit.unlimitedParts"),
+                    t("myPlan.benefit.fullApi"),
+                    t("myPlan.benefit.yourData"),
+                  ].map((benefit, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm">
+                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span>{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button asChild className="w-full">
+                  <a
+                    href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/docs/SELF_HOSTING_GUIDE.md"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t("myPlan.viewGuide")}
+                    <ExternalLink className="h-4 w-4 ml-2" />
+                  </a>
                 </Button>
-                <p className="text-[10px] text-muted-foreground text-center mt-3">
-                  {t("myPlan.noSalesCalls")}
-                </p>
               </CardContent>
             </Card>
           )}
+
+          {/* Help */}
+          <Card className="glass-card">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Info className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold">{t("myPlan.needHelp")}</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                {t("myPlan.helpDescription")}
+              </p>
+              <Button variant="outline" asChild className="w-full">
+                <a
+                  href="https://www.sheetmetalconnect.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t("myPlan.contactUs")}
+                  <ExternalLink className="h-4 w-4 ml-2" />
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
-
     </div>
   );
 };
