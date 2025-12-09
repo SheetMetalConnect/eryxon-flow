@@ -316,6 +316,13 @@
     "upgradePlan": "Plan upgraden",
     "usage": "Nutzung",
     "usageThisMonth": "Nutzung diesen Monat",
-    "users": "Benutzer"
+    "users": "Benutzer",
+    "apiRequests": "API Anfragen",
+    "today": "heute",
+    "requestsThisMonth": "Anfragen diesen Monat",
+    "upgradeRequest": {
+      "subject": "Upgrade Anfrage: {{planName}}",
+      "body": "Hallo,\n\nIch möchte auf den {{planName}} Plan upgraden.\n\nAktueller Plan: {{currentPlan}}\nTenant ID: {{tenantId}}\n\nDanke!"
+    }
   }
 }

@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Eryxon Flow API",
-    "description": "Production workflow management API for sheet metal manufacturing. This API allows you to manage jobs, parts, tasks, and track production progress through various stages.\n\n## Authentication\n\nAll API requests require an API key. Include your API key in the `Authorization` header:\n\n```\nAuthorization: Bearer ery_live_your_api_key_here\n```\n\n## Getting Started\n\n1. **Generate an API Key**: Navigate to Admin > API Keys in the web interface\n2. **Test the Connection**: Use the `/api-stages` endpoint (read-only) to verify your key works\n3. **Create Your First Job**: Use POST `/api-jobs` to create a job with parts and tasks\n4. **Track Progress**: Use GET endpoints to retrieve and monitor job status\n\n## Rate Limiting\n\nAPI requests are rate-limited to prevent abuse. Rate limit information is included in response headers:\n- `X-RateLimit-Limit`: Maximum requests allowed\n- `X-RateLimit-Remaining`: Remaining requests in current window\n- `X-RateLimit-Reset`: Timestamp when the limit resets\n\n## Base URL\n\n```\nhttps://vatgianzotsurljznsry.supabase.co/functions/v1\n```",
+    "description": "Production workflow management API for sheet metal manufacturing. This API allows you to manage jobs, parts, tasks, and track production progress through various stages.\n\n## Authentication\n\nAll API requests require an API key. Include your API key in the `Authorization` header:\n\n```\nAuthorization: Bearer ery_live_your_api_key_here\n```\n\n## Getting Started\n\n1. **Generate an API Key**: Navigate to Admin > API Keys in the web interface\n2. **Test the Connection**: Use the `/api-stages` endpoint (read-only) to verify your key works\n3. **Create Your First Job**: Use POST `/api-jobs` to create a job with parts and tasks\n4. **Track Progress**: Use GET endpoints to retrieve and monitor job status\n\n## Rate Limiting\n\nAPI requests are rate-limited based on your subscription plan:\n\n| Plan | Daily Limit |\n|------|-------------|\n| Free | 100 requests/day |\n| Pro | 1,000 requests/day |\n| Premium | 10,000 requests/day |\n| Enterprise | Unlimited |\n\nRate limit information is included in response headers:\n- `X-RateLimit-Remaining`: Remaining requests in current window\n- `X-RateLimit-Reset`: Timestamp when the limit resets\n- `Retry-After`: Seconds until you can retry (when rate limited)\n\nWhen you exceed your rate limit, you'll receive a `429 Too Many Requests` response.\n\n## Base URL\n\n```\nhttps://vatgianzotsurljznsry.supabase.co/functions/v1\n```",
     "version": "1.0.0",
     "contact": {
       "name": "API Support",
@@ -2336,7 +2336,31 @@
         }
       },
       "RateLimitError": {
-        "description": "Rate limit exceeded",
+        "description": "Rate limit exceeded. Your subscription plan's daily request limit has been reached.",
+        "headers": {
+          "X-RateLimit-Remaining": {
+            "description": "Number of requests remaining in current window",
+            "schema": {
+              "type": "integer",
+              "example": 0
+            }
+          },
+          "X-RateLimit-Reset": {
+            "description": "ISO 8601 timestamp when the rate limit resets",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-12-10T00:00:00Z"
+            }
+          },
+          "Retry-After": {
+            "description": "Seconds until the rate limit resets",
+            "schema": {
+              "type": "integer",
+              "example": 3600
+            }
+          }
+        },
         "content": {
           "application/json": {
             "schema": {
@@ -2346,7 +2370,13 @@
               "success": false,
               "error": {
                 "code": "RATE_LIMIT_EXCEEDED",
-                "message": "Too many requests. Please try again later."
+                "message": "Rate limit exceeded. Your free plan allows 100 requests per day. Please upgrade your plan or wait until the limit resets.",
+                "statusCode": 429,
+                "details": {
+                  "remaining": 0,
+                  "resetAt": "2024-12-10T00:00:00Z",
+                  "retryAfter": 3600
+                }
               }
             }
           }

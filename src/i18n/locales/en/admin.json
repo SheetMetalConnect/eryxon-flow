@@ -403,6 +403,13 @@
     "upgradePlan": "Upgrade Plan",
     "usage": "Usage",
     "usageThisMonth": "Usage This Month",
-    "users": "Users"
+    "users": "Users",
+    "apiRequests": "API Requests",
+    "today": "today",
+    "requestsThisMonth": "requests this month",
+    "upgradeRequest": {
+      "subject": "Upgrade Request: {{planName}}",
+      "body": "Hi,\n\nI would like to upgrade to the {{planName}} plan.\n\nCurrent Plan: {{currentPlan}}\nTenant ID: {{tenantId}}\n\nThank you!"
+    }
   }
 }
