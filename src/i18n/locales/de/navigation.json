@@ -42,6 +42,7 @@
     "cells": "Zellen",
     "calendar": "Kalender",
     "appStore": "App Store",
+    "mcpSetup": "MCP-Einrichtung",
     "mcpKeys": "MCP-Schlüssel",
     "mcpServer": "MCP-Server",
     "mqttPublishers": "MQTT-Publisher",

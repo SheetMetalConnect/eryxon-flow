@@ -35,6 +35,7 @@ const FactoryCalendar = lazy(() => import("./pages/admin/FactoryCalendar"));
 const OrganizationSettings = lazy(() => import("./pages/admin/OrganizationSettings"));
 const Assignments = lazy(() => import("./pages/admin/Assignments"));
 const McpServerSettings = lazy(() => import("./pages/admin/McpServerSettings"));
+const McpSetup = lazy(() => import("./pages/admin/McpSetup"));
 const DataExport = lazy(() => import("./pages/admin/DataExport"));
 const DataImport = lazy(() => import("./pages/admin/DataImport"));
 const Jobs = lazy(() => import("./pages/admin/Jobs"));
@@ -415,6 +416,19 @@ function AppRoutes() {
             <Layout>
               <LazyRoute>
                 <ConfigMcpKeys />
+              </LazyRoute>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/mcp-setup"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <LazyRoute>
+                <McpSetup />
               </LazyRoute>
             </Layout>
           </ProtectedRoute>

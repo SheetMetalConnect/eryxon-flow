@@ -260,14 +260,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       exact: true,
     },
     {
-      path: "/admin/config/mcp-keys",
-      label: t("navigation.mcpKeys"),
-      icon: Key,
-      exact: true,
-    },
-    {
-      path: "/admin/config/mcp-server",
-      label: t("navigation.mcpServer"),
+      path: "/admin/mcp-setup",
+      label: t("navigation.mcpSetup"),
       icon: Code,
       exact: true,
     },

@@ -42,6 +42,7 @@
     "cells": "Cellen",
     "calendar": "Kalender",
     "appStore": "App Winkel",
+    "mcpSetup": "MCP Setup",
     "mcpKeys": "MCP-sleutels",
     "mcpServer": "MCP-server",
     "mqttPublishers": "MQTT Publishers",
