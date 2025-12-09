@@ -220,7 +220,6 @@ export const useNotifications = (filters?: NotificationFilters) => {
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
         (payload) => {
-          console.log('Notification change:', payload);
           // Refetch notifications when changes occur
           fetchNotifications();
         }

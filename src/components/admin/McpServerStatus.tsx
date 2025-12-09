@@ -67,7 +67,6 @@ export function McpServerStatus() {
         // Retry with exponential backoff on error
         if (attempt < maxRetries) {
           const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
-          console.log(`Retrying health check in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
           await new Promise(resolve => setTimeout(resolve, delay));
           return fetchHealthWithRetry(attempt + 1, maxRetries);
         }
@@ -95,7 +94,6 @@ export function McpServerStatus() {
       // Retry with exponential backoff on exception
       if (attempt < maxRetries) {
         const delay = Math.pow(2, attempt) * 1000;
-        console.log(`Retrying health check in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
         await new Promise(resolve => setTimeout(resolve, delay));
         return fetchHealthWithRetry(attempt + 1, maxRetries);
       }
@@ -143,13 +141,7 @@ export function McpServerStatus() {
             fetchHealthWithRetry(0, 0);
           }
         )
-        .subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            console.log('MCP health subscription active');
-          } else if (status === 'CHANNEL_ERROR') {
-            console.error('MCP health channel error');
-          }
-        });
+        .subscribe();
     };
 
     init();

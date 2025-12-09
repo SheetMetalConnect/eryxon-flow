@@ -132,7 +132,6 @@ export async function startTimeTracking(
 
   // Prevent duplicate entries for same operation (race condition protection)
   if (existingForOperation && existingForOperation.length > 0) {
-    console.log("Time entry already exists for this operation, skipping duplicate");
     return; // Silently succeed - entry already exists
   }
 
@@ -193,7 +192,6 @@ export async function startTimeTracking(
     .is("end_time", null);
 
   if (doubleCheck && doubleCheck.length > 0) {
-    console.log("Time entry created by concurrent request, skipping");
     return;
   }
 
@@ -317,7 +315,6 @@ export async function stopTimeTracking(operationId: string, operatorId: string) 
 
   // If there are duplicates, close them all
   if (entries.length > 1) {
-    console.log(`Found ${entries.length} duplicate time entries, closing all`);
     const now = new Date();
     for (let i = 1; i < entries.length; i++) {
       const dupEntry = entries[i];

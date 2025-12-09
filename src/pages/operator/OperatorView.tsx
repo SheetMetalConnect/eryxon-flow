@@ -155,13 +155,6 @@ export default function OperatorView() {
 
   // Map operations to TerminalJob
   const mapOperationToJob = (op: OperationWithDetails): TerminalJob => {
-    // Debug log for part data
-    if (op.part.file_paths && op.part.file_paths.length > 0) {
-      console.log("Mapping op with files:", op.id, op.part.part_number, op.part.file_paths);
-    } else {
-      // console.log("Mapping op WITHOUT files:", op.id, op.part.part_number, op.part);
-    }
-
     const hasPdf = op.part.file_paths?.some(p => p.toLowerCase().endsWith('.pdf')) || false;
     const hasModel = op.part.file_paths?.some(p => p.toLowerCase().endsWith('.step') || p.toLowerCase().endsWith('.stp')) || false;
 
@@ -244,13 +237,10 @@ export default function OperatorView() {
   useEffect(() => {
     const loadFiles = async () => {
       if (!selectedJob?.filePaths?.length) {
-        console.log("No file paths for job:", selectedJob?.jobCode);
         setPdfUrl(null);
         setStepUrl(null);
         return;
       }
-
-      console.log("Loading files for:", selectedJob.jobCode, selectedJob.filePaths);
 
       try {
         let pdf: string | null = null;
@@ -258,7 +248,6 @@ export default function OperatorView() {
 
         for (const path of selectedJob.filePaths) {
           const ext = path.toLowerCase();
-          console.log("Checking file:", path, "Ext:", ext);
 
           if (ext.endsWith(".pdf") && !pdf) {
             const { data } = await supabase.storage.from("parts-cad").createSignedUrl(path, 3600);
@@ -266,7 +255,6 @@ export default function OperatorView() {
           } else if ((ext.endsWith(".step") || ext.endsWith(".stp")) && !step) {
             const { data } = await supabase.storage.from("parts-cad").createSignedUrl(path, 3600);
             if (data?.signedUrl) {
-              console.log("Found STEP file, creating blob URL from:", data.signedUrl);
               const response = await fetch(data.signedUrl);
               const blob = await response.blob();
               step = URL.createObjectURL(blob);

@@ -161,7 +161,6 @@ export const ActivityMonitor: React.FC = () => {
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
         (payload) => {
-          console.log("Real-time activity update:", payload);
           // Reload data when changes occur
           loadData();
         },

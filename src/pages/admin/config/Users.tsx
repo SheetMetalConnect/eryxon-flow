@@ -236,19 +236,11 @@ export default function ConfigUsers() {
       // Use provided employee ID or let the RPC auto-generate
       const employeeIdParam = operatorForm.employee_id.trim() || null;
 
-      console.log('Creating operator with:', {
-        name: operatorForm.full_name.trim(),
-        employeeId: employeeIdParam,
-        pinLength: operatorForm.pin.length
-      });
-
       const { data, error } = await supabase.rpc('create_operator_with_pin' as any, {
         p_full_name: operatorForm.full_name.trim(),
         p_pin: operatorForm.pin,
         p_employee_id: employeeIdParam,
       });
-
-      console.log('RPC result:', { data, error });
 
       if (error) throw error;
 
