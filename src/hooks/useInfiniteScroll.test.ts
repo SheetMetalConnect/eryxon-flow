@@ -19,7 +19,12 @@ describe('useInfiniteScroll', () => {
     };
 
     // Create a proper constructor mock for IntersectionObserver
-    const MockIntersectionObserver = vi.fn().mockImplementation((callback: IntersectionObserverCallback, options?: IntersectionObserverInit) => {
+    // Must use function keyword (not arrow function) for constructor mocking
+    const MockIntersectionObserver = vi.fn(function (
+      this: IntersectionObserver,
+      callback: IntersectionObserverCallback,
+      options?: IntersectionObserverInit
+    ) {
       observerCallback = callback;
       observerOptions = options || {};
       return {
