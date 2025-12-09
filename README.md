@@ -14,6 +14,16 @@
 
 ---
 
+## About This Project
+
+Eryxon MES is built by [Sheet Metal Connect e.U.](https://www.sheetmetalconnect.com/), founded by Luke van Enkhuizen, for digital transformation of SMB metals companies.
+
+This is a starting point. Each shop is unique - fork it, customize it, make it yours. Sheet Metal Connect e.U. can help you self-host and adapt it to your specific needs.
+
+**Recommended:** Self-host with your own Supabase instance or Docker.
+
+---
+
 ## What Makes This Different
 
 - **MCP Server** - AI/automation ready out of the box
@@ -103,35 +113,27 @@ Additional documentation:
 - **API Security**: Bearer token auth with bcrypt-hashed keys
 - **Webhooks**: HMAC-SHA256 signatures for verification
 
-## Pricing
+## Getting Started
 
-| | Free | Pro | Premium | Enterprise | Self-hosted |
-|---|---|---|---|---|---|
-| **Price** | €0 | €97/mo | €497/mo | By request | €0 |
-| **Where** | My infra | My infra | My infra | Your infra | Your infra |
-| **Jobs/mo** | 25 | 500 | Fair use | Unlimited | Unlimited |
-| **Parts/mo** | 250 | 5,000 | Fair use | Unlimited | Unlimited |
-| **Storage** | 500MB | 10GB | 100GB | Your cost | Your cost |
-| **API** | Limited | Full | Full | Full | Full |
-| **Webhooks** | No | Yes | Yes | Yes | Yes |
-| **MCP Server** | No | Yes | Yes | Yes | Yes |
-| **SSO/SAML** | No | No | Yes | Yes | DIY |
-| **White-label** | No | No | Optional | Yes | DIY |
-| **Support** | Docs | Email | Priority | Dedicated | Community |
+| | Hosted Demo | Self-Hosted (Recommended) |
+|---|---|---|
+| **Where** | Our infrastructure | Your infrastructure |
+| **Usage** | Limited | Unlimited |
+| **API** | Limited | Full |
+| **Webhooks** | Limited | Full |
+| **MCP Server** | Limited | Full |
+| **Support** | Docs only | Community + Consulting |
 
-- **Free** — Try it. Very limited.
-- **Pro** — Real usage, my infra, email support.
-- **Premium** — High limits, SSO, priority support. Still my infra.
-- **Enterprise** — Your network, I deploy, custom scope. Contact me.
-- **Self-hosted** — On your own. Free forever.
+- **Hosted Demo** — Try it online, limited usage for evaluation and educational purposes
+- **Self-Hosted** — Full features, unlimited usage, bring your own Supabase or Docker
 
-Paid plans billed yearly. Want to self-host? See the [Self-Hosting Guide](docs/SELF_HOSTING_GUIDE.md).
+**Recommended:** Self-host with your own Supabase instance. See the [Self-Hosting Guide](docs/SELF_HOSTING_GUIDE.md) for database setup, migrations, and deployment.
 
-Need integration work or custom forks? [Contact us](mailto:office@sheetmetalconnect.com).
+Need help setting up or customizing? [Contact Sheet Metal Connect e.U.](mailto:office@sheetmetalconnect.com)
 
 ## Deployment
 
-### Self-Hosted (Free)
+### Self-Hosted
 
 ```bash
 # Clone and configure
@@ -160,14 +162,28 @@ docker run -p 8080:80 \
 
 **Business Source License 1.1 (BSL 1.1)**
 
-- You can view, modify, and self-host the code for your own use - free, unlimited
-- You cannot offer commercial hosted versions that compete with our SaaS
-- After 4 years, converts to Apache 2.0
+**TL;DR:** Use it, modify it, self-host it - all free. Just don't host it and charge others for access.
+
+- ✅ Self-host for your own manufacturing operations - free, unlimited
+- ✅ Fork it, modify it, make it yours - each shop is unique
+- ✅ Use for internal business, development, testing, education
+- ❌ Cannot host it and sell access as a SaaS to others
+- 🔄 Converts to Apache 2.0 after 4 years
 
 See [LICENSE](LICENSE) for full terms.
 
-Copyright © 2025 Sheet Metal Connect e.U.
+---
+
+## Contributing & Support
+
+- **Website**: [sheetmetalconnect.com](https://www.sheetmetalconnect.com/)
+- **Issues & PRs**: [GitHub](https://github.com/SheetMetalConnect/eryxon-flow)
+- **Consulting & Custom Setup**: [office@sheetmetalconnect.com](mailto:office@sheetmetalconnect.com)
+
+No guarantees of continued development, but likely will be updated with latest features.
 
 ---
+
+Copyright © 2025 Sheet Metal Connect e.U.
 
 **Built with** React + TypeScript + Supabase | **Region**: EU (Netherlands)

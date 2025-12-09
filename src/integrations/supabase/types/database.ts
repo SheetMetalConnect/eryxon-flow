@@ -34,11 +34,6 @@ import type {
   OperationDayAllocationsTable,
 } from './tables/time-tracking'
 import type {
-  BillingWaitlistTable,
-  SubscriptionEventsTable,
-  MonthlyResetLogsTable,
-} from './tables/billing'
-import type {
   ApiKeysTable,
   WebhooksTable,
   WebhookLogsTable,
@@ -110,11 +105,6 @@ export type Database = {
       time_entry_pauses: TimeEntryPausesTable
       operation_quantities: OperationQuantitiesTable
       operation_day_allocations: OperationDayAllocationsTable
-
-      // Billing domain
-      billing_waitlist: BillingWaitlistTable
-      subscription_events: SubscriptionEventsTable
-      monthly_reset_logs: MonthlyResetLogsTable
 
       // Integrations domain
       api_keys: ApiKeysTable

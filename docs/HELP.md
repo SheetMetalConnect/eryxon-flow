@@ -213,12 +213,9 @@ A:
 
 **Q: Can't create a new job (Admin)**
 
-A: Check plan limits in "My Plan" page:
-- **Free:** 10 jobs max
-- **Pro:** 100 jobs max
-- **Premium:** Unlimited
+A: If you're on the hosted free plan, there are usage limits. Check the "My Plan" page for current usage.
 
-Solution: Complete or delete old jobs, or upgrade plan.
+Solution: Complete or delete old jobs, or self-host for unlimited usage.
 
 **Q: Data export is taking a long time**
 
@@ -234,11 +231,12 @@ Tips:
 **Q: How do I get API access?**
 
 A:
-1. Ensure you're on Pro or Premium plan
-2. Go to **Settings → API Keys**
-3. Click "Generate New API Key"
-4. Copy key immediately (shown only once)
-5. Use in Authorization header: `Authorization: Bearer ery_live_xxxxx`
+1. Go to **Settings → API Keys**
+2. Click "Generate New API Key"
+3. Copy key immediately (shown only once)
+4. Use in Authorization header: `Authorization: Bearer ery_live_xxxxx`
+
+Note: API access may be limited on the hosted free plan. Self-host for full API access.
 
 **Q: How do webhooks work?**
 
@@ -360,29 +358,26 @@ Security: Each webhook includes HMAC-SHA256 signature for verification
 
 ---
 
-## Subscription Plans
+## Usage & Limits
 
-### Plan Comparison
+### Hosted Free Plan
 
-| Feature | Free | Pro | Premium |
-|---------|------|-----|---------|
-| **Jobs** | 10 max | 100 max | Unlimited |
-| **Parts/Month** | 100 | 1,000 | Unlimited |
-| **Storage** | 1GB | 10GB | 100GB |
-| **API Access** | ❌ | ✅ | ✅ |
-| **Webhooks** | ❌ | ✅ | ✅ |
-| **Support** | Email | Priority Email | 24/7 Phone |
+The hosted free plan has limited usage for evaluation and educational purposes:
+- Limited jobs and parts per month
+- Limited storage
+- Limited API access
 
-### Usage Tracking
+View your current usage in the **My Plan** page.
 
-View in **My Plan** page:
-- Current jobs (active + in_progress)
-- Parts created this month
-- Storage used
+### Self-Hosted (Recommended)
 
-Limits enforced:
-- Warning at 80% of limit
-- Hard limit prevents creation when exceeded
+Self-host Eryxon MES for:
+- Unlimited jobs, parts, and storage
+- Full API access
+- Full webhook support
+- Complete control over your data
+
+See the [Self-Hosting Guide](./SELF_HOSTING_GUIDE.md) for setup instructions.
 
 ---
 
@@ -398,18 +393,23 @@ Limits enforced:
 
 ## Support
 
-### Contact
+### Resources
 
-**Email:** support@eryxonflow.com
-**Response Time:**
-- Free/Pro: Within 24 hours
-- Premium: Within 4 hours
-
-### Additional Resources
-
-- **Documentation:** [/docs](https://github.com/SheetMetalConnect/eryxon-flow/tree/main/docs)
+- **Documentation:** [GitHub Docs](https://github.com/SheetMetalConnect/eryxon-flow/tree/main/docs)
 - **API Reference:** [/api-docs](/api-docs)
-- **Pricing:** [/pricing](/pricing)
+- **Issues & Bugs:** [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues)
+
+### Consulting
+
+Need help with self-hosting or customization?
+
+**Website:** [sheetmetalconnect.com](https://www.sheetmetalconnect.com/)
+**Email:** [office@sheetmetalconnect.com](mailto:office@sheetmetalconnect.com)
+
+Sheet Metal Connect e.U. can help you:
+- Set up self-hosted instances
+- Customize for your specific needs
+- Integrate with your existing systems
 
 ---
 

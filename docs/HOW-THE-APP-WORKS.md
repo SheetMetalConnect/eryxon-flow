@@ -1769,65 +1769,44 @@ parts-cad/
 
 ---
 
-## Subscription Plans
+## Usage & Deployment
 
-**Accessed from:** `/my-plan` (Admin only)
+### Hosted Free Plan
 
-### Plan Tiers
+The hosted version at our infrastructure is available for evaluation and educational purposes with limited usage:
+- Limited jobs and parts per month
+- Limited storage
+- Limited API access
 
-**1. Free Plan**
-- Max 10 jobs
-- Max 100 parts per month
-- Max 1GB storage
-- Email support
+View your current usage in the **My Plan** page (`/my-plan`).
 
-**2. Pro Plan**
-- Max 100 jobs
-- Max 1,000 parts per month
-- Max 10GB storage
-- Priority email support
-- API access
-- Webhooks
+### Self-Hosted (Recommended)
 
-**3. Premium Plan**
-- Unlimited jobs
-- Unlimited parts
-- Max 100GB storage
-- 24/7 phone support
-- API access
-- Webhooks
-- Dedicated account manager
+For production use, self-host Eryxon MES:
+- Unlimited jobs, parts, and storage
+- Full API access
+- Full webhook support
+- Complete control over your data
 
-### Usage Tracking
+**Options:**
+1. **Supabase Cloud + Docker** - Easiest setup
+2. **Self-Hosted Supabase** - Full control, air-gapped environments
 
-**Monitored Metrics:**
-- Current jobs (active + in_progress)
-- Parts created this month (resets monthly)
-- Storage used (file uploads)
+See the [Self-Hosting Guide](./SELF_HOSTING_GUIDE.md) for detailed setup instructions.
 
-**Display:**
-- Progress bars showing usage vs. limits
-- Percentage used
-- Warning when approaching limits
+### Getting Help
 
-### Limit Enforcement
+- **Documentation:** `/docs` folder
+- **GitHub Issues:** Bug reports and feature requests
+- **Consulting:** [Sheet Metal Connect e.U.](https://www.sheetmetalconnect.com/) can help with self-hosting setup and customization
 
-**Soft Limits:**
-- Warning shown when 80% of limit reached
-- "Upgrade" button appears
+### License (BSL 1.1)
 
-**Hard Limits:**
-- Cannot create job if at max jobs
-- Cannot create part if at monthly max
-- Cannot upload file if at storage max
+**TL;DR:** Use it, modify it, self-host it - all free. Just don't host it and charge others for access.
 
-### Upgrade Process
-
-1. Click "Upgrade Plan" on My Plan page
-2. (Future) Billing integration
-3. Plan updated immediately
-4. Limits increased
-5. New features unlocked
+- ✅ Self-host for your own operations - free, unlimited
+- ✅ Fork and modify for your needs
+- ❌ Cannot host it and sell access as a SaaS to others
 
 ---
 
