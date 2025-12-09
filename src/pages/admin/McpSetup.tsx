@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { Copy, Plus, RefreshCw, Trash2, Key, CheckCircle2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 interface McpEndpoint {
   id: string;
@@ -25,6 +26,7 @@ interface McpEndpoint {
 }
 
 export default function McpSetup() {
+  const { t } = useTranslation();
   const { tenant } = useAuth();
   const [endpoints, setEndpoints] = useState<McpEndpoint[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +62,7 @@ export default function McpSetup() {
       console.error("Error fetching endpoints:", error);
       // Table might not exist yet - that's okay
       if (error.code !== '42P01') {
-        toast.error("Failed to load MCP endpoints");
+        toast.error(t('mcp.failedToLoad'));
       }
     } finally {
       setLoading(false);
@@ -69,7 +71,7 @@ export default function McpSetup() {
 
   const createEndpoint = async () => {
     if (!newEndpointName.trim()) {
-      toast.error("Please enter a name for the endpoint");
+      toast.error(t('mcp.enterName'));
       return;
     }
 
@@ -89,17 +91,17 @@ export default function McpSetup() {
       setCreateDialogOpen(false);
       setNewEndpointName("");
       await fetchEndpoints();
-      toast.success("MCP endpoint created successfully");
+      toast.success(t('mcp.endpointCreatedSuccess'));
     } catch (error: any) {
       console.error("Error creating endpoint:", error);
-      toast.error(error.message || "Failed to create endpoint");
+      toast.error(error.message || t('mcp.failedToCreate'));
     } finally {
       setIsCreating(false);
     }
   };
 
   const regenerateToken = async (endpointId: string, endpointName: string) => {
-    if (!confirm(`Regenerate token for "${endpointName}"? The old token will stop working immediately.`)) {
+    if (!confirm(t('mcp.regenerateConfirm', { name: endpointName }))) {
       return;
     }
 
@@ -116,10 +118,10 @@ export default function McpSetup() {
         token: result.token,
       });
       await fetchEndpoints();
-      toast.success("Token regenerated successfully");
+      toast.success(t('mcp.tokenRegenerated'));
     } catch (error: any) {
       console.error("Error regenerating token:", error);
-      toast.error(error.message || "Failed to regenerate token");
+      toast.error(error.message || t('mcp.failedToRegenerate'));
     }
   };
 
@@ -132,15 +134,15 @@ export default function McpSetup() {
 
       if (error) throw error;
       await fetchEndpoints();
-      toast.success(`Endpoint ${!currentEnabled ? "enabled" : "disabled"}`);
+      toast.success(t(currentEnabled ? 'mcp.endpointDisabled' : 'mcp.endpointEnabled'));
     } catch (error: any) {
       console.error("Error toggling endpoint:", error);
-      toast.error("Failed to update endpoint");
+      toast.error(t('mcp.failedToUpdate'));
     }
   };
 
   const deleteEndpoint = async (endpointId: string, endpointName: string) => {
-    if (!confirm(`Delete endpoint "${endpointName}"? This cannot be undone.`)) {
+    if (!confirm(t('mcp.deleteConfirm', { name: endpointName }))) {
       return;
     }
 
@@ -152,10 +154,10 @@ export default function McpSetup() {
 
       if (error) throw error;
       await fetchEndpoints();
-      toast.success("Endpoint deleted");
+      toast.success(t('mcp.endpointDeleted'));
     } catch (error: any) {
       console.error("Error deleting endpoint:", error);
-      toast.error("Failed to delete endpoint");
+      toast.error(t('mcp.failedToDelete'));
     }
   };
 
@@ -211,47 +213,47 @@ export default function McpSetup() {
     <div className="container mx-auto p-6 space-y-6 max-w-4xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">MCP Setup</h1>
+          <h1 className="text-3xl font-bold">{t('mcp.title')}</h1>
           <p className="text-muted-foreground mt-1">
-            Connect AI assistants to your manufacturing data
+            {t('mcp.description')}
           </p>
         </div>
         <Button onClick={() => setCreateDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          New MCP Endpoint
+          {t('mcp.newEndpoint')}
         </Button>
       </div>
 
       {/* Token Display Dialog - shown after creating or regenerating */}
       {newToken && (
         <Dialog open={!!newToken} onOpenChange={() => setNewToken(null)}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-500" />
-                MCP Endpoint Created
+                {t('mcp.endpointCreated')}
               </DialogTitle>
               <DialogDescription>
-                Save your MCP configuration - the token is only shown once!
+                {t('mcp.saveConfiguration')}
               </DialogDescription>
             </DialogHeader>
 
             <Alert className="bg-amber-500/10 border-amber-500/20">
               <AlertCircle className="h-4 w-4 text-amber-500" />
               <AlertDescription className="text-amber-500">
-                Copy this configuration now. The token will not be shown again.
+                {t('mcp.copyWarning')}
               </AlertDescription>
             </Alert>
 
             <div className="space-y-4">
               <div>
-                <Label className="text-sm text-muted-foreground">Endpoint Name</Label>
+                <Label className="text-sm text-muted-foreground">{t('mcp.endpointName')}</Label>
                 <p className="font-medium">{newToken.name}</p>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label className="text-sm text-muted-foreground">Token</Label>
+                  <Label className="text-sm text-muted-foreground">{t('mcp.token')}</Label>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -267,7 +269,7 @@ export default function McpSetup() {
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => copyToClipboard(newToken.token, "Token copied")}
+                    onClick={() => copyToClipboard(newToken.token, t('mcp.tokenCopied'))}
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
@@ -315,17 +317,17 @@ export default function McpSetup() {
                   variant="secondary"
                   size="sm"
                   className="absolute top-2 right-2"
-                  onClick={() => copyToClipboard(getConfigJson(newToken.token)[configTab], "Configuration copied")}
+                  onClick={() => copyToClipboard(getConfigJson(newToken.token)[configTab], t('mcp.configCopied'))}
                 >
                   <Copy className="h-4 w-4 mr-1" />
-                  Copy
+                  {t('common.copy')}
                 </Button>
               </div>
             </div>
 
             <DialogFooter>
               <Button onClick={() => setNewToken(null)}>
-                I've saved the configuration
+                {t('mcp.savedConfiguration')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -336,18 +338,18 @@ export default function McpSetup() {
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create MCP Endpoint</DialogTitle>
+            <DialogTitle>{t('mcp.createEndpoint')}</DialogTitle>
             <DialogDescription>
-              Create a new endpoint to connect AI assistants to your manufacturing data
+              {t('mcp.createEndpointDescription')}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="endpoint-name">Endpoint Name</Label>
+              <Label htmlFor="endpoint-name">{t('mcp.endpointName')}</Label>
               <Input
                 id="endpoint-name"
-                placeholder="e.g., Production Assistant, Quality Bot"
+                placeholder={t('mcp.endpointNamePlaceholder')}
                 value={newEndpointName}
                 onChange={(e) => setNewEndpointName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && createEndpoint()}
@@ -357,10 +359,10 @@ export default function McpSetup() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button onClick={createEndpoint} disabled={isCreating}>
-              {isCreating ? "Creating..." : "Create"}
+              {isCreating ? t('common.creating') : t('common.create')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -369,9 +371,9 @@ export default function McpSetup() {
       {/* Endpoints List */}
       <Card>
         <CardHeader>
-          <CardTitle>MCP Endpoints</CardTitle>
+          <CardTitle>{t('mcp.activeEndpoints')}</CardTitle>
           <CardDescription>
-            Manage your Model Context Protocol endpoints
+            {t('mcp.activeEndpointsDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -383,14 +385,14 @@ export default function McpSetup() {
             <div className="text-center py-8 space-y-4">
               <Key className="h-12 w-12 mx-auto text-muted-foreground/50" />
               <div>
-                <p className="text-muted-foreground">No MCP endpoints yet</p>
+                <p className="text-muted-foreground">{t('mcp.noEndpoints')}</p>
                 <p className="text-sm text-muted-foreground">
-                  Create an endpoint to connect AI assistants
+                  {t('mcp.noEndpointsDescription')}
                 </p>
               </div>
               <Button onClick={() => setCreateDialogOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Create First Endpoint
+                {t('mcp.createFirstEndpoint')}
               </Button>
             </div>
           ) : (
@@ -404,7 +406,7 @@ export default function McpSetup() {
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{endpoint.name}</span>
                       <Badge variant={endpoint.enabled ? "default" : "secondary"}>
-                        {endpoint.enabled ? "Active" : "Disabled"}
+                        {endpoint.enabled ? t('mcp.active') : t('mcp.disabled')}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -412,15 +414,15 @@ export default function McpSetup() {
                         {endpoint.token_prefix}...
                       </code>
                       <span>
-                        Created {format(new Date(endpoint.created_at), "MMM d, yyyy")}
+                        {t('mcp.created')} {format(new Date(endpoint.created_at), "MMM d, yyyy")}
                       </span>
                       {endpoint.last_used_at && (
                         <span>
-                          Last used {format(new Date(endpoint.last_used_at), "MMM d, h:mm a")}
+                          {t('mcp.lastUsed')} {format(new Date(endpoint.last_used_at), "MMM d, h:mm a")}
                         </span>
                       )}
                       {endpoint.usage_count > 0 && (
-                        <span>{endpoint.usage_count} requests</span>
+                        <span>{endpoint.usage_count} {t('mcp.requests')}</span>
                       )}
                     </div>
                   </div>
@@ -434,7 +436,7 @@ export default function McpSetup() {
                       variant="ghost"
                       size="icon"
                       onClick={() => regenerateToken(endpoint.id, endpoint.name)}
-                      title="Regenerate token"
+                      title={t('mcp.regenerateToken')}
                     >
                       <RefreshCw className="h-4 w-4" />
                     </Button>
@@ -443,7 +445,7 @@ export default function McpSetup() {
                       size="icon"
                       onClick={() => deleteEndpoint(endpoint.id, endpoint.name)}
                       className="text-destructive hover:text-destructive"
-                      title="Delete endpoint"
+                      title={t('mcp.deleteEndpoint')}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -458,9 +460,9 @@ export default function McpSetup() {
       {/* Quick Setup Guide */}
       <Card>
         <CardHeader>
-          <CardTitle>Quick Setup</CardTitle>
+          <CardTitle>{t('mcp.quickSetup')}</CardTitle>
           <CardDescription>
-            Get started with MCP in 3 simple steps
+            {t('mcp.quickSetupDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -470,9 +472,9 @@ export default function McpSetup() {
                 1
               </div>
               <div>
-                <p className="font-medium">Create Endpoint</p>
+                <p className="font-medium">{t('mcp.step1Title')}</p>
                 <p className="text-sm text-muted-foreground">
-                  Click "New MCP Endpoint" and give it a name
+                  {t('mcp.step1Description')}
                 </p>
               </div>
             </div>
@@ -482,9 +484,9 @@ export default function McpSetup() {
                 2
               </div>
               <div>
-                <p className="font-medium">Copy Configuration</p>
+                <p className="font-medium">{t('mcp.step2Title')}</p>
                 <p className="text-sm text-muted-foreground">
-                  Copy the JSON config for your AI client
+                  {t('mcp.step2Description')}
                 </p>
               </div>
             </div>
@@ -494,9 +496,9 @@ export default function McpSetup() {
                 3
               </div>
               <div>
-                <p className="font-medium">Start Using</p>
+                <p className="font-medium">{t('mcp.step3Title')}</p>
                 <p className="text-sm text-muted-foreground">
-                  Your AI assistant can now access manufacturing data
+                  {t('mcp.step3Description')}
                 </p>
               </div>
             </div>
