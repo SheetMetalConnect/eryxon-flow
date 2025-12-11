@@ -18,23 +18,61 @@ export const translations = {
     // Hero section
     hero: {
       badge: {
-        openSource: 'Open Source',
-        license: 'BSL 1.1',
+        beta: 'Beta · v0.1 Coming 2026',
+        license: 'BSL 1.1 License',
         selfHostable: 'Self-Hostable',
       },
-      title: 'Manufacturing Made Modern',
+      title: 'MES for Job Shops',
       tagline: 'Open Source Manufacturing Execution System',
-      description: 'Real-time production tracking, QRM capacity management, and operator terminals. Built from hands-on experience with SMB metal shops. A starting point for your unique shop.',
+      audience: 'For custom manufacturing · High-mix low-volume · Sheet metal & machining',
+      description: 'Real-time production tracking, QRM capacity management, and operator terminals. Built from hands-on experience with SMB metal shops. Free to use, modify, and self-host.',
       cta: {
-        getStarted: 'Get Started',
+        waitlist: 'Join Waitlist',
         viewGithub: 'View on GitHub',
       },
+      licenseNote: 'Free to use & modify. Cannot be resold as a competing product.',
       stats: {
-        uiComponents: 'UI Components',
-        edgeFunctions: 'Edge Functions',
-        languages: 'Languages',
-        apiReady: 'API Ready',
+        jobShops: 'Job Shops',
+        jobShopsDesc: 'Target audience',
+        hmvl: 'HMLV',
+        hmvlDesc: 'High-mix low-volume',
+        qrm: 'QRM',
+        qrmDesc: 'Capacity planning',
+        api: 'REST API',
+        apiDesc: 'ERP integration',
       },
+      contributions: 'Contributions welcome · PRs, issues, and feedback',
+    },
+
+    // MES Accelerator section
+    accelerator: {
+      badge: 'Professional Services',
+      title: 'The MES Accelerator',
+      subtitle: '3-Month Program · Custom MES guidance for real-time operations',
+      program: {
+        title: 'Your External MES Architect',
+        tagline: 'Faster results. Lasting knowledge. No vendor lock-in.',
+      },
+      whatYouGet: {
+        title: 'What You Get',
+        item1: 'Custom implementation roadmap for your shop',
+        item2: 'Proven templates and workflow designs',
+        item3: 'Weekly guidance calls & async support',
+        item4: 'ERP integration architecture review',
+        item5: 'Code reviews & customization guidance',
+        item6: 'Knowledge transfer to your internal team',
+      },
+      whyThis: {
+        title: 'Why This Approach',
+        point1: 'Build internal capability. Your team learns the system, not just uses it. When the program ends, you\'re self-sufficient.',
+        point2: 'No recurring fees. Fixed 3-month engagement. You own the result completely.',
+        point3: 'Real shop floor experience. Designed by someone who\'s worked in metal fabrication, not just software.',
+      },
+      cta: {
+        note: 'Limited availability · Currently accepting inquiries for Q2 2026',
+        button: 'Inquire About Availability',
+      },
+      note: 'Not ready for a full program? Start with the free self-hosted version and reach out when you need guidance.',
     },
 
     // Features section
@@ -291,23 +329,61 @@ export const translations = {
     // Hero section
     hero: {
       badge: {
-        openSource: 'Open Source',
-        license: 'BSL 1.1',
+        beta: 'Beta · v0.1 Komt 2026',
+        license: 'BSL 1.1 Licentie',
         selfHostable: 'Zelf te hosten',
       },
-      title: 'Productie Gemoderniseerd',
+      title: 'MES voor Werkplaatsen',
       tagline: 'Open Source Manufacturing Execution System',
-      description: 'Realtime productietracking, QRM capaciteitsmanagement en operator terminals. Gebouwd met praktijkervaring uit MKB metaalbedrijven. Een startpunt voor jouw unieke werkplaats.',
+      audience: 'Voor maatwerkproductie · High-mix low-volume · Plaatwerk & verspaning',
+      description: 'Realtime productietracking, QRM capaciteitsmanagement en operator terminals. Gebouwd met praktijkervaring uit MKB metaalbedrijven. Gratis te gebruiken, aan te passen en zelf te hosten.',
       cta: {
-        getStarted: 'Aan de slag',
+        waitlist: 'Schrijf je in',
         viewGithub: 'Bekijk op GitHub',
       },
+      licenseNote: 'Gratis te gebruiken & aan te passen. Mag niet worden doorverkocht als concurrerend product.',
       stats: {
-        uiComponents: 'UI Componenten',
-        edgeFunctions: 'Edge Functions',
-        languages: 'Talen',
-        apiReady: 'API Gereed',
+        jobShops: 'Werkplaatsen',
+        jobShopsDesc: 'Doelgroep',
+        hmvl: 'HMLV',
+        hmvlDesc: 'High-mix low-volume',
+        qrm: 'QRM',
+        qrmDesc: 'Capaciteitsplanning',
+        api: 'REST API',
+        apiDesc: 'ERP-integratie',
       },
+      contributions: 'Bijdragen welkom · PRs, issues en feedback',
+    },
+
+    // MES Accelerator section
+    accelerator: {
+      badge: 'Professionele Diensten',
+      title: 'De MES Accelerator',
+      subtitle: '3-Maanden Programma · Aangepaste MES-begeleiding voor realtime operaties',
+      program: {
+        title: 'Jouw Externe MES Architect',
+        tagline: 'Snellere resultaten. Blijvende kennis. Geen vendor lock-in.',
+      },
+      whatYouGet: {
+        title: 'Wat Je Krijgt',
+        item1: 'Aangepaste implementatie-roadmap voor jouw werkplaats',
+        item2: 'Bewezen templates en workflow-ontwerpen',
+        item3: 'Wekelijkse begeleidingsgesprekken & async support',
+        item4: 'ERP-integratie architectuur review',
+        item5: 'Code reviews & aanpassingsbegeleiding',
+        item6: 'Kennisoverdracht naar je interne team',
+      },
+      whyThis: {
+        title: 'Waarom Deze Aanpak',
+        point1: 'Bouw interne capaciteit op. Je team leert het systeem, gebruikt het niet alleen. Als het programma eindigt, ben je zelfvoorzienend.',
+        point2: 'Geen terugkerende kosten. Vast 3-maanden traject. Je bent volledig eigenaar van het resultaat.',
+        point3: 'Echte werkvloer-ervaring. Ontworpen door iemand die in metaalbewerking heeft gewerkt, niet alleen software.',
+      },
+      cta: {
+        note: 'Beperkte beschikbaarheid · Momenteel accepteren we aanvragen voor Q2 2026',
+        button: 'Vraag Beschikbaarheid Aan',
+      },
+      note: 'Nog niet klaar voor een volledig programma? Begin met de gratis zelf-gehoste versie en neem contact op wanneer je begeleiding nodig hebt.',
     },
 
     // Features section
@@ -564,23 +640,61 @@ export const translations = {
     // Hero section
     hero: {
       badge: {
-        openSource: 'Open Source',
-        license: 'BSL 1.1',
+        beta: 'Beta · v0.1 Kommt 2026',
+        license: 'BSL 1.1 Lizenz',
         selfHostable: 'Selbst hostbar',
       },
-      title: 'Fertigung modernisiert',
+      title: 'MES für Lohnfertiger',
       tagline: 'Open Source Manufacturing Execution System',
-      description: 'Echtzeit-Produktionsverfolgung, QRM-Kapazit\u00e4tsmanagement und Operator-Terminals. Aus praktischer Erfahrung mit KMU-Metallbetrieben entwickelt. Ein Ausgangspunkt f\u00fcr Ihre einzigartige Werkstatt.',
+      audience: 'Für Einzelfertigung · High-Mix Low-Volume · Blechbearbeitung & Zerspanung',
+      description: 'Echtzeit-Produktionsverfolgung, QRM-Kapazitätsmanagement und Operator-Terminals. Aus praktischer Erfahrung mit KMU-Metallbetrieben entwickelt. Kostenlos nutzbar, anpassbar und selbst hostbar.',
       cta: {
-        getStarted: 'Loslegen',
+        waitlist: 'Auf Warteliste setzen',
         viewGithub: 'Auf GitHub ansehen',
       },
+      licenseNote: 'Kostenlos nutzbar & anpassbar. Darf nicht als Konkurrenzprodukt weiterverkauft werden.',
       stats: {
-        uiComponents: 'UI-Komponenten',
-        edgeFunctions: 'Edge Functions',
-        languages: 'Sprachen',
-        apiReady: 'API bereit',
+        jobShops: 'Lohnfertiger',
+        jobShopsDesc: 'Zielgruppe',
+        hmvl: 'HMLV',
+        hmvlDesc: 'High-Mix Low-Volume',
+        qrm: 'QRM',
+        qrmDesc: 'Kapazitätsplanung',
+        api: 'REST API',
+        apiDesc: 'ERP-Integration',
       },
+      contributions: 'Beiträge willkommen · PRs, Issues und Feedback',
+    },
+
+    // MES Accelerator section
+    accelerator: {
+      badge: 'Professionelle Dienstleistungen',
+      title: 'Der MES Accelerator',
+      subtitle: '3-Monats-Programm · Individuelle MES-Begleitung für Echtzeit-Operationen',
+      program: {
+        title: 'Ihr externer MES-Architekt',
+        tagline: 'Schnellere Ergebnisse. Bleibendes Wissen. Kein Vendor Lock-in.',
+      },
+      whatYouGet: {
+        title: 'Was Sie bekommen',
+        item1: 'Individuelle Implementierungs-Roadmap für Ihre Werkstatt',
+        item2: 'Bewährte Vorlagen und Workflow-Designs',
+        item3: 'Wöchentliche Beratungsgespräche & asynchroner Support',
+        item4: 'ERP-Integrations-Architektur-Review',
+        item5: 'Code-Reviews & Anpassungsberatung',
+        item6: 'Wissenstransfer an Ihr internes Team',
+      },
+      whyThis: {
+        title: 'Warum dieser Ansatz',
+        point1: 'Interne Kompetenz aufbauen. Ihr Team lernt das System, nutzt es nicht nur. Nach Programmende sind Sie eigenständig.',
+        point2: 'Keine wiederkehrenden Kosten. Festes 3-Monats-Engagement. Das Ergebnis gehört vollständig Ihnen.',
+        point3: 'Echte Werkstatt-Erfahrung. Entwickelt von jemandem, der in der Metallverarbeitung gearbeitet hat, nicht nur Software.',
+      },
+      cta: {
+        note: 'Begrenzte Verfügbarkeit · Derzeit Anfragen für Q2 2026 akzeptierend',
+        button: 'Verfügbarkeit anfragen',
+      },
+      note: 'Noch nicht bereit für ein vollständiges Programm? Starten Sie mit der kostenlosen selbst gehosteten Version und melden Sie sich, wenn Sie Beratung benötigen.',
     },
 
     // Features section
