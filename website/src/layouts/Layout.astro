@@ -574,5 +574,186 @@ const fullTitle = title.includes("Eryxon Flow") ? title : `${title} | Eryxon Flo
       document.addEventListener('DOMContentLoaded', observeElements);
     </script>
 
+    <!-- i18n Initialization -->
+    <script>
+      import { initI18n, applyTranslations, getCurrentLocale, translations } from '@i18n/client';
+
+      // Apply translations on page load
+      document.addEventListener('DOMContentLoaded', () => {
+        const locale = getCurrentLocale();
+        const t = translations[locale];
+
+        // Apply translations to data-i18n elements
+        applyTranslations(locale);
+
+        // Update specific sections that need more complex translations
+        updateHeroSection(t);
+        updateFeaturesSection(t);
+        updateComparisonSection(t);
+        updateHowItWorksSection(t);
+        updateGetStartedSection(t);
+        updateFooterSection(t);
+      });
+
+      function updateHeroSection(t: any) {
+        // Hero badges
+        const badges = document.querySelectorAll('.floating-badges span');
+        if (badges.length >= 3) {
+          badges[0].innerHTML = `<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>${t.hero.badge.openSource}`;
+          badges[1].textContent = t.hero.badge.license;
+          badges[2].textContent = t.hero.badge.selfHostable;
+        }
+
+        // Hero title and text
+        const heroTitle = document.querySelector('.gradient-text');
+        if (heroTitle) heroTitle.textContent = t.hero.title;
+
+        const tagline = document.querySelector('section p.text-xl.sm\\:text-2xl');
+        if (tagline) tagline.textContent = t.hero.tagline;
+
+        // Hero description
+        const heroDesc = document.querySelector('section p.text-lg.sm\\:text-xl.text-muted-foreground');
+        if (heroDesc) heroDesc.textContent = t.hero.description;
+
+        // CTA buttons
+        const ctaButtons = document.querySelectorAll('section .flex.flex-col.sm\\:flex-row a');
+        if (ctaButtons.length >= 2) {
+          const getStartedBtn = ctaButtons[0];
+          const githubBtn = ctaButtons[1];
+          // Keep SVG, update text
+          const getStartedSvg = getStartedBtn.querySelector('svg');
+          if (getStartedSvg) {
+            getStartedBtn.innerHTML = '';
+            getStartedBtn.appendChild(getStartedSvg);
+            getStartedBtn.appendChild(document.createTextNode(t.hero.cta.getStarted));
+          }
+          const githubSvg = githubBtn.querySelector('svg');
+          if (githubSvg) {
+            githubBtn.innerHTML = '';
+            githubBtn.appendChild(githubSvg);
+            githubBtn.appendChild(document.createTextNode(t.hero.cta.viewGithub));
+          }
+        }
+
+        // Stats labels
+        const statLabels = document.querySelectorAll('.grid.grid-cols-2.md\\:grid-cols-4 .text-sm.text-zinc-500');
+        if (statLabels.length >= 4) {
+          statLabels[0].textContent = t.hero.stats.uiComponents;
+          statLabels[1].textContent = t.hero.stats.edgeFunctions;
+          statLabels[2].textContent = t.hero.stats.languages;
+          statLabels[3].textContent = t.hero.stats.apiReady;
+        }
+      }
+
+      function updateFeaturesSection(t: any) {
+        // Features section title
+        const featuresSection = document.getElementById('features');
+        if (!featuresSection) return;
+
+        const sectionTitle = featuresSection.querySelector('h2.gradient-text');
+        if (sectionTitle) sectionTitle.textContent = t.features.title;
+
+        const sectionDesc = featuresSection.querySelector('p.text-xl.text-muted-foreground');
+        if (sectionDesc) sectionDesc.textContent = t.features.description;
+
+        // CTA at bottom
+        const ctaText = featuresSection.querySelector('.inline-flex.items-center span');
+        if (ctaText) ctaText.textContent = t.features.callToAction;
+      }
+
+      function updateComparisonSection(t: any) {
+        const compareSection = document.getElementById('compare');
+        if (!compareSection) return;
+
+        // Badge
+        const badge = compareSection.querySelector('span.inline-block.px-4');
+        if (badge) badge.textContent = t.comparison.badge;
+
+        // Title
+        const title = compareSection.querySelector('h2.gradient-text');
+        if (title) title.textContent = t.comparison.title;
+
+        // Subtitle
+        const subtitle = compareSection.querySelector('p.text-xl.text-zinc-400');
+        if (subtitle) subtitle.textContent = t.comparison.subtitle;
+
+        // Team section
+        const teamTitle = compareSection.querySelector('.mt-16 h3');
+        if (teamTitle) teamTitle.textContent = t.comparison.teamSection.title;
+
+        const teamDesc = compareSection.querySelector('.mt-16 p.text-zinc-400');
+        if (teamDesc) teamDesc.textContent = t.comparison.teamSection.description;
+      }
+
+      function updateHowItWorksSection(t: any) {
+        const howSection = document.getElementById('how-it-works');
+        if (!howSection) return;
+
+        // Title
+        const title = howSection.querySelector('h2.gradient-text');
+        if (title) title.textContent = t.howItWorks.title;
+
+        // Description
+        const desc = howSection.querySelector('p.text-xl.text-zinc-400');
+        if (desc) desc.textContent = t.howItWorks.description;
+
+        // Architecture title
+        const archTitle = howSection.querySelector('.mt-16 h3.text-2xl');
+        if (archTitle) archTitle.textContent = t.howItWorks.architecture.title;
+
+        // CTA section
+        const ctaTitle = howSection.querySelector('.text-center.mt-16 h3');
+        if (ctaTitle) ctaTitle.textContent = t.howItWorks.callToAction.title;
+
+        const ctaDesc = howSection.querySelector('.text-center.mt-16 p.text-zinc-400');
+        if (ctaDesc) ctaDesc.textContent = t.howItWorks.callToAction.description;
+      }
+
+      function updateGetStartedSection(t: any) {
+        const gsSection = document.getElementById('get-started');
+        if (!gsSection) return;
+
+        // Title
+        const title = gsSection.querySelector('h2.gradient-text');
+        if (title) title.textContent = t.getStarted.title;
+
+        // Description
+        const desc = gsSection.querySelector('p.text-xl.text-muted-foreground');
+        if (desc) desc.textContent = t.getStarted.description;
+
+        // Terminal title
+        const termTitle = gsSection.querySelector('.terminal-title');
+        if (termTitle) termTitle.textContent = t.getStarted.terminal.title;
+      }
+
+      function updateFooterSection(t: any) {
+        const footer = document.querySelector('footer');
+        if (!footer) return;
+
+        // Footer description
+        const desc = footer.querySelector('.md\\:col-span-2 p.text-muted-foreground');
+        if (desc) desc.textContent = t.footer.description;
+
+        // Quick Links title
+        const quickLinksTitle = footer.querySelectorAll('h3')[0];
+        if (quickLinksTitle) quickLinksTitle.textContent = t.footer.quickLinks.title;
+
+        // Community title
+        const communityTitle = footer.querySelectorAll('h3')[1];
+        if (communityTitle) communityTitle.textContent = t.footer.community.title;
+
+        // Bottom bar
+        const copyright = footer.querySelector('.border-t p.text-muted-foreground');
+        if (copyright) {
+          copyright.innerHTML = `2025 <a href="https://www.sheetmetalconnect.com/" target="_blank" rel="noopener noreferrer" class="hover:text-foreground transition-colors">Sheet Metal Connect e.U.</a> ${t.footer.bottomBar.copyright.split('Released')[1] ? 'Released' + t.footer.bottomBar.copyright.split('Released')[1] : ''}`;
+        }
+
+        const madeBy = footer.querySelector('.border-t span');
+        if (madeBy) {
+          madeBy.innerHTML = `${t.footer.bottomBar.madeBy.split('Luke')[0]}<a href="https://vanenkhuizen.com" target="_blank" rel="noopener noreferrer" class="hover:text-foreground transition-colors">Luke van Enkhuizen</a>${t.footer.bottomBar.madeBy.split('Luke van Enkhuizen')[1] || ''}`;
+        }
+      }
+    </script>
+
   </body>
 </html>

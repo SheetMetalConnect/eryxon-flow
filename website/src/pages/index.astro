@@ -4,6 +4,7 @@ import Hero from '@components/Hero.astro';
 import FeatureGrid from '@components/FeatureGrid.astro';
 import HowItWorks from '@components/HowItWorks.astro';
 import ComparisonTable from '@components/ComparisonTable.astro';
+import LanguageSwitcher from '@components/LanguageSwitcher.tsx';
 ---
 
 <Layout>
@@ -24,28 +25,32 @@ import ComparisonTable from '@components/ComparisonTable.astro';
         </div>
 
         <!-- Navigation links -->
-        <div class="hidden md:flex items-center gap-8">
-          <a href="#features" class="nav-link">Features</a>
-          <a href="#how-it-works" class="nav-link">How It Works</a>
-          <a href="#get-started" class="nav-link">Get Started</a>
+        <div class="hidden md:flex items-center gap-6">
+          <a href="#features" class="nav-link" data-i18n="nav.features">Features</a>
+          <a href="#how-it-works" class="nav-link" data-i18n="nav.howItWorks">How It Works</a>
+          <a href="#get-started" class="nav-link" data-i18n="nav.getStarted">Get Started</a>
           <a href="https://github.com/SheetMetalConnect/eryxon-flow" target="_blank" rel="noopener noreferrer" class="nav-link">GitHub</a>
+          <LanguageSwitcher client:load />
         </div>
 
         <!-- Mobile menu button -->
-        <button class="md:hidden nav-link p-2" id="mobile-menu-button" aria-label="Toggle mobile menu">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
-        </button>
+        <div class="md:hidden flex items-center gap-2">
+          <LanguageSwitcher client:load />
+          <button class="nav-link p-2" id="mobile-menu-button" aria-label="Toggle mobile menu">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- Mobile menu dropdown -->
     <div class="md:hidden mobile-menu hidden fixed top-[80px] left-0 right-0 bottom-0 z-[9998]" id="mobile-menu">
       <div class="p-8 space-y-6 h-auto" style="background: rgba(0, 0, 0, 0.85);">
-        <a href="#features" class="block nav-link text-center text-lg">Features</a>
-        <a href="#how-it-works" class="block nav-link text-center text-lg">How It Works</a>
-        <a href="#get-started" class="block nav-link text-center text-lg">Get Started</a>
+        <a href="#features" class="block nav-link text-center text-lg" data-i18n="nav.features">Features</a>
+        <a href="#how-it-works" class="block nav-link text-center text-lg" data-i18n="nav.howItWorks">How It Works</a>
+        <a href="#get-started" class="block nav-link text-center text-lg" data-i18n="nav.getStarted">Get Started</a>
         <a href="https://github.com/SheetMetalConnect/eryxon-flow" target="_blank" rel="noopener noreferrer" class="block nav-link text-center text-lg">GitHub</a>
       </div>
     </div>
