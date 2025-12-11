@@ -88,90 +88,93 @@ export const translations = {
 
     // Comparison section
     comparison: {
-      badge: 'By metalworkers, for metalworkers',
-      title: 'The MES You Actually Want to Use',
-      subtitle: 'Free to start. Loved by SMBs. No expensive licenses or per-seat fees.',
+      badge: 'Find the right fit for your shop',
+      title: 'Where Does Eryxon Flow Fit?',
+      subtitle: 'A modern starting point between heavyweight ERPs, expensive SaaS, and DIY chaos.',
       eryxonFlow: 'Eryxon Flow',
-      theOthers: 'The Others',
-      othersExamples: 'PROPOS, 24Flow, Ridder iQ, MKG, Bemet...',
+      columns: {
+        erp: 'ERP Add-ons',
+        erpExamples: 'SAP, Exact, AFAS',
+        saas: 'SaaS MES',
+        saasExamples: 'PROPOS, 24Flow, Ridder iQ',
+        diy: 'DIY / Spreadsheets',
+        diyExamples: 'Excel, Google Sheets',
+      },
       rows: {
-        pricing: {
-          label: 'Pricing',
-          eryxon: 'Free to start',
-          eryxonNote: 'Pay for data usage, not per user',
-          others: 'Per-user licenses + setup fees',
+        cost: {
+          label: 'Startup Cost',
+          erp: '€€€€',
+          saas: '€€€',
+          eryxon: 'Free',
+          diy: 'Free',
+        },
+        perUser: {
+          label: 'Per-User Fees',
+          erp: '€50-150/mo',
+          saas: '€30-80/mo',
+          eryxon: 'None',
+          diy: 'None',
+        },
+        deploy: {
+          label: 'Time to Deploy',
+          erp: 'Months',
+          saas: 'Weeks',
+          eryxon: 'Hours',
+          diy: 'Hours',
+        },
+        custom: {
+          label: 'Customization',
+          erp: 'Consultant required',
+          saas: 'Limited',
+          eryxon: 'Full source access',
+          diy: 'Unlimited',
         },
         realtime: {
-          label: 'Real-time Updates',
-          eryxon: 'Instant updates everywhere',
-          others: 'Refresh to see changes',
+          label: 'Real-time Sync',
+        },
+        cad: {
+          label: '3D CAD Viewer',
+          erp: 'Add-on',
+          saas: 'Rare',
         },
         api: {
-          label: 'API Access',
-          eryxon: 'Open REST API + Webhooks',
-          others: 'Proprietary / extra cost',
+          label: 'Open API',
+          erp: 'Extra cost',
+          saas: 'Varies',
         },
-        sourceCode: {
-          label: 'Source Code',
-          eryxon: 'Open Source (BSL 1.1)',
-          others: 'Closed / vendor lock-in',
+        lockin: {
+          label: 'Vendor Lock-in',
+          erp: 'High',
+          saas: 'Medium',
+          eryxon: 'None',
+          diy: 'None',
         },
-        cadViewer: {
-          label: '3D CAD Viewer',
-          eryxon: 'Built-in STEP viewer',
-          others: 'Separate software needed',
-        },
-        pdfViewer: {
-          label: 'PDF Drawing Viewer',
-          eryxon: 'Inline PDF viewer',
-          others: 'External app',
-        },
-        substeps: {
-          label: 'Substeps & Templates',
-          eryxon: 'Checklist-driven workflow',
-          others: 'Basic or missing',
-        },
-        assemblies: {
-          label: 'Assembly Support',
-          eryxon: 'Multi-level assemblies',
-          others: 'Flat structure only',
-        },
-        capacity: {
-          label: 'Capacity Planning',
-          eryxon: 'QRM: less work-in-progress',
-          others: 'Push everything at once',
-        },
-        ui: {
-          label: 'User Interface',
-          eryxon: 'Modern, mobile-first',
-          others: 'Desktop-era design',
-        },
-        deployment: {
-          label: 'Deployment',
-          eryxon: 'Cloud or self-hosted',
-          others: 'On-premise only',
+        structure: {
+          label: 'Built-in Structure',
         },
       },
-      teamSection: {
-        title: 'Built for Your Team, Not IT Departments',
-        description: 'Shop floor tested. Zero training needed. Your operators will thank you.',
-        features: {
-          simple: {
-            title: 'Simple & Fast',
-            description: 'One-tap time tracking',
-          },
-          models: {
-            title: '3D Models',
-            description: 'View STEP files inline',
-          },
-          checklists: {
-            title: 'Substep Checklists',
-            description: 'Guided procedures',
-          },
-          photos: {
-            title: 'Photo Issues',
-            description: 'Report with camera',
-          },
+      community: {
+        title: 'A Starting Point, Not a Finished Product',
+        description: 'Eryxon Flow gives you a solid foundation with real-time tracking, operator terminals, and QRM capacity planning. Fork it, extend it, make it yours. The community grows the features.',
+        github: 'View on GitHub',
+        start: 'Get Started Free',
+      },
+      features: {
+        terminal: {
+          title: 'Operator Terminal',
+          description: 'Touch-friendly time tracking',
+        },
+        qrm: {
+          title: 'QRM Dashboard',
+          description: 'WIP limits & capacity',
+        },
+        cad: {
+          title: '3D STEP Viewer',
+          description: 'View parts in-browser',
+        },
+        api: {
+          title: 'REST API',
+          description: 'Integrate with anything',
         },
       },
     },
@@ -358,90 +361,93 @@ export const translations = {
 
     // Comparison section
     comparison: {
-      badge: 'Door metaalbewerkers, voor metaalbewerkers',
-      title: 'Het MES dat je \u00e9cht wilt gebruiken',
-      subtitle: 'Gratis starten. Geliefd bij MKB. Geen dure licenties of per-gebruiker kosten.',
+      badge: 'Vind de juiste oplossing voor jouw werkplaats',
+      title: 'Waar past Eryxon Flow?',
+      subtitle: 'Een modern startpunt tussen zware ERPs, dure SaaS, en DIY-chaos.',
       eryxonFlow: 'Eryxon Flow',
-      theOthers: 'De anderen',
-      othersExamples: 'PROPOS, 24Flow, Ridder iQ, MKG, Bemet...',
+      columns: {
+        erp: 'ERP Add-ons',
+        erpExamples: 'SAP, Exact, AFAS',
+        saas: 'SaaS MES',
+        saasExamples: 'PROPOS, 24Flow, Ridder iQ',
+        diy: 'DIY / Spreadsheets',
+        diyExamples: 'Excel, Google Sheets',
+      },
       rows: {
-        pricing: {
-          label: 'Prijzen',
-          eryxon: 'Gratis starten',
-          eryxonNote: 'Betaal voor dataverbruik, niet per gebruiker',
-          others: 'Per-gebruiker licenties + opstartkosten',
+        cost: {
+          label: 'Opstartkosten',
+          erp: '€€€€',
+          saas: '€€€',
+          eryxon: 'Gratis',
+          diy: 'Gratis',
+        },
+        perUser: {
+          label: 'Kosten per gebruiker',
+          erp: '€50-150/mnd',
+          saas: '€30-80/mnd',
+          eryxon: 'Geen',
+          diy: 'Geen',
+        },
+        deploy: {
+          label: 'Implementatietijd',
+          erp: 'Maanden',
+          saas: 'Weken',
+          eryxon: 'Uren',
+          diy: 'Uren',
+        },
+        custom: {
+          label: 'Aanpassingen',
+          erp: 'Consultant vereist',
+          saas: 'Beperkt',
+          eryxon: 'Volledige broncode',
+          diy: 'Onbeperkt',
         },
         realtime: {
-          label: 'Realtime Updates',
-          eryxon: 'Directe updates overal',
-          others: 'Verversen om wijzigingen te zien',
+          label: 'Realtime sync',
+        },
+        cad: {
+          label: '3D CAD Viewer',
+          erp: 'Add-on',
+          saas: 'Zeldzaam',
         },
         api: {
-          label: 'API Toegang',
-          eryxon: 'Open REST API + Webhooks',
-          others: 'Proprietary / extra kosten',
+          label: 'Open API',
+          erp: 'Extra kosten',
+          saas: 'Varieert',
         },
-        sourceCode: {
-          label: 'Broncode',
-          eryxon: 'Open Source (BSL 1.1)',
-          others: 'Gesloten / vendor lock-in',
+        lockin: {
+          label: 'Vendor lock-in',
+          erp: 'Hoog',
+          saas: 'Gemiddeld',
+          eryxon: 'Geen',
+          diy: 'Geen',
         },
-        cadViewer: {
-          label: '3D CAD Viewer',
-          eryxon: 'Ingebouwde STEP viewer',
-          others: 'Aparte software nodig',
-        },
-        pdfViewer: {
-          label: 'PDF Tekening Viewer',
-          eryxon: 'Inline PDF viewer',
-          others: 'Externe app',
-        },
-        substeps: {
-          label: 'Substappen & Templates',
-          eryxon: 'Checklist-gedreven workflow',
-          others: 'Basis of ontbrekend',
-        },
-        assemblies: {
-          label: 'Assemblage Support',
-          eryxon: 'Multi-level assemblages',
-          others: 'Alleen platte structuur',
-        },
-        capacity: {
-          label: 'Capaciteitsplanning',
-          eryxon: 'QRM: minder onderhanden werk',
-          others: 'Alles tegelijk pushen',
-        },
-        ui: {
-          label: 'Gebruikersinterface',
-          eryxon: 'Modern, mobile-first',
-          others: 'Desktop-era design',
-        },
-        deployment: {
-          label: 'Deployment',
-          eryxon: 'Cloud of zelf gehost',
-          others: 'Alleen on-premise',
+        structure: {
+          label: 'Ingebouwde structuur',
         },
       },
-      teamSection: {
-        title: 'Gebouwd voor je team, niet IT-afdelingen',
-        description: 'Werkvloer getest. Geen training nodig. Je operators zullen je dankbaar zijn.',
-        features: {
-          simple: {
-            title: 'Simpel & Snel',
-            description: 'Tijdregistratie met \u00e9\u00e9n tik',
-          },
-          models: {
-            title: '3D Modellen',
-            description: 'Bekijk STEP bestanden inline',
-          },
-          checklists: {
-            title: 'Substap Checklists',
-            description: 'Begeleide procedures',
-          },
-          photos: {
-            title: 'Foto Problemen',
-            description: 'Meld met camera',
-          },
+      community: {
+        title: 'Een startpunt, geen eindproduct',
+        description: 'Eryxon Flow geeft je een solide basis met realtime tracking, operator terminals en QRM capaciteitsplanning. Fork het, breid het uit, maak het van jou. De community bouwt de features.',
+        github: 'Bekijk op GitHub',
+        start: 'Start gratis',
+      },
+      features: {
+        terminal: {
+          title: 'Operator Terminal',
+          description: 'Touch-vriendelijke tijdregistratie',
+        },
+        qrm: {
+          title: 'QRM Dashboard',
+          description: 'OHW-limieten & capaciteit',
+        },
+        cad: {
+          title: '3D STEP Viewer',
+          description: 'Bekijk onderdelen in de browser',
+        },
+        api: {
+          title: 'REST API',
+          description: 'Integreer met alles',
         },
       },
     },
@@ -628,90 +634,93 @@ export const translations = {
 
     // Comparison section
     comparison: {
-      badge: 'Von Metallbearbeitern, f\u00fcr Metallbearbeiter',
-      title: 'Das MES das Sie wirklich nutzen wollen',
-      subtitle: 'Kostenlos starten. Von KMUs geliebt. Keine teuren Lizenzen oder Pro-Benutzer-Geb\u00fchren.',
+      badge: 'Finden Sie die richtige Lösung für Ihre Werkstatt',
+      title: 'Wo passt Eryxon Flow?',
+      subtitle: 'Ein moderner Ausgangspunkt zwischen schweren ERPs, teurer SaaS, und DIY-Chaos.',
       eryxonFlow: 'Eryxon Flow',
-      theOthers: 'Die anderen',
-      othersExamples: 'PROPOS, 24Flow, Ridder iQ, MKG, Bemet...',
+      columns: {
+        erp: 'ERP Add-ons',
+        erpExamples: 'SAP, Exact, AFAS',
+        saas: 'SaaS MES',
+        saasExamples: 'PROPOS, 24Flow, Ridder iQ',
+        diy: 'DIY / Spreadsheets',
+        diyExamples: 'Excel, Google Sheets',
+      },
       rows: {
-        pricing: {
-          label: 'Preise',
-          eryxon: 'Kostenlos starten',
-          eryxonNote: 'Zahlen Sie f\u00fcr Datenverbrauch, nicht pro Benutzer',
-          others: 'Pro-Benutzer-Lizenzen + Einrichtungsgeb\u00fchren',
+        cost: {
+          label: 'Startkosten',
+          erp: '€€€€',
+          saas: '€€€',
+          eryxon: 'Kostenlos',
+          diy: 'Kostenlos',
+        },
+        perUser: {
+          label: 'Pro-Benutzer-Kosten',
+          erp: '€50-150/Mon',
+          saas: '€30-80/Mon',
+          eryxon: 'Keine',
+          diy: 'Keine',
+        },
+        deploy: {
+          label: 'Implementierungszeit',
+          erp: 'Monate',
+          saas: 'Wochen',
+          eryxon: 'Stunden',
+          diy: 'Stunden',
+        },
+        custom: {
+          label: 'Anpassungen',
+          erp: 'Berater erforderlich',
+          saas: 'Begrenzt',
+          eryxon: 'Voller Quellcode',
+          diy: 'Unbegrenzt',
         },
         realtime: {
-          label: 'Echtzeit-Updates',
-          eryxon: 'Sofortige Updates \u00fcberall',
-          others: 'Aktualisieren um \u00c4nderungen zu sehen',
+          label: 'Echtzeit-Sync',
+        },
+        cad: {
+          label: '3D CAD Viewer',
+          erp: 'Add-on',
+          saas: 'Selten',
         },
         api: {
-          label: 'API-Zugang',
-          eryxon: 'Offene REST API + Webhooks',
-          others: 'Propriet\u00e4r / Zusatzkosten',
+          label: 'Offene API',
+          erp: 'Zusatzkosten',
+          saas: 'Variiert',
         },
-        sourceCode: {
-          label: 'Quellcode',
-          eryxon: 'Open Source (BSL 1.1)',
-          others: 'Geschlossen / Vendor Lock-in',
+        lockin: {
+          label: 'Vendor Lock-in',
+          erp: 'Hoch',
+          saas: 'Mittel',
+          eryxon: 'Keiner',
+          diy: 'Keiner',
         },
-        cadViewer: {
-          label: '3D CAD Viewer',
-          eryxon: 'Integrierter STEP Viewer',
-          others: 'Separate Software erforderlich',
-        },
-        pdfViewer: {
-          label: 'PDF Zeichnungs-Viewer',
-          eryxon: 'Inline PDF Viewer',
-          others: 'Externe App',
-        },
-        substeps: {
-          label: 'Unterschritte & Vorlagen',
-          eryxon: 'Checklisten-gesteuerter Workflow',
-          others: 'Basis oder fehlend',
-        },
-        assemblies: {
-          label: 'Baugruppen-Support',
-          eryxon: 'Mehrstufige Baugruppen',
-          others: 'Nur flache Struktur',
-        },
-        capacity: {
-          label: 'Kapazit\u00e4tsplanung',
-          eryxon: 'QRM: weniger Umlaufbest\u00e4nde',
-          others: 'Alles auf einmal durchdr\u00fccken',
-        },
-        ui: {
-          label: 'Benutzeroberfl\u00e4che',
-          eryxon: 'Modern, Mobile-first',
-          others: 'Desktop-\u00c4ra Design',
-        },
-        deployment: {
-          label: 'Bereitstellung',
-          eryxon: 'Cloud oder selbst gehostet',
-          others: 'Nur On-Premise',
+        structure: {
+          label: 'Eingebaute Struktur',
         },
       },
-      teamSection: {
-        title: 'F\u00fcr Ihr Team gebaut, nicht f\u00fcr IT-Abteilungen',
-        description: 'Werkstatt-getestet. Keine Schulung erforderlich. Ihre Bediener werden es Ihnen danken.',
-        features: {
-          simple: {
-            title: 'Einfach & Schnell',
-            description: 'Ein-Tipp Zeiterfassung',
-          },
-          models: {
-            title: '3D Modelle',
-            description: 'STEP Dateien inline ansehen',
-          },
-          checklists: {
-            title: 'Unterschritt-Checklisten',
-            description: 'Gef\u00fchrte Abl\u00e4ufe',
-          },
-          photos: {
-            title: 'Foto-Probleme',
-            description: 'Mit Kamera melden',
-          },
+      community: {
+        title: 'Ein Ausgangspunkt, kein fertiges Produkt',
+        description: 'Eryxon Flow gibt Ihnen eine solide Basis mit Echtzeit-Tracking, Operator-Terminals und QRM-Kapazitätsplanung. Forken Sie es, erweitern Sie es, machen Sie es zu Ihrem. Die Community baut die Features.',
+        github: 'Auf GitHub ansehen',
+        start: 'Kostenlos starten',
+      },
+      features: {
+        terminal: {
+          title: 'Operator Terminal',
+          description: 'Touch-freundliche Zeiterfassung',
+        },
+        qrm: {
+          title: 'QRM Dashboard',
+          description: 'WIP-Limits & Kapazität',
+        },
+        cad: {
+          title: '3D STEP Viewer',
+          description: 'Teile im Browser ansehen',
+        },
+        api: {
+          title: 'REST API',
+          description: 'Mit allem integrieren',
         },
       },
     },
