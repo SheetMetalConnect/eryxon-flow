@@ -2,253 +2,215 @@
 ---
 
 <section class="relative py-24 px-4 sm:px-6 lg:px-8 bg-background">
-  <div class="max-w-6xl mx-auto">
+  <div class="max-w-5xl mx-auto">
     <!-- Section header -->
-    <div class="text-center mb-16 fade-in-on-scroll">
-      <span class="inline-block px-4 py-1.5 rounded-full bg-blue-500/10 text-blue-400 text-sm font-medium mb-6 border border-blue-500/20">
+    <div class="text-center mb-12 fade-in-on-scroll">
+      <span class="inline-block px-4 py-1.5 rounded-full bg-blue-500/10 text-blue-400 text-sm font-medium mb-6 border border-blue-500/20" data-i18n="comparison.badge">
         By metalworkers, for metalworkers
       </span>
-      <h2 class="text-4xl sm:text-5xl font-bold gradient-text mb-6">
+      <h2 class="text-4xl sm:text-5xl font-bold gradient-text mb-4" data-i18n="comparison.title">
         The MES You Actually Want to Use
       </h2>
-      <p class="text-xl text-zinc-400 max-w-3xl mx-auto">
+      <p class="text-lg text-zinc-400 max-w-2xl mx-auto" data-i18n="comparison.subtitle">
         Free to start. Loved by SMBs. No expensive licenses or per-seat fees.
       </p>
     </div>
 
     <!-- Comparison table -->
     <div class="overflow-x-auto fade-in-on-scroll">
-      <table class="w-full border-collapse">
+      <table class="w-full border-collapse comparison-table">
         <thead>
           <tr>
-            <th class="text-left p-4 bg-zinc-900/30 border-b border-white/5 rounded-tl-xl"></th>
-            <th class="text-center p-4 bg-blue-500/10 border-b border-blue-500/20">
+            <th class="text-left p-4 bg-zinc-900/50 border-b border-white/10 rounded-tl-xl w-1/3"></th>
+            <th class="text-center p-4 bg-blue-500/10 border-b border-blue-500/30 w-1/3">
               <div class="flex flex-col items-center gap-2">
-                <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 2L2 7l10 5 10-5-10-5z"/>
                     <path d="M2 17l10 5 10-5"/>
                     <path d="M2 12l10 5 10-5"/>
                   </svg>
                 </div>
-                <span class="font-bold text-white">Eryxon Flow</span>
+                <span class="font-semibold text-white" data-i18n="comparison.eryxonFlow">Eryxon Flow</span>
               </div>
             </th>
-            <th class="text-center p-4 bg-zinc-900/30 border-b border-white/5 rounded-tr-xl">
-              <span class="font-medium text-zinc-400">The Others</span>
-              <p class="text-xs text-zinc-500 mt-1">PROPOS, 24Flow, Ridder iQ, MKG, Bemet...</p>
+            <th class="text-center p-4 bg-zinc-900/50 border-b border-white/10 rounded-tr-xl w-1/3">
+              <span class="font-medium text-zinc-400" data-i18n="comparison.theOthers">Traditional MES</span>
+              <p class="text-xs text-zinc-500 mt-1" data-i18n="comparison.othersExamples">PROPOS, 24Flow, Ridder iQ, MKG...</p>
             </th>
           </tr>
         </thead>
         <tbody>
           <!-- Pricing -->
-          <tr class="hover:bg-zinc-900/50 transition-colors">
-            <td class="p-4 border-b border-white/5 font-medium text-zinc-200">Pricing</td>
+          <tr class="table-row-hover">
+            <td class="p-4 border-b border-white/5 font-medium text-zinc-300" data-i18n="comparison.rows.pricing.label">Pricing Model</td>
             <td class="p-4 border-b border-white/5 text-center bg-blue-500/5">
-              <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-sm font-medium">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                Free to start
-              </span>
-              <p class="text-xs text-zinc-500 mt-2">Pay for data usage, not per user</p>
+              <div class="flex flex-col items-center gap-1">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-sm font-medium">
+                  <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                  <span data-i18n="comparison.rows.pricing.eryxon">Free to start</span>
+                </span>
+                <span class="text-xs text-zinc-500" data-i18n="comparison.rows.pricing.eryxonNote">Unlimited users included</span>
+              </div>
             </td>
-            <td class="p-4 border-b border-white/5 text-center text-zinc-500">
-              Per-user licenses + setup fees
-            </td>
-          </tr>
-
-          <!-- Architecture -->
-          <tr class="hover:bg-zinc-900/50 transition-colors">
-            <td class="p-4 border-b border-white/5 font-medium text-zinc-200">Real-time Updates</td>
-            <td class="p-4 border-b border-white/5 text-center bg-blue-500/5">
-              <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-sm font-medium">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                Instant updates everywhere
-              </span>
-            </td>
-            <td class="p-4 border-b border-white/5 text-center text-zinc-500">
-              Refresh to see changes
-            </td>
-          </tr>
-
-          <!-- API -->
-          <tr class="hover:bg-zinc-900/50 transition-colors">
-            <td class="p-4 border-b border-white/5 font-medium text-zinc-200">API Access</td>
-            <td class="p-4 border-b border-white/5 text-center bg-blue-500/5">
-              <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-400/20 text-blue-300 text-sm font-medium">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                Open REST API + Webhooks
-              </span>
-            </td>
-            <td class="p-4 border-b border-white/5 text-center text-zinc-500">
-              Proprietary / extra cost
+            <td class="p-4 border-b border-white/5 text-center">
+              <span class="text-zinc-500 text-sm" data-i18n="comparison.rows.pricing.others">Per-user licenses + setup fees</span>
             </td>
           </tr>
 
           <!-- Source Code -->
-          <tr class="hover:bg-zinc-900/50 transition-colors">
-            <td class="p-4 border-b border-white/5 font-medium text-zinc-200">Source Code</td>
+          <tr class="table-row-hover">
+            <td class="p-4 border-b border-white/5 font-medium text-zinc-300" data-i18n="comparison.rows.sourceCode.label">Source Access</td>
             <td class="p-4 border-b border-white/5 text-center bg-blue-500/5">
-              <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-sm font-medium">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                Open Source (BSL 1.1)
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-sm font-medium">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span data-i18n="comparison.rows.sourceCode.eryxon">Open Source (BSL 1.1)</span>
               </span>
             </td>
-            <td class="p-4 border-b border-white/5 text-center text-zinc-500">
-              Closed / vendor lock-in
-            </td>
-          </tr>
-
-          <!-- 3D CAD Viewer -->
-          <tr class="hover:bg-zinc-900/50 transition-colors">
-            <td class="p-4 border-b border-white/5 font-medium text-zinc-200">3D CAD Viewer</td>
-            <td class="p-4 border-b border-white/5 text-center bg-blue-500/5">
-              <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-sm font-medium">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                Built-in STEP viewer
-              </span>
-            </td>
-            <td class="p-4 border-b border-white/5 text-center text-zinc-500">
-              Separate software needed
-            </td>
-          </tr>
-
-          <!-- PDF Viewer -->
-          <tr class="hover:bg-zinc-900/50 transition-colors">
-            <td class="p-4 border-b border-white/5 font-medium text-zinc-200">PDF Drawing Viewer</td>
-            <td class="p-4 border-b border-white/5 text-center bg-blue-500/5">
-              <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-sm font-medium">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                Inline PDF viewer
-              </span>
-            </td>
-            <td class="p-4 border-b border-white/5 text-center text-zinc-500">
-              External app
-            </td>
-          </tr>
-
-          <!-- Substeps -->
-          <tr class="hover:bg-zinc-900/50 transition-colors">
-            <td class="p-4 border-b border-white/5 font-medium text-zinc-200">Substeps & Templates</td>
-            <td class="p-4 border-b border-white/5 text-center bg-blue-500/5">
-              <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-400/20 text-blue-300 text-sm font-medium">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                Checklist-driven workflow
-              </span>
-            </td>
-            <td class="p-4 border-b border-white/5 text-center text-zinc-500">
-              Basic or missing
-            </td>
-          </tr>
-
-          <!-- Assemblies -->
-          <tr class="hover:bg-zinc-900/50 transition-colors">
-            <td class="p-4 border-b border-white/5 font-medium text-zinc-200">Assembly Support</td>
-            <td class="p-4 border-b border-white/5 text-center bg-blue-500/5">
-              <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-sm font-medium">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                Multi-level assemblies
-              </span>
-            </td>
-            <td class="p-4 border-b border-white/5 text-center text-zinc-500">
-              Flat structure only
-            </td>
-          </tr>
-
-          <!-- QRM -->
-          <tr class="hover:bg-zinc-900/50 transition-colors">
-            <td class="p-4 border-b border-white/5 font-medium text-zinc-200">Capacity Planning</td>
-            <td class="p-4 border-b border-white/5 text-center bg-blue-500/5">
-              <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-sm font-medium">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                QRM: less work-in-progress
-              </span>
-            </td>
-            <td class="p-4 border-b border-white/5 text-center text-zinc-500">
-              Push everything at once
-            </td>
-          </tr>
-
-          <!-- UI -->
-          <tr class="hover:bg-zinc-900/50 transition-colors">
-            <td class="p-4 border-b border-white/5 font-medium text-zinc-200">User Interface</td>
-            <td class="p-4 border-b border-white/5 text-center bg-blue-500/5">
-              <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-400/20 text-blue-300 text-sm font-medium">
-                Modern, mobile-first
-              </span>
-            </td>
-            <td class="p-4 border-b border-white/5 text-center text-zinc-500">
-              Desktop-era design
+            <td class="p-4 border-b border-white/5 text-center">
+              <span class="text-zinc-500 text-sm" data-i18n="comparison.rows.sourceCode.others">Closed source</span>
             </td>
           </tr>
 
           <!-- Deployment -->
-          <tr class="hover:bg-zinc-900/50 transition-colors">
-            <td class="p-4 border-b border-white/5 rounded-bl-xl font-medium text-zinc-200">Deployment</td>
+          <tr class="table-row-hover">
+            <td class="p-4 border-b border-white/5 font-medium text-zinc-300" data-i18n="comparison.rows.deployment.label">Deployment</td>
             <td class="p-4 border-b border-white/5 text-center bg-blue-500/5">
-              <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-sm font-medium">
-                Cloud or self-hosted
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/15 text-blue-400 text-sm font-medium">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span data-i18n="comparison.rows.deployment.eryxon">Cloud or self-hosted</span>
               </span>
             </td>
-            <td class="p-4 border-b border-white/5 rounded-br-xl text-center text-zinc-500">
-              On-premise only
+            <td class="p-4 border-b border-white/5 text-center">
+              <span class="text-zinc-500 text-sm" data-i18n="comparison.rows.deployment.others">Vendor-managed only</span>
+            </td>
+          </tr>
+
+          <!-- API Access -->
+          <tr class="table-row-hover">
+            <td class="p-4 border-b border-white/5 font-medium text-zinc-300" data-i18n="comparison.rows.api.label">API & Integrations</td>
+            <td class="p-4 border-b border-white/5 text-center bg-blue-500/5">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/15 text-blue-400 text-sm font-medium">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span data-i18n="comparison.rows.api.eryxon">REST API + Webhooks included</span>
+              </span>
+            </td>
+            <td class="p-4 border-b border-white/5 text-center">
+              <span class="text-zinc-500 text-sm" data-i18n="comparison.rows.api.others">Often extra cost</span>
+            </td>
+          </tr>
+
+          <!-- Real-time -->
+          <tr class="table-row-hover">
+            <td class="p-4 border-b border-white/5 font-medium text-zinc-300" data-i18n="comparison.rows.realtime.label">Real-time Updates</td>
+            <td class="p-4 border-b border-white/5 text-center bg-blue-500/5">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/15 text-blue-400 text-sm font-medium">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span data-i18n="comparison.rows.realtime.eryxon">Live sync across all devices</span>
+              </span>
+            </td>
+            <td class="p-4 border-b border-white/5 text-center">
+              <span class="text-zinc-500 text-sm" data-i18n="comparison.rows.realtime.others">Manual refresh required</span>
+            </td>
+          </tr>
+
+          <!-- CAD Viewer -->
+          <tr class="table-row-hover">
+            <td class="p-4 border-b border-white/5 font-medium text-zinc-300" data-i18n="comparison.rows.cadViewer.label">CAD Viewing</td>
+            <td class="p-4 border-b border-white/5 text-center bg-blue-500/5">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/15 text-blue-400 text-sm font-medium">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span data-i18n="comparison.rows.cadViewer.eryxon">Built-in 3D STEP viewer</span>
+              </span>
+            </td>
+            <td class="p-4 border-b border-white/5 text-center">
+              <span class="text-zinc-500 text-sm" data-i18n="comparison.rows.cadViewer.others">External CAD software</span>
+            </td>
+          </tr>
+
+          <!-- Capacity Planning -->
+          <tr class="table-row-hover">
+            <td class="p-4 border-b border-white/5 font-medium text-zinc-300" data-i18n="comparison.rows.capacity.label">Capacity Planning</td>
+            <td class="p-4 border-b border-white/5 text-center bg-blue-500/5">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-sm font-medium">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span data-i18n="comparison.rows.capacity.eryxon">QRM with WIP limits</span>
+              </span>
+            </td>
+            <td class="p-4 border-b border-white/5 text-center">
+              <span class="text-zinc-500 text-sm" data-i18n="comparison.rows.capacity.others">Traditional scheduling</span>
+            </td>
+          </tr>
+
+          <!-- User Interface -->
+          <tr class="table-row-hover">
+            <td class="p-4 border-b border-white/5 rounded-bl-xl font-medium text-zinc-300" data-i18n="comparison.rows.ui.label">User Experience</td>
+            <td class="p-4 border-b border-white/5 text-center bg-blue-500/5">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/15 text-blue-400 text-sm font-medium">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span data-i18n="comparison.rows.ui.eryxon">Modern, mobile-ready</span>
+              </span>
+            </td>
+            <td class="p-4 border-b border-white/5 rounded-br-xl text-center">
+              <span class="text-zinc-500 text-sm" data-i18n="comparison.rows.ui.others">Desktop-focused</span>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Operator love section -->
+    <!-- Operator features section -->
     <div class="mt-16 fade-in-on-scroll">
-      <div class="bg-zinc-900/30 rounded-3xl border border-white/5 p-8 backdrop-blur-xl">
+      <div class="bg-zinc-900/40 rounded-2xl border border-white/5 p-8 backdrop-blur-sm">
         <div class="text-center mb-8">
-          <h3 class="text-2xl font-bold text-white mb-2">
+          <h3 class="text-xl font-semibold text-white mb-2" data-i18n="comparison.teamSection.title">
             Built for Your Team, Not IT Departments
           </h3>
-          <p class="text-zinc-400">
+          <p class="text-zinc-400 text-sm" data-i18n="comparison.teamSection.description">
             Shop floor tested. Zero training needed. Your operators will thank you.
           </p>
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div class="text-center">
-            <div class="w-14 h-14 bg-blue-500/10 rounded-xl flex items-center justify-center mx-auto mb-3 border border-blue-500/20">
-              <svg class="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mx-auto mb-3 border border-blue-500/20">
+              <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
               </svg>
             </div>
-            <h4 class="font-semibold text-white mb-1">Simple & Fast</h4>
-            <p class="text-sm text-zinc-500">One-tap time tracking</p>
+            <h4 class="font-medium text-white text-sm mb-1" data-i18n="comparison.teamSection.features.simple.title">One-Tap Tracking</h4>
+            <p class="text-xs text-zinc-500" data-i18n="comparison.teamSection.features.simple.description">Start/stop with a single tap</p>
           </div>
 
           <div class="text-center">
-            <div class="w-14 h-14 bg-blue-400/10 rounded-xl flex items-center justify-center mx-auto mb-3 border border-blue-400/20">
-              <svg class="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-12 h-12 bg-blue-400/10 rounded-xl flex items-center justify-center mx-auto mb-3 border border-blue-400/20">
+              <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"/>
               </svg>
             </div>
-            <h4 class="font-semibold text-white mb-1">3D Models</h4>
-            <p class="text-sm text-zinc-500">View STEP files inline</p>
+            <h4 class="font-medium text-white text-sm mb-1" data-i18n="comparison.teamSection.features.models.title">3D Part Viewer</h4>
+            <p class="text-xs text-zinc-500" data-i18n="comparison.teamSection.features.models.description">View STEP files in-browser</p>
           </div>
 
           <div class="text-center">
-            <div class="w-14 h-14 bg-emerald-500/10 rounded-xl flex items-center justify-center mx-auto mb-3 border border-emerald-500/20">
-              <svg class="w-7 h-7 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mx-auto mb-3 border border-emerald-500/20">
+              <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
               </svg>
             </div>
-            <h4 class="font-semibold text-white mb-1">Substep Checklists</h4>
-            <p class="text-sm text-zinc-500">Guided procedures</p>
+            <h4 class="font-medium text-white text-sm mb-1" data-i18n="comparison.teamSection.features.checklists.title">Step Checklists</h4>
+            <p class="text-xs text-zinc-500" data-i18n="comparison.teamSection.features.checklists.description">Guided work instructions</p>
           </div>
 
           <div class="text-center">
-            <div class="w-14 h-14 bg-amber-500/10 rounded-xl flex items-center justify-center mx-auto mb-3 border border-amber-500/20">
-              <svg class="w-7 h-7 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center mx-auto mb-3 border border-amber-500/20">
+              <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
               </svg>
             </div>
-            <h4 class="font-semibold text-white mb-1">Photo Issues</h4>
-            <p class="text-sm text-zinc-500">Report with camera</p>
+            <h4 class="font-medium text-white text-sm mb-1" data-i18n="comparison.teamSection.features.photos.title">Photo Issues</h4>
+            <p class="text-xs text-zinc-500" data-i18n="comparison.teamSection.features.photos.description">Report problems with photos</p>
           </div>
         </div>
       </div>
@@ -277,10 +239,23 @@
     }
   }
 
+  .comparison-table {
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .table-row-hover {
+    transition: background-color 0.15s ease;
+  }
+
+  .table-row-hover:hover {
+    background-color: rgba(39, 39, 42, 0.3);
+  }
+
   /* Table responsive */
   @media (max-width: 768px) {
     table {
-      font-size: 0.875rem;
+      font-size: 0.8125rem;
     }
 
     td, th {
@@ -288,8 +263,12 @@
     }
 
     .inline-flex {
-      font-size: 0.75rem;
+      font-size: 0.6875rem;
       padding: 0.25rem 0.5rem;
+    }
+
+    .text-xs {
+      font-size: 0.625rem;
     }
   }
 </style>
