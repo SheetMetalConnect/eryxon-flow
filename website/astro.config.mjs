@@ -13,7 +13,8 @@ export default defineConfig({
     resolve: {
       alias: {
         '@components': '/src/components',
-        '@layouts': '/src/layouts'
+        '@layouts': '/src/layouts',
+        '@i18n': '/src/i18n'
       }
     },
     build: {
