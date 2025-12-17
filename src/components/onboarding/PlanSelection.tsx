@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 
-export type PlanType = 'free' | 'pro' | 'premium' | 'enterprise';
+export type PlanType = 'free' | 'pro' | 'premium' | 'enterprise' | 'self_hosted';
 
 interface PlanSelectionProps {
   onPlanSelect: (plan: PlanType) => void;

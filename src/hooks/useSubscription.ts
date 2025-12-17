@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
 
-export type SubscriptionPlan = 'free' | 'pro' | 'premium' | 'enterprise';
+export type SubscriptionPlan = 'free' | 'pro' | 'premium' | 'enterprise' | 'self_hosted';
 export type SubscriptionStatus = 'active' | 'cancelled' | 'suspended' | 'trial';
 
 export interface TenantSubscription {
@@ -100,6 +100,7 @@ export const useSubscription = () => {
       pro: 'Pro Plan',
       premium: 'Premium Plan',
       enterprise: 'Enterprise Plan',
+      self_hosted: 'Self-Hosted',
     };
     return planNames[plan] || 'Unknown Plan';
   };
@@ -110,6 +111,7 @@ export const useSubscription = () => {
       pro: '#8b5cf6', // purple
       premium: '#f59e0b', // amber
       enterprise: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', // gradient
+      self_hosted: '#059669', // emerald
     };
     return planColors[plan] || '#64748b';
   };
