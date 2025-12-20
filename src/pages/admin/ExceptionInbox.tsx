@@ -37,7 +37,7 @@ import { cn } from '@/lib/utils'
 import type { ExceptionStatus, ExceptionWithExpectation, ExceptionType } from '@/integrations/supabase/types/tables/expectations'
 
 const ExceptionInbox: React.FC = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['admin', 'common'])
   const [activeTab, setActiveTab] = useState<ExceptionStatus | 'all'>('open')
   const [selectedException, setSelectedException] = useState<ExceptionWithExpectation | null>(null)
   const [resolveDialogOpen, setResolveDialogOpen] = useState(false)

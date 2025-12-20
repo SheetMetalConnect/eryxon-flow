@@ -124,6 +124,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       badge: pendingIssuesCount,
     },
     {
+      path: "/admin/exceptions",
+      label: t("navigation.exceptions"),
+      icon: Flag,
+      exact: true,
+    },
+    {
       path: "/admin/activity",
       label: t("navigation.activity"),
       icon: Clock,
