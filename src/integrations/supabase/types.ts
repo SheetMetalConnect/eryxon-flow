@@ -397,6 +397,186 @@ export type Database = {
           },
         ]
       }
+      exceptions: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          actual_value: Json | null
+          corrective_action: string | null
+          detected_at: string
+          detected_by_event: string | null
+          deviation_amount: number | null
+          deviation_unit: string | null
+          exception_type: Database["public"]["Enums"]["exception_type"]
+          expectation_id: string
+          id: string
+          metadata: Json | null
+          occurred_at: string | null
+          preventive_action: string | null
+          resolution: Json | null
+          resolved_at: string | null
+          resolved_by: string | null
+          root_cause: string | null
+          search_vector: unknown
+          status: Database["public"]["Enums"]["exception_status"]
+          tenant_id: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          actual_value?: Json | null
+          corrective_action?: string | null
+          detected_at?: string
+          detected_by_event?: string | null
+          deviation_amount?: number | null
+          deviation_unit?: string | null
+          exception_type: Database["public"]["Enums"]["exception_type"]
+          expectation_id: string
+          id?: string
+          metadata?: Json | null
+          occurred_at?: string | null
+          preventive_action?: string | null
+          resolution?: Json | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          root_cause?: string | null
+          search_vector?: unknown
+          status?: Database["public"]["Enums"]["exception_status"]
+          tenant_id: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          actual_value?: Json | null
+          corrective_action?: string | null
+          detected_at?: string
+          detected_by_event?: string | null
+          deviation_amount?: number | null
+          deviation_unit?: string | null
+          exception_type?: Database["public"]["Enums"]["exception_type"]
+          expectation_id?: string
+          id?: string
+          metadata?: Json | null
+          occurred_at?: string | null
+          preventive_action?: string | null
+          resolution?: Json | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          root_cause?: string | null
+          search_vector?: unknown
+          status?: Database["public"]["Enums"]["exception_status"]
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exceptions_acknowledged_by_fkey"
+            columns: ["acknowledged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exceptions_expectation_id_fkey"
+            columns: ["expectation_id"]
+            isOneToOne: false
+            referencedRelation: "expectations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exceptions_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exceptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expectations: {
+        Row: {
+          belief_statement: string
+          context: Json | null
+          created_at: string
+          created_by: string | null
+          entity_id: string
+          entity_type: string
+          expectation_type: Database["public"]["Enums"]["expectation_type"]
+          expected_at: string | null
+          expected_value: Json
+          id: string
+          search_vector: unknown
+          source: string
+          superseded_at: string | null
+          superseded_by: string | null
+          tenant_id: string
+          version: number
+        }
+        Insert: {
+          belief_statement: string
+          context?: Json | null
+          created_at?: string
+          created_by?: string | null
+          entity_id: string
+          entity_type: string
+          expectation_type: Database["public"]["Enums"]["expectation_type"]
+          expected_at?: string | null
+          expected_value: Json
+          id?: string
+          search_vector?: unknown
+          source: string
+          superseded_at?: string | null
+          superseded_by?: string | null
+          tenant_id: string
+          version?: number
+        }
+        Update: {
+          belief_statement?: string
+          context?: Json | null
+          created_at?: string
+          created_by?: string | null
+          entity_id?: string
+          entity_type?: string
+          expectation_type?: Database["public"]["Enums"]["expectation_type"]
+          expected_at?: string | null
+          expected_value?: Json
+          id?: string
+          search_vector?: unknown
+          source?: string
+          superseded_at?: string | null
+          superseded_by?: string | null
+          tenant_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expectations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expectations_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "expectations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expectations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       factory_calendar: {
         Row: {
           capacity_multiplier: number | null
@@ -3236,6 +3416,10 @@ export type Database = {
         Args: { p_tenant_id: string }
         Returns: undefined
       }
+      acknowledge_exception: {
+        Args: { p_exception_id: string }
+        Returns: undefined
+      }
       can_create_job: { Args: { p_tenant_id: string }; Returns: boolean }
       can_create_parts: {
         Args: { p_quantity?: number; p_tenant_id: string }
@@ -3275,6 +3459,16 @@ export type Database = {
           p_email: string
           p_role?: Database["public"]["Enums"]["app_role"]
           p_tenant_id?: string
+        }
+        Returns: string
+      }
+      create_job_completion_expectation: {
+        Args: {
+          p_created_by?: string
+          p_due_date: string
+          p_job_id: string
+          p_source?: string
+          p_tenant_id: string
         }
         Returns: string
       }
@@ -3324,6 +3518,10 @@ export type Database = {
       delete_tenant_data: { Args: { p_tenant_id: string }; Returns: Json }
       delete_user_account: { Args: never; Returns: Json }
       disable_demo_mode: { Args: { p_tenant_id: string }; Returns: undefined }
+      dismiss_exception: {
+        Args: { p_exception_id: string; p_reason?: string }
+        Returns: undefined
+      }
       dismiss_notification: {
         Args: { p_notification_id: string }
         Returns: undefined
@@ -3407,6 +3605,17 @@ export type Database = {
       get_cell_wip_count: {
         Args: { cell_id_param: string; tenant_id_param: string }
         Returns: number
+      }
+      get_exception_stats: {
+        Args: { p_tenant_id?: string }
+        Returns: {
+          acknowledged_count: number
+          avg_resolution_time_hours: number
+          dismissed_count: number
+          open_count: number
+          resolved_count: number
+          total_count: number
+        }[]
       }
       get_invitation_by_token: {
         Args: { p_token: string }
@@ -3677,6 +3886,16 @@ export type Database = {
         Args: { p_new_pin: string; p_operator_id: string }
         Returns: boolean
       }
+      resolve_exception: {
+        Args: {
+          p_corrective_action?: string
+          p_exception_id: string
+          p_preventive_action?: string
+          p_resolution?: Json
+          p_root_cause?: string
+        }
+        Returns: undefined
+      }
       seed_default_scrap_reasons: {
         Args: { p_tenant_id: string }
         Returns: {
@@ -3702,6 +3921,17 @@ export type Database = {
       should_show_demo_banner: {
         Args: { p_tenant_id: string }
         Returns: boolean
+      }
+      supersede_expectation: {
+        Args: {
+          p_context?: Json
+          p_created_by?: string
+          p_expectation_id: string
+          p_new_expected_at: string
+          p_new_expected_value: Json
+          p_source?: string
+        }
+        Returns: string
       }
       toggle_notification_pin: {
         Args: { p_notification_id: string }
@@ -3763,6 +3993,9 @@ export type Database = {
     Enums: {
       app_role: "operator" | "admin"
       assignment_status: "assigned" | "accepted" | "in_progress" | "completed"
+      exception_status: "open" | "acknowledged" | "resolved" | "dismissed"
+      exception_type: "late" | "early" | "non_occurrence" | "exceeded" | "under"
+      expectation_type: "completion_time" | "duration" | "quantity" | "delivery"
       integration_category:
         | "erp"
         | "accounting"
@@ -3949,6 +4182,9 @@ export const Constants = {
     Enums: {
       app_role: ["operator", "admin"],
       assignment_status: ["assigned", "accepted", "in_progress", "completed"],
+      exception_status: ["open", "acknowledged", "resolved", "dismissed"],
+      exception_type: ["late", "early", "non_occurrence", "exceeded", "under"],
+      expectation_type: ["completion_time", "duration", "quantity", "delivery"],
       integration_category: [
         "erp",
         "accounting",

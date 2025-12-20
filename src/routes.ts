@@ -20,6 +20,7 @@ export const ROUTES = {
     OPERATIONS: "/admin/operations",
     ASSIGNMENTS: "/admin/assignments",
     ISSUES: "/admin/issues",
+    EXCEPTIONS: "/admin/exceptions",
     ACTIVITY: "/admin/activity",
     INTEGRATIONS: "/admin/integrations",
     DATA_EXPORT: "/admin/data-export",
