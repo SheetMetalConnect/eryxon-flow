@@ -74,6 +74,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [operatorViewsOpen, setOperatorViewsOpen] = useState(false);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const [monitoringOpen, setMonitoringOpen] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
   const [integrationsOpen, setIntegrationsOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -124,19 +125,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       badge: pendingIssuesCount,
     },
     {
-      path: "/admin/exceptions",
-      label: t("navigation.exceptions"),
-      icon: Flag,
-      exact: true,
-    },
-    {
-      path: "/admin/activity",
-      label: t("navigation.activity"),
-      icon: Clock,
-      exact: true,
-    },
-    {
       path: "/admin/capacity",
+      label: t("navigation.capacity"),
+      icon: CalendarClock,
+      exact: true,
+    },
+    {
+      path: "/admin/shipping",
       label: t("navigation.capacity"),
       icon: CalendarClock,
       exact: true,
@@ -145,6 +140,28 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       path: "/admin/shipping",
       label: t("navigation.shipping"),
       icon: Truck,
+      exact: true,
+    },
+  ];
+
+  // Monitoring - Expectations, Exceptions, Activity
+  const monitoringNavItems = [
+    {
+      path: "/admin/activity",
+      label: t("navigation.activity"),
+      icon: Clock,
+      exact: true,
+    },
+    {
+      path: "/admin/expectations",
+      label: t("navigation.expectations"),
+      icon: Target,
+      exact: true,
+    },
+    {
+      path: "/admin/exceptions",
+      label: t("navigation.exceptions"),
+      icon: Flag,
       exact: true,
     },
   ];
@@ -166,7 +183,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     {
       path: "/admin/analytics/quality",
       label: t("navigation.qualityAnalytics"),
-      icon: Target,
+      icon: Gauge,
       exact: true,
     },
     {
@@ -449,6 +466,53 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-0.5 pl-3">
               {operatorViewItems.map((item) => {
+                const isItemActive = item.exact
+                  ? isActive(item.path)
+                  : location.pathname.startsWith(item.path);
+
+                return (
+                  <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}>
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start gap-2 nav-item-hover h-7 text-xs",
+                        isItemActive && "nav-item-active"
+                      )}
+                      size="sm"
+                    >
+                      <item.icon className="h-3.5 w-3.5 shrink-0" />
+                      <span>{item.label}</span>
+                    </Button>
+                  </Link>
+                );
+              })}
+            </CollapsibleContent>
+          </Collapsible>
+        )}
+
+        {!collapsed && <Separator className="my-2" />}
+
+        {/* Monitoring Section - Collapsible */}
+        {!collapsed && (
+          <Collapsible open={monitoringOpen} onOpenChange={setMonitoringOpen} className="space-y-0.5">
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2 font-medium text-muted-foreground h-7 text-xs"
+              >
+                <Activity className="h-3.5 w-3.5" />
+                <span className="flex-1 text-left">{t("navigation.monitoring")}</span>
+                <ChevronDown
+                  className={cn(
+                    "h-3 w-3 transition-transform",
+                    monitoringOpen && "rotate-180"
+                  )}
+                />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-0.5 pl-3">
+              {monitoringNavItems.map((item) => {
                 const isItemActive = item.exact
                   ? isActive(item.path)
                   : location.pathname.startsWith(item.path);

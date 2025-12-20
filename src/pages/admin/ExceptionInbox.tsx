@@ -354,34 +354,46 @@ const ExceptionInbox: React.FC = () => {
       {/* Workflow Explanation */}
       <Card className="glass-card">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
+          <div className="flex flex-col gap-4">
+            {/* Main flow */}
+            <div className="flex items-center gap-3 flex-wrap">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-[hsl(var(--color-error))]/20 flex items-center justify-center">
-                  <span className="text-sm font-bold text-[hsl(var(--color-error))]">1</span>
+                  <AlertTriangle className="h-4 w-4 text-[hsl(var(--color-error))]" />
                 </div>
-                <span className="text-sm font-medium">{t('exceptionInbox.open', 'Open')}</span>
+                <span className="text-sm font-medium">{t('admin:exceptionInbox.open', 'Open')}</span>
               </div>
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-[hsl(var(--color-warning))]/20 flex items-center justify-center">
-                  <span className="text-sm font-bold text-[hsl(var(--color-warning))]">2</span>
+                  <Eye className="h-4 w-4 text-[hsl(var(--color-warning))]" />
                 </div>
-                <span className="text-sm font-medium">{t('exceptionInbox.acknowledged', 'Acknowledged')}</span>
+                <span className="text-sm font-medium">{t('admin:exceptionInbox.acknowledged', 'Acknowledged')}</span>
               </div>
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-[hsl(var(--color-success))]/20 flex items-center justify-center">
-                  <span className="text-sm font-bold text-[hsl(var(--color-success))]">3</span>
+                  <CheckCircle2 className="h-4 w-4 text-[hsl(var(--color-success))]" />
                 </div>
-                <span className="text-sm font-medium">{t('exceptionInbox.resolved', 'Resolved')}</span>
+                <span className="text-sm font-medium">{t('admin:exceptionInbox.resolved', 'Resolved')}</span>
               </div>
-              <span className="text-muted-foreground mx-2">{t('common.or', 'or')}</span>
+            </div>
+            
+            {/* Alternative flow */}
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <span className="text-xs">{t('common:or', 'or')}</span>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-[hsl(var(--color-error))]/20 flex items-center justify-center">
+                  <AlertTriangle className="h-4 w-4 text-[hsl(var(--color-error))]" />
+                </div>
+                <span className="text-sm">{t('admin:exceptionInbox.open', 'Open')}</span>
+              </div>
+              <ArrowRight className="h-4 w-4" />
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                  <XCircle className="h-4 w-4 text-muted-foreground" />
+                  <XCircle className="h-4 w-4" />
                 </div>
-                <span className="text-sm font-medium text-muted-foreground">{t('exceptionInbox.dismissed', 'Dismissed')}</span>
+                <span className="text-sm">{t('admin:exceptionInbox.dismissed', 'Dismissed')}</span>
               </div>
             </div>
           </div>
