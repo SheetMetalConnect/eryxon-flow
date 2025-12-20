@@ -32,6 +32,7 @@ const OperatorView = lazy(() => import("./pages/operator/OperatorView"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
 const IssueQueue = lazy(() => import("./pages/admin/IssueQueue"));
 const ExceptionInbox = lazy(() => import("./pages/admin/ExceptionInbox"));
+const ExpectationsView = lazy(() => import("./pages/admin/ExpectationsView"));
 const FactoryCalendar = lazy(() => import("./pages/admin/FactoryCalendar"));
 const OrganizationSettings = lazy(() => import("./pages/admin/OrganizationSettings"));
 const Assignments = lazy(() => import("./pages/admin/Assignments"));
@@ -365,6 +366,19 @@ function AppRoutes() {
             <Layout>
               <LazyRoute>
                 <ExceptionInbox />
+              </LazyRoute>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/expectations"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <LazyRoute>
+                <ExpectationsView />
               </LazyRoute>
             </Layout>
           </ProtectedRoute>

@@ -439,6 +439,25 @@
     "statsResolved": "Vandaag Opgelost",
     "statsDismissed": "Afgewezen"
   },
+  "expectations": {
+    "title": "Verwachtingen",
+    "description": "Expliciete overtuigingen over wat zou moeten gebeuren. Elke verwachting is geversioned en onveranderlijk.",
+    "total": "Totaal",
+    "active": "Actief",
+    "fulfilled": "Vervuld",
+    "violated": "Geschonden",
+    "superseded": "Vervangen",
+    "all": "Alles",
+    "due": "Verwacht",
+    "type": "Type",
+    "source": "Bron",
+    "supersededNote": "Deze verwachting is vervangen door een nieuwere versie",
+    "noExpectations": "Geen verwachtingen gevonden",
+    "noExpectationsDescription": "Verwachtingen worden automatisch aangemaakt wanneer opdrachten worden aangemaakt of gepland.",
+    "whatIsTitle": "Wat is een Verwachting?",
+    "whatIsDescription": "Een verwachting is een expliciete overtuiging over wat in de toekomst zou moeten gebeuren.",
+    "onlyActiveEvaluated": "Alleen actieve verwachtingen worden geëvalueerd tegen de werkelijkheid"
+  },
   "myActivity": {
     "title": "Mijn activiteit",
     "completed": "Voltooid",

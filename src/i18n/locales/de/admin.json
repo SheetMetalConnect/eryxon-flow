@@ -202,6 +202,25 @@
     "statsResolved": "Heute Gelöst",
     "statsDismissed": "Abgelehnt"
   },
+  "expectations": {
+    "title": "Erwartungen",
+    "description": "Explizite Überzeugungen darüber, was passieren sollte. Jede Erwartung ist versioniert und unveränderlich.",
+    "total": "Gesamt",
+    "active": "Aktiv",
+    "fulfilled": "Erfüllt",
+    "violated": "Verletzt",
+    "superseded": "Ersetzt",
+    "all": "Alle",
+    "due": "Fällig",
+    "type": "Typ",
+    "source": "Quelle",
+    "supersededNote": "Diese Erwartung wurde durch eine neuere Version ersetzt",
+    "noExpectations": "Keine Erwartungen gefunden",
+    "noExpectationsDescription": "Erwartungen werden automatisch erstellt, wenn Aufträge erstellt oder geplant werden.",
+    "whatIsTitle": "Was ist eine Erwartung?",
+    "whatIsDescription": "Eine Erwartung ist eine explizite Überzeugung darüber, was in der Zukunft passieren sollte.",
+    "onlyActiveEvaluated": "Nur aktive Erwartungen werden gegen die Realität ausgewertet"
+  },
   "myActivity": {
     "title": "Meine Aktivität",
     "completed": "Abgeschlossen",
