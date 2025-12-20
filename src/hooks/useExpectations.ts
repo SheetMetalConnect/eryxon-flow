@@ -4,6 +4,12 @@ import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 import type { Expectation, ExpectationInsert, ExpectationEntityType } from '@/integrations/supabase/types/tables/expectations'
 
+export interface ExpectationWithStatus extends Expectation {
+  status: 'active' | 'fulfilled' | 'violated' | 'overdue' | 'superseded'
+  exception_id?: string
+  exception_status?: string
+}
+
 interface UseExpectationsOptions {
   entityType?: ExpectationEntityType
   entityId?: string
@@ -12,11 +18,11 @@ interface UseExpectationsOptions {
 }
 
 export function useExpectations(options: UseExpectationsOptions = {}) {
-  const { entityType, entityId, activeOnly = true, limit = 50 } = options
+  const { entityType, entityId, activeOnly = false, limit = 100 } = options
   const { profile } = useAuth()
   const queryClient = useQueryClient()
 
-  // Fetch expectations
+  // Fetch expectations with exception status
   const {
     data: expectations = [],
     isLoading,
@@ -27,11 +33,12 @@ export function useExpectations(options: UseExpectationsOptions = {}) {
     queryFn: async () => {
       if (!profile?.tenant_id) return []
 
+      // Fetch expectations
       let query = supabase
         .from('expectations')
         .select('*')
         .eq('tenant_id', profile.tenant_id)
-        .order('created_at', { ascending: false })
+        .order('expected_at', { ascending: true })
         .limit(limit)
 
       if (entityType) {
@@ -46,10 +53,42 @@ export function useExpectations(options: UseExpectationsOptions = {}) {
         query = query.is('superseded_by', null)
       }
 
-      const { data, error } = await query
+      const { data: expectationsData, error: expectationsError } = await query
+      if (expectationsError) throw expectationsError
 
-      if (error) throw error
-      return (data || []) as Expectation[]
+      // Fetch exceptions for these expectations
+      const expectationIds = (expectationsData || []).map(e => e.id)
+      const { data: exceptionsData } = await supabase
+        .from('exceptions')
+        .select('expectation_id, id, status')
+        .in('expectation_id', expectationIds.length > 0 ? expectationIds : ['none'])
+
+      const exceptionsMap = new Map((exceptionsData || []).map(e => [e.expectation_id, e]))
+
+      // Determine status for each expectation
+      const now = new Date()
+      return (expectationsData || []).map(exp => {
+        const exception = exceptionsMap.get(exp.id)
+        let status: ExpectationWithStatus['status'] = 'active'
+
+        if (exp.superseded_by) {
+          status = 'superseded'
+        } else if (exception) {
+          status = 'violated'
+        } else if (exp.expected_at) {
+          const expectedAt = new Date(exp.expected_at)
+          if (expectedAt < now) {
+            status = 'overdue' // Past due but no exception yet (could still be completed on time)
+          }
+        }
+
+        return {
+          ...exp,
+          status,
+          exception_id: exception?.id,
+          exception_status: exception?.status,
+        } as ExpectationWithStatus
+      })
     },
     enabled: !!profile?.tenant_id,
   })
