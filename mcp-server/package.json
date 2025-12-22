@@ -15,7 +15,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.24.3",
     "@supabase/supabase-js": "^2.86.2",
-    "openai": "^6.10.0"
+    "openai": "^6.15.0"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
