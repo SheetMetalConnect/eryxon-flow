@@ -587,5 +587,55 @@
       "subject": "Upgrade Aanvraag: {{planName}}",
       "body": "Hallo,\n\nIk wil graag upgraden naar het {{planName}} abonnement.\n\nHuidig Abonnement: {{currentPlan}}\nTenant ID: {{tenantId}}\n\nBedankt!"
     }
+  },
+  "featureFlags": {
+    "title": "Functievlaggen",
+    "description": "Schakel functies in of uit voor uw organisatie",
+    "enabled": "AAN",
+    "quickActions": "Snelle Acties",
+    "enableAll": "Alles Inschakelen",
+    "disableAll": "Alles Uitschakelen",
+    "infoTitle": "Let op:",
+    "infoDescription": "Uitgeschakelde functies worden verborgen in het navigatiemenu. Dit helpt de interface te vereenvoudigen door alleen de functies te tonen die u nodig heeft.",
+    "footerNote": "Wijzigingen worden direct doorgevoerd. Uitgeschakelde functies kunnen op elk moment weer worden ingeschakeld.",
+    "updateSuccess": "Functievlaggen bijgewerkt",
+    "updateError": "Functievlaggen bijwerken mislukt",
+    "categories": {
+      "operations": "Operaties",
+      "analytics": "Analyse & Monitoring",
+      "admin": "Administratie"
+    },
+    "analytics": {
+      "label": "Analyse",
+      "description": "QRM Dashboard, OEE, Kwaliteit, Betrouwbaarheid en Opdracht Analyse"
+    },
+    "monitoring": {
+      "label": "Monitoring",
+      "description": "Activiteiten bijhouden, Verwachtingen en Uitzonderingen inbox"
+    },
+    "shipping": {
+      "label": "Verzending",
+      "description": "Zendingen volgen en bezorgingsbeheer"
+    },
+    "operatorViews": {
+      "label": "Operator Weergaven",
+      "description": "Cel Overzicht, Terminal Weergave, Mijn Activiteit en Mijn Problemen"
+    },
+    "integrations": {
+      "label": "Integraties",
+      "description": "App Store, API Sleutels, Webhooks, MQTT en Data Import/Export"
+    },
+    "issues": {
+      "label": "Problemen",
+      "description": "Probleemregistratie en kwaliteitsbeheer"
+    },
+    "capacity": {
+      "label": "Capaciteit",
+      "description": "Capaciteitsplanning en planning"
+    },
+    "assignments": {
+      "label": "Toewijzingen",
+      "description": "Werktoewijzingen en operator planning"
+    }
   }
 }

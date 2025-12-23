@@ -428,5 +428,55 @@
     "viewGuide": "View Self-Hosting Guide",
     "needHelp": "Need Help?",
     "helpDescription": "Sheet Metal Connect e.U. can help you set up and customize Eryxon MES for your operations."
+  },
+  "featureFlags": {
+    "title": "Feature Flags",
+    "description": "Enable or disable features for your organization",
+    "enabled": "ON",
+    "quickActions": "Quick Actions",
+    "enableAll": "Enable All",
+    "disableAll": "Disable All",
+    "infoTitle": "Note:",
+    "infoDescription": "Disabled features will be hidden from the navigation menu. This helps simplify the interface by showing only the features you need.",
+    "footerNote": "Changes take effect immediately. Disabled features can be re-enabled at any time.",
+    "updateSuccess": "Feature flags updated",
+    "updateError": "Failed to update feature flags",
+    "categories": {
+      "operations": "Operations",
+      "analytics": "Analytics & Monitoring",
+      "admin": "Administration"
+    },
+    "analytics": {
+      "label": "Analytics",
+      "description": "QRM Dashboard, OEE, Quality, Reliability, and Jobs Analytics"
+    },
+    "monitoring": {
+      "label": "Monitoring",
+      "description": "Activity tracking, Expectations, and Exceptions inbox"
+    },
+    "shipping": {
+      "label": "Shipping",
+      "description": "Shipment tracking and delivery management"
+    },
+    "operatorViews": {
+      "label": "Operator Views",
+      "description": "Cell Overview, Terminal View, My Activity, and My Issues"
+    },
+    "integrations": {
+      "label": "Integrations",
+      "description": "App Store, API Keys, Webhooks, MQTT, and Data Import/Export"
+    },
+    "issues": {
+      "label": "Issues",
+      "description": "Issue tracking and quality management"
+    },
+    "capacity": {
+      "label": "Capacity",
+      "description": "Capacity planning and scheduling"
+    },
+    "assignments": {
+      "label": "Assignments",
+      "description": "Work assignments and operator scheduling"
+    }
   }
 }
