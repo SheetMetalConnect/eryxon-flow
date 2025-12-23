@@ -58,8 +58,9 @@ export function usePartIssues(partId: string | undefined) {
 
     fetchIssueSummary();
 
-    // Subscribe to changes in issues
-    const subscription = supabase
+    // Subscribe to changes in issues - filter by status to reduce callback frequency
+    // Note: Can't filter by part_id directly since issues link through operations
+    const channel = supabase
       .channel(`part-issues-${partId}`)
       .on(
         'postgres_changes',
@@ -67,6 +68,7 @@ export function usePartIssues(partId: string | undefined) {
           event: '*',
           schema: 'public',
           table: 'issues',
+          filter: 'status=eq.pending',
         },
         () => {
           fetchIssueSummary();
@@ -75,7 +77,7 @@ export function usePartIssues(partId: string | undefined) {
       .subscribe();
 
     return () => {
-      subscription.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [partId]);
 

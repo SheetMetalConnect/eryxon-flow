@@ -91,11 +91,17 @@ export function useQualityMetrics() {
 
       if (issuesError) throw issuesError;
 
-      // Calculate production totals
-      const totalProduced = quantities?.reduce((sum, q) => sum + (q.quantity_produced || 0), 0) || 0;
-      const totalGood = quantities?.reduce((sum, q) => sum + (q.quantity_good || 0), 0) || 0;
-      const totalScrap = quantities?.reduce((sum, q) => sum + (q.quantity_scrap || 0), 0) || 0;
-      const totalRework = quantities?.reduce((sum, q) => sum + (q.quantity_rework || 0), 0) || 0;
+      // Calculate production totals in single pass instead of 4 separate reduces
+      const totals = quantities?.reduce(
+        (acc, q) => ({
+          produced: acc.produced + (q.quantity_produced || 0),
+          good: acc.good + (q.quantity_good || 0),
+          scrap: acc.scrap + (q.quantity_scrap || 0),
+          rework: acc.rework + (q.quantity_rework || 0),
+        }),
+        { produced: 0, good: 0, scrap: 0, rework: 0 }
+      ) || { produced: 0, good: 0, scrap: 0, rework: 0 };
+      const { produced: totalProduced, good: totalGood, scrap: totalScrap, rework: totalRework } = totals;
 
       // Calculate yield metrics
       const overallYield = totalProduced > 0 ? (totalGood / totalProduced) * 100 : 100;
@@ -142,18 +148,35 @@ export function useQualityMetrics() {
         .sort((a, b) => b.quantity - a.quantity)
         .slice(0, 10);
 
-      // Calculate issue metrics
+      // Calculate issue metrics in single pass instead of 9 separate filters
+      const issueCounts = issues?.reduce(
+        (acc, i) => {
+          // Count by status
+          if (i.status === "pending") acc.pending++;
+          else if (i.status === "approved") acc.approved++;
+          else if (i.status === "rejected") acc.rejected++;
+          else if (i.status === "closed") acc.closed++;
+          // Count by severity
+          if (i.severity === "critical") acc.critical++;
+          else if (i.severity === "high") acc.high++;
+          else if (i.severity === "medium") acc.medium++;
+          else if (i.severity === "low") acc.low++;
+          return acc;
+        },
+        { pending: 0, approved: 0, rejected: 0, closed: 0, critical: 0, high: 0, medium: 0, low: 0 }
+      ) || { pending: 0, approved: 0, rejected: 0, closed: 0, critical: 0, high: 0, medium: 0, low: 0 };
+
       const issueMetrics = {
         total: issues?.length || 0,
-        pending: issues?.filter((i) => i.status === "pending").length || 0,
-        approved: issues?.filter((i) => i.status === "approved").length || 0,
-        rejected: issues?.filter((i) => i.status === "rejected").length || 0,
-        closed: issues?.filter((i) => i.status === "closed").length || 0,
+        pending: issueCounts.pending,
+        approved: issueCounts.approved,
+        rejected: issueCounts.rejected,
+        closed: issueCounts.closed,
         bySeverity: {
-          critical: issues?.filter((i) => i.severity === "critical").length || 0,
-          high: issues?.filter((i) => i.severity === "high").length || 0,
-          medium: issues?.filter((i) => i.severity === "medium").length || 0,
-          low: issues?.filter((i) => i.severity === "low").length || 0,
+          critical: issueCounts.critical,
+          high: issueCounts.high,
+          medium: issueCounts.medium,
+          low: issueCounts.low,
         },
       };
 
@@ -186,10 +209,10 @@ export function useScrapReasonUsage() {
         throw new Error("No tenant ID");
       }
 
-      // Fetch all scrap reasons
+      // Fetch all scrap reasons - only fields we need
       const { data: reasons, error: reasonsError } = await supabase
         .from("scrap_reasons")
-        .select("*")
+        .select("id, code, description, category, active")
         .eq("tenant_id", profile.tenant_id)
         .order("code");
 
