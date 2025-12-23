@@ -253,6 +253,13 @@
     "dismissedExceptions": "Dismissed",
     "noExceptions": "No exceptions found",
     "noExceptionsDescription": "When expectations are violated, exceptions will appear here",
+    "noOpenExceptions": "No open exceptions",
+    "all": "All",
+    "avgResolutionTime": "Avg Resolution",
+    "resolveDescription": "Document the root cause and corrective action taken.",
+    "dismissDescription": "Explain why this exception is not actionable.",
+    "markResolved": "Mark Resolved",
+    "resolution": "Resolution",
     "violatedBelief": "Violated Belief",
     "expected": "Expected",
     "actual": "Actual",
@@ -308,7 +315,11 @@
     "noExpectationsDescription": "Expectations are created automatically when jobs get due dates or operations are scheduled.",
     "whatIsTitle": "What is an Expectation?",
     "whatIsDescription": "An expectation is an explicit belief about what should happen in the future. Unlike alerts, expectations are created before reality unfolds. When reality diverges from expectation, an exception is raised.",
-    "onlyActiveEvaluated": "Only Active expectations are evaluated against reality"
+    "onlyActiveEvaluated": "Only Active expectations are evaluated against reality",
+    "created": "Expectation created",
+    "createFailed": "Failed to create expectation",
+    "updated": "Expectation updated (history preserved)",
+    "updateFailed": "Failed to update expectation"
   },
   "myActivity": {
     "title": "My Activity",

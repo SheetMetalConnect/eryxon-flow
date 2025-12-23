@@ -51,7 +51,8 @@
     "optional": "optioneel",
     "done": "Gereed",
     "creating": "Aanmaken...",
-    "helpAndDocs": "Help & Documentatie"
+    "helpAndDocs": "Help & Documentatie",
+    "refresh": "Vernieuwen"
   },
   "forms": {
     "required": "Dit veld is verplicht",

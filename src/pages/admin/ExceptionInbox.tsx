@@ -200,14 +200,14 @@ const ExceptionInbox: React.FC = () => {
 
               {/* Violated Belief */}
               <div className="mb-3">
-                <p className="text-xs text-muted-foreground mb-1">{t('exceptionInbox.violatedBelief', 'Violated Belief')}</p>
+                <p className="text-xs text-muted-foreground mb-1">{t('admin:exceptionInbox.violatedBelief')}</p>
                 <p className="text-sm font-medium">"{expectation?.belief_statement}"</p>
               </div>
 
               {/* Expected vs Actual */}
               <div className="flex items-center gap-4 text-sm">
                 <div>
-                  <span className="text-muted-foreground">{t('exceptionInbox.expected', 'Expected')}:</span>
+                  <span className="text-muted-foreground">{t('admin:exceptionInbox.expected')}:</span>
                   <span className="ml-1 font-medium">
                     {expectedAt ? format(new Date(expectedAt), 'HH:mm') : 
                      expectedValue?.due_at ? format(new Date(expectedValue.due_at as string), 'HH:mm') : '—'}
@@ -215,13 +215,13 @@ const ExceptionInbox: React.FC = () => {
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <span className="text-muted-foreground">{t('exceptionInbox.actual', 'Actual')}:</span>
+                  <span className="text-muted-foreground">{t('admin:exceptionInbox.actual')}:</span>
                   <span className="ml-1 font-medium">
                     {exception.occurred_at 
                       ? format(new Date(exception.occurred_at), 'HH:mm')
                       : actualValue?.completed_at 
                         ? format(new Date(actualValue.completed_at as string), 'HH:mm')
-                        : t('exceptionInbox.neverOccurred', 'Never occurred')}
+                        : t('admin:exceptionInbox.neverOccurred')}
                   </span>
                 </div>
                 {exception.deviation_amount !== null && (
@@ -240,7 +240,7 @@ const ExceptionInbox: React.FC = () => {
               {/* Resolution note if resolved */}
               {exception.status === 'resolved' && exception.corrective_action && (
                 <div className="mt-3 p-2 bg-[hsl(var(--color-success))]/5 rounded border border-[hsl(var(--color-success))]/20">
-                  <p className="text-xs text-muted-foreground">{t('exceptionInbox.resolution', 'Resolution')}:</p>
+                  <p className="text-xs text-muted-foreground">{t('admin:exceptionInbox.resolution')}:</p>
                   <p className="text-sm">{exception.corrective_action}</p>
                 </div>
               )}
@@ -259,7 +259,7 @@ const ExceptionInbox: React.FC = () => {
                   disabled={isAcknowledging}
                 >
                   <Eye className="h-3 w-3 mr-1" />
-                  {t('exceptionInbox.acknowledge', 'Acknowledge')}
+                  {t('admin:exceptionInbox.acknowledge')}
                 </Button>
               </div>
             )}
@@ -275,7 +275,7 @@ const ExceptionInbox: React.FC = () => {
                   disabled={isResolving}
                 >
                   <CheckCircle2 className="h-3 w-3 mr-1" />
-                  {t('exceptionInbox.resolve', 'Resolve')}
+                  {t('admin:exceptionInbox.resolve')}
                 </Button>
                 <Button
                   size="sm"
@@ -287,7 +287,7 @@ const ExceptionInbox: React.FC = () => {
                   disabled={isDismissing}
                 >
                   <XCircle className="h-3 w-3 mr-1" />
-                  {t('exceptionInbox.dismiss', 'Dismiss')}
+                  {t('admin:exceptionInbox.dismiss')}
                 </Button>
               </div>
             )}
@@ -308,10 +308,10 @@ const ExceptionInbox: React.FC = () => {
   return (
     <div className="p-4 space-y-4">
       <AdminPageHeader
-        title={t('exceptionInbox.title', 'Exception Inbox')}
-        description={t('exceptionInbox.description', 'Judgments derived from violated expectations. Review and learn.')}
+        title={t('admin:exceptionInbox.title')}
+        description={t('admin:exceptionInbox.description')}
         action={{
-          label: t('common.refresh', 'Refresh'),
+          label: t('common:common.refresh'),
           onClick: () => refetch(),
           icon: RefreshCw,
         }}
@@ -322,25 +322,25 @@ const ExceptionInbox: React.FC = () => {
         <PageStatsRow
           stats={[
             {
-              label: t('exceptionInbox.open', 'Open'),
+              label: t('admin:exceptionInbox.open'),
               value: stats.open_count || 0,
               icon: AlertTriangle,
               color: 'error',
             },
             {
-              label: t('exceptionInbox.acknowledged', 'Acknowledged'),
+              label: t('admin:exceptionInbox.acknowledged'),
               value: stats.acknowledged_count || 0,
               icon: Eye,
               color: 'warning',
             },
             {
-              label: t('exceptionInbox.resolved', 'Resolved'),
+              label: t('admin:exceptionInbox.resolved'),
               value: stats.resolved_count || 0,
               icon: CheckCircle2,
               color: 'success',
             },
             {
-              label: t('exceptionInbox.avgResolutionTime', 'Avg Resolution'),
+              label: t('admin:exceptionInbox.avgResolutionTime'),
               value: stats.avg_resolution_time_hours 
                 ? `${Math.round(stats.avg_resolution_time_hours)}h` 
                 : '—',
@@ -381,7 +381,7 @@ const ExceptionInbox: React.FC = () => {
             
             {/* Alternative flow */}
             <div className="flex items-center gap-3 text-muted-foreground">
-              <span className="text-xs">{t('common:or', 'or')}</span>
+              <span className="text-xs">{t('common:modals.or', 'or')}</span>
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-[hsl(var(--color-error))]/20 flex items-center justify-center">
                   <AlertTriangle className="h-4 w-4 text-[hsl(var(--color-error))]" />
@@ -405,7 +405,7 @@ const ExceptionInbox: React.FC = () => {
         <TabsList className="glass-card">
           <TabsTrigger value="open" className="gap-2">
             <AlertTriangle className="h-4 w-4" />
-            {t('exceptionInbox.open', 'Open')}
+            {t('admin:exceptionInbox.open')}
             {stats?.open_count ? (
               <Badge variant="destructive" className="ml-1 h-5 px-1.5">
                 {stats.open_count}
@@ -414,7 +414,7 @@ const ExceptionInbox: React.FC = () => {
           </TabsTrigger>
           <TabsTrigger value="acknowledged" className="gap-2">
             <Eye className="h-4 w-4" />
-            {t('exceptionInbox.acknowledged', 'Acknowledged')}
+            {t('admin:exceptionInbox.acknowledged')}
             {stats?.acknowledged_count ? (
               <Badge variant="secondary" className="ml-1 h-5 px-1.5">
                 {stats.acknowledged_count}
@@ -423,11 +423,11 @@ const ExceptionInbox: React.FC = () => {
           </TabsTrigger>
           <TabsTrigger value="resolved" className="gap-2">
             <CheckCircle2 className="h-4 w-4" />
-            {t('exceptionInbox.resolved', 'Resolved')}
+            {t('admin:exceptionInbox.resolved')}
           </TabsTrigger>
           <TabsTrigger value="all" className="gap-2">
             <Inbox className="h-4 w-4" />
-            {t('exceptionInbox.all', 'All')}
+            {t('admin:exceptionInbox.all')}
           </TabsTrigger>
         </TabsList>
 
@@ -438,11 +438,11 @@ const ExceptionInbox: React.FC = () => {
                 <Inbox className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                 <p className="text-muted-foreground mb-2">
                   {activeTab === 'open' 
-                    ? t('exceptionInbox.noOpenExceptions', 'No open exceptions')
-                    : t('exceptionInbox.noExceptions', 'No exceptions found')}
+                    ? t('admin:exceptionInbox.noOpenExceptions')
+                    : t('admin:exceptionInbox.noExceptions')}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {t('exceptionInbox.noExceptionsDescription', 'Exceptions are created when reality misaligns with expectations.')}
+                  {t('admin:exceptionInbox.noExceptionsDescription')}
                 </p>
               </CardContent>
             </Card>
@@ -458,26 +458,26 @@ const ExceptionInbox: React.FC = () => {
       <Dialog open={resolveDialogOpen} onOpenChange={setResolveDialogOpen}>
         <DialogContent className="glass-card">
           <DialogHeader>
-            <DialogTitle>{t('exceptionInbox.resolveException', 'Resolve Exception')}</DialogTitle>
+            <DialogTitle>{t('admin:exceptionInbox.resolveException')}</DialogTitle>
             <DialogDescription>
-              {t('exceptionInbox.resolveDescription', 'Document the root cause and corrective action taken.')}
+              {t('admin:exceptionInbox.resolveDescription')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="root-cause">{t('exceptionInbox.rootCause', 'Root Cause')}</Label>
+              <Label htmlFor="root-cause">{t('admin:exceptionInbox.rootCause')}</Label>
               <Textarea
                 id="root-cause"
-                placeholder={t('exceptionInbox.rootCausePlaceholder', 'What caused this exception?')}
+                placeholder={t('admin:exceptionInbox.rootCausePlaceholder')}
                 value={rootCause}
                 onChange={(e) => setRootCause(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="corrective-action">{t('exceptionInbox.correctiveAction', 'Corrective Action')}</Label>
+              <Label htmlFor="corrective-action">{t('admin:exceptionInbox.correctiveAction')}</Label>
               <Textarea
                 id="corrective-action"
-                placeholder={t('exceptionInbox.correctiveActionPlaceholder', 'What was done to address this?')}
+                placeholder={t('admin:exceptionInbox.correctiveActionPlaceholder')}
                 value={correctiveAction}
                 onChange={(e) => setCorrectiveAction(e.target.value)}
               />
@@ -485,7 +485,7 @@ const ExceptionInbox: React.FC = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setResolveDialogOpen(false)}>
-              {t('common.cancel', 'Cancel')}
+              {t('common:common.cancel')}
             </Button>
             <Button onClick={handleResolveSubmit} disabled={isResolving}>
               {isResolving ? (
@@ -493,7 +493,7 @@ const ExceptionInbox: React.FC = () => {
               ) : (
                 <CheckCircle2 className="h-4 w-4 mr-2" />
               )}
-              {t('exceptionInbox.markResolved', 'Mark Resolved')}
+              {t('admin:exceptionInbox.markResolved')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -503,17 +503,17 @@ const ExceptionInbox: React.FC = () => {
       <Dialog open={dismissDialogOpen} onOpenChange={setDismissDialogOpen}>
         <DialogContent className="glass-card">
           <DialogHeader>
-            <DialogTitle>{t('exceptionInbox.dismissException', 'Dismiss Exception')}</DialogTitle>
+            <DialogTitle>{t('admin:exceptionInbox.dismissException')}</DialogTitle>
             <DialogDescription>
-              {t('exceptionInbox.dismissDescription', 'Explain why this exception is not actionable.')}
+              {t('admin:exceptionInbox.dismissDescription')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="dismiss-reason">{t('exceptionInbox.dismissReason', 'Reason for Dismissal')}</Label>
+              <Label htmlFor="dismiss-reason">{t('admin:exceptionInbox.dismissReason')}</Label>
               <Textarea
                 id="dismiss-reason"
-                placeholder={t('exceptionInbox.dismissReasonPlaceholder', 'Why is this exception being dismissed?')}
+                placeholder={t('admin:exceptionInbox.dismissReasonPlaceholder')}
                 value={dismissReason}
                 onChange={(e) => setDismissReason(e.target.value)}
               />
@@ -521,7 +521,7 @@ const ExceptionInbox: React.FC = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDismissDialogOpen(false)}>
-              {t('common.cancel', 'Cancel')}
+              {t('common:common.cancel')}
             </Button>
             <Button variant="destructive" onClick={handleDismissSubmit} disabled={isDismissing}>
               {isDismissing ? (
