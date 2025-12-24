@@ -33,6 +33,7 @@ from extractor import extract_geometry_and_pmi, ProcessingResult
 from supabase_client import (
     is_async_processing_enabled,
     update_pmi_status,
+    update_pmi_progress,
     store_pmi_result,
 )
 
@@ -549,14 +550,17 @@ async def process_cad_async(
     Background task for async CAD processing.
 
     Updates parts.metadata directly in Supabase with:
-    1. pmi_status = 'processing' at start
+    1. pmi_status = 'processing' at start (with progress updates)
     2. pmi_status = 'complete' + pmi data on success
     3. pmi_status = 'error' + pmi_error on failure
     """
     start_time = datetime.now()
 
     try:
-        logger.info(f"[Async] Starting processing for part {part_id}")
+        logger.info(f"[{part_id}] Starting async processing")
+
+        # Progress: Downloading
+        await update_pmi_progress(part_id, 10, "Downloading file")
 
         # Download the file
         async with httpx.AsyncClient(timeout=120.0, follow_redirects=False) as client:
@@ -571,6 +575,11 @@ async def process_cad_async(
         file_size_mb = len(file_content) / (1024 * 1024)
         if file_size_mb > MAX_FILE_SIZE_MB:
             raise Exception(f"File too large: {file_size_mb:.1f}MB (max: {MAX_FILE_SIZE_MB}MB)")
+
+        logger.info(f"[{part_id}] Downloaded {file_size_mb:.1f}MB")
+
+        # Progress: Parsing
+        await update_pmi_progress(part_id, 30, "Parsing CAD file")
 
         # Determine file extension
         file_ext = file_name.lower().split('.')[-1] if file_name else 'step'
@@ -590,6 +599,14 @@ async def process_cad_async(
             tmp_path = tmp_file.name
 
         try:
+            # Progress: Extracting geometry
+            if include_geometry:
+                await update_pmi_progress(part_id, 50, "Extracting geometry")
+
+            # Progress: Extracting PMI
+            if include_pmi:
+                await update_pmi_progress(part_id, 70, "Extracting PMI/GD&T")
+
             # Process the file
             result = extract_geometry_and_pmi(
                 tmp_path,
@@ -598,12 +615,24 @@ async def process_cad_async(
                 generate_thumbnail=False,
             )
 
+            # Progress: Storing results
+            await update_pmi_progress(part_id, 90, "Storing results")
+
             processing_time = int((datetime.now() - start_time).total_seconds() * 1000)
+
+            # Build geometry stats if available
+            geometry_stats = None
+            if result.geometry:
+                geometry_stats = {
+                    'total_vertices': result.geometry.get('total_vertices', 0),
+                    'total_faces': result.geometry.get('total_faces', 0),
+                    'bounding_box': result.geometry.get('bounding_box'),
+                }
 
             # Store PMI result in Supabase
             if result.pmi:
-                await store_pmi_result(part_id, result.pmi, processing_time)
-                logger.info(f"[Async] Completed processing for part {part_id} in {processing_time}ms")
+                await store_pmi_result(part_id, result.pmi, processing_time, geometry_stats)
+                logger.info(f"[{part_id}] Completed in {processing_time}ms")
             else:
                 # No PMI found but processing succeeded
                 await store_pmi_result(part_id, {
@@ -614,15 +643,15 @@ async def process_cad_async(
                     'surface_finishes': [],
                     'notes': [],
                     'graphical_pmi': [],
-                }, processing_time)
-                logger.info(f"[Async] Completed (no PMI found) for part {part_id}")
+                }, processing_time, geometry_stats)
+                logger.info(f"[{part_id}] Completed (no PMI) in {processing_time}ms")
 
         finally:
             # Clean up temporary file
             os.unlink(tmp_path)
 
     except Exception as e:
-        logger.exception(f"[Async] Processing failed for part {part_id}: {e}")
+        logger.exception(f"[{part_id}] Processing failed: {e}")
         await update_pmi_status(part_id, 'error', str(e))
 
 
