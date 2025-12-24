@@ -17,8 +17,10 @@ import hashlib
 import tempfile
 import logging
 import base64
+import secrets
 from typing import Optional, List
 from datetime import datetime
+from urllib.parse import urlparse
 
 import httpx
 from fastapi import FastAPI, HTTPException, Security, Depends, Request
@@ -43,6 +45,22 @@ REQUIRE_AUTH = os.getenv("REQUIRE_AUTH", "true").lower() == "true"
 
 # CORS configuration
 ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",") if o.strip()]
+
+# URL domain allowlist for SSRF protection
+# Default allows common cloud storage providers; set ALLOWED_URL_DOMAINS for custom domains
+DEFAULT_ALLOWED_DOMAINS = [
+    "supabase.co",
+    "supabase.in",
+    "amazonaws.com",       # AWS S3
+    "storage.googleapis.com",  # GCS
+    "blob.core.windows.net",   # Azure Blob
+    "r2.cloudflarestorage.com",  # Cloudflare R2
+]
+ALLOWED_URL_DOMAINS = [
+    d.strip().lower()
+    for d in os.getenv("ALLOWED_URL_DOMAINS", ",".join(DEFAULT_ALLOWED_DOMAINS)).split(",")
+    if d.strip()
+]
 
 # Rate limiting (simple in-memory, use Redis for production)
 MAX_FILE_SIZE_MB = int(os.getenv("MAX_FILE_SIZE_MB", "100"))
@@ -70,6 +88,49 @@ app.add_middleware(
 # Authentication
 # =============================================================================
 
+def _constant_time_compare(provided: str, stored: str) -> bool:
+    """Constant-time string comparison to prevent timing attacks."""
+    # Ensure both are encoded to bytes for secrets.compare_digest
+    return secrets.compare_digest(provided.encode('utf-8'), stored.encode('utf-8'))
+
+
+def _validate_url(url: str) -> None:
+    """
+    Validate URL against allowed domains to prevent SSRF attacks.
+
+    Raises HTTPException if URL is not from an allowed domain.
+    """
+    parsed = urlparse(url)
+    hostname = parsed.hostname
+
+    if not hostname:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid URL: missing hostname"
+        )
+
+    # Prevent access to internal/local networks
+    hostname_lower = hostname.lower()
+    if hostname_lower in ('localhost', '127.0.0.1', '0.0.0.0') or hostname_lower.startswith('192.168.') or hostname_lower.startswith('10.') or hostname_lower.startswith('172.'):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid URL: internal/local addresses not allowed"
+        )
+
+    # Check against allowed domains
+    is_allowed = any(
+        hostname_lower == domain or hostname_lower.endswith('.' + domain)
+        for domain in ALLOWED_URL_DOMAINS
+    )
+
+    if not is_allowed:
+        logger.warning(f"URL domain not in allowlist: {hostname}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"URL domain not allowed. Configure ALLOWED_URL_DOMAINS to add trusted domains."
+        )
+
+
 async def verify_api_key(api_key: Optional[str] = Security(API_KEY_HEADER)) -> Optional[str]:
     """Verify API key if authentication is required."""
     if not REQUIRE_AUTH:
@@ -89,7 +150,9 @@ async def verify_api_key(api_key: Optional[str] = Security(API_KEY_HEADER)) -> O
             detail="Missing API key. Include X-API-Key header."
         )
 
-    if api_key not in API_KEYS:
+    # Use constant-time comparison to prevent timing attacks
+    is_valid = any(_constant_time_compare(api_key, stored_key) for stored_key in API_KEYS)
+    if not is_valid:
         raise HTTPException(
             status_code=403,
             detail="Invalid API key"
@@ -253,8 +316,11 @@ async def process_cad(
     try:
         logger.info(f"Processing CAD file: {request.file_url}")
 
+        # Validate URL to prevent SSRF attacks
+        _validate_url(str(request.file_url))
+
         # Download the file
-        async with httpx.AsyncClient(timeout=120.0) as client:
+        async with httpx.AsyncClient(timeout=120.0, follow_redirects=False) as client:
             response = await client.get(str(request.file_url))
 
             if response.status_code != 200:
@@ -361,12 +427,26 @@ async def process_cad(
     except HTTPException:
         raise
     except Exception as e:
+        # Log full exception details server-side
         logger.exception(f"CAD processing failed: {e}")
         processing_time = int((datetime.now() - start_time).total_seconds() * 1000)
 
+        # Sanitize error message to avoid leaking internal details
+        # Map known safe errors, otherwise return generic message
+        error_message = "CAD processing failed"
+        error_str = str(e).lower()
+        if "file" in error_str and ("not found" in error_str or "empty" in error_str):
+            error_message = "CAD file not found or empty"
+        elif "format" in error_str or "invalid" in error_str or "unsupported" in error_str:
+            error_message = "Unsupported or invalid CAD file format"
+        elif "timeout" in error_str:
+            error_message = "Processing timed out"
+        elif "memory" in error_str:
+            error_message = "File too complex to process"
+
         return ProcessResponse(
             success=False,
-            error=str(e),
+            error=error_message,
             processing_time_ms=processing_time,
         )
 

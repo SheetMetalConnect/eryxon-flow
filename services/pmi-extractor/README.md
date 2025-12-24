@@ -203,9 +203,50 @@ API_KEYS="key1,key2,key3"
 | `PORT` | `8000` | Server port |
 | `API_KEYS` | (none) | Comma-separated API keys |
 | `REQUIRE_AUTH` | `true` | Enable/disable authentication |
-| `ALLOWED_ORIGINS` | `*` | CORS allowed origins |
+| `ALLOWED_ORIGINS` | `*` | CORS allowed origins (comma-separated) |
+| `ALLOWED_URL_DOMAINS` | (see below) | Allowed domains for file URLs (SSRF protection) |
 | `MAX_FILE_SIZE_MB` | `100` | Maximum file size in MB |
 | `ENABLE_DOCS` | `true` | Enable Swagger/OpenAPI docs at `/docs` |
+
+## Security Configuration
+
+### CORS
+
+For production deployments, always restrict CORS to your application domains:
+
+```bash
+ALLOWED_ORIGINS="https://app.example.com,https://admin.example.com"
+```
+
+Using `*` is convenient for development but should be avoided in production.
+
+### SSRF Protection
+
+The service validates file URLs against an allowlist of trusted domains to prevent Server-Side Request Forgery (SSRF) attacks.
+
+**Default allowed domains:**
+- `supabase.co`, `supabase.in` (Supabase storage)
+- `amazonaws.com` (AWS S3)
+- `storage.googleapis.com` (Google Cloud Storage)
+- `blob.core.windows.net` (Azure Blob)
+- `r2.cloudflarestorage.com` (Cloudflare R2)
+
+**Custom domains:**
+
+If your files are hosted elsewhere, configure allowed domains:
+
+```bash
+ALLOWED_URL_DOMAINS="your-cdn.example.com,storage.custom.com"
+```
+
+Internal/local addresses (`localhost`, `127.0.0.1`, private IP ranges) are always blocked.
+
+### API Key Security
+
+- API keys are compared using constant-time comparison to prevent timing attacks
+- Generate keys with sufficient entropy: `openssl rand -hex 32`
+- Rotate keys periodically
+- Use different keys for different clients/environments
 
 ## Deployment Options
 
@@ -215,7 +256,8 @@ API_KEYS="key1,key2,key3"
 2. Copy the contents of `docker-compose.yml`
 3. Add environment variables:
    - `API_KEYS`: Your generated API key(s)
-   - `ALLOWED_ORIGINS`: Your app domain(s)
+   - `ALLOWED_ORIGINS`: Your app domain(s) (e.g., `https://app.eryxon.eu`)
+   - `ALLOWED_URL_DOMAINS`: Your storage domains (if not using default cloud providers)
 4. Deploy the stack
 
 ### Railway
@@ -249,6 +291,8 @@ services:
       - API_KEYS=your-secure-key-here
       - REQUIRE_AUTH=true
       - ALLOWED_ORIGINS=https://your-app.com
+      # Optional: Add custom storage domains for SSRF protection
+      # - ALLOWED_URL_DOMAINS=your-storage.example.com
     restart: unless-stopped
     deploy:
       resources:
