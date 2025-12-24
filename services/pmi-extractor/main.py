@@ -46,21 +46,15 @@ REQUIRE_AUTH = os.getenv("REQUIRE_AUTH", "true").lower() == "true"
 # CORS configuration
 ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",") if o.strip()]
 
-# URL domain allowlist for SSRF protection
-# Default allows common cloud storage providers; set ALLOWED_URL_DOMAINS for custom domains
-DEFAULT_ALLOWED_DOMAINS = [
-    "supabase.co",
-    "supabase.in",
-    "amazonaws.com",       # AWS S3
-    "storage.googleapis.com",  # GCS
-    "blob.core.windows.net",   # Azure Blob
-    "r2.cloudflarestorage.com",  # Cloudflare R2
-]
+# URL domain validation (opt-in for restrictive environments)
+# By default, allows all URLs since service is authenticated
+# Set ALLOWED_URL_DOMAINS to restrict to specific domains if needed
+ALLOWED_URL_DOMAINS_RAW = os.getenv("ALLOWED_URL_DOMAINS", "").strip()
 ALLOWED_URL_DOMAINS = [
     d.strip().lower()
-    for d in os.getenv("ALLOWED_URL_DOMAINS", ",".join(DEFAULT_ALLOWED_DOMAINS)).split(",")
+    for d in ALLOWED_URL_DOMAINS_RAW.split(",")
     if d.strip()
-]
+] if ALLOWED_URL_DOMAINS_RAW else []  # Empty = allow all
 
 # Rate limiting (simple in-memory, use Redis for production)
 MAX_FILE_SIZE_MB = int(os.getenv("MAX_FILE_SIZE_MB", "100"))
@@ -96,10 +90,16 @@ def _constant_time_compare(provided: str, stored: str) -> bool:
 
 def _validate_url(url: str) -> None:
     """
-    Validate URL against allowed domains to prevent SSRF attacks.
+    Validate URL against allowed domains if configured.
 
-    Raises HTTPException if URL is not from an allowed domain.
+    Only enforces domain restrictions when ALLOWED_URL_DOMAINS is set.
+    For self-hosted deployments, this is typically left open since
+    the service is already behind API key authentication.
     """
+    # Skip validation if no domain restrictions configured
+    if not ALLOWED_URL_DOMAINS:
+        return
+
     parsed = urlparse(url)
     hostname = parsed.hostname
 
@@ -109,15 +109,8 @@ def _validate_url(url: str) -> None:
             detail="Invalid URL: missing hostname"
         )
 
-    # Prevent access to internal/local networks
-    hostname_lower = hostname.lower()
-    if hostname_lower in ('localhost', '127.0.0.1', '0.0.0.0') or hostname_lower.startswith('192.168.') or hostname_lower.startswith('10.') or hostname_lower.startswith('172.'):
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid URL: internal/local addresses not allowed"
-        )
-
     # Check against allowed domains
+    hostname_lower = hostname.lower()
     is_allowed = any(
         hostname_lower == domain or hostname_lower.endswith('.' + domain)
         for domain in ALLOWED_URL_DOMAINS
@@ -127,7 +120,7 @@ def _validate_url(url: str) -> None:
         logger.warning(f"URL domain not in allowlist: {hostname}")
         raise HTTPException(
             status_code=400,
-            detail=f"URL domain not allowed. Configure ALLOWED_URL_DOMAINS to add trusted domains."
+            detail="URL domain not allowed. Check ALLOWED_URL_DOMAINS configuration."
         )
 
 
