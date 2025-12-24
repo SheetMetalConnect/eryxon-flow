@@ -66,11 +66,39 @@ export interface PMIDatum {
   associated_geometry?: AssociatedGeometry;
 }
 
+export interface PMISurfaceFinish {
+  id: string;
+  type: string;
+  roughness_type?: string;  // Ra, Rz, Rmax, etc.
+  roughness_value?: number;
+  roughness_unit: string;
+  machining_allowance?: number;
+  lay_symbol?: string;  // =, ⊥, X, M, C, R, P
+  text: string;
+  position: Vector3;
+}
+
+export interface PMINote {
+  id: string;
+  type: string;  // note, callout, flag
+  text: string;
+  position: Vector3;
+}
+
+export interface PMIGraphical {
+  id: string;
+  type: string;  // line, arc, spline
+  points: Vector3[];
+}
+
 export interface PMIData {
   version: string;
   dimensions: PMIDimension[];
   geometric_tolerances: PMIGeometricTolerance[];
   datums: PMIDatum[];
+  surface_finishes: PMISurfaceFinish[];
+  notes: PMINote[];
+  graphical_pmi: PMIGraphical[];
 }
 
 export interface PMIExtractionResult {
@@ -271,19 +299,30 @@ export function usePMI(partId: string | undefined) {
    * Check if PMI data exists for this part
    */
   const hasPMI = Boolean(pmiData && (
-    pmiData.dimensions.length > 0 ||
-    pmiData.geometric_tolerances.length > 0 ||
-    pmiData.datums.length > 0
+    pmiData.dimensions?.length > 0 ||
+    pmiData.geometric_tolerances?.length > 0 ||
+    pmiData.datums?.length > 0 ||
+    pmiData.surface_finishes?.length > 0 ||
+    pmiData.notes?.length > 0 ||
+    pmiData.graphical_pmi?.length > 0
   ));
 
   /**
    * Get PMI summary counts
    */
   const pmiSummary = pmiData ? {
-    dimensionCount: pmiData.dimensions.length,
-    toleranceCount: pmiData.geometric_tolerances.length,
-    datumCount: pmiData.datums.length,
-    total: pmiData.dimensions.length + pmiData.geometric_tolerances.length + pmiData.datums.length,
+    dimensionCount: pmiData.dimensions?.length || 0,
+    toleranceCount: pmiData.geometric_tolerances?.length || 0,
+    datumCount: pmiData.datums?.length || 0,
+    surfaceFinishCount: pmiData.surface_finishes?.length || 0,
+    noteCount: pmiData.notes?.length || 0,
+    graphicalCount: pmiData.graphical_pmi?.length || 0,
+    total: (pmiData.dimensions?.length || 0) +
+           (pmiData.geometric_tolerances?.length || 0) +
+           (pmiData.datums?.length || 0) +
+           (pmiData.surface_finishes?.length || 0) +
+           (pmiData.notes?.length || 0) +
+           (pmiData.graphical_pmi?.length || 0),
   } : null;
 
   return {

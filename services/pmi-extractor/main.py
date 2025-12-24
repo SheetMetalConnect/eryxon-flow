@@ -236,12 +236,48 @@ class Datum(BaseModel):
     position: Vector3
 
 
+class SurfaceFinish(BaseModel):
+    """Surface finish symbol per ISO 1302 / ASME Y14.36."""
+    id: str
+    type: str = "surface_finish"
+    roughness_type: Optional[str] = None  # Ra, Rz, Rmax, etc.
+    roughness_value: Optional[float] = None
+    roughness_unit: str = "μm"
+    machining_allowance: Optional[float] = None
+    lay_symbol: Optional[str] = None  # =, ⊥, X, M, C, R, P
+    text: str = ""
+    position: Vector3
+
+
+class Note(BaseModel):
+    """Text note or annotation."""
+    id: str
+    type: str = "note"  # note, callout, flag
+    text: str
+    position: Vector3
+
+
+class GraphicalPMI(BaseModel):
+    """Graphical PMI element (polyline, curve)."""
+    id: str
+    type: str  # line, arc, spline
+    points: List[Vector3] = []
+
+
 class PMIData(BaseModel):
-    """PMI annotation data."""
+    """
+    Complete PMI/MBD annotation data per STEP AP242.
+
+    Includes semantic PMI (dimensions, GD&T, datums) and
+    graphical PMI (curves, notes, surface finish symbols).
+    """
     version: str = "1.0"
     dimensions: List[Dimension] = []
     geometric_tolerances: List[GeometricTolerance] = []
     datums: List[Datum] = []
+    surface_finishes: List[SurfaceFinish] = []
+    notes: List[Note] = []
+    graphical_pmi: List[GraphicalPMI] = []
 
 
 class ProcessResponse(BaseModel):
@@ -404,14 +440,31 @@ async def process_cad(
                     dimensions=[Dimension(**d) for d in result.pmi.get('dimensions', [])],
                     geometric_tolerances=[GeometricTolerance(**t) for t in result.pmi.get('geometric_tolerances', [])],
                     datums=[Datum(**d) for d in result.pmi.get('datums', [])],
+                    surface_finishes=[SurfaceFinish(**sf) for sf in result.pmi.get('surface_finishes', [])],
+                    notes=[Note(**n) for n in result.pmi.get('notes', [])],
+                    graphical_pmi=[GraphicalPMI(**g) for g in result.pmi.get('graphical_pmi', [])],
                 )
 
             if result.thumbnail_base64:
                 response_data.thumbnail_base64 = result.thumbnail_base64
 
+            # Log summary
+            pmi_summary = []
+            if result.pmi:
+                if result.pmi.get('dimensions'):
+                    pmi_summary.append(f"{len(result.pmi['dimensions'])} dims")
+                if result.pmi.get('geometric_tolerances'):
+                    pmi_summary.append(f"{len(result.pmi['geometric_tolerances'])} GD&T")
+                if result.pmi.get('datums'):
+                    pmi_summary.append(f"{len(result.pmi['datums'])} datums")
+                if result.pmi.get('surface_finishes'):
+                    pmi_summary.append(f"{len(result.pmi['surface_finishes'])} surface finishes")
+                if result.pmi.get('notes'):
+                    pmi_summary.append(f"{len(result.pmi['notes'])} notes")
+
             logger.info(
                 f"Processing complete: {result.geometry['total_vertices'] if result.geometry else 0} vertices, "
-                f"{len(result.pmi.get('dimensions', [])) if result.pmi else 0} PMI dimensions"
+                f"PMI: {', '.join(pmi_summary) if pmi_summary else 'none'}"
             )
 
             return response_data
