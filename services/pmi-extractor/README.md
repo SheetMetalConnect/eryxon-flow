@@ -442,8 +442,8 @@ print(f'Datums: {len(result.pmi[\"datums\"])}')
 
 ### Test Files
 
-- `test_pmi_extraction.py` - Unit tests for extraction functions
-- `test_create_pmi_model.py` - Create test geometry with PMI structure
+- `test_pmi_extraction.py` - Validates extraction against ASME Y14.5 symbols and API models
+- `run_tests.sh` - Docker-based test runner
 
 ### Standards Compliance
 

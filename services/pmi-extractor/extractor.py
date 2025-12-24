@@ -75,6 +75,9 @@ def extract_geometry_and_pmi(
         doc = None
         shape = None
 
+        # Keep reference to STEP reader for entity access
+        step_reader = None
+
         if file_ext in ['step', 'stp']:
             if extract_pmi:
                 # Use XCAF reader for PMI support
@@ -87,6 +90,9 @@ def extract_geometry_and_pmi(
                 status = reader.ReadFile(file_path)
                 if status != IFSelect_RetDone:
                     raise ValueError(f"Failed to read STEP file: status {status}")
+
+                # Store reader for entity access
+                step_reader = reader.Reader()
 
                 reader.Transfer(doc)
 
@@ -139,9 +145,11 @@ def extract_geometry_and_pmi(
 
         # Extract PMI
         if extract_pmi and doc is not None:
-            result.pmi = extract_pmi_from_document(doc)
+            result.pmi = extract_pmi_from_document(doc, step_reader)
             dim_count = len(result.pmi.get('dimensions', []))
-            logger.info(f"Extracted {dim_count} PMI dimensions")
+            tol_count = len(result.pmi.get('geometric_tolerances', []))
+            datum_count = len(result.pmi.get('datums', []))
+            logger.info(f"Extracted PMI: {dim_count} dimensions, {tol_count} GD&T, {datum_count} datums")
 
         # Generate thumbnail
         if generate_thumbnail and shape is not None:
@@ -300,7 +308,7 @@ def tessellate_shape(shape) -> Dict[str, Any]:
     }
 
 
-def extract_pmi_from_document(doc) -> Dict[str, Any]:
+def extract_pmi_from_document(doc, step_reader=None) -> Dict[str, Any]:
     """
     Extract all PMI/MBD annotations from an XCAF document.
 
@@ -311,11 +319,16 @@ def extract_pmi_from_document(doc) -> Dict[str, Any]:
     - Surface finish symbols (per ISO 1302)
     - Notes and text annotations
     - Graphical PMI (polylines, leader lines)
+
+    Args:
+        doc: XCAF document from STEPCAFControl_Reader
+        step_reader: Optional STEPControl_Reader for entity-level access
     """
     from OCC.Core.XCAFDoc import XCAFDoc_DocumentTool
     from OCC.Core.TDF import TDF_LabelSequence, TDF_ChildIterator
 
     pmi_data = {
+        'version': '1.0',
         'dimensions': [],
         'geometric_tolerances': [],
         'datums': [],
@@ -328,10 +341,10 @@ def extract_pmi_from_document(doc) -> Dict[str, Any]:
         main_label = doc.Main()
         dim_tol_tool = XCAFDoc_DocumentTool.DimTolTool(main_label)
 
-        # Extract dimensions
+        # Extract dimensions via XDE
         dim_labels = TDF_LabelSequence()
         dim_tol_tool.GetDimensionLabels(dim_labels)
-        logger.info(f"Found {dim_labels.Length()} dimensions")
+        logger.info(f"Found {dim_labels.Length()} dimension labels")
 
         for i in range(1, dim_labels.Length() + 1):
             label = dim_labels.Value(i)
@@ -339,10 +352,10 @@ def extract_pmi_from_document(doc) -> Dict[str, Any]:
             if dim:
                 pmi_data['dimensions'].append(dim)
 
-        # Extract geometric tolerances
+        # Extract geometric tolerances via XDE
         tol_labels = TDF_LabelSequence()
         dim_tol_tool.GetGeomToleranceLabels(tol_labels)
-        logger.info(f"Found {tol_labels.Length()} geometric tolerances")
+        logger.info(f"Found {tol_labels.Length()} tolerance labels")
 
         for i in range(1, tol_labels.Length() + 1):
             label = tol_labels.Value(i)
@@ -350,10 +363,10 @@ def extract_pmi_from_document(doc) -> Dict[str, Any]:
             if tol:
                 pmi_data['geometric_tolerances'].append(tol)
 
-        # Extract datums
+        # Extract datums via XDE
         datum_labels = TDF_LabelSequence()
         dim_tol_tool.GetDatumLabels(datum_labels)
-        logger.info(f"Found {datum_labels.Length()} datums")
+        logger.info(f"Found {datum_labels.Length()} datum labels")
 
         for i in range(1, datum_labels.Length() + 1):
             label = datum_labels.Value(i)
@@ -361,36 +374,145 @@ def extract_pmi_from_document(doc) -> Dict[str, Any]:
             if datum:
                 pmi_data['datums'].append(datum)
 
-        # Extract surface finish symbols (if available)
-        surface_finishes = extract_surface_finishes(doc, main_label)
-        pmi_data['surface_finishes'] = surface_finishes
-        logger.info(f"Found {len(surface_finishes)} surface finishes")
+        # Extract surface finish from STEP entities
+        if step_reader is not None:
+            surface_finishes = extract_surface_finishes_from_step(step_reader)
+            pmi_data['surface_finishes'] = surface_finishes
+        else:
+            # Fallback to document traversal
+            surface_finishes = extract_surface_finishes(doc, main_label)
+            pmi_data['surface_finishes'] = surface_finishes
 
         # Extract notes and text annotations
         notes = extract_notes(doc, main_label)
         pmi_data['notes'] = notes
-        logger.info(f"Found {len(notes)} notes")
 
         # Extract graphical PMI (polylines, curves used for annotations)
         graphical = extract_graphical_pmi(doc, main_label)
         pmi_data['graphical_pmi'] = graphical
-        logger.info(f"Found {len(graphical)} graphical PMI elements")
 
     except Exception as e:
         logger.warning(f"PMI extraction error: {e}")
+        import traceback
+        logger.debug(traceback.format_exc())
 
     return pmi_data
+
+
+def extract_surface_finishes_from_step(step_reader) -> List[Dict]:
+    """
+    Extract surface finish from STEP entities directly.
+
+    STEP AP242 stores surface finish as:
+    - surface_texture_representation
+    - machining_allowance_representation
+
+    These are linked via draughting_model_item_association to geometry.
+    """
+    surface_finishes = []
+
+    try:
+        from OCC.Core.Interface import Interface_Static
+
+        # Get the workspace model
+        ws = step_reader.WS()
+        if ws is None:
+            return surface_finishes
+
+        model = ws.Model()
+        if model is None:
+            return surface_finishes
+
+        nb_entities = model.NbEntities()
+        logger.debug(f"STEP model has {nb_entities} entities")
+
+        sf_index = 1
+
+        # Traverse entities looking for surface texture
+        for i in range(1, nb_entities + 1):
+            ent = model.Entity(i)
+            if ent is None:
+                continue
+
+            type_name = ent.DynamicType().Name()
+
+            # Look for surface texture entities
+            if 'surface_texture' in type_name.lower():
+                sf = _parse_surface_texture_entity(ent, sf_index, model)
+                if sf:
+                    surface_finishes.append(sf)
+                    sf_index += 1
+
+            # Also check for mechanical_design_representation with roughness
+            elif 'roughness' in type_name.lower():
+                sf = _parse_roughness_entity(ent, sf_index, model)
+                if sf:
+                    surface_finishes.append(sf)
+                    sf_index += 1
+
+    except Exception as e:
+        logger.debug(f"STEP entity traversal: {e}")
+
+    return surface_finishes
+
+
+def _parse_surface_texture_entity(ent, index: int, model) -> Optional[Dict]:
+    """Parse a surface_texture STEP entity."""
+    try:
+        # Surface texture has parameters like Ra, Rz values
+        # The exact parsing depends on the STEP schema
+
+        roughness_type = 'Ra'
+        roughness_value = None
+
+        # Try to get attributes from the entity
+        if hasattr(ent, 'NbFields'):
+            for field_idx in range(1, ent.NbFields() + 1):
+                try:
+                    field = ent.Field(field_idx)
+                    if hasattr(field, 'Real'):
+                        # Likely a roughness value
+                        roughness_value = field.Real()
+                        break
+                except:
+                    pass
+
+        if roughness_value is not None:
+            return {
+                'id': f"sf_{index}",
+                'type': 'surface_finish',
+                'roughness_type': roughness_type,
+                'roughness_value': roughness_value,
+                'roughness_unit': 'μm',
+                'machining_allowance': None,
+                'lay_symbol': None,
+                'text': f"{roughness_type} {roughness_value} μm",
+                'position': {'x': 0, 'y': 0, 'z': 0},
+            }
+
+        return None
+
+    except Exception as e:
+        logger.debug(f"Surface texture parse: {e}")
+        return None
+
+
+def _parse_roughness_entity(ent, index: int, model) -> Optional[Dict]:
+    """Parse a roughness-related STEP entity."""
+    # Similar structure to surface texture
+    return _parse_surface_texture_entity(ent, index, model)
 
 
 def extract_surface_finishes(doc, main_label) -> List[Dict]:
     """
     Extract surface finish symbols per ISO 1302 / ASME Y14.36.
 
-    Surface finish symbols include:
-    - Ra (arithmetic average roughness)
-    - Rz (mean roughness depth)
-    - Machining allowance
-    - Lay direction symbols
+    STEP AP242 encodes surface finish in draughting_model_item_association
+    with surface_texture_representation entities. OCCT accesses these via
+    the STEP reader's entity traversal.
+
+    Note: Direct XDE API for surface finish is limited. This extracts
+    from STEP entities where available.
     """
     from OCC.Core.TDF import TDF_ChildIterator
 
@@ -408,116 +530,145 @@ def extract_surface_finishes(doc, main_label) -> List[Dict]:
     surface_finishes = []
 
     try:
-        # Try to find surface finish annotations in the document
-        # STEP AP242 stores these as XCAFDoc_Note with specific types
-        from OCC.Core.XCAFDoc import XCAFDoc_NoteTool
+        from OCC.Core.XCAFDoc import XCAFDoc_DocumentTool
+        from OCC.Core.TDF import TDF_LabelSequence
+        from OCC.Core.TDataStd import TDataStd_Name, TDataStd_Real
 
-        note_tool = None
-        try:
-            # NoteTool is available in newer OCCT versions
-            from OCC.Core.XCAFDoc import XCAFDoc_DocumentTool
-            note_tool = XCAFDoc_DocumentTool.NotesTool(main_label) if hasattr(XCAFDoc_DocumentTool, 'NotesTool') else None
-        except:
-            pass
+        # Traverse the document looking for surface finish annotations
+        # These are typically stored with specific naming conventions
+        iterator = TDF_ChildIterator(main_label, True)
+        sf_index = 1
 
-        if note_tool is not None:
-            # Iterate through notes looking for surface finish annotations
-            from OCC.Core.TDF import TDF_LabelSequence
-            note_labels = TDF_LabelSequence()
+        while iterator.More():
+            label = iterator.Value()
 
-            try:
-                note_tool.GetNotes(note_labels)
-                for i in range(1, note_labels.Length() + 1):
-                    label = note_labels.Value(i)
-                    sf = extract_surface_finish_from_label(label, i, LAY_SYMBOLS)
-                    if sf:
-                        surface_finishes.append(sf)
-            except Exception as e:
-                logger.debug(f"Could not get notes: {e}")
+            # Check for name attribute indicating surface finish
+            name_attr = TDataStd_Name()
+            if label.FindAttribute(TDataStd_Name.GetID(), name_attr):
+                name = name_attr.Get()
+                if hasattr(name, 'ToCString'):
+                    name_str = name.ToCString().lower()
+
+                    # Detect surface finish by naming convention
+                    if any(kw in name_str for kw in ['surface_finish', 'roughness', 'texture', 'ra ', 'rz ']):
+                        sf = _parse_surface_finish_label(label, sf_index, name_str)
+                        if sf:
+                            surface_finishes.append(sf)
+                            sf_index += 1
+
+            iterator.Next()
 
     except Exception as e:
-        logger.debug(f"Surface finish extraction not available: {e}")
+        logger.debug(f"Surface finish extraction: {e}")
 
     return surface_finishes
 
 
-def extract_surface_finish_from_label(label, index: int, lay_symbols: Dict) -> Optional[Dict]:
-    """Extract surface finish data from a label."""
+def _parse_surface_finish_label(label, index: int, name_str: str) -> Optional[Dict]:
+    """Parse surface finish data from label name and attributes."""
     try:
-        # Try to get surface finish specific attributes
-        # This is implementation-dependent based on CAD system export
+        from OCC.Core.TDataStd import TDataStd_Real
+        import re
+
         position = {'x': 0, 'y': 0, 'z': 0}
 
-        return {
-            'id': f"sf_{index}",
-            'type': 'surface_finish',
-            'roughness_type': 'Ra',  # or Rz, Rmax, etc.
-            'roughness_value': None,
-            'roughness_unit': 'μm',
-            'machining_allowance': None,
-            'lay_symbol': None,
-            'text': '',
-            'position': position,
-        }
+        # Try to extract roughness value from name
+        roughness_value = None
+        roughness_type = None
+
+        # Match patterns like "Ra 3.2" or "Rz 12.5"
+        ra_match = re.search(r'\bra\s*[=:]?\s*([\d.]+)', name_str, re.IGNORECASE)
+        rz_match = re.search(r'\brz\s*[=:]?\s*([\d.]+)', name_str, re.IGNORECASE)
+
+        if ra_match:
+            roughness_type = 'Ra'
+            roughness_value = float(ra_match.group(1))
+        elif rz_match:
+            roughness_type = 'Rz'
+            roughness_value = float(rz_match.group(1))
+
+        # Try to get real value attribute
+        real_attr = TDataStd_Real()
+        if label.FindAttribute(TDataStd_Real.GetID(), real_attr):
+            roughness_value = real_attr.Get()
+
+        # Only return if we have actual data
+        if roughness_value is not None:
+            return {
+                'id': f"sf_{index}",
+                'type': 'surface_finish',
+                'roughness_type': roughness_type or 'Ra',
+                'roughness_value': roughness_value,
+                'roughness_unit': 'μm',
+                'machining_allowance': None,
+                'lay_symbol': None,
+                'text': f"{roughness_type or 'Ra'} {roughness_value} μm",
+                'position': position,
+            }
+
+        return None
+
     except Exception as e:
-        logger.debug(f"Could not extract surface finish: {e}")
+        logger.debug(f"Could not parse surface finish: {e}")
         return None
 
 
 def extract_notes(doc, main_label) -> List[Dict]:
     """
-    Extract text notes and annotations.
+    Extract text notes and annotations from XCAF document.
 
-    Includes:
-    - General notes
-    - Callouts
-    - Flag notes
-    - Bill of materials references
+    STEP AP242 stores notes as draughting_annotation_occurrence with
+    text_literal entities. OCCT exposes these via XCAFDoc_NoteTool (7.6+)
+    and TDataStd_Comment attributes.
     """
     notes = []
 
     try:
         from OCC.Core.XCAFDoc import XCAFDoc_DocumentTool
         from OCC.Core.TDF import TDF_LabelSequence
+        from OCC.Core.TDataStd import TDataStd_Name, TDataStd_Comment
 
-        # Try to access NotesTool (OCCT 7.6+)
+        note_index = 1
+
+        # Method 1: XCAFDoc_NoteTool (OCCT 7.6+)
         try:
-            note_tool = XCAFDoc_DocumentTool.NotesTool(main_label) if hasattr(XCAFDoc_DocumentTool, 'NotesTool') else None
+            if hasattr(XCAFDoc_DocumentTool, 'NotesTool'):
+                note_tool = XCAFDoc_DocumentTool.NotesTool(main_label)
 
-            if note_tool is not None:
-                note_labels = TDF_LabelSequence()
-                note_tool.GetNotes(note_labels)
+                if note_tool is not None:
+                    note_labels = TDF_LabelSequence()
+                    note_tool.GetNotes(note_labels)
 
-                for i in range(1, note_labels.Length() + 1):
-                    label = note_labels.Value(i)
-                    note = extract_note_from_label(label, i)
-                    if note:
-                        notes.append(note)
+                    for i in range(1, note_labels.Length() + 1):
+                        label = note_labels.Value(i)
+                        note = _extract_note_from_tool(label, note_index, note_tool)
+                        if note and note.get('text'):
+                            notes.append(note)
+                            note_index += 1
+
         except Exception as e:
-            logger.debug(f"NotesTool not available: {e}")
+            logger.debug(f"NotesTool: {e}")
 
-        # Also check for TDataStd_Name attributes which often contain text
+        # Method 2: TDataStd_Comment attributes (general text annotations)
         try:
-            from OCC.Core.TDataStd import TDataStd_Name
             from OCC.Core.TDF import TDF_ChildIterator
 
             iterator = TDF_ChildIterator(main_label, True)
-            note_index = len(notes) + 1
 
             while iterator.More():
                 child_label = iterator.Value()
-                name_attr = TDataStd_Name()
 
-                if child_label.FindAttribute(TDataStd_Name.GetID(), name_attr):
-                    text = name_attr.Get()
-                    if text and hasattr(text, 'ToCString'):
-                        text_str = text.ToCString()
-                        # Filter out shape names, look for annotation-like text
-                        if len(text_str) > 0 and not text_str.startswith('Shape'):
+                # Check for Comment attribute (actual notes/annotations)
+                comment_attr = TDataStd_Comment()
+                if child_label.FindAttribute(TDataStd_Comment.GetID(), comment_attr):
+                    comment = comment_attr.Get()
+                    if hasattr(comment, 'ToCString'):
+                        text_str = comment.ToCString()
+                        if text_str and len(text_str.strip()) > 0:
                             notes.append({
                                 'id': f"note_{note_index}",
-                                'type': 'text',
-                                'text': text_str,
+                                'type': 'note',
+                                'text': text_str.strip(),
                                 'position': {'x': 0, 'y': 0, 'z': 0},
                             })
                             note_index += 1
@@ -525,36 +676,46 @@ def extract_notes(doc, main_label) -> List[Dict]:
                 iterator.Next()
 
         except Exception as e:
-            logger.debug(f"Text attribute extraction failed: {e}")
+            logger.debug(f"Comment extraction: {e}")
 
     except Exception as e:
-        logger.debug(f"Note extraction error: {e}")
+        logger.debug(f"Note extraction: {e}")
 
     return notes
 
 
-def extract_note_from_label(label, index: int) -> Optional[Dict]:
-    """Extract a note from its label."""
+def _extract_note_from_tool(label, index: int, note_tool) -> Optional[Dict]:
+    """Extract note content from NoteTool label."""
     try:
-        from OCC.Core.XCAFDoc import XCAFDoc_Note
-
-        note_attr = XCAFDoc_Note()
-        if not label.FindAttribute(XCAFDoc_Note.GetID(), note_attr):
+        # Get note object
+        note_obj = note_tool.GetNote(label)
+        if note_obj is None:
             return None
 
         text = ""
-        if hasattr(note_attr, 'Get'):
-            text = str(note_attr.Get())
+        position = {'x': 0, 'y': 0, 'z': 0}
 
-        return {
-            'id': f"note_{index}",
-            'type': 'note',
-            'text': text,
-            'position': {'x': 0, 'y': 0, 'z': 0},
-        }
+        # Get text content
+        if hasattr(note_obj, 'Comment'):
+            text = note_obj.Comment().ToCString() if hasattr(note_obj.Comment(), 'ToCString') else str(note_obj.Comment())
+
+        # Get position if available
+        if hasattr(note_obj, 'GetPoint'):
+            pnt = note_obj.GetPoint()
+            position = {'x': pnt.X(), 'y': pnt.Y(), 'z': pnt.Z()}
+
+        if text:
+            return {
+                'id': f"note_{index}",
+                'type': 'note',
+                'text': text,
+                'position': position,
+            }
+
+        return None
 
     except Exception as e:
-        logger.debug(f"Could not extract note: {e}")
+        logger.debug(f"Note extraction from tool: {e}")
         return None
 
 

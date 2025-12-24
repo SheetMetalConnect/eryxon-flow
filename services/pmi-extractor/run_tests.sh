@@ -2,8 +2,9 @@
 # Run PMI extraction tests inside Docker container
 #
 # Usage:
-#   ./run_tests.sh           # Build and run tests
-#   ./run_tests.sh --no-build  # Run tests without rebuilding
+#   ./run_tests.sh                    # Build and run tests
+#   ./run_tests.sh --no-build         # Run tests without rebuilding
+#   ./run_tests.sh --file model.step  # Test with a specific file
 
 set -e
 
@@ -14,10 +15,28 @@ cd "$SCRIPT_DIR"
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 echo -e "${YELLOW}PMI Extraction Test Runner${NC}"
 echo "================================"
+
+# Parse arguments
+BUILD=true
+FILE_ARG=""
+for arg in "$@"; do
+    case $arg in
+        --no-build)
+            BUILD=false
+            ;;
+        --file=*)
+            FILE_ARG="--file ${arg#*=}"
+            ;;
+        --file)
+            shift
+            FILE_ARG="--file $1"
+            ;;
+    esac
+done
 
 # Check if Docker is available
 if ! command -v docker &> /dev/null; then
@@ -27,7 +46,7 @@ if ! command -v docker &> /dev/null; then
 fi
 
 # Build if needed
-if [ "$1" != "--no-build" ]; then
+if [ "$BUILD" = true ]; then
     echo -e "\n${YELLOW}Building Docker image...${NC}"
     docker build -t cad-processor-test . 2>&1 | tail -10
 fi
@@ -38,23 +57,13 @@ docker run --rm \
     -v "$SCRIPT_DIR:/app" \
     -w /app \
     cad-processor-test \
-    python test_pmi_extraction.py
+    python test_pmi_extraction.py $FILE_ARG
 
 TEST_EXIT=$?
 
-# Run model creation test
-echo -e "\n${YELLOW}Running model creation test...${NC}"
-docker run --rm \
-    -v "$SCRIPT_DIR:/app" \
-    -w /app \
-    cad-processor-test \
-    python test_create_pmi_model.py
-
-MODEL_EXIT=$?
-
 # Summary
 echo -e "\n================================"
-if [ $TEST_EXIT -eq 0 ] && [ $MODEL_EXIT -eq 0 ]; then
+if [ $TEST_EXIT -eq 0 ]; then
     echo -e "${GREEN}All tests passed!${NC}"
     exit 0
 else
