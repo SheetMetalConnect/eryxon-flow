@@ -18,17 +18,23 @@ import tempfile
 import logging
 import base64
 import secrets
+import asyncio
 from typing import Optional, List
 from datetime import datetime
 from urllib.parse import urlparse
 
 import httpx
-from fastapi import FastAPI, HTTPException, Security, Depends, Request
+from fastapi import FastAPI, HTTPException, Security, Depends, Request, BackgroundTasks
 from fastapi.security import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl
 
 from extractor import extract_geometry_and_pmi, ProcessingResult
+from supabase_client import (
+    is_async_processing_enabled,
+    update_pmi_status,
+    store_pmi_result,
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -510,6 +516,178 @@ async def extract_pmi_legacy(
     request.include_geometry = False
     request.include_pmi = True
     return await process_cad(request, api_key)
+
+
+# =============================================================================
+# Async Processing (Supabase Realtime)
+# =============================================================================
+
+class AsyncProcessRequest(BaseModel):
+    """Request body for async CAD processing."""
+    part_id: str  # Supabase part ID to update
+    file_url: HttpUrl
+    file_name: Optional[str] = None
+    include_geometry: bool = True
+    include_pmi: bool = True
+
+
+class AsyncProcessResponse(BaseModel):
+    """Response body for async processing request."""
+    accepted: bool
+    part_id: str
+    message: str
+
+
+async def process_cad_async(
+    part_id: str,
+    file_url: str,
+    file_name: str,
+    include_geometry: bool,
+    include_pmi: bool,
+):
+    """
+    Background task for async CAD processing.
+
+    Updates parts.metadata directly in Supabase with:
+    1. pmi_status = 'processing' at start
+    2. pmi_status = 'complete' + pmi data on success
+    3. pmi_status = 'error' + pmi_error on failure
+    """
+    start_time = datetime.now()
+
+    try:
+        logger.info(f"[Async] Starting processing for part {part_id}")
+
+        # Download the file
+        async with httpx.AsyncClient(timeout=120.0, follow_redirects=False) as client:
+            response = await client.get(file_url)
+
+            if response.status_code != 200:
+                raise Exception(f"Failed to download file: HTTP {response.status_code}")
+
+            file_content = response.content
+
+        # Check file size
+        file_size_mb = len(file_content) / (1024 * 1024)
+        if file_size_mb > MAX_FILE_SIZE_MB:
+            raise Exception(f"File too large: {file_size_mb:.1f}MB (max: {MAX_FILE_SIZE_MB}MB)")
+
+        # Determine file extension
+        file_ext = file_name.lower().split('.')[-1] if file_name else 'step'
+
+        ext_map = {
+            'step': '.step',
+            'stp': '.step',
+            'iges': '.iges',
+            'igs': '.iges',
+            'brep': '.brep',
+        }
+        suffix = ext_map.get(file_ext, '.step')
+
+        # Write to temporary file for processing
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp_file:
+            tmp_file.write(file_content)
+            tmp_path = tmp_file.name
+
+        try:
+            # Process the file
+            result = extract_geometry_and_pmi(
+                tmp_path,
+                extract_geometry=include_geometry,
+                extract_pmi=include_pmi,
+                generate_thumbnail=False,
+            )
+
+            processing_time = int((datetime.now() - start_time).total_seconds() * 1000)
+
+            # Store PMI result in Supabase
+            if result.pmi:
+                await store_pmi_result(part_id, result.pmi, processing_time)
+                logger.info(f"[Async] Completed processing for part {part_id} in {processing_time}ms")
+            else:
+                # No PMI found but processing succeeded
+                await store_pmi_result(part_id, {
+                    'version': '1.0',
+                    'dimensions': [],
+                    'geometric_tolerances': [],
+                    'datums': [],
+                    'surface_finishes': [],
+                    'notes': [],
+                    'graphical_pmi': [],
+                }, processing_time)
+                logger.info(f"[Async] Completed (no PMI found) for part {part_id}")
+
+        finally:
+            # Clean up temporary file
+            os.unlink(tmp_path)
+
+    except Exception as e:
+        logger.exception(f"[Async] Processing failed for part {part_id}: {e}")
+        await update_pmi_status(part_id, 'error', str(e))
+
+
+@app.post("/process-async", response_model=AsyncProcessResponse)
+async def process_cad_async_endpoint(
+    request: AsyncProcessRequest,
+    background_tasks: BackgroundTasks,
+    api_key: Optional[str] = Depends(verify_api_key)
+):
+    """
+    Async CAD processing with Supabase realtime updates.
+
+    This endpoint:
+    1. Validates the request
+    2. Sets pmi_status = 'processing' in parts.metadata
+    3. Returns immediately (HTTP 202 Accepted)
+    4. Processes the file in background
+    5. Updates parts.metadata with results when done
+
+    Frontend should subscribe to the parts table for realtime updates.
+    Status values: 'pending' | 'processing' | 'complete' | 'error'
+    """
+    # Check if async processing is configured
+    if not is_async_processing_enabled():
+        raise HTTPException(
+            status_code=503,
+            detail="Async processing not configured. Set SUPABASE_URL and SUPABASE_SERVICE_KEY."
+        )
+
+    # Validate URL
+    _validate_url(str(request.file_url))
+
+    # Set initial status
+    status_updated = await update_pmi_status(request.part_id, 'processing')
+    if not status_updated:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Part not found: {request.part_id}"
+        )
+
+    # Queue background processing
+    file_name = request.file_name or "model.step"
+    background_tasks.add_task(
+        process_cad_async,
+        request.part_id,
+        str(request.file_url),
+        file_name,
+        request.include_geometry,
+        request.include_pmi,
+    )
+
+    return AsyncProcessResponse(
+        accepted=True,
+        part_id=request.part_id,
+        message="Processing started. Subscribe to realtime updates for status."
+    )
+
+
+@app.get("/async-status")
+async def async_processing_status():
+    """Check if async processing is available."""
+    return {
+        "enabled": is_async_processing_enabled(),
+        "message": "Async processing requires SUPABASE_URL and SUPABASE_SERVICE_KEY"
+    }
 
 
 if __name__ == "__main__":

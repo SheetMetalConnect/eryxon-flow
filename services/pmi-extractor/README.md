@@ -168,6 +168,73 @@ Request:
 
 This endpoint is maintained for backwards compatibility. It calls `/process` with `include_geometry=false`.
 
+### Async Processing with Supabase Realtime
+
+```
+POST /process-async
+X-API-Key: your-api-key-here
+Content-Type: application/json
+
+Request:
+{
+  "part_id": "uuid-of-part-in-supabase",
+  "file_url": "https://storage.example.com/path/to/model.step",
+  "file_name": "model.step",
+  "include_geometry": true,
+  "include_pmi": true
+}
+
+Response:
+{
+  "accepted": true,
+  "part_id": "uuid-of-part-in-supabase",
+  "message": "Processing started. Subscribe to realtime updates for status."
+}
+```
+
+This endpoint enables async processing with Supabase realtime updates:
+
+1. Sets `parts.metadata.pmi_status = 'processing'` immediately
+2. Returns HTTP 202 Accepted
+3. Processes the CAD file in background
+4. Updates `parts.metadata` directly with results when done
+
+**Status values in `parts.metadata.pmi_status`:**
+- `pending` - Queued for processing
+- `processing` - Currently being processed
+- `complete` - Processing finished successfully
+- `error` - Processing failed (see `pmi_error` for details)
+
+**Frontend integration:**
+```tsx
+// Subscribe to realtime updates
+const channel = supabase
+  .channel(`pmi-${partId}`)
+  .on('postgres_changes', {
+    event: 'UPDATE',
+    schema: 'public',
+    table: 'parts',
+    filter: `id=eq.${partId}`,
+  }, (payload) => {
+    const status = payload.new?.metadata?.pmi_status;
+    if (status === 'complete') {
+      // PMI data is now available in payload.new.metadata.pmi
+    }
+  })
+  .subscribe();
+```
+
+**Async Status Check:**
+```
+GET /async-status
+
+Response:
+{
+  "enabled": true,
+  "message": "Async processing requires SUPABASE_URL and SUPABASE_SERVICE_KEY"
+}
+```
+
 ## Authentication
 
 The service supports API key authentication via the `X-API-Key` header.
@@ -207,6 +274,8 @@ API_KEYS="key1,key2,key3"
 | `ALLOWED_URL_DOMAINS` | (none) | Optional: restrict file URLs to specific domains |
 | `MAX_FILE_SIZE_MB` | `100` | Maximum file size in MB |
 | `ENABLE_DOCS` | `true` | Enable Swagger/OpenAPI docs at `/docs` |
+| `SUPABASE_URL` | (none) | Supabase project URL (for async processing) |
+| `SUPABASE_SERVICE_KEY` | (none) | Supabase service role key (for async processing) |
 
 ## Security Configuration
 

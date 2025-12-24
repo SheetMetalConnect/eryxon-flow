@@ -2,12 +2,13 @@
  * PMI (Product Manufacturing Information) Hook
  *
  * This hook provides:
- * 1. PMI extraction trigger after STEP file upload
+ * 1. Async PMI extraction with Supabase realtime updates
  * 2. PMI data fetching from parts.metadata
- * 3. Caching and loading states
+ * 3. Realtime subscription for processing status
+ * 4. Caching and loading states
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,6 +16,28 @@ import { useAuth } from '@/contexts/AuthContext';
 // ============================================================================
 // Types
 // ============================================================================
+
+/**
+ * PMI processing status for async extraction
+ */
+export type PMIStatus = 'pending' | 'processing' | 'complete' | 'error';
+
+export interface PMIMetadata {
+  pmi?: PMIData;
+  pmi_status?: PMIStatus;
+  pmi_error?: string;
+  pmi_extracted_at?: string;
+  pmi_processing_time_ms?: number;
+  pmi_summary?: {
+    dimensions: number;
+    geometric_tolerances: number;
+    datums: number;
+    surface_finishes: number;
+    notes: number;
+    graphical_pmi: number;
+    total: number;
+  };
+}
 
 export interface Vector3 {
   x: number;
@@ -114,7 +137,8 @@ export interface PMIExtractionResult {
 // Configuration
 // ============================================================================
 
-const PMI_SERVICE_URL = import.meta.env.VITE_PMI_SERVICE_URL;
+const PMI_SERVICE_URL = import.meta.env.VITE_PMI_SERVICE_URL || import.meta.env.VITE_CAD_SERVICE_URL;
+const PMI_SERVICE_API_KEY = import.meta.env.VITE_CAD_SERVICE_API_KEY;
 
 /**
  * Check if PMI service is configured
@@ -132,18 +156,19 @@ export function usePMI(partId: string | undefined) {
   const queryClient = useQueryClient();
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractionError, setExtractionError] = useState<string | null>(null);
+  const [pmiStatus, setPmiStatus] = useState<PMIStatus | null>(null);
 
   /**
    * Fetch PMI data from parts.metadata
    */
   const {
-    data: pmiData,
+    data: pmiMetadata,
     isLoading: isLoadingPMI,
     error: fetchError,
     refetch: refetchPMI,
   } = useQuery({
     queryKey: ['pmi', partId],
-    queryFn: async (): Promise<PMIData | null> => {
+    queryFn: async (): Promise<PMIMetadata | null> => {
       if (!partId) return null;
 
       const { data: part, error } = await supabase
@@ -154,18 +179,140 @@ export function usePMI(partId: string | undefined) {
 
       if (error) throw error;
 
-      // Extract PMI from metadata
-      const metadata = part?.metadata as Record<string, unknown> | null;
-      const pmi = metadata?.pmi as PMIData | undefined;
-
-      return pmi || null;
+      // Extract PMI metadata
+      const metadata = part?.metadata as PMIMetadata | null;
+      return metadata || null;
     },
     enabled: !!partId,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  // Extract PMI data and status from metadata
+  const pmiData = pmiMetadata?.pmi || null;
+
   /**
-   * Extract PMI from a STEP file via the PMI service
+   * Subscribe to realtime updates for PMI status
+   */
+  useEffect(() => {
+    if (!partId) return;
+
+    // Set initial status from fetched data
+    if (pmiMetadata?.pmi_status) {
+      setPmiStatus(pmiMetadata.pmi_status);
+    }
+
+    // Subscribe to changes on this specific part
+    const channel = supabase
+      .channel(`pmi-status-${partId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'parts',
+          filter: `id=eq.${partId}`,
+        },
+        (payload) => {
+          const newMetadata = payload.new?.metadata as PMIMetadata | undefined;
+          if (newMetadata) {
+            // Update local status
+            if (newMetadata.pmi_status) {
+              setPmiStatus(newMetadata.pmi_status);
+
+              // If processing complete, invalidate query to get fresh data
+              if (newMetadata.pmi_status === 'complete' || newMetadata.pmi_status === 'error') {
+                queryClient.invalidateQueries({ queryKey: ['pmi', partId] });
+                setIsExtracting(false);
+              }
+            }
+
+            // Update error if present
+            if (newMetadata.pmi_error) {
+              setExtractionError(newMetadata.pmi_error);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [partId, pmiMetadata?.pmi_status, queryClient]);
+
+  /**
+   * Extract PMI asynchronously via the PMI service
+   * Uses Supabase realtime for status updates - no need to poll
+   */
+  const extractPMIAsync = useCallback(async (
+    fileUrl: string,
+    fileName: string
+  ): Promise<{ accepted: boolean; error?: string }> => {
+    if (!PMI_SERVICE_URL) {
+      return { accepted: false, error: 'PMI service not configured' };
+    }
+
+    if (!partId) {
+      return { accepted: false, error: 'No part ID provided' };
+    }
+
+    // Only process STEP files
+    const ext = fileName.toLowerCase().split('.').pop();
+    if (!['step', 'stp'].includes(ext || '')) {
+      return { accepted: false, error: 'Not a STEP file' };
+    }
+
+    setIsExtracting(true);
+    setExtractionError(null);
+    setPmiStatus('processing');
+
+    try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      // Add API key if configured
+      if (PMI_SERVICE_API_KEY) {
+        headers['X-API-Key'] = PMI_SERVICE_API_KEY;
+      }
+
+      const response = await fetch(`${PMI_SERVICE_URL}/process-async`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          part_id: partId,
+          file_url: fileUrl,
+          file_name: fileName,
+          include_geometry: true,
+          include_pmi: true,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`PMI extraction failed: HTTP ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.accepted) {
+        throw new Error(result.message || 'Extraction not accepted');
+      }
+
+      // Processing started - status updates will come via realtime subscription
+      return { accepted: true };
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'PMI extraction failed';
+      setExtractionError(errorMessage);
+      setIsExtracting(false);
+      setPmiStatus('error');
+      return { accepted: false, error: errorMessage };
+    }
+  }, [partId, session?.access_token]);
+
+  /**
+   * Extract PMI synchronously (legacy) - returns result directly
    */
   const extractPMI = useCallback(async (
     fileUrl: string,
@@ -196,14 +343,18 @@ export function usePMI(partId: string | undefined) {
     setExtractionError(null);
 
     try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      // Add API key if configured
+      if (PMI_SERVICE_API_KEY) {
+        headers['X-API-Key'] = PMI_SERVICE_API_KEY;
+      }
+
       const response = await fetch(`${PMI_SERVICE_URL}/extract`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(session?.access_token && {
-            'Authorization': `Bearer ${session.access_token}`,
-          }),
-        },
+        headers,
         body: JSON.stringify({
           file_url: fileUrl,
           file_name: fileName,
@@ -239,7 +390,7 @@ export function usePMI(partId: string | undefined) {
     } finally {
       setIsExtracting(false);
     }
-  }, [partId, session?.access_token, queryClient]);
+  }, [partId, queryClient]);
 
   /**
    * Store PMI data in parts.metadata
@@ -331,17 +482,26 @@ export function usePMI(partId: string | undefined) {
     pmiData,
     hasPMI,
     pmiSummary,
+    pmiMetadata,
+
+    // Status (for async processing)
+    pmiStatus,
+    pmiError: pmiMetadata?.pmi_error,
+    pmiExtractedAt: pmiMetadata?.pmi_extracted_at,
+    pmiProcessingTime: pmiMetadata?.pmi_processing_time_ms,
 
     // Loading states
     isLoadingPMI,
     isExtracting,
+    isProcessing: pmiStatus === 'processing' || isExtracting,
 
     // Errors
     fetchError,
     extractionError,
 
     // Actions
-    extractPMI,
+    extractPMI,        // Sync extraction (legacy)
+    extractPMIAsync,   // Async extraction with realtime updates
     clearPMI,
     refetchPMI,
 
@@ -355,7 +515,6 @@ export function usePMI(partId: string | undefined) {
  * Use this in upload components to trigger extraction after successful upload
  */
 export function usePMIExtraction() {
-  const { session } = useAuth();
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractionError, setExtractionError] = useState<string | null>(null);
 
@@ -385,14 +544,18 @@ export function usePMIExtraction() {
     setExtractionError(null);
 
     try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      // Add API key if configured
+      if (PMI_SERVICE_API_KEY) {
+        headers['X-API-Key'] = PMI_SERVICE_API_KEY;
+      }
+
       const response = await fetch(`${PMI_SERVICE_URL}/extract`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(session?.access_token && {
-            'Authorization': `Bearer ${session.access_token}`,
-          }),
-        },
+        headers,
         body: JSON.stringify({
           file_url: fileUrl,
           file_name: fileName,
@@ -417,7 +580,7 @@ export function usePMIExtraction() {
     } finally {
       setIsExtracting(false);
     }
-  }, [session?.access_token]);
+  }, []);
 
   return {
     extract,
