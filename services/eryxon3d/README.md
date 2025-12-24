@@ -1,6 +1,6 @@
-# CAD Processing Service
+# Eryxon3D Engine
 
-Server-side CAD file processing using OpenCASCADE (pythonocc-core). Extracts geometry and PMI/MBD data from STEP, IGES, and BREP files.
+Server-side CAD processing engine using OpenCASCADE (pythonocc-core). Extracts geometry and PMI/MBD data from STEP, IGES, and BREP files.
 
 ## Features
 
@@ -8,15 +8,16 @@ Server-side CAD file processing using OpenCASCADE (pythonocc-core). Extracts geo
 - **PMI extraction**: Dimensions, geometric tolerances (GD&T), and datums from STEP AP242
 - **Multi-format support**: STEP, IGES, BREP
 - **API key authentication**: Secure access with configurable API keys
+- **Async processing**: Supabase realtime updates for long-running jobs
 - **Thumbnail generation**: Optional PNG thumbnail of the model
-- **Portainer-ready**: Docker Compose stack for easy self-hosting
+- **Standalone deployment**: Docker Compose stack for self-hosting
 
 ## Quick Start
 
 ### Using Docker Compose (Recommended)
 
 ```bash
-cd services/pmi-extractor
+cd services/eryxon3d
 
 # Generate an API key
 export API_KEYS=$(openssl rand -hex 32)
@@ -32,13 +33,13 @@ curl http://localhost:8000/health
 
 ```bash
 # Build the image
-docker build -t cad-processor .
+docker build -t eryxon3d .
 
 # Run with API key authentication
 docker run -p 8000:8000 \
   -e API_KEYS="your-api-key-here" \
   -e REQUIRE_AUTH=true \
-  cad-processor
+  eryxon3d
 
 # Test (with API key)
 curl -H "X-API-Key: your-api-key-here" http://localhost:8000/health

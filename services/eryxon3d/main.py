@@ -1,15 +1,16 @@
 """
-CAD Processing Service
+Eryxon3D Engine
 
-FastAPI service that processes CAD files (STEP, IGES, etc.) using pythonocc-core.
-Extracts both geometry (tessellated meshes) and PMI (dimensions, tolerances, datums).
+CAD processing engine using pythonocc-core (OpenCASCADE).
+Extracts geometry and PMI/MBD data from STEP, IGES, and BREP files.
 
 Features:
-- Full geometry extraction (vertices, normals, indices)
-- PMI/MBD extraction from STEP AP242
+- Geometry extraction (tessellated meshes as base64)
+- PMI/MBD extraction from STEP AP242 (dimensions, GD&T, datums)
+- Async processing with Supabase realtime updates
 - API key authentication
 - Thumbnail generation
-- Multi-format support (future: IGES, BREP, etc.)
+- Multi-format support (STEP, IGES, BREP)
 """
 
 import os
@@ -71,9 +72,9 @@ MAX_FILE_SIZE_MB = int(os.getenv("MAX_FILE_SIZE_MB", "100"))
 # =============================================================================
 
 app = FastAPI(
-    title="CAD Processing Service",
-    description="Extracts geometry and PMI from CAD files (STEP, IGES, etc.)",
-    version="2.0.0",
+    title="Eryxon3D Engine",
+    description="CAD processing engine - extracts geometry and PMI from STEP, IGES, BREP files",
+    version="1.0.0",
     docs_url="/docs" if os.getenv("ENABLE_DOCS", "true").lower() == "true" else None,
 )
 
@@ -307,8 +308,8 @@ async def health_check():
     """Health check endpoint for container orchestration."""
     return {
         "status": "healthy",
-        "service": "cad-processor",
-        "version": "2.0.0",
+        "service": "eryxon3d",
+        "version": "1.0.0",
         "auth_required": REQUIRE_AUTH,
         "auth_configured": len(API_KEYS) > 0,
     }
@@ -318,12 +319,13 @@ async def health_check():
 async def service_info():
     """Service information and capabilities."""
     return {
-        "service": "cad-processor",
-        "version": "2.0.0",
+        "service": "eryxon3d",
+        "version": "1.0.0",
         "supported_formats": ["step", "stp", "iges", "igs", "brep"],
         "capabilities": {
             "geometry_extraction": True,
             "pmi_extraction": True,
+            "async_processing": True,
             "thumbnail_generation": True,
         },
         "limits": {

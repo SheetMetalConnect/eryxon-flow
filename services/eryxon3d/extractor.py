@@ -1,17 +1,17 @@
 """
-CAD Geometry and PMI Extraction Module
+Eryxon3D - CAD Extraction Engine
 
 Extracts tessellated geometry and PMI from CAD files using pythonocc-core.
 
-Supports:
-- STEP (AP203, AP214, AP242)
+Supported formats:
+- STEP (AP203, AP214, AP242 with PMI)
 - IGES
 - BREP
 
-Returns:
-- Tessellated mesh geometry (vertices, normals, indices)
-- PMI annotations (dimensions, tolerances, datums)
-- Thumbnails (optional)
+Output:
+- Tessellated mesh geometry (vertices, normals, indices as base64)
+- PMI annotations (dimensions, GD&T, datums, surface finish)
+- Thumbnails (optional PNG)
 """
 
 import logging

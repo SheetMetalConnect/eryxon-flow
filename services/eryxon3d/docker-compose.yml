@@ -1,12 +1,13 @@
 version: "3.8"
 
 # =============================================================================
-# CAD Processing Service - Docker Compose Stack for Portainer
+# Eryxon3D Engine - Docker Compose Stack
 # =============================================================================
 #
-# This stack provides CAD file processing capabilities including:
+# CAD processing engine with capabilities:
 # - Geometry extraction (tessellated meshes)
-# - PMI/MBD extraction (dimensions, tolerances, datums)
+# - PMI/MBD extraction (dimensions, GD&T, datums)
+# - Async processing with Supabase realtime
 # - Thumbnail generation
 #
 # Supported formats: STEP, IGES, BREP
@@ -17,12 +18,12 @@ version: "3.8"
 # =============================================================================
 
 services:
-  cad-processor:
+  eryxon3d:
     build:
       context: .
       dockerfile: Dockerfile
-    image: eryxon/cad-processor:latest
-    container_name: cad-processor
+    image: eryxon/eryxon3d:latest
+    container_name: eryxon3d
     restart: unless-stopped
 
     ports:

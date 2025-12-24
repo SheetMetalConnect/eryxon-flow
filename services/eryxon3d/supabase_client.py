@@ -1,13 +1,13 @@
 """
-Supabase Client for Async PMI Processing
+Eryxon3D - Supabase Client
 
 Uses service role key to write directly to the database,
-enabling async processing with realtime updates.
+enabling async CAD processing with realtime updates.
 
 Features:
 - Retry logic with exponential backoff
 - Progress updates during processing
-- Structured logging with correlation IDs
+- Structured logging with part ID correlation
 """
 
 import os
