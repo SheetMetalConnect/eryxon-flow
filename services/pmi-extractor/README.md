@@ -404,6 +404,55 @@ function MyComponent() {
 />
 ```
 
+## Testing
+
+### Run Tests with Docker
+
+```bash
+cd services/pmi-extractor
+
+# Run all tests (builds image first)
+./run_tests.sh
+
+# Run tests without rebuilding
+./run_tests.sh --no-build
+```
+
+### Manual Test with NIST PMI Files
+
+To validate against NIST MBE PMI test files:
+
+1. Download test files from [NIST CAD-PMI Testing](https://www.nist.gov/el/systems-integration-division-73400/mbe-pmi-validation-and-conformance-testing)
+2. Place STEP AP242 files in `test_files/` directory
+3. Run:
+
+```bash
+docker run --rm \
+  -v $(pwd):/app \
+  -w /app \
+  cad-processor-test \
+  python -c "
+from extractor import extract_geometry_and_pmi
+result = extract_geometry_and_pmi('test_files/your_file.step')
+print(f'Dimensions: {len(result.pmi[\"dimensions\"])}')
+print(f'GD&T: {len(result.pmi[\"geometric_tolerances\"])}')
+print(f'Datums: {len(result.pmi[\"datums\"])}')
+"
+```
+
+### Test Files
+
+- `test_pmi_extraction.py` - Unit tests for extraction functions
+- `test_create_pmi_model.py` - Create test geometry with PMI structure
+
+### Standards Compliance
+
+The PMI extraction follows these standards:
+- **STEP AP242** for MBD/PMI data format
+- **ASME Y14.5-2018** for GD&T symbols and tolerancing
+- **ISO 1101** for geometric tolerancing
+- **ISO 1302** for surface finish symbols
+
 ## Troubleshooting
 
 ### "pythonocc-core not installed"
