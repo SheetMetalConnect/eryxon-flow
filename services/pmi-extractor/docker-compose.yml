@@ -1,0 +1,103 @@
+version: "3.8"
+
+# =============================================================================
+# CAD Processing Service - Docker Compose Stack for Portainer
+# =============================================================================
+#
+# This stack provides CAD file processing capabilities including:
+# - Geometry extraction (tessellated meshes)
+# - PMI/MBD extraction (dimensions, tolerances, datums)
+# - Thumbnail generation
+#
+# Supported formats: STEP, IGES, BREP
+#
+# Deploy via Portainer or docker-compose:
+#   docker-compose up -d
+#
+# =============================================================================
+
+services:
+  cad-processor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: eryxon/cad-processor:latest
+    container_name: cad-processor
+    restart: unless-stopped
+
+    ports:
+      - "8000:8000"
+
+    environment:
+      # Authentication
+      # Comma-separated list of valid API keys
+      - API_KEYS=${API_KEYS:-}
+      # Set to "false" to disable authentication (not recommended for production)
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-true}
+
+      # CORS Configuration
+      # Comma-separated list of allowed origins (use * for all)
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
+
+      # File Processing Limits
+      - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-100}
+
+      # Service Configuration
+      - PORT=8000
+      - ENABLE_DOCS=${ENABLE_DOCS:-true}
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Resource limits (adjust based on your server)
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 4G
+        reservations:
+          cpus: "0.5"
+          memory: 1G
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# =============================================================================
+# Networks (optional - uncomment if using Traefik or other reverse proxy)
+# =============================================================================
+# networks:
+#   default:
+#     name: traefik-public
+#     external: true
+
+# =============================================================================
+# Usage Notes:
+# =============================================================================
+#
+# 1. Generate API keys:
+#    openssl rand -hex 32
+#
+# 2. Configure environment:
+#    export API_KEYS="key1,key2,key3"
+#    export ALLOWED_ORIGINS="https://your-app.com"
+#
+# 3. Deploy:
+#    docker-compose up -d
+#
+# 4. Test:
+#    curl -H "X-API-Key: your-key" http://localhost:8000/health
+#
+# 5. For Portainer Stack:
+#    - Copy this file content to Portainer's Stack editor
+#    - Add environment variables in Portainer's UI
+#    - Deploy
+#
+# =============================================================================

@@ -18,6 +18,8 @@ import {
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import type { PMIData, PMIDimension } from '@/hooks/usePMI';
+import type { GeometryData, MeshData } from '@/hooks/useCADProcessing';
+import { decodeFloat32Array, decodeUint32Array } from '@/hooks/useCADProcessing';
 
 // Interface for calculated dimensions
 interface ModelDimensions {
@@ -39,9 +41,20 @@ interface STEPViewerProps {
   title?: string;
   compact?: boolean;
   pmiData?: PMIData | null;
+  /** Server-processed geometry data (if available) */
+  serverGeometry?: GeometryData | null;
+  /** Skip browser-based processing if server geometry is provided */
+  preferServerGeometry?: boolean;
 }
 
-export function STEPViewer({ url, title, compact = false, pmiData }: STEPViewerProps) {
+export function STEPViewer({
+  url,
+  title,
+  compact = false,
+  pmiData,
+  serverGeometry,
+  preferServerGeometry = true
+}: STEPViewerProps) {
   const { t } = useTranslation();
 
   // State
@@ -85,8 +98,55 @@ export function STEPViewer({ url, title, compact = false, pmiData }: STEPViewerP
   const css2dRendererRef = useRef<CSS2DRenderer | null>(null);
   const pmiLayerRef = useRef<THREE.Group | null>(null);
 
-  // Load occt-import-js library from CDN
+  /**
+   * Convert server mesh data (base64 encoded) to Three.js mesh
+   */
+  const createMeshFromServerData = useCallback((meshData: MeshData): THREE.Mesh => {
+    const geometry = new THREE.BufferGeometry();
+
+    // Decode base64 to typed arrays
+    const vertices = decodeFloat32Array(meshData.vertices_base64);
+    const normals = decodeFloat32Array(meshData.normals_base64);
+    const indices = decodeUint32Array(meshData.indices_base64);
+
+    // Set geometry attributes
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
+
+    // Use Uint16Array if indices fit, otherwise Uint32Array
+    const maxIndex = Math.max(...indices);
+    if (maxIndex > 65535) {
+      geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+    } else {
+      geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
+    }
+
+    // Create material
+    const color = new THREE.Color(
+      meshData.color[0],
+      meshData.color[1],
+      meshData.color[2]
+    );
+
+    const material = new THREE.MeshStandardMaterial({
+      color,
+      side: THREE.DoubleSide,
+      metalness: 0.3,
+      roughness: 0.6,
+      flatShading: false,
+    });
+
+    return new THREE.Mesh(geometry, material);
+  }, []);
+
+  // Load occt-import-js library from CDN (only if server geometry is not available)
   useEffect(() => {
+    // If server geometry is provided and preferred, skip loading browser library
+    if (serverGeometry && preferServerGeometry) {
+      setLibrariesLoaded(true);
+      return;
+    }
+
     const loadOcct = async () => {
       if (!window.occtimportjs) {
         const script = document.createElement('script');
@@ -114,7 +174,7 @@ export function STEPViewer({ url, title, compact = false, pmiData }: STEPViewerP
     };
 
     loadOcct();
-  }, []);
+  }, [serverGeometry, preferServerGeometry]);
 
   // Initialize Three.js scene
   useEffect(() => {
@@ -226,9 +286,108 @@ export function STEPViewer({ url, title, compact = false, pmiData }: STEPViewerP
     };
   }, [librariesLoaded]);
 
-  // Load and parse STEP file
+  /**
+   * Clear existing meshes and edges from the scene
+   */
+  const clearMeshes = useCallback(() => {
+    // Clear existing meshes
+    meshesRef.current.forEach((mesh) => {
+      sceneRef.current?.remove(mesh);
+      mesh.geometry.dispose();
+      if (Array.isArray(mesh.material)) {
+        mesh.material.forEach(m => m.dispose());
+      } else {
+        mesh.material.dispose();
+      }
+    });
+    meshesRef.current = [];
+
+    // Clear existing edges
+    edgesRef.current.forEach((edges) => {
+      sceneRef.current?.remove(edges);
+      edges.geometry.dispose();
+      if (Array.isArray(edges.material)) {
+        edges.material.forEach(m => m.dispose());
+      } else {
+        edges.material.dispose();
+      }
+    });
+    edgesRef.current = [];
+
+    originalPositionsRef.current = [];
+    explosionDataRef.current.initialized = false;
+  }, []);
+
+  /**
+   * Add a mesh to the scene with edges
+   */
+  const addMeshToScene = useCallback((mesh: THREE.Mesh) => {
+    if (!sceneRef.current) return;
+
+    meshesRef.current.push(mesh);
+    originalPositionsRef.current.push(mesh.position.clone());
+    sceneRef.current.add(mesh);
+
+    // Add edges for better contour visibility (threshold angle: 30 degrees)
+    const edgesGeometry = new THREE.EdgesGeometry(mesh.geometry, 30);
+    const edgesMaterial = new THREE.LineBasicMaterial({
+      color: 0x000000,
+      linewidth: 1,
+      opacity: 0.8,
+      transparent: true,
+    });
+    const edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
+    edges.visible = edgesVisible;
+
+    // Position edges with mesh (for exploded view)
+    mesh.add(edges);
+    edgesRef.current.push(edges);
+  }, [edgesVisible]);
+
+  // Load and render geometry (from server or browser)
   useEffect(() => {
-    if (!librariesLoaded || !sceneRef.current || !url) return;
+    if (!librariesLoaded || !sceneRef.current) return;
+
+    // If server geometry is provided and preferred, use it
+    if (serverGeometry && preferServerGeometry && serverGeometry.meshes.length > 0) {
+      setStepLoading(true);
+      setLoadingError(null);
+
+      try {
+        clearMeshes();
+
+        // Convert server meshes to Three.js meshes
+        for (const meshData of serverGeometry.meshes) {
+          const mesh = createMeshFromServerData(meshData);
+          addMeshToScene(mesh);
+        }
+
+        // Store original materials for feature highlighting
+        originalMaterialsRef.current = meshesRef.current.map(mesh =>
+          (mesh.material as THREE.Material).clone()
+        );
+
+        // Calculate dimensions
+        calculateDimensions();
+
+        // Fit camera to view
+        fitCameraToMeshes();
+        updateGridSize();
+
+        setStepLoading(false);
+      } catch (err) {
+        console.error('Server geometry rendering error:', err);
+        setLoadingError(
+          err instanceof Error ? err.message : 'Failed to render geometry'
+        );
+        setStepLoading(false);
+      }
+
+      return;
+    }
+
+    // Fall back to browser-based STEP processing
+    if (!url) return;
 
     const loadSTEP = async () => {
       try {
@@ -256,32 +415,7 @@ export function STEPViewer({ url, title, compact = false, pmiData }: STEPViewerP
           throw new Error('No geometry found in STEP file');
         }
 
-        // Clear existing meshes
-        meshesRef.current.forEach((mesh) => {
-          sceneRef.current?.remove(mesh);
-          mesh.geometry.dispose();
-          if (Array.isArray(mesh.material)) {
-            mesh.material.forEach(m => m.dispose());
-          } else {
-            mesh.material.dispose();
-          }
-        });
-        meshesRef.current = [];
-
-        // Clear existing edges
-        edgesRef.current.forEach((edges) => {
-          sceneRef.current?.remove(edges);
-          edges.geometry.dispose();
-          if (Array.isArray(edges.material)) {
-            edges.material.forEach(m => m.dispose());
-          } else {
-            edges.material.dispose();
-          }
-        });
-        edgesRef.current = [];
-
-        originalPositionsRef.current = [];
-        explosionDataRef.current.initialized = false;
+        clearMeshes();
 
         // Convert to Three.js meshes
         for (let i = 0; i < result.meshes.length; i++) {
@@ -345,24 +479,7 @@ export function STEPViewer({ url, title, compact = false, pmiData }: STEPViewerP
 
           // Create and add mesh
           const mesh = new THREE.Mesh(geometry, material);
-          meshesRef.current.push(mesh);
-          originalPositionsRef.current.push(mesh.position.clone());
-          sceneRef.current.add(mesh);
-
-          // Add edges for better contour visibility (threshold angle: 30 degrees)
-          const edgesGeometry = new THREE.EdgesGeometry(geometry, 30);
-          const edgesMaterial = new THREE.LineBasicMaterial({
-            color: 0x000000,
-            linewidth: 1,
-            opacity: 0.8,
-            transparent: true,
-          });
-          const edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
-          edges.visible = edgesVisible;
-
-          // Position edges with mesh (for exploded view)
-          mesh.add(edges);
-          edgesRef.current.push(edges);
+          addMeshToScene(mesh);
         }
 
         // Store original materials for feature highlighting
@@ -388,7 +505,7 @@ export function STEPViewer({ url, title, compact = false, pmiData }: STEPViewerP
     };
 
     loadSTEP();
-  }, [url, librariesLoaded, edgesVisible, gridVisible]);
+  }, [url, librariesLoaded, serverGeometry, preferServerGeometry, edgesVisible, gridVisible, clearMeshes, addMeshToScene, createMeshFromServerData, calculateDimensions, fitCameraToMeshes, updateGridSize]);
 
   // Fit camera to meshes
   const fitCameraToMeshes = useCallback(() => {

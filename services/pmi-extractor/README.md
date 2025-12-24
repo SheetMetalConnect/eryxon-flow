@@ -1,27 +1,47 @@
-# PMI Extraction Service
+# CAD Processing Service
 
-Extracts Product Manufacturing Information (PMI) from STEP AP242 files using OpenCASCADE.
+Server-side CAD file processing using OpenCASCADE (pythonocc-core). Extracts geometry and PMI/MBD data from STEP, IGES, and BREP files.
 
 ## Features
 
-- Extracts **dimensions** (linear, angular, radius, diameter)
-- Extracts **geometric tolerances** (GD&T)
-- Extracts **datums** (reference features)
-- Returns structured JSON for frontend rendering
+- **Geometry extraction**: Tessellated meshes (vertices, normals, indices) in base64 format
+- **PMI extraction**: Dimensions, geometric tolerances (GD&T), and datums from STEP AP242
+- **Multi-format support**: STEP, IGES, BREP
+- **API key authentication**: Secure access with configurable API keys
+- **Thumbnail generation**: Optional PNG thumbnail of the model
+- **Portainer-ready**: Docker Compose stack for easy self-hosting
 
 ## Quick Start
 
-### Using Docker (Recommended)
+### Using Docker Compose (Recommended)
 
 ```bash
-# Build the image
-docker build -t pmi-extractor .
+cd services/pmi-extractor
 
-# Run the container
-docker run -p 8000:8000 pmi-extractor
+# Generate an API key
+export API_KEYS=$(openssl rand -hex 32)
+
+# Deploy
+docker-compose up -d
 
 # Test the health endpoint
 curl http://localhost:8000/health
+```
+
+### Using Docker
+
+```bash
+# Build the image
+docker build -t cad-processor .
+
+# Run with API key authentication
+docker run -p 8000:8000 \
+  -e API_KEYS="your-api-key-here" \
+  -e REQUIRE_AUTH=true \
+  cad-processor
+
+# Test (with API key)
+curl -H "X-API-Key: your-api-key-here" http://localhost:8000/health
 ```
 
 ### Local Development
@@ -30,17 +50,17 @@ Requires conda for pythonocc-core installation:
 
 ```bash
 # Create conda environment
-conda create -n pmi-extractor python=3.11
-conda activate pmi-extractor
+conda create -n cad-processor python=3.11
+conda activate cad-processor
 
 # Install pythonocc-core
-conda install -c conda-forge pythonocc-core
+conda install -c conda-forge pythonocc-core=7.7.2
 
 # Install Python dependencies
 pip install -r requirements.txt
 
-# Run the service
-python main.py
+# Run the service (auth disabled for development)
+REQUIRE_AUTH=false python main.py
 ```
 
 ## API Endpoints
@@ -50,42 +70,162 @@ python main.py
 ```
 GET /health
 
-Response: { "status": "healthy", "service": "pmi-extractor" }
+Response:
+{
+  "status": "healthy",
+  "service": "cad-processor",
+  "version": "2.0.0",
+  "auth_required": true,
+  "auth_configured": true
+}
 ```
 
-### Extract PMI
+### Service Info
 
 ```
-POST /extract
+GET /info
+
+Response:
+{
+  "service": "cad-processor",
+  "version": "2.0.0",
+  "supported_formats": ["step", "stp", "iges", "igs", "brep"],
+  "capabilities": {
+    "geometry_extraction": true,
+    "pmi_extraction": true,
+    "thumbnail_generation": true
+  },
+  "limits": {
+    "max_file_size_mb": 100
+  }
+}
+```
+
+### Process CAD File
+
+```
+POST /process
+X-API-Key: your-api-key-here
 Content-Type: application/json
 
 Request:
 {
-  "file_url": "https://storage.example.com/path/to/model.step"
+  "file_url": "https://storage.example.com/path/to/model.step",
+  "file_name": "model.step",
+  "include_geometry": true,
+  "include_pmi": true,
+  "generate_thumbnail": false,
+  "thumbnail_size": 256
 }
 
 Response:
 {
   "success": true,
+  "geometry": {
+    "meshes": [
+      {
+        "vertices_base64": "...",
+        "normals_base64": "...",
+        "indices_base64": "...",
+        "vertex_count": 1234,
+        "face_count": 456,
+        "color": [0.29, 0.56, 0.89]
+      }
+    ],
+    "bounding_box": {
+      "min": [0, 0, 0],
+      "max": [100, 50, 25],
+      "center": [50, 25, 12.5],
+      "size": [100, 50, 25]
+    },
+    "total_vertices": 1234,
+    "total_faces": 456
+  },
   "pmi": {
     "version": "1.0",
     "dimensions": [...],
     "geometric_tolerances": [...],
     "datums": [...]
   },
-  "processing_time_ms": 1234,
-  "file_hash": "abc123..."
+  "thumbnail_base64": null,
+  "file_hash": "abc123...",
+  "processing_time_ms": 2500
 }
 ```
 
+### Extract PMI Only (Legacy)
+
+```
+POST /extract
+X-API-Key: your-api-key-here
+Content-Type: application/json
+
+Request:
+{
+  "file_url": "https://storage.example.com/path/to/model.step"
+}
+```
+
+This endpoint is maintained for backwards compatibility. It calls `/process` with `include_geometry=false`.
+
+## Authentication
+
+The service supports API key authentication via the `X-API-Key` header.
+
+### Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `API_KEYS` | (none) | Comma-separated list of valid API keys |
+| `REQUIRE_AUTH` | `true` | Set to `false` to disable authentication |
+
+### Generating API Keys
+
+```bash
+# Generate a secure random key
+openssl rand -hex 32
+
+# Example output: a3f2d7e8c1b4a5f6e7d8c9b0a1f2e3d4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0
+```
+
+### Multiple Keys
+
+You can configure multiple API keys for different clients:
+
+```bash
+API_KEYS="key1,key2,key3"
+```
+
+## Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `8000` | Server port |
+| `API_KEYS` | (none) | Comma-separated API keys |
+| `REQUIRE_AUTH` | `true` | Enable/disable authentication |
+| `ALLOWED_ORIGINS` | `*` | CORS allowed origins |
+| `MAX_FILE_SIZE_MB` | `100` | Maximum file size in MB |
+| `ENABLE_DOCS` | `true` | Enable Swagger/OpenAPI docs at `/docs` |
+
 ## Deployment Options
+
+### Portainer Stack
+
+1. In Portainer, go to Stacks → Add Stack
+2. Copy the contents of `docker-compose.yml`
+3. Add environment variables:
+   - `API_KEYS`: Your generated API key(s)
+   - `ALLOWED_ORIGINS`: Your app domain(s)
+4. Deploy the stack
 
 ### Railway
 
 1. Connect your GitHub repository
 2. Set the root directory to `services/pmi-extractor`
-3. Deploy using the Dockerfile
-4. Note the generated URL (e.g., `https://pmi-extractor.up.railway.app`)
+3. Add environment variables:
+   - `API_KEYS`: Your API key(s)
+   - `REQUIRE_AUTH`: `true`
+4. Deploy using the Dockerfile
 
 ### Render
 
@@ -94,30 +234,43 @@ Response:
 3. Set:
    - Root Directory: `services/pmi-extractor`
    - Environment: Docker
-4. Deploy and note the URL
+4. Add environment variables and deploy
 
 ### Docker Compose (Self-hosted)
 
 ```yaml
 version: '3.8'
 services:
-  pmi-extractor:
+  cad-processor:
     build: ./services/pmi-extractor
     ports:
       - "8000:8000"
     environment:
+      - API_KEYS=your-secure-key-here
+      - REQUIRE_AUTH=true
       - ALLOWED_ORIGINS=https://your-app.com
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 4G
 ```
 
-## Environment Variables
+## Response Schemas
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `8000` | Server port |
-| `ALLOWED_ORIGINS` | `*` | Comma-separated CORS origins |
+### MeshData
 
-## Response Schema
+```json
+{
+  "vertices_base64": "base64-encoded Float32Array",
+  "normals_base64": "base64-encoded Float32Array",
+  "indices_base64": "base64-encoded Uint32Array",
+  "vertex_count": 1234,
+  "face_count": 456,
+  "color": [0.29, 0.56, 0.89]
+}
+```
 
 ### Dimension
 
@@ -166,11 +319,57 @@ services:
 }
 ```
 
+## Frontend Integration
+
+### Configure Environment
+
+Add to your `.env`:
+
+```bash
+VITE_CAD_SERVICE_URL="https://your-cad-service.example.com"
+VITE_CAD_SERVICE_API_KEY="your-api-key-here"
+```
+
+### Use the Hook
+
+```tsx
+import { useCADProcessing } from '@/hooks/useCADProcessing';
+
+function MyComponent() {
+  const { processCAD, isProcessing } = useCADProcessing();
+
+  const handleUpload = async (fileUrl: string, fileName: string) => {
+    const result = await processCAD(fileUrl, fileName, {
+      includeGeometry: true,
+      includePMI: true,
+    });
+
+    if (result.success) {
+      // Use result.geometry and result.pmi
+    }
+  };
+}
+```
+
+### Pass to STEPViewer
+
+```tsx
+<STEPViewer
+  url={fileUrl}
+  serverGeometry={result.geometry}
+  pmiData={result.pmi}
+/>
+```
+
 ## Troubleshooting
 
 ### "pythonocc-core not installed"
 
 The service requires pythonocc-core which must be installed via conda. Use the Docker image or install via conda locally.
+
+### "Invalid API key"
+
+Ensure you're passing the correct API key in the `X-API-Key` header. Check that `API_KEYS` environment variable is set correctly.
 
 ### "No PMI data found"
 
@@ -178,6 +377,17 @@ Not all STEP files contain PMI data. PMI is only present in:
 - STEP AP242 files with embedded PMI
 - Files exported with "Include PMI" option from CAD software
 
+### "No geometry found"
+
+The CAD file may be empty or corrupted. Try opening it in a CAD viewer to verify.
+
 ### Performance
 
-PMI extraction typically takes 1-5 seconds depending on file complexity. The service downloads the file to a temp directory, processes it, and cleans up automatically.
+- Geometry extraction typically takes 1-5 seconds depending on model complexity
+- PMI extraction adds minimal overhead (~100-500ms)
+- Large files (>50MB) may take 10-30 seconds
+- Consider enabling thumbnail generation for preview purposes
+
+## License
+
+BSL 1.1 - See main project LICENSE file.
