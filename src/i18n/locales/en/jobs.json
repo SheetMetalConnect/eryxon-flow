@@ -254,8 +254,16 @@
       "flatSurfaces": "Flat surfaces",
       "bendsCurves": "Bends / Curves",
       "holesEdges": "Holes / Sharp edges",
-      "loading": "Loading 3D model..."
-    }
+      "loading": "Loading 3D model...",
+      "showPMI": "Show PMI Annotations",
+      "hidePMI": "Hide PMI Annotations",
+      "pmiAnnotations": "PMI Annotations",
+      "pmiDimensions": "Dimensions",
+      "pmiTolerances": "GD&T Tolerances",
+      "pmiDatums": "Datums"
+    },
+    "pmiExtracted": "PMI Extracted",
+    "pmiExtractedDesc": "Found {{count}} dimension(s) in the model"
   },
   "operations": {
     "title": "Operations",

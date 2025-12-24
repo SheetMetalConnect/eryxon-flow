@@ -242,8 +242,16 @@
       "flatSurfaces": "Flache Oberflächen",
       "bendsCurves": "Biegungen / Kurven",
       "holesEdges": "Löcher / Scharfe Kanten",
-      "loading": "3D-Modell wird geladen..."
-    }
+      "loading": "3D-Modell wird geladen...",
+      "showPMI": "PMI Annotationen Anzeigen",
+      "hidePMI": "PMI Annotationen Ausblenden",
+      "pmiAnnotations": "PMI Annotationen",
+      "pmiDimensions": "Maße",
+      "pmiTolerances": "GD&T Toleranzen",
+      "pmiDatums": "Bezugspunkte"
+    },
+    "pmiExtracted": "PMI Extrahiert",
+    "pmiExtractedDesc": "{{count}} Maß(e) im Modell gefunden"
   },
   "operations": {
     "title": "Arbeitsgänge",

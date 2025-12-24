@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import {
@@ -11,10 +12,12 @@ import {
   Box,
   Hexagon,
   Ruler,
-  Sparkles
+  Sparkles,
+  Crosshair
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import type { PMIData, PMIDimension } from '@/hooks/usePMI';
 
 // Interface for calculated dimensions
 interface ModelDimensions {
@@ -35,9 +38,10 @@ interface STEPViewerProps {
   url: string;
   title?: string;
   compact?: boolean;
+  pmiData?: PMIData | null;
 }
 
-export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
+export function STEPViewer({ url, title, compact = false, pmiData }: STEPViewerProps) {
   const { t } = useTranslation();
 
   // State
@@ -51,6 +55,7 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
   const [edgesVisible, setEdgesVisible] = useState(true);
   const [showDimensions, setShowDimensions] = useState(false);
   const [showFeatures, setShowFeatures] = useState(false);
+  const [showPMI, setShowPMI] = useState(false);
   const [dimensions, setDimensions] = useState<ModelDimensions | null>(null);
 
   // Three.js refs
@@ -75,6 +80,10 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
   // Dimension lines and feature highlight refs
   const dimensionLinesRef = useRef<THREE.Group | null>(null);
   const originalMaterialsRef = useRef<THREE.Material[]>([]);
+
+  // PMI rendering refs
+  const css2dRendererRef = useRef<CSS2DRenderer | null>(null);
+  const pmiLayerRef = useRef<THREE.Group | null>(null);
 
   // Load occt-import-js library from CDN
   useEffect(() => {
@@ -170,11 +179,22 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
     controls.dampingFactor = 0.05;
     controlsRef.current = controls;
 
+    // CSS2D Renderer for PMI labels
+    const css2dRenderer = new CSS2DRenderer();
+    css2dRenderer.setSize(container.clientWidth, container.clientHeight);
+    css2dRenderer.domElement.style.position = 'absolute';
+    css2dRenderer.domElement.style.top = '0';
+    css2dRenderer.domElement.style.left = '0';
+    css2dRenderer.domElement.style.pointerEvents = 'none';
+    container.appendChild(css2dRenderer.domElement);
+    css2dRendererRef.current = css2dRenderer;
+
     // Animation loop
     const animate = () => {
       animationFrameRef.current = requestAnimationFrame(animate);
       controls.update();
       renderer.render(scene, camera);
+      css2dRenderer.render(scene, camera);
     };
     animate();
 
@@ -186,6 +206,7 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
+      css2dRenderer.setSize(width, height);
     };
     window.addEventListener('resize', handleResize);
 
@@ -198,6 +219,9 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
       renderer.dispose();
       if (container && renderer.domElement.parentNode === container) {
         container.removeChild(renderer.domElement);
+      }
+      if (container && css2dRenderer.domElement.parentNode === container) {
+        container.removeChild(css2dRenderer.domElement);
       }
     };
   }, [librariesLoaded]);
@@ -910,6 +934,172 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
     setShowFeatures(!showFeatures);
   }, [showFeatures, applyFeatureHighlighting, removeFeatureHighlighting]);
 
+  // Create PMI visualization layer
+  const createPMIVisualization = useCallback(() => {
+    if (!sceneRef.current || !pmiData) return;
+
+    // Remove existing PMI layer
+    if (pmiLayerRef.current) {
+      // Remove CSS2D objects properly
+      pmiLayerRef.current.traverse((child) => {
+        if (child instanceof CSS2DObject) {
+          if (child.element.parentNode) {
+            child.element.parentNode.removeChild(child.element);
+          }
+        }
+        if (child instanceof THREE.Line || child instanceof THREE.Mesh) {
+          child.geometry?.dispose();
+          if (Array.isArray(child.material)) {
+            child.material.forEach(m => m.dispose());
+          } else if (child.material) {
+            child.material.dispose();
+          }
+        }
+      });
+      sceneRef.current.remove(pmiLayerRef.current);
+    }
+
+    const group = new THREE.Group();
+    group.name = 'pmiAnnotations';
+
+    // PMI dimension line color
+    const pmiColor = 0x00bcd4; // Cyan for PMI
+    const lineMaterial = new THREE.LineBasicMaterial({
+      color: pmiColor,
+      linewidth: 2,
+      transparent: true,
+      opacity: 0.9,
+    });
+
+    // Render dimensions
+    pmiData.dimensions.forEach((dim, index) => {
+      // Create label element
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'pmi-label';
+      labelDiv.style.cssText = `
+        background: rgba(0, 188, 212, 0.9);
+        color: white;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 11px;
+        font-family: ui-monospace, monospace;
+        font-weight: 500;
+        white-space: nowrap;
+        pointer-events: auto;
+        cursor: pointer;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      `;
+      labelDiv.textContent = dim.text;
+      labelDiv.title = `${dim.type}: ${dim.text}`;
+
+      const label = new CSS2DObject(labelDiv);
+      label.position.set(dim.position.x, dim.position.y, dim.position.z);
+      group.add(label);
+
+      // Create leader line if points available
+      if (dim.leader_points && dim.leader_points.length >= 2) {
+        const points = dim.leader_points.map(p => new THREE.Vector3(p.x, p.y, p.z));
+        const leaderGeom = new THREE.BufferGeometry().setFromPoints(points);
+        const leaderLine = new THREE.Line(leaderGeom, lineMaterial.clone());
+        group.add(leaderLine);
+      }
+    });
+
+    // Render geometric tolerances (GD&T)
+    pmiData.geometric_tolerances.forEach((tol, index) => {
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'pmi-gdt-label';
+      labelDiv.style.cssText = `
+        background: rgba(156, 39, 176, 0.9);
+        color: white;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 11px;
+        font-family: ui-monospace, monospace;
+        font-weight: 500;
+        white-space: nowrap;
+        pointer-events: auto;
+        cursor: pointer;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      `;
+      labelDiv.textContent = tol.text;
+      labelDiv.title = `${tol.type}: ${tol.text}`;
+
+      const label = new CSS2DObject(labelDiv);
+      label.position.set(tol.position.x, tol.position.y, tol.position.z);
+      group.add(label);
+    });
+
+    // Render datums
+    pmiData.datums.forEach((datum) => {
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'pmi-datum-label';
+      labelDiv.style.cssText = `
+        background: rgba(76, 175, 80, 0.9);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-family: ui-monospace, monospace;
+        font-weight: 700;
+        white-space: nowrap;
+        pointer-events: auto;
+        cursor: pointer;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      `;
+      labelDiv.textContent = datum.label;
+      labelDiv.title = `Datum ${datum.label}`;
+
+      const label = new CSS2DObject(labelDiv);
+      label.position.set(datum.position.x, datum.position.y, datum.position.z);
+      group.add(label);
+    });
+
+    sceneRef.current.add(group);
+    pmiLayerRef.current = group;
+  }, [pmiData]);
+
+  // Remove PMI visualization
+  const removePMIVisualization = useCallback(() => {
+    if (!sceneRef.current || !pmiLayerRef.current) return;
+
+    pmiLayerRef.current.traverse((child) => {
+      if (child instanceof CSS2DObject) {
+        if (child.element.parentNode) {
+          child.element.parentNode.removeChild(child.element);
+        }
+      }
+      if (child instanceof THREE.Line || child instanceof THREE.Mesh) {
+        child.geometry?.dispose();
+        if (Array.isArray(child.material)) {
+          child.material.forEach(m => m.dispose());
+        } else if (child.material) {
+          child.material.dispose();
+        }
+      }
+    });
+
+    sceneRef.current.remove(pmiLayerRef.current);
+    pmiLayerRef.current = null;
+  }, []);
+
+  // Toggle PMI display
+  const togglePMI = useCallback(() => {
+    if (!showPMI) {
+      createPMIVisualization();
+    } else {
+      removePMIVisualization();
+    }
+    setShowPMI(!showPMI);
+  }, [showPMI, createPMIVisualization, removePMIVisualization]);
+
+  // Check if PMI data is available
+  const hasPMIData = pmiData && (
+    pmiData.dimensions.length > 0 ||
+    pmiData.geometric_tolerances.length > 0 ||
+    pmiData.datums.length > 0
+  );
+
   return (
     <div className="flex flex-col h-full w-full bg-background">
       {/* Compact Toolbar */}
@@ -1015,6 +1205,23 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
         >
           <Sparkles className="h-3.5 w-3.5" />
         </Button>
+
+        {/* PMI Toggle - only shown when PMI data is available */}
+        {hasPMIData && (
+          <>
+            <div className="w-px h-4 bg-border mx-0.5" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={togglePMI}
+              disabled={stepLoading || meshesRef.current.length === 0}
+              className={cn("h-7 w-7 p-0", showPMI && "bg-cyan-500/20 text-cyan-600")}
+              title={showPMI ? t('parts.cadViewer.hidePMI') : t('parts.cadViewer.showPMI')}
+            >
+              <Crosshair className="h-3.5 w-3.5" />
+            </Button>
+          </>
+        )}
       </div>
 
       {/* 3D Viewer Container */}
@@ -1118,6 +1325,46 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
                   <div className="w-2.5 h-2.5 rounded-full bg-[hsl(var(--stage-bending))]" />
                   <span className="text-[10px] text-muted-foreground">{t('parts.cadViewer.holesEdges')}</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PMI Legend */}
+        {showPMI && pmiData && (
+          <div className="absolute bottom-3 left-3 z-10">
+            <div className="glass-card p-2.5 min-w-[160px]">
+              <div className="flex items-center gap-2 mb-2">
+                <Crosshair className="h-3.5 w-3.5 text-cyan-500" />
+                <span className="text-[10px] font-semibold text-foreground">
+                  {t('parts.cadViewer.pmiAnnotations')}
+                </span>
+              </div>
+              <div className="space-y-1.5">
+                {pmiData.dimensions.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-sm bg-cyan-500" />
+                    <span className="text-[10px] text-muted-foreground">
+                      {t('parts.cadViewer.pmiDimensions')} ({pmiData.dimensions.length})
+                    </span>
+                  </div>
+                )}
+                {pmiData.geometric_tolerances.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-sm bg-purple-500" />
+                    <span className="text-[10px] text-muted-foreground">
+                      {t('parts.cadViewer.pmiTolerances')} ({pmiData.geometric_tolerances.length})
+                    </span>
+                  </div>
+                )}
+                {pmiData.datums.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-sm bg-green-500" />
+                    <span className="text-[10px] text-muted-foreground">
+                      {t('parts.cadViewer.pmiDatums')} ({pmiData.datums.length})
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

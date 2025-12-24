@@ -242,8 +242,16 @@
       "flatSurfaces": "Vlakke oppervlakken",
       "bendsCurves": "Buigingen / Rondingen",
       "holesEdges": "Gaten / Scherpe randen",
-      "loading": "3D-model laden..."
-    }
+      "loading": "3D-model laden...",
+      "showPMI": "PMI Annotaties Tonen",
+      "hidePMI": "PMI Annotaties Verbergen",
+      "pmiAnnotations": "PMI Annotaties",
+      "pmiDimensions": "Afmetingen",
+      "pmiTolerances": "GD&T Toleranties",
+      "pmiDatums": "Datums"
+    },
+    "pmiExtracted": "PMI Geëxtraheerd",
+    "pmiExtractedDesc": "{{count}} afmeting(en) gevonden in het model"
   },
   "operations": {
     "title": "Bewerkingen",

@@ -22,6 +22,7 @@ import { PDFViewer } from "@/components/PDFViewer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { UploadProgress } from "@/components/UploadProgress";
+import { usePMI, isPMIServiceEnabled } from "@/hooks/usePMI";
 import {
   Select,
   SelectContent,
@@ -86,6 +87,15 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     uploadFiles,
     resetProgress,
   } = useFileUpload();
+
+  // PMI extraction hook
+  const {
+    extractPMI,
+    isExtracting: isExtractingPMI,
+    hasPMI,
+    pmiSummary,
+    isPMIServiceEnabled: pmiEnabled,
+  } = usePMI(partId);
 
   const { data: part, isLoading } = useQuery({
     queryKey: ["part-detail", partId],
@@ -375,8 +385,43 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           description: t("parts.filesUploadedSuccess", { count: result.uploadedPaths.length }),
         });
 
+        // Trigger PMI extraction for STEP files if service is enabled
+        if (pmiEnabled) {
+          const stepFiles = result.uploadedPaths.filter(path => {
+            const ext = path.toLowerCase().split('.').pop();
+            return ext === 'step' || ext === 'stp';
+          });
+
+          for (const stepPath of stepFiles) {
+            try {
+              // Create signed URL for the PMI service to fetch
+              const { data: signedUrlData } = await supabase.storage
+                .from("parts-cad")
+                .createSignedUrl(stepPath, 3600);
+
+              if (signedUrlData?.signedUrl) {
+                const fileName = stepPath.split('/').pop() || 'model.step';
+                const pmiResult = await extractPMI(signedUrlData.signedUrl, fileName);
+
+                if (pmiResult.success && pmiResult.pmi) {
+                  toast({
+                    title: t("parts.pmiExtracted"),
+                    description: t("parts.pmiExtractedDesc", {
+                      count: pmiResult.pmi.dimensions.length
+                    }),
+                  });
+                }
+                // If no PMI found, that's okay - many files don't have PMI
+              }
+            } catch (pmiError) {
+              console.warn('PMI extraction failed:', pmiError);
+              // Don't show error toast - PMI is optional
+            }
+          }
+        }
+
         setCadFiles(null);
-        
+
         // Refresh modal data and parent list
         await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
         onUpdate();

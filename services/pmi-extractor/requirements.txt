@@ -1,0 +1,14 @@
+# PMI Extraction Service Dependencies
+
+# Web framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# HTTP client for downloading STEP files
+httpx>=0.25.0
+
+# Data validation
+pydantic>=2.5.0
+
+# Note: pythonocc-core is installed via conda, not pip
+# See Dockerfile for installation instructions
