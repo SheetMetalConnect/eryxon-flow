@@ -51,11 +51,12 @@ export interface PMIGeometricTolerance {
   value: number;
   unit: string;
   symbol: string;
+  modifier: string;  // Material modifier: Ⓜ (MMC), Ⓛ (LMC), etc.
+  zone_modifier: string;  // Zone shape: ⌀ for cylindrical
   datum_refs: string[];
-  modifiers: string[];
   text: string;
   position: Vector3;
-  leader_points: Vector3[];
+  leader_points?: Vector3[];
   associated_geometry?: AssociatedGeometry;
 }
 
