@@ -40,9 +40,8 @@ services:
       # SECURITY: Set specific origins in production, avoid using *
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
 
-      # SSRF Protection
-      # Comma-separated list of allowed domains for file URLs
-      # Default includes common cloud storage providers (see README)
+      # URL Domain Restrictions (optional)
+      # Leave empty to allow all domains (default)
       - ALLOWED_URL_DOMAINS=${ALLOWED_URL_DOMAINS:-}
 
       # File Processing Limits
@@ -94,8 +93,6 @@ services:
 # 2. Configure environment for production:
 #    export API_KEYS="key1,key2,key3"
 #    export ALLOWED_ORIGINS="https://your-app.com"
-#    # Optional: custom storage domains (default includes Supabase, S3, GCS, Azure, R2)
-#    export ALLOWED_URL_DOMAINS="your-storage.example.com"
 #
 # 3. Deploy:
 #    docker-compose up -d
@@ -111,7 +108,6 @@ services:
 # SECURITY NOTES:
 # - Always set specific ALLOWED_ORIGINS in production
 # - API keys are verified with constant-time comparison
-# - File URLs are validated against ALLOWED_URL_DOMAINS to prevent SSRF
 # - Error messages are sanitized to prevent information leakage
 #
 # =============================================================================

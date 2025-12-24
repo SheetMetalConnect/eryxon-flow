@@ -217,13 +217,16 @@ class Dimension(BaseModel):
 
 
 class GeometricTolerance(BaseModel):
+    """GD&T feature control frame per ASME Y14.5 / ISO 1101."""
     id: str
-    type: str
+    type: str  # flatness, straightness, circularity, etc.
     value: float
     unit: str = "mm"
-    symbol: str
-    datum_refs: List[str] = []
-    text: str
+    symbol: str  # Unicode GD&T symbol (⏥, ⏤, ○, etc.)
+    modifier: str = ""  # Material modifier: Ⓜ (MMC), Ⓛ (LMC), Ⓢ (RFS), etc.
+    zone_modifier: str = ""  # Zone shape: ⌀ for cylindrical
+    datum_refs: List[str] = []  # Referenced datums: ["A", "B", "C"]
+    text: str  # Full feature control frame text
     position: Vector3
 
 

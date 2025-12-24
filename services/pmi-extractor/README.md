@@ -204,7 +204,7 @@ API_KEYS="key1,key2,key3"
 | `API_KEYS` | (none) | Comma-separated API keys |
 | `REQUIRE_AUTH` | `true` | Enable/disable authentication |
 | `ALLOWED_ORIGINS` | `*` | CORS allowed origins (comma-separated) |
-| `ALLOWED_URL_DOMAINS` | (see below) | Allowed domains for file URLs (SSRF protection) |
+| `ALLOWED_URL_DOMAINS` | (none) | Optional: restrict file URLs to specific domains |
 | `MAX_FILE_SIZE_MB` | `100` | Maximum file size in MB |
 | `ENABLE_DOCS` | `true` | Enable Swagger/OpenAPI docs at `/docs` |
 
@@ -220,26 +220,15 @@ ALLOWED_ORIGINS="https://app.example.com,https://admin.example.com"
 
 Using `*` is convenient for development but should be avoided in production.
 
-### SSRF Protection
+### URL Domain Restrictions (Optional)
 
-The service validates file URLs against an allowlist of trusted domains to prevent Server-Side Request Forgery (SSRF) attacks.
-
-**Default allowed domains:**
-- `supabase.co`, `supabase.in` (Supabase storage)
-- `amazonaws.com` (AWS S3)
-- `storage.googleapis.com` (Google Cloud Storage)
-- `blob.core.windows.net` (Azure Blob)
-- `r2.cloudflarestorage.com` (Cloudflare R2)
-
-**Custom domains:**
-
-If your files are hosted elsewhere, configure allowed domains:
+By default, the service accepts file URLs from any domain since it's already protected by API key authentication. For additional security, you can restrict allowed domains:
 
 ```bash
-ALLOWED_URL_DOMAINS="your-cdn.example.com,storage.custom.com"
+ALLOWED_URL_DOMAINS="supabase.co,your-storage.example.com"
 ```
 
-Internal/local addresses (`localhost`, `127.0.0.1`, private IP ranges) are always blocked.
+When set, only URLs from matching domains (including subdomains) will be accepted.
 
 ### API Key Security
 
@@ -257,7 +246,6 @@ Internal/local addresses (`localhost`, `127.0.0.1`, private IP ranges) are alway
 3. Add environment variables:
    - `API_KEYS`: Your generated API key(s)
    - `ALLOWED_ORIGINS`: Your app domain(s) (e.g., `https://app.eryxon.eu`)
-   - `ALLOWED_URL_DOMAINS`: Your storage domains (if not using default cloud providers)
 4. Deploy the stack
 
 ### Railway
@@ -291,8 +279,6 @@ services:
       - API_KEYS=your-secure-key-here
       - REQUIRE_AUTH=true
       - ALLOWED_ORIGINS=https://your-app.com
-      # Optional: Add custom storage domains for SSRF protection
-      # - ALLOWED_URL_DOMAINS=your-storage.example.com
     restart: unless-stopped
     deploy:
       resources:
@@ -338,20 +324,33 @@ services:
 }
 ```
 
-### Geometric Tolerance
+### Geometric Tolerance (GD&T)
+
+Per ASME Y14.5 / ISO 1101 standards:
 
 ```json
 {
   "id": "tol_1",
-  "type": "flatness",
+  "type": "position",
   "value": 0.05,
   "unit": "mm",
-  "symbol": "⏥",
-  "datum_refs": ["A"],
-  "text": "⏥ 0.050 A",
+  "symbol": "⌖",
+  "modifier": "Ⓜ",
+  "zone_modifier": "⌀",
+  "datum_refs": ["A", "B", "C"],
+  "text": "⌖ ⌀ 0.050 Ⓜ | A | B | C",
   "position": { "x": 15, "y": 30, "z": 0 }
 }
 ```
+
+**Supported GD&T symbols:**
+- Form: ⏥ (flatness), ⏤ (straightness), ○ (circularity), ⌭ (cylindricity)
+- Profile: ⌒ (line profile), ⌓ (surface profile)
+- Orientation: ∥ (parallelism), ⊥ (perpendicularity), ∠ (angularity)
+- Location: ⌖ (position), ◎ (concentricity), ⌯ (symmetry)
+- Runout: ↗ (circular runout), ↗↗ (total runout)
+
+**Material modifiers:** Ⓜ (MMC), Ⓛ (LMC), Ⓢ (RFS), Ⓟ (projected), Ⓕ (free state), Ⓣ (tangent plane)
 
 ### Datum
 

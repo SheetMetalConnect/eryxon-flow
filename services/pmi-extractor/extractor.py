@@ -331,7 +331,7 @@ def extract_pmi_from_document(doc) -> Dict[str, Any]:
 
         for i in range(1, tol_labels.Length() + 1):
             label = tol_labels.Value(i)
-            tol = extract_tolerance_from_label(label, i)
+            tol = extract_tolerance_from_label(label, i, dim_tol_tool)
             if tol:
                 pmi_data['geometric_tolerances'].append(tol)
 
@@ -417,10 +417,12 @@ def extract_dimension_from_label(label, index: int) -> Optional[Dict]:
         return None
 
 
-def extract_tolerance_from_label(label, index: int) -> Optional[Dict]:
+def extract_tolerance_from_label(label, index: int, dim_tol_tool=None) -> Optional[Dict]:
     """Extract a geometric tolerance from its label."""
     from OCC.Core.XCAFDoc import XCAFDoc_GeomTolerance
+    from OCC.Core.TDF import TDF_LabelSequence
 
+    # GD&T symbols per ASME Y14.5 / ISO 1101
     GDT_SYMBOLS = {
         0: ("flatness", "⏥"),
         1: ("straightness", "⏤"),
@@ -438,6 +440,18 @@ def extract_tolerance_from_label(label, index: int) -> Optional[Dict]:
         13: ("total_runout", "↗↗"),
     }
 
+    # Material condition modifiers
+    MATERIAL_MODIFIERS = {
+        0: "",        # None/RFS (Regardless of Feature Size)
+        1: "Ⓜ",      # MMC (Maximum Material Condition)
+        2: "Ⓛ",      # LMC (Least Material Condition)
+        3: "Ⓢ",      # RFS explicit
+        4: "Ⓟ",      # Projected tolerance zone
+        5: "Ⓕ",      # Free state
+        6: "Ⓣ",      # Tangent plane
+        7: "Ⓤ",      # Unequal bilateral
+    }
+
     try:
         tol_attr = XCAFDoc_GeomTolerance()
         if not label.FindAttribute(XCAFDoc_GeomTolerance.GetID(), tol_attr):
@@ -452,12 +466,47 @@ def extract_tolerance_from_label(label, index: int) -> Optional[Dict]:
 
         value = tol_obj.GetValue() if hasattr(tol_obj, 'GetValue') else 0.0
 
+        # Get material modifier
+        modifier = ""
+        if hasattr(tol_obj, 'GetMaterialRequirementModifier'):
+            mod_type = tol_obj.GetMaterialRequirementModifier()
+            modifier = MATERIAL_MODIFIERS.get(mod_type, "")
+
+        # Get zone modifier (diameter symbol for cylindrical tolerance zone)
+        zone_modifier = ""
+        if hasattr(tol_obj, 'GetZoneModifier'):
+            zone_type = tol_obj.GetZoneModifier()
+            if zone_type == 1:  # Cylindrical zone
+                zone_modifier = "⌀"
+
         position = {'x': 0, 'y': 0, 'z': 0}
         if hasattr(tol_obj, 'GetPointTextAttach'):
             pnt = tol_obj.GetPointTextAttach()
             position = {'x': pnt.X(), 'y': pnt.Y(), 'z': pnt.Z()}
 
-        text = f"{symbol} {value:.3f}"
+        # Extract datum references
+        datum_refs = []
+        if dim_tol_tool is not None:
+            try:
+                datum_labels = TDF_LabelSequence()
+                dim_tol_tool.GetDatumOfTolerLabels(label, datum_labels)
+                for j in range(1, datum_labels.Length() + 1):
+                    datum_label = datum_labels.Value(j)
+                    datum_info = extract_datum_from_label(datum_label, j)
+                    if datum_info:
+                        datum_refs.append(datum_info['label'])
+            except Exception as e:
+                logger.debug(f"Could not extract datum refs: {e}")
+
+        # Build feature control frame text
+        text = f"{symbol}"
+        if zone_modifier:
+            text += f" {zone_modifier}"
+        text += f" {value:.3f}"
+        if modifier:
+            text += f" {modifier}"
+        if datum_refs:
+            text += f" | {' | '.join(datum_refs)}"
 
         return {
             'id': f"tol_{index}",
@@ -465,7 +514,9 @@ def extract_tolerance_from_label(label, index: int) -> Optional[Dict]:
             'value': value,
             'unit': 'mm',
             'symbol': symbol,
-            'datum_refs': [],
+            'modifier': modifier,
+            'zone_modifier': zone_modifier,
+            'datum_refs': datum_refs,
             'text': text,
             'position': position,
         }
