@@ -71,6 +71,12 @@ export function STEPViewer({
   const [showPMI, setShowPMI] = useState(false);
   const [dimensions, setDimensions] = useState<ModelDimensions | null>(null);
 
+  // Processing mode tracking
+  const [processingMode, setProcessingMode] = useState<'server' | 'browser' | null>(null);
+
+  // PMI filter state
+  const [pmiFilter, setPmiFilter] = useState<'all' | 'dimensions' | 'tolerances' | 'datums'>('all');
+
   // Three.js refs
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -352,6 +358,7 @@ export function STEPViewer({
     if (serverGeometry && preferServerGeometry && serverGeometry.meshes.length > 0) {
       setStepLoading(true);
       setLoadingError(null);
+      setProcessingMode('server');
 
       try {
         clearMeshes();
@@ -393,6 +400,7 @@ export function STEPViewer({
       try {
         setStepLoading(true);
         setLoadingError(null);
+        setProcessingMode('browser');
 
         // Initialize occt-import-js
         if (!window.occtimportjs) {
@@ -1088,93 +1096,99 @@ export function STEPViewer({
       opacity: 0.9,
     });
 
-    // Render dimensions
-    pmiData.dimensions.forEach((dim, index) => {
-      // Create label element
-      const labelDiv = document.createElement('div');
-      labelDiv.className = 'pmi-label';
-      labelDiv.style.cssText = `
-        background: rgba(0, 188, 212, 0.9);
-        color: white;
-        padding: 2px 6px;
-        border-radius: 3px;
-        font-size: 11px;
-        font-family: ui-monospace, monospace;
-        font-weight: 500;
-        white-space: nowrap;
-        pointer-events: auto;
-        cursor: pointer;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-      `;
-      labelDiv.textContent = dim.text;
-      labelDiv.title = `${dim.type}: ${dim.text}`;
+    // Render dimensions (if filter allows)
+    if (pmiFilter === 'all' || pmiFilter === 'dimensions') {
+      pmiData.dimensions.forEach((dim) => {
+        // Create label element
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'pmi-label';
+        labelDiv.style.cssText = `
+          background: rgba(0, 188, 212, 0.9);
+          color: white;
+          padding: 2px 6px;
+          border-radius: 3px;
+          font-size: 11px;
+          font-family: ui-monospace, monospace;
+          font-weight: 500;
+          white-space: nowrap;
+          pointer-events: auto;
+          cursor: pointer;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        `;
+        labelDiv.textContent = dim.text;
+        labelDiv.title = `${dim.type}: ${dim.text}`;
 
-      const label = new CSS2DObject(labelDiv);
-      label.position.set(dim.position.x, dim.position.y, dim.position.z);
-      group.add(label);
+        const label = new CSS2DObject(labelDiv);
+        label.position.set(dim.position.x, dim.position.y, dim.position.z);
+        group.add(label);
 
-      // Create leader line if points available
-      if (dim.leader_points && dim.leader_points.length >= 2) {
-        const points = dim.leader_points.map(p => new THREE.Vector3(p.x, p.y, p.z));
-        const leaderGeom = new THREE.BufferGeometry().setFromPoints(points);
-        const leaderLine = new THREE.Line(leaderGeom, lineMaterial.clone());
-        group.add(leaderLine);
-      }
-    });
+        // Create leader line if points available
+        if (dim.leader_points && dim.leader_points.length >= 2) {
+          const points = dim.leader_points.map(p => new THREE.Vector3(p.x, p.y, p.z));
+          const leaderGeom = new THREE.BufferGeometry().setFromPoints(points);
+          const leaderLine = new THREE.Line(leaderGeom, lineMaterial.clone());
+          group.add(leaderLine);
+        }
+      });
+    }
 
-    // Render geometric tolerances (GD&T)
-    pmiData.geometric_tolerances.forEach((tol, index) => {
-      const labelDiv = document.createElement('div');
-      labelDiv.className = 'pmi-gdt-label';
-      labelDiv.style.cssText = `
-        background: rgba(156, 39, 176, 0.9);
-        color: white;
-        padding: 2px 6px;
-        border-radius: 3px;
-        font-size: 11px;
-        font-family: ui-monospace, monospace;
-        font-weight: 500;
-        white-space: nowrap;
-        pointer-events: auto;
-        cursor: pointer;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-      `;
-      labelDiv.textContent = tol.text;
-      labelDiv.title = `${tol.type}: ${tol.text}`;
+    // Render geometric tolerances (GD&T) (if filter allows)
+    if (pmiFilter === 'all' || pmiFilter === 'tolerances') {
+      pmiData.geometric_tolerances.forEach((tol, index) => {
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'pmi-gdt-label';
+        labelDiv.style.cssText = `
+          background: rgba(156, 39, 176, 0.9);
+          color: white;
+          padding: 2px 6px;
+          border-radius: 3px;
+          font-size: 11px;
+          font-family: ui-monospace, monospace;
+          font-weight: 500;
+          white-space: nowrap;
+          pointer-events: auto;
+          cursor: pointer;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        `;
+        labelDiv.textContent = tol.text;
+        labelDiv.title = `${tol.type}: ${tol.text}`;
 
-      const label = new CSS2DObject(labelDiv);
-      label.position.set(tol.position.x, tol.position.y, tol.position.z);
-      group.add(label);
-    });
+        const label = new CSS2DObject(labelDiv);
+        label.position.set(tol.position.x, tol.position.y, tol.position.z);
+        group.add(label);
+      });
+    }
 
-    // Render datums
-    pmiData.datums.forEach((datum) => {
-      const labelDiv = document.createElement('div');
-      labelDiv.className = 'pmi-datum-label';
-      labelDiv.style.cssText = `
-        background: rgba(76, 175, 80, 0.9);
-        color: white;
-        padding: 2px 8px;
-        border-radius: 3px;
-        font-size: 12px;
-        font-family: ui-monospace, monospace;
-        font-weight: 700;
-        white-space: nowrap;
-        pointer-events: auto;
-        cursor: pointer;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-      `;
-      labelDiv.textContent = datum.label;
-      labelDiv.title = `Datum ${datum.label}`;
+    // Render datums (if filter allows)
+    if (pmiFilter === 'all' || pmiFilter === 'datums') {
+      pmiData.datums.forEach((datum) => {
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'pmi-datum-label';
+        labelDiv.style.cssText = `
+          background: rgba(76, 175, 80, 0.9);
+          color: white;
+          padding: 2px 8px;
+          border-radius: 3px;
+          font-size: 12px;
+          font-family: ui-monospace, monospace;
+          font-weight: 700;
+          white-space: nowrap;
+          pointer-events: auto;
+          cursor: pointer;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        `;
+        labelDiv.textContent = datum.label;
+        labelDiv.title = `Datum ${datum.label}`;
 
-      const label = new CSS2DObject(labelDiv);
-      label.position.set(datum.position.x, datum.position.y, datum.position.z);
-      group.add(label);
-    });
+        const label = new CSS2DObject(labelDiv);
+        label.position.set(datum.position.x, datum.position.y, datum.position.z);
+        group.add(label);
+      });
+    }
 
     sceneRef.current.add(group);
     pmiLayerRef.current = group;
-  }, [pmiData]);
+  }, [pmiData, pmiFilter]);
 
   // Remove PMI visualization
   const removePMIVisualization = useCallback(() => {
@@ -1209,6 +1223,13 @@ export function STEPViewer({
     }
     setShowPMI(!showPMI);
   }, [showPMI, createPMIVisualization, removePMIVisualization]);
+
+  // Re-render PMI when filter changes
+  useEffect(() => {
+    if (showPMI && pmiData) {
+      createPMIVisualization();
+    }
+  }, [pmiFilter, showPMI, pmiData, createPMIVisualization]);
 
   // Check if PMI data is available
   const hasPMIData = pmiData && (
@@ -1447,18 +1468,76 @@ export function STEPViewer({
           </div>
         )}
 
-        {/* PMI Legend */}
+        {/* PMI Legend with Filters */}
         {showPMI && pmiData && (
           <div className="absolute bottom-3 left-3 z-10">
-            <div className="glass-card p-2.5 min-w-[160px]">
-              <div className="flex items-center gap-2 mb-2">
-                <Crosshair className="h-3.5 w-3.5 text-cyan-500" />
-                <span className="text-[10px] font-semibold text-foreground">
-                  {t('parts.cadViewer.pmiAnnotations')}
-                </span>
+            <div className="glass-card p-2.5 min-w-[180px]">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2">
+                  <Crosshair className="h-3.5 w-3.5 text-cyan-500" />
+                  <span className="text-[10px] font-semibold text-foreground">
+                    {t('parts.cadViewer.pmiAnnotations')}
+                  </span>
+                </div>
               </div>
-              <div className="space-y-1.5">
+
+              {/* Filter Buttons */}
+              <div className="flex flex-wrap gap-1 mb-2 pb-2 border-b border-border/50">
+                <button
+                  onClick={() => setPmiFilter('all')}
+                  className={cn(
+                    "text-[9px] px-1.5 py-0.5 rounded transition-colors",
+                    pmiFilter === 'all'
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                  )}
+                >
+                  {t('parts.cadViewer.filterAll')}
+                </button>
                 {pmiData.dimensions.length > 0 && (
+                  <button
+                    onClick={() => setPmiFilter('dimensions')}
+                    className={cn(
+                      "text-[9px] px-1.5 py-0.5 rounded transition-colors",
+                      pmiFilter === 'dimensions'
+                        ? "bg-cyan-500 text-white"
+                        : "bg-cyan-500/20 text-cyan-600 hover:bg-cyan-500/30"
+                    )}
+                  >
+                    {t('parts.cadViewer.filterDimensions')}
+                  </button>
+                )}
+                {pmiData.geometric_tolerances.length > 0 && (
+                  <button
+                    onClick={() => setPmiFilter('tolerances')}
+                    className={cn(
+                      "text-[9px] px-1.5 py-0.5 rounded transition-colors",
+                      pmiFilter === 'tolerances'
+                        ? "bg-purple-500 text-white"
+                        : "bg-purple-500/20 text-purple-600 hover:bg-purple-500/30"
+                    )}
+                  >
+                    {t('parts.cadViewer.filterTolerances')}
+                  </button>
+                )}
+                {pmiData.datums.length > 0 && (
+                  <button
+                    onClick={() => setPmiFilter('datums')}
+                    className={cn(
+                      "text-[9px] px-1.5 py-0.5 rounded transition-colors",
+                      pmiFilter === 'datums'
+                        ? "bg-green-500 text-white"
+                        : "bg-green-500/20 text-green-600 hover:bg-green-500/30"
+                    )}
+                  >
+                    {t('parts.cadViewer.filterDatums')}
+                  </button>
+                )}
+              </div>
+
+              {/* Legend */}
+              <div className="space-y-1.5">
+                {(pmiFilter === 'all' || pmiFilter === 'dimensions') && pmiData.dimensions.length > 0 && (
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-sm bg-cyan-500" />
                     <span className="text-[10px] text-muted-foreground">
@@ -1466,7 +1545,7 @@ export function STEPViewer({
                     </span>
                   </div>
                 )}
-                {pmiData.geometric_tolerances.length > 0 && (
+                {(pmiFilter === 'all' || pmiFilter === 'tolerances') && pmiData.geometric_tolerances.length > 0 && (
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-sm bg-purple-500" />
                     <span className="text-[10px] text-muted-foreground">
@@ -1474,7 +1553,7 @@ export function STEPViewer({
                     </span>
                   </div>
                 )}
-                {pmiData.datums.length > 0 && (
+                {(pmiFilter === 'all' || pmiFilter === 'datums') && pmiData.datums.length > 0 && (
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-sm bg-green-500" />
                     <span className="text-[10px] text-muted-foreground">
@@ -1492,17 +1571,45 @@ export function STEPViewer({
           <div className="absolute inset-0 flex items-center justify-center bg-background/90 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-2">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <p className="text-xs text-muted-foreground">{t('parts.cadViewer.loading')}</p>
+              <p className="text-xs text-muted-foreground">
+                {processingMode === 'server'
+                  ? t('parts.cadViewer.processingServer')
+                  : t('parts.cadViewer.processingBrowser')}
+              </p>
+              {processingMode && (
+                <span className={cn(
+                  "text-[10px] px-1.5 py-0.5 rounded-full",
+                  processingMode === 'server'
+                    ? "bg-cyan-500/20 text-cyan-600"
+                    : "bg-amber-500/20 text-amber-600"
+                )}>
+                  {processingMode === 'server'
+                    ? t('parts.cadViewer.serverProcessing')
+                    : t('parts.cadViewer.browserProcessing')}
+                </span>
+              )}
             </div>
           </div>
         )}
 
         {/* Error Display */}
-        {loadingError && (
+        {loadingError && !stepLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background">
             <div className="text-center p-4 max-w-xs">
               <div className="text-destructive text-3xl mb-2 opacity-50">⚠️</div>
-              <p className="text-xs text-muted-foreground">{loadingError}</p>
+              <p className="text-xs text-muted-foreground mb-3">{loadingError}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setLoadingError(null);
+                  setLibrariesLoaded(false);
+                  setTimeout(() => setLibrariesLoaded(true), 100);
+                }}
+                className="text-xs"
+              >
+                {t('parts.cadViewer.retryProcessing')}
+              </Button>
             </div>
           </div>
         )}

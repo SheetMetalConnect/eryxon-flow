@@ -260,7 +260,21 @@
       "pmiAnnotations": "PMI Annotations",
       "pmiDimensions": "Dimensions",
       "pmiTolerances": "GD&T Tolerances",
-      "pmiDatums": "Datums"
+      "pmiDatums": "Datums",
+      "processingServer": "Processing on server...",
+      "processingBrowser": "Processing in browser...",
+      "serverProcessing": "Server",
+      "browserProcessing": "Browser",
+      "processingFailed": "Processing failed",
+      "retryProcessing": "Retry",
+      "fallbackToBrowser": "Falling back to browser processing...",
+      "serverUnavailable": "CAD service unavailable",
+      "filterAll": "All",
+      "filterDimensions": "Dimensions",
+      "filterTolerances": "Tolerances",
+      "filterDatums": "Datums",
+      "noPmiData": "No PMI data in this file",
+      "pmiNotSupported": "PMI requires STEP AP242 format"
     },
     "pmiExtracted": "PMI Extracted",
     "pmiExtractedDesc": "Found {{count}} dimension(s) in the model"

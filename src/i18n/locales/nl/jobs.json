@@ -248,7 +248,21 @@
       "pmiAnnotations": "PMI Annotaties",
       "pmiDimensions": "Afmetingen",
       "pmiTolerances": "GD&T Toleranties",
-      "pmiDatums": "Datums"
+      "pmiDatums": "Datums",
+      "processingServer": "Verwerken op server...",
+      "processingBrowser": "Verwerken in browser...",
+      "serverProcessing": "Server",
+      "browserProcessing": "Browser",
+      "processingFailed": "Verwerking mislukt",
+      "retryProcessing": "Opnieuw proberen",
+      "fallbackToBrowser": "Terugvallen op browserverwerking...",
+      "serverUnavailable": "CAD-service niet beschikbaar",
+      "filterAll": "Alle",
+      "filterDimensions": "Afmetingen",
+      "filterTolerances": "Toleranties",
+      "filterDatums": "Datums",
+      "noPmiData": "Geen PMI-gegevens in dit bestand",
+      "pmiNotSupported": "PMI vereist STEP AP242-formaat"
     },
     "pmiExtracted": "PMI Geëxtraheerd",
     "pmiExtractedDesc": "{{count}} afmeting(en) gevonden in het model"
