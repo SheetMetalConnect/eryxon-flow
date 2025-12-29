@@ -242,8 +242,30 @@
       "flatSurfaces": "Flache Oberflächen",
       "bendsCurves": "Biegungen / Kurven",
       "holesEdges": "Löcher / Scharfe Kanten",
-      "loading": "3D-Modell wird geladen..."
-    }
+      "loading": "3D-Modell wird geladen...",
+      "showPMI": "PMI Annotationen Anzeigen",
+      "hidePMI": "PMI Annotationen Ausblenden",
+      "pmiAnnotations": "PMI Annotationen",
+      "pmiDimensions": "Maße",
+      "pmiTolerances": "GD&T Toleranzen",
+      "pmiDatums": "Bezugspunkte",
+      "processingServer": "Verarbeitung auf Server...",
+      "processingBrowser": "Verarbeitung im Browser...",
+      "serverProcessing": "Server",
+      "browserProcessing": "Browser",
+      "processingFailed": "Verarbeitung fehlgeschlagen",
+      "retryProcessing": "Erneut versuchen",
+      "fallbackToBrowser": "Wechsel zur Browser-Verarbeitung...",
+      "serverUnavailable": "CAD-Dienst nicht verfügbar",
+      "filterAll": "Alle",
+      "filterDimensions": "Maße",
+      "filterTolerances": "Toleranzen",
+      "filterDatums": "Bezugspunkte",
+      "noPmiData": "Keine PMI-Daten in dieser Datei",
+      "pmiNotSupported": "PMI erfordert STEP AP242-Format"
+    },
+    "pmiExtracted": "PMI Extrahiert",
+    "pmiExtractedDesc": "{{count}} Maß(e) im Modell gefunden"
   },
   "operations": {
     "title": "Arbeitsgänge",

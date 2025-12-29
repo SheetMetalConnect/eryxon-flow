@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import {
@@ -11,10 +12,14 @@ import {
   Box,
   Hexagon,
   Ruler,
-  Sparkles
+  Sparkles,
+  Crosshair
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import type { PMIData, PMIDimension } from '@/hooks/usePMI';
+import type { GeometryData, MeshData } from '@/hooks/useCADProcessing';
+import { decodeFloat32Array, decodeUint32Array } from '@/hooks/useCADProcessing';
 
 // Interface for calculated dimensions
 interface ModelDimensions {
@@ -35,9 +40,21 @@ interface STEPViewerProps {
   url: string;
   title?: string;
   compact?: boolean;
+  pmiData?: PMIData | null;
+  /** Server-processed geometry data (if available) */
+  serverGeometry?: GeometryData | null;
+  /** Skip browser-based processing if server geometry is provided */
+  preferServerGeometry?: boolean;
 }
 
-export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
+export function STEPViewer({
+  url,
+  title,
+  compact = false,
+  pmiData,
+  serverGeometry,
+  preferServerGeometry = true
+}: STEPViewerProps) {
   const { t } = useTranslation();
 
   // State
@@ -51,7 +68,14 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
   const [edgesVisible, setEdgesVisible] = useState(true);
   const [showDimensions, setShowDimensions] = useState(false);
   const [showFeatures, setShowFeatures] = useState(false);
+  const [showPMI, setShowPMI] = useState(false);
   const [dimensions, setDimensions] = useState<ModelDimensions | null>(null);
+
+  // Processing mode tracking
+  const [processingMode, setProcessingMode] = useState<'server' | 'browser' | null>(null);
+
+  // PMI filter state
+  const [pmiFilter, setPmiFilter] = useState<'all' | 'dimensions' | 'tolerances' | 'datums'>('all');
 
   // Three.js refs
   const containerRef = useRef<HTMLDivElement>(null);
@@ -76,8 +100,59 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
   const dimensionLinesRef = useRef<THREE.Group | null>(null);
   const originalMaterialsRef = useRef<THREE.Material[]>([]);
 
-  // Load occt-import-js library from CDN
+  // PMI rendering refs
+  const css2dRendererRef = useRef<CSS2DRenderer | null>(null);
+  const pmiLayerRef = useRef<THREE.Group | null>(null);
+
+  /**
+   * Convert server mesh data (base64 encoded) to Three.js mesh
+   */
+  const createMeshFromServerData = useCallback((meshData: MeshData): THREE.Mesh => {
+    const geometry = new THREE.BufferGeometry();
+
+    // Decode base64 to typed arrays
+    const vertices = decodeFloat32Array(meshData.vertices_base64);
+    const normals = decodeFloat32Array(meshData.normals_base64);
+    const indices = decodeUint32Array(meshData.indices_base64);
+
+    // Set geometry attributes
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
+
+    // Use Uint16Array if indices fit, otherwise Uint32Array
+    const maxIndex = Math.max(...indices);
+    if (maxIndex > 65535) {
+      geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+    } else {
+      geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
+    }
+
+    // Create material
+    const color = new THREE.Color(
+      meshData.color[0],
+      meshData.color[1],
+      meshData.color[2]
+    );
+
+    const material = new THREE.MeshStandardMaterial({
+      color,
+      side: THREE.DoubleSide,
+      metalness: 0.3,
+      roughness: 0.6,
+      flatShading: false,
+    });
+
+    return new THREE.Mesh(geometry, material);
+  }, []);
+
+  // Load occt-import-js library from CDN (only if server geometry is not available)
   useEffect(() => {
+    // If server geometry is provided and preferred, skip loading browser library
+    if (serverGeometry && preferServerGeometry) {
+      setLibrariesLoaded(true);
+      return;
+    }
+
     const loadOcct = async () => {
       if (!window.occtimportjs) {
         const script = document.createElement('script');
@@ -105,7 +180,7 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
     };
 
     loadOcct();
-  }, []);
+  }, [serverGeometry, preferServerGeometry]);
 
   // Initialize Three.js scene
   useEffect(() => {
@@ -170,11 +245,22 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
     controls.dampingFactor = 0.05;
     controlsRef.current = controls;
 
+    // CSS2D Renderer for PMI labels
+    const css2dRenderer = new CSS2DRenderer();
+    css2dRenderer.setSize(container.clientWidth, container.clientHeight);
+    css2dRenderer.domElement.style.position = 'absolute';
+    css2dRenderer.domElement.style.top = '0';
+    css2dRenderer.domElement.style.left = '0';
+    css2dRenderer.domElement.style.pointerEvents = 'none';
+    container.appendChild(css2dRenderer.domElement);
+    css2dRendererRef.current = css2dRenderer;
+
     // Animation loop
     const animate = () => {
       animationFrameRef.current = requestAnimationFrame(animate);
       controls.update();
       renderer.render(scene, camera);
+      css2dRenderer.render(scene, camera);
     };
     animate();
 
@@ -186,6 +272,7 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
+      css2dRenderer.setSize(width, height);
     };
     window.addEventListener('resize', handleResize);
 
@@ -199,17 +286,121 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
       if (container && renderer.domElement.parentNode === container) {
         container.removeChild(renderer.domElement);
       }
+      if (container && css2dRenderer.domElement.parentNode === container) {
+        container.removeChild(css2dRenderer.domElement);
+      }
     };
   }, [librariesLoaded]);
 
-  // Load and parse STEP file
+  /**
+   * Clear existing meshes and edges from the scene
+   */
+  const clearMeshes = useCallback(() => {
+    // Clear existing meshes
+    meshesRef.current.forEach((mesh) => {
+      sceneRef.current?.remove(mesh);
+      mesh.geometry.dispose();
+      if (Array.isArray(mesh.material)) {
+        mesh.material.forEach(m => m.dispose());
+      } else {
+        mesh.material.dispose();
+      }
+    });
+    meshesRef.current = [];
+
+    // Clear existing edges
+    edgesRef.current.forEach((edges) => {
+      sceneRef.current?.remove(edges);
+      edges.geometry.dispose();
+      if (Array.isArray(edges.material)) {
+        edges.material.forEach(m => m.dispose());
+      } else {
+        edges.material.dispose();
+      }
+    });
+    edgesRef.current = [];
+
+    originalPositionsRef.current = [];
+    explosionDataRef.current.initialized = false;
+  }, []);
+
+  /**
+   * Add a mesh to the scene with edges
+   */
+  const addMeshToScene = useCallback((mesh: THREE.Mesh) => {
+    if (!sceneRef.current) return;
+
+    meshesRef.current.push(mesh);
+    originalPositionsRef.current.push(mesh.position.clone());
+    sceneRef.current.add(mesh);
+
+    // Add edges for better contour visibility (threshold angle: 30 degrees)
+    const edgesGeometry = new THREE.EdgesGeometry(mesh.geometry, 30);
+    const edgesMaterial = new THREE.LineBasicMaterial({
+      color: 0x000000,
+      linewidth: 1,
+      opacity: 0.8,
+      transparent: true,
+    });
+    const edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
+    edges.visible = edgesVisible;
+
+    // Position edges with mesh (for exploded view)
+    mesh.add(edges);
+    edgesRef.current.push(edges);
+  }, [edgesVisible]);
+
+  // Load and render geometry (from server or browser)
   useEffect(() => {
-    if (!librariesLoaded || !sceneRef.current || !url) return;
+    if (!librariesLoaded || !sceneRef.current) return;
+
+    // If server geometry is provided and preferred, use it
+    if (serverGeometry && preferServerGeometry && serverGeometry.meshes.length > 0) {
+      setStepLoading(true);
+      setLoadingError(null);
+      setProcessingMode('server');
+
+      try {
+        clearMeshes();
+
+        // Convert server meshes to Three.js meshes
+        for (const meshData of serverGeometry.meshes) {
+          const mesh = createMeshFromServerData(meshData);
+          addMeshToScene(mesh);
+        }
+
+        // Store original materials for feature highlighting
+        originalMaterialsRef.current = meshesRef.current.map(mesh =>
+          (mesh.material as THREE.Material).clone()
+        );
+
+        // Calculate dimensions
+        calculateDimensions();
+
+        // Fit camera to view
+        fitCameraToMeshes();
+        updateGridSize();
+
+        setStepLoading(false);
+      } catch (err) {
+        console.error('Server geometry rendering error:', err);
+        setLoadingError(
+          err instanceof Error ? err.message : 'Failed to render geometry'
+        );
+        setStepLoading(false);
+      }
+
+      return;
+    }
+
+    // Fall back to browser-based STEP processing
+    if (!url) return;
 
     const loadSTEP = async () => {
       try {
         setStepLoading(true);
         setLoadingError(null);
+        setProcessingMode('browser');
 
         // Initialize occt-import-js
         if (!window.occtimportjs) {
@@ -232,32 +423,7 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
           throw new Error('No geometry found in STEP file');
         }
 
-        // Clear existing meshes
-        meshesRef.current.forEach((mesh) => {
-          sceneRef.current?.remove(mesh);
-          mesh.geometry.dispose();
-          if (Array.isArray(mesh.material)) {
-            mesh.material.forEach(m => m.dispose());
-          } else {
-            mesh.material.dispose();
-          }
-        });
-        meshesRef.current = [];
-
-        // Clear existing edges
-        edgesRef.current.forEach((edges) => {
-          sceneRef.current?.remove(edges);
-          edges.geometry.dispose();
-          if (Array.isArray(edges.material)) {
-            edges.material.forEach(m => m.dispose());
-          } else {
-            edges.material.dispose();
-          }
-        });
-        edgesRef.current = [];
-
-        originalPositionsRef.current = [];
-        explosionDataRef.current.initialized = false;
+        clearMeshes();
 
         // Convert to Three.js meshes
         for (let i = 0; i < result.meshes.length; i++) {
@@ -321,24 +487,7 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
 
           // Create and add mesh
           const mesh = new THREE.Mesh(geometry, material);
-          meshesRef.current.push(mesh);
-          originalPositionsRef.current.push(mesh.position.clone());
-          sceneRef.current.add(mesh);
-
-          // Add edges for better contour visibility (threshold angle: 30 degrees)
-          const edgesGeometry = new THREE.EdgesGeometry(geometry, 30);
-          const edgesMaterial = new THREE.LineBasicMaterial({
-            color: 0x000000,
-            linewidth: 1,
-            opacity: 0.8,
-            transparent: true,
-          });
-          const edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
-          edges.visible = edgesVisible;
-
-          // Position edges with mesh (for exploded view)
-          mesh.add(edges);
-          edgesRef.current.push(edges);
+          addMeshToScene(mesh);
         }
 
         // Store original materials for feature highlighting
@@ -364,7 +513,7 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
     };
 
     loadSTEP();
-  }, [url, librariesLoaded, edgesVisible, gridVisible]);
+  }, [url, librariesLoaded, serverGeometry, preferServerGeometry, edgesVisible, gridVisible, clearMeshes, addMeshToScene, createMeshFromServerData, calculateDimensions, fitCameraToMeshes, updateGridSize]);
 
   // Fit camera to meshes
   const fitCameraToMeshes = useCallback(() => {
@@ -910,6 +1059,185 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
     setShowFeatures(!showFeatures);
   }, [showFeatures, applyFeatureHighlighting, removeFeatureHighlighting]);
 
+  // Create PMI visualization layer
+  const createPMIVisualization = useCallback(() => {
+    if (!sceneRef.current || !pmiData) return;
+
+    // Remove existing PMI layer
+    if (pmiLayerRef.current) {
+      // Remove CSS2D objects properly
+      pmiLayerRef.current.traverse((child) => {
+        if (child instanceof CSS2DObject) {
+          if (child.element.parentNode) {
+            child.element.parentNode.removeChild(child.element);
+          }
+        }
+        if (child instanceof THREE.Line || child instanceof THREE.Mesh) {
+          child.geometry?.dispose();
+          if (Array.isArray(child.material)) {
+            child.material.forEach(m => m.dispose());
+          } else if (child.material) {
+            child.material.dispose();
+          }
+        }
+      });
+      sceneRef.current.remove(pmiLayerRef.current);
+    }
+
+    const group = new THREE.Group();
+    group.name = 'pmiAnnotations';
+
+    // PMI dimension line color
+    const pmiColor = 0x00bcd4; // Cyan for PMI
+    const lineMaterial = new THREE.LineBasicMaterial({
+      color: pmiColor,
+      linewidth: 2,
+      transparent: true,
+      opacity: 0.9,
+    });
+
+    // Render dimensions (if filter allows)
+    if (pmiFilter === 'all' || pmiFilter === 'dimensions') {
+      pmiData.dimensions.forEach((dim) => {
+        // Create label element
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'pmi-label';
+        labelDiv.style.cssText = `
+          background: rgba(0, 188, 212, 0.9);
+          color: white;
+          padding: 2px 6px;
+          border-radius: 3px;
+          font-size: 11px;
+          font-family: ui-monospace, monospace;
+          font-weight: 500;
+          white-space: nowrap;
+          pointer-events: auto;
+          cursor: pointer;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        `;
+        labelDiv.textContent = dim.text;
+        labelDiv.title = `${dim.type}: ${dim.text}`;
+
+        const label = new CSS2DObject(labelDiv);
+        label.position.set(dim.position.x, dim.position.y, dim.position.z);
+        group.add(label);
+
+        // Create leader line if points available
+        if (dim.leader_points && dim.leader_points.length >= 2) {
+          const points = dim.leader_points.map(p => new THREE.Vector3(p.x, p.y, p.z));
+          const leaderGeom = new THREE.BufferGeometry().setFromPoints(points);
+          const leaderLine = new THREE.Line(leaderGeom, lineMaterial.clone());
+          group.add(leaderLine);
+        }
+      });
+    }
+
+    // Render geometric tolerances (GD&T) (if filter allows)
+    if (pmiFilter === 'all' || pmiFilter === 'tolerances') {
+      pmiData.geometric_tolerances.forEach((tol, index) => {
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'pmi-gdt-label';
+        labelDiv.style.cssText = `
+          background: rgba(156, 39, 176, 0.9);
+          color: white;
+          padding: 2px 6px;
+          border-radius: 3px;
+          font-size: 11px;
+          font-family: ui-monospace, monospace;
+          font-weight: 500;
+          white-space: nowrap;
+          pointer-events: auto;
+          cursor: pointer;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        `;
+        labelDiv.textContent = tol.text;
+        labelDiv.title = `${tol.type}: ${tol.text}`;
+
+        const label = new CSS2DObject(labelDiv);
+        label.position.set(tol.position.x, tol.position.y, tol.position.z);
+        group.add(label);
+      });
+    }
+
+    // Render datums (if filter allows)
+    if (pmiFilter === 'all' || pmiFilter === 'datums') {
+      pmiData.datums.forEach((datum) => {
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'pmi-datum-label';
+        labelDiv.style.cssText = `
+          background: rgba(76, 175, 80, 0.9);
+          color: white;
+          padding: 2px 8px;
+          border-radius: 3px;
+          font-size: 12px;
+          font-family: ui-monospace, monospace;
+          font-weight: 700;
+          white-space: nowrap;
+          pointer-events: auto;
+          cursor: pointer;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        `;
+        labelDiv.textContent = datum.label;
+        labelDiv.title = `Datum ${datum.label}`;
+
+        const label = new CSS2DObject(labelDiv);
+        label.position.set(datum.position.x, datum.position.y, datum.position.z);
+        group.add(label);
+      });
+    }
+
+    sceneRef.current.add(group);
+    pmiLayerRef.current = group;
+  }, [pmiData, pmiFilter]);
+
+  // Remove PMI visualization
+  const removePMIVisualization = useCallback(() => {
+    if (!sceneRef.current || !pmiLayerRef.current) return;
+
+    pmiLayerRef.current.traverse((child) => {
+      if (child instanceof CSS2DObject) {
+        if (child.element.parentNode) {
+          child.element.parentNode.removeChild(child.element);
+        }
+      }
+      if (child instanceof THREE.Line || child instanceof THREE.Mesh) {
+        child.geometry?.dispose();
+        if (Array.isArray(child.material)) {
+          child.material.forEach(m => m.dispose());
+        } else if (child.material) {
+          child.material.dispose();
+        }
+      }
+    });
+
+    sceneRef.current.remove(pmiLayerRef.current);
+    pmiLayerRef.current = null;
+  }, []);
+
+  // Toggle PMI display
+  const togglePMI = useCallback(() => {
+    if (!showPMI) {
+      createPMIVisualization();
+    } else {
+      removePMIVisualization();
+    }
+    setShowPMI(!showPMI);
+  }, [showPMI, createPMIVisualization, removePMIVisualization]);
+
+  // Re-render PMI when filter changes
+  useEffect(() => {
+    if (showPMI && pmiData) {
+      createPMIVisualization();
+    }
+  }, [pmiFilter, showPMI, pmiData, createPMIVisualization]);
+
+  // Check if PMI data is available
+  const hasPMIData = pmiData && (
+    pmiData.dimensions.length > 0 ||
+    pmiData.geometric_tolerances.length > 0 ||
+    pmiData.datums.length > 0
+  );
+
   return (
     <div className="flex flex-col h-full w-full bg-background">
       {/* Compact Toolbar */}
@@ -1015,6 +1343,23 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
         >
           <Sparkles className="h-3.5 w-3.5" />
         </Button>
+
+        {/* PMI Toggle - only shown when PMI data is available */}
+        {hasPMIData && (
+          <>
+            <div className="w-px h-4 bg-border mx-0.5" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={togglePMI}
+              disabled={stepLoading || meshesRef.current.length === 0}
+              className={cn("h-7 w-7 p-0", showPMI && "bg-cyan-500/20 text-cyan-600")}
+              title={showPMI ? t('parts.cadViewer.hidePMI') : t('parts.cadViewer.showPMI')}
+            >
+              <Crosshair className="h-3.5 w-3.5" />
+            </Button>
+          </>
+        )}
       </div>
 
       {/* 3D Viewer Container */}
@@ -1123,22 +1468,148 @@ export function STEPViewer({ url, title, compact = false }: STEPViewerProps) {
           </div>
         )}
 
+        {/* PMI Legend with Filters */}
+        {showPMI && pmiData && (
+          <div className="absolute bottom-3 left-3 z-10">
+            <div className="glass-card p-2.5 min-w-[180px]">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2">
+                  <Crosshair className="h-3.5 w-3.5 text-cyan-500" />
+                  <span className="text-[10px] font-semibold text-foreground">
+                    {t('parts.cadViewer.pmiAnnotations')}
+                  </span>
+                </div>
+              </div>
+
+              {/* Filter Buttons */}
+              <div className="flex flex-wrap gap-1 mb-2 pb-2 border-b border-border/50">
+                <button
+                  onClick={() => setPmiFilter('all')}
+                  className={cn(
+                    "text-[9px] px-1.5 py-0.5 rounded transition-colors",
+                    pmiFilter === 'all'
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                  )}
+                >
+                  {t('parts.cadViewer.filterAll')}
+                </button>
+                {pmiData.dimensions.length > 0 && (
+                  <button
+                    onClick={() => setPmiFilter('dimensions')}
+                    className={cn(
+                      "text-[9px] px-1.5 py-0.5 rounded transition-colors",
+                      pmiFilter === 'dimensions'
+                        ? "bg-cyan-500 text-white"
+                        : "bg-cyan-500/20 text-cyan-600 hover:bg-cyan-500/30"
+                    )}
+                  >
+                    {t('parts.cadViewer.filterDimensions')}
+                  </button>
+                )}
+                {pmiData.geometric_tolerances.length > 0 && (
+                  <button
+                    onClick={() => setPmiFilter('tolerances')}
+                    className={cn(
+                      "text-[9px] px-1.5 py-0.5 rounded transition-colors",
+                      pmiFilter === 'tolerances'
+                        ? "bg-purple-500 text-white"
+                        : "bg-purple-500/20 text-purple-600 hover:bg-purple-500/30"
+                    )}
+                  >
+                    {t('parts.cadViewer.filterTolerances')}
+                  </button>
+                )}
+                {pmiData.datums.length > 0 && (
+                  <button
+                    onClick={() => setPmiFilter('datums')}
+                    className={cn(
+                      "text-[9px] px-1.5 py-0.5 rounded transition-colors",
+                      pmiFilter === 'datums'
+                        ? "bg-green-500 text-white"
+                        : "bg-green-500/20 text-green-600 hover:bg-green-500/30"
+                    )}
+                  >
+                    {t('parts.cadViewer.filterDatums')}
+                  </button>
+                )}
+              </div>
+
+              {/* Legend */}
+              <div className="space-y-1.5">
+                {(pmiFilter === 'all' || pmiFilter === 'dimensions') && pmiData.dimensions.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-sm bg-cyan-500" />
+                    <span className="text-[10px] text-muted-foreground">
+                      {t('parts.cadViewer.pmiDimensions')} ({pmiData.dimensions.length})
+                    </span>
+                  </div>
+                )}
+                {(pmiFilter === 'all' || pmiFilter === 'tolerances') && pmiData.geometric_tolerances.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-sm bg-purple-500" />
+                    <span className="text-[10px] text-muted-foreground">
+                      {t('parts.cadViewer.pmiTolerances')} ({pmiData.geometric_tolerances.length})
+                    </span>
+                  </div>
+                )}
+                {(pmiFilter === 'all' || pmiFilter === 'datums') && pmiData.datums.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-sm bg-green-500" />
+                    <span className="text-[10px] text-muted-foreground">
+                      {t('parts.cadViewer.pmiDatums')} ({pmiData.datums.length})
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Loading Overlay */}
         {stepLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/90 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-2">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <p className="text-xs text-muted-foreground">{t('parts.cadViewer.loading')}</p>
+              <p className="text-xs text-muted-foreground">
+                {processingMode === 'server'
+                  ? t('parts.cadViewer.processingServer')
+                  : t('parts.cadViewer.processingBrowser')}
+              </p>
+              {processingMode && (
+                <span className={cn(
+                  "text-[10px] px-1.5 py-0.5 rounded-full",
+                  processingMode === 'server'
+                    ? "bg-cyan-500/20 text-cyan-600"
+                    : "bg-amber-500/20 text-amber-600"
+                )}>
+                  {processingMode === 'server'
+                    ? t('parts.cadViewer.serverProcessing')
+                    : t('parts.cadViewer.browserProcessing')}
+                </span>
+              )}
             </div>
           </div>
         )}
 
         {/* Error Display */}
-        {loadingError && (
+        {loadingError && !stepLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background">
             <div className="text-center p-4 max-w-xs">
               <div className="text-destructive text-3xl mb-2 opacity-50">⚠️</div>
-              <p className="text-xs text-muted-foreground">{loadingError}</p>
+              <p className="text-xs text-muted-foreground mb-3">{loadingError}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setLoadingError(null);
+                  setLibrariesLoaded(false);
+                  setTimeout(() => setLibrariesLoaded(true), 100);
+                }}
+                className="text-xs"
+              >
+                {t('parts.cadViewer.retryProcessing')}
+              </Button>
             </div>
           </div>
         )}
