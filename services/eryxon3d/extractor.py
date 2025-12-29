@@ -20,11 +20,14 @@ PMI Extraction Strategy:
 
 import base64
 import logging
+import os
 import struct
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
+
+_FINDATTRIBUTE_SUPPORTED = True
 
 
 def extract_pmi_via_text_parser(file_path: str) -> Dict[str, Any]:
@@ -94,65 +97,185 @@ class ProcessingResult:
 
 def _create_xcaf_document():
     """
-    Create a properly initialized XCAF document.
-
-    Works with pythonocc-core 7.x by directly creating TDocStd_Document
-    instead of using Handle wrappers which may not be fully exposed.
+    Create a properly initialized XCAF document with version-aware API selection.
     """
     from OCC.Core.TCollection import TCollection_ExtendedString
     from OCC.Core.XCAFApp import XCAFApp_Application
 
-    fmt = TCollection_ExtendedString("MDTV-XCAF")
+    fmt_str = "MDTV-XCAF"
+    fmt = TCollection_ExtendedString(fmt_str)
     app = XCAFApp_Application.GetApplication()
 
-    # Method 1: Direct TDocStd_Document creation (pythonocc 7.x preferred)
+    def _pythonocc_version():
+        try:
+            import OCC
+
+            major = getattr(OCC, "PYTHONOCC_VERSION_MAJOR", None)
+            minor = getattr(OCC, "PYTHONOCC_VERSION_MINOR", None)
+            patch = getattr(OCC, "PYTHONOCC_VERSION_PATCH", None)
+            devel = getattr(OCC, "PYTHONOCC_VERSION_DEVEL", "")
+            if all(isinstance(v, int) for v in [major, minor, patch]):
+                return (major, minor, patch, devel)
+        except Exception as occ_err:
+            logger.debug(f"Failed to read pythonocc version: {occ_err}")
+        return None
+
     try:
-        from OCC.Core.TDocStd import TDocStd_Document
+        from OCC.Core.Standard import Standard_Version
 
-        doc = TDocStd_Document(fmt)
-        app.InitDocument(doc)
+        version_str = getattr(Standard_Version, "OCC_VERSION_COMPLETE", None)
+        if version_str:
+            logger.info(f"OCCT version: {version_str}")
+    except Exception as version_err:
+        logger.debug(f"Failed to read OCCT version: {version_err}")
 
-        # Verify the document is valid
-        if hasattr(doc, "Main") and not doc.Main().IsNull():
-            logger.info("XCAF document created via TDocStd_Document")
-            return None, doc  # Return (handle, doc) - handle is None for direct creation
-    except Exception as direct_err:
-        logger.debug(f"Direct document creation failed: {direct_err}")
+    occ_version = _pythonocc_version()
+    if occ_version:
+        logger.info(
+            "pythonocc version: %d.%d.%d%s"
+            % (occ_version[0], occ_version[1], occ_version[2], occ_version[3])
+        )
 
-    # Method 2: Try Handle wrapper approach (older pythonocc versions)
+    # Avoid direct TDocStd_Document creation only when explicitly disabled.
+    allow_direct = True
+    if occ_version:
+        allow_direct = (occ_version[0], occ_version[1]) >= (7, 8)
+    if os.getenv("XCAF_ALLOW_DIRECT") == "1":
+        allow_direct = True
+    if os.getenv("XCAF_DISABLE_DIRECT") == "1":
+        allow_direct = False
+    if not allow_direct:
+        logger.info("Direct TDocStd_Document creation disabled for this environment")
+
+    def _validate_document(doc) -> bool:
+        if doc is None:
+            logger.warning("XCAF document is None")
+            return False
+        if not hasattr(doc, "Main"):
+            logger.warning("XCAF document missing Main()")
+            return False
+        main_label = doc.Main()
+        if hasattr(main_label, "IsNull") and main_label.IsNull():
+            logger.warning("XCAF main label is null")
+            return False
+        return True
+
+    # Method 1: Try Handle wrapper approach (older pythonocc versions)
     try:
         from OCC.Core.TDocStd import Handle_TDocStd_Document
 
+        logger.debug("Attempting Handle_TDocStd_Document creation")
         h_doc = Handle_TDocStd_Document()
         app.NewDocument(fmt, h_doc)
         if not h_doc.IsNull():
             doc_obj = h_doc.GetObject()
-            if doc_obj is not None:
-                logger.info("XCAF document created via Handle wrapper")
+            if doc_obj is not None and _validate_document(doc_obj):
+                logger.info("XCAF document created via Handle_TDocStd_Document")
                 return h_doc, doc_obj
+        logger.warning("Handle document creation produced invalid XCAF document")
     except Exception as handle_err:
-        logger.debug(f"Handle document creation failed: {handle_err}")
+        import traceback
 
-    # Method 3: Try using NewDocument with output parameter style
+        logger.warning(f"Handle document creation failed: {handle_err}")
+        logger.debug(traceback.format_exc())
+
+    # Method 2: Try NewDocument return style (varies by binding)
     try:
-        from OCC.Core.TDocStd import TDocStd_Document
-
-        # Some pythonocc versions return the document directly
+        logger.debug("Attempting NewDocument return style")
         result = app.NewDocument(fmt)
         if result is not None:
             if hasattr(result, "GetObject"):
                 doc = result.GetObject()
-                if doc is not None:
-                    logger.info("XCAF document created via NewDocument return")
+                if doc is not None and _validate_document(doc):
+                    logger.info("XCAF document created via NewDocument return handle")
                     return result, doc
-            elif hasattr(result, "Main"):
-                logger.info("XCAF document created via NewDocument direct")
+            if hasattr(result, "Main") and _validate_document(result):
+                logger.info("XCAF document created via NewDocument return doc")
                 return None, result
     except Exception as new_doc_err:
-        logger.debug(f"NewDocument return style failed: {new_doc_err}")
+        import traceback
 
-    logger.warning("All XCAF document creation methods failed")
+        logger.warning(f"NewDocument return style failed: {new_doc_err}")
+        logger.debug(traceback.format_exc())
+
+    # Method 3: Direct TDocStd_Document creation (opt-in or older bindings)
+    if allow_direct:
+        try:
+            from OCC.Core.TDocStd import TDocStd_Document
+
+            logger.debug("Attempting direct TDocStd_Document creation")
+            doc = TDocStd_Document(fmt_str)
+            app.InitDocument(doc)
+
+            if _validate_document(doc):
+                logger.info("XCAF document created via TDocStd_Document")
+                return None, doc
+            logger.warning("Direct document creation produced invalid XCAF document")
+        except Exception as direct_err:
+            import traceback
+
+            logger.warning(f"Direct document creation failed: {direct_err}")
+            logger.debug(traceback.format_exc())
+
+    logger.error("All XCAF document creation methods failed")
     return None
+
+
+def _label_find_attribute(label, guid, attr) -> bool:
+    global _FINDATTRIBUTE_SUPPORTED
+    if not _FINDATTRIBUTE_SUPPORTED:
+        return False
+    try:
+        return label.FindAttribute(guid, attr)
+    except Exception as attr_err:
+        logger.debug(f"Label FindAttribute failed: {attr_err}")
+        _FINDATTRIBUTE_SUPPORTED = False
+        return False
+
+
+def _harray_to_list(arr) -> List[float]:
+    if arr is None or not hasattr(arr, "Lower") or not hasattr(arr, "Upper"):
+        return []
+    values = []
+    for i in range(arr.Lower(), arr.Upper() + 1):
+        try:
+            values.append(arr.Value(i))
+        except Exception:
+            break
+    return values
+
+
+def _as_string(value) -> Optional[str]:
+    if value is None:
+        return None
+    if hasattr(value, "ToCString"):
+        try:
+            return value.ToCString()
+        except Exception:
+            return None
+    return str(value)
+
+
+def _parse_dimtol_result(result):
+    success = True
+    kind = None
+    name = None
+    description = None
+    if isinstance(result, tuple):
+        if result and isinstance(result[0], bool):
+            success = result[0]
+            result = result[1:]
+        if len(result) > 0:
+            kind = result[0]
+        if len(result) > 1:
+            name = result[1]
+        if len(result) > 2:
+            description = result[2]
+    elif isinstance(result, bool):
+        success = result
+    else:
+        kind = result
+    return success, kind, name, description
 
 
 def extract_geometry_and_pmi(
@@ -248,20 +371,32 @@ def extract_geometry_and_pmi(
                         from OCC.Core.Interface import Interface_CheckIterator
 
                         check_iter = Interface_CheckIterator()
-                        model.FillChecks(check_iter)
+                        if hasattr(model, "FillChecks"):
+                            model.FillChecks(check_iter)
+                        else:
+                            logger.debug(
+                                "Interface model does not support FillChecks; skipping validation checks"
+                            )
 
                         has_fails = False
                         fail_count = 0
-                        for i in range(1, check_iter.NbChecks() + 1):
-                            check = check_iter.Value(i)
-                            if check.HasFailed():
-                                has_fails = True
-                                fail_count += 1
-                                if fail_count <= 5:  # Log first 5 failures
-                                    for j in range(1, check.NbFails() + 1):
-                                        logger.warning(
-                                            f"STEP validation fail: {check.CFail(j)}"
-                                        )
+                        if hasattr(check_iter, "NbChecks") and hasattr(
+                            check_iter, "Value"
+                        ):
+                            for i in range(1, check_iter.NbChecks() + 1):
+                                check = check_iter.Value(i)
+                                if check.HasFailed():
+                                    has_fails = True
+                                    fail_count += 1
+                                    if fail_count <= 5:  # Log first 5 failures
+                                        for j in range(1, check.NbFails() + 1):
+                                            logger.warning(
+                                                f"STEP validation fail: {check.CFail(j)}"
+                                            )
+                        else:
+                            logger.debug(
+                                "Interface_CheckIterator lacks NbChecks/Value; skipping validation iteration"
+                            )
 
                         if has_fails:
                             logger.warning(
@@ -300,7 +435,15 @@ def extract_geometry_and_pmi(
                     if doc is not None:
                         shape_tool = XCAFDoc_DocumentTool.ShapeTool(doc.Main())
                         shapes = []
-                        shape_tool.GetFreeShapes(shapes)
+                        try:
+                            from OCC.Core.TDF import TDF_LabelSequence
+
+                            seq = TDF_LabelSequence()
+                            shape_tool.GetFreeShapes(seq)
+                            for i in range(1, seq.Length() + 1):
+                                shapes.append(seq.Value(i))
+                        except Exception:
+                            shape_tool.GetFreeShapes(shapes)
                         if shapes:
                             from OCC.Core.BRep import BRep_Builder
                             from OCC.Core.TopoDS import TopoDS_Compound
@@ -1246,76 +1389,116 @@ def extract_edge_data(edge, curve_id: str) -> Optional[Dict]:
         return None
 
 
-def extract_dimension_from_label(label, index: int) -> Optional[Dict]:
+def extract_dimension_from_label(
+    label, index: int, dim_tol_tool=None
+) -> Optional[Dict]:
     """Extract a dimension from its label."""
-    from OCC.Core.XCAFDoc import XCAFDoc_Dimension
+    try:
+        from OCC.Core.XCAFDoc import XCAFDoc_Dimension
+
+        dim_attr = XCAFDoc_Dimension()
+        if _label_find_attribute(label, XCAFDoc_Dimension.GetID(), dim_attr):
+            dim_obj = dim_attr.GetObject()
+            if dim_obj is None:
+                return None
+
+            # Get type
+            dim_type = dim_obj.GetType()
+            type_name = {
+                0: "linear",
+                1: "linear",
+                2: "angular",
+                3: "radius",
+                4: "diameter",
+                5: "ordinate",
+            }.get(dim_type, "linear")
+
+            # Get value
+            value = 0.0
+            if hasattr(dim_obj, "GetValue"):
+                value = dim_obj.GetValue()
+
+            # Get tolerance
+            tolerance = None
+            if hasattr(dim_obj, "HasLowerBound") and hasattr(dim_obj, "HasUpperBound"):
+                if dim_obj.HasLowerBound() or dim_obj.HasUpperBound():
+                    upper = dim_obj.GetUpperBound() if dim_obj.HasUpperBound() else 0
+                    lower = dim_obj.GetLowerBound() if dim_obj.HasLowerBound() else 0
+                    tolerance = {"upper": upper, "lower": lower, "type": "bilateral"}
+
+            # Get position
+            position = {"x": 0, "y": 0, "z": 0}
+            if hasattr(dim_obj, "GetPointTextAttach"):
+                pnt = dim_obj.GetPointTextAttach()
+                position = {"x": pnt.X(), "y": pnt.Y(), "z": pnt.Z()}
+
+            # Format text
+            text = f"{value:.2f}"
+            if tolerance:
+                if tolerance["upper"] == abs(tolerance["lower"]):
+                    text += f" ±{tolerance['upper']:.2f}"
+                else:
+                    text += f" +{tolerance['upper']:.2f}/{tolerance['lower']:.2f}"
+            text += " mm"
+
+            if type_name == "radius":
+                text = "R" + text
+            elif type_name == "diameter":
+                text = "⌀" + text
+
+            return {
+                "id": f"dim_{index}",
+                "type": type_name,
+                "value": value,
+                "unit": "mm",
+                "tolerance": tolerance,
+                "text": text,
+                "position": position,
+                "leader_points": [],
+            }
+
+    except Exception as e:
+        logger.debug(f"Could not extract dimension from attribute: {e}")
+
+    if dim_tol_tool is None:
+        return None
 
     try:
-        dim_attr = XCAFDoc_Dimension()
-        if not label.FindAttribute(XCAFDoc_Dimension.GetID(), dim_attr):
+        from OCC.Core.TColStd import TColStd_HArray1OfReal
+
+        if hasattr(dim_tol_tool, "IsDimension") and not dim_tol_tool.IsDimension(label):
             return None
 
-        dim_obj = dim_attr.GetObject()
-        if dim_obj is None:
+        values = TColStd_HArray1OfReal(1, 3)
+        result = dim_tol_tool.GetDimTol(label, values)
+        success, _, name, description = _parse_dimtol_result(result)
+        if success is False:
             return None
 
-        # Get type
-        dim_type = dim_obj.GetType()
-        type_name = {
-            0: "linear",
-            1: "linear",
-            2: "angular",
-            3: "radius",
-            4: "diameter",
-            5: "ordinate",
-        }.get(dim_type, "linear")
-
-        # Get value
-        value = 0.0
-        if hasattr(dim_obj, "GetValue"):
-            value = dim_obj.GetValue()
-
-        # Get tolerance
+        vals = _harray_to_list(values)
+        value = vals[0] if vals else 0.0
         tolerance = None
-        if hasattr(dim_obj, "HasLowerBound") and hasattr(dim_obj, "HasUpperBound"):
-            if dim_obj.HasLowerBound() or dim_obj.HasUpperBound():
-                upper = dim_obj.GetUpperBound() if dim_obj.HasUpperBound() else 0
-                lower = dim_obj.GetLowerBound() if dim_obj.HasLowerBound() else 0
-                tolerance = {"upper": upper, "lower": lower, "type": "bilateral"}
+        if len(vals) >= 3:
+            tolerance = {"upper": vals[1], "lower": vals[2], "type": "bilateral"}
 
-        # Get position
-        position = {"x": 0, "y": 0, "z": 0}
-        if hasattr(dim_obj, "GetPointTextAttach"):
-            pnt = dim_obj.GetPointTextAttach()
-            position = {"x": pnt.X(), "y": pnt.Y(), "z": pnt.Z()}
-
-        # Format text
-        text = f"{value:.2f}"
-        if tolerance:
-            if tolerance["upper"] == abs(tolerance["lower"]):
-                text += f" ±{tolerance['upper']:.2f}"
-            else:
-                text += f" +{tolerance['upper']:.2f}/{tolerance['lower']:.2f}"
-        text += " mm"
-
-        if type_name == "radius":
-            text = "R" + text
-        elif type_name == "diameter":
-            text = "⌀" + text
+        name_str = _as_string(name)
+        desc_str = _as_string(description)
+        text = " ".join([v for v in [name_str, desc_str] if v])
+        if not text:
+            text = f"{value:.3f} mm" if value else "dimension"
 
         return {
             "id": f"dim_{index}",
-            "type": type_name,
+            "type": "linear",
             "value": value,
             "unit": "mm",
             "tolerance": tolerance,
             "text": text,
-            "position": position,
+            "position": {"x": 0, "y": 0, "z": 0},
             "leader_points": [],
         }
-
     except Exception as e:
-        logger.debug(f"Could not extract dimension: {e}")
+        logger.debug(f"Dimension tool extraction failed: {e}")
         return None
 
 
