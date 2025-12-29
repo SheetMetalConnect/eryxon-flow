@@ -7,6 +7,10 @@ import { useTranslation } from 'react-i18next';
 /**
  * Feature flag definitions for Eryxon MES
  * Each flag controls visibility of a major module or feature group
+ *
+ * Note: Some features require external services (marked below).
+ * These are optional components that must be separately deployed.
+ * See docs/SELF_HOSTING_GUIDE.md for deployment instructions.
  */
 export interface FeatureFlags {
   // Core modules (always enabled - listed for reference)
@@ -24,10 +28,14 @@ export interface FeatureFlags {
   issues: boolean;          // Issues tracking
   capacity: boolean;        // Capacity planning
   assignments: boolean;     // Assignments management
+
+  // External service features (require separate deployment)
+  advancedCAD: boolean;     // PMI/MBD extraction - requires eryxon3d service (services/eryxon3d)
 }
 
 /**
- * Default feature flags - all features enabled by default
+ * Default feature flags - core features enabled, external services disabled by default
+ * External service features (advancedCAD) require separate deployment and are opt-in
  */
 export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   analytics: true,
@@ -38,6 +46,8 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   issues: true,
   capacity: true,
   assignments: true,
+  // External service features - disabled by default (require separate deployment)
+  advancedCAD: false,
 };
 
 /**
@@ -107,6 +117,14 @@ export const FEATURE_FLAG_METADATA: FeatureFlagMeta[] = [
     descriptionKey: 'featureFlags.assignments.description',
     icon: 'UserCheck',
     category: 'operations',
+  },
+  // External service features
+  {
+    key: 'advancedCAD',
+    labelKey: 'featureFlags.advancedCAD.label',
+    descriptionKey: 'featureFlags.advancedCAD.description',
+    icon: 'Box',
+    category: 'admin',
   },
 ];
 
@@ -201,6 +219,7 @@ export function useFeatureFlags() {
       issues: false,
       capacity: false,
       assignments: false,
+      advancedCAD: false,
     };
     updateFlags.mutate(allDisabled);
   };

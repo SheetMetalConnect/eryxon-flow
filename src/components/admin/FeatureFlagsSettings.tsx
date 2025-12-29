@@ -14,6 +14,7 @@ import {
   AlertCircle,
   CalendarClock,
   UserCheck,
+  Box,
 } from 'lucide-react';
 import {
   useFeatureFlags,
@@ -33,6 +34,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   AlertCircle,
   CalendarClock,
   UserCheck,
+  Box,
 };
 
 // Category labels and order
@@ -41,6 +43,11 @@ const CATEGORIES = [
   { key: 'analytics', labelKey: 'featureFlags.categories.analytics' },
   { key: 'admin', labelKey: 'featureFlags.categories.admin' },
 ] as const;
+
+// External services category (shown separately with warning)
+
+// Feature flags that require external services
+const EXTERNAL_SERVICE_FLAGS = ['advancedCAD'] as const;
 
 interface FeatureFlagItemProps {
   meta: FeatureFlagMeta;
@@ -52,6 +59,7 @@ interface FeatureFlagItemProps {
 function FeatureFlagItem({ meta, enabled, onToggle, disabled }: FeatureFlagItemProps) {
   const { t } = useTranslation();
   const Icon = ICON_MAP[meta.icon] || Activity;
+  const isExternalService = EXTERNAL_SERVICE_FLAGS.includes(meta.key as typeof EXTERNAL_SERVICE_FLAGS[number]);
 
   return (
     <div
@@ -59,7 +67,8 @@ function FeatureFlagItem({ meta, enabled, onToggle, disabled }: FeatureFlagItemP
         'group flex items-center justify-between rounded-lg border p-4 transition-all duration-200',
         enabled
           ? 'border-primary/30 bg-primary/5 hover:border-primary/50'
-          : 'border-border/50 bg-muted/30 hover:border-border'
+          : 'border-border/50 bg-muted/30 hover:border-border',
+        isExternalService && 'border-dashed'
       )}
     >
       <div className="flex items-center gap-4">
@@ -81,6 +90,11 @@ function FeatureFlagItem({ meta, enabled, onToggle, disabled }: FeatureFlagItemP
             )}>
               {t(meta.labelKey)}
             </span>
+            {isExternalService && (
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/50 text-amber-600">
+                External
+              </Badge>
+            )}
             {enabled && (
               <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/20 text-primary border-0">
                 {t('featureFlags.enabled')}
@@ -90,6 +104,11 @@ function FeatureFlagItem({ meta, enabled, onToggle, disabled }: FeatureFlagItemP
           <p className="text-sm text-muted-foreground">
             {t(meta.descriptionKey)}
           </p>
+          {isExternalService && (
+            <p className="text-xs text-amber-600/80 mt-1">
+              {t('featureFlags.externalServiceNote')}
+            </p>
+          )}
         </div>
       </div>
       <Switch

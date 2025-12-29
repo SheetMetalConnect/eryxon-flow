@@ -488,6 +488,11 @@
     "assignments": {
       "label": "Assignments",
       "description": "Work assignments and operator scheduling"
-    }
+    },
+    "advancedCAD": {
+      "label": "Advanced CAD (PMI/MBD)",
+      "description": "Server-side CAD processing with PMI/MBD extraction. Requires external eryxon3d service."
+    },
+    "externalServiceNote": "This feature requires an external service. See the Self-Hosting Guide for deployment instructions."
   }
 }
