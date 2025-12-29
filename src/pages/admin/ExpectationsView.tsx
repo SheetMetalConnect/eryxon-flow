@@ -214,7 +214,7 @@ const ExpectationsView: React.FC = () => {
         title={t('admin:expectations.title', 'Expectations')}
         description={t('admin:expectations.description', 'Explicit beliefs about what should happen. Each expectation is versioned and immutable.')}
         action={{
-          label: t('common:refresh', 'Refresh'),
+          label: t('common:common.refresh'),
           onClick: () => refetch(),
           icon: RefreshCw,
         }}

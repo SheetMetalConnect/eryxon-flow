@@ -50,7 +50,8 @@
     "optional": "optional",
     "done": "Fertig",
     "creating": "Erstellen...",
-    "helpAndDocs": "Hilfe & Dokumentation"
+    "helpAndDocs": "Hilfe & Dokumentation",
+    "refresh": "Aktualisieren"
   },
   "forms": {
     "required": "Dieses Feld ist erforderlich",

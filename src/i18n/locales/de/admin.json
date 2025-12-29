@@ -200,7 +200,14 @@
     "statsOpen": "Offene Ausnahmen",
     "statsAcknowledged": "Bestätigt",
     "statsResolved": "Heute Gelöst",
-    "statsDismissed": "Abgelehnt"
+    "statsDismissed": "Abgelehnt",
+    "noOpenExceptions": "Keine offenen Ausnahmen",
+    "all": "Alle",
+    "avgResolutionTime": "Durchschn. Lösungszeit",
+    "resolveDescription": "Dokumentieren Sie die Grundursache und die ergriffenen Korrekturmaßnahmen.",
+    "dismissDescription": "Erklären Sie, warum diese Ausnahme nicht handlungsbedarf hat.",
+    "markResolved": "Als gelöst markieren",
+    "resolution": "Lösung"
   },
   "expectations": {
     "title": "Erwartungen",
@@ -221,7 +228,11 @@
     "noExpectationsDescription": "Erwartungen werden automatisch erstellt, wenn Aufträge ein Fälligkeitsdatum erhalten oder Vorgänge geplant werden.",
     "whatIsTitle": "Was ist eine Erwartung?",
     "whatIsDescription": "Eine Erwartung ist eine explizite Überzeugung darüber, was in der Zukunft passieren sollte. Wenn die Realität von der Erwartung abweicht, wird eine Ausnahme ausgelöst.",
-    "onlyActiveEvaluated": "Nur aktive Erwartungen werden gegen die Realität ausgewertet"
+    "onlyActiveEvaluated": "Nur aktive Erwartungen werden gegen die Realität ausgewertet",
+    "created": "Erwartung erstellt",
+    "createFailed": "Erwartung konnte nicht erstellt werden",
+    "updated": "Erwartung aktualisiert (Verlauf beibehalten)",
+    "updateFailed": "Erwartung konnte nicht aktualisiert werden"
   },
   "myActivity": {
     "title": "Meine Aktivität",

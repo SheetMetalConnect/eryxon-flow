@@ -437,7 +437,14 @@
     "statsOpen": "Open Uitzonderingen",
     "statsAcknowledged": "Bevestigd",
     "statsResolved": "Vandaag Opgelost",
-    "statsDismissed": "Afgewezen"
+    "statsDismissed": "Afgewezen",
+    "noOpenExceptions": "Geen open uitzonderingen",
+    "all": "Alles",
+    "avgResolutionTime": "Gem. Oplostijd",
+    "resolveDescription": "Documenteer de hoofdoorzaak en genomen corrigerende actie.",
+    "dismissDescription": "Leg uit waarom deze uitzondering niet actiegericht is.",
+    "markResolved": "Markeer als opgelost",
+    "resolution": "Oplossing"
   },
   "expectations": {
     "title": "Verwachtingen",
@@ -458,7 +465,11 @@
     "noExpectationsDescription": "Verwachtingen worden automatisch aangemaakt wanneer opdrachten een vervaldatum krijgen of bewerkingen worden gepland.",
     "whatIsTitle": "Wat is een Verwachting?",
     "whatIsDescription": "Een verwachting is een expliciete overtuiging over wat in de toekomst zou moeten gebeuren. Wanneer de werkelijkheid afwijkt van de verwachting, wordt een uitzondering gemaakt.",
-    "onlyActiveEvaluated": "Alleen actieve verwachtingen worden geëvalueerd tegen de werkelijkheid"
+    "onlyActiveEvaluated": "Alleen actieve verwachtingen worden geëvalueerd tegen de werkelijkheid",
+    "created": "Verwachting aangemaakt",
+    "createFailed": "Aanmaken verwachting mislukt",
+    "updated": "Verwachting bijgewerkt (historie behouden)",
+    "updateFailed": "Bijwerken verwachting mislukt"
   },
   "myActivity": {
     "title": "Mijn activiteit",

@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
@@ -19,6 +20,7 @@ interface UseExpectationsOptions {
 
 export function useExpectations(options: UseExpectationsOptions = {}) {
   const { entityType, entityId, activeOnly = false, limit = 100 } = options
+  const { t } = useTranslation(['admin', 'common'])
   const { profile } = useAuth()
   const queryClient = useQueryClient()
 
@@ -113,10 +115,10 @@ export function useExpectations(options: UseExpectationsOptions = {}) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expectations'] })
-      toast.success('Expectation created')
+      toast.success(t('admin:expectations.created'))
     },
     onError: (error) => {
-      toast.error('Failed to create expectation')
+      toast.error(t('admin:expectations.createFailed'))
       console.error(error)
     },
   })
@@ -150,10 +152,10 @@ export function useExpectations(options: UseExpectationsOptions = {}) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expectations'] })
-      toast.success('Expectation updated (history preserved)')
+      toast.success(t('admin:expectations.updated'))
     },
     onError: (error) => {
-      toast.error('Failed to update expectation')
+      toast.error(t('admin:expectations.updateFailed'))
       console.error(error)
     },
   })

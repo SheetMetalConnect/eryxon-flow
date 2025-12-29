@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
@@ -20,6 +21,7 @@ interface UseExceptionsOptions {
 
 export function useExceptions(options: UseExceptionsOptions = {}) {
   const { status = 'all', limit = 50 } = options
+  const { t } = useTranslation(['admin', 'common'])
   const { profile } = useAuth()
   const queryClient = useQueryClient()
 
@@ -96,10 +98,10 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exceptions'] })
       queryClient.invalidateQueries({ queryKey: ['exception-stats'] })
-      toast.success('Exception acknowledged')
+      toast.success(t('admin:exceptionInbox.exceptionAcknowledged'))
     },
     onError: (error) => {
-      toast.error('Failed to acknowledge exception')
+      toast.error(t('admin:exceptionInbox.actionFailed'))
       console.error(error)
     },
   })
@@ -131,10 +133,10 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exceptions'] })
       queryClient.invalidateQueries({ queryKey: ['exception-stats'] })
-      toast.success('Exception resolved')
+      toast.success(t('admin:exceptionInbox.exceptionResolved'))
     },
     onError: (error) => {
-      toast.error('Failed to resolve exception')
+      toast.error(t('admin:exceptionInbox.actionFailed'))
       console.error(error)
     },
   })
@@ -157,10 +159,10 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exceptions'] })
       queryClient.invalidateQueries({ queryKey: ['exception-stats'] })
-      toast.success('Exception dismissed')
+      toast.success(t('admin:exceptionInbox.exceptionDismissed'))
     },
     onError: (error) => {
-      toast.error('Failed to dismiss exception')
+      toast.error(t('admin:exceptionInbox.actionFailed'))
       console.error(error)
     },
   })
