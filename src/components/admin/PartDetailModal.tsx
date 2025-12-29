@@ -547,6 +547,9 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     return (
       <Dialog open onOpenChange={onClose}>
         <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("parts.loadingPartDetails")}</DialogTitle>
+          </DialogHeader>
           <div className="text-center py-8">{t("parts.loadingPartDetails")}</div>
         </DialogContent>
       </Dialog>
@@ -926,7 +929,10 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               )}
             </div>
           )}
+            </TabsContent>
 
+            {/* Files Tab */}
+            <TabsContent value="files" className="p-4 sm:p-6 space-y-5 m-0">
           {/* Files Section */}
           <div>
             <div className="flex justify-between items-center mb-3">
@@ -1065,7 +1071,10 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               }}
             />
           </div>
+            </TabsContent>
 
+            {/* Operations Tab - Second Section (NCRs and Operations List) */}
+            <TabsContent value="operations" className="p-4 sm:p-6 space-y-5 m-0">
           {/* NCRs / Issues Summary */}
           <IssuesSummarySection partId={partId} />
 
