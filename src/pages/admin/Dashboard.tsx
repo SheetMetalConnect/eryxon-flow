@@ -467,7 +467,18 @@ export default function Dashboard() {
   };
 
   const handleStopAllClockings = async () => {
-    if (!profile?.tenant_id) return;
+    if (!profile?.tenant_id) {
+      console.error("No tenant ID available");
+      return;
+    }
+
+    if (activeWork.length === 0) {
+      toast({
+        title: t("dashboard.noActiveClockings", "No active clockings"),
+        description: t("dashboard.noActiveClockingsDescription", "There are no active time entries to stop."),
+      });
+      return;
+    }
 
     setStoppingAll(true);
     try {
@@ -476,8 +487,9 @@ export default function Dashboard() {
         title: t("dashboard.allClockingsStopped"),
         description: t("dashboard.allClockingsStoppedDescription", { count: stoppedCount }),
       });
-      loadData();
+      await loadData();
     } catch (error: any) {
+      console.error("Failed to stop all clockings:", error);
       toast({
         variant: "destructive",
         title: t("dashboard.stopAllFailed"),
