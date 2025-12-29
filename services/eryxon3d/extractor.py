@@ -40,26 +40,6 @@ def _create_xcaf_document():
     fmt = TCollection_ExtendedString("MDTV-XCAF")
     app = XCAFApp_Application.GetApplication()
 
-    def _unwrap_doc(candidate):
-        if candidate is None:
-            return None, None
-        if hasattr(candidate, "GetObject"):
-            doc_obj = candidate.GetObject()
-            return candidate, doc_obj
-        if hasattr(candidate, "Main"):
-            return None, candidate
-        return None, None
-
-    try:
-        candidate = app.NewDocument(fmt)
-        doc_handle, doc_obj = _unwrap_doc(candidate)
-        if doc_obj is not None and not (
-            hasattr(doc_obj, "IsNull") and doc_obj.IsNull()
-        ):
-            return doc_handle, doc_obj
-    except Exception as newdoc_err:
-        logger.warning(f"XCAF NewDocument(fmt) failed: {newdoc_err}")
-
     try:
         from OCC.Core.TDocStd import Handle_TDocStd_Document
 
@@ -69,19 +49,6 @@ def _create_xcaf_document():
             return h_doc, h_doc.GetObject()
     except Exception as handle_err:
         logger.warning(f"XCAF handle document init failed: {handle_err}")
-
-    try:
-        from OCC.Core.TDocStd import TDocStd_Document
-
-        doc = TDocStd_Document(fmt)
-        try:
-            app.NewDocument(fmt, doc)
-        except Exception as doc_new_err:
-            logger.warning(f"XCAF NewDocument with TDocStd failed: {doc_new_err}")
-        if not (hasattr(doc, "IsNull") and doc.IsNull()):
-            return None, doc
-    except Exception as doc_err:
-        logger.warning(f"XCAF document init via TDocStd_Document failed: {doc_err}")
 
     return None
 

@@ -2,174 +2,339 @@
   "summary": {
     "total_files": 33,
     "successes": 0,
-    "failures": 0,
-    "crashes": 33
+    "failures": 33,
+    "crashes": 0
   },
   "results": [
     {
       "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ctc_01_asme1_rd.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 228,
+      "geometry": {
+        "total_vertices": 3012,
+        "total_faces": 2832
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ctc_02_asme1_rc.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 548,
+      "geometry": {
+        "total_vertices": 19734,
+        "total_faces": 21616
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ctc_03_asme1_rc.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 94,
+      "geometry": {
+        "total_vertices": 3430,
+        "total_faces": 3224
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ctc_04_asme1_rd.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 374,
+      "geometry": {
+        "total_vertices": 14707,
+        "total_faces": 15658
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ctc_05_asme1_rd.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 159,
+      "geometry": {
+        "total_vertices": 6577,
+        "total_faces": 7025
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ftc_06_asme1_rd.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 123,
+      "geometry": {
+        "total_vertices": 6258,
+        "total_faces": 7272
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ftc_07_asme1_rd.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 182,
+      "geometry": {
+        "total_vertices": 7602,
+        "total_faces": 8244
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ftc_08_asme1_rc.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 188,
+      "geometry": {
+        "total_vertices": 7008,
+        "total_faces": 7102
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ftc_09_asme1_rd.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 142,
+      "geometry": {
+        "total_vertices": 5068,
+        "total_faces": 4892
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ftc_10_asme1_rb.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 207,
+      "geometry": {
+        "total_vertices": 9853,
+        "total_faces": 11440
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ftc_11_asme1_rb.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 34,
+      "geometry": {
+        "total_vertices": 2212,
+        "total_faces": 3766
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/AP203 with PMI/nist_ctc_01_asme1_ap203.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 114,
+      "geometry": {
+        "total_vertices": 3012,
+        "total_faces": 2832
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/AP203 with PMI/nist_ctc_02_asme1_ap203.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 511,
+      "geometry": {
+        "total_vertices": 19199,
+        "total_faces": 21190
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/AP203 with PMI/nist_ctc_03_asme1_ap203.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 131,
+      "geometry": {
+        "total_vertices": 3430,
+        "total_faces": 3224
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/AP203 with PMI/nist_ctc_04_asme1_ap203.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 331,
+      "geometry": {
+        "total_vertices": 14500,
+        "total_faces": 15636
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/AP203 with PMI/nist_ctc_05_asme1_ap203.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 152,
+      "geometry": {
+        "total_vertices": 6412,
+        "total_faces": 6974
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/nist_ctc_01_asme1_ap242-e1.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 87,
+      "geometry": {
+        "total_vertices": 2480,
+        "total_faces": 2340
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/nist_ctc_02_asme1_ap242-e2.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 580,
+      "geometry": {
+        "total_vertices": 18885,
+        "total_faces": 20586
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/nist_ctc_03_asme1_ap242-e2.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 94,
+      "geometry": {
+        "total_vertices": 2892,
+        "total_faces": 2720
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/nist_ctc_04_asme1_ap242-e1.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 387,
+      "geometry": {
+        "total_vertices": 14248,
+        "total_faces": 15264
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/nist_ctc_05_asme1_ap242-e1.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 157,
+      "geometry": {
+        "total_vertices": 6437,
+        "total_faces": 6984
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/nist_ftc_06_asme1_ap242-e2.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 184,
+      "geometry": {
+        "total_vertices": 6493,
+        "total_faces": 7390
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/nist_ftc_07_asme1_ap242-e2.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 291,
+      "geometry": {
+        "total_vertices": 8547,
+        "total_faces": 9371
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/nist_ftc_08_asme1_ap242-e1-tg.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 84,
+      "geometry": {
+        "total_vertices": 3788,
+        "total_faces": 3377
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/nist_ftc_08_asme1_ap242-e2.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 279,
+      "geometry": {
+        "total_vertices": 6936,
+        "total_faces": 7072
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/nist_ftc_09_asme1_ap242-e1.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 262,
+      "geometry": {
+        "total_vertices": 5184,
+        "total_faces": 4998
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/nist_ftc_10_asme1_ap242-e2.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 401,
+      "geometry": {
+        "total_vertices": 12133,
+        "total_faces": 14264
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/nist_ftc_11_asme1_ap242-e2.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 106,
+      "geometry": {
+        "total_vertices": 3426,
+        "total_faces": 5310
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/nist_stc_06_asme1_ap242-e3.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 146,
+      "geometry": {
+        "total_vertices": 6263,
+        "total_faces": 7259
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/nist_stc_07_asme1_ap242-e3.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 292,
+      "geometry": {
+        "total_vertices": 8191,
+        "total_faces": 8870
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/nist_stc_08_asme1_ap242-e3.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 231,
+      "geometry": {
+        "total_vertices": 7002,
+        "total_faces": 7094
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/nist_stc_09_asme1_ap242-e3.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 283,
+      "geometry": {
+        "total_vertices": 5002,
+        "total_faces": 4892
+      },
+      "error": "PMI extraction unavailable"
     },
     {
       "file": "/app/NIST-PMI-STEP-Files/nist_stc_10_asme1_ap242-e2.stp",
       "success": false,
-      "error": "Worker crashed (process pool broken)"
+      "processing_time_ms": 338,
+      "geometry": {
+        "total_vertices": 11250,
+        "total_faces": 13358
+      },
+      "error": "PMI extraction unavailable"
     }
   ]
 }

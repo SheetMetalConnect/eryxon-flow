@@ -68,7 +68,11 @@ fi
 # Build if needed
 if [ "$BUILD" = true ]; then
     echo -e "\n${YELLOW}Building Docker image...${NC}"
-    docker build -t cad-processor-test . 2>&1 | tail -10
+    BUILD_ARGS=()
+    if [ -n "$PYTHONOCC_VERSION" ]; then
+        BUILD_ARGS+=(--build-arg "PYTHONOCC_VERSION=$PYTHONOCC_VERSION")
+    fi
+    docker build "${BUILD_ARGS[@]}" -t cad-processor-test . 2>&1 | tail -10
 fi
 
 # Run validation tests
