@@ -12,6 +12,10 @@ Output:
 - Tessellated mesh geometry (vertices, normals, indices as base64)
 - PMI annotations (dimensions, GD&T, datums, surface finish)
 - Thumbnails (optional PNG)
+
+PMI Extraction Strategy:
+- Primary: Text-based parsing of STEP AP242 files (reliable, no binding issues)
+- Fallback: XCAF/XDE API via pythonocc-core (may have incomplete bindings)
 """
 
 import base64
@@ -21,6 +25,62 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
+
+
+def extract_pmi_via_text_parser(file_path: str) -> Dict[str, Any]:
+    """
+    Extract PMI from STEP file using direct text parsing.
+
+    This method bypasses pythonocc-core's incomplete PMI bindings by parsing
+    the STEP file as plain text according to ISO 10303-21 format.
+
+    Based on Chen et al. (2025) "Three-Dimensional Visualization of PMI
+    in a Web Browser Based on STEP AP242 and WebGL".
+
+    Args:
+        file_path: Path to STEP AP242 file
+
+    Returns:
+        PMI data structure with dimensions, tolerances, datums
+    """
+    try:
+        from pmi_extractors import extract_pmi_from_step
+
+        logger.info(f"Extracting PMI via text parser from: {file_path}")
+        pmi_data = extract_pmi_from_step(file_path)
+
+        dim_count = len(pmi_data.get("dimensions", []))
+        tol_count = len(pmi_data.get("geometric_tolerances", []))
+        datum_count = len(pmi_data.get("datums", []))
+
+        logger.info(
+            f"Text parser extracted: {dim_count} dimensions, "
+            f"{tol_count} tolerances, {datum_count} datums"
+        )
+
+        return pmi_data
+
+    except ImportError as e:
+        logger.warning(f"Text parser not available: {e}")
+        return _empty_pmi_data()
+    except Exception as e:
+        logger.error(f"Text parser PMI extraction failed: {e}")
+        import traceback
+        logger.debug(traceback.format_exc())
+        return _empty_pmi_data()
+
+
+def _empty_pmi_data() -> Dict[str, Any]:
+    """Return empty PMI data structure."""
+    return {
+        "version": "1.0",
+        "dimensions": [],
+        "geometric_tolerances": [],
+        "datums": [],
+        "surface_finishes": [],
+        "notes": [],
+        "graphical_pmi": [],
+    }
 
 
 @dataclass
@@ -310,8 +370,40 @@ def extract_geometry_and_pmi(
                 logger.warning("Shape is null, cannot extract geometry")
                 raise ValueError("Invalid shape - geometry extraction not possible")
 
-        # Extract PMI
-        if extract_pmi and doc is not None:
+        # Extract PMI - Use text parser as primary method (more reliable)
+        if extract_pmi and file_ext in ["step", "stp"]:
+            # Primary: Text-based parsing (bypasses pythonocc binding issues)
+            result.pmi = extract_pmi_via_text_parser(file_path)
+
+            dim_count = len(result.pmi.get("dimensions", []))
+            tol_count = len(result.pmi.get("geometric_tolerances", []))
+            datum_count = len(result.pmi.get("datums", []))
+
+            # If text parser found PMI, use it
+            if dim_count > 0 or tol_count > 0 or datum_count > 0:
+                logger.info(
+                    f"PMI extracted via text parser: {dim_count} dimensions, "
+                    f"{tol_count} GD&T, {datum_count} datums"
+                )
+            else:
+                # Fallback: Try XCAF extraction if text parser found nothing
+                logger.info("Text parser found no PMI, trying XCAF fallback...")
+                if doc is not None:
+                    xcaf_pmi = extract_pmi_from_document(doc, step_reader)
+                    xcaf_dim_count = len(xcaf_pmi.get("dimensions", []))
+                    xcaf_tol_count = len(xcaf_pmi.get("geometric_tolerances", []))
+                    xcaf_datum_count = len(xcaf_pmi.get("datums", []))
+
+                    if xcaf_dim_count > 0 or xcaf_tol_count > 0 or xcaf_datum_count > 0:
+                        result.pmi = xcaf_pmi
+                        logger.info(
+                            f"PMI extracted via XCAF: {xcaf_dim_count} dimensions, "
+                            f"{xcaf_tol_count} GD&T, {xcaf_datum_count} datums"
+                        )
+                    else:
+                        logger.info("No PMI found in file (may be geometry-only)")
+        elif extract_pmi and doc is not None:
+            # Non-STEP files: use XCAF extraction only
             result.pmi = extract_pmi_from_document(doc, step_reader)
             dim_count = len(result.pmi.get("dimensions", []))
             tol_count = len(result.pmi.get("geometric_tolerances", []))
