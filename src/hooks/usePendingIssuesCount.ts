@@ -10,7 +10,7 @@ export function usePendingIssuesCount() {
     queryFn: async () => {
       const { count, error } = await supabase
         .from('issues')
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact', head: true })
         .eq('status', 'pending');
 
       if (error) throw error;

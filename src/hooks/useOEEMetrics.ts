@@ -49,7 +49,7 @@ export function useOEEMetrics(dateRange: number = 30) {
       const startDate = subDays(new Date(), dateRange).toISOString();
       const now = new Date();
 
-      // Fetch operations with cell info
+      // Fetch operations with cell info - removed unused capacity_hours_per_day
       const { data: operations, error: opsError } = await supabase
         .from("operations")
         .select(`
@@ -61,7 +61,7 @@ export function useOEEMetrics(dateRange: number = 30) {
           status,
           completed_at,
           cell_id,
-          cells(name, capacity_hours_per_day)
+          cells(name)
         `)
         .eq("tenant_id", profile.tenant_id)
         .gte("updated_at", startDate);
@@ -184,9 +184,10 @@ export function useOEEMetrics(dateRange: number = 30) {
         }
       });
 
-      // Add quality data to cells
+      // Add quality data to cells - use Map for O(1) lookups instead of O(n) find
+      const operationMap = new Map(operations?.map(o => [o.id, o]) || []);
       quantities?.forEach(q => {
-        const op = operations?.find(o => o.id === q.operation_id);
+        const op = operationMap.get(q.operation_id);
         if (op?.cells?.name) {
           const current = cellMap.get(op.cells.name);
           if (current) {

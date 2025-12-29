@@ -104,14 +104,9 @@ export default function Parts() {
       const { data, error } = await query;
       if (error) throw error;
 
-      // Check which parts have children
-      const { data: allChildRelations } = await supabase
-        .from("parts")
-        .select("parent_part_id")
-        .not("parent_part_id", "is", null);
-
+      // Build children set from already-fetched data (no second query needed)
       const partsWithChildren = new Set(
-        allChildRelations?.map((p) => p.parent_part_id) || [],
+        data?.filter((p: any) => p.parent_part_id).map((p: any) => p.parent_part_id) || [],
       );
 
       return data.map((part: any) => {

@@ -186,7 +186,7 @@ export function useRealtimeSubscription(options: RealtimeSubscriptionOptions): v
         operation: 'useRealtimeSubscription',
         channelName,
       });
-      channel.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [channelName, tables, enabled, debounceMs, includePayload, debouncedCallback]);
 }
