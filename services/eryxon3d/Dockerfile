@@ -10,7 +10,7 @@ FROM continuumio/miniconda3:latest
 WORKDIR /app
 
 # Install pythonocc-core via conda (includes OpenCASCADE)
-RUN conda install -c conda-forge pythonocc-core=7.7.2 -y && \
+RUN conda install -c conda-forge python=3.11 pythonocc-core=7.8.1.1 -y && \
     conda clean -afy
 
 # Install Python dependencies
@@ -20,6 +20,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY main.py .
 COPY extractor.py .
+COPY supabase_client.py .
+COPY test_pmi_extraction.py .
 
 # Create non-root user for security
 RUN useradd -m -u 1000 appuser && \

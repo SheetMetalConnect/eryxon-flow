@@ -46,8 +46,8 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   issues: true,
   capacity: true,
   assignments: true,
-  // External service features - disabled by default (require separate deployment)
-  advancedCAD: false,
+  // External service features - enabled for local development with eryxon3d
+  advancedCAD: true,
 };
 
 /**

@@ -8,6 +8,7 @@ import { STEPViewer } from '@/components/STEPViewer';
 import { PDFViewer } from '@/components/PDFViewer';
 import { OperationResources } from './OperationResources';
 import { AssemblyDependencies } from './AssemblyDependencies';
+import type { PMIData, GeometryData } from '@/hooks/useCADProcessing';
 import { OperationWithDetails } from '@/lib/database';
 import { cn } from '@/lib/utils';
 import IssueForm from '@/components/operator/IssueForm';
@@ -37,11 +38,13 @@ interface DetailPanelProps {
     onComplete?: () => void;
     stepUrl?: string | null;
     pdfUrl?: string | null;
+    pmiData?: PMIData | null;
+    serverGeometry?: GeometryData | null;
     operations?: OperationWithDetails[];
     onDataRefresh?: () => void;
 }
 
-export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl, operations = [], onDataRefresh }: DetailPanelProps) {
+export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl, pmiData, serverGeometry, operations = [], onDataRefresh }: DetailPanelProps) {
     const { t } = useTranslation();
     const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
     const [isQuantityModalOpen, setIsQuantityModalOpen] = useState(false);
@@ -264,7 +267,13 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                     <div className="flex-1 p-2 min-h-0 overflow-hidden">
                         {job.hasModel && (
                             <TabsContent value="3d" className="h-full m-0 rounded-md overflow-hidden border border-border bg-background relative group">
-                                <STEPViewer url={stepUrl || ""} title={job.jobCode} />
+                                <STEPViewer
+                                    url={stepUrl || ""}
+                                    title={job.jobCode}
+                                    pmiData={pmiData}
+                                    serverGeometry={serverGeometry}
+                                    preferServerGeometry={true}
+                                />
                                 <Button
                                     variant="secondary"
                                     size="sm"
@@ -475,7 +484,13 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                     >
                         <div className="h-full rounded-lg overflow-hidden border border-border bg-background shadow-xl">
                             {fullscreenViewer === '3d' && stepUrl && (
-                                <STEPViewer url={stepUrl} title={job.jobCode} />
+                                <STEPViewer
+                                    url={stepUrl}
+                                    title={job.jobCode}
+                                    pmiData={pmiData}
+                                    serverGeometry={serverGeometry}
+                                    preferServerGeometry={true}
+                                />
                             )}
                             {fullscreenViewer === 'pdf' && pdfUrl && (
                                 <PDFViewer url={pdfUrl} title={job.jobCode} />

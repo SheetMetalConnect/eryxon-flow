@@ -17,8 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
-import type { PMIData, PMIDimension } from '@/hooks/usePMI';
-import type { GeometryData, MeshData } from '@/hooks/useCADProcessing';
+import type { PMIData, PMIDimension, GeometryData, MeshData } from '@/hooks/useCADProcessing';
 import { decodeFloat32Array, decodeUint32Array } from '@/hooks/useCADProcessing';
 
 // Interface for calculated dimensions

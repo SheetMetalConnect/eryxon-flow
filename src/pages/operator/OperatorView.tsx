@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useAuth } from "@/contexts/AuthContext";
 import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useCADProcessing, isCADServiceEnabled, type PMIData, type GeometryData } from "@/hooks/useCADProcessing";
 import {
   fetchOperationsWithDetails,
   startTimeTracking,
@@ -41,6 +42,12 @@ export default function OperatorView() {
   // File URLs
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [stepUrl, setStepUrl] = useState<string | null>(null);
+  const [signedStepUrl, setSignedStepUrl] = useState<string | null>(null);
+  const [pmiData, setPmiData] = useState<PMIData | null>(null);
+  const [geometryData, setGeometryData] = useState<GeometryData | null>(null);
+
+  // CAD Processing hook
+  const { processCAD, isProcessing: cadProcessing } = useCADProcessing();
 
   // Panel collapse/resize states
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
@@ -247,6 +254,8 @@ export default function OperatorView() {
         console.log("No file paths for job:", selectedJob?.jobCode);
         setPdfUrl(null);
         setStepUrl(null);
+        setSignedStepUrl(null);
+        setPmiData(null);
         return;
       }
 
@@ -255,6 +264,8 @@ export default function OperatorView() {
       try {
         let pdf: string | null = null;
         let step: string | null = null;
+        let signedStep: string | null = null;
+        let stepFileName: string | null = null;
 
         for (const path of selectedJob.filePaths) {
           const ext = path.toLowerCase();
@@ -267,6 +278,8 @@ export default function OperatorView() {
             const { data } = await supabase.storage.from("parts-cad").createSignedUrl(path, 3600);
             if (data?.signedUrl) {
               console.log("Found STEP file, creating blob URL from:", data.signedUrl);
+              signedStep = data.signedUrl;
+              stepFileName = path.split('/').pop() || 'model.step';
               const response = await fetch(data.signedUrl);
               const blob = await response.blob();
               step = URL.createObjectURL(blob);
@@ -275,13 +288,49 @@ export default function OperatorView() {
         }
         setPdfUrl(pdf);
         setStepUrl(step);
+        setSignedStepUrl(signedStep);
+
+        setSignedStepUrl(signedStep);
+        setStepUrl(step); // Keep blob URL as fallback or for initial render? Actually better to clear it if we want server forced? 
+        // Let's keep stepUrl (blob) so there's something while server processes? 
+        // No, if we want server mode, STEPViewer needs serverGeometry.
+        // But STEPViewer falls back to url if serverGeometry is missing.
+        // So we can keep stepUrl for immediate feedback (browser mode) and then switch to server mode when data arrives.
+
+        // Call backend for PMI extraction if CAD service is enabled
+        if (signedStep && stepFileName && isCADServiceEnabled()) {
+          console.log("Calling backend for PMI extraction:", signedStep);
+          try {
+            const result = await processCAD(signedStep, stepFileName, {
+              includeGeometry: true, // Server handles geometry
+              includePMI: true,
+              generateThumbnail: false,
+            });
+            if (result.success) {
+              console.log("CAD processing successful", result);
+              if (result.pmi) setPmiData(result.pmi);
+              if (result.geometry) setGeometryData(result.geometry);
+            } else if (result.error) {
+              console.warn("CAD processing failed:", result.error);
+              setPmiData(null);
+              setGeometryData(null);
+            }
+          } catch (pmiError) {
+            console.error("Error during CAD processing:", pmiError);
+            setPmiData(null);
+            setGeometryData(null);
+          }
+        } else {
+          setPmiData(null);
+          setGeometryData(null);
+        }
       } catch (e) {
         console.error("Error loading file URLs", e);
       }
     };
 
     loadFiles();
-  }, [selectedJob]);
+  }, [selectedJob, processCAD]);
 
   // Actions
   const handleStart = async () => {
@@ -521,6 +570,8 @@ export default function OperatorView() {
             onComplete={handleComplete}
             stepUrl={stepUrl}
             pdfUrl={pdfUrl}
+            pmiData={pmiData}
+            serverGeometry={geometryData}
             operations={selectedPartOperations}
             onDataRefresh={loadData}
           />

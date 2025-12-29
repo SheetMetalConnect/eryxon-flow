@@ -20,6 +20,7 @@ import logging
 import base64
 import secrets
 import asyncio
+import concurrent.futures
 from typing import Optional, List
 from datetime import datetime
 from urllib.parse import urlparse
@@ -41,6 +42,10 @@ from supabase_client import (
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Global process executor for isolation
+# Max workers = 2 to prevent OOM
+process_executor = concurrent.futures.ProcessPoolExecutor(max_workers=2)
 
 # =============================================================================
 # Configuration
@@ -352,6 +357,7 @@ async def process_cad(
     Returns:
         ProcessResponse with geometry, PMI, and optional thumbnail
     """
+    global process_executor
     start_time = datetime.now()
 
     try:
@@ -403,13 +409,16 @@ async def process_cad(
             tmp_path = tmp_file.name
 
         try:
-            # Process the file
-            result = extract_geometry_and_pmi(
+            # Process the file in separate process to isolate crashes
+            loop = asyncio.get_running_loop()
+            result = await loop.run_in_executor(
+                process_executor,
+                extract_geometry_and_pmi,
                 tmp_path,
-                extract_geometry=request.include_geometry,
-                extract_pmi=request.include_pmi,
-                generate_thumbnail=request.generate_thumbnail,
-                thumbnail_size=request.thumbnail_size,
+                request.include_geometry,
+                request.include_pmi,
+                request.generate_thumbnail,
+                request.thumbnail_size,
             )
 
             processing_time = int((datetime.now() - start_time).total_seconds() * 1000)
@@ -481,6 +490,18 @@ async def process_cad(
         finally:
             # Clean up temporary file
             os.unlink(tmp_path)
+
+    except concurrent.futures.process.BrokenProcessPool:
+        logger.error("Process pool broken (segfault/crash)")
+        # Recreate pool
+        process_executor.shutdown(wait=False)
+        process_executor = concurrent.futures.ProcessPoolExecutor(max_workers=2)
+
+        return ProcessResponse(
+            success=False,
+            error="CAD engine crashed: File contains invalid geometry causing segfault",
+            processing_time_ms=int((datetime.now() - start_time).total_seconds() * 1000),
+        )
 
     except HTTPException:
         raise
