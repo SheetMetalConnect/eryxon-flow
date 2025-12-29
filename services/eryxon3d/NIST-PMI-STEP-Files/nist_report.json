@@ -1,0 +1,175 @@
+{
+  "summary": {
+    "total_files": 33,
+    "successes": 0,
+    "failures": 0,
+    "crashes": 33
+  },
+  "results": [
+    {
+      "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ctc_01_asme1_rd.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ctc_02_asme1_rc.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ctc_03_asme1_rc.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ctc_04_asme1_rd.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ctc_05_asme1_rd.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ftc_06_asme1_rd.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ftc_07_asme1_rd.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ftc_08_asme1_rc.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ftc_09_asme1_rd.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ftc_10_asme1_rb.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/AP203 geometry only/nist_ftc_11_asme1_rb.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/AP203 with PMI/nist_ctc_01_asme1_ap203.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/AP203 with PMI/nist_ctc_02_asme1_ap203.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/AP203 with PMI/nist_ctc_03_asme1_ap203.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/AP203 with PMI/nist_ctc_04_asme1_ap203.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/AP203 with PMI/nist_ctc_05_asme1_ap203.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/nist_ctc_01_asme1_ap242-e1.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/nist_ctc_02_asme1_ap242-e2.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/nist_ctc_03_asme1_ap242-e2.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/nist_ctc_04_asme1_ap242-e1.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/nist_ctc_05_asme1_ap242-e1.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/nist_ftc_06_asme1_ap242-e2.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/nist_ftc_07_asme1_ap242-e2.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/nist_ftc_08_asme1_ap242-e1-tg.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/nist_ftc_08_asme1_ap242-e2.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/nist_ftc_09_asme1_ap242-e1.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/nist_ftc_10_asme1_ap242-e2.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/nist_ftc_11_asme1_ap242-e2.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/nist_stc_06_asme1_ap242-e3.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/nist_stc_07_asme1_ap242-e3.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/nist_stc_08_asme1_ap242-e3.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/nist_stc_09_asme1_ap242-e3.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    },
+    {
+      "file": "/app/NIST-PMI-STEP-Files/nist_stc_10_asme1_ap242-e2.stp",
+      "success": false,
+      "error": "Worker crashed (process pool broken)"
+    }
+  ]
+}
