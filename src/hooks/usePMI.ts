@@ -453,7 +453,7 @@ export function usePMI(partId: string | undefined) {
     // Update the part
     const { error: updateError } = await supabase
       .from('parts')
-      .update({ metadata: updatedMetadata })
+      .update({ metadata: JSON.parse(JSON.stringify(updatedMetadata)) })
       .eq('id', partId);
 
     if (updateError) throw updateError;
@@ -478,7 +478,7 @@ export function usePMI(partId: string | undefined) {
 
     await supabase
       .from('parts')
-      .update({ metadata: restMetadata })
+      .update({ metadata: JSON.parse(JSON.stringify(restMetadata)) })
       .eq('id', partId);
 
     queryClient.invalidateQueries({ queryKey: ['pmi', partId] });
