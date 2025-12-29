@@ -71,6 +71,20 @@ export interface AssociatedGeometry {
   edge_ids: string[];
 }
 
+export interface LeaderLine {
+  type: 'line' | 'polyline';
+  points: Vector3[];
+  start: Vector3;
+  end: Vector3;
+  has_arrowhead: boolean;
+}
+
+export interface TargetGeometry {
+  shape_aspect_refs: string[];
+  feature_type: string;
+  attachment_points: Vector3[];
+}
+
 export interface PMIDimension {
   id: string;
   type: 'linear' | 'angular' | 'radius' | 'diameter' | 'ordinate';
@@ -79,7 +93,9 @@ export interface PMIDimension {
   tolerance?: Tolerance;
   text: string;
   position: Vector3;
-  leader_points: Vector3[];
+  leader_points: Vector3[]; // Legacy field - kept for compatibility
+  leader_lines?: LeaderLine[]; // NEW - explicit leader line geometry
+  target_geometry?: TargetGeometry; // NEW - target geometry with attachment points
   associated_geometry?: AssociatedGeometry;
 }
 
