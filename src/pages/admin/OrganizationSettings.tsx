@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Loader2, Building2, Save, Clock, Paintbrush, Crown, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { FeatureFlagsSettings } from '@/components/admin/FeatureFlagsSettings';
 
 const TIMEZONES = [
   'UTC',
@@ -476,6 +477,9 @@ export default function OrganizationSettings() {
           )}
         </CardContent>
       </Card>
+
+      {/* Feature Flags Settings */}
+      <FeatureFlagsSettings />
 
       {/* Subscription Info (Read-only for now) */}
       {tenant && (

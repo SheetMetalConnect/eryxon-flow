@@ -341,5 +341,55 @@
     "viewGuide": "Self-Hosting Anleitung ansehen",
     "needHelp": "Hilfe benötigt?",
     "helpDescription": "Sheet Metal Connect e.U. kann Ihnen bei der Einrichtung und Anpassung von Eryxon MES helfen."
+  },
+  "featureFlags": {
+    "title": "Feature-Flags",
+    "description": "Aktivieren oder deaktivieren Sie Funktionen für Ihre Organisation",
+    "enabled": "AN",
+    "quickActions": "Schnellaktionen",
+    "enableAll": "Alle Aktivieren",
+    "disableAll": "Alle Deaktivieren",
+    "infoTitle": "Hinweis:",
+    "infoDescription": "Deaktivierte Funktionen werden im Navigationsmenü ausgeblendet. Dies vereinfacht die Oberfläche, indem nur die benötigten Funktionen angezeigt werden.",
+    "footerNote": "Änderungen werden sofort wirksam. Deaktivierte Funktionen können jederzeit wieder aktiviert werden.",
+    "updateSuccess": "Feature-Flags aktualisiert",
+    "updateError": "Feature-Flags konnten nicht aktualisiert werden",
+    "categories": {
+      "operations": "Betrieb",
+      "analytics": "Analyse & Überwachung",
+      "admin": "Administration"
+    },
+    "analytics": {
+      "label": "Analyse",
+      "description": "QRM Dashboard, OEE, Qualität, Zuverlässigkeit und Auftragsanalyse"
+    },
+    "monitoring": {
+      "label": "Überwachung",
+      "description": "Aktivitätsverfolgung, Erwartungen und Ausnahmen-Posteingang"
+    },
+    "shipping": {
+      "label": "Versand",
+      "description": "Sendungsverfolgung und Liefermanagement"
+    },
+    "operatorViews": {
+      "label": "Bediener-Ansichten",
+      "description": "Zellenübersicht, Terminal-Ansicht, Meine Aktivität und Meine Probleme"
+    },
+    "integrations": {
+      "label": "Integrationen",
+      "description": "App Store, API-Schlüssel, Webhooks, MQTT und Daten-Import/Export"
+    },
+    "issues": {
+      "label": "Probleme",
+      "description": "Problemverfolgung und Qualitätsmanagement"
+    },
+    "capacity": {
+      "label": "Kapazität",
+      "description": "Kapazitätsplanung und Terminierung"
+    },
+    "assignments": {
+      "label": "Zuweisungen",
+      "description": "Arbeitszuweisungen und Bedienerplanung"
+    }
   }
 }
