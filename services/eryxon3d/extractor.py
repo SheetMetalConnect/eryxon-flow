@@ -33,23 +33,65 @@ class ProcessingResult:
 
 
 def _create_xcaf_document():
-    """Create a properly initialized XCAF document."""
+    """
+    Create a properly initialized XCAF document.
+
+    Works with pythonocc-core 7.x by directly creating TDocStd_Document
+    instead of using Handle wrappers which may not be fully exposed.
+    """
     from OCC.Core.TCollection import TCollection_ExtendedString
     from OCC.Core.XCAFApp import XCAFApp_Application
 
     fmt = TCollection_ExtendedString("MDTV-XCAF")
     app = XCAFApp_Application.GetApplication()
 
+    # Method 1: Direct TDocStd_Document creation (pythonocc 7.x preferred)
+    try:
+        from OCC.Core.TDocStd import TDocStd_Document
+
+        doc = TDocStd_Document(fmt)
+        app.InitDocument(doc)
+
+        # Verify the document is valid
+        if hasattr(doc, "Main") and not doc.Main().IsNull():
+            logger.info("XCAF document created via TDocStd_Document")
+            return None, doc  # Return (handle, doc) - handle is None for direct creation
+    except Exception as direct_err:
+        logger.debug(f"Direct document creation failed: {direct_err}")
+
+    # Method 2: Try Handle wrapper approach (older pythonocc versions)
     try:
         from OCC.Core.TDocStd import Handle_TDocStd_Document
 
         h_doc = Handle_TDocStd_Document()
         app.NewDocument(fmt, h_doc)
         if not h_doc.IsNull():
-            return h_doc, h_doc.GetObject()
+            doc_obj = h_doc.GetObject()
+            if doc_obj is not None:
+                logger.info("XCAF document created via Handle wrapper")
+                return h_doc, doc_obj
     except Exception as handle_err:
-        logger.warning(f"XCAF handle document init failed: {handle_err}")
+        logger.debug(f"Handle document creation failed: {handle_err}")
 
+    # Method 3: Try using NewDocument with output parameter style
+    try:
+        from OCC.Core.TDocStd import TDocStd_Document
+
+        # Some pythonocc versions return the document directly
+        result = app.NewDocument(fmt)
+        if result is not None:
+            if hasattr(result, "GetObject"):
+                doc = result.GetObject()
+                if doc is not None:
+                    logger.info("XCAF document created via NewDocument return")
+                    return result, doc
+            elif hasattr(result, "Main"):
+                logger.info("XCAF document created via NewDocument direct")
+                return None, result
+    except Exception as new_doc_err:
+        logger.debug(f"NewDocument return style failed: {new_doc_err}")
+
+    logger.warning("All XCAF document creation methods failed")
     return None
 
 
@@ -168,8 +210,12 @@ def extract_geometry_and_pmi(
 
                     # Attempt transfer with error handling
                     try:
-                        transfer_target = doc_handle if doc_handle is not None else doc
-                        transfer_status = reader.Transfer(transfer_target)
+                        # In pythonocc 7.x, Transfer takes the document directly
+                        # Use doc_handle if available (older API), otherwise use doc directly
+                        if doc_handle is not None:
+                            transfer_status = reader.Transfer(doc_handle)
+                        else:
+                            transfer_status = reader.Transfer(doc)
                         if not transfer_status:
                             logger.warning(
                                 "STEP transfer returned false, attempting to extract partial geometry"
