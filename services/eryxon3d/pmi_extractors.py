@@ -939,11 +939,800 @@ class AnnotationExtractor:
                     return
 
 
+class SurfaceFinishExtractor:
+    """
+    Extract surface finish/roughness symbols from STEP files.
+
+    Supports ISO 1302 and ASME Y14.36 surface texture symbols.
+
+    Entity types handled:
+    - SURFACE_TEXTURE_REPRESENTATION (AP242)
+    - SURFACE_TEXTURE_PARAMETER
+    - MACHINING_ALLOWANCE
+    - Plus text-based parsing for graphical annotations
+    """
+
+    # Lay direction symbols per ISO 1302
+    LAY_SYMBOLS = {
+        'PARALLEL': '=',      # Parallel to projection plane
+        'PERPENDICULAR': '⊥', # Perpendicular to projection plane
+        'CROSSED': 'X',       # Crossed (two directions)
+        'MULTIDIRECTIONAL': 'M',
+        'CIRCULAR': 'C',
+        'RADIAL': 'R',
+        'PARTICULATE': 'P',   # Particulate/non-directional
+    }
+
+    def __init__(self, parser: StepParser):
+        self.parser = parser
+
+    def extract_surface_finishes(self) -> List[Dict[str, Any]]:
+        """
+        Extract all surface finish symbols from the STEP file.
+
+        Returns:
+            List of surface finish dictionaries
+        """
+        surface_finishes = []
+        index = 1
+
+        # Method 1: Look for SURFACE_TEXTURE_REPRESENTATION (AP242 semantic)
+        str_entities = self.parser.find_entities('SURFACE_TEXTURE_REPRESENTATION')
+        for entity in str_entities:
+            sf = self._extract_surface_texture_repr(entity, index)
+            if sf:
+                surface_finishes.append(sf)
+                index += 1
+
+        # Method 2: Look for SURFACE_TEXTURE_PARAMETER
+        stp_entities = self.parser.find_entities('SURFACE_TEXTURE_PARAMETER')
+        for entity in stp_entities:
+            sf = self._extract_surface_texture_param(entity, index)
+            if sf:
+                surface_finishes.append(sf)
+                index += 1
+
+        # Method 3: Look for MACHINING_ALLOWANCE
+        ma_entities = self.parser.find_entities('MACHINING_ALLOWANCE')
+        for entity in ma_entities:
+            sf = self._extract_machining_allowance(entity, index)
+            if sf:
+                surface_finishes.append(sf)
+                index += 1
+
+        # Method 4: Text-based search in annotations for roughness patterns
+        # Look for text annotations containing Ra, Rz, etc.
+        text_based = self._extract_from_text_annotations(index)
+        surface_finishes.extend(text_based)
+
+        logger.info(f"Extracted {len(surface_finishes)} surface finishes")
+        return surface_finishes
+
+    def _extract_surface_texture_repr(self, entity: StepEntity, index: int) -> Optional[Dict[str, Any]]:
+        """Extract from SURFACE_TEXTURE_REPRESENTATION entity."""
+        try:
+            # Get roughness parameters from linked entities
+            roughness_type = 'Ra'
+            roughness_value = None
+
+            for attr in entity.parsed_attributes:
+                if isinstance(attr, str) and attr.startswith('#'):
+                    ref = self.parser.get_entity(attr)
+                    if ref:
+                        val = self.parser.get_numeric_value_from_entity(ref)
+                        if val is not None:
+                            roughness_value = val
+                            break
+
+            if roughness_value is not None:
+                return self._format_surface_finish(index, roughness_type, roughness_value, entity.id)
+
+            return None
+
+        except Exception as e:
+            logger.debug(f"Could not extract surface texture repr {entity.id}: {e}")
+            return None
+
+    def _extract_surface_texture_param(self, entity: StepEntity, index: int) -> Optional[Dict[str, Any]]:
+        """Extract from SURFACE_TEXTURE_PARAMETER entity."""
+        try:
+            # SURFACE_TEXTURE_PARAMETER('Ra', value, unit_ref)
+            param_name = self.parser.get_attribute_value(entity, 0)
+            value = None
+
+            # Look for value in attributes
+            for attr in entity.parsed_attributes:
+                if isinstance(attr, (int, float)):
+                    value = float(attr)
+                    break
+                if isinstance(attr, str) and attr.startswith('#'):
+                    ref = self.parser.get_entity(attr)
+                    if ref:
+                        val = self.parser.get_numeric_value_from_entity(ref)
+                        if val is not None:
+                            value = val
+                            break
+
+            if value is not None:
+                roughness_type = str(param_name) if param_name else 'Ra'
+                return self._format_surface_finish(index, roughness_type, value, entity.id)
+
+            return None
+
+        except Exception as e:
+            logger.debug(f"Could not extract surface texture param {entity.id}: {e}")
+            return None
+
+    def _extract_machining_allowance(self, entity: StepEntity, index: int) -> Optional[Dict[str, Any]]:
+        """Extract machining allowance information."""
+        try:
+            value = None
+            for attr in entity.parsed_attributes:
+                if isinstance(attr, (int, float)):
+                    value = float(attr)
+                    break
+                if isinstance(attr, str) and attr.startswith('#'):
+                    ref = self.parser.get_entity(attr)
+                    if ref:
+                        val = self.parser.get_numeric_value_from_entity(ref)
+                        if val is not None:
+                            value = val
+                            break
+
+            if value is not None:
+                return {
+                    'id': entity.id,
+                    'type': 'machining_allowance',
+                    'roughness_type': None,
+                    'roughness_value': None,
+                    'machining_allowance': value,
+                    'unit': 'mm',
+                    'lay_symbol': None,
+                    'text': f"Machining allowance: {value:.2f} mm",
+                    'position': {'x': 0, 'y': 0, 'z': 0},
+                    'associated_geometry': [],
+                }
+
+            return None
+
+        except Exception as e:
+            logger.debug(f"Could not extract machining allowance {entity.id}: {e}")
+            return None
+
+    def _extract_from_text_annotations(self, start_index: int) -> List[Dict[str, Any]]:
+        """Extract surface finish from text annotations containing roughness values."""
+        results = []
+        index = start_index
+
+        # Look for DRAUGHTING_ANNOTATION_OCCURRENCE or TEXT_LITERAL
+        for entity_type in ['TEXT_LITERAL', 'ANNOTATION_TEXT_OCCURRENCE', 'DRAUGHTING_ANNOTATION_OCCURRENCE']:
+            entities = self.parser.find_entities(entity_type)
+            for entity in entities:
+                # Check raw line for roughness patterns
+                raw = entity.raw_line.upper()
+
+                # Match patterns like Ra3.2, Rz12.5, Ra 1.6, etc.
+                patterns = [
+                    (r'RA\s*[=:]?\s*([\d.]+)', 'Ra'),
+                    (r'RZ\s*[=:]?\s*([\d.]+)', 'Rz'),
+                    (r'RY\s*[=:]?\s*([\d.]+)', 'Ry'),
+                    (r'RQ\s*[=:]?\s*([\d.]+)', 'Rq'),
+                ]
+
+                for pattern, roughness_type in patterns:
+                    match = re.search(pattern, raw)
+                    if match:
+                        try:
+                            value = float(match.group(1))
+                            sf = self._format_surface_finish(index, roughness_type, value, entity.id)
+                            results.append(sf)
+                            index += 1
+                            break
+                        except ValueError:
+                            continue
+
+        return results
+
+    def _format_surface_finish(
+        self,
+        index: int,
+        roughness_type: str,
+        roughness_value: float,
+        entity_id: str
+    ) -> Dict[str, Any]:
+        """Format surface finish data for output."""
+        return {
+            'id': entity_id,
+            'type': 'surface_finish',
+            'roughness_type': roughness_type,
+            'roughness_value': roughness_value,
+            'roughness_unit': 'μm',
+            'machining_allowance': None,
+            'lay_symbol': None,
+            'text': f"{roughness_type} {roughness_value} μm",
+            'position': {'x': 0, 'y': 0, 'z': 0},
+            'associated_geometry': [],
+        }
+
+
+class WeldSymbolExtractor:
+    """
+    Extract weld symbols from STEP files.
+
+    Supports AWS A2.4 and ISO 2553 weld symbol standards.
+
+    Entity types handled:
+    - WELD (base weld definition)
+    - WELD_SYMBOL
+    - WELDING_PROCESS
+    - Plus text-based parsing for graphical annotations
+    """
+
+    # Weld type symbols per AWS A2.4 / ISO 2553
+    WELD_TYPES = {
+        'FILLET': '△',
+        'GROOVE': 'V',
+        'SQUARE': '||',
+        'V_GROOVE': 'V',
+        'BEVEL': '/',
+        'U_GROOVE': 'U',
+        'J_GROOVE': 'J',
+        'FLARE_V': 'V~',
+        'FLARE_BEVEL': '/~',
+        'PLUG': '○',
+        'SLOT': '▭',
+        'SPOT': '●',
+        'SEAM': '—',
+        'BACK': '⌒',
+        'SURFACING': '∿',
+        'EDGE': '⊏',
+    }
+
+    def __init__(self, parser: StepParser):
+        self.parser = parser
+
+    def extract_weld_symbols(self) -> List[Dict[str, Any]]:
+        """
+        Extract all weld symbols from the STEP file.
+
+        Returns:
+            List of weld symbol dictionaries
+        """
+        weld_symbols = []
+        index = 1
+
+        # Method 1: Look for WELD entities (AP242)
+        weld_entities = self.parser.find_entities('WELD')
+        for entity in weld_entities:
+            ws = self._extract_weld(entity, index)
+            if ws:
+                weld_symbols.append(ws)
+                index += 1
+
+        # Method 2: Look for WELD_SYMBOL entities
+        ws_entities = self.parser.find_entities('WELD_SYMBOL')
+        for entity in ws_entities:
+            ws = self._extract_weld_symbol(entity, index)
+            if ws:
+                weld_symbols.append(ws)
+                index += 1
+
+        # Method 3: Look for WELDING_PROCESS
+        wp_entities = self.parser.find_entities('WELDING_PROCESS')
+        for entity in wp_entities:
+            ws = self._extract_welding_process(entity, index)
+            if ws:
+                weld_symbols.append(ws)
+                index += 1
+
+        # Method 4: Text-based search for weld annotations
+        text_based = self._extract_from_text_annotations(index)
+        weld_symbols.extend(text_based)
+
+        logger.info(f"Extracted {len(weld_symbols)} weld symbols")
+        return weld_symbols
+
+    def _extract_weld(self, entity: StepEntity, index: int) -> Optional[Dict[str, Any]]:
+        """Extract from WELD entity."""
+        try:
+            name = self.parser.get_attribute_value(entity, 0) or ''
+            weld_type = self._determine_weld_type(entity, name)
+
+            return self._format_weld_symbol(index, weld_type, entity.id, name)
+
+        except Exception as e:
+            logger.debug(f"Could not extract weld {entity.id}: {e}")
+            return None
+
+    def _extract_weld_symbol(self, entity: StepEntity, index: int) -> Optional[Dict[str, Any]]:
+        """Extract from WELD_SYMBOL entity."""
+        try:
+            name = self.parser.get_attribute_value(entity, 0) or ''
+            weld_type = self._determine_weld_type(entity, name)
+
+            return self._format_weld_symbol(index, weld_type, entity.id, name)
+
+        except Exception as e:
+            logger.debug(f"Could not extract weld symbol {entity.id}: {e}")
+            return None
+
+    def _extract_welding_process(self, entity: StepEntity, index: int) -> Optional[Dict[str, Any]]:
+        """Extract from WELDING_PROCESS entity."""
+        try:
+            name = self.parser.get_attribute_value(entity, 0) or ''
+
+            # Extract process type (e.g., GMAW, GTAW, SMAW)
+            process_type = None
+            for attr in entity.parsed_attributes:
+                if isinstance(attr, str) and attr.upper() in ['GMAW', 'GTAW', 'SMAW', 'FCAW', 'SAW', 'MIG', 'TIG']:
+                    process_type = attr.upper()
+                    break
+
+            return {
+                'id': entity.id,
+                'type': 'welding_process',
+                'weld_type': 'process',
+                'symbol': '',
+                'process': process_type,
+                'size': None,
+                'length': None,
+                'pitch': None,
+                'text': f"Welding: {process_type or name}",
+                'position': {'x': 0, 'y': 0, 'z': 0},
+                'associated_geometry': [],
+            }
+
+        except Exception as e:
+            logger.debug(f"Could not extract welding process {entity.id}: {e}")
+            return None
+
+    def _determine_weld_type(self, entity: StepEntity, name: str) -> str:
+        """Determine weld type from entity or name."""
+        name_upper = name.upper()
+        raw_upper = entity.raw_line.upper()
+
+        for weld_type in self.WELD_TYPES.keys():
+            if weld_type in name_upper or weld_type in raw_upper:
+                return weld_type.lower()
+
+        return 'unknown'
+
+    def _extract_from_text_annotations(self, start_index: int) -> List[Dict[str, Any]]:
+        """Extract weld symbols from text annotations."""
+        results = []
+        index = start_index
+
+        # Look for text annotations containing weld-related terms
+        for entity_type in ['TEXT_LITERAL', 'ANNOTATION_TEXT_OCCURRENCE']:
+            entities = self.parser.find_entities(entity_type)
+            for entity in entities:
+                raw = entity.raw_line.upper()
+
+                # Check for weld-related keywords
+                if any(kw in raw for kw in ['WELD', 'FILLET', 'GROOVE', 'GMAW', 'GTAW', 'SMAW']):
+                    # Extract size if present (e.g., "5mm FILLET WELD")
+                    size = None
+                    size_match = re.search(r'(\d+(?:\.\d+)?)\s*(?:MM|IN)', raw)
+                    if size_match:
+                        size = float(size_match.group(1))
+
+                    weld_type = 'unknown'
+                    for wt in self.WELD_TYPES.keys():
+                        if wt in raw:
+                            weld_type = wt.lower()
+                            break
+
+                    ws = self._format_weld_symbol(index, weld_type, entity.id, '', size)
+                    results.append(ws)
+                    index += 1
+
+        return results
+
+    def _format_weld_symbol(
+        self,
+        index: int,
+        weld_type: str,
+        entity_id: str,
+        name: str = '',
+        size: Optional[float] = None
+    ) -> Dict[str, Any]:
+        """Format weld symbol data for output."""
+        symbol = self.WELD_TYPES.get(weld_type.upper(), '')
+        text = f"{symbol} {weld_type.replace('_', ' ').title()}"
+        if size:
+            text += f" {size}mm"
+
+        return {
+            'id': entity_id,
+            'type': 'weld',
+            'weld_type': weld_type,
+            'symbol': symbol,
+            'size': size,
+            'length': None,
+            'pitch': None,
+            'process': None,
+            'text': text,
+            'position': {'x': 0, 'y': 0, 'z': 0},
+            'associated_geometry': [],
+        }
+
+
+class AP203AP214Extractor:
+    """
+    Extract PMI from AP203/AP214 STEP files.
+
+    These older formats store PMI differently than AP242:
+    - Graphical PMI as polylines/curves (not semantic)
+    - Text annotations with dimension values
+    - Limited tolerance representation
+
+    This extractor parses graphical PMI and attempts to extract
+    values from text annotations.
+    """
+
+    def __init__(self, parser: StepParser):
+        self.parser = parser
+
+    def is_ap203_or_ap214(self) -> bool:
+        """Check if the file is AP203 or AP214 format."""
+        # Check FILE_SCHEMA in header by looking for these entity types
+        # AP242 has specific entity types not in AP203/AP214
+
+        # If we have AP242-specific entities, it's not AP203/AP214
+        ap242_types = ['DIMENSIONAL_SIZE', 'GEOMETRIC_TOLERANCE', 'DATUM_SYSTEM']
+        for t in ap242_types:
+            if self.parser.find_entities(t):
+                return False
+
+        # Check for draughting entities common in AP203/AP214
+        # Note: AP203 uses ANNOTATION_OCCURRENCE, not DRAUGHTING_ANNOTATION_OCCURRENCE
+        ap203_types = [
+            'ANNOTATION_OCCURRENCE',
+            'DRAUGHTING_ANNOTATION_OCCURRENCE',
+            'ANNOTATION_CURVE_OCCURRENCE',
+            'DRAUGHTING_MODEL_ITEM_ASSOCIATION',
+        ]
+        for t in ap203_types:
+            if self.parser.find_entities(t):
+                return True
+
+        return False
+
+    def extract_graphical_dimensions(self) -> List[Dict[str, Any]]:
+        """
+        Extract dimension-like information from graphical PMI in AP203/AP214.
+
+        This parses text annotations and attempts to extract numeric values.
+        """
+        dimensions = []
+        index = 1
+
+        # Look for ANNOTATION_OCCURRENCE (primary AP203 format)
+        # Format: ANNOTATION_OCCURRENCE('type',(#item_refs),#curve_ref)
+        ao_entities = self.parser.find_entities('ANNOTATION_OCCURRENCE')
+        for entity in ao_entities:
+            dim = self._extract_from_annotation_occurrence(entity, index)
+            if dim:
+                dimensions.append(dim)
+                index += 1
+
+        # Look for ANNOTATION_TEXT_OCCURRENCE
+        text_entities = self.parser.find_entities('ANNOTATION_TEXT_OCCURRENCE')
+        for entity in text_entities:
+            dim = self._extract_dimension_from_text(entity, index)
+            if dim:
+                dimensions.append(dim)
+                index += 1
+
+        # Look for DRAUGHTING_ANNOTATION_OCCURRENCE
+        dao_entities = self.parser.find_entities('DRAUGHTING_ANNOTATION_OCCURRENCE')
+        for entity in dao_entities:
+            dim = self._extract_dimension_from_draughting(entity, index)
+            if dim:
+                dimensions.append(dim)
+                index += 1
+
+        # Look for TEXT_LITERAL with numeric content
+        text_lit_entities = self.parser.find_entities('TEXT_LITERAL')
+        for entity in text_lit_entities:
+            dim = self._extract_dimension_from_text_literal(entity, index)
+            if dim:
+                dimensions.append(dim)
+                index += 1
+
+        logger.info(f"AP203/AP214: Extracted {len(dimensions)} graphical dimensions")
+        return dimensions
+
+    def _extract_from_annotation_occurrence(self, entity: StepEntity, index: int) -> Optional[Dict[str, Any]]:
+        """Extract dimension from ANNOTATION_OCCURRENCE (AP203 format)."""
+        try:
+            raw = entity.raw_line
+
+            # Parse: ANNOTATION_OCCURRENCE('type',(#item_refs),#style_ref)
+            # Types: 'radial dimension', 'linear dimension', 'angular dimension', 'fcf', 'datum', 'note'
+            type_match = re.search(r"ANNOTATION_OCCURRENCE\s*\(\s*'([^']+)'", raw, re.IGNORECASE)
+            if not type_match:
+                return None
+
+            annotation_type = type_match.group(1).lower()
+
+            # Map annotation types to dimension types
+            type_map = {
+                'radial dimension': 'radius',
+                'linear dimension': 'linear',
+                'angular dimension': 'angular',
+                'diameter dimension': 'diameter',
+            }
+
+            dim_type = type_map.get(annotation_type)
+            if not dim_type:
+                # This is not a dimension (might be fcf, datum, note)
+                return None
+
+            # Try to find associated text/value
+            # Look for referenced items in parentheses: (#3431)
+            item_refs = re.findall(r'#(\d+)', raw)
+            value = None
+
+            for ref_id in item_refs:
+                ref_entity = self.parser.get_entity(ref_id)
+                if ref_entity:
+                    # Check if it's a composite curve or text
+                    value = self._extract_numeric_from_entity(ref_entity)
+                    if value is not None:
+                        break
+
+            # If no value found, create placeholder with type info
+            if value is None:
+                return {
+                    'id': f'ap203_dim_{index}',
+                    'type': dim_type,
+                    'value': 0.0,
+                    'unit': 'mm',
+                    'tolerance': None,
+                    'text': f'{annotation_type.title()}',
+                    'position': {'x': 0, 'y': 0, 'z': 0},
+                    'source': 'graphical_pmi',
+                    'entity_id': entity.id,
+                }
+
+            return self._format_graphical_dimension(index, dim_type, value, entity.id)
+
+        except Exception as e:
+            logger.debug(f"Could not extract ANNOTATION_OCCURRENCE {entity.id}: {e}")
+            return None
+
+    def _extract_numeric_from_entity(self, entity: StepEntity) -> Optional[float]:
+        """Try to extract a numeric value from an entity."""
+        raw = entity.raw_line
+
+        # Look for dimension value patterns
+        patterns = [
+            r'LENGTH_MEASURE\s*\(\s*([\d.]+)',
+            r'PLANE_ANGLE_MEASURE\s*\(\s*([\d.]+)',
+            r"'([\d.]+)'",  # Value in quotes
+            r'\(\s*([\d.]+)\s*[,)]',  # First number in parentheses
+        ]
+
+        for pattern in patterns:
+            match = re.search(pattern, raw)
+            if match:
+                try:
+                    return float(match.group(1))
+                except ValueError:
+                    continue
+
+        return None
+
+    def extract_graphical_annotations(self) -> List[Dict[str, Any]]:
+        """Extract graphical PMI (polylines, curves, symbols) from AP203/AP214."""
+        annotations = []
+        index = 1
+
+        # Look for ANNOTATION_OCCURRENCE that are NOT dimensions (fcf, datum, note)
+        ao_entities = self.parser.find_entities('ANNOTATION_OCCURRENCE')
+        for entity in ao_entities:
+            ann = self._extract_non_dimension_annotation(entity, index)
+            if ann:
+                annotations.append(ann)
+                index += 1
+
+        # Look for ANNOTATION_CURVE_OCCURRENCE
+        curve_entities = self.parser.find_entities('ANNOTATION_CURVE_OCCURRENCE')
+        for entity in curve_entities:
+            ann = self._extract_curve_annotation(entity, index)
+            if ann:
+                annotations.append(ann)
+                index += 1
+
+        # Look for LEADER_CURVE
+        leader_entities = self.parser.find_entities('LEADER_CURVE')
+        for entity in leader_entities:
+            ann = self._extract_leader(entity, index)
+            if ann:
+                annotations.append(ann)
+                index += 1
+
+        logger.info(f"AP203/AP214: Extracted {len(annotations)} graphical annotations")
+        return annotations
+
+    def _extract_non_dimension_annotation(self, entity: StepEntity, index: int) -> Optional[Dict[str, Any]]:
+        """Extract non-dimension annotations (fcf, datum, note) from ANNOTATION_OCCURRENCE."""
+        try:
+            raw = entity.raw_line
+
+            type_match = re.search(r"ANNOTATION_OCCURRENCE\s*\(\s*'([^']+)'", raw, re.IGNORECASE)
+            if not type_match:
+                return None
+
+            annotation_type = type_match.group(1).lower()
+
+            # Skip dimensions - those are handled by extract_graphical_dimensions
+            dimension_types = {'radial dimension', 'linear dimension', 'angular dimension', 'diameter dimension'}
+            if annotation_type in dimension_types:
+                return None
+
+            # Map annotation types to PMI types
+            type_display = {
+                'fcf': 'GD&T Feature Control Frame',
+                'datum': 'Datum Reference',
+                'note': 'Note',
+                'surface finish': 'Surface Finish',
+            }
+
+            display_type = type_display.get(annotation_type, annotation_type.title())
+
+            return {
+                'id': f'ap203_ann_{index}',
+                'type': annotation_type,
+                'text': display_type,
+                'position': {'x': 0, 'y': 0, 'z': 0},
+                'source': 'graphical_pmi',
+                'entity_id': entity.id,
+            }
+
+        except Exception as e:
+            logger.debug(f"Could not extract non-dimension annotation {entity.id}: {e}")
+            return None
+
+    def _extract_dimension_from_text(self, entity: StepEntity, index: int) -> Optional[Dict[str, Any]]:
+        """Extract dimension from text annotation."""
+        try:
+            # Look for numeric value in the annotation
+            raw = entity.raw_line
+
+            # Match dimension patterns: 25.4, Ø35, R10, 45°, etc.
+            patterns = [
+                (r'[ØⰆ∅]\s*([\d.]+)', 'diameter'),
+                (r'R\s*([\d.]+)', 'radius'),
+                (r'([\d.]+)\s*[°]', 'angular'),
+                (r'([\d.]+)\s*(?:mm|MM|in|IN)', 'linear'),
+                (r"'([\d.]+)'", 'linear'),  # Value in quotes
+            ]
+
+            for pattern, dim_type in patterns:
+                match = re.search(pattern, raw)
+                if match:
+                    value = float(match.group(1))
+                    return self._format_graphical_dimension(index, dim_type, value, entity.id)
+
+            return None
+
+        except Exception as e:
+            logger.debug(f"Could not extract text dimension {entity.id}: {e}")
+            return None
+
+    def _extract_dimension_from_draughting(self, entity: StepEntity, index: int) -> Optional[Dict[str, Any]]:
+        """Extract dimension from draughting annotation."""
+        # Similar to text extraction but looks at linked entities
+        try:
+            for attr in entity.parsed_attributes:
+                if isinstance(attr, str) and attr.startswith('#'):
+                    ref = self.parser.get_entity(attr)
+                    if ref and ref.has_type('TEXT_LITERAL'):
+                        return self._extract_dimension_from_text_literal(ref, index)
+
+            return None
+
+        except Exception as e:
+            logger.debug(f"Could not extract draughting dimension {entity.id}: {e}")
+            return None
+
+    def _extract_dimension_from_text_literal(self, entity: StepEntity, index: int) -> Optional[Dict[str, Any]]:
+        """Extract dimension from TEXT_LITERAL entity."""
+        try:
+            # TEXT_LITERAL has text content in attributes
+            text = None
+            for attr in entity.parsed_attributes:
+                if isinstance(attr, str) and not attr.startswith('#'):
+                    text = attr
+                    break
+
+            if not text:
+                text = entity.raw_line
+
+            # Look for numeric values
+            match = re.search(r'([\d.]+)', text)
+            if match:
+                value = float(match.group(1))
+
+                # Determine type from context
+                dim_type = 'linear'
+                if 'Ø' in text or '∅' in text or 'diameter' in text.lower():
+                    dim_type = 'diameter'
+                elif text.startswith('R') or 'radius' in text.lower():
+                    dim_type = 'radius'
+                elif '°' in text:
+                    dim_type = 'angular'
+
+                return self._format_graphical_dimension(index, dim_type, value, entity.id)
+
+            return None
+
+        except Exception as e:
+            logger.debug(f"Could not extract text literal {entity.id}: {e}")
+            return None
+
+    def _extract_curve_annotation(self, entity: StepEntity, index: int) -> Optional[Dict[str, Any]]:
+        """Extract curve annotation (leader lines, dimension lines)."""
+        try:
+            return {
+                'id': entity.id,
+                'type': 'curve',
+                'points': [],  # Would need to extract from geometry
+                'position': {'x': 0, 'y': 0, 'z': 0},
+            }
+        except Exception:
+            return None
+
+    def _extract_leader(self, entity: StepEntity, index: int) -> Optional[Dict[str, Any]]:
+        """Extract leader line."""
+        try:
+            return {
+                'id': entity.id,
+                'type': 'leader',
+                'points': [],
+                'position': {'x': 0, 'y': 0, 'z': 0},
+            }
+        except Exception:
+            return None
+
+    def _format_graphical_dimension(
+        self,
+        index: int,
+        dim_type: str,
+        value: float,
+        entity_id: str
+    ) -> Dict[str, Any]:
+        """Format graphical dimension data."""
+        prefix = ''
+        unit = 'mm'
+        if dim_type == 'diameter':
+            prefix = '⌀'
+        elif dim_type == 'radius':
+            prefix = 'R'
+        elif dim_type == 'angular':
+            unit = '°'
+
+        return {
+            'id': entity_id,
+            'type': dim_type,
+            'value': value,
+            'unit': unit,
+            'tolerance': None,
+            'associated_geometry': [],
+            'position': {'x': 0, 'y': 0, 'z': 0},
+            'text': f"{prefix}{value:.2f} {unit}",
+            'source': 'graphical',  # Indicates this is from graphical PMI
+        }
+
+
 class PMIExtractor:
     """
     Main PMI extraction coordinator.
 
     Combines all extractors to produce complete PMI data.
+    Supports AP203, AP214, and AP242 STEP files.
     """
 
     def __init__(self, step_file_path: str):
@@ -953,29 +1742,60 @@ class PMIExtractor:
         Args:
             step_file_path: Path to STEP file
         """
+        self.file_path = step_file_path
         self.parser = StepParser(step_file_path)
+
+        # Core extractors
         self.dimension_extractor = DimensionExtractor(self.parser)
         self.tolerance_extractor = ToleranceExtractor(self.parser)
         self.datum_extractor = DatumExtractor(self.parser)
         self.annotation_extractor = AnnotationExtractor(self.parser)
 
+        # Extended extractors
+        self.surface_finish_extractor = SurfaceFinishExtractor(self.parser)
+        self.weld_extractor = WeldSymbolExtractor(self.parser)
+        self.ap203_extractor = AP203AP214Extractor(self.parser)
+
     def extract_all(self) -> Dict[str, Any]:
         """
         Extract all PMI from the STEP file.
 
+        Automatically detects AP203/AP214 vs AP242 format and uses
+        appropriate extraction methods.
+
         Returns:
             Complete PMI data structure
         """
+        # Check if this is AP203/AP214 format
+        is_legacy = self.ap203_extractor.is_ap203_or_ap214()
+
         pmi_data = {
             'version': '2.0',
             'source': 'text_parser',
-            'dimensions': self.dimension_extractor.extract_dimensions(),
-            'geometric_tolerances': self.tolerance_extractor.extract_tolerances(),
-            'datums': self.datum_extractor.extract_datums(),
-            'surface_finishes': [],  # To be implemented if needed
+            'schema': 'AP203/AP214' if is_legacy else 'AP242',
+            'dimensions': [],
+            'geometric_tolerances': [],
+            'datums': [],
+            'surface_finishes': [],
+            'weld_symbols': [],
             'notes': [],
             'graphical_pmi': [],
         }
+
+        if is_legacy:
+            # AP203/AP214: Use graphical PMI extraction
+            logger.info("Detected AP203/AP214 format, using graphical PMI extraction")
+            pmi_data['dimensions'] = self.ap203_extractor.extract_graphical_dimensions()
+            pmi_data['graphical_pmi'] = self.ap203_extractor.extract_graphical_annotations()
+        else:
+            # AP242: Use semantic PMI extraction
+            pmi_data['dimensions'] = self.dimension_extractor.extract_dimensions()
+            pmi_data['geometric_tolerances'] = self.tolerance_extractor.extract_tolerances()
+            pmi_data['datums'] = self.datum_extractor.extract_datums()
+
+        # Extract surface finishes and welds (works for both formats)
+        pmi_data['surface_finishes'] = self.surface_finish_extractor.extract_surface_finishes()
+        pmi_data['weld_symbols'] = self.weld_extractor.extract_weld_symbols()
 
         # Enrich with annotation positions
         self.annotation_extractor.get_annotation_positions(pmi_data)
@@ -985,6 +1805,9 @@ class PMIExtractor:
             'dimension_count': len(pmi_data['dimensions']),
             'tolerance_count': len(pmi_data['geometric_tolerances']),
             'datum_count': len(pmi_data['datums']),
+            'surface_finish_count': len(pmi_data['surface_finishes']),
+            'weld_count': len(pmi_data['weld_symbols']),
+            'is_legacy_format': is_legacy,
             'parser_stats': self.parser.get_statistics(),
         }
 

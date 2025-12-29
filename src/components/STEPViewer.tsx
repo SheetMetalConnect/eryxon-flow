@@ -17,7 +17,14 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
-import type { PMIData, PMIDimension, GeometryData, MeshData } from '@/hooks/useCADProcessing';
+import type {
+  PMIData,
+  PMIDimension,
+  PMISurfaceFinish,
+  PMIWeldSymbol,
+  GeometryData,
+  MeshData,
+} from '@/hooks/useCADProcessing';
 import { decodeFloat32Array, decodeUint32Array } from '@/hooks/useCADProcessing';
 
 // Interface for calculated dimensions
@@ -73,8 +80,8 @@ export function STEPViewer({
   // Processing mode tracking
   const [processingMode, setProcessingMode] = useState<'server' | 'browser' | null>(null);
 
-  // PMI filter state
-  const [pmiFilter, setPmiFilter] = useState<'all' | 'dimensions' | 'tolerances' | 'datums'>('all');
+  // PMI filter state - covers all backend PMI types
+  const [pmiFilter, setPmiFilter] = useState<'all' | 'dimensions' | 'tolerances' | 'datums' | 'surface' | 'welds' | 'notes' | 'graphical'>('all');
 
   // Three.js refs
   const containerRef = useRef<HTMLDivElement>(null);
@@ -1187,6 +1194,129 @@ export function STEPViewer({
       });
     }
 
+    // Render surface finishes (if filter allows)
+    if ((pmiFilter === 'all' || pmiFilter === 'surface') && pmiData.surface_finishes) {
+      pmiData.surface_finishes.forEach((finish) => {
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'pmi-surface-label';
+        labelDiv.style.cssText = `
+          background: rgba(255, 152, 0, 0.9);
+          color: white;
+          padding: 2px 6px;
+          border-radius: 3px;
+          font-size: 11px;
+          font-family: ui-monospace, monospace;
+          font-weight: 500;
+          white-space: nowrap;
+          pointer-events: auto;
+          cursor: pointer;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        `;
+        labelDiv.textContent = finish.text;
+        labelDiv.title = `Surface Finish: ${finish.parameter} ${finish.value} ${finish.unit}`;
+
+        const label = new CSS2DObject(labelDiv);
+        label.position.set(finish.position.x, finish.position.y, finish.position.z);
+        group.add(label);
+      });
+    }
+
+    // Render weld symbols (if filter allows)
+    if ((pmiFilter === 'all' || pmiFilter === 'welds') && pmiData.weld_symbols) {
+      pmiData.weld_symbols.forEach((weld) => {
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'pmi-weld-label';
+        labelDiv.style.cssText = `
+          background: rgba(244, 67, 54, 0.9);
+          color: white;
+          padding: 2px 6px;
+          border-radius: 3px;
+          font-size: 11px;
+          font-family: ui-monospace, monospace;
+          font-weight: 500;
+          white-space: nowrap;
+          pointer-events: auto;
+          cursor: pointer;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        `;
+        labelDiv.textContent = weld.text;
+        labelDiv.title = `Weld: ${weld.weld_type}${weld.process ? ` (${weld.process})` : ''}`;
+
+        const label = new CSS2DObject(labelDiv);
+        label.position.set(weld.position.x, weld.position.y, weld.position.z);
+        group.add(label);
+      });
+    }
+
+    // Render notes (if filter allows)
+    if ((pmiFilter === 'all' || pmiFilter === 'notes') && pmiData.notes) {
+      pmiData.notes.forEach((note) => {
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'pmi-note-label';
+        labelDiv.style.cssText = `
+          background: rgba(96, 125, 139, 0.9);
+          color: white;
+          padding: 2px 6px;
+          border-radius: 3px;
+          font-size: 10px;
+          font-family: ui-monospace, monospace;
+          font-weight: 400;
+          max-width: 200px;
+          white-space: pre-wrap;
+          pointer-events: auto;
+          cursor: pointer;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        `;
+        labelDiv.textContent = note.text;
+        labelDiv.title = `Note: ${note.text}`;
+
+        const label = new CSS2DObject(labelDiv);
+        label.position.set(note.position.x, note.position.y, note.position.z);
+        group.add(label);
+
+        // Create leader line if points available
+        if (note.leader_points && note.leader_points.length >= 2) {
+          const points = note.leader_points.map(p => new THREE.Vector3(p.x, p.y, p.z));
+          const leaderGeom = new THREE.BufferGeometry().setFromPoints(points);
+          const noteMaterial = new THREE.LineBasicMaterial({
+            color: 0x607d8b,
+            linewidth: 1,
+            transparent: true,
+            opacity: 0.8,
+          });
+          const leaderLine = new THREE.Line(leaderGeom, noteMaterial);
+          group.add(leaderLine);
+        }
+      });
+    }
+
+    // Render graphical PMI for AP203/AP214 legacy formats (if filter allows)
+    if ((pmiFilter === 'all' || pmiFilter === 'graphical') && pmiData.graphical_pmi) {
+      pmiData.graphical_pmi.forEach((gfx) => {
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'pmi-graphical-label';
+        labelDiv.style.cssText = `
+          background: rgba(63, 81, 181, 0.9);
+          color: white;
+          padding: 2px 6px;
+          border-radius: 3px;
+          font-size: ${gfx.font_size || 11}px;
+          font-family: ui-monospace, monospace;
+          font-weight: 500;
+          white-space: nowrap;
+          pointer-events: auto;
+          cursor: pointer;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        `;
+        labelDiv.textContent = gfx.text;
+        labelDiv.title = `${gfx.type}: ${gfx.text}`;
+
+        const label = new CSS2DObject(labelDiv);
+        label.position.set(gfx.position.x, gfx.position.y, gfx.position.z);
+        group.add(label);
+      });
+    }
+
     sceneRef.current.add(group);
     pmiLayerRef.current = group;
   }, [pmiData, pmiFilter]);
@@ -1232,11 +1362,15 @@ export function STEPViewer({
     }
   }, [pmiFilter, showPMI, pmiData, createPMIVisualization]);
 
-  // Check if PMI data is available
+  // Check if PMI data is available - covers all 7 backend PMI types
   const hasPMIData = pmiData && (
     pmiData.dimensions.length > 0 ||
     pmiData.geometric_tolerances.length > 0 ||
-    pmiData.datums.length > 0
+    pmiData.datums.length > 0 ||
+    (pmiData.surface_finishes?.length ?? 0) > 0 ||
+    (pmiData.weld_symbols?.length ?? 0) > 0 ||
+    (pmiData.notes?.length ?? 0) > 0 ||
+    (pmiData.graphical_pmi?.length ?? 0) > 0
   );
 
   return (
@@ -1534,6 +1668,58 @@ export function STEPViewer({
                     {t('parts.cadViewer.filterDatums')}
                   </button>
                 )}
+                {(pmiData.surface_finishes?.length ?? 0) > 0 && (
+                  <button
+                    onClick={() => setPmiFilter('surface')}
+                    className={cn(
+                      "text-[9px] px-1.5 py-0.5 rounded transition-colors",
+                      pmiFilter === 'surface'
+                        ? "bg-orange-500 text-white"
+                        : "bg-orange-500/20 text-orange-600 hover:bg-orange-500/30"
+                    )}
+                  >
+                    {t('parts.cadViewer.filterSurface')}
+                  </button>
+                )}
+                {(pmiData.weld_symbols?.length ?? 0) > 0 && (
+                  <button
+                    onClick={() => setPmiFilter('welds')}
+                    className={cn(
+                      "text-[9px] px-1.5 py-0.5 rounded transition-colors",
+                      pmiFilter === 'welds'
+                        ? "bg-red-500 text-white"
+                        : "bg-red-500/20 text-red-600 hover:bg-red-500/30"
+                    )}
+                  >
+                    {t('parts.cadViewer.filterWelds')}
+                  </button>
+                )}
+                {(pmiData.notes?.length ?? 0) > 0 && (
+                  <button
+                    onClick={() => setPmiFilter('notes')}
+                    className={cn(
+                      "text-[9px] px-1.5 py-0.5 rounded transition-colors",
+                      pmiFilter === 'notes'
+                        ? "bg-slate-500 text-white"
+                        : "bg-slate-500/20 text-slate-600 hover:bg-slate-500/30"
+                    )}
+                  >
+                    {t('parts.cadViewer.filterNotes')}
+                  </button>
+                )}
+                {(pmiData.graphical_pmi?.length ?? 0) > 0 && (
+                  <button
+                    onClick={() => setPmiFilter('graphical')}
+                    className={cn(
+                      "text-[9px] px-1.5 py-0.5 rounded transition-colors",
+                      pmiFilter === 'graphical'
+                        ? "bg-indigo-500 text-white"
+                        : "bg-indigo-500/20 text-indigo-600 hover:bg-indigo-500/30"
+                    )}
+                  >
+                    {t('parts.cadViewer.filterGraphical')}
+                  </button>
+                )}
               </div>
 
               {/* Legend */}
@@ -1559,6 +1745,38 @@ export function STEPViewer({
                     <div className="w-2.5 h-2.5 rounded-sm bg-green-500" />
                     <span className="text-[10px] text-muted-foreground">
                       {t('parts.cadViewer.pmiDatums')} ({pmiData.datums.length})
+                    </span>
+                  </div>
+                )}
+                {(pmiFilter === 'all' || pmiFilter === 'surface') && (pmiData.surface_finishes?.length ?? 0) > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-sm bg-orange-500" />
+                    <span className="text-[10px] text-muted-foreground">
+                      {t('parts.cadViewer.pmiSurface')} ({pmiData.surface_finishes?.length})
+                    </span>
+                  </div>
+                )}
+                {(pmiFilter === 'all' || pmiFilter === 'welds') && (pmiData.weld_symbols?.length ?? 0) > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-sm bg-red-500" />
+                    <span className="text-[10px] text-muted-foreground">
+                      {t('parts.cadViewer.pmiWelds')} ({pmiData.weld_symbols?.length})
+                    </span>
+                  </div>
+                )}
+                {(pmiFilter === 'all' || pmiFilter === 'notes') && (pmiData.notes?.length ?? 0) > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-sm bg-slate-500" />
+                    <span className="text-[10px] text-muted-foreground">
+                      {t('parts.cadViewer.pmiNotes')} ({pmiData.notes?.length})
+                    </span>
+                  </div>
+                )}
+                {(pmiFilter === 'all' || pmiFilter === 'graphical') && (pmiData.graphical_pmi?.length ?? 0) > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-sm bg-indigo-500" />
+                    <span className="text-[10px] text-muted-foreground">
+                      {t('parts.cadViewer.pmiGraphical')} ({pmiData.graphical_pmi?.length})
                     </span>
                   </div>
                 )}
