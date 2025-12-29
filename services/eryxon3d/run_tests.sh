@@ -5,6 +5,11 @@
 #   ./run_tests.sh                    # Build and run tests
 #   ./run_tests.sh --no-build         # Run tests without rebuilding
 #   ./run_tests.sh --file model.step  # Test with a specific file
+#   ./run_tests.sh --nist             # Run NIST batch test
+#   ./run_tests.sh --check-handle     # Check Handle_TDocStd_Document availability
+#
+# Environment variables:
+#   PYTHONOCC_VERSION=7.6.2 ./run_tests.sh   # Build with specific version
 
 set -e
 
@@ -15,10 +20,15 @@ cd "$SCRIPT_DIR"
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m'
 
 echo -e "${YELLOW}PMI Extraction Test Runner${NC}"
 echo "================================"
+
+# Default pythonocc version
+PYTHONOCC_VERSION="${PYTHONOCC_VERSION:-7.7.2}"
+echo -e "pythonocc-core version: ${BLUE}${PYTHONOCC_VERSION}${NC}"
 
 # Parse arguments
 BUILD=true
@@ -26,6 +36,8 @@ FILE_ARG=""
 DIR_ARG=""
 NIST_ARG=""
 REPORT_ARG=""
+CHECK_HANDLE=false
+
 for arg in "$@"; do
     case $arg in
         --no-build)
@@ -55,6 +67,9 @@ for arg in "$@"; do
             shift
             REPORT_ARG="--report $1"
             ;;
+        --check-handle)
+            CHECK_HANDLE=true
+            ;;
     esac
 done
 
@@ -67,8 +82,21 @@ fi
 
 # Build if needed
 if [ "$BUILD" = true ]; then
-    echo -e "\n${YELLOW}Building Docker image...${NC}"
-    docker build -t cad-processor-test . 2>&1 | tail -10
+    echo -e "\n${YELLOW}Building Docker image with pythonocc-core=${PYTHONOCC_VERSION}...${NC}"
+    docker build \
+        --build-arg PYTHONOCC_VERSION="${PYTHONOCC_VERSION}" \
+        -t cad-processor-test . 2>&1 | tail -15
+fi
+
+# Check handle if requested
+if [ "$CHECK_HANDLE" = true ]; then
+    echo -e "\n${YELLOW}Checking Handle_TDocStd_Document availability...${NC}"
+    docker run --rm \
+        -v "$SCRIPT_DIR:/app" \
+        -w /app \
+        cad-processor-test \
+        python test_handle.py --verbose
+    exit $?
 fi
 
 # Run validation tests

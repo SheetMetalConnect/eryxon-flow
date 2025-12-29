@@ -33,12 +33,31 @@ class ProcessingResult:
 
 
 def _create_xcaf_document():
-    """Create a properly initialized XCAF document."""
-    from OCC.Core.TCollection import TCollection_ExtendedString
-    from OCC.Core.XCAFApp import XCAFApp_Application
+    """
+    Create a properly initialized XCAF document for PMI extraction.
+
+    Returns:
+        Tuple of (handle, document) on success, or None if XCAF initialization fails.
+
+    Note:
+        Some pythonocc-core versions don't expose Handle_TDocStd_Document.
+        This function tries multiple methods to create a valid XCAF document.
+        See docs/STEP-AP242-PMI.md for version compatibility.
+    """
+    try:
+        from OCC.Core.TCollection import TCollection_ExtendedString
+        from OCC.Core.XCAFApp import XCAFApp_Application
+    except ImportError as e:
+        logger.warning(f"XCAF modules not available: {e}")
+        return None
 
     fmt = TCollection_ExtendedString("MDTV-XCAF")
-    app = XCAFApp_Application.GetApplication()
+
+    try:
+        app = XCAFApp_Application.GetApplication()
+    except Exception as e:
+        logger.warning(f"XCAFApp_Application not available: {e}")
+        return None
 
     def _unwrap_doc(candidate):
         if candidate is None:
@@ -50,40 +69,197 @@ def _create_xcaf_document():
             return None, candidate
         return None, None
 
+    def _validate_doc(doc_obj):
+        """Validate document has a usable Main() label."""
+        if doc_obj is None:
+            return False
+        if hasattr(doc_obj, "IsNull") and doc_obj.IsNull():
+            return False
+        if not hasattr(doc_obj, "Main"):
+            return False
+        try:
+            main = doc_obj.Main()
+            if hasattr(main, "IsNull") and main.IsNull():
+                return False
+            return True
+        except Exception:
+            return False
+
+    # Method 1: NewDocument returning handle/document directly (newer API)
     try:
         candidate = app.NewDocument(fmt)
         doc_handle, doc_obj = _unwrap_doc(candidate)
-        if doc_obj is not None and not (
-            hasattr(doc_obj, "IsNull") and doc_obj.IsNull()
-        ):
+        if _validate_doc(doc_obj):
+            logger.debug("XCAF document created via NewDocument(fmt) return value")
             return doc_handle, doc_obj
     except Exception as newdoc_err:
-        logger.warning(f"XCAF NewDocument(fmt) failed: {newdoc_err}")
+        logger.debug(f"XCAF NewDocument(fmt) return: {newdoc_err}")
 
+    # Method 2: Handle_TDocStd_Document (classic API)
     try:
         from OCC.Core.TDocStd import Handle_TDocStd_Document
 
         h_doc = Handle_TDocStd_Document()
         app.NewDocument(fmt, h_doc)
         if not h_doc.IsNull():
-            return h_doc, h_doc.GetObject()
+            doc_obj = h_doc.GetObject()
+            if _validate_doc(doc_obj):
+                logger.debug("XCAF document created via Handle_TDocStd_Document")
+                return h_doc, doc_obj
+    except ImportError:
+        logger.debug("Handle_TDocStd_Document not available in this pythonocc version")
     except Exception as handle_err:
-        logger.warning(f"XCAF handle document init failed: {handle_err}")
+        logger.debug(f"XCAF Handle_TDocStd_Document init: {handle_err}")
 
+    # Method 3: TDocStd_Document directly
     try:
         from OCC.Core.TDocStd import TDocStd_Document
 
         doc = TDocStd_Document(fmt)
+        # Try to register with app
         try:
             app.NewDocument(fmt, doc)
-        except Exception as doc_new_err:
-            logger.warning(f"XCAF NewDocument with TDocStd failed: {doc_new_err}")
-        if not (hasattr(doc, "IsNull") and doc.IsNull()):
+        except Exception:
+            pass  # May fail but document might still work
+
+        if _validate_doc(doc):
+            logger.debug("XCAF document created via TDocStd_Document")
             return None, doc
     except Exception as doc_err:
-        logger.warning(f"XCAF document init via TDocStd_Document failed: {doc_err}")
+        logger.debug(f"XCAF TDocStd_Document init: {doc_err}")
 
+    logger.warning(
+        "XCAF document creation failed - PMI extraction will be disabled. "
+        "Try a different pythonocc-core version. See docs/STEP-AP242-PMI.md"
+    )
     return None
+
+
+def _read_step_with_xcaf(file_path: str):
+    """
+    Attempt to read STEP file using XCAF reader with PMI support.
+
+    Returns:
+        Tuple of (shape, doc, step_reader) on success, or (None, None, None) on failure.
+    """
+    try:
+        from OCC.Core.IFSelect import IFSelect_RetDone
+        from OCC.Core.STEPCAFControl import STEPCAFControl_Reader
+        from OCC.Core.XCAFDoc import XCAFDoc_DocumentTool
+        from OCC.Core.BRep import BRep_Builder
+        from OCC.Core.TopoDS import TopoDS_Compound
+
+        doc_bundle = _create_xcaf_document()
+        if doc_bundle is None:
+            logger.info("XCAF document unavailable, using basic reader")
+            return None, None, None
+
+        doc_handle, doc = doc_bundle
+        if not hasattr(doc, "Main"):
+            logger.warning("XCAF document missing Main()")
+            return None, None, None
+
+        # Create XCAF reader
+        reader = STEPCAFControl_Reader()
+        reader.SetGDTMode(True)  # Enable PMI
+        reader.SetNameMode(True)
+        reader.SetColorMode(True)
+
+        # Set failure mode to continue on errors
+        try:
+            reader.Reader().WS().TransferReader().TransientProcess().SetTraceLevel(0)
+        except Exception:
+            pass  # Non-critical
+
+        status = reader.ReadFile(file_path)
+        if status != IFSelect_RetDone:
+            logger.warning(f"XCAF reader failed to read file: status {status}")
+            return None, None, None
+
+        step_reader = reader.Reader()
+
+        # Log file info
+        try:
+            ws = step_reader.WS()
+            model = ws.Model()
+            if model is not None:
+                logger.info(f"STEP model has {model.NbEntities()} entities")
+        except Exception:
+            pass
+
+        # Transfer to document
+        transfer_target = doc_handle if doc_handle is not None else doc
+        try:
+            transfer_status = reader.Transfer(transfer_target)
+            if not transfer_status:
+                logger.warning("XCAF transfer returned false")
+        except Exception as e:
+            logger.warning(f"XCAF transfer failed: {e}")
+            return None, None, None
+
+        # Extract shape from document
+        try:
+            shape_tool = XCAFDoc_DocumentTool.ShapeTool(doc.Main())
+            shapes = []
+            shape_tool.GetFreeShapes(shapes)
+
+            if not shapes:
+                logger.warning("No shapes found in XCAF document")
+                return None, None, None
+
+            compound = TopoDS_Compound()
+            builder = BRep_Builder()
+            builder.MakeCompound(compound)
+
+            for s in shapes:
+                shape_tool_shape = shape_tool.GetShape(s)
+                if not shape_tool_shape.IsNull():
+                    builder.Add(compound, shape_tool_shape)
+
+            if compound.IsNull():
+                logger.warning("Compound shape is null")
+                return None, None, None
+
+            return compound, doc, step_reader
+
+        except Exception as e:
+            logger.warning(f"Shape extraction from XCAF failed: {e}")
+            return None, None, None
+
+    except Exception as e:
+        logger.warning(f"XCAF reader failed: {e}")
+        return None, None, None
+
+
+def _read_step_basic(file_path: str):
+    """
+    Read STEP file using basic reader (geometry only, no PMI).
+
+    Returns:
+        TopoDS_Shape on success, or None on failure.
+    """
+    try:
+        from OCC.Core.IFSelect import IFSelect_RetDone
+        from OCC.Core.STEPControl import STEPControl_Reader
+
+        reader = STEPControl_Reader()
+        status = reader.ReadFile(file_path)
+        if status != IFSelect_RetDone:
+            logger.error(f"Basic STEP reader failed: status {status}")
+            return None
+
+        reader.TransferRoots()
+        shape = reader.OneShape()
+
+        if shape is None or shape.IsNull():
+            logger.error("Basic STEP reader returned null shape")
+            return None
+
+        return shape
+
+    except Exception as e:
+        logger.error(f"Basic STEP reader error: {e}")
+        return None
 
 
 def extract_geometry_and_pmi(
@@ -114,10 +290,8 @@ def extract_geometry_and_pmi(
         from OCC.Core.BRepTools import breptools_Read
         from OCC.Core.IFSelect import IFSelect_RetDone
         from OCC.Core.IGESControl import IGESControl_Reader
-        from OCC.Core.STEPCAFControl import STEPCAFControl_Reader
         from OCC.Core.STEPControl import STEPControl_Reader
         from OCC.Core.TopoDS import TopoDS_Shape
-        from OCC.Core.XCAFDoc import XCAFDoc_DocumentTool
 
         logger.info(f"Processing file: {file_path}")
 
@@ -127,133 +301,26 @@ def extract_geometry_and_pmi(
         # For PMI extraction, we need XCAF document
         doc = None
         shape = None
-
-        # Keep reference to STEP reader for entity access
         step_reader = None
 
         if file_ext in ["step", "stp"]:
+            # First try XCAF reader if PMI is requested
             if extract_pmi:
-                # Use XCAF reader for PMI support
-                doc_bundle = _create_xcaf_document()
-                if doc_bundle is None:
-                    logger.warning("XCAF document init failed; PMI extraction disabled")
+                shape, doc, step_reader = _read_step_with_xcaf(file_path)
+                if shape is None:
+                    logger.info("XCAF reader failed, falling back to basic reader")
                     extract_pmi = False
-                else:
-                    doc_handle, doc = doc_bundle
-                    if not hasattr(doc, "Main"):
-                        logger.warning(
-                            "XCAF document missing Main(); PMI extraction disabled"
-                        )
-                        extract_pmi = False
-                        doc = None
-                    reader = STEPCAFControl_Reader()
-                    reader.SetGDTMode(True)  # Enable PMI
-                    reader.SetNameMode(True)
-                    reader.SetColorMode(True)
+                    doc = None
 
-                    # Set failure mode to continue on errors instead of crashing
-                    reader.Reader().WS().TransferReader().TransientProcess().SetTraceLevel(
-                        0
-                    )
+            # Fall back to basic reader if XCAF failed or PMI not requested
+            if shape is None:
+                shape = _read_step_basic(file_path)
+                if shape is None:
+                    raise ValueError("Failed to read STEP file with any reader")
+                extract_pmi = False  # No PMI without XCAF
 
-                    status = reader.ReadFile(file_path)
-                    if status != IFSelect_RetDone:
-                        raise ValueError(f"Failed to read STEP file: status {status}")
-
-                    # Store reader for entity access
-                    step_reader = reader.Reader()
-
-                    # Check for unresolved references before transfer
-                    ws = step_reader.WS()
-                    model = ws.Model()
-                    nb_roots = step_reader.NbRootsForTransfer()
-
-                    logger.info(f"STEP file has {nb_roots} root entities")
-
-                    # Check model validity
-                    if model is not None:
-                        nb_entities = model.NbEntities()
-                        logger.info(f"STEP model has {nb_entities} entities")
-
-                        # Check for unresolved references using check model
-                        from OCC.Core.Interface import Interface_CheckIterator
-
-                        check_iter = Interface_CheckIterator()
-                        model.FillChecks(check_iter)
-
-                        has_fails = False
-                        fail_count = 0
-                        for i in range(1, check_iter.NbChecks() + 1):
-                            check = check_iter.Value(i)
-                            if check.HasFailed():
-                                has_fails = True
-                                fail_count += 1
-                                if fail_count <= 5:  # Log first 5 failures
-                                    for j in range(1, check.NbFails() + 1):
-                                        logger.warning(
-                                            f"STEP validation fail: {check.CFail(j)}"
-                                        )
-
-                        if has_fails:
-                            logger.warning(
-                                f"STEP file has {fail_count} validation failures - attempting to continue"
-                            )
-
-                    # Attempt transfer with error handling
-                    try:
-                        transfer_target = doc_handle if doc_handle is not None else doc
-                        transfer_status = reader.Transfer(transfer_target)
-                        if not transfer_status:
-                            logger.warning(
-                                "STEP transfer returned false, attempting to extract partial geometry"
-                            )
-                    except Exception as transfer_err:
-                        logger.error(f"STEP transfer failed: {transfer_err}")
-                        # Fall back to basic reader
-                        logger.info("Falling back to basic STEP reader without PMI")
-                        extract_pmi = False
-                        doc = None
-                        reader_basic = STEPControl_Reader()
-                        status = reader_basic.ReadFile(file_path)
-                        if status == IFSelect_RetDone:
-                            reader_basic.TransferRoots()
-                            shape = reader_basic.OneShape()
-                        else:
-                            raise ValueError(
-                                "Failed to read STEP file with basic reader"
-                            )
-
-                    # Get shape from document if transfer succeeded
-                    if doc is not None:
-                        shape_tool = XCAFDoc_DocumentTool.ShapeTool(doc.Main())
-                        shapes = []
-                        shape_tool.GetFreeShapes(shapes)
-                        if shapes:
-                            from OCC.Core.BRep import BRep_Builder
-                            from OCC.Core.TopoDS import TopoDS_Compound
-
-                            compound = TopoDS_Compound()
-                            builder = BRep_Builder()
-                            builder.MakeCompound(compound)
-                            for s in shapes:
-                                shape_tool_shape = shape_tool.GetShape(s)
-                                if not shape_tool_shape.IsNull():
-                                    builder.Add(compound, shape_tool_shape)
-                            shape = compound
-
-                        # Validate we got a shape
-                        if shape is None or shape.IsNull():
-                            logger.warning(
-                                "No valid shape extracted from XCAF, trying basic reader"
-                            )
-                            extract_pmi = False
-                            doc = None
-                            reader_basic = STEPControl_Reader()
-                            status = reader_basic.ReadFile(file_path)
-                            if status == IFSelect_RetDone:
-                                reader_basic.TransferRoots()
-                                shape = reader_basic.OneShape()
-            if not extract_pmi:
+            # Additional fallback check - if shape is still problematic
+            if shape is not None and shape.IsNull():
                 # Simple STEP reader for geometry only
                 reader = STEPControl_Reader()
                 status = reader.ReadFile(file_path)
