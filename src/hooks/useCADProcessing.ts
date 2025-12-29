@@ -310,7 +310,7 @@ export function useCADProcessing() {
 
     const { error: updateError } = await supabase
       .from('parts')
-      .update({ metadata: updatedMetadata })
+      .update({ metadata: JSON.parse(JSON.stringify(updatedMetadata)) })
       .eq('id', partId);
 
     if (updateError) throw updateError;

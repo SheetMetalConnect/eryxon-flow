@@ -350,6 +350,88 @@ export function STEPViewer({
     edgesRef.current.push(edges);
   }, [edgesVisible]);
 
+  // Calculate dimensions from bounding box (must be defined before useEffect that uses it)
+  const calculateDimensions = useCallback(() => {
+    if (meshesRef.current.length === 0) return;
+
+    const box = new THREE.Box3();
+    meshesRef.current.forEach((mesh) => box.expandByObject(mesh));
+
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+
+    // Dimensions in mm (assuming model units are mm)
+    setDimensions({
+      x: Math.round(size.x * 100) / 100,
+      y: Math.round(size.y * 100) / 100,
+      z: Math.round(size.z * 100) / 100,
+      center: center,
+    });
+  }, []);
+
+  // Fit camera to meshes (must be defined before useEffect that uses it)
+  const fitCameraToMeshes = useCallback(() => {
+    if (
+      !cameraRef.current ||
+      !controlsRef.current ||
+      meshesRef.current.length === 0
+    )
+      return;
+
+    const box = new THREE.Box3();
+    meshesRef.current.forEach((mesh) => box.expandByObject(mesh));
+
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    const maxSize = Math.max(size.x, size.y, size.z);
+    const distance = maxSize * 2;
+
+    cameraRef.current.position.set(
+      center.x + distance,
+      center.y + distance,
+      center.z + distance
+    );
+
+    controlsRef.current.target.copy(center);
+    controlsRef.current.update();
+  }, []);
+
+  // Update grid size based on model (must be defined before useEffect that uses it)
+  const updateGridSize = useCallback(() => {
+    if (!gridRef.current || !sceneRef.current || meshesRef.current.length === 0)
+      return;
+
+    const box = new THREE.Box3();
+    meshesRef.current.forEach((mesh) => box.expandByObject(mesh));
+    const size = box.getSize(new THREE.Vector3());
+    const maxDimension = Math.max(size.x, size.y, size.z);
+
+    // Grid size = 3x assembly size
+    const gridSize = Math.max(
+      1000,
+      Math.ceil((maxDimension * 3) / 100) * 100
+    );
+    const divisions = Math.max(10, Math.min(100, Math.round(gridSize / 100)));
+
+    // Remove old grid
+    sceneRef.current.remove(gridRef.current);
+    gridRef.current.geometry.dispose();
+    if (Array.isArray(gridRef.current.material)) {
+      gridRef.current.material.forEach(m => m.dispose());
+    } else {
+      gridRef.current.material.dispose();
+    }
+
+    // Create new grid
+    const newGrid = new THREE.GridHelper(gridSize, divisions, 0x444444, 0x888888);
+    newGrid.material.transparent = true;
+    newGrid.material.opacity = 0.35;
+    newGrid.visible = gridVisible;
+
+    sceneRef.current.add(newGrid);
+    gridRef.current = newGrid;
+  }, [gridVisible]);
+
   // Load and render geometry (from server or browser)
   useEffect(() => {
     if (!librariesLoaded || !sceneRef.current) return;
@@ -515,68 +597,6 @@ export function STEPViewer({
     loadSTEP();
   }, [url, librariesLoaded, serverGeometry, preferServerGeometry, edgesVisible, gridVisible, clearMeshes, addMeshToScene, createMeshFromServerData, calculateDimensions, fitCameraToMeshes, updateGridSize]);
 
-  // Fit camera to meshes
-  const fitCameraToMeshes = useCallback(() => {
-    if (
-      !cameraRef.current ||
-      !controlsRef.current ||
-      meshesRef.current.length === 0
-    )
-      return;
-
-    const box = new THREE.Box3();
-    meshesRef.current.forEach((mesh) => box.expandByObject(mesh));
-
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    const maxSize = Math.max(size.x, size.y, size.z);
-    const distance = maxSize * 2;
-
-    cameraRef.current.position.set(
-      center.x + distance,
-      center.y + distance,
-      center.z + distance
-    );
-
-    controlsRef.current.target.copy(center);
-    controlsRef.current.update();
-  }, []);
-
-  // Update grid size based on model
-  const updateGridSize = useCallback(() => {
-    if (!gridRef.current || !sceneRef.current || meshesRef.current.length === 0)
-      return;
-
-    const box = new THREE.Box3();
-    meshesRef.current.forEach((mesh) => box.expandByObject(mesh));
-    const size = box.getSize(new THREE.Vector3());
-    const maxDimension = Math.max(size.x, size.y, size.z);
-
-    // Grid size = 3x assembly size
-    const gridSize = Math.max(
-      1000,
-      Math.ceil((maxDimension * 3) / 100) * 100
-    );
-    const divisions = Math.max(10, Math.min(100, Math.round(gridSize / 100)));
-
-    // Remove old grid
-    sceneRef.current.remove(gridRef.current);
-    gridRef.current.geometry.dispose();
-    if (Array.isArray(gridRef.current.material)) {
-      gridRef.current.material.forEach(m => m.dispose());
-    } else {
-      gridRef.current.material.dispose();
-    }
-
-    // Create new grid
-    const newGrid = new THREE.GridHelper(gridSize, divisions, 0x444444, 0x888888);
-    newGrid.material.transparent = true;
-    newGrid.material.opacity = 0.35;
-    newGrid.visible = gridVisible;
-
-    sceneRef.current.add(newGrid);
-    gridRef.current = newGrid;
-  }, [gridVisible]);
 
   // Initialize explosion data
   const initializeExplosionData = () => {
@@ -689,24 +709,6 @@ export function STEPViewer({
     setEdgesVisible(!edgesVisible);
   };
 
-  // Calculate dimensions from bounding box
-  const calculateDimensions = useCallback(() => {
-    if (meshesRef.current.length === 0) return;
-
-    const box = new THREE.Box3();
-    meshesRef.current.forEach((mesh) => box.expandByObject(mesh));
-
-    const size = box.getSize(new THREE.Vector3());
-    const center = box.getCenter(new THREE.Vector3());
-
-    // Dimensions in mm (assuming model units are mm)
-    setDimensions({
-      x: Math.round(size.x * 100) / 100,
-      y: Math.round(size.y * 100) / 100,
-      z: Math.round(size.z * 100) / 100,
-      center: center,
-    });
-  }, []);
 
   // Create dimension visualization lines in 3D
   const createDimensionVisualization = useCallback(() => {
