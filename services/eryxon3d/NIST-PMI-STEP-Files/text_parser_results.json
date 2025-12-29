@@ -1,0 +1,182 @@
+{
+  "summary": {
+    "files_processed": 17,
+    "successful": 17,
+    "failed": 0,
+    "total_dimensions": 261,
+    "total_tolerances": 360,
+    "total_datums": 114
+  },
+  "results": [
+    {
+      "file": "nist_ctc_01_asme1_ap242-e1.stp",
+      "dimensions": 12,
+      "tolerances": 6,
+      "datums": 3,
+      "total_pmi": 21,
+      "extraction_time_ms": 238.09,
+      "success": true,
+      "error": null
+    },
+    {
+      "file": "nist_ctc_02_asme1_ap242-e2.stp",
+      "dimensions": 7,
+      "tolerances": 22,
+      "datums": 10,
+      "total_pmi": 39,
+      "extraction_time_ms": 961.36,
+      "success": true,
+      "error": null
+    },
+    {
+      "file": "nist_ctc_03_asme1_ap242-e2.stp",
+      "dimensions": 10,
+      "tolerances": 13,
+      "datums": 6,
+      "total_pmi": 29,
+      "extraction_time_ms": 339.71,
+      "success": true,
+      "error": null
+    },
+    {
+      "file": "nist_ctc_04_asme1_ap242-e1.stp",
+      "dimensions": 9,
+      "tolerances": 7,
+      "datums": 8,
+      "total_pmi": 24,
+      "extraction_time_ms": 561.39,
+      "success": true,
+      "error": null
+    },
+    {
+      "file": "nist_ctc_05_asme1_ap242-e1.stp",
+      "dimensions": 6,
+      "tolerances": 9,
+      "datums": 4,
+      "total_pmi": 19,
+      "extraction_time_ms": 344.55,
+      "success": true,
+      "error": null
+    },
+    {
+      "file": "nist_ftc_06_asme1_ap242-e2.stp",
+      "dimensions": 24,
+      "tolerances": 28,
+      "datums": 10,
+      "total_pmi": 62,
+      "extraction_time_ms": 1079.67,
+      "success": true,
+      "error": null
+    },
+    {
+      "file": "nist_ftc_07_asme1_ap242-e2.stp",
+      "dimensions": 17,
+      "tolerances": 27,
+      "datums": 5,
+      "total_pmi": 49,
+      "extraction_time_ms": 682.23,
+      "success": true,
+      "error": null
+    },
+    {
+      "file": "nist_ftc_08_asme1_ap242-e1-tg.stp",
+      "dimensions": 0,
+      "tolerances": 0,
+      "datums": 0,
+      "total_pmi": 0,
+      "extraction_time_ms": 1117.34,
+      "success": true,
+      "error": null
+    },
+    {
+      "file": "nist_ftc_08_asme1_ap242-e2.stp",
+      "dimensions": 10,
+      "tolerances": 33,
+      "datums": 11,
+      "total_pmi": 54,
+      "extraction_time_ms": 2989.28,
+      "success": true,
+      "error": null
+    },
+    {
+      "file": "nist_ftc_09_asme1_ap242-e1.stp",
+      "dimensions": 22,
+      "tolerances": 31,
+      "datums": 8,
+      "total_pmi": 61,
+      "extraction_time_ms": 3812.51,
+      "success": true,
+      "error": null
+    },
+    {
+      "file": "nist_ftc_10_asme1_ap242-e2.stp",
+      "dimensions": 26,
+      "tolerances": 40,
+      "datums": 11,
+      "total_pmi": 77,
+      "extraction_time_ms": 889.39,
+      "success": true,
+      "error": null
+    },
+    {
+      "file": "nist_ftc_11_asme1_ap242-e2.stp",
+      "dimensions": 6,
+      "tolerances": 3,
+      "datums": 2,
+      "total_pmi": 11,
+      "extraction_time_ms": 1178.25,
+      "success": true,
+      "error": null
+    },
+    {
+      "file": "nist_stc_06_asme1_ap242-e3.stp",
+      "dimensions": 17,
+      "tolerances": 25,
+      "datums": 6,
+      "total_pmi": 48,
+      "extraction_time_ms": 450.4,
+      "success": true,
+      "error": null
+    },
+    {
+      "file": "nist_stc_07_asme1_ap242-e3.stp",
+      "dimensions": 39,
+      "tolerances": 22,
+      "datums": 5,
+      "total_pmi": 66,
+      "extraction_time_ms": 930.78,
+      "success": true,
+      "error": null
+    },
+    {
+      "file": "nist_stc_08_asme1_ap242-e3.stp",
+      "dimensions": 7,
+      "tolerances": 30,
+      "datums": 8,
+      "total_pmi": 45,
+      "extraction_time_ms": 1266.39,
+      "success": true,
+      "error": null
+    },
+    {
+      "file": "nist_stc_09_asme1_ap242-e3.stp",
+      "dimensions": 22,
+      "tolerances": 27,
+      "datums": 8,
+      "total_pmi": 57,
+      "extraction_time_ms": 3465.33,
+      "success": true,
+      "error": null
+    },
+    {
+      "file": "nist_stc_10_asme1_ap242-e2.stp",
+      "dimensions": 27,
+      "tolerances": 37,
+      "datums": 9,
+      "total_pmi": 73,
+      "extraction_time_ms": 2928.74,
+      "success": true,
+      "error": null
+    }
+  ]
+}

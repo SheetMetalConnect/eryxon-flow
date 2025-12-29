@@ -1,18 +1,31 @@
 /**
  * CAD Processing Hook
  *
- * This hook provides server-side CAD file processing:
+ * This hook provides CAD file processing with configurable backends:
  * 1. Geometry extraction (tessellated meshes as base64)
- * 2. PMI/MBD extraction (dimensions, tolerances, datums)
+ * 2. PMI/MBD extraction (dimensions, tolerances, datums, surface finishes, weld symbols)
  * 3. Thumbnail generation (optional)
  *
- * Falls back to browser-based processing if server is unavailable.
+ * Backend modes (configurable via cadBackend.ts):
+ * - 'custom': Eryxon3D Docker-based backend (recommended)
+ * - 'byob': Bring Your Own Backend (CAD Exchanger SDK, etc.)
+ * - 'frontend': Browser-only processing via occt-import-js (fallback)
  */
 
 import { useState, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  getCADConfig,
+  getActiveBackendUrl,
+  getActiveApiKey,
+  getActiveTimeout,
+  isBackendAvailable,
+  determineBestBackend,
+  setCADBackendMode,
+  type CADBackendMode,
+} from '@/config/cadBackend';
 
 // ============================================================================
 // Types
@@ -91,11 +104,85 @@ export interface PMIDatum {
   associated_geometry?: AssociatedGeometry;
 }
 
+export interface PMISurfaceFinish {
+  id: string;
+  type: 'roughness' | 'waviness' | 'lay' | 'composite';
+  parameter: string;  // Ra, Rz, Rq, etc.
+  value: number;
+  unit: string;
+  upper_limit?: number;
+  lower_limit?: number;
+  sampling_length?: number;
+  method?: string;
+  text: string;
+  position: Vector3;
+  associated_geometry?: AssociatedGeometry;
+}
+
+export interface PMIWeldSymbol {
+  id: string;
+  weld_type: string;  // fillet, groove, spot, seam, etc.
+  arrow_side?: {
+    weld_symbol?: string;
+    size?: number;
+    length?: number;
+    pitch?: number;
+    contour?: string;
+  };
+  other_side?: {
+    weld_symbol?: string;
+    size?: number;
+    length?: number;
+    pitch?: number;
+    contour?: string;
+  };
+  process?: string;
+  field_weld: boolean;
+  all_around: boolean;
+  tail_note?: string;
+  text: string;
+  position: Vector3;
+  associated_geometry?: AssociatedGeometry;
+}
+
+export interface PMINote {
+  id: string;
+  text: string;
+  position: Vector3;
+  leader_points?: Vector3[];
+  associated_geometry?: AssociatedGeometry;
+}
+
+export interface PMIGraphical {
+  id: string;
+  type: string;
+  text: string;
+  position: Vector3;
+  font_size?: number;
+  color?: string;
+  associated_geometry?: AssociatedGeometry;
+}
+
+export interface PMIStatistics {
+  dimension_count: number;
+  tolerance_count: number;
+  datum_count: number;
+  surface_finish_count: number;
+  weld_count: number;
+}
+
 export interface PMIData {
   version: string;
+  source?: string;  // 'text_parser' | 'xcaf' | etc.
+  schema?: string;  // 'AP242' | 'AP203/AP214'
   dimensions: PMIDimension[];
   geometric_tolerances: PMIGeometricTolerance[];
   datums: PMIDatum[];
+  surface_finishes?: PMISurfaceFinish[];
+  weld_symbols?: PMIWeldSymbol[];
+  notes?: PMINote[];
+  graphical_pmi?: PMIGraphical[];
+  statistics?: PMIStatistics;
 }
 
 export interface CADProcessingResult {
@@ -109,17 +196,35 @@ export interface CADProcessingResult {
 }
 
 // ============================================================================
-// Configuration
+// Configuration (via cadBackend.ts)
 // ============================================================================
 
-const CAD_SERVICE_URL = import.meta.env.VITE_CAD_SERVICE_URL || import.meta.env.VITE_PMI_SERVICE_URL;
-const CAD_SERVICE_API_KEY = import.meta.env.VITE_CAD_SERVICE_API_KEY;
-
 /**
- * Check if CAD processing service is configured
+ * Check if CAD processing service is configured (custom or byob backend)
  */
 export function isCADServiceEnabled(): boolean {
-  return Boolean(CAD_SERVICE_URL);
+  return isBackendAvailable('custom') || isBackendAvailable('byob');
+}
+
+/**
+ * Get the current backend mode
+ */
+export function getBackendMode(): CADBackendMode {
+  return getCADConfig().mode;
+}
+
+/**
+ * Switch to a different backend mode
+ */
+export function switchBackendMode(mode: CADBackendMode): void {
+  setCADBackendMode(mode);
+}
+
+/**
+ * Check if a specific feature is enabled
+ */
+export function isFeatureEnabled(feature: 'pmiExtraction' | 'thumbnails' | 'geometry'): boolean {
+  return getCADConfig().features[feature];
 }
 
 /**
@@ -170,22 +275,27 @@ export function useCADProcessing() {
   const [processingError, setProcessingError] = useState<string | null>(null);
 
   /**
-   * Process a CAD file through the server
+   * Process a CAD file through the configured backend
    */
   const processCAD = useCallback(async (
     fileUrl: string,
     fileName: string,
     options: UseCADProcessingOptions = {}
   ): Promise<CADProcessingResult> => {
+    const config = getCADConfig();
     const {
-      includeGeometry = true,
-      includePMI = true,
-      generateThumbnail = false,
+      includeGeometry = config.features.geometry,
+      includePMI = config.features.pmiExtraction,
+      generateThumbnail = config.features.thumbnails,
       thumbnailSize = 256,
     } = options;
 
-    // Check if service is configured
-    if (!CAD_SERVICE_URL) {
+    // Get active backend URL
+    const backendUrl = getActiveBackendUrl();
+    const currentMode = config.mode;
+
+    // If mode is frontend-only, return early (caller should use browser processing)
+    if (currentMode === 'frontend' || !backendUrl) {
       return {
         success: false,
         geometry: null,
@@ -193,7 +303,7 @@ export function useCADProcessing() {
         thumbnail_base64: null,
         file_hash: null,
         processing_time_ms: 0,
-        error: 'CAD processing service not configured',
+        error: 'No server backend configured - use browser processing',
       };
     }
 
@@ -221,13 +331,27 @@ export function useCADProcessing() {
       };
 
       // Add API key if configured
-      if (CAD_SERVICE_API_KEY) {
-        headers['X-API-Key'] = CAD_SERVICE_API_KEY;
+      const apiKey = getActiveApiKey();
+      if (apiKey) {
+        headers['X-API-Key'] = apiKey;
       }
 
-      const response = await fetch(`${CAD_SERVICE_URL}/process`, {
+      // Add custom headers for BYOB mode
+      if (currentMode === 'byob' && config.byob.headers) {
+        Object.entries(config.byob.headers).forEach(([key, value]) => {
+          headers[key] = value;
+        });
+      }
+
+      const timeout = getActiveTimeout();
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+      const response = await fetch(`${backendUrl}/process`, {
         method: 'POST',
         headers,
+        signal: controller.signal,
         body: JSON.stringify({
           file_url: fileUrl,
           file_name: fileName,
@@ -237,6 +361,8 @@ export function useCADProcessing() {
           thumbnail_size: thumbnailSize,
         }),
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
@@ -254,7 +380,11 @@ export function useCADProcessing() {
       return result;
 
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'CAD processing failed';
+      const errorMessage = error instanceof Error
+        ? error.name === 'AbortError'
+          ? 'CAD processing timed out'
+          : error.message
+        : 'CAD processing failed';
       setProcessingError(errorMessage);
       return {
         success: false,
@@ -355,8 +485,16 @@ export function useCADProcessing() {
     decodeFloat32Array,
     decodeUint32Array,
 
-    // Service status
+    // Backend configuration
+    backendMode: getCADConfig().mode,
     isCADServiceEnabled: isCADServiceEnabled(),
+    isServerBackendActive: getCADConfig().mode !== 'frontend' && isCADServiceEnabled(),
+    isFrontendFallback: getCADConfig().mode === 'frontend',
+    config: getCADConfig(),
+
+    // Config management
+    switchBackendMode,
+    determineBestBackend,
   };
 }
 
