@@ -10,7 +10,7 @@ FROM continuumio/miniconda3:latest
 WORKDIR /app
 
 # Install pythonocc-core via conda (includes OpenCASCADE)
-RUN conda install -c conda-forge python=3.11 pythonocc-core=7.8.1.1 -y && \
+RUN conda install -c conda-forge python=3.11 pythonocc-core=7.7.2 -y && \
     conda clean -afy
 
 # Install Python dependencies

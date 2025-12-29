@@ -23,6 +23,9 @@ echo "================================"
 # Parse arguments
 BUILD=true
 FILE_ARG=""
+DIR_ARG=""
+NIST_ARG=""
+REPORT_ARG=""
 for arg in "$@"; do
     case $arg in
         --no-build)
@@ -34,6 +37,23 @@ for arg in "$@"; do
         --file)
             shift
             FILE_ARG="--file $1"
+            ;;
+        --dir=*)
+            DIR_ARG="--dir ${arg#*=}"
+            ;;
+        --dir)
+            shift
+            DIR_ARG="--dir $1"
+            ;;
+        --nist)
+            NIST_ARG="--nist"
+            ;;
+        --report=*)
+            REPORT_ARG="--report ${arg#*=}"
+            ;;
+        --report)
+            shift
+            REPORT_ARG="--report $1"
             ;;
     esac
 done
@@ -57,7 +77,7 @@ docker run --rm \
     -v "$SCRIPT_DIR:/app" \
     -w /app \
     cad-processor-test \
-    python test_pmi_extraction.py $FILE_ARG
+    python test_pmi_extraction.py $FILE_ARG $DIR_ARG $NIST_ARG $REPORT_ARG
 
 TEST_EXIT=$?
 
