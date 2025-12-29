@@ -401,6 +401,11 @@
     "assignments": {
       "label": "Zuweisungen",
       "description": "Arbeitszuweisungen und Bedienerplanung"
-    }
+    },
+    "advancedCAD": {
+      "label": "Erweiterte CAD (PMI/MBD)",
+      "description": "Serverseitige CAD-Verarbeitung mit PMI/MBD-Extraktion. Erfordert externen eryxon3d-Service."
+    },
+    "externalServiceNote": "Diese Funktion erfordert einen externen Dienst. Siehe Self-Hosting-Anleitung für Bereitstellungsanweisungen."
   }
 }

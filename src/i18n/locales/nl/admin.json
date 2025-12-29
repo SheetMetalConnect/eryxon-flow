@@ -647,6 +647,11 @@
     "assignments": {
       "label": "Toewijzingen",
       "description": "Werktoewijzingen en operator planning"
-    }
+    },
+    "advancedCAD": {
+      "label": "Geavanceerde CAD (PMI/MBD)",
+      "description": "Server-side CAD-verwerking met PMI/MBD-extractie. Vereist externe eryxon3d-service."
+    },
+    "externalServiceNote": "Deze functie vereist een externe service. Zie de Self-Hosting Guide voor implementatie-instructies."
   }
 }

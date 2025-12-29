@@ -160,7 +160,9 @@ docker run -p 8080:80 \
 
 ## License
 
-**Business Source License 1.1 (BSL 1.1)**
+**Business Source License 1.1 (BSL 1.1)** - Source Available
+
+This is an **open source repository** under the BSL 1.1 license, which allows source code access while preventing competitive SaaS offerings.
 
 **TL;DR:** Use it, modify it, self-host it - all free. Just don't host it and charge others for access.
 
@@ -171,6 +173,24 @@ docker run -p 8080:80 \
 - 🔄 Converts to Apache 2.0 after 4 years
 
 See [LICENSE](LICENSE) for full terms.
+
+### External Components (Feature Flags)
+
+Some features require external services that must be deployed separately:
+
+| Feature | Service | Description | Feature Flag |
+|---------|---------|-------------|--------------|
+| Advanced CAD (PMI/MBD) | `services/eryxon3d` | Server-side CAD processing with PMI extraction | `advancedCAD` |
+
+These external components are:
+- **Disabled by default** - must be explicitly enabled via feature flags in Organization Settings
+- **Self-hosted** - you deploy and control the service
+- **Optional** - core MES functionality works without them
+
+To enable an external feature:
+1. Deploy the required service (see `services/` directory)
+2. Configure environment variables (see `.env.example`)
+3. Enable the feature flag in Admin → Settings → Organization Settings
 
 ---
 
