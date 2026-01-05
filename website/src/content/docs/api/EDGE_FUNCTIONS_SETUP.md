@@ -3,8 +3,6 @@ title: "Edge Functions Setup Guide"
 description: "Documentation for Edge Functions Setup Guide"
 ---
 
-
-
 This guide explains how to run and test Supabase Edge Functions locally and deploy them to production.
 
 ## Prerequisites

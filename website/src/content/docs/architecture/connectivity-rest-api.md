@@ -2,11 +2,6 @@
 title: "REST API Reference"
 description: "Inbound integration reference for Jobs, Parts, Operations, and ERP Sync."
 ---
-
-
-
-**Base URL:** `https://vatgianzotsurljznsry.supabase.co/functions/v1`
-
 ## Authentication
 Use your API Key in the `Authorization` header as a Bearer token.
 

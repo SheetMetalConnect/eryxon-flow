@@ -21,7 +21,7 @@ const hasSidebar = Astro.locals.starlightRoute.hasSidebar;
 
 <nav class="navbar container">
   <!-- logo -->
-  <div class="order-0">
+  <div class="order-0 lg:flex-1">
     <SiteTitle />
   </div>
   <!-- navbar toggler -->
@@ -105,22 +105,10 @@ const hasSidebar = Astro.locals.starlightRoute.hasSidebar;
         </>
       ))
     }
-    {
-      navigation_button.enable && (
-        <li class="mt-4 inline-block lg:hidden">
-          <a
-            class="btn btn-outline-primary btn-sm"
-            href={navigation_button.link}
-          >
-            {navigation_button.label}
-          </a>
-        </li>
-      )
-    }
   </ul>
 
   <div
-    class="order-1 ml-auto flex items-center md:order-2 lg:ml-0 navbar-actions"
+    class="order-1 ml-auto flex items-center md:order-2 lg:ml-0 lg:flex-1 lg:justify-end navbar-actions"
   >
     {
       hasSidebar && settings.search && (

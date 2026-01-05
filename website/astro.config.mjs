@@ -51,8 +51,6 @@ export default defineConfig({
         Pagination: "./src/components/override-components/Pagination.astro",
         Sidebar: "./src/components/override-components/Sidebar.astro",
         Footer: "./src/components/override-components/Footer.astro",
-
-
       },
 
     }),

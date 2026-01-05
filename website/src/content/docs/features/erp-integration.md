@@ -3,8 +3,6 @@ title: "ERP Integration"
 description: "Guide to integrating Eryxon Flow with your ERP system."
 ---
 
-
-
 Eryxon MES supports two-way data synchronization with external ERP systems like SAP, NetSuite, Odoo, and others.
 
 ## Architecture Overview

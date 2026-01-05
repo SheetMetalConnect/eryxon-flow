@@ -3,8 +3,6 @@ title: "API Key Authentication"
 description: "Documentation for API Key Authentication"
 ---
 
-
-
 ## Overview
 
 The Eryxon Flow API uses API keys for external integrations (ERP systems, automation, etc.). Keys follow the format `ery_live_xxx` or `ery_test_xxx`.
@@ -132,9 +130,3 @@ curl -H "Authorization: Bearer ery_live_yourkey" \
 curl -H "Authorization: Bearer invalid_key" \
   https://yourproject.supabase.co/functions/v1/api-jobs
 
-
-```
-
-## Historical Note
-
-**Issue Fixed (Dec 2024):** API endpoints were using bcrypt for key validation while key generation used SHA-256. This caused all API key authentication to fail. Fixed by standardizing all endpoints on the shared auth module with SHA-256.

@@ -3,12 +3,9 @@ title: "Self-Hosting Guide"
 description: "Step-by-step guide to hosting Eryxon Flow in your own environment."
 ---
 
-
-
 This guide covers how to self-host Eryxon Flow on your own infrastructure. Self-hosting is free, unlimited, and you manage everything yourself.
 
-> [!IMPORTANT]
-> **License & Usage:** Eryxon Flow is licensed under **BSL 1.1**. This means you are free to self-host, modify, and use it for your own business operations. However, you are **not** permitted to commercially resell the software or provide it as a competing SaaS offering. The license converts to Apache 2.0 after 4 years.
+**License:** BSL 1.1 - You can self-host for your own use. You cannot offer commercial hosting to third parties.
 
 ---
 
@@ -351,17 +348,3 @@ For database schema updates:
 ```bash
 supabase db push
 ```
-
----
-
-## Support
-
-Self-hosting is community-supported only:
-- **GitHub Issues:** Bug reports
-- **Documentation:** `/docs` folder
-
-Need help with complex deployments? Check out [vanenkhuizen.com](https://www.vanenkhuizen.com/) for consulting services.
-
----
-
-*Licensed under BSL 1.1 - See [LICENSE](../LICENSE) for terms*

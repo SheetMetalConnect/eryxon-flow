@@ -3,8 +3,6 @@ title: "Shipping Management"
 description: "Documentation for Shipping Management"
 ---
 
-
-
 Eryxon MES includes a shipping management module for production logistics. This is not an ERP shipping slip system - it's designed to help manufacturing floor managers organize and track what's ready to deliver, group shipments efficiently, and monitor delivery status.
 
 ---

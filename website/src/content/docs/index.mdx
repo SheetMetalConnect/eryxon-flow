@@ -34,7 +34,7 @@ import LinkButton from "~/components/LinkButton.astro";
     Prioritize work orders and manage capacity with QRM-based polca lanes.
   </Card>
   <Card title="Self-Hostable" icon="seti:lock" iconColor="#4a9eff">
-    Keep your production data private. Run on your own server or cloud. BSL 1.1 License.
+    Keep your production data private. Run on your own server. BSL 1.1 License (Free for internal use).
   </Card>
   <Card title="ERP Integration" icon="seti:db" iconColor="#4a9eff">
     Sync jobs and parts from your ERP via REST API. No double entry.
@@ -85,9 +85,9 @@ import LinkButton from "~/components/LinkButton.astro";
 </Card>
 </Grid>
 
-<div class="flex justify-center mt-12 pb-12">
-    <LinkButton href="/getting-started/introduction/quickstart/" variant="primary">Start Quick Guide</LinkButton>
-    <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow" variant="minimal" className="ml-4">Star on GitHub</LinkButton>
+<div class="flex flex-wrap justify-center gap-4 mt-12 pb-12">
+    <LinkButton href="/guides/quick-start/" variant="primary">Start Quick Guide</LinkButton>
+    <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow" variant="minimal">Star on GitHub</LinkButton>
 </div>
 
 </Section>
@@ -133,6 +133,42 @@ import ListCard from "~/components/user-components/ListCard.astro";
 
 
 
+<Section title="License & <span class='text-primary'>Terms</span>">
+  <div class="bg-dark/50 p-8 rounded-2xl border border-white/5">
+    <div class="grid md:grid-cols-2 gap-8 items-center">
+      <div>
+        <h3 class="text-2xl font-bold mb-4">Business Source License 1.1</h3>
+        <p class="text-gray-400 mb-6">
+          Eryxon Flow is source-available and free to use for your own manufacturing operations. 
+          We believe in keeping the core platform open for shops to customize and own.
+        </p>
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <div class="text-primary font-bold">✓</div>
+            <span>Free for internal business use</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="text-primary font-bold">✓</div>
+            <span>Modify, fork, and self-host</span>
+          </div>
+          <div class="flex items-center gap-3 text-red-400">
+            <div class="font-bold">✕</div>
+            <span>No commercial resale or competitive SaaS</span>
+          </div>
+        </div>
+      </div>
+      <div class="text-center">
+        <p class="mb-6 text-sm italic text-gray-500">
+          "Use it, modify it, make it yours. Just don't host it and charge others for access."
+        </p>
+        <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" variant="minimal">
+          Read Full License terms on GitHub
+        </LinkButton>
+      </div>
+    </div>
+  </div>
+</Section>
+
 <Section title="Support & <span class='text-primary'>Services</span>">
   <Grid columns={2}>
     <Card title="Community Support" icon="seti:github" iconColor="#4a9eff">
@@ -149,9 +185,4 @@ import ListCard from "~/components/user-components/ListCard.astro";
     </Card>
   </Grid>
 
-  <div class="text-center mt-12">
-      <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" variant="minimal" className="text-sm text-gray-400 hover:text-primary">
-        Licensed under BSL 1.1 - See LICENSE for terms
-      </LinkButton>
-  </div>
 </Section>

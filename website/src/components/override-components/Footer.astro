@@ -11,88 +11,99 @@ const menu = await getTranslations(locale || "en");
 
 const footer = menu.footer;
 const currentLocal = Astro.currentLocale || "en";
+const { hasSidebar } = Astro.locals.starlightRoute;
 ---
 
-<footer>
-  <div class="container">
-    <div class="top-footer">
-      {
-        footer.community && (
-          <div>
-            <h4>{footer.community.title}</h4>
-            <ul>
-              {footer.community?.links.map((link: any) => (
-                <li>
-                  <a href={link.url}>{link.name}</a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )
-      }
-      {
-        footer.help_links && (
-          <div>
-            <h4>{footer.help_links.title}</h4>
-            <ul>
-              {footer.help_links?.links.map((link: any) => (
-                <li>
-                  <a href={link.url}>{link.name}</a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )
-      }
-      {
-        footer.company && (
-          <div>
-            <h4>{footer.company.title}</h4>
-            <ul>
-              {footer.company?.links.map((link: any) => (
-                <li>
-                  <a href={link.url}>{link.name}</a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )
-      }
+{
+  !hasSidebar && (
+    <footer>
+      <div class="container">
+        <div class="top-footer">
+          {
+            footer.community && (
+              <div>
+                <h4>{footer.community.title}</h4>
+                <ul>
+                  {footer.community?.links.map((link: any) => (
+                    <li>
+                      <a href={link.url}>{link.name}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          }
+          {
+            footer.help_links && (
+              <div>
+                <h4>{footer.help_links.title}</h4>
+                <ul>
+                  {footer.help_links?.links.map((link: any) => (
+                    <li>
+                      <a href={link.url}>{link.name}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          }
+          {
+            footer.company && (
+              <div>
+                <h4>{footer.company.title}</h4>
+                <ul>
+                  {footer.company?.links.map((link: any) => (
+                    <li>
+                      <a href={link.url}>{link.name}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          }
 
-      {
-        config?.params?.footer_contact?.enable && (
-          <div>
-            <h4>Created with warm regards from Vienna and Amsterdam</h4>
-            <div class="flex items-center gap-3 mt-4 text-sm text-gray-400">
-               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-globe-2"><path d="M21.54 15H17a2 2 0 0 0-2 2v4.54"/><path d="M7 3.34V5a3 3 0 0 0 3 3a2 2 0 0 1 2 2c0 1.1.9 2 2 2a2 2 0 0 0 2-2c0-1.1.9-2 2-2h3.17"/><path d="M11 21.95V18a2 2 0 0 0-2-2a2 2 0 0 1-2-2v-1a2 2 0 0 0-2-2H2.05"/><circle cx="12" cy="12" r="10"/></svg>
-               <span>Made in Europe</span>
-            </div>
+          {
+            config?.params?.footer_contact?.enable && (
+              <div>
+                <h4>Created with warm regards from Vienna and Amsterdam</h4>
+                <div class="flex items-center gap-3 mt-4 text-sm text-gray-400">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-globe-2"><path d="M21.54 15H17a2 2 0 0 0-2 2v4.54"/><path d="M7 3.34V5a3 3 0 0 0 3 3a2 2 0 0 1 2 2c0 1.1.9 2 2 2a2 2 0 0 0 2-2c0-1.1.9-2 2-2h3.17"/><path d="M11 21.95V18a2 2 0 0 0-2-2a2 2 0 0 1-2-2v-1a2 2 0 0 0-2-2H2.05"/><circle cx="12" cy="12" r="10"/></svg>
+                   <span>Made in Europe</span>
+                </div>
 
-            <ul class="social-icons">
-              {social.main.map((item) => (
-                <li>
-                  <a href={item.href} aria-label={item.label}>
-                    <Icon
-                      name={item?.icon as any}
-                      color="var(--sl-color-white)"
-                      size="20px"
-                    />
-                  </a>
-                </li>
-              ))}
-            </ul>
+                <ul class="social-icons">
+                  {social.main.map((item) => (
+                    <li>
+                      <a href={item.href} aria-label={item.label}>
+                        <Icon
+                          name={item?.icon as any}
+                          color="var(--sl-color-white)"
+                          size="20px"
+                        />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          }
+        </div>
+        <div class="bottom-footer">
+          <div class="flex flex-col gap-1">
+            <p set:html={markdownify(config?.params?.copyright)} />
+            <p class="text-xs text-gray-500">
+              Licensed under <a href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" class="underline hover:text-primary">BSL 1.1</a> 
+              — Source available, free for internal business use. No commercial resale.
+            </p>
           </div>
-        )
-      }
-    </div>
-    <div class="bottom-footer">
-      <p set:html={markdownify(config?.params?.copyright)} />
-      <a href={currentLocal + "/privacy-policy"}
-        >{Astro.locals.t("footer.privacy", "Privacy Policy")}</a
-      >
-    </div>
-  </div>
-</footer>
+          <a href={currentLocal + "/privacy-policy"}
+            >{Astro.locals.t("footer.privacy", "Privacy Policy")}</a
+          >
+        </div>
+      </div>
+    </footer>
+  )
+}
 
 <style>
   @layer starlight.core {

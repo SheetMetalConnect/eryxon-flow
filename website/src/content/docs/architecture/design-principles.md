@@ -3,8 +3,6 @@ title: "Design Principles"
 description: "Core philosophy and architectural principles of the Eryxon Flow design system."
 ---
 
-
-
 The Eryxon Flow design system is a **modern, multi-theme** UI framework built for manufacturing professionals. It supports **dark**, **light**, and **auto** (system preference) modes.
 
 ## "The Simple MES You Love to Use"

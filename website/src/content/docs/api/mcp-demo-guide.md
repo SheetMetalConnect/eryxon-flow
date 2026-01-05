@@ -3,8 +3,6 @@ title: MCP Server Demo Guide
 description: Step-by-step instructions for demonstrating the Eryxon Flow MCP Server capabilities.
 ---
 
-
-
 This guide provides step-by-step instructions for demonstrating the Eryxon Flow MCP Server capabilities.
 
 ## Prerequisites
@@ -332,9 +330,3 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 supabase.from('jobs').select('count').single().then(console.log);
 "
 ```
-
-### AI Chat Not Working
-
-1. Verify `OPENAI_API_KEY` is set
-2. Check the API key has sufficient quota
-3. Test with a simple query first

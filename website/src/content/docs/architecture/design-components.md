@@ -3,8 +3,6 @@ title: "Visual Components"
 description: "Implementation guide for UI components and standard layout patterns."
 ---
 
-
-
 ## Layout Foundations
 
 ### Glass Cards

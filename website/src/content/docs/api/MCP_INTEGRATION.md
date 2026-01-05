@@ -3,8 +3,6 @@ title: "MCP Integration Guide"
 description: "Documentation for MCP Integration Guide"
 ---
 
-
-
 ## Overview
 
 The Model Context Protocol (MCP) Server enables AI assistants like Claude to directly interact with your manufacturing data in Eryxon Flow. This integration provides secure, per-tenant authentication and comprehensive audit trails for all MCP operations.
@@ -480,10 +478,6 @@ For issues or questions about MCP integration:
    - Error message
    - Timestamp of issue
 
----
-
-**Last Updated**: 2025-11-22
-**Version**: 2.1.0
 **Related Documentation**:
 - [API Documentation](./API_DOCUMENTATION.md)
 - [Edge Functions Setup](./EDGE_FUNCTIONS_SETUP.md)

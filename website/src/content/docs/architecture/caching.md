@@ -3,8 +3,6 @@ title: "Caching Architecture"
 description: "Documentation for Caching Architecture"
 ---
 
-
-
 This document describes the caching architecture implemented in the application to improve performance and reduce database load.
 
 ## Overview

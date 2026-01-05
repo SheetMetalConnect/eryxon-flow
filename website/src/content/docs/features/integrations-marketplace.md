@@ -3,10 +3,6 @@ title: "Integrations Marketplace"
 description: "Discover, install, and manage pre-built integrations for ERP and business tools."
 ---
 
-
-
-## Overview
-
 The Integrations Marketplace is a feature that allows users to discover, install, and manage pre-built integrations for common ERP systems and other business tools. Users can also access starter kits to build their own custom integrations.
 
 ## Features
