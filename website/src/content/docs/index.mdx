@@ -1,0 +1,157 @@
+---
+title: Eryxon Flow - Open Source MES
+description: Manufacturing Execution System for Job Shops. Self-hostable, API-first, and built for the shop floor.
+template: splash
+hero:
+  title: |
+    MES for <span class="text-primary">Job Shops</span>
+  tagline: Open source production tracking for custom manufacturing. Real-time operator terminals, capacity planning, and ERP integration.
+  actions:
+    - text: Get Started
+      link: /guides/quick-start/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/SheetMetalConnect/eryxon-flow
+      icon: external
+      variant: minimal
+---
+
+import Section from "~/components/Section.astro";
+import Card from "~/components/user-components/NewCard.astro";
+import Grid from "~/components/user-components/Grid.astro";
+import HeroTabs from "~/components/HeroTabs.astro";
+import HeroTabsItem from "~/components/HeroTabsItem.astro";
+import LinkButton from "~/components/LinkButton.astro";
+
+<Section title="Built for <span class='text-primary'>Production</span>" description="Real-time operator terminals, QRM capacity planning, and ERP integration.">
+
+<Grid columns={3}>
+  <Card title="Real-time Tracking" icon="seti:clock" iconColor="#4a9eff">
+    Operators track time and status on touch-friendly tablets. Live visibility into every job.
+  </Card>
+  <Card title="Job Scheduling" icon="seti:plan" iconColor="#4a9eff">
+    Prioritize work orders and manage capacity with QRM-based polca lanes.
+  </Card>
+  <Card title="Self-Hostable" icon="seti:lock" iconColor="#4a9eff">
+    Keep your production data private. Run on your own server or cloud. BSL 1.1 License.
+  </Card>
+  <Card title="ERP Integration" icon="seti:db" iconColor="#4a9eff">
+    Sync jobs and parts from your ERP via REST API. No double entry.
+  </Card>
+  <Card title="Paperless Shop" icon="seti:image" iconColor="#4a9eff">
+    Attach drawings, 3D files (STEP), and work instructions directly to the job.
+  </Card>
+  <Card title="Analytics" icon="seti:chart" iconColor="#4a9eff">
+     Analyze efficiency, scrap rates, and on-time delivery performance.
+  </Card>
+
+</Grid>
+</Section>
+
+<Section
+  title="How it <span class='text-primary'>Works</span>"
+  description="Simple workflow from order to delivery."
+>
+  <HeroTabs>
+    <HeroTabsItem
+      title="Create or Sync Jobs"
+      subtitle="Import orders from your ERP or create them manually in Eryxon Flow."
+      number={1}
+      imageAlt="Job creation screenshot"
+    />
+    <HeroTabsItem
+      title="Operators Log Work"
+      subtitle="Shop floor staff use tablets to start/stop operations and view files."
+      number={2}
+      imageAlt="Operator tablet screenshot"
+    />
+    <HeroTabsItem
+      title="Track Progress"
+      subtitle="Managers see live status and prevent bottlenecks before they happen."
+      number={3}
+      imageAlt="Dashboard screenshot"
+    />
+  </HeroTabs>
+</Section>
+
+<Section title="Why <span class='text-primary'>Eryxon Flow?</span>">
+<Grid columns={2}>
+<Card title="For Job Shops" icon="seti:home" iconColor="#4a9eff">
+  High mix, low volume. Handling thousands of unique parts? We built Eryxon for that.
+</Card>
+<Card title="Developer Friendly" icon="seti:code" iconColor="#4a9eff">
+  API-first design. Extend functionality, build custom integrations, and own your data.
+</Card>
+</Grid>
+
+<div class="flex justify-center mt-12 pb-12">
+    <LinkButton href="/getting-started/introduction/quickstart/" variant="primary">Start Quick Guide</LinkButton>
+    <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow" variant="minimal" className="ml-4">Star on GitHub</LinkButton>
+</div>
+
+</Section>
+
+import ListCard from "~/components/user-components/ListCard.astro";
+
+<Section title="Quick <span class='text-primary'>Navigation</span>" description="Jump straight to the docs you need.">
+  <Grid columns={3}>
+    <ListCard title="Getting Started" icon="rocket" number="2">
+      - [Installation](/guides/quick-start/)
+      - [Initial Setup](/guides/quick-start/)
+    </ListCard>
+
+    <ListCard title="Guides" icon="open-book" number="4">
+      - [Operator Guides](/guides/quick-start/)
+      - [Manager Guides](/guides/quick-start/)
+      - [Admin Guides](/guides/quick-start/)
+      - [Self Hosting](/guides/self-hosting/)
+    </ListCard>
+
+    <ListCard title="Architecture" icon="puzzle" number="3">
+      - [System Design](/architecture/connectivity-rest-api/)
+      - [Data Flow](/architecture/connectivity-rest-api/)
+      - [Database Schema](/architecture/database/)
+    </ListCard>
+  </Grid>
+  <Grid columns={3}>
+    <ListCard title="Reference" icon="document" number="2">
+      - [Configuration](/architecture/database/)
+      - [Plugin Reference](/architecture/database/)
+    </ListCard>
+
+    <ListCard title="Features" icon="list-format" number="2">
+      - [Job Tracking](/guides/quick-start/)
+      - [Scheduling](/guides/quick-start/)
+    </ListCard>
+
+    <ListCard title="API" icon="seti:json" number="1">
+       - [REST API](/architecture/connectivity-rest-api/)
+    </ListCard>
+  </Grid>
+</Section>
+
+
+
+<Section title="Support & <span class='text-primary'>Services</span>">
+  <Grid columns={2}>
+    <Card title="Community Support" icon="seti:github" iconColor="#4a9eff">
+      Self-hosting is community-supported only.
+      <br/><br/>
+      <strong>GitHub Issues:</strong> Bug reports<br/>
+      <strong>Documentation:</strong> <a href="/introduction/" class="text-primary hover:underline">/docs</a> folder
+    </Card>
+    
+    <Card title="Professional Services" icon="seti:notebook" iconColor="#4a9eff">
+      Need help with complex deployments?
+      <br/><br/>
+      Check out <a href="https://www.vanenkhuizen.com/" target="_blank" class="text-primary font-semibold hover:underline">vanenkhuizen.com</a> for consulting services.
+    </Card>
+  </Grid>
+
+  <div class="text-center mt-12">
+      <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" variant="minimal" className="text-sm text-gray-400 hover:text-primary">
+        Licensed under BSL 1.1 - See LICENSE for terms
+      </LinkButton>
+  </div>
+</Section>

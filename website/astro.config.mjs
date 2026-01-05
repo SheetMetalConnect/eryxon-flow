@@ -1,33 +1,69 @@
-import { defineConfig } from 'astro/config';
-import react from '@astrojs/react';
-import tailwind from '@astrojs/tailwind';
+// @ts-check
+import { defineConfig } from "astro/config";
+import starlight from "@astrojs/starlight";
+import { viewTransitions } from "astro-vtbot/starlight-view-transitions";
+
+import tailwindcss from "@tailwindcss/vite";
+import config from "./src/config/config.json" assert { type: "json" };
+import social from "./src/config/social.json";
+import locals from "./src/config/locals.json";
+import sidebar from "./src/config/sidebar.json";
+
+import { fileURLToPath } from "url";
+
+const { site } = config;
+const { title, logo, logo_darkmode } = site;
+
+export const locales = locals
+
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://eryxon-flow.com',
-  integrations: [react(), tailwind()],
-  build: {
-    inlineStylesheets: 'always' // Inline all CSS to prevent render blocking
+  image: {
+    service: { entrypoint: "astro/assets/services/noop" },
   },
+  integrations: [
+    starlight({
+      title,
+
+      ...(logo && logo_darkmode
+        ? {
+          logo: {
+            light: logo,
+            dark: logo_darkmode,
+            alt: "Eryxon Flow Logo",
+          },
+        }
+        : {}),
+      // @ts-ignore
+      social: social.main || [],
+      locales,
+      sidebar: sidebar.main || [],
+      customCss: ["./src/styles/global.css"],
+      components: {
+        Head: "./src/components/override-components/Head.astro",
+        Header: "./src/components/override-components/Header.astro",
+        Hero: "./src/components/override-components/Hero.astro",
+        PageFrame: "./src/components/override-components/PageFrame.astro",
+        PageSidebar: "./src/components/override-components/PageSidebar.astro",
+        TwoColumnContent: "./src/components/override-components/TwoColumnContent.astro",
+        ContentPanel: "./src/components/override-components/ContentPanel.astro",
+        Pagination: "./src/components/override-components/Pagination.astro",
+        Sidebar: "./src/components/override-components/Sidebar.astro",
+        Footer: "./src/components/override-components/Footer.astro",
+
+
+      },
+
+    }),
+  ],
   vite: {
+    plugins: [tailwindcss(), viewTransitions()],
     resolve: {
       alias: {
-        '@components': '/src/components',
-        '@layouts': '/src/layouts',
-        '@i18n': '/src/i18n'
-      }
-    },
-    build: {
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            // Split syntax highlighter into separate chunk
-            'syntax-highlighter': ['react-syntax-highlighter']
-          }
-        }
+        "@": fileURLToPath(new URL("./src", import.meta.url)),
+        "~": fileURLToPath(new URL("./src", import.meta.url)),
       },
-      // Increase chunk size warning limit (636 KB unminified, but only 230 KB gzipped)
-      chunkSizeWarningLimit: 700
-    }
-  }
+    },
+  },
 });
