@@ -34,9 +34,13 @@ export async function uploadFileWithProgress(
   const { onProgress, signal } = options;
 
   try {
-    // Use the actual Supabase project URL and anon key
-    const supabaseUrl = 'https://vatgianzotsurljznsry.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhdGdpYW56b3RzdXJsanpuc3J5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI2OTA2MDksImV4cCI6MjA3ODI2NjYwOX0.7AjzaZjAMcygsMiPbI8w43F00JDU6hlpOWlbejOAZS0';
+    // Get Supabase configuration from environment variables
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY environment variables');
+    }
 
     // Get the current session for auth
     const { data: { session } } = await supabase.auth.getSession();
