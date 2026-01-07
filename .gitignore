@@ -39,3 +39,32 @@ __pycache__/
 .Python
 *.egg-info/
 .eggs/
+
+# === Security: Sensitive Files ===
+
+# Supabase configuration (contains project ID)
+supabase/config.toml
+supabase/.temp/
+
+# Environment files (contains credentials)
+.env
+.env.local
+.env.*.local
+# Keep example files
+!.env.example
+
+# Secrets and credentials
+*.pem
+*.key
+*.p12
+secrets/
+credentials/
+
+# IDE settings (may contain sensitive paths)
+.vscode/settings.json
+.idea/workspace.xml
+
+# Backup files
+*.bak
+*.backup
+*~

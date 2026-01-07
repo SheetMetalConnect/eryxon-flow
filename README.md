@@ -1,209 +1,82 @@
-# Eryxon MES
+# Eryxon Flow
 
-**The simple, elegant and powerful manufacturing execution system that your people will love to use. Made for SMB metal fabrication.**
+Open source Manufacturing Execution System (MES) for job shops and make-to-order manufacturers.
 
-<div align="center">
+## Features
 
-[![License: BSL 1.1](https://img.shields.io/badge/License-BSL_1.1-blue?style=for-the-badge)](LICENSE)
-[![React](https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-7.2.6-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
-[![Supabase](https://img.shields.io/badge/Supabase-2.86.2-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+- Job and part tracking with real-time status updates
+- Production planning and scheduling
+- Multi-tenant SaaS architecture with row-level security
+- Analytics and reporting (OEE, QRM, quality metrics)
+- REST API with webhooks for ERP integration
+- Shipping and logistics management
+- Multi-language support (English, Dutch, German)
 
-</div>
+## Quick Deploy
 
----
+See **[DEPLOY.md](DEPLOY.md)** for complete deployment instructions.
 
-## About This Project
+## Prerequisites
 
-Eryxon MES is built by [Sheet Metal Connect e.U.](https://www.sheetmetalconnect.com/), founded by Luke van Enkhuizen, for digital transformation of SMB metals companies.
+- [Supabase](https://supabase.com) account
+- [Cloudflare](https://cloudflare.com) account
+- Node.js 20+
 
-This is a starting point. Each shop is unique - fork it, customize it, make it yours. Sheet Metal Connect e.U. can help you self-host and adapt it to your specific needs.
-
-**Recommended:** Self-host with your own Supabase instance or Docker.
-
----
-
-## What Makes This Different
-
-- **MCP Server** - AI/automation ready out of the box
-- **API-first** - Send data from any system
-- **Webhooks** - Link to any other system
-- **Event-driven, real-time** - Industry 4.0 ready
-- **Modern UI** - Operators actually want to use it
-
-It's opinionated. Built for sheet metal manufacturing. Not for everyone.
-
-## ✨ Key Features
-
-- **Production Management** - Job tracking, parts routing, operation assignments, and issue tracking
-- **QRM Capacity Management** - WIP limits, capacity warnings, and bottleneck prevention
-- **Operator Terminal** - Real-time production interface with time tracking and 3D CAD viewer
-- **Admin Dashboard** - Live production metrics, job wizard, and activity monitoring
-- **Multi-tenant SaaS** - Complete tenant isolation with row-level security
-- **REST API & Webhooks** - Full integration capabilities with external systems
-- **MCP Server** - AI-powered automation via Model Context Protocol
-- **Multi-language** - English, Dutch, German with dark mode support
-
-## 🚀 Quick Start
+## Local Development
 
 ```bash
-# Install dependencies
-npm install
+git clone https://github.com/SheetMetalConnect/eryxon-flow.git
+cd eryxon-flow
 
-# Set up environment variables
 cp .env.example .env
 # Edit .env with your Supabase credentials
 
-# Start development server
+npm install
 npm run dev
 ```
 
-Visit `http://localhost:8080` to access the application.
-
-## 📚 Documentation
-
-Comprehensive documentation is available in the [`/docs`](./docs) folder:
-
-- **[HOW-THE-APP-WORKS.md](docs/HOW-THE-APP-WORKS.md)** - Complete functional guide
-- **[API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md)** - REST API reference
-- **[DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md)** - Design tokens and styling
-- **[EDGE_FUNCTIONS_SETUP.md](docs/EDGE_FUNCTIONS_SETUP.md)** - Edge Functions guide
-- **[CICD_DEPLOYMENT_PLAN.md](docs/CICD_DEPLOYMENT_PLAN.md)** - CI/CD pipeline and Docker deployment
-- **[CLAUDE.md](CLAUDE.md)** - AI assistant guide for contributors
-
-Additional documentation:
-- [3D Viewer](docs/3d-viewer.md)
-- [Notifications System](docs/NOTIFICATIONS_SYSTEM.md)
-- [Data Export](docs/DATA_EXPORT_FEATURE.md)
-- [Integrations Marketplace](docs/INTEGRATIONS_MARKETPLACE.md)
-- [MCP Server Setup](mcp-server/README.md)
-
-## 🏗️ Tech Stack
-
-- **Frontend**: React 18, TypeScript 5.8, Vite 7, TailwindCSS 3
-- **UI**: shadcn/ui (54+ components), Material-UI, Lucide icons
-- **State**: React Query, React Context
-- **Backend**: Supabase (PostgreSQL, Realtime, Edge Functions, Storage)
-- **Forms**: react-hook-form, Zod validation
-- **3D**: Three.js for STEP file viewing
-- **Charts**: Recharts
-- **i18n**: i18next with en/nl/de support
-
-## 📁 Project Structure
+## Environment Variables
 
 ```
-├── src/
-│   ├── components/     # UI components (admin, operator, terminal, qrm, etc.)
-│   ├── pages/          # Route pages (admin, operator, common)
-│   ├── hooks/          # Custom React hooks
-│   ├── lib/            # Utility libraries
-│   └── integrations/   # Supabase client
-├── supabase/
-│   ├── functions/      # 23 Edge Functions
-│   └── migrations/     # Database schema
-├── mcp-server/         # Model Context Protocol server
-└── docs/               # Documentation
+VITE_SUPABASE_URL
+VITE_SUPABASE_PUBLISHABLE_KEY
+VITE_SUPABASE_PROJECT_ID
 ```
 
-## 🔒 Security
+See `.env.example` for complete list.
 
-- **Multi-Tenancy**: PostgreSQL Row-Level Security for complete data isolation
-- **Authentication**: Supabase Auth with JWT tokens
-- **API Security**: Bearer token auth with bcrypt-hashed keys
-- **Webhooks**: HMAC-SHA256 signatures for verification
+## Architecture
 
-## Getting Started
+**Frontend**: React + TypeScript + Vite
+**UI**: shadcn/ui + Tailwind CSS
+**Backend**: Supabase (PostgreSQL + Edge Functions)
+**Deployment**: Cloudflare Pages
+**Database**: 85 migrations, multi-tenant schema
+**API**: 28 Edge Functions
 
-| | Hosted Demo | Self-Hosted (Recommended) |
-|---|---|---|
-| **Where** | Our infrastructure | Your infrastructure |
-| **Usage** | Limited | Unlimited |
-| **API** | Limited | Full |
-| **Webhooks** | Limited | Full |
-| **MCP Server** | Limited | Full |
-| **Support** | Docs only | Community + Consulting |
+## Documentation
 
-- **Hosted Demo** — Try it online, limited usage for evaluation and educational purposes
-- **Self-Hosted** — Full features, unlimited usage, bring your own Supabase or Docker
-
-**Recommended:** Self-host with your own Supabase instance. See the [Self-Hosting Guide](docs/SELF_HOSTING_GUIDE.md) for database setup, migrations, and deployment.
-
-Need help setting up or customizing? [Contact Sheet Metal Connect e.U.](mailto:office@sheetmetalconnect.com)
-
-## Deployment
-
-### Self-Hosted
-
-```bash
-# Clone and configure
-git clone https://github.com/SheetMetalConnect/eryxon-flow.git
-cd eryxon-flow
-cp .env.example .env
-# Edit .env with your Supabase credentials
-
-# Run with Docker
-docker-compose up -d
-```
-
-See **[docs/SELF_HOSTING_GUIDE.md](docs/SELF_HOSTING_GUIDE.md)** for complete setup instructions.
-
-### Docker Quick Start
-
-```bash
-docker pull ghcr.io/sheetmetalconnect/eryxon-flow:latest
-docker run -p 8080:80 \
-  -e VITE_SUPABASE_URL=your-url \
-  -e VITE_SUPABASE_PUBLISHABLE_KEY=your-key \
-  ghcr.io/sheetmetalconnect/eryxon-flow:latest
-```
+- [DEPLOY.md](DEPLOY.md) - Deployment guide
+- [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) - API reference
+- [docs/SELF_HOSTING_GUIDE.md](docs/SELF_HOSTING_GUIDE.md) - Self-hosting
+- [docs/DATABASE.md](docs/DATABASE.md) - Database schema
+- [docs/](docs/) - Complete documentation
 
 ## License
 
-**Business Source License 1.1 (BSL 1.1)** - Source Available
+**Business Source License 1.1**
 
-This is an **open source repository** under the BSL 1.1 license, which allows source code access while preventing competitive SaaS offerings.
-
-**TL;DR:** Use it, modify it, self-host it - all free. Just don't host it and charge others for access.
-
-- ✅ Self-host for your own manufacturing operations - free, unlimited
-- ✅ Fork it, modify it, make it yours - each shop is unique
-- ✅ Use for internal business, development, testing, education
-- ❌ Cannot host it and sell access as a SaaS to others
-- 🔄 Converts to Apache 2.0 after 4 years
+- Free to use for your own manufacturing business
+- Source available for modification and improvement
+- Self-host unlimited instances
+- Cannot offer as competing hosted service
 
 See [LICENSE](LICENSE) for full terms.
 
-### External Components (Feature Flags)
+**Change Date**: 2029-01-01 (converts to Apache 2.0)
 
-Some features require external services that must be deployed separately:
+## Support
 
-| Feature | Service | Description | Feature Flag |
-|---------|---------|-------------|--------------|
-| Advanced CAD (PMI/MBD) | `services/eryxon3d` | Server-side CAD processing with PMI extraction | `advancedCAD` |
-
-These external components are:
-- **Disabled by default** - must be explicitly enabled via feature flags in Organization Settings
-- **Self-hosted** - you deploy and control the service
-- **Optional** - core MES functionality works without them
-
-To enable an external feature:
-1. Deploy the required service (see `services/` directory)
-2. Configure environment variables (see `.env.example`)
-3. Enable the feature flag in Admin → Settings → Organization Settings
-
----
-
-## Contributing & Support
-
-- **Website**: [sheetmetalconnect.com](https://www.sheetmetalconnect.com/)
-- **Issues & PRs**: [GitHub](https://github.com/SheetMetalConnect/eryxon-flow)
-- **Consulting & Custom Setup**: [office@sheetmetalconnect.com](mailto:office@sheetmetalconnect.com)
-
-No guarantees of continued development, but likely will be updated with latest features.
-
----
-
-Copyright © 2025 Sheet Metal Connect e.U.
-
-**Built with** React + TypeScript + Supabase | **Region**: EU (Netherlands)
+- Documentation: [docs/](docs/)
+- Issues: [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues)
+- Commercial support: office@sheetmetalconnect.com
