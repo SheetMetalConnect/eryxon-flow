@@ -198,8 +198,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             role: userData.role || "operator",
             tenant_id: userData.tenant_id,
             company_name: userData.company_name,
-            // New tenants start as suspended - require manual approval
-            tenant_status: 'suspended',
+            // Default hosted alpha to trial; can be overridden via invite metadata
+            tenant_status: 'trial',
           },
         },
       });

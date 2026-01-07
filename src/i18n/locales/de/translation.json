@@ -167,7 +167,7 @@
   "subscription": {
     "currentPlan": "Aktueller Plan",
     "upgradePlan": "Plan upgraden",
-    "freePlan": "Kostenloser Plan",
+    "freePlan": "Hosted Alpha Testversion",
     "proPlan": "Pro-Plan",
     "premiumPlan": "Premium-Plan"
   },
@@ -270,7 +270,7 @@
     "subtitle": "Das einfache, elegante Fertigungsleitsystem für Metallbearbeitung",
     "choosePlan": "Wählen Sie Ihren Plan",
     "planDescription": "Beginnen Sie mit unserem kostenlosen Plan und führen Sie jederzeit ein Upgrade durch",
-    "freePlan": "Kostenloser Plan",
+    "freePlan": "Hosted Alpha Testversion",
     "proPlan": "Pro-Plan",
     "bestForSmallTeams": "Optimal für kleine Teams",
     "mostPopular": "Am beliebtesten",

@@ -256,7 +256,7 @@
   "subscription": {
     "currentPlan": "Current Plan",
     "upgradePlan": "Upgrade Plan",
-    "freePlan": "Free Plan",
+    "freePlan": "Hosted Alpha Trial",
     "proPlan": "Pro Plan",
     "premiumPlan": "Premium Plan"
   },
@@ -375,8 +375,8 @@
     "welcome": "Welcome to Eryxon MES",
     "subtitle": "The simple, elegant manufacturing execution system for metals fabrication",
     "choosePlan": "Choose Your Plan",
-    "planDescription": "Start with our free plan and upgrade anytime as your shop grows",
-    "freePlan": "Free Plan",
+    "planDescription": "Start with our 30-day trial and upgrade anytime as your shop grows",
+    "freePlan": "Hosted Alpha Trial",
     "proPlan": "Pro Plan",
     "bestForSmallTeams": "Best for Small Teams",
     "mostPopular": "Most Popular",
@@ -387,7 +387,7 @@
     "proPlanDescription": "Advanced features for growing metal fabrication shops",
     "continue": "Continue",
     "continueWithPlan": "Continue with {{plan}} Plan",
-    "noCardRequired": "No credit card required for Free plan",
+    "noCardRequired": "No credit card required for trial",
     "cancelAnytime": "Cancel anytime",
     "moneyBackGuarantee": "30-day money-back guarantee",
     "sampleData": "Import Sample Data",
@@ -396,7 +396,7 @@
     "planSelection": {
       "title": "Choose Your Plan",
       "comingSoon": "Pricing plans are being finalized",
-      "continue": "Continue with Free Plan",
+      "continue": "Continue with Trial",
       "skip": "Skip for Now",
       "freeForNow": "All features are currently free during beta"
     },

@@ -25,7 +25,7 @@ description: "Common issues and solutions for Eryxon Flow."
 - **Fix**: Wait for capacity, or ask Supervisor to increase limit/override.
 
 ### 5. Can't create new job (Admin)
-- Check **My Plan** page. You might have hit the Free Plan limits.
+- Check **My Plan** page. You might have hit the Hosted Alpha Trial limits.
 - **Fix**: Delete old jobs or switch to Self-Hosted (Unlimited).
 
 ### 6. "Data export taking too long"

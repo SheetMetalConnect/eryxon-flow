@@ -422,7 +422,7 @@
   "subscription": {
     "currentPlan": "Huidig abonnement",
     "upgradePlan": "Abonnement upgraden",
-    "freePlan": "Gratis abonnement",
+    "freePlan": "Hosted Alpha Proefperiode",
     "proPlan": "Pro-abonnement",
     "premiumPlan": "Premium-abonnement"
   },
@@ -540,7 +540,7 @@
     "subtitle": "Het eenvoudige, elegante productiebeheersysteem voor metaalbewerking",
     "choosePlan": "Kies uw abonnement",
     "planDescription": "Begin met ons gratis abonnement en upgrade op elk moment",
-    "freePlan": "Gratis abonnement",
+    "freePlan": "Hosted Alpha Proefperiode",
     "proPlan": "Pro-abonnement",
     "bestForSmallTeams": "Ideaal voor kleine teams",
     "mostPopular": "Meest populair",

@@ -82,7 +82,7 @@ export function canAccessApp(tenant: Tenant | null): SubscriptionAccessResult {
 export function getSubscriptionMessage(result: SubscriptionAccessResult): string {
   switch (result.reason) {
     case 'free_tier':
-      return 'You are on the Free plan. Upgrade to unlock more features.';
+      return 'You are on the Hosted Alpha Trial. Upgrade to unlock more features.';
     case 'active_subscription':
       return 'Your subscription is active.';
     case 'trial_period':
