@@ -1,0 +1,61 @@
+{
+  "main": [
+    {
+      "name": "Home",
+      "url": "/"
+    },
+    {
+      "name": "Documentation",
+      "url": "/introduction/"
+    }
+  ],
+  "footer": {
+    "community": {
+      "title": "Community",
+      "links": [
+        {
+          "name": "GitHub",
+          "url": "https://github.com/SheetMetalConnect/eryxon-flow"
+        },
+        {
+          "name": "Discussions",
+          "url": "https://github.com/SheetMetalConnect/eryxon-flow/discussions"
+        },
+        {
+          "name": "Issues",
+          "url": "https://github.com/SheetMetalConnect/eryxon-flow/issues"
+        }
+      ]
+    },
+    "help_links": {
+      "title": "Resources",
+      "links": [
+        {
+          "name": "Documentation",
+          "url": "/introduction/"
+        },
+        {
+          "name": "Self Hosting",
+          "url": "/guides/self-hosting/"
+        },
+        {
+          "name": "FAQ",
+          "url": "/guides/faq/"
+        }
+      ]
+    },
+    "company": {
+      "title": "Company",
+      "links": [
+        {
+          "name": "Sheet Metal Connect",
+          "url": "https://www.sheetmetalconnect.com/"
+        },
+        {
+          "name": "Contact",
+          "url": "https://www.sheetmetalconnect.com/contact"
+        }
+      ]
+    }
+  }
+}

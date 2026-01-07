@@ -1,0 +1,224 @@
+---
+title: Eryxon Flow - Open Source MES
+description: Manufacturing Execution System voor Job Shops. Self-hostable, API-first, en gebouwd voor de werkvloer.
+template: splash
+hero:
+  title: |
+    MES voor <span class="text-primary">Job Shops</span>
+  tagline: Open source productie-tracking voor maatwerkproductie. Real-time operator terminals, capaciteitsplanning en ERP-integratie.
+  actions:
+    - text: Aan de slag
+      link: /nl/guides/quick-start/
+      icon: right-arrow
+      variant: primary
+    - text: Bekijk op GitHub
+      link: https://github.com/SheetMetalConnect/eryxon-flow
+      icon: external
+      variant: minimal
+---
+
+import Section from "~/components/Section.astro";
+import Card from "~/components/user-components/NewCard.astro";
+import Grid from "~/components/user-components/Grid.astro";
+import HeroTabs from "~/components/HeroTabs.astro";
+import HeroTabsItem from "~/components/HeroTabsItem.astro";
+import LinkButton from "~/components/LinkButton.astro";
+
+<Section title="Gebouwd voor <span class='text-primary'>Productie</span>" description="Real-time operator terminals, QRM capaciteitsplanning en ERP-integratie.">
+
+<Grid columns={3}>
+  <Card title="Real-time Tracking" icon="seti:clock" iconColor="#4a9eff">
+    Operators houden tijd en status bij op touch-vriendelijke tablets. Live inzicht in elke order.
+  </Card>
+  <Card title="Orderplanning" icon="seti:plan" iconColor="#4a9eff">
+    Prioriteer werkorders en beheer capaciteit met QRM-gebaseerde polca-lanes.
+  </Card>
+  <Card title="Zelf te hosten" icon="seti:lock" iconColor="#4a9eff">
+    Houd uw productiegegevens privé. Draai op uw eigen server. BSL 1.1 Licentie (Gratis voor intern gebruik).
+  </Card>
+  <Card title="ERP-Integratie" icon="seti:db" iconColor="#4a9eff">
+    Synchroniseer orders en onderdelen uit uw ERP via de REST API. Geen dubbele invoer.
+  </Card>
+  <Card title="Papierloze Werkplaats" icon="seti:image" iconColor="#4a9eff">
+    Koppel tekeningen, 3D-bestanden (STEP) en werkinstructies direct aan de order.
+  </Card>
+  <Card title="Analyses" icon="seti:chart" iconColor="#4a9eff">
+    Analyseer efficiëntie, uitvalpercentages en leverbetrouwbaarheid.
+  </Card>
+
+</Grid>
+</Section>
+
+<Section
+  title="Hoe het <span class='text-primary'>Werkt</span>"
+  description="Eenvoudige workflow van order tot levering."
+>
+  <HeroTabs>
+    <HeroTabsItem
+      title="Maak of Sync Orders"
+      subtitle="Importeer orders uit uw ERP of maak ze handmatig aan in Eryxon Flow."
+      number={1}
+      imageAlt="Job creatie screenshot"
+    />
+    <HeroTabsItem
+      title="Operators Loggen Werk"
+      subtitle="Werkplaatsmedewerkers gebruiken tablets om bewerkingen te starten/stoppen en bestanden te bekijken."
+      number={2}
+      imageAlt="Operator tablet screenshot"
+    />
+    <HeroTabsItem
+      title="Volg de Voortgang"
+      subtitle="Managers zien de live status en voorkomen knelpunten voordat ze ontstaan."
+      number={3}
+      imageAlt="Dashboard screenshot"
+    />
+  </HeroTabs>
+</Section>
+
+<Section title="Waarom <span class='text-primary'>Eryxon Flow?</span>">
+<Grid columns={2}>
+<Card title="Voor Job Shops" icon="seti:home" iconColor="#4a9eff">
+  High mix, low volume. Beheert u duizenden unieke onderdelen? Daarvoor hebben we Eryxon gebouwd.
+</Card>
+<Card title="Ontwikkelaar Vriendelijk" icon="seti:code" iconColor="#4a9eff">
+  API-first ontwerp. Breid functionaliteit uit, bouw eigen integraties en blijf eigenaar van uw data.
+</Card>
+</Grid>
+
+<div class="flex flex-wrap justify-center gap-4 mt-12 pb-12">
+    <LinkButton href="/nl/guides/quick-start/" variant="primary">Start Introductie</LinkButton>
+    <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow" variant="minimal">Star op GitHub</LinkButton>
+</div>
+
+</Section>
+
+import ListCard from "~/components/user-components/ListCard.astro";
+
+<Section title="Snelle <span class='text-primary'>Navigatie</span>" description="Ga direct naar de documentatie die u nodig heeft.">
+  <Grid columns={3}>
+    <ListCard title="Aan de slag" icon="rocket" number="2">
+      - [Installatie](/nl/guides/quick-start/)
+      - [Initiele Setup](/nl/guides/quick-start/)
+    </ListCard>
+
+    <ListCard title="Handleidingen" icon="open-book" number="4">
+      - [Operator Handleidingen](/nl/guides/quick-start/)
+      - [Manager Handleidingen](/nl/guides/quick-start/)
+      - [Admin Handleidingen](/nl/guides/quick-start/)
+      - [Zelf hosten](/nl/guides/self-hosting/)
+    </ListCard>
+
+    <ListCard title="Architectuur" icon="puzzle" number="3">
+      - [Systeemontwerp](/nl/architecture/connectivity-rest-api/)
+      - [Data Flow](/nl/architecture/connectivity-rest-api/)
+      - [Databaseschema](/nl/architecture/database/)
+    </ListCard>
+  </Grid>
+  <Grid columns={3}>
+    <ListCard title="Referentie" icon="document" number="2">
+      - [Configuratie](/nl/architecture/database/)
+      - [Plugin Referentie](/nl/architecture/database/)
+    </ListCard>
+
+    <ListCard title="Mogelijkheden" icon="list-format" number="2">
+      - [Order Tracking](/nl/guides/quick-start/)
+      - [Planning](/nl/guides/quick-start/)
+    </ListCard>
+
+    <ListCard title="API" icon="seti:json" number="1">
+       - [REST API](/nl/architecture/connectivity-rest-api/)
+    </ListCard>
+  </Grid>
+</Section>
+
+
+
+<Section title="Licentie & <span class='text-primary'>Voorwaarden</span>">
+  <div class="bg-dark/50 p-8 rounded-2xl border border-white/5">
+    <div class="grid md:grid-cols-2 gap-8 items-center">
+      <div>
+        <h3 class="text-2xl font-bold mb-4">Business Source License 1.1</h3>
+        <p class="text-gray-400 mb-6">
+          Eryxon Flow is source-available en gratis te gebruiken voor uw eigen productieactiviteiten. 
+          Wij geloven in het open houden van het kernplatform zodat shops dit zelf kunnen aanpassen en beheren.
+        </p>
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <div class="text-primary font-bold">✓</div>
+            <span>Gratis voor intern zakelijk gebruik</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="text-primary font-bold">✓</div>
+            <span>Aanpassen, forken en zelf hosten</span>
+          </div>
+          <div class="flex items-center gap-3 text-red-400">
+            <div class="font-bold">✕</div>
+            <span>Geen commerciële wederverkoop of concurrerende SaaS</span>
+          </div>
+        </div>
+      </div>
+      <div class="text-center">
+        <p class="mb-6 text-sm italic text-gray-500">
+          "Gebruik het, pas het aan, maak het van u. Host het alleen niet om anderen tegen betaling toegang te geven."
+        </p>
+        <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" variant="minimal">
+          Lees de volledige licentievoorwaarden op GitHub
+        </LinkButton>
+      </div>
+    </div>
+  </div>
+</Section>
+
+<Section title="Licentie & <span class='text-primary'>Voorwaarden</span>">
+  <div class="bg-dark/50 p-8 rounded-2xl border border-white/5">
+    <div class="grid md:grid-cols-2 gap-8 items-center">
+      <div>
+        <h3 class="text-2xl font-bold mb-4">Business Source License 1.1</h3>
+        <p class="text-gray-400 mb-6">
+          Eryxon Flow is source-available en gratis te gebruiken voor uw eigen productieactiviteiten. 
+          Wij geloven in het open houden van het kernplatform zodat shops dit zelf kunnen aanpassen en beheren.
+        </p>
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <div class="text-primary font-bold">✓</div>
+            <span>Gratis voor intern zakelijk gebruik</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="text-primary font-bold">✓</div>
+            <span>Aanpassen, forken en zelf hosten</span>
+          </div>
+          <div class="flex items-center gap-3 text-red-400">
+            <div class="font-bold">✕</div>
+            <span>Geen commerciële wederverkoop of concurrerende SaaS</span>
+          </div>
+        </div>
+      </div>
+      <div class="text-center">
+        <p class="mb-6 text-sm italic text-gray-500">
+          "Gebruik het, pas het aan, maak het van u. Host het alleen niet om anderen tegen betaling toegang te geven."
+        </p>
+        <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" variant="minimal">
+          Lees de volledige licentievoorwaarden op GitHub
+        </LinkButton>
+      </div>
+    </div>
+  </div>
+</Section>
+
+<Section title="Ondersteuning & <span class='text-primary'>Diensten</span>">
+  <Grid columns={2}>
+    <Card title="Community Ondersteuning" icon="seti:github" iconColor="#4a9eff">
+      Zelf hosten wordt alleen door de community ondersteund.
+      <br/><br/>
+      <strong>GitHub Issues:</strong> Bug meldingen<br/>
+      <strong>Documentatie:</strong> <a href="/nl/introduction/" class="text-primary hover:underline">/nl/docs</a> map
+    </Card>
+    
+    <Card title="Professionele Diensten" icon="seti:notebook" iconColor="#4a9eff">
+      Hulp nodig bij complexe implementaties?
+      <br/><br/>
+      Kijk op <a href="https://www.vanenkhuizen.com/" target="_blank" class="text-primary font-semibold hover:underline">vanenkhuizen.com</a> voor adviesdiensten.
+    </Card>
+  </Grid>
+
+</Section>

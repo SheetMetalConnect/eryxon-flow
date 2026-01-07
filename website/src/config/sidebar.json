@@ -1,0 +1,149 @@
+{
+  "main": [
+    {
+      "label": "Getting Started",
+      "items": [
+        {
+          "label": "Introduction",
+          "slug": "introduction"
+        },
+        {
+          "label": "Quick Start",
+          "slug": "guides/quick-start"
+        },
+        {
+          "label": "Self Hosting",
+          "slug": "guides/self-hosting"
+        }
+      ]
+    },
+    {
+      "label": "Features",
+      "items": [
+        {
+          "label": "Integrations Marketplace",
+          "slug": "features/integrations-marketplace"
+        },
+        {
+          "label": "ERP Integration",
+          "slug": "features/erp-integration"
+        },
+        {
+          "label": "Shipping Management",
+          "slug": "features/shipping-management"
+        },
+        {
+          "label": "PMI Extraction",
+          "slug": "features/pmi-extraction"
+        },
+        {
+          "label": "3D Viewer",
+          "slug": "features/3d-viewer"
+        },
+        {
+          "label": "CSV Import",
+          "slug": "features/csv-import"
+        },
+        {
+          "label": "Flexible Metadata",
+          "slug": "features/flexible-metadata"
+        }
+      ]
+    },
+    {
+      "label": "Architecture",
+      "items": [
+        {
+          "label": "App Architecture",
+          "slug": "architecture/app-architecture"
+        },
+        {
+          "label": "Database Schema",
+          "slug": "architecture/database"
+        },
+        {
+          "label": "Connectivity Overview",
+          "slug": "architecture/connectivity-overview"
+        },
+        {
+          "label": "REST API",
+          "slug": "architecture/connectivity-rest-api"
+        },
+        {
+          "label": "MQTT & Webhooks",
+          "slug": "architecture/connectivity-mqtt"
+        },
+        {
+          "label": "Caching",
+          "slug": "architecture/caching"
+        },
+        {
+          "label": "Error Handling",
+          "slug": "architecture/error-handling"
+        },
+        {
+          "label": "Notifications",
+          "slug": "architecture/notifications-system"
+        },
+        {
+          "label": "Workflow Engine",
+          "slug": "architecture/workflow-engine"
+        },
+        {
+          "label": "3D Engine",
+          "slug": "architecture/3d-engine"
+        }
+      ]
+    },
+    {
+      "label": "Design System",
+      "items": [
+        {
+          "label": "Design Principles",
+          "slug": "architecture/design-principles"
+        },
+        {
+          "label": "Design Tokens",
+          "slug": "architecture/design-tokens"
+        },
+        {
+          "label": "Design Components",
+          "slug": "architecture/design-components"
+        },
+        {
+          "label": "Responsive UI",
+          "slug": "architecture/responsive-ui-patterns"
+        }
+      ]
+    },
+    {
+      "label": "API Reference",
+      "items": [
+        {
+          "label": "API Documentation",
+          "slug": "api/api_documentation"
+        },
+        {
+          "label": "Authentication",
+          "slug": "api/api_key_authentication"
+        },
+        {
+          "label": "Sync Endpoints",
+          "slug": "api/api_sync"
+        },
+        {
+          "label": "Edge Functions",
+          "slug": "api/edge_functions_setup"
+        },
+        {
+          "label": "MCP Integration",
+          "slug": "api/mcp_integration"
+        },
+        {
+          "label": "MCP Demo",
+          "slug": "api/mcp-demo-guide"
+        }
+      ]
+    }
+  ]
+}
