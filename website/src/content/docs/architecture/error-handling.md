@@ -409,6 +409,6 @@ try {
 
 ## Related Documentation
 
-- [CODING_PATTERNS.md](./CODING_PATTERNS.md) - General coding patterns
-- [CACHING.md](./CACHING.md) - Query caching patterns
-- [CLAUDE.md](../CLAUDE.md) - AI agent guidelines
+- [Coding Patterns](/development/coding_patterns/) - General coding patterns
+- [Caching](/architecture/caching/) - Query caching patterns
+- [Developer Guide](/development/claude/) - AI agent guidelines

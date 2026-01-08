@@ -591,6 +591,6 @@ Potential future additions to the shipping module:
 
 ## Related Documentation
 
-- [API Documentation](./API_DOCUMENTATION.md) - Full API reference including job/part fields
-- [ERP Integration](./ERP_INTEGRATION.md) - Syncing jobs with delivery addresses from ERP
-- [Webhook Events](./API_DOCUMENTATION.md#webhook-events) - Event-driven integrations
+- [API Documentation](/api/api_documentation/) - Full API reference including job/part fields
+- [ERP Integration](/features/erp-integration/) - Syncing jobs with delivery addresses from ERP
+- [Webhook Events](/api/api_documentation/#webhook-events) - Event-driven integrations

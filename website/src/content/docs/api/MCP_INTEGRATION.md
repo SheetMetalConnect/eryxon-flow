@@ -479,6 +479,6 @@ For issues or questions about MCP integration:
    - Timestamp of issue
 
 **Related Documentation**:
-- [API Documentation](./API_DOCUMENTATION.md)
-- [Edge Functions Setup](./EDGE_FUNCTIONS_SETUP.md)
-- [How the App Works](./HOW-THE-APP-WORKS.md)
+- [API Documentation](/api/api_documentation/)
+- [Edge Functions Setup](/api/edge_functions_setup/)
+- [App Architecture](/architecture/app-architecture/)
