@@ -194,5 +194,5 @@ Ensure all required fields have values. Empty cells for required fields will fai
 
 ## Related Documentation
 
-- [ERP Integration Overview](./ERP_INTEGRATION.md)
-- [API Sync Reference](./API_SYNC.md)
+- [ERP Integration Overview](/features/erp-integration/)
+- [API Sync Reference](/api/api_sync/)

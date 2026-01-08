@@ -79,9 +79,9 @@ Timestamp of the last successful sync, useful for incremental updates.
 
 ## Related Documentation
 
-- [API Sync Reference](./API_SYNC.md) - Detailed API endpoint documentation
-- [CSV Import Guide](./CSV_IMPORT.md) - Step-by-step CSV import instructions
-- [API Documentation](./API_DOCUMENTATION.md) - Full API reference
+- [API Sync Reference](/api/api_sync/) - Detailed API endpoint documentation
+- [CSV Import Guide](/guides/csv_import/) - Step-by-step CSV import instructions
+- [API Documentation](/api/api_documentation/) - Full API reference
 
 ## Database Schema
 

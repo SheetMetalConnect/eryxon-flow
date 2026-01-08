@@ -106,7 +106,7 @@ Want to see the app with sample data?
 - **[Self-Hosting Guide](/guides/self-hosting/)** - Production deployment options
 - **[API Documentation](/api/api_documentation/)** - REST API reference
 - **[MCP Integration](/api/mcp_integration/)** - AI assistant integration
-- **[How It Works](/architecture/how-the-app-works/)** - Deep dive into features
+- **[App Architecture](/architecture/app-architecture/)** - Deep dive into features
 - **[FAQ](/guides/faq/)** - Frequently asked questions
 
 ---
@@ -129,9 +129,9 @@ Want to see the app with sample data?
 
 ## Need Help?
 
-- Check the [documentation](../README.md)
-- Open an issue on GitHub
-- Join our community discussions
+- Check the [full documentation](/introduction/)
+- Open an issue on [GitHub](https://github.com/SheetMetalConnect/eryxon-flow/issues)
+- Join our [community discussions](https://github.com/SheetMetalConnect/eryxon-flow/discussions)
 
 ---
 
