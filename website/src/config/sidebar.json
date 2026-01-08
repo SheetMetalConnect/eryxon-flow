@@ -37,14 +37,6 @@
           "slug": "features/pmi-extraction"
         },
         {
-          "label": "3D Viewer",
-          "slug": "features/3d-viewer"
-        },
-        {
-          "label": "CSV Import",
-          "slug": "features/csv-import"
-        },
-        {
           "label": "Flexible Metadata",
           "slug": "features/flexible-metadata"
         }

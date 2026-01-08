@@ -85,7 +85,21 @@ export default function Help() {
       </div>
 
       {/* Quick Links */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <a
+          href="https://eryxon.com/docs"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Card className="glass-card hover:bg-white/5 transition-colors cursor-pointer h-full">
+            <CardContent className="flex flex-col items-center justify-center py-6 text-center">
+              <FileText className="h-12 w-12 text-primary mb-3" />
+              <h3 className="font-semibold mb-1">Documentation</h3>
+              <p className="text-sm text-muted-foreground">Full guides & tutorials</p>
+            </CardContent>
+          </Card>
+        </a>
+
         <Link to="/admin/api-docs">
           <Card className="glass-card hover:bg-white/5 transition-colors cursor-pointer h-full">
             <CardContent className="flex flex-col items-center justify-center py-6 text-center">
@@ -103,9 +117,9 @@ export default function Help() {
         >
           <Card className="glass-card hover:bg-white/5 transition-colors cursor-pointer h-full">
             <CardContent className="flex flex-col items-center justify-center py-6 text-center">
-              <FileText className="h-12 w-12 text-primary mb-3" />
+              <GitBranch className="h-12 w-12 text-primary mb-3" />
               <h3 className="font-semibold mb-1">GitHub</h3>
-              <p className="text-sm text-muted-foreground">Source and docs</p>
+              <p className="text-sm text-muted-foreground">Source code</p>
             </CardContent>
           </Card>
         </a>
