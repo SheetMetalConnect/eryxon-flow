@@ -41,10 +41,11 @@ export interface FeatureFlags {
  * External service features (advancedCAD) require separate deployment and are opt-in
  */
 export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
-  // WIP MODULES - Not ready for production yet (hidden from UI, cannot be enabled)
+  // WIP MODULES - Not ready for production yet (forced off, cannot be enabled)
   analytics: false,     // WIP: Analytics module (QRM, OEE, Quality, Reliability)
   shipping: false,      // WIP: Shipping planning module
   appStore: false,      // WIP: App Store / Marketplace
+  advancedCAD: false,   // WIP: Backend-only CAD processing - requires external eryxon3d service
   
   // Active modules
   monitoring: true,
@@ -53,10 +54,13 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   issues: true,
   capacity: true,
   assignments: true,
-  
-  // External service features - enabled for local development with eryxon3d
-  advancedCAD: true,
 };
+
+/**
+ * WIP flags that are forced OFF regardless of database values.
+ * These modules are not ready for production and cannot be enabled.
+ */
+const WIP_FLAGS: (keyof FeatureFlags)[] = ['analytics', 'shipping', 'appStore', 'advancedCAD'];
 
 /**
  * Feature flag metadata for UI display
@@ -70,9 +74,9 @@ export interface FeatureFlagMeta {
 }
 
 export const FEATURE_FLAG_METADATA: FeatureFlagMeta[] = [
-  // NOTE: WIP modules (analytics, shipping, appStore) are intentionally excluded
-  // from this list so they cannot be enabled via the UI. They will be added back
-  // when the features are ready for production.
+  // NOTE: WIP modules (analytics, shipping, appStore, advancedCAD) are intentionally 
+  // excluded from this list so they cannot be enabled via the UI. They will be added 
+  // back when the features are ready for production.
   
   {
     key: 'monitoring',
@@ -116,14 +120,6 @@ export const FEATURE_FLAG_METADATA: FeatureFlagMeta[] = [
     icon: 'UserCheck',
     category: 'operations',
   },
-  // External service features
-  {
-    key: 'advancedCAD',
-    labelKey: 'featureFlags.advancedCAD.label',
-    descriptionKey: 'featureFlags.advancedCAD.description',
-    icon: 'Box',
-    category: 'admin',
-  },
 ];
 
 /**
@@ -153,10 +149,17 @@ export function useFeatureFlags() {
       // Merge with defaults to ensure all flags exist
       // Cast to access feature_flags which exists in DB but may not be in generated types
       const storedFlags = (data as any)?.feature_flags as Partial<FeatureFlags> | null;
-      return {
+      const mergedFlags = {
         ...DEFAULT_FEATURE_FLAGS,
         ...(storedFlags || {}),
       };
+      
+      // Force WIP flags to false regardless of what's stored in DB
+      for (const wipFlag of WIP_FLAGS) {
+        mergedFlags[wipFlag] = false;
+      }
+      
+      return mergedFlags;
     },
     enabled: !!tenant?.id,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
@@ -224,8 +227,14 @@ export function useFeatureFlags() {
     updateFlags.mutate(allDisabled);
   };
 
+  // Ensure WIP flags are forced off in the returned flags
+  const safeFlags = flags ?? DEFAULT_FEATURE_FLAGS;
+  for (const wipFlag of WIP_FLAGS) {
+    safeFlags[wipFlag] = false;
+  }
+
   return {
-    flags: flags ?? DEFAULT_FEATURE_FLAGS,
+    flags: safeFlags,
     isLoading,
     error,
     isEnabled,
