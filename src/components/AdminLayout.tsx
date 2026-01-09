@@ -61,7 +61,7 @@ import { McpServerStatus } from "@/components/admin/McpServerStatus";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useTranslation } from "react-i18next";
 import { GlobalSearch, SearchTriggerButton } from "@/components/GlobalSearch";
-import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -82,7 +82,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [tenantSwitcherOpen, setTenantSwitcherOpen] = useState(false);
   const { count: pendingIssuesCount } = usePendingIssuesCount();
-  const { flags: featureFlags } = useFeatureFlags();
+  
 
   const isActive = (path: string) => location.pathname === path;
   const isActiveGroup = (...paths: string[]) => paths.some(path => location.pathname.startsWith(path));
@@ -113,31 +113,31 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       icon: Layers,
       exact: true,
     },
-    ...(featureFlags.assignments ? [{
+    {
       path: "/admin/assignments",
       label: t("navigation.assignments"),
       icon: UserCheck,
       exact: true,
-    }] : []),
-    ...(featureFlags.issues ? [{
+    },
+    {
       path: "/admin/issues",
       label: t("navigation.issues"),
       icon: AlertCircle,
       exact: true,
       badge: pendingIssuesCount,
-    }] : []),
-    ...(featureFlags.capacity ? [{
+    },
+    {
       path: "/admin/capacity",
       label: t("navigation.capacity"),
       icon: CalendarClock,
       exact: true,
-    }] : []),
-    ...(featureFlags.shipping ? [{
+    },
+    {
       path: "/admin/shipping",
       label: t("navigation.shipping"),
       icon: Truck,
       exact: true,
-    }] : []),
+    },
   ];
 
   // Monitoring - Expectations, Exceptions, Activity
@@ -266,13 +266,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   // Integrations - Developer tools, APIs, and external connections
   const integrationsNavItems = [
-    // WIP: App Store - hidden until ready
-    ...(featureFlags.appStore ? [{
+    {
       path: "/admin/integrations",
       label: t("navigation.appStore"),
       icon: Store,
       exact: true,
-    }] : []),
+    },
     {
       path: "/admin/config/api-keys",
       label: t("navigation.apiKeys"),
@@ -441,10 +440,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           })}
         </div>
 
-        {!collapsed && featureFlags.operatorViews && <Separator className="my-2" />}
+        {!collapsed && <Separator className="my-2" />}
 
         {/* Operator Views Section - Collapsible */}
-        {!collapsed && featureFlags.operatorViews && (
+        {!collapsed && (
           <Collapsible open={operatorViewsOpen} onOpenChange={setOperatorViewsOpen} className="space-y-0.5">
             <CollapsibleTrigger asChild>
               <Button
@@ -488,10 +487,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </Collapsible>
         )}
 
-        {!collapsed && featureFlags.monitoring && <Separator className="my-2" />}
+        {!collapsed && <Separator className="my-2" />}
 
         {/* Monitoring Section - Collapsible */}
-        {!collapsed && featureFlags.monitoring && (
+        {!collapsed && (
           <Collapsible open={monitoringOpen} onOpenChange={setMonitoringOpen} className="space-y-0.5">
             <CollapsibleTrigger asChild>
               <Button
@@ -535,10 +534,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </Collapsible>
         )}
 
-        {!collapsed && featureFlags.analytics && <Separator className="my-2" />}
+        {!collapsed && <Separator className="my-2" />}
 
         {/* Analytics Section - Collapsible */}
-        {!collapsed && featureFlags.analytics && (
+        {!collapsed && (
           <Collapsible open={analyticsOpen} onOpenChange={setAnalyticsOpen} className="space-y-0.5">
             <CollapsibleTrigger asChild>
               <Button
@@ -629,10 +628,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </Collapsible>
         )}
 
-        {!collapsed && featureFlags.integrations && <Separator className="my-2" />}
+        {!collapsed && <Separator className="my-2" />}
 
         {/* Integrations Section - Collapsible */}
-        {!collapsed && featureFlags.integrations && (
+        {!collapsed && (
           <Collapsible open={integrationsOpen} onOpenChange={setIntegrationsOpen} className="space-y-0.5">
             <CollapsibleTrigger asChild>
               <Button
