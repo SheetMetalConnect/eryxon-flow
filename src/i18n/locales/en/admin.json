@@ -458,16 +458,20 @@
       "admin": "Administration"
     },
     "analytics": {
-      "label": "Analytics",
-      "description": "QRM Dashboard, OEE, Quality, Reliability, and Jobs Analytics"
+      "label": "Analytics (WIP)",
+      "description": "QRM Dashboard, OEE, Quality, Reliability, and Jobs Analytics - Coming soon"
     },
     "monitoring": {
       "label": "Monitoring",
       "description": "Activity tracking, Expectations, and Exceptions inbox"
     },
     "shipping": {
-      "label": "Shipping",
-      "description": "Shipment tracking and delivery management"
+      "label": "Shipping (WIP)",
+      "description": "Shipment tracking and delivery management - Coming soon"
+    },
+    "appStore": {
+      "label": "App Store (WIP)",
+      "description": "Marketplace for integrations and extensions - Coming soon"
     },
     "operatorViews": {
       "label": "Operator Views",
