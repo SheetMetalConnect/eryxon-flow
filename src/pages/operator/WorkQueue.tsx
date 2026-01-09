@@ -4,13 +4,15 @@ import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchOperationsWithDetails, OperationWithDetails } from "@/lib/database";
 import OperationCard from "@/components/operator/OperationCard";
+import BatchCard from "@/components/operator/BatchCard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Search, Filter, Eye, EyeOff, LayoutGrid, List, UserCheck } from "lucide-react";
+import { Loader2, Search, Filter, Eye, EyeOff, LayoutGrid, List, UserCheck, Layers } from "lucide-react";
 import { toast } from "sonner";
+import type { BatchWithOperations } from "@/types/batches";
 import {
   Select,
   SelectContent,
@@ -44,6 +46,7 @@ export default function WorkQueue() {
   const { profile } = useAuth();
   const { activeOperator } = useOperator();
   const [operations, setOperations] = useState<OperationWithDetails[]>([]);
+  const [batches, setBatches] = useState<BatchWithOperations[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMaterial, setSelectedMaterial] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -57,6 +60,7 @@ export default function WorkQueue() {
   const [viewMode, setViewMode] = useState<"detailed" | "compact">("detailed");
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [myAssignments, setMyAssignments] = useState<PartAssignment[]>([]);
+  const [showBatches, setShowBatches] = useState<boolean>(true);
 
   useEffect(() => {
     if (!profile?.tenant_id) return;
@@ -68,7 +72,7 @@ export default function WorkQueue() {
     if (!profile?.tenant_id) return;
 
     try {
-      const [operationsData, cellsData] = await Promise.all([
+      const [operationsData, cellsData, batchesData] = await Promise.all([
         fetchOperationsWithDetails(profile.tenant_id),
         supabase
           .from("cells")
@@ -76,10 +80,42 @@ export default function WorkQueue() {
           .eq("tenant_id", profile.tenant_id)
           .eq("active", true)
           .order("sequence"),
+        supabase
+          .from("operation_batches")
+          .select(`
+            *,
+            batch_operations (
+              id,
+              operation_id,
+              sequence_in_batch,
+              operation:operations (
+                id,
+                operation_name,
+                status,
+                estimated_time,
+                part:parts (
+                  id,
+                  part_number,
+                  material,
+                  quantity,
+                  job:jobs (
+                    id,
+                    job_number,
+                    customer,
+                    due_date
+                  )
+                )
+              )
+            )
+          `)
+          .eq("tenant_id", profile.tenant_id)
+          .in("status", ["draft", "ready", "in_progress"])
+          .order("created_at", { ascending: false }),
       ]);
 
       setOperations(operationsData);
       if (cellsData.data) setCells(cellsData.data);
+      if (batchesData.data) setBatches(batchesData.data as BatchWithOperations[]);
 
       // Load assignments for the active shop floor operator
       if (activeOperator?.id) {
@@ -150,9 +186,26 @@ export default function WorkQueue() {
       )
       .subscribe();
 
+    const batchesChannel = supabase
+      .channel("batches-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "operation_batches",
+          filter: `tenant_id=eq.${profile.tenant_id}`,
+        },
+        () => {
+          loadData();
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(operationsChannel);
       supabase.removeChannel(timeEntriesChannel);
+      supabase.removeChannel(batchesChannel);
     };
   };
 
@@ -247,18 +300,39 @@ export default function WorkQueue() {
     return map;
   }, [myAssignments]);
 
-  // Group operations by cell
+  // Get IDs of operations that are in batches (to exclude from individual listing)
+  const operationIdsInBatches = useMemo(() => {
+    const ids = new Set<string>();
+    batches.forEach((batch) => {
+      batch.batch_operations?.forEach((bo: any) => {
+        if (bo.operation_id) ids.add(bo.operation_id);
+      });
+    });
+    return ids;
+  }, [batches]);
+
+  // Group operations and batches by cell
   const operationsByCell = cells
     .filter((cell) => !hiddenCells.has(cell.id))
     .map((cell) => ({
       cell,
-      operations: sortedOperations.filter((operation) => operation.cell_id === cell.id),
+      // Filter out operations that are in batches when showing batches
+      operations: sortedOperations.filter(
+        (operation) =>
+          operation.cell_id === cell.id &&
+          (!showBatches || !operationIdsInBatches.has(operation.id))
+      ),
+      batches: showBatches
+        ? batches.filter((batch) => batch.cell_id === cell.id)
+        : [],
     }));
 
   // Calculate stats
   const totalOperations = filteredOperations.length;
   const inProgressOperations = filteredOperations.filter((o) => o.status === "in_progress").length;
   const completedOperations = filteredOperations.filter((o) => o.status === "completed").length;
+  const activeBatches = batches.filter((b) => b.status === "in_progress").length;
+  const totalBatches = batches.length;
 
   if (loading) {
     return (
@@ -273,7 +347,7 @@ export default function WorkQueue() {
       <div className="space-y-4">
         {/* Stats Card */}
         <Card className="glass-card p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
             <div>
               <p className="text-sm text-muted-foreground">Total Operations</p>
               <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
@@ -298,6 +372,17 @@ export default function WorkQueue() {
                 {totalOperations - inProgressOperations - completedOperations}
               </p>
             </div>
+            {totalBatches > 0 && (
+              <div>
+                <p className="text-sm text-muted-foreground flex items-center gap-1">
+                  <Layers className="h-3 w-3" />
+                  {t("batches.batches")}
+                </p>
+                <p className="text-3xl font-bold text-brand-primary">
+                  {activeBatches}<span className="text-lg text-muted-foreground">/{totalBatches}</span>
+                </p>
+              </div>
+            )}
           </div>
         </Card>
 
@@ -409,6 +494,18 @@ export default function WorkQueue() {
                 />
                 <Label htmlFor="show-completed">Show Completed</Label>
               </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="show-batches"
+                  checked={showBatches}
+                  onCheckedChange={setShowBatches}
+                />
+                <Label htmlFor="show-batches" className="flex items-center gap-1">
+                  <Layers className="h-3 w-3" />
+                  {t("batches.batches")}
+                </Label>
+              </div>
             </div>
           )}
 
@@ -440,7 +537,7 @@ export default function WorkQueue() {
         {/* Kanban Board */}
         <div className="overflow-x-auto">
           <div className="flex gap-4 pb-4" style={{ minWidth: "max-content" }}>
-            {operationsByCell.map(({ cell, operations }) => (
+            {operationsByCell.map(({ cell, operations, batches: cellBatches }) => (
               <div
                 key={cell.id}
                 className={`flex-shrink-0 ${viewMode === "detailed" ? "w-80" : "w-64"
@@ -450,12 +547,48 @@ export default function WorkQueue() {
                   className={`p-4 border-b border-t-4 border-t-${getStageClass(cell.name)}`}
                 >
                   <h3 className="font-semibold text-lg">{cell.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {operations.length} operation{operations.length !== 1 ? "s" : ""}
-                  </p>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>{operations.length} operation{operations.length !== 1 ? "s" : ""}</span>
+                    {cellBatches.length > 0 && (
+                      <>
+                        <span>•</span>
+                        <span className="flex items-center gap-1 text-brand-primary">
+                          <Layers className="h-3 w-3" />
+                          {cellBatches.length} {t("batches.batch").toLowerCase()}{cellBatches.length !== 1 ? "es" : ""}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
                 <div className="p-4 space-y-3 max-h-[calc(100vh-16rem)] overflow-y-auto">
-                  {operations.length === 0 ? (
+                  {/* Batches Section */}
+                  {cellBatches.length > 0 && (
+                    <div className="space-y-3">
+                      {cellBatches.map((batch) => (
+                        <BatchCard
+                          key={batch.id}
+                          batch={batch}
+                          onUpdate={loadData}
+                          compact={viewMode === "compact"}
+                        />
+                      ))}
+                      {operations.length > 0 && (
+                        <div className="relative py-2">
+                          <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-border/50" />
+                          </div>
+                          <div className="relative flex justify-center">
+                            <span className="bg-card px-2 text-xs text-muted-foreground">
+                              {t("operations.title")}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Individual Operations */}
+                  {operations.length === 0 && cellBatches.length === 0 ? (
                     <div className="text-center text-muted-foreground py-8">
                       No operations
                     </div>

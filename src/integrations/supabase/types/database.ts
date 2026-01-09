@@ -73,6 +73,10 @@ import type {
   SubstepTemplatesTable,
   SubstepTemplateItemsTable,
 } from './tables/substeps'
+import type {
+  OperationBatchesTable,
+  BatchOperationsTable,
+} from './tables/batches'
 
 /**
  * Complete Database type for Supabase client
@@ -145,6 +149,10 @@ export type Database = {
       substeps: SubstepsTable
       substep_templates: SubstepTemplatesTable
       substep_template_items: SubstepTemplateItemsTable
+
+      // Batches domain
+      operation_batches: OperationBatchesTable
+      batch_operations: BatchOperationsTable
     }
     Views: DatabaseViews
     Functions: DatabaseFunctions

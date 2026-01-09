@@ -50,6 +50,7 @@
     "mcpServer": "MCP-Server",
     "mqttPublishers": "MQTT-Publisher",
     "shipping": "Versand",
+    "batches": "Batches",
     "dataImport": "Datenimport",
     "analytics": "Analysen",
     "qrmDashboard": "QRM-Dashboard",

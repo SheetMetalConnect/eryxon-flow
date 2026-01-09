@@ -49,6 +49,7 @@ const Operations = lazy(() => import("./pages/admin/Operations").then(m => ({ de
 const Settings = lazy(() => import("./pages/admin/Settings").then(m => ({ default: m.Settings })));
 const IntegrationsMarketplace = lazy(() => import("./pages/admin/IntegrationsMarketplace"));
 const Shipments = lazy(() => import("./pages/admin/Shipments"));
+const Batches = lazy(() => import("./pages/admin/Batches"));
 const StepsTemplatesView = lazy(() => import("./pages/admin/StepsTemplatesView"));
 const AnalyticsDashboard = lazy(() => import("./pages/admin/AnalyticsDashboard"));
 
@@ -613,6 +614,19 @@ function AppRoutes() {
             <Layout>
               <LazyRoute>
                 <Shipments />
+              </LazyRoute>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/batches"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <LazyRoute>
+                <Batches />
               </LazyRoute>
             </Layout>
           </ProtectedRoute>
