@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { FeatureFlagsSettings } from "@/components/admin/FeatureFlagsSettings";
 
 export const Settings: React.FC = () => {
   const { t } = useTranslation();
@@ -379,6 +380,9 @@ export const Settings: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Feature Flags Settings */}
+      <FeatureFlagsSettings />
 
       {/* GDPR Compliance: Data Deletion */}
       <Card className="border-destructive/50">
