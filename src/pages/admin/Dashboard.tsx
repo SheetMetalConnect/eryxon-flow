@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { ColumnDef } from "@tanstack/react-table";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +16,12 @@ import {
   Trash2,
   Square,
   User,
+  Briefcase,
+  Box,
+  Layers,
+  CheckCircle2,
+  ChevronRight,
+  TrendingUp,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -24,7 +29,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { seedDemoData } from "@/lib/seed";
 import { clearMockData } from "@/lib/mockDataGenerator";
 import { QRMDashboard } from "@/components/qrm/QRMDashboard";
-import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
 import {
   Table,
   TableBody,
@@ -42,6 +46,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { adminStopTimeTracking, stopAllActiveTimeEntries } from "@/lib/database";
+import { cn } from "@/lib/utils";
 
 interface ActiveWork {
   id: string;
@@ -65,39 +70,108 @@ interface ActiveWork {
   };
 }
 
-interface StatCardProps {
+interface MetricCardProps {
   title: string;
   value: number;
-  description: string;
+  subtitle?: string;
   icon: LucideIcon;
-  onClick: () => void;
+  href: string;
+  trend?: "up" | "down" | "neutral";
+  highlight?: boolean;
+  accentColor?: string;
 }
 
-function StatCard({
+function MetricCard({
   title,
   value,
-  description,
+  subtitle,
   icon: Icon,
-  onClick,
-}: StatCardProps) {
+  href,
+  trend,
+  highlight,
+  accentColor = "primary",
+}: MetricCardProps) {
+  const navigate = useNavigate();
+  
   return (
     <Card
-      className="glass-card cursor-pointer transition-all hover:shadow-xl hover:scale-105 active:scale-100 hover:border-white/20"
-      onClick={onClick}
+      className={cn(
+        "group relative overflow-hidden cursor-pointer transition-all duration-300",
+        "hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5",
+        "border-border/50 bg-card/50 backdrop-blur-sm",
+        highlight && "ring-1 ring-primary/20"
+      )}
+      onClick={() => navigate(href)}
     >
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <div className="p-2 rounded-lg bg-primary/10">
-          <Icon className="h-5 w-5 text-primary" />
+      {/* Gradient accent line */}
+      <div className={cn(
+        "absolute top-0 left-0 right-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity",
+        `bg-gradient-to-r from-${accentColor} via-${accentColor}/50 to-transparent`
+      )} />
+      
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between">
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold tracking-tight">{value}</span>
+              {trend && trend !== "neutral" && (
+                <TrendingUp className={cn(
+                  "h-4 w-4",
+                  trend === "up" ? "text-green-500" : "text-red-500 rotate-180"
+                )} />
+              )}
+            </div>
+            {subtitle && (
+              <p className="text-xs text-muted-foreground">{subtitle}</p>
+            )}
+          </div>
+          <div className={cn(
+            "flex h-11 w-11 items-center justify-center rounded-xl transition-colors",
+            "bg-primary/10 group-hover:bg-primary/20"
+          )}>
+            <Icon className="h-5 w-5 text-primary" />
+          </div>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-          {value}
+        
+        {/* Drill-down indicator */}
+        <div className="flex items-center gap-1 mt-4 text-xs text-muted-foreground group-hover:text-primary transition-colors">
+          <span>View details</span>
+          <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
         </div>
-        <p className="text-xs text-muted-foreground mt-1">{description}</p>
       </CardContent>
     </Card>
+  );
+}
+
+interface QuickStatProps {
+  label: string;
+  value: number;
+  href: string;
+  icon: LucideIcon;
+}
+
+function QuickStat({ label, value, href, icon: Icon }: QuickStatProps) {
+  const navigate = useNavigate();
+  
+  return (
+    <button
+      onClick={() => navigate(href)}
+      className={cn(
+        "flex items-center gap-4 p-4 rounded-xl transition-all text-left w-full",
+        "bg-white/5 hover:bg-white/10 border border-transparent hover:border-primary/20",
+        "group"
+      )}
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+        <Icon className="h-5 w-5 text-primary" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-2xl font-bold">{value}</p>
+        <p className="text-sm text-muted-foreground truncate">{label}</p>
+      </div>
+      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+    </button>
   );
 }
 
@@ -266,7 +340,7 @@ export default function Dashboard() {
     if (!profile?.tenant_id) return;
 
     checkFactoryHours();
-    const interval = setInterval(checkFactoryHours, 60000); // Check every minute
+    const interval = setInterval(checkFactoryHours, 60000);
 
     return () => clearInterval(interval);
   }, [profile?.tenant_id]);
@@ -294,78 +368,6 @@ export default function Dashboard() {
       supabase.removeChannel(channel);
     };
   };
-
-  const columns: ColumnDef<ActiveWork>[] = useMemo(
-    () => [
-      {
-        accessorKey: "operator.full_name",
-        id: "operator",
-        header: ({ column }) => (
-          <DataTableColumnHeader
-            column={column}
-            title={t("dashboard.operator")}
-          />
-        ),
-        cell: ({ row }) => (
-          <span className="font-medium">{row.original.operator.full_name}</span>
-        ),
-      },
-      {
-        accessorKey: "operation.operation_name",
-        id: "operation",
-        header: ({ column }) => (
-          <DataTableColumnHeader
-            column={column}
-            title={t("dashboard.operation")}
-          />
-        ),
-        cell: ({ row }) => row.original.operation.operation_name,
-      },
-      {
-        id: "job",
-        header: t("dashboard.job"),
-        cell: ({ row }) => (
-          <div>
-            <div>{row.original.operation.part.job.job_number}</div>
-            {row.original.operation.part.job.customer && (
-              <div className="text-xs text-muted-foreground">
-                {row.original.operation.part.job.customer}
-              </div>
-            )}
-          </div>
-        ),
-      },
-      {
-        accessorKey: "operation.part.part_number",
-        id: "part",
-        header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={t("dashboard.part")} />
-        ),
-        cell: ({ row }) => row.original.operation.part.part_number,
-      },
-      {
-        id: "cell",
-        header: t("dashboard.cell"),
-        cell: ({ row }) => (
-          <Badge className="bg-accent text-white">
-            {row.original.operation.cell.name}
-          </Badge>
-        ),
-      },
-      {
-        accessorKey: "start_time",
-        header: ({ column }) => (
-          <DataTableColumnHeader
-            column={column}
-            title={t("dashboard.elapsedTime")}
-          />
-        ),
-        cell: ({ row }) =>
-          formatDistanceToNow(new Date(row.getValue("start_time"))),
-      },
-    ],
-    [t],
-  );
 
   if (loading) {
     return (
@@ -400,7 +402,6 @@ export default function Dashboard() {
   const handleWipeDemo = async () => {
     if (!profile?.tenant_id) return;
 
-    // Confirm before wiping
     if (
       !confirm(
         "Are you sure you want to wipe all demo data? This cannot be undone.",
@@ -502,20 +503,22 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold tracking-tight">
             {t("dashboard.title")}
           </h1>
-          <p className="text-muted-foreground text-lg">{t("dashboard.description")}</p>
+          <p className="text-muted-foreground mt-1">{t("dashboard.description")}</p>
         </div>
         {!needsSetup &&
           profile?.tenant_id === "11111111-1111-1111-1111-111111111111" && (
             <Button
-              variant="destructive"
+              variant="outline"
               onClick={handleWipeDemo}
               disabled={wiping}
               size="sm"
+              className="text-destructive hover:text-destructive"
             >
               {wiping ? (
                 <>
@@ -532,13 +535,11 @@ export default function Dashboard() {
           )}
       </div>
 
-      <hr className="title-divider" />
-
       {needsSetup && (
-        <Card className="glass-card border-warning/20">
+        <Card className="border-warning/30 bg-warning/5">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-warning" />
+            <CardTitle className="flex items-center gap-2 text-warning">
+              <AlertTriangle className="h-5 w-5" />
               {t("dashboard.initialSetup")}
             </CardTitle>
           </CardHeader>
@@ -547,81 +548,80 @@ export default function Dashboard() {
               <p className="text-muted-foreground">
                 {t("dashboard.noStagesFound")}
               </p>
-              <Button onClick={handleSeed} disabled={seeding} className="cta-button">
+              <Button onClick={handleSeed} disabled={seeding}>
                 {seeding ? t("dashboard.seeding") : t("dashboard.seedDemoData")}
-                {!seeding && <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />}
+                {!seeding && <ArrowRight className="ml-2 h-4 w-4" />}
               </Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4" data-tour="dashboard-stats">
-        <StatCard
+      {/* Primary Metrics - 4 Column Grid */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-tour="dashboard-stats">
+        <MetricCard
           title={t("dashboard.activeWorkers")}
           value={stats.activeWorkers}
-          description={t("dashboard.currentlyWorking")}
+          subtitle={t("dashboard.currentlyWorking")}
           icon={Users}
-          onClick={() => navigate("/admin/activity")}
+          href="/admin/activity"
+          highlight={stats.activeWorkers > 0}
         />
 
-        <StatCard
+        <MetricCard
           title={t("dashboard.pendingIssues")}
           value={stats.pendingIssues}
-          description={t("dashboard.awaitingReview")}
+          subtitle={t("dashboard.awaitingReview")}
           icon={AlertTriangle}
-          onClick={() => navigate("/admin/issues")}
+          href="/admin/issues?status=pending"
+          highlight={stats.pendingIssues > 0}
         />
 
-        <StatCard
+        <MetricCard
           title={t("dashboard.inProgress")}
           value={stats.inProgressTasks}
-          description={t("dashboard.activeTasks")}
+          subtitle={t("dashboard.activeTasks")}
           icon={Activity}
-          onClick={() => navigate("/admin/operations")}
+          href="/admin/operations?status=in_progress"
         />
 
-        <StatCard
+        <MetricCard
           title={t("dashboard.dueThisWeek")}
           value={stats.dueThisWeek}
-          description={t("dashboard.jobsDue")}
+          subtitle={t("dashboard.jobsDue")}
           icon={Clock}
-          onClick={() => navigate("/admin/jobs")}
+          href="/admin/jobs?dueWithin=7"
         />
       </div>
 
-      {/* Quick Stats Panel */}
-      <Card className="glass-card">
-        <CardHeader>
-          <CardTitle className="text-xl">{t("dashboard.quickStats")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-6 md:grid-cols-4">
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">{t("dashboard.totalJobs")}</p>
-              <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-                {stats.totalJobs}
-              </p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">{t("dashboard.totalParts")}</p>
-              <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-                {stats.totalParts}
-              </p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">{t("dashboard.activeCells")}</p>
-              <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-                {stats.activeCells}
-              </p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">{t("dashboard.completedToday")}</p>
-              <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-                {stats.completedToday}
-              </p>
-            </div>
+      {/* Secondary Stats - Compact Row */}
+      <Card className="border-border/50 bg-card/30 backdrop-blur-sm">
+        <CardContent className="p-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <QuickStat
+              label={t("dashboard.totalJobs")}
+              value={stats.totalJobs}
+              href="/admin/jobs"
+              icon={Briefcase}
+            />
+            <QuickStat
+              label={t("dashboard.totalParts")}
+              value={stats.totalParts}
+              href="/admin/parts"
+              icon={Box}
+            />
+            <QuickStat
+              label={t("dashboard.activeCells")}
+              value={stats.activeCells}
+              href="/admin/config/stages"
+              icon={Layers}
+            />
+            <QuickStat
+              label={t("dashboard.completedToday")}
+              value={stats.completedToday}
+              href="/admin/operations?status=completed&today=true"
+              icon={CheckCircle2}
+            />
           </div>
         </CardContent>
       </Card>
@@ -631,7 +631,7 @@ export default function Dashboard() {
 
       {/* Past Closing Time Warning */}
       {isPastClosingTime && activeWork.length > 0 && (
-        <Card className="glass-card border-warning/50 bg-warning/5">
+        <Card className="border-warning/50 bg-warning/5">
           <CardContent className="py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -674,12 +674,22 @@ export default function Dashboard() {
       )}
 
       {/* Active Work Table */}
-      <Card className="glass-card" data-tour="active-operations">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-xl flex items-center gap-2">
-            <Activity className="h-5 w-5 text-primary" />
-            {t("dashboard.activeWork")}
-          </CardTitle>
+      <Card className="border-border/50" data-tour="active-operations">
+        <CardHeader className="flex flex-row items-center justify-between pb-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+              <Activity className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">{t("dashboard.activeWork")}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {activeWork.length > 0 
+                  ? `${activeWork.length} active session${activeWork.length > 1 ? 's' : ''}`
+                  : 'No active sessions'
+                }
+              </p>
+            </div>
+          </div>
           {activeWork.length > 0 && (
             <Button
               variant="outline"
@@ -704,50 +714,64 @@ export default function Dashboard() {
         </CardHeader>
         <CardContent>
           {activeWork.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="informational-text max-w-md mx-auto">
-                {t("dashboard.noActiveWork")}
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/50 mb-4">
+                <Activity className="h-6 w-6 text-muted-foreground" />
               </div>
+              <p className="text-muted-foreground">
+                {t("dashboard.noActiveWork")}
+              </p>
             </div>
           ) : (
-            <div className="rounded-lg border border-white/10 overflow-hidden">
+            <div className="rounded-lg border border-border/50 overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-white/10 hover:bg-white/5">
-                    <TableHead>{t("dashboard.operator")}</TableHead>
-                    <TableHead>{t("dashboard.operation")}</TableHead>
-                    <TableHead>{t("dashboard.job")}</TableHead>
-                    <TableHead>{t("dashboard.part")}</TableHead>
-                    <TableHead>{t("dashboard.cell")}</TableHead>
-                    <TableHead>{t("dashboard.elapsedTime")}</TableHead>
+                  <TableRow className="hover:bg-transparent border-border/50">
+                    <TableHead className="font-medium">{t("dashboard.operator")}</TableHead>
+                    <TableHead className="font-medium">{t("dashboard.operation")}</TableHead>
+                    <TableHead className="font-medium">{t("dashboard.job")}</TableHead>
+                    <TableHead className="font-medium">{t("dashboard.part")}</TableHead>
+                    <TableHead className="font-medium">{t("dashboard.cell")}</TableHead>
+                    <TableHead className="font-medium text-right">{t("dashboard.elapsedTime")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {activeWork.map((work) => (
                     <TableRow
                       key={work.id}
-                      className="border-white/10 hover:bg-white/5 cursor-pointer transition-colors"
+                      className="border-border/50 hover:bg-muted/30 cursor-pointer transition-colors"
                       onClick={() => handleRowClick(work)}
                     >
-                      <TableCell className="font-medium">
-                        {work.operator.full_name}
-                      </TableCell>
-                      <TableCell>{work.operation.operation_name}</TableCell>
                       <TableCell>
-                        <div>{work.operation.part.job.job_number}</div>
-                        {work.operation.part.job.customer && (
-                          <div className="text-xs text-muted-foreground">
-                            {work.operation.part.job.customer}
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
+                            <User className="h-3.5 w-3.5 text-primary" />
                           </div>
-                        )}
+                          <span className="font-medium">{work.operator.full_name}</span>
+                        </div>
                       </TableCell>
-                      <TableCell>{work.operation.part.part_number}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {work.operation.operation_name}
+                      </TableCell>
                       <TableCell>
-                        <Badge className="bg-primary/20 text-primary border-primary/30">
+                        <div>
+                          <div className="font-medium">{work.operation.part.job.job_number}</div>
+                          {work.operation.part.job.customer && (
+                            <div className="text-xs text-muted-foreground">
+                              {work.operation.part.job.customer}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {work.operation.part.part_number}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="font-normal">
                           {work.operation.cell.name}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
+                      <TableCell className="text-right tabular-nums text-muted-foreground">
                         {formatDistanceToNow(new Date(work.start_time))}
                       </TableCell>
                     </TableRow>
@@ -796,7 +820,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">{t("dashboard.cell")}</p>
-                  <Badge className="bg-primary/20 text-primary border-primary/30">
+                  <Badge variant="secondary">
                     {selectedWork.operation.cell.name}
                   </Badge>
                 </div>
