@@ -355,10 +355,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Logo/Brand - Compact */}
       <div className="flex h-12 items-center border-b border-border-subtle px-3">
         <div className="flex items-center gap-2">
-          <Factory className="h-6 w-6 text-foreground/80" strokeWidth={1.5} />
-          {!collapsed && (
-            <span className="text-sm font-bold text-foreground">
-              Eryxon Flow
+          {collapsed ? (
+            <span className="text-base font-black tracking-tight text-foreground">E</span>
+          ) : (
+            <span className="text-base font-black tracking-tight text-foreground">
+              ERYXON <span className="font-normal text-muted-foreground">FLOW</span>
             </span>
           )}
         </div>
