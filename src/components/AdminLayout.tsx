@@ -266,12 +266,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   // Integrations - Developer tools, APIs, and external connections
   const integrationsNavItems = [
-    {
+    // WIP: App Store - hidden until ready
+    ...(featureFlags.appStore ? [{
       path: "/admin/integrations",
       label: t("navigation.appStore"),
       icon: Store,
       exact: true,
-    },
+    }] : []),
     {
       path: "/admin/config/api-keys",
       label: t("navigation.apiKeys"),

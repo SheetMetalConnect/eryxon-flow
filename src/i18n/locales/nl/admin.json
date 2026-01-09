@@ -617,16 +617,20 @@
       "admin": "Administratie"
     },
     "analytics": {
-      "label": "Analyse",
-      "description": "QRM Dashboard, OEE, Kwaliteit, Betrouwbaarheid en Opdracht Analyse"
+      "label": "Analyse (WIP)",
+      "description": "QRM Dashboard, OEE, Kwaliteit, Betrouwbaarheid en Opdracht Analyse - Binnenkort beschikbaar"
     },
     "monitoring": {
       "label": "Monitoring",
       "description": "Activiteiten bijhouden, Verwachtingen en Uitzonderingen inbox"
     },
     "shipping": {
-      "label": "Verzending",
-      "description": "Zendingen volgen en bezorgingsbeheer"
+      "label": "Verzending (WIP)",
+      "description": "Zendingen volgen en bezorgingsbeheer - Binnenkort beschikbaar"
+    },
+    "appStore": {
+      "label": "App Store (WIP)",
+      "description": "Marktplaats voor integraties en extensies - Binnenkort beschikbaar"
     },
     "operatorViews": {
       "label": "Operator Weergaven",

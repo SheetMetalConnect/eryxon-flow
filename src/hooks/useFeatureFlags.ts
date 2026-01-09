@@ -19,12 +19,15 @@ export interface FeatureFlags {
   // parts: true (always on)
   // operations: true (always on)
 
-  // Toggleable feature groups
-  analytics: boolean;       // Analytics section: QRM, OEE, Quality, Reliability, Jobs Analytics
+  // WIP MODULES (not ready for production)
+  analytics: boolean;       // WIP: Analytics section: QRM, OEE, Quality, Reliability, Jobs Analytics
+  shipping: boolean;        // WIP: Shipping module
+  appStore: boolean;        // WIP: App Store / Marketplace
+
+  // Active feature groups
   monitoring: boolean;      // Monitoring section: Activity, Expectations, Exceptions
-  shipping: boolean;        // Shipping module
   operatorViews: boolean;   // Operator views: Cell Overview, Terminal, My Activity, My Issues
-  integrations: boolean;    // Integrations: App Store, API Keys, Webhooks, MQTT, etc.
+  integrations: boolean;    // Integrations: API Keys, Webhooks, MQTT, etc.
   issues: boolean;          // Issues tracking
   capacity: boolean;        // Capacity planning
   assignments: boolean;     // Assignments management
@@ -38,9 +41,13 @@ export interface FeatureFlags {
  * External service features (advancedCAD) require separate deployment and are opt-in
  */
 export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
-  analytics: true,
+  // WIP MODULES - Not ready for production yet
+  analytics: false,     // WIP: Analytics module (QRM, OEE, Quality, Reliability)
+  shipping: false,      // WIP: Shipping planning module
+  appStore: false,      // WIP: App Store / Marketplace
+  
+  // Active modules
   monitoring: true,
-  shipping: true,
   operatorViews: true,
   integrations: true,
   issues: true,
@@ -82,6 +89,14 @@ export const FEATURE_FLAG_METADATA: FeatureFlagMeta[] = [
     descriptionKey: 'featureFlags.shipping.description',
     icon: 'Truck',
     category: 'operations',
+  },
+  // WIP MODULES
+  {
+    key: 'appStore',
+    labelKey: 'featureFlags.appStore.label',
+    descriptionKey: 'featureFlags.appStore.description',
+    icon: 'Store',
+    category: 'admin',
   },
   {
     key: 'operatorViews',
@@ -215,6 +230,7 @@ export function useFeatureFlags() {
       analytics: false,
       monitoring: false,
       shipping: false,
+      appStore: false,
       operatorViews: false,
       integrations: false,
       issues: false,
