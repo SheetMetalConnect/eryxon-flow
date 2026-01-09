@@ -52,6 +52,7 @@
     "no": "No",
     "done": "Done",
     "creating": "Creating...",
+    "selected": "selected",
     "helpAndDocs": "Help & Docs",
     "refresh": "Refresh"
   },

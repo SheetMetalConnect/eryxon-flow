@@ -578,6 +578,15 @@
     "externalId": "Externe ID",
     "externalSource": "Externe Quelle",
     "notes": "Notizen",
-    "notesPlaceholder": "Notizen zu diesem Batch hinzufügen..."
+    "notesPlaceholder": "Notizen zu diesem Batch hinzufügen...",
+    "quickCreate": "Batch schnell erstellen",
+    "quickCreateForCell": "Batch für {{cell}} erstellen",
+    "quickCreateDescription": "Wählen Sie Arbeitsgänge zum Gruppieren in einem Batch",
+    "noGroupableOperations": "Keine Arbeitsgänge zum Batching verfügbar",
+    "noMaterial": "Kein Material",
+    "noThickness": "Keine Dicke",
+    "operationsSelected": "Arbeitsgänge ausgewählt",
+    "selectOperationsToCreate": "Arbeitsgänge auswählen um Batch zu erstellen",
+    "startedBy": "Gestartet von"
   }
 }

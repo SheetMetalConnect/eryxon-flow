@@ -5,12 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchOperationsWithDetails, OperationWithDetails } from "@/lib/database";
 import OperationCard from "@/components/operator/OperationCard";
 import BatchCard from "@/components/operator/BatchCard";
+import QuickBatchModal from "@/components/operator/QuickBatchModal";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Search, Filter, Eye, EyeOff, LayoutGrid, List, UserCheck, Layers } from "lucide-react";
+import { Loader2, Search, Filter, Eye, EyeOff, LayoutGrid, List, UserCheck, Layers, Plus } from "lucide-react";
 import { toast } from "sonner";
 import type { BatchWithOperations } from "@/types/batches";
 import {
@@ -61,6 +62,7 @@ export default function WorkQueue() {
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [myAssignments, setMyAssignments] = useState<PartAssignment[]>([]);
   const [showBatches, setShowBatches] = useState<boolean>(true);
+  const [quickBatchCell, setQuickBatchCell] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     if (!profile?.tenant_id) return;
@@ -546,7 +548,18 @@ export default function WorkQueue() {
                 <div
                   className={`p-4 border-b border-t-4 border-t-${getStageClass(cell.name)}`}
                 >
-                  <h3 className="font-semibold text-lg">{cell.name}</h3>
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="font-semibold text-lg">{cell.name}</h3>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => setQuickBatchCell({ id: cell.id, name: cell.name })}
+                      title={t("batches.createBatch")}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <span>{operations.length} operation{operations.length !== 1 ? "s" : ""}</span>
                     {cellBatches.length > 0 && (
@@ -613,6 +626,15 @@ export default function WorkQueue() {
           </div>
         </div>
       </div>
+
+      {/* Quick Batch Creation Modal */}
+      <QuickBatchModal
+        open={!!quickBatchCell}
+        onClose={() => setQuickBatchCell(null)}
+        cellId={quickBatchCell?.id}
+        cellName={quickBatchCell?.name}
+        onSuccess={loadData}
+      />
     </>
   );
 }

@@ -597,6 +597,15 @@
     "externalId": "External ID",
     "externalSource": "External Source",
     "notes": "Notes",
-    "notesPlaceholder": "Add notes about this batch..."
+    "notesPlaceholder": "Add notes about this batch...",
+    "quickCreate": "Quick Create Batch",
+    "quickCreateForCell": "Create a batch for {{cell}}",
+    "quickCreateDescription": "Select operations to group into a batch",
+    "noGroupableOperations": "No operations available for batching",
+    "noMaterial": "No material",
+    "noThickness": "No thickness",
+    "operationsSelected": "operations selected",
+    "selectOperationsToCreate": "Select operations to create a batch",
+    "startedBy": "Started by"
   }
 }

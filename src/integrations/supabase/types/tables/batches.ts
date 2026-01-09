@@ -22,6 +22,7 @@ export type OperationBatchesTable = {
     estimated_time: number | null
     actual_time: number | null
     created_by: string | null
+    started_by: string | null
     completed_by: string | null
     created_at: string
     started_at: string | null
@@ -45,6 +46,7 @@ export type OperationBatchesTable = {
     estimated_time?: number | null
     actual_time?: number | null
     created_by?: string | null
+    started_by?: string | null
     completed_by?: string | null
     created_at?: string
     started_at?: string | null
@@ -68,6 +70,7 @@ export type OperationBatchesTable = {
     estimated_time?: number | null
     actual_time?: number | null
     created_by?: string | null
+    started_by?: string | null
     completed_by?: string | null
     created_at?: string
     started_at?: string | null
@@ -87,6 +90,13 @@ export type OperationBatchesTable = {
     {
       foreignKeyName: "operation_batches_created_by_fkey"
       columns: ["created_by"]
+      isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },
+    {
+      foreignKeyName: "operation_batches_started_by_fkey"
+      columns: ["started_by"]
       isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]

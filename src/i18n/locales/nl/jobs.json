@@ -578,6 +578,15 @@
     "externalId": "Extern ID",
     "externalSource": "Externe bron",
     "notes": "Notities",
-    "notesPlaceholder": "Voeg notities toe over deze batch..."
+    "notesPlaceholder": "Voeg notities toe over deze batch...",
+    "quickCreate": "Batch snel aanmaken",
+    "quickCreateForCell": "Maak een batch voor {{cell}}",
+    "quickCreateDescription": "Selecteer bewerkingen om te groeperen in een batch",
+    "noGroupableOperations": "Geen bewerkingen beschikbaar voor batching",
+    "noMaterial": "Geen materiaal",
+    "noThickness": "Geen dikte",
+    "operationsSelected": "bewerkingen geselecteerd",
+    "selectOperationsToCreate": "Selecteer bewerkingen om een batch te maken",
+    "startedBy": "Gestart door"
   }
 }

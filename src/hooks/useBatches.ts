@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOperator } from '@/contexts/OperatorContext';
 import { useToast } from '@/hooks/use-toast';
 import type {
   OperationBatch,
@@ -80,6 +81,10 @@ export function useBatches(filters?: BatchFilters) {
             id,
             full_name
           ),
+          started_by_user:profiles!operation_batches_started_by_fkey (
+            id,
+            full_name
+          ),
           batch_operations (
             id,
             operation_id,
@@ -156,6 +161,10 @@ export function useBatch(id: string | null) {
             icon_name
           ),
           created_by_user:profiles!operation_batches_created_by_fkey (
+            id,
+            full_name
+          ),
+          started_by_user:profiles!operation_batches_started_by_fkey (
             id,
             full_name
           ),
@@ -731,14 +740,20 @@ export function useRemoveOperationFromBatch() {
 export function useStartBatch() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { profile } = useAuth();
+  const { activeOperator } = useOperator();
 
   return useMutation({
     mutationFn: async (id: string) => {
+      // Use active operator if on terminal, otherwise use logged-in user
+      const startedBy = activeOperator?.id || profile?.id || null;
+
       const { data, error } = await supabase
         .from('operation_batches')
         .update({
           status: 'in_progress',
           started_at: new Date().toISOString(),
+          started_by: startedBy,
         })
         .eq('id', id)
         .select()

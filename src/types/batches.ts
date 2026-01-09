@@ -59,6 +59,7 @@ export interface OperationBatch {
 
   // Tracking
   created_by: string | null;
+  started_by: string | null;
   completed_by: string | null;
   created_at: string;
   started_at: string | null;
@@ -136,6 +137,10 @@ export interface BatchWithOperations extends OperationBatch {
     icon_name: string | null;
   };
   created_by_user?: {
+    id: string;
+    full_name: string;
+  };
+  started_by_user?: {
     id: string;
     full_name: string;
   };

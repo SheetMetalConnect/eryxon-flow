@@ -50,6 +50,7 @@
     "optional": "optional",
     "done": "Fertig",
     "creating": "Erstellen...",
+    "selected": "ausgewählt",
     "helpAndDocs": "Hilfe & Dokumentation",
     "refresh": "Aktualisieren"
   },

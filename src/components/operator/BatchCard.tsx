@@ -21,6 +21,7 @@ import {
   Cylinder,
   Scissors,
   Sparkles,
+  User,
 } from "lucide-react";
 import { useStartBatch, useCompleteBatch } from "@/hooks/useBatches";
 import type { BatchWithOperations, BatchType, BatchStatus } from "@/types/batches";
@@ -108,12 +109,20 @@ export default function BatchCard({ batch, onUpdate, compact = false }: BatchCar
             </Badge>
           </div>
 
-          {/* Progress */}
+          {/* Progress + Operator */}
           {batch.status === "in_progress" && (
             <div className="space-y-1">
               <Progress value={progressPercent} className="h-1" />
-              <div className="text-xs text-muted-foreground text-right">
-                {completedOps}/{totalOps}
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                {batch.started_by_user ? (
+                  <span className="flex items-center gap-1">
+                    <User className="h-3 w-3" />
+                    {batch.started_by_user.full_name}
+                  </span>
+                ) : (
+                  <span />
+                )}
+                <span>{completedOps}/{totalOps}</span>
               </div>
             </div>
           )}
