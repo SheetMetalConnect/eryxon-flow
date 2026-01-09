@@ -146,14 +146,15 @@ export function useFeatureFlags() {
 
       const { data, error } = await supabase
         .from('tenants')
-        .select('feature_flags')
+        .select('*')
         .eq('id', tenant.id)
         .single();
 
       if (error) throw error;
 
       // Merge with defaults to ensure all flags exist
-      const storedFlags = data?.feature_flags as Partial<FeatureFlags> | null;
+      // Cast to access feature_flags which exists in DB but may not be in generated types
+      const storedFlags = (data as any)?.feature_flags as Partial<FeatureFlags> | null;
       return {
         ...DEFAULT_FEATURE_FLAGS,
         ...(storedFlags || {}),
@@ -176,7 +177,7 @@ export function useFeatureFlags() {
 
       const { error } = await supabase
         .from('tenants')
-        .update({ feature_flags: mergedFlags })
+        .update({ feature_flags: mergedFlags } as any)
         .eq('id', tenant.id);
 
       if (error) throw error;
