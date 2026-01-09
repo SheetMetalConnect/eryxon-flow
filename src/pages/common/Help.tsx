@@ -32,6 +32,15 @@ interface ReleasesData {
   lastUpdated: string;
 }
 
+// Text-based logo component matching the docs site
+const EryxonLogo = () => (
+  <div className="flex items-center gap-2">
+    <span className="text-3xl font-black tracking-tight">
+      ERYXON <span className="font-normal text-muted-foreground">FLOW</span>
+    </span>
+  </div>
+);
+
 export default function Help() {
   const [releases, setReleases] = React.useState<Release[]>([]);
   const [releasesLoading, setReleasesLoading] = React.useState(true);
@@ -62,25 +71,25 @@ export default function Help() {
 
   const docLinks = [
     {
-      href: "https://eryxon.com/docs/guides/quick-start/",
+      href: "https://eryxon.eu/docs/guides/quick-start/",
       icon: BookOpen,
       title: "Quick Start",
       desc: "Get up and running",
     },
     {
-      href: "https://eryxon.com/docs/guides/operator-manual/",
+      href: "https://eryxon.eu/docs/guides/operator-manual/",
       icon: Users,
       title: "Operator Guide",
       desc: "For shop floor users",
     },
     {
-      href: "https://eryxon.com/docs/guides/admin-manual/",
+      href: "https://eryxon.eu/docs/guides/admin-manual/",
       icon: Shield,
       title: "Admin Guide",
       desc: "Configuration & setup",
     },
     {
-      href: "https://eryxon.com/docs/guides/faq/",
+      href: "https://eryxon.eu/docs/guides/faq/",
       icon: HelpCircle,
       title: "FAQ",
       desc: "Common questions",
@@ -89,10 +98,13 @@ export default function Help() {
 
   return (
     <div className="container max-w-4xl mx-auto py-8 px-4">
-      {/* Header */}
+      {/* Header with Logo */}
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-2">Help & Documentation</h1>
-        <p className="text-lg text-muted-foreground">
+        <div className="flex justify-center mb-4">
+          <EryxonLogo />
+        </div>
+        <h1 className="text-2xl font-semibold mb-2">Help & Documentation</h1>
+        <p className="text-muted-foreground">
           Everything you need to use Eryxon MES
         </p>
       </div>
@@ -100,7 +112,7 @@ export default function Help() {
       {/* Quick Links */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <a
-          href="https://eryxon.com/docs"
+          href="https://eryxon.eu/docs"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -180,7 +192,7 @@ export default function Help() {
           </div>
           <div className="mt-4 pt-4 border-t border-white/10 text-center">
             <a
-              href="https://eryxon.com/docs"
+              href="https://eryxon.eu/docs"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-primary hover:underline inline-flex items-center gap-1"
