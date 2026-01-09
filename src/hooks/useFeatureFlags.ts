@@ -41,7 +41,7 @@ export interface FeatureFlags {
  * External service features (advancedCAD) require separate deployment and are opt-in
  */
 export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
-  // WIP MODULES - Not ready for production yet
+  // WIP MODULES - Not ready for production yet (hidden from UI, cannot be enabled)
   analytics: false,     // WIP: Analytics module (QRM, OEE, Quality, Reliability)
   shipping: false,      // WIP: Shipping planning module
   appStore: false,      // WIP: App Store / Marketplace
@@ -53,6 +53,7 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   issues: true,
   capacity: true,
   assignments: true,
+  
   // External service features - enabled for local development with eryxon3d
   advancedCAD: true,
 };
@@ -69,34 +70,16 @@ export interface FeatureFlagMeta {
 }
 
 export const FEATURE_FLAG_METADATA: FeatureFlagMeta[] = [
-  {
-    key: 'analytics',
-    labelKey: 'featureFlags.analytics.label',
-    descriptionKey: 'featureFlags.analytics.description',
-    icon: 'BarChart3',
-    category: 'analytics',
-  },
+  // NOTE: WIP modules (analytics, shipping, appStore) are intentionally excluded
+  // from this list so they cannot be enabled via the UI. They will be added back
+  // when the features are ready for production.
+  
   {
     key: 'monitoring',
     labelKey: 'featureFlags.monitoring.label',
     descriptionKey: 'featureFlags.monitoring.description',
     icon: 'Activity',
     category: 'analytics',
-  },
-  {
-    key: 'shipping',
-    labelKey: 'featureFlags.shipping.label',
-    descriptionKey: 'featureFlags.shipping.description',
-    icon: 'Truck',
-    category: 'operations',
-  },
-  // WIP MODULES
-  {
-    key: 'appStore',
-    labelKey: 'featureFlags.appStore.label',
-    descriptionKey: 'featureFlags.appStore.description',
-    icon: 'Store',
-    category: 'admin',
   },
   {
     key: 'operatorViews',
