@@ -57,11 +57,14 @@ export interface CADBackendConfig {
  * Default configuration with custom backend enabled
  */
 const defaultConfig: CADBackendConfig = {
-  mode: 'custom',
+  // Default to frontend-only processing.
+  // Server-side PMI/MBD extraction is WIP and must be explicitly configured.
+  mode: 'frontend',
 
   custom: {
-    enabled: true,
-    url: import.meta.env.VITE_CAD_SERVICE_URL || 'http://localhost:8888',
+    // Only enable the external Eryxon3D backend when explicitly configured.
+    enabled: !!import.meta.env.VITE_CAD_SERVICE_URL,
+    url: import.meta.env.VITE_CAD_SERVICE_URL || '',
     apiKey: import.meta.env.VITE_CAD_SERVICE_API_KEY || '',
     timeout: 120000, // 2 minutes
   },
@@ -81,7 +84,8 @@ const defaultConfig: CADBackendConfig = {
   },
 
   features: {
-    pmiExtraction: true,
+    // WIP: Server-side PMI/MBD extraction (Advanced CAD)
+    pmiExtraction: false,
     thumbnails: false, // Not yet fully supported
     geometry: true,
   },
