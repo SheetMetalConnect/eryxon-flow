@@ -168,27 +168,73 @@ export function useFeatureFlags() {
     mutationFn: async (newFlags: Partial<FeatureFlags>) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const mergedFlags = {
+      const nextFlags: FeatureFlags = {
         ...DEFAULT_FEATURE_FLAGS,
-        ...flags,
+        ...(flags ?? {}),
         ...newFlags,
       };
 
-      const { error } = await supabase
-        .from('tenants')
-        .update({ feature_flags: mergedFlags } as any)
-        .eq('id', tenant.id);
+      // Force WIP flags to false regardless of what the client sends
+      for (const wipFlag of WIP_FLAGS) {
+        nextFlags[wipFlag] = false;
+      }
+
+      const { data, error } = await supabase.rpc('update_tenant_feature_flags' as any, {
+        p_tenant_id: tenant.id,
+        p_flags: nextFlags as any,
+      });
 
       if (error) throw error;
-      return mergedFlags;
+
+      // RPC returns JSON object with stored flags
+      const stored = (data as any) as Partial<FeatureFlags> | null;
+      const merged: FeatureFlags = {
+        ...DEFAULT_FEATURE_FLAGS,
+        ...(stored || nextFlags),
+      };
+
+      for (const wipFlag of WIP_FLAGS) {
+        merged[wipFlag] = false;
+      }
+
+      return merged;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['feature-flags', tenant?.id] });
+    onMutate: async (newFlags: Partial<FeatureFlags>) => {
+      if (!tenant?.id) return;
+
+      const queryKey = ['feature-flags', tenant.id] as const;
+      await queryClient.cancelQueries({ queryKey });
+
+      const previous = queryClient.getQueryData<FeatureFlags>(queryKey);
+
+      const optimistic: FeatureFlags = {
+        ...DEFAULT_FEATURE_FLAGS,
+        ...(previous ?? flags ?? {}),
+        ...newFlags,
+      };
+
+      for (const wipFlag of WIP_FLAGS) {
+        optimistic[wipFlag] = false;
+      }
+
+      queryClient.setQueryData(queryKey, optimistic);
+      return { previous };
+    },
+    onSuccess: (updated: FeatureFlags) => {
+      queryClient.setQueryData(['feature-flags', tenant?.id], updated);
       toast.success(t('featureFlags.updateSuccess'));
     },
-    onError: (error: Error) => {
+    onError: (error: Error, _vars, ctx: any) => {
       console.error('Failed to update feature flags:', error);
+
+      if (ctx?.previous && tenant?.id) {
+        queryClient.setQueryData(['feature-flags', tenant.id], ctx.previous);
+      }
+
       toast.error(t('featureFlags.updateError'));
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['feature-flags', tenant?.id] });
     },
   });
 
@@ -226,7 +272,11 @@ export function useFeatureFlags() {
   };
 
   // Ensure WIP flags are forced off in the returned flags
-  const safeFlags = flags ?? DEFAULT_FEATURE_FLAGS;
+  const safeFlags: FeatureFlags = {
+    ...DEFAULT_FEATURE_FLAGS,
+    ...(flags ?? {}),
+  };
+
   for (const wipFlag of WIP_FLAGS) {
     safeFlags[wipFlag] = false;
   }
