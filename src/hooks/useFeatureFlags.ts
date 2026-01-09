@@ -138,27 +138,25 @@ export function useFeatureFlags() {
         return DEFAULT_FEATURE_FLAGS;
       }
 
-      const { data, error } = await supabase
-        .from('tenants')
-        .select('*')
-        .eq('id', tenant.id)
-        .single();
+      // Fetch via SECURITY DEFINER RPC (tenants table has no UPDATE policy for regular users)
+      const { data, error } = await supabase.rpc('get_tenant_feature_flags' as any, {
+        p_tenant_id: tenant.id,
+      });
 
       if (error) throw error;
 
-      // Merge with defaults to ensure all flags exist
-      // Cast to access feature_flags which exists in DB but may not be in generated types
-      const storedFlags = (data as any)?.feature_flags as Partial<FeatureFlags> | null;
-      const mergedFlags = {
+      // RPC returns a JSON object with flags
+      const storedFlags = (data as any) as Partial<FeatureFlags> | null;
+      const mergedFlags: FeatureFlags = {
         ...DEFAULT_FEATURE_FLAGS,
         ...(storedFlags || {}),
       };
-      
+
       // Force WIP flags to false regardless of what's stored in DB
       for (const wipFlag of WIP_FLAGS) {
         mergedFlags[wipFlag] = false;
       }
-      
+
       return mergedFlags;
     },
     enabled: !!tenant?.id,
