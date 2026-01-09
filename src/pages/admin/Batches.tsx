@@ -252,7 +252,7 @@ export default function Batches() {
                 <TableHead>{t("batches.cell")}</TableHead>
                 <TableHead>{t("batches.material")}</TableHead>
                 <TableHead className="text-center">{t("batches.operationsCount")}</TableHead>
-                <TableHead>{t("batches.status.draft")}</TableHead>
+                <TableHead>{t("operations.status")}</TableHead>
                 <TableHead>{t("batches.createdAt")}</TableHead>
                 <TableHead className="text-right">{t("common.actions")}</TableHead>
               </TableRow>

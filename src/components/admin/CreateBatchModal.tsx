@@ -281,7 +281,7 @@ export default function CreateBatchModal({
               </div>
 
               {loadingOperations ? (
-                <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                <div className="text-center py-8 text-muted-foreground">{t("common.loading")}</div>
               ) : !groupableData?.materialGroups?.length ? (
                 <div className="text-center py-8 text-muted-foreground">
                   {t("batches.noOperationsInBatch")}

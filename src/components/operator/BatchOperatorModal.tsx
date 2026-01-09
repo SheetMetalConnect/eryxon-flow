@@ -186,6 +186,12 @@ export default function BatchOperatorModal({
                     <div className="font-medium">
                       {format(new Date(batch.started_at), "dd MMM yyyy HH:mm")}
                     </div>
+                    {batch.started_by_user && (
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <User className="h-3 w-3" />
+                        {batch.started_by_user.full_name}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

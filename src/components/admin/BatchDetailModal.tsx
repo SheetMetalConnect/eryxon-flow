@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { useBatch, useStartBatch, useCompleteBatch, useCancelBatch, useRemoveOperationFromBatch } from "@/hooks/useBatches";
@@ -8,6 +9,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,6 +54,9 @@ interface BatchDetailModalProps {
 
 export default function BatchDetailModal({ batchId, onClose }: BatchDetailModalProps) {
   const { t } = useTranslation();
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [removeOpId, setRemoveOpId] = useState<string | null>(null);
+
   const { data: batch, isLoading } = useBatch(batchId);
   const startBatch = useStartBatch();
   const completeBatch = useCompleteBatch();
@@ -78,18 +92,17 @@ export default function BatchDetailModal({ batchId, onClose }: BatchDetailModalP
   };
 
   const handleCancel = async () => {
-    if (confirm(t("batches.deleteConfirm"))) {
-      await cancelBatch.mutateAsync(batch.id);
-    }
+    await cancelBatch.mutateAsync(batch.id);
+    setCancelConfirmOpen(false);
   };
 
-  const handleRemoveOperation = async (operationId: string) => {
-    if (confirm(t("batches.removeOperation") + "?")) {
-      await removeOperation.mutateAsync({
-        batch_id: batch.id,
-        operation_id: operationId,
-      });
-    }
+  const handleRemoveOperation = async () => {
+    if (!removeOpId) return;
+    await removeOperation.mutateAsync({
+      batch_id: batch.id,
+      operation_id: removeOpId,
+    });
+    setRemoveOpId(null);
   };
 
   return (
@@ -126,7 +139,7 @@ export default function BatchDetailModal({ batchId, onClose }: BatchDetailModalP
                     <CheckCircle2 className="h-4 w-4 mr-2" />
                     {t("batches.completeBatch")}
                   </Button>
-                  <Button variant="outline" onClick={handleCancel} disabled={cancelBatch.isPending}>
+                  <Button variant="outline" onClick={() => setCancelConfirmOpen(true)} disabled={cancelBatch.isPending}>
                     <XCircle className="h-4 w-4 mr-2" />
                     {t("batches.cancelBatch")}
                   </Button>
@@ -215,6 +228,12 @@ export default function BatchDetailModal({ batchId, onClose }: BatchDetailModalP
                       <div className="font-medium">
                         {format(new Date(batch.started_at), "dd MMM yyyy HH:mm")}
                       </div>
+                      {batch.started_by_user && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                          <User className="h-3 w-3" />
+                          {batch.started_by_user.full_name}
+                        </div>
+                      )}
                     </div>
                   )}
                   {batch.completed_at && (
@@ -341,7 +360,7 @@ export default function BatchDetailModal({ batchId, onClose }: BatchDetailModalP
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => handleRemoveOperation(bo.operation_id)}
+                                onClick={() => setRemoveOpId(bo.operation_id)}
                                 disabled={removeOperation.isPending}
                               >
                                 <X className="h-4 w-4 text-muted-foreground hover:text-destructive" />
@@ -358,6 +377,42 @@ export default function BatchDetailModal({ batchId, onClose }: BatchDetailModalP
           </div>
         </ScrollArea>
       </DialogContent>
+
+      {/* Cancel Confirmation Dialog */}
+      <AlertDialog open={cancelConfirmOpen} onOpenChange={setCancelConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("batches.cancelBatch")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("batches.deleteConfirm")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleCancel} className="bg-destructive text-destructive-foreground">
+              {t("batches.cancelBatch")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Remove Operation Confirmation Dialog */}
+      <AlertDialog open={!!removeOpId} onOpenChange={() => setRemoveOpId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("batches.removeOperation")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("batches.removeOperation")}?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRemoveOperation} className="bg-destructive text-destructive-foreground">
+              {t("common.remove")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
