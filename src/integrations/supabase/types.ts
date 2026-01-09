@@ -3025,8 +3025,10 @@ export type Database = {
           demo_data_seeded_by: string | null
           demo_mode_acknowledged: boolean | null
           demo_mode_enabled: boolean | null
+          external_feature_flags_config: Json | null
           factory_closing_time: string | null
           factory_opening_time: string | null
+          feature_flags: Json | null
           grace_period_ends_at: string | null
           id: string
           last_parts_reset_date: string | null
@@ -3050,6 +3052,7 @@ export type Database = {
           trial_end: string | null
           trial_ends_at: string | null
           updated_at: string | null
+          use_external_feature_flags: boolean | null
           vat_number: string | null
           whitelabel_app_name: string | null
           whitelabel_enabled: boolean | null
@@ -3075,8 +3078,10 @@ export type Database = {
           demo_data_seeded_by?: string | null
           demo_mode_acknowledged?: boolean | null
           demo_mode_enabled?: boolean | null
+          external_feature_flags_config?: Json | null
           factory_closing_time?: string | null
           factory_opening_time?: string | null
+          feature_flags?: Json | null
           grace_period_ends_at?: string | null
           id?: string
           last_parts_reset_date?: string | null
@@ -3100,6 +3105,7 @@ export type Database = {
           trial_end?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
+          use_external_feature_flags?: boolean | null
           vat_number?: string | null
           whitelabel_app_name?: string | null
           whitelabel_enabled?: boolean | null
@@ -3125,8 +3131,10 @@ export type Database = {
           demo_data_seeded_by?: string | null
           demo_mode_acknowledged?: boolean | null
           demo_mode_enabled?: boolean | null
+          external_feature_flags_config?: Json | null
           factory_closing_time?: string | null
           factory_opening_time?: string | null
+          feature_flags?: Json | null
           grace_period_ends_at?: string | null
           id?: string
           last_parts_reset_date?: string | null
@@ -3150,6 +3158,7 @@ export type Database = {
           trial_end?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
+          use_external_feature_flags?: boolean | null
           vat_number?: string | null
           whitelabel_app_name?: string | null
           whitelabel_enabled?: boolean | null
@@ -3747,6 +3756,10 @@ export type Database = {
           used_percentage: number
         }[]
       }
+      get_tenant_feature_flags: {
+        Args: { p_tenant_id?: string }
+        Returns: Json
+      }
       get_tenant_info: {
         Args: never
         Returns: {
@@ -3947,6 +3960,10 @@ export type Database = {
           p_tenant_id: string
         }
         Returns: string
+      }
+      update_tenant_feature_flags: {
+        Args: { p_flags: Json; p_tenant_id: string }
+        Returns: Json
       }
       update_tenant_storage_usage: {
         Args: {
