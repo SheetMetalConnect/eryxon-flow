@@ -245,6 +245,83 @@ export type Database = {
           },
         ]
       }
+      attendance_entries: {
+        Row: {
+          clock_in: string
+          clock_out: string | null
+          created_at: string
+          duration_minutes: number | null
+          id: string
+          notes: string | null
+          operator_id: string | null
+          profile_id: string | null
+          shift_id: string | null
+          status: string
+          target_hours: number | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          clock_in?: string
+          clock_out?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          notes?: string | null
+          operator_id?: string | null
+          profile_id?: string | null
+          shift_id?: string | null
+          status?: string
+          target_hours?: number | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          clock_in?: string
+          clock_out?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          notes?: string | null
+          operator_id?: string | null
+          profile_id?: string | null
+          shift_id?: string | null
+          status?: string
+          target_hours?: number | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_entries_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_entries_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_entries_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "factory_shifts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_entries_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       billing_waitlist: {
         Row: {
           company_name: string
@@ -3429,6 +3506,7 @@ export type Database = {
         Args: { p_exception_id: string }
         Returns: undefined
       }
+      auto_close_stale_attendance: { Args: never; Returns: number }
       can_create_job: { Args: { p_tenant_id: string }; Returns: boolean }
       can_create_parts: {
         Args: { p_quantity?: number; p_tenant_id: string }
@@ -3720,6 +3798,16 @@ export type Database = {
           status: string
         }[]
       }
+      get_operator_attendance_status: {
+        Args: { p_operator_id: string }
+        Returns: {
+          clock_in_time: string
+          current_duration_minutes: number
+          is_clocked_in: boolean
+          shift_name: string
+          target_hours: number
+        }[]
+      }
       get_part_image_url: {
         Args: { p_expires_in?: number; p_image_path: string }
         Returns: string
@@ -3876,6 +3964,14 @@ export type Database = {
       mark_notification_read: {
         Args: { p_notification_id: string }
         Returns: undefined
+      }
+      operator_clock_in: {
+        Args: { p_notes?: string; p_operator_id: string }
+        Returns: string
+      }
+      operator_clock_out: {
+        Args: { p_notes?: string; p_operator_id: string }
+        Returns: boolean
       }
       regenerate_mcp_token: {
         Args: { p_endpoint_id: string }
