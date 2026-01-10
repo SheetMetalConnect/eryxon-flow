@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, Search, Filter, Layers, Play, CheckCircle2, XCircle, Eye, Trash2 } from "lucide-react";
+import { Plus, Search, Filter, Layers, Play, CheckCircle2, XCircle, Eye, Trash2, FileEdit, CircleCheck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -133,13 +133,12 @@ export default function Batches() {
     <div className="space-y-6">
       <AdminPageHeader
         title={t("batches.title")}
-        subtitle={t("batches.subtitle")}
-        action={
-          <Button onClick={() => setCreateModalOpen(true)} className="cta-button">
-            <Plus className="h-4 w-4 mr-2" />
-            {t("batches.createBatch")}
-          </Button>
-        }
+        description={t("batches.subtitle")}
+        action={{
+          label: t("batches.createBatch"),
+          onClick: () => setCreateModalOpen(true),
+          icon: Plus,
+        }}
       />
 
       {/* Stats */}
@@ -153,20 +152,24 @@ export default function Batches() {
           {
             label: t("batches.stats.draft"),
             value: stats?.draft || 0,
+            icon: FileEdit,
           },
           {
             label: t("batches.stats.ready"),
             value: stats?.ready || 0,
+            icon: CircleCheck,
           },
           {
             label: t("batches.stats.inProgress"),
             value: stats?.in_progress || 0,
-            color: "text-status-active",
+            icon: Play,
+            color: "warning",
           },
           {
             label: t("batches.stats.completed"),
             value: stats?.completed || 0,
-            color: "text-status-completed",
+            icon: CheckCircle2,
+            color: "success",
           },
         ]}
       />

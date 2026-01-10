@@ -65,7 +65,7 @@ async function generateBatchNumber(tenantId: string, batchType: string): Promise
 
 export function useBatches(filters?: BatchFilters) {
   return useQuery({
-    queryKey: batchKeys.list(filters),
+    queryKey: batchKeys.list(filters as Record<string, unknown> | undefined),
     queryFn: async () => {
       let query = supabase
         .from('operation_batches')
@@ -612,16 +612,8 @@ export function useAddOperationToBatch() {
 
       if (error) throw error;
 
-      // Update operations count on batch
-      await supabase.rpc('increment_batch_operations_count', {
-        p_batch_id: input.batch_id,
-      }).catch(() => {
-        // Fallback if RPC doesn't exist
-        supabase
-          .from('operation_batches')
-          .update({ operations_count: supabase.rpc('count_batch_operations', { p_batch_id: input.batch_id }) })
-          .eq('id', input.batch_id);
-      });
+      // The trigger function handles updating operations_count automatically
+      // No need to call RPC - just return the data
 
       return data as BatchOperation;
     },

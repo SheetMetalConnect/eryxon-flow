@@ -322,6 +322,61 @@ export type Database = {
           },
         ]
       }
+      batch_operations: {
+        Row: {
+          batch_id: string
+          created_at: string
+          id: string
+          operation_id: string
+          quantity_in_batch: number | null
+          sequence_in_batch: number | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          batch_id: string
+          created_at?: string
+          id?: string
+          operation_id: string
+          quantity_in_batch?: number | null
+          sequence_in_batch?: number | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          batch_id?: string
+          created_at?: string
+          id?: string
+          operation_id?: string
+          quantity_in_batch?: number | null
+          sequence_in_batch?: number | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "batch_operations_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "operation_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "batch_operations_operation_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: true
+            referencedRelation: "operations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "batch_operations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       billing_waitlist: {
         Row: {
           company_name: string
@@ -1914,6 +1969,117 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "notifications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operation_batches: {
+        Row: {
+          actual_time: number | null
+          batch_number: string
+          batch_type: Database["public"]["Enums"]["batch_type"]
+          cell_id: string
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          created_by: string | null
+          estimated_time: number | null
+          external_id: string | null
+          external_source: string | null
+          id: string
+          material: string | null
+          nesting_metadata: Json | null
+          notes: string | null
+          operations_count: number
+          started_at: string | null
+          started_by: string | null
+          status: Database["public"]["Enums"]["batch_status"]
+          tenant_id: string
+          thickness_mm: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          actual_time?: number | null
+          batch_number: string
+          batch_type?: Database["public"]["Enums"]["batch_type"]
+          cell_id: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          estimated_time?: number | null
+          external_id?: string | null
+          external_source?: string | null
+          id?: string
+          material?: string | null
+          nesting_metadata?: Json | null
+          notes?: string | null
+          operations_count?: number
+          started_at?: string | null
+          started_by?: string | null
+          status?: Database["public"]["Enums"]["batch_status"]
+          tenant_id: string
+          thickness_mm?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          actual_time?: number | null
+          batch_number?: string
+          batch_type?: Database["public"]["Enums"]["batch_type"]
+          cell_id?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          estimated_time?: number | null
+          external_id?: string | null
+          external_source?: string | null
+          id?: string
+          material?: string | null
+          nesting_metadata?: Json | null
+          notes?: string | null
+          operations_count?: number
+          started_at?: string | null
+          started_by?: string | null
+          status?: Database["public"]["Enums"]["batch_status"]
+          tenant_id?: string
+          thickness_mm?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operation_batches_cell_id_fkey"
+            columns: ["cell_id"]
+            isOneToOne: false
+            referencedRelation: "cells"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_batches_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_batches_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_batches_started_by_fkey"
+            columns: ["started_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_batches_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -4106,6 +4272,18 @@ export type Database = {
     Enums: {
       app_role: "operator" | "admin"
       assignment_status: "assigned" | "accepted" | "in_progress" | "completed"
+      batch_status:
+        | "draft"
+        | "ready"
+        | "in_progress"
+        | "completed"
+        | "cancelled"
+      batch_type:
+        | "laser_nesting"
+        | "tube_batch"
+        | "saw_batch"
+        | "finishing_batch"
+        | "general"
       exception_status: "open" | "acknowledged" | "resolved" | "dismissed"
       exception_type: "late" | "early" | "non_occurrence" | "exceeded" | "under"
       expectation_type: "completion_time" | "duration" | "quantity" | "delivery"
@@ -4295,6 +4473,14 @@ export const Constants = {
     Enums: {
       app_role: ["operator", "admin"],
       assignment_status: ["assigned", "accepted", "in_progress", "completed"],
+      batch_status: ["draft", "ready", "in_progress", "completed", "cancelled"],
+      batch_type: [
+        "laser_nesting",
+        "tube_batch",
+        "saw_batch",
+        "finishing_batch",
+        "general",
+      ],
       exception_status: ["open", "acknowledged", "resolved", "dismissed"],
       exception_type: ["late", "early", "non_occurrence", "exceeded", "under"],
       expectation_type: ["completion_time", "duration", "quantity", "delivery"],
