@@ -1,7 +1,8 @@
 {
   "Actions": "Actions",
   "alphaBanner": {
-    "message": "You are using the alpha release in the cloud. This is a free version until further notice. Things might break or the site might go down unexpectedly."
+    "message": "Heads up – this is an early version. Free during early access, but expect some bugs or downtime.",
+    "learnMore": "Learn more"
   },
   "Blocked": "Blocked",
   "Cancel": "Cancel",

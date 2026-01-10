@@ -1,7 +1,8 @@
 {
   "Actions": "Acties",
   "alphaBanner": {
-    "message": "Je gebruikt de alpha-versie in de cloud. Dit is een gratis versie tot nader bericht. Dingen kunnen kapot gaan of de site kan onverwacht offline gaan."
+    "message": "Even een heads-up – dit is een vroege versie. Gratis tijdens early access, maar bugs of downtime kunnen voorkomen.",
+    "learnMore": "Meer info"
   },
   "Blocked": "Geblokkeerd",
   "Cancel": "Annuleren",
