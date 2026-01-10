@@ -50,8 +50,8 @@ export async function triggerWebhook(
       return { success: false, error: 'Not authenticated' };
     }
 
-    // Get Supabase URL from environment or construct from current origin
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://vatgianzotsurljznsry.supabase.co';
+    // Get Supabase URL from environment
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     
     const response = await fetch(
       `${supabaseUrl}/functions/v1/webhook-dispatch`,
