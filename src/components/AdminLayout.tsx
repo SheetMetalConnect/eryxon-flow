@@ -171,6 +171,18 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // Analytics - Production insights and metrics
   const analyticsNavItems = [
     {
+      path: "/admin/analytics/live-operators",
+      label: t("navigation.liveFloorStatus"),
+      icon: Users,
+      exact: true,
+    },
+    {
+      path: "/admin/analytics/employee-oee",
+      label: t("navigation.employeeOEE"),
+      icon: Gauge,
+      exact: true,
+    },
+    {
       path: "/admin/analytics/qrm-dashboard",
       label: t("navigation.qrmDashboard"),
       icon: Activity,
