@@ -1,0 +1,12 @@
+# Cloudflare Pages/Workers configuration for the docs site
+# This overrides the root wrangler.toml when deploying from /website/
+
+name = "eryxon-flow-website"
+compatibility_date = "2026-01-10"
+
+# For Pages-style deployment
+pages_build_output_dir = "./dist"
+
+# For Workers static assets (new recommended approach)
+[assets]
+directory = "./dist"
