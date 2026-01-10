@@ -1,7 +1,8 @@
 {
   "Actions": "Aktionen",
   "alphaBanner": {
-    "message": "Du nutzt die Alpha-Version in der Cloud. Diese Version ist bis auf Weiteres kostenlos. Es kann zu Fehlern kommen oder die Seite kann unerwartet nicht erreichbar sein."
+    "message": "Kurz zur Info – das ist eine frühe Version. Kostenlos während Early Access, aber Bugs oder Ausfälle sind möglich.",
+    "learnMore": "Mehr erfahren"
   },
   "Blocked": "Blockiert",
   "Cancel": "Abbrechen",

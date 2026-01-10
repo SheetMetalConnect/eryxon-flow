@@ -30,7 +30,15 @@ export function AlphaBanner() {
     <div className="bg-amber-500 text-amber-950 px-4 py-2 text-sm flex items-center justify-center gap-2 relative">
       <AlertTriangle className="h-4 w-4 flex-shrink-0" />
       <span className="text-center font-medium">
-        {t("alphaBanner.message")}
+        {t("alphaBanner.message")}{" "}
+        <a 
+          href="https://eryxon.eu/introduction/" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="underline hover:no-underline font-semibold"
+        >
+          {t("alphaBanner.learnMore")}
+        </a>
       </span>
       <button
         onClick={handleDismiss}
