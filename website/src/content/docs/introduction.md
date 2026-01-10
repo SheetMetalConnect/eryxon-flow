@@ -4,7 +4,7 @@ description: The simple, elegant and powerful manufacturing execution system tha
 ---
 
 :::note[Early Access]
-Heads up – this is an early version. Free during early access, but expect some bugs or downtime. See the [Hosted Version](/hosted-version) page for details on the hosted demo and future plans.
+Heads up – this is an early version. Free during early access, but expect some bugs or downtime. [Try the demo](https://app.eryxon.eu) or see the [Hosted Version](/hosted-version) page for details.
 :::
 
 **The simple, elegant and powerful manufacturing execution system that your people will love to use. Made for metals fabrication.**
