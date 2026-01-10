@@ -1,5 +1,8 @@
 {
   "Actions": "Actions",
+  "alphaBanner": {
+    "message": "You are using the alpha release in the cloud. This is a free version until further notice. Things might break or the site might go down unexpectedly."
+  },
   "Blocked": "Blocked",
   "Cancel": "Cancel",
   "Cell": "Cell",
@@ -37,6 +40,7 @@
     "back": "Back",
     "cancel": "Cancel",
     "delete": "Delete",
+    "dismiss": "Dismiss",
     "edit": "Edit",
     "error": "Error",
     "loading": "Loading...",
