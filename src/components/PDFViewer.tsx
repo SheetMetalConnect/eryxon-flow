@@ -14,7 +14,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, sanitizeUrl, safeOpenUrl } from '@/lib/utils';
 
 // Configure PDF.js worker from CDN
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -65,17 +65,22 @@ export function PDFViewer({ url, title, compact = false }: PDFViewerProps) {
   };
 
   const handleDownload = () => {
+    const safeUrl = sanitizeUrl(url);
+    if (!safeUrl) return;
     const link = document.createElement('a');
-    link.href = url;
+    link.href = safeUrl;
     link.download = title || 'drawing.pdf';
     link.click();
   };
 
   const handleOpenExternal = () => {
-    window.open(url, '_blank');
+    safeOpenUrl(url);
   };
 
-  if (!url) {
+  // Validate URL to prevent XSS
+  const safeFileUrl = sanitizeUrl(url);
+
+  if (!url || !safeFileUrl) {
     return (
       <div className="flex flex-col h-full w-full bg-background items-center justify-center text-muted-foreground">
         <FileText className="h-12 w-12 mb-2 opacity-20" />
@@ -218,7 +223,7 @@ export function PDFViewer({ url, title, compact = false }: PDFViewerProps) {
         {!error && (
           <div className="min-h-full flex justify-center p-4">
             <Document
-              file={url}
+              file={safeFileUrl}
               onLoadSuccess={onDocumentLoadSuccess}
               onLoadError={onDocumentLoadError}
               loading={null}

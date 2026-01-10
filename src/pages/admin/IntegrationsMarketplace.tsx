@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import IntegrationDetailModal from "@/components/admin/IntegrationDetailModal";
 import { toast } from "sonner";
+import { sanitizeUrl, safeOpenUrl } from "@/lib/utils";
 
 interface Integration {
   id: string;
@@ -236,14 +237,14 @@ export default function IntegrationsMarketplace() {
             <span>{integration.install_count.toLocaleString()} installs</span>
           </div>
         </div>
-        {integration.github_repo_url && (
+        {sanitizeUrl(integration.github_repo_url) && (
           <div className="mt-4 flex gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                window.open(integration.github_repo_url, "_blank");
+                safeOpenUrl(integration.github_repo_url);
               }}
             >
               <Github className="w-4 h-4 mr-2" />
