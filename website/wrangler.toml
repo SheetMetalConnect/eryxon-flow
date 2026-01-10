@@ -1,0 +1,8 @@
+# Cloudflare Pages configuration for the docs site
+# This overrides the root wrangler.toml when deploying from /website/
+
+name = "eryxon-flow-website"
+compatibility_date = "2024-01-01"
+
+# Tell wrangler this is a Pages project, not a Worker
+pages_build_output_dir = "./dist"
