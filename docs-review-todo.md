@@ -107,10 +107,14 @@ Inventory of all markdown files requiring review for bloat removal and tone fixe
 
 ## Consolidation Candidates (flagged during review)
 
-| File | Reason |
-|------|--------|
-| `docs/API_DOCUMENTATION.md` | Likely duplicate of `website/.../api/api_documentation.md` |
-| `docs/3d-viewer.md` | Likely duplicate of `website/.../guides/3d-viewer.md` |
+**Recommendation:** Delete these root `/docs/` files - they duplicate cleaned website docs.
+
+| File | Duplicate Of | Recommendation |
+|------|--------------|----------------|
+| `docs/API_DOCUMENTATION.md` | `website/.../api/api_documentation.md` | Delete - website version is canonical |
+| `docs/3d-viewer.md` | `website/.../guides/3d-viewer.md` | Delete - website version is canonical |
+
+These internal engineering docs are older/more verbose versions. The website Starlight docs are now the single source of truth.
 
 ---
 
