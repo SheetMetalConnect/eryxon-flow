@@ -1,24 +1,11 @@
 ---
-title: "Responsive UI  SaaS-Style Patterns"
-description: "Documentation for Responsive UI  SaaS-Style Patterns"
+title: "Responsive UI Patterns"
+description: "SaaS-style responsive design patterns"
 ---
 
+Responsive patterns for desktop, tablet, and mobile.
 
-
-This document describes the responsive design patterns and SaaS-style UI conventions used throughout Eryxon MES.
-
-The app is designed to work **equally well on all screen sizes** - desktop, tablet, and mobile. It is not mobile-first or desktop-first, but rather **responsive and adaptive** to provide the best experience on each device.
-
----
-
-## Table of Contents
-
-- [SaaS-Style Modal Patterns](#saas-style-modal-patterns)
-- [Responsive Data Tables](#responsive-data-tables)
-- [Adaptive Layouts](#adaptive-layouts)
-- [Component Reference](#component-reference)
-
----
+See also: [Design Components](/architecture/design-components/), [Design Tokens](/architecture/design-tokens/)
 
 ## SaaS-Style Modal Patterns
 

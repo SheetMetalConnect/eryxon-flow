@@ -1,7 +1,9 @@
 ---
 title: "Visual Components"
-description: "Implementation guide for UI components and standard layout patterns."
+description: "UI components and layout patterns"
 ---
+
+See also: [Design Tokens](/architecture/design-tokens/), [Design Principles](/architecture/design-principles/), [Responsive Patterns](/architecture/responsive-ui-patterns/)
 
 ## Layout Foundations
 

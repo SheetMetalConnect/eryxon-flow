@@ -1,7 +1,10 @@
 ---
 title: "REST API Reference"
-description: "Inbound integration reference for Jobs, Parts, Operations, and ERP Sync."
+description: "Inbound integration reference for Jobs, Parts, Operations, and ERP Sync"
 ---
+
+See also: [Full API Documentation](/api/api_documentation/), [API Key Authentication](/api/api_key_authentication/), [ERP Integration](/features/erp-integration/)
+
 ## Authentication
 Use your API Key in the `Authorization` header as a Bearer token.
 
