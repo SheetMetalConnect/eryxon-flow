@@ -42,6 +42,7 @@
     "cancel": "Annuleren",
     "delete": "Verwijderen",
     "dismiss": "Sluiten",
+    "remove": "Verwijderen",
     "edit": "Bewerken",
     "error": "Fout",
     "loading": "Laden...",
@@ -56,6 +57,7 @@
     "optional": "optioneel",
     "done": "Gereed",
     "creating": "Aanmaken...",
+    "selected": "geselecteerd",
     "helpAndDocs": "Help & Documentatie",
     "refresh": "Vernieuwen"
   },

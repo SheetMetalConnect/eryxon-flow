@@ -42,6 +42,7 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "dismiss": "Dismiss",
+    "remove": "Remove",
     "edit": "Edit",
     "error": "Error",
     "loading": "Loading...",
@@ -57,6 +58,7 @@
     "no": "No",
     "done": "Done",
     "creating": "Creating...",
+    "selected": "selected",
     "helpAndDocs": "Help & Docs",
     "refresh": "Refresh"
   },

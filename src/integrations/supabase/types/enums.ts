@@ -6,6 +6,8 @@
 export type DatabaseEnums = {
   app_role: "operator" | "admin"
   assignment_status: "assigned" | "accepted" | "in_progress" | "completed"
+  batch_status: "draft" | "ready" | "in_progress" | "completed" | "cancelled"
+  batch_type: "laser_nesting" | "tube_batch" | "saw_batch" | "finishing_batch" | "general"
   integration_category:
     | "erp"
     | "accounting"
@@ -71,6 +73,8 @@ export type DatabaseEnums = {
 export const EnumConstants = {
   app_role: ["operator", "admin"],
   assignment_status: ["assigned", "accepted", "in_progress", "completed"],
+  batch_status: ["draft", "ready", "in_progress", "completed", "cancelled"],
+  batch_type: ["laser_nesting", "tube_batch", "saw_batch", "finishing_batch", "general"],
   integration_category: [
     "erp",
     "accounting",

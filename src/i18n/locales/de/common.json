@@ -42,6 +42,7 @@
     "cancel": "Abbrechen",
     "delete": "Löschen",
     "dismiss": "Schließen",
+    "remove": "Entfernen",
     "edit": "Bearbeiten",
     "error": "Fehler",
     "loading": "Wird geladen...",
@@ -55,6 +56,7 @@
     "optional": "optional",
     "done": "Fertig",
     "creating": "Erstellen...",
+    "selected": "ausgewählt",
     "helpAndDocs": "Hilfe & Dokumentation",
     "refresh": "Aktualisieren"
   },

@@ -114,6 +114,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       exact: true,
     },
     {
+      path: "/admin/batches",
+      label: t("navigation.batches"),
+      icon: Layers,
+      exact: true,
+    },
+    {
       path: "/admin/assignments",
       label: t("navigation.assignments"),
       icon: UserCheck,
