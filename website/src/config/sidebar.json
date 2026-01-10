@@ -22,6 +22,7 @@
     {
       "label": "Features",
       "items": [
+        { "label": "Batch/Nesting Operations", "slug": "features/batch-operations" },
         { "label": "ERP Integration", "slug": "features/erp-integration" },
         { "label": "Shipping Management", "slug": "features/shipping-management" },
         { "label": "Flexible Metadata", "slug": "features/flexible-metadata" },
