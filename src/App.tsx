@@ -66,6 +66,8 @@ const ConfigWebhooks = lazy(() => import("./pages/admin/config/Webhooks"));
 
 // Admin analytics pages - lazy loaded
 const OEEAnalytics = lazy(() => import("./pages/admin/analytics/OEEAnalytics"));
+const EmployeeOEEDashboard = lazy(() => import("./pages/admin/analytics/EmployeeOEEDashboard"));
+const LiveOperatorsDashboard = lazy(() => import("./pages/admin/analytics/LiveOperatorsDashboard"));
 const ReliabilityAnalytics = lazy(() => import("./pages/admin/analytics/ReliabilityAnalytics"));
 const QRMAnalytics = lazy(() => import("./pages/admin/analytics/QRMAnalytics"));
 const QRMDashboard = lazy(() => import("./pages/admin/analytics/QRMDashboard"));
@@ -693,6 +695,32 @@ function AppRoutes() {
             <Layout>
               <LazyRoute>
                 <JobsAnalytics />
+              </LazyRoute>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/analytics/employee-oee"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <LazyRoute>
+                <EmployeeOEEDashboard />
+              </LazyRoute>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/analytics/live-operators"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <LazyRoute>
+                <LiveOperatorsDashboard />
               </LazyRoute>
             </Layout>
           </ProtectedRoute>
