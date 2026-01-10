@@ -14,12 +14,12 @@ Inventory of all markdown files requiring review for bloat removal and tone fixe
 
 | Status | File | Notes |
 |--------|------|-------|
-| [ ] | `docs/API_DOCUMENTATION.md` | |
+| [~] | `docs/API_DOCUMENTATION.md` | Likely duplicate of website API docs - verify |
 | [ ] | `docs/CACHING.md` | |
 | [ ] | `docs/CODING_PATTERNS.md` | |
 | [ ] | `docs/DATABASE.md` | |
 | [ ] | `docs/DESIGN_SYSTEM.md` | |
-| [ ] | `docs/3d-viewer.md` | |
+| [~] | `docs/3d-viewer.md` | Likely duplicate of website 3D viewer guide - verify |
 
 ---
 
@@ -38,7 +38,7 @@ Inventory of all markdown files requiring review for bloat removal and tone fixe
 ### Architecture
 | Status | File | Notes |
 |--------|------|-------|
-| [ ] | `website/src/content/docs/architecture/3d-engine.md` | |
+| [x] | `website/src/content/docs/architecture/3d-engine.md` | Added cross-links to viewer/PMI docs |
 | [x] | `website/src/content/docs/architecture/app-architecture.md` | Condensed intro, user roles table, security section (-107 lines) |
 | [ ] | `website/src/content/docs/architecture/caching.md` | |
 | [ ] | `website/src/content/docs/architecture/connectivity-mqtt.md` | |
@@ -62,7 +62,7 @@ Inventory of all markdown files requiring review for bloat removal and tone fixe
 ### Guides
 | Status | File | Notes |
 |--------|------|-------|
-| [ ] | `website/src/content/docs/guides/3d-viewer.md` | |
+| [x] | `website/src/content/docs/guides/3d-viewer.md` | Condensed setup, added cross-links (-290 lines) |
 | [ ] | `website/src/content/docs/guides/admin-manual.md` | Clean - concise already |
 | [ ] | `website/src/content/docs/guides/csv_import.md` | |
 | [ ] | `website/src/content/docs/guides/faq.md` | Clean - concise already |
@@ -78,9 +78,9 @@ Inventory of all markdown files requiring review for bloat removal and tone fixe
 | [x] | `website/src/content/docs/features/batch-operations.md` | Removed TOC, verbose ASCII art, consolidated sections (-538 lines) |
 | [ ] | `website/src/content/docs/features/employee-tracking.md` | Clean - concise already |
 | [ ] | `website/src/content/docs/features/erp-integration.md` | Clean - reasonable |
-| [ ] | `website/src/content/docs/features/flexible-metadata.md` | |
-| [ ] | `website/src/content/docs/features/integrations-marketplace.md` | |
-| [ ] | `website/src/content/docs/features/pmi-extraction.md` | |
+| [x] | `website/src/content/docs/features/flexible-metadata.md` | Condensed types, added table reference (-430 lines) |
+| [x] | `website/src/content/docs/features/integrations-marketplace.md` | Removed implementation details (-215 lines) |
+| [x] | `website/src/content/docs/features/pmi-extraction.md` | Condensed, added cross-links (-215 lines) |
 | [x] | `website/src/content/docs/features/shipping-management.md` | Removed TOC, verbose ASCII art, consolidated sections (-556 lines) |
 
 ### Root Level
@@ -107,15 +107,31 @@ Inventory of all markdown files requiring review for bloat removal and tone fixe
 
 ## Consolidation Candidates (flagged during review)
 
-_None identified yet - most docs serve distinct purposes_
+| File | Reason |
+|------|--------|
+| `docs/API_DOCUMENTATION.md` | Likely duplicate of `website/.../api/api_documentation.md` |
+| `docs/3d-viewer.md` | Likely duplicate of `website/.../guides/3d-viewer.md` |
+
+---
+
+## Cross-Links Added
+
+| From | To |
+|------|-----|
+| pmi-extraction.md | 3d-viewer.md, 3d-engine.md |
+| 3d-viewer.md | 3d-engine.md, pmi-extraction.md, database.md |
+| 3d-engine.md | 3d-viewer.md, pmi-extraction.md |
+| integrations-marketplace.md | api_documentation.md |
+| flexible-metadata.md | (links to source code types) |
 
 ---
 
 ## Review Progress
 
 - **Total files:** 47
-- **Reviewed/Cleaned:** 5 (significant bloat removed)
-- **Already clean:** 6 (no changes needed)
-- **Remaining:** 36
+- **Reviewed/Cleaned:** 11
+- **Already clean:** 6
+- **Flagged for consolidation:** 2
+- **Remaining:** 28
 
-**Total lines removed:** ~1,725 lines
+**Total lines removed:** ~2,875 lines
