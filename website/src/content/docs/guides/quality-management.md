@@ -1,13 +1,11 @@
 ---
 title: "Quality Management"
-description: "Understanding quality dashboards and scrap tracking in Eryxon Flow."
+description: "Quality dashboards and scrap tracking"
 ---
 
-## Overview
+Quality dashboards for real-time visibility into production metrics.
 
-Quality dashboards are integrated throughout the admin interface to provide real-time visibility into production quality metrics.
-
-## Dashboards
+See also: [Workflow Engine](/architecture/workflow-engine/), [OEE Analytics](/architecture/connectivity-overview/)
 
 ### Jobs Page
 - **Yield Rate**: Percentage of good parts vs total (Green >95%, Yellow >85%, Red <85%).

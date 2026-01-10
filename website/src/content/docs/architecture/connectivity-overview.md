@@ -1,11 +1,11 @@
 ---
 title: "Connectivity Overview"
-description: "Integration architecture, authentication, and real-time connectivity options."
+description: "Integration architecture and real-time connectivity options"
 ---
 
+Integration options for external systems, industrial automation, and AI agents.
 
-
-Eryxon MES provides a comprehensive set of connectivity options for integrating with external systems, industrial automation, and AI agents.
+See also: [REST API](/api/api_documentation/), [MQTT Integration](/architecture/connectivity-mqtt/), [MCP Integration](/api/mcp_integration/)
 
 ## Integration Architecture
 

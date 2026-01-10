@@ -3,7 +3,9 @@ title: "Workflow Engine"
 description: "Core manufacturing workflows and production execution logic."
 ---
 
+Core production workflows from job creation through completion.
 
+See also: [Database Schema](/architecture/database/), [3D Viewer](/guides/3d-viewer/), [Operator Manual](/guides/operator-manual/)
 
 ## Manufacturing Job Lifecycle
 

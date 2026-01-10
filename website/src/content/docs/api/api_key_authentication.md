@@ -1,11 +1,11 @@
 ---
 title: "API Key Authentication"
-description: "Documentation for API Key Authentication"
+description: "How API keys work for external integrations"
 ---
 
-## Overview
+API keys for external integrations (ERP systems, automation). Format: `ery_live_xxx` or `ery_test_xxx`.
 
-The Eryxon Flow API uses API keys for external integrations (ERP systems, automation, etc.). Keys follow the format `ery_live_xxx` or `ery_test_xxx`.
+See also: [REST API Reference](/api/api_documentation/), [Sync Endpoints](/api/api_sync/)
 
 ## How It Works
 
