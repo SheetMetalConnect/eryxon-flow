@@ -23,6 +23,7 @@ import {
   Package,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { sanitizeUrl, safeOpenUrl } from "@/lib/utils";
 
 interface Integration {
   id: string;
@@ -90,9 +91,9 @@ export default function IntegrationDetailModal({
                 </DialogTitle>
                 <DialogDescription className="text-base">
                   by {integration.provider_name}
-                  {integration.provider_url && (
+                  {sanitizeUrl(integration.provider_url) && (
                     <a
-                      href={integration.provider_url}
+                      href={sanitizeUrl(integration.provider_url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="ml-2 inline-flex items-center text-primary hover:underline"
@@ -190,13 +191,11 @@ export default function IntegrationDetailModal({
                 <p className="text-muted-foreground">
                   {integration.pricing_description}
                 </p>
-                {integration.pricing_url && (
+                {sanitizeUrl(integration.pricing_url) && (
                   <Button
                     variant="link"
                     className="px-0"
-                    onClick={() =>
-                      window.open(integration.pricing_url, "_blank")
-                    }
+                    onClick={() => safeOpenUrl(integration.pricing_url)}
                   >
                     View pricing details
                     <ExternalLink className="w-4 h-4 ml-1" />
@@ -268,12 +267,10 @@ export default function IntegrationDetailModal({
               </ol>
             </div>
 
-            {integration.documentation_url && (
+            {sanitizeUrl(integration.documentation_url) && (
               <Button
                 variant="outline"
-                onClick={() =>
-                  window.open(integration.documentation_url, "_blank")
-                }
+                onClick={() => safeOpenUrl(integration.documentation_url)}
               >
                 <BookOpen className="w-4 h-4 mr-2" />
                 View Setup Documentation
@@ -283,13 +280,11 @@ export default function IntegrationDetailModal({
 
           <TabsContent value="resources" className="space-y-4">
             <div className="grid gap-4">
-              {integration.documentation_url && (
+              {sanitizeUrl(integration.documentation_url) && (
                 <Button
                   variant="outline"
                   className="justify-start"
-                  onClick={() =>
-                    window.open(integration.documentation_url, "_blank")
-                  }
+                  onClick={() => safeOpenUrl(integration.documentation_url)}
                 >
                   <BookOpen className="w-5 h-5 mr-3" />
                   <div className="text-left">
@@ -301,13 +296,11 @@ export default function IntegrationDetailModal({
                 </Button>
               )}
 
-              {integration.github_repo_url && (
+              {sanitizeUrl(integration.github_repo_url) && (
                 <Button
                   variant="outline"
                   className="justify-start"
-                  onClick={() =>
-                    window.open(integration.github_repo_url, "_blank")
-                  }
+                  onClick={() => safeOpenUrl(integration.github_repo_url)}
                 >
                   <Github className="w-5 h-5 mr-3" />
                   <div className="text-left">
@@ -319,13 +312,11 @@ export default function IntegrationDetailModal({
                 </Button>
               )}
 
-              {integration.demo_video_url && (
+              {sanitizeUrl(integration.demo_video_url) && (
                 <Button
                   variant="outline"
                   className="justify-start"
-                  onClick={() =>
-                    window.open(integration.demo_video_url, "_blank")
-                  }
+                  onClick={() => safeOpenUrl(integration.demo_video_url)}
                 >
                   <ExternalLink className="w-5 h-5 mr-3" />
                   <div className="text-left">
@@ -342,7 +333,7 @@ export default function IntegrationDetailModal({
                   variant="outline"
                   className="justify-start"
                   onClick={() =>
-                    window.open(`mailto:${integration.provider_email}`, "_blank")
+                    safeOpenUrl(`mailto:${integration.provider_email}`)
                   }
                 >
                   <ExternalLink className="w-5 h-5 mr-3" />
