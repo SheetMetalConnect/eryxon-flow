@@ -53,6 +53,8 @@
     "batches": "Batches",
     "dataImport": "Gegevensimport",
     "analytics": "Analyses",
+    "liveFloorStatus": "Live Werkvloerstatus",
+    "employeeOEE": "Medewerker OEE",
     "qrmDashboard": "QRM Dashboard",
     "jobsAnalytics": "Orderanalyses",
     "qualityAnalytics": "Kwaliteitsanalyses",

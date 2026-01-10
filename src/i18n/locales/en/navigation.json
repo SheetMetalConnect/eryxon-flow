@@ -53,6 +53,8 @@
     "mcpServer": "MCP Server",
     "mqttPublishers": "MQTT Publishers",
     "analytics": "Analytics",
+    "liveFloorStatus": "Live Floor Status",
+    "employeeOEE": "Employee OEE",
     "qrmDashboard": "QRM Dashboard",
     "jobsAnalytics": "Jobs Analytics",
     "qualityAnalytics": "Quality Analytics",
