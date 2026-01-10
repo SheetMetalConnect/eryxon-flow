@@ -159,6 +159,42 @@
     "clockOut": "Clock Out",
     "noOperatorSelected": "No operator selected"
   },
+  "attendance": {
+    "clockIn": "Clock In",
+    "clockOut": "Clock Out",
+    "clockedInAt": "Clocked in at",
+    "clockedOutAt": "Clocked out at",
+    "duration": "Duration",
+    "hoursWorked": "Hours Worked",
+    "shift": "Shift",
+    "status": {
+      "active": "Active",
+      "clockedOut": "Clocked Out",
+      "break": "On Break"
+    },
+    "takeBreak": "Take Break",
+    "endBreak": "End Break",
+    "breakStarted": "Break started",
+    "breakEnded": "Break ended",
+    "totalBreakTime": "Total Break Time",
+    "targetHours": "Target Hours",
+    "overtimeHours": "Overtime Hours"
+  },
+  "batchWork": {
+    "currentBatch": "Current Batch",
+    "batchOperations": "Batch Operations",
+    "workingOnBatch": "Working on Batch",
+    "startBatch": "Start Batch",
+    "completeBatch": "Complete Batch",
+    "batchProgress": "Batch Progress",
+    "operationsRemaining": "operations remaining",
+    "batchStarted": "Batch started",
+    "batchCompleted": "Batch completed",
+    "viewBatchDetails": "View Batch Details",
+    "selectBatch": "Select a Batch",
+    "noBatchesAvailable": "No batches available",
+    "batchesInCell": "Batches in Cell"
+  },
   "operatorView": {
     "shopFloor": "Shop Floor",
     "selectJob": "Select a Job",

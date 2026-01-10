@@ -85,7 +85,7 @@ function OperatorCard({ operator }: { operator: LiveOperator }) {
                 operator.status === "idle" && "border-amber-500/50 text-amber-600"
               )}
             >
-              {operator.status === "on_job" ? t("liveOperators.onJob", "On Job") : t("liveOperators.idle", "Idle")}
+              {operator.status === "on_job" ? t("liveOperators.onJob") : t("liveOperators.idle")}
             </Badge>
           </div>
           <div className="text-xs text-muted-foreground">
@@ -97,7 +97,7 @@ function OperatorCard({ operator }: { operator: LiveOperator }) {
             {operator.todayStats.goodParts}
           </div>
           <div className="text-muted-foreground">
-            {t("liveOperators.goodParts", "good")}
+            {t("liveOperators.goodParts")}
           </div>
         </div>
       </div>
@@ -117,7 +117,7 @@ function OperatorCard({ operator }: { operator: LiveOperator }) {
       {operator.todayStats.scrapParts > 0 && (
         <div className="mt-2 flex items-center gap-1 text-xs text-red-500">
           <XCircle className="h-3 w-3" />
-          {operator.todayStats.scrapParts} {t("liveOperators.scrap", "scrap")}
+          {operator.todayStats.scrapParts} {t("liveOperators.scrap")}
         </div>
       )}
     </div>
@@ -160,7 +160,7 @@ function CellSection({
                 {goodParts} / {partsProduced}
               </div>
               <div className="text-xs text-muted-foreground">
-                {qualityRate.toFixed(0)}% {t("liveOperators.quality", "quality")}
+                {qualityRate.toFixed(0)}% {t("liveOperators.quality")}
               </div>
             </div>
           )}
@@ -169,7 +169,7 @@ function CellSection({
       <CardContent className="pt-0">
         {operators.length === 0 ? (
           <div className="text-sm text-muted-foreground text-center py-4">
-            {t("liveOperators.noOperators", "No operators")}
+            {t("liveOperators.noOperators")}
           </div>
         ) : (
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -191,8 +191,8 @@ export default function LiveOperatorsDashboard() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold">{t("liveOperators.title", "Live Floor Status")}</h1>
-          <p className="text-muted-foreground">{t("liveOperators.description", "Real-time view of operators and production")}</p>
+          <h1 className="text-2xl font-bold">{t("liveOperators.title")}</h1>
+          <p className="text-muted-foreground">{t("liveOperators.description")}</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
@@ -227,55 +227,55 @@ export default function LiveOperatorsDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{t("liveOperators.title", "Live Floor Status")}</h1>
+          <h1 className="text-2xl font-bold">{t("liveOperators.title")}</h1>
           <p className="text-muted-foreground">
-            {t("liveOperators.description", "Real-time view of operators and production")}
+            {t("liveOperators.description")}
           </p>
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
-          {t("liveOperators.autoRefresh", "Auto-refreshing")}
+          {t("liveOperators.autoRefresh")}
         </div>
       </div>
 
       {/* Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
         <SummaryCard
-          title={t("liveOperators.clockedIn", "Clocked In")}
+          title={t("liveOperators.clockedIn")}
           value={summary?.totalClockedIn || 0}
           icon={Users}
         />
         <SummaryCard
-          title={t("liveOperators.onJobs", "On Jobs")}
+          title={t("liveOperators.onJobs")}
           value={summary?.totalOnJob || 0}
           icon={Activity}
           variant="success"
         />
         <SummaryCard
-          title={t("liveOperators.idleLabel", "Idle")}
+          title={t("liveOperators.idleLabel")}
           value={summary?.totalIdle || 0}
           icon={Coffee}
           variant="warning"
         />
         <SummaryCard
-          title={t("liveOperators.partsToday", "Parts Today")}
+          title={t("liveOperators.partsToday")}
           value={summary?.totalPartsToday || 0}
           icon={CheckCircle2}
         />
         <SummaryCard
-          title={t("liveOperators.goodPartsLabel", "Good Parts")}
+          title={t("liveOperators.goodPartsLabel")}
           value={summary?.totalGoodParts || 0}
           icon={TrendingUp}
           variant="success"
         />
         <SummaryCard
-          title={t("liveOperators.scrapLabel", "Scrap")}
+          title={t("liveOperators.scrapLabel")}
           value={summary?.totalScrapParts || 0}
           icon={XCircle}
           variant="danger"
         />
         <SummaryCard
-          title={t("liveOperators.qualityRate", "Quality %")}
+          title={t("liveOperators.qualityRate")}
           value={`${summary?.qualityRate || 100}%`}
           icon={Wrench}
           variant={
@@ -292,7 +292,7 @@ export default function LiveOperatorsDashboard() {
       <Card>
         <CardContent className="py-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">{t("liveOperators.overallQuality", "Overall Quality")}</span>
+            <span className="text-sm font-medium">{t("liveOperators.overallQuality")}</span>
             <span className="text-sm font-bold">{summary?.qualityRate || 100}%</span>
           </div>
           <Progress
@@ -308,11 +308,11 @@ export default function LiveOperatorsDashboard() {
           />
           <div className="flex justify-between text-xs text-muted-foreground mt-1">
             <span>
-              {summary?.totalGoodParts || 0} {t("liveOperators.good", "good")}
+              {summary?.totalGoodParts || 0} {t("liveOperators.good")}
             </span>
             <span>
-              {summary?.totalScrapParts || 0} {t("liveOperators.scrap", "scrap")} /{" "}
-              {(data?.summary?.totalPartsToday || 0) - (summary?.totalGoodParts || 0) - (summary?.totalScrapParts || 0)} {t("liveOperators.rework", "rework")}
+              {summary?.totalScrapParts || 0} {t("liveOperators.scrap")} /{" "}
+              {(data?.summary?.totalPartsToday || 0) - (summary?.totalGoodParts || 0) - (summary?.totalScrapParts || 0)} {t("liveOperators.rework")}
             </span>
           </div>
         </CardContent>
@@ -320,7 +320,7 @@ export default function LiveOperatorsDashboard() {
 
       {/* By Cell Breakdown */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">{t("liveOperators.byCell", "By Cell")}</h2>
+        <h2 className="text-lg font-semibold">{t("liveOperators.byCell")}</h2>
         {byCell.map((cell) => (
           <CellSection
             key={cell.cellId}
@@ -334,7 +334,7 @@ export default function LiveOperatorsDashboard() {
         {byCell.length === 0 && (
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
-              {t("liveOperators.noOneClockedIn", "No operators are currently clocked in")}
+              {t("liveOperators.noOneClockedIn")}
             </CardContent>
           </Card>
         )}

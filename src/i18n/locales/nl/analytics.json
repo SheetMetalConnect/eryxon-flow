@@ -129,5 +129,50 @@
     "high": "Hoog",
     "medium": "Gemiddeld",
     "low": "Laag"
+  },
+  "calendar": {
+    "title": "Fabriekskalender",
+    "description": "Beheer feestdagen, sluitingen en speciale werkdagen"
+  },
+  "liveOperators": {
+    "title": "Live Werkvloerstatus",
+    "description": "Real-time overzicht van operators en productie",
+    "autoRefresh": "Automatisch vernieuwen",
+    "clockedIn": "Ingeklokt",
+    "onJobs": "Aan het werk",
+    "idleLabel": "Inactief",
+    "partsToday": "Onderdelen vandaag",
+    "goodPartsLabel": "Goede onderdelen",
+    "scrapLabel": "Afval",
+    "qualityRate": "Kwaliteit %",
+    "overallQuality": "Totale kwaliteit",
+    "good": "goed",
+    "scrap": "afval",
+    "rework": "herwerk",
+    "byCell": "Per cel",
+    "noOneClockedIn": "Er zijn geen operators ingeklokt",
+    "onJob": "Aan het werk",
+    "idle": "Inactief",
+    "goodParts": "goed",
+    "quality": "kwaliteit",
+    "noOperators": "Geen operators"
+  },
+  "employeeOEE": {
+    "title": "Medewerker OEE",
+    "description": "Individuele operator prestaties en efficiëntie metrieken",
+    "selectEmployee": "Selecteer medewerker",
+    "allEmployees": "Alle medewerkers",
+    "hoursWorked": "Gewerkte uren",
+    "partsProduced": "Geproduceerde onderdelen",
+    "goodParts": "Goede onderdelen",
+    "scrapParts": "Afgekeurde onderdelen",
+    "efficiency": "Efficiëntie",
+    "qualityRate": "Kwaliteitspercentage",
+    "avgCycleTime": "Gem. cyclustijd",
+    "noData": "Geen gegevens beschikbaar voor geselecteerde periode",
+    "dailyBreakdown": "Dagelijkse uitsplitsing",
+    "operationsCompleted": "Voltooide bewerkingen",
+    "timeOnTask": "Tijd aan taak",
+    "idleTime": "Inactieve tijd"
   }
 }

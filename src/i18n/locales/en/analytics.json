@@ -124,5 +124,46 @@
   "calendar": {
     "title": "Factory Calendar",
     "description": "Manage holidays, closures, and special working days"
+  },
+  "liveOperators": {
+    "title": "Live Floor Status",
+    "description": "Real-time view of operators and production",
+    "autoRefresh": "Auto-refreshing",
+    "clockedIn": "Clocked In",
+    "onJobs": "On Jobs",
+    "idleLabel": "Idle",
+    "partsToday": "Parts Today",
+    "goodPartsLabel": "Good Parts",
+    "scrapLabel": "Scrap",
+    "qualityRate": "Quality %",
+    "overallQuality": "Overall Quality",
+    "good": "good",
+    "scrap": "scrap",
+    "rework": "rework",
+    "byCell": "By Cell",
+    "noOneClockedIn": "No operators are currently clocked in",
+    "onJob": "On Job",
+    "idle": "Idle",
+    "goodParts": "good",
+    "quality": "quality",
+    "noOperators": "No operators"
+  },
+  "employeeOEE": {
+    "title": "Employee OEE",
+    "description": "Individual operator performance and efficiency metrics",
+    "selectEmployee": "Select Employee",
+    "allEmployees": "All Employees",
+    "hoursWorked": "Hours Worked",
+    "partsProduced": "Parts Produced",
+    "goodParts": "Good Parts",
+    "scrapParts": "Scrap Parts",
+    "efficiency": "Efficiency",
+    "qualityRate": "Quality Rate",
+    "avgCycleTime": "Avg Cycle Time",
+    "noData": "No data available for selected period",
+    "dailyBreakdown": "Daily Breakdown",
+    "operationsCompleted": "Operations Completed",
+    "timeOnTask": "Time on Task",
+    "idleTime": "Idle Time"
   }
 }

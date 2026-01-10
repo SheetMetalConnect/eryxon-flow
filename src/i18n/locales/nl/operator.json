@@ -159,6 +159,42 @@
     "clockOut": "Uitklokken",
     "noOperatorSelected": "Geen operator geselecteerd"
   },
+  "attendance": {
+    "clockIn": "Inklokken",
+    "clockOut": "Uitklokken",
+    "clockedInAt": "Ingeklokt om",
+    "clockedOutAt": "Uitgeklokt om",
+    "duration": "Duur",
+    "hoursWorked": "Gewerkte uren",
+    "shift": "Dienst",
+    "status": {
+      "active": "Actief",
+      "clockedOut": "Uitgeklokt",
+      "break": "Pauze"
+    },
+    "takeBreak": "Pauze nemen",
+    "endBreak": "Pauze beëindigen",
+    "breakStarted": "Pauze gestart",
+    "breakEnded": "Pauze beëindigd",
+    "totalBreakTime": "Totale pauzetijd",
+    "targetHours": "Doeluren",
+    "overtimeHours": "Overuren"
+  },
+  "batchWork": {
+    "currentBatch": "Huidige batch",
+    "batchOperations": "Batchbewerkingen",
+    "workingOnBatch": "Werken aan batch",
+    "startBatch": "Batch starten",
+    "completeBatch": "Batch voltooien",
+    "batchProgress": "Batchvoortgang",
+    "operationsRemaining": "bewerkingen resterend",
+    "batchStarted": "Batch gestart",
+    "batchCompleted": "Batch voltooid",
+    "viewBatchDetails": "Batchdetails bekijken",
+    "selectBatch": "Selecteer een batch",
+    "noBatchesAvailable": "Geen batches beschikbaar",
+    "batchesInCell": "Batches in cel"
+  },
   "operatorView": {
     "shopFloor": "Werkvloer",
     "selectJob": "Selecteer een Opdracht",
