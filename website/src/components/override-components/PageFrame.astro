@@ -60,16 +60,6 @@ const { hasSidebar } = Astro.locals.starlightRoute;
     <div class="container flex relative">
       {
         hasSidebar && (
-           <div class="fixed top-[4.5rem] left-0 right-0 z-40 lg:left-[var(--sl-sidebar-width)] pointer-events-none p-4">
-              <div class="bg-amber-500/10 border border-amber-500/20 text-amber-500 px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center pointer-events-auto backdrop-blur-sm max-w-2xl mx-auto shadow-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/></svg>
-                Current State: ALPHA - Use at your own risk / Work in Progress
-              </div>
-           </div>
-        )
-      }
-      {
-        hasSidebar && (
           <nav
             class="sidebar print:hidden"
             aria-label={Astro.locals.t("sidebarNav.accessibleLabel")}
@@ -124,12 +114,7 @@ const { hasSidebar } = Astro.locals.starlightRoute;
     }
 
     :global([data-has-sidebar]) .main-frame {
-      padding-top: 2rem;
-    }
-    @media (max-width: 1156px) {
-      :global([data-has-sidebar]) .main-frame {
-        padding-top: 4rem;
-      }
+      padding-top: 1rem;
     }
 
     .sidebar-pane {

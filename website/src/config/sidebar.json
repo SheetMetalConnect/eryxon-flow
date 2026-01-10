@@ -4,7 +4,8 @@
       "label": "Getting Started",
       "items": [
         { "label": "Introduction", "slug": "introduction" },
-        { "label": "Quick Start", "slug": "guides/quick-start" }
+        { "label": "Quick Start", "slug": "guides/quick-start" },
+        { "label": "Hosted Version", "slug": "hosted-version" }
       ]
     },
     {
