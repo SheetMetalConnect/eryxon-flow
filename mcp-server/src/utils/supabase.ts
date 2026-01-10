@@ -5,7 +5,7 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 // Supabase configuration from environment
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://vatgianzotsurljznsry.supabase.co";
+const SUPABASE_URL = process.env.SUPABASE_URL || "";
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "";
 
 /**

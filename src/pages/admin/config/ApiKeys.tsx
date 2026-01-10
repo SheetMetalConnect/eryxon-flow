@@ -77,8 +77,9 @@ export default function ConfigApiKeys() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const response = await fetch(
-        `https://vatgianzotsurljznsry.supabase.co/functions/v1/api-key-generate`,
+        `${supabaseUrl}/functions/v1/api-key-generate`,
         {
           method: 'POST',
           headers: {
@@ -386,7 +387,7 @@ export default function ConfigApiKeys() {
                   <div className="flex-1">
                     <p className="text-sm font-medium">Base URL</p>
                     <code className="text-xs bg-muted px-2 py-1 rounded block break-all">
-                      https://vatgianzotsurljznsry.supabase.co/functions/v1
+                      {import.meta.env.VITE_SUPABASE_URL}/functions/v1
                     </code>
                   </div>
                 </div>

@@ -72,7 +72,7 @@ export default function DataExport() {
 
       // Call export API
       const entities = selectedEntities.join(',');
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://vatgianzotsurljznsry.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const response = await fetch(
         `${supabaseUrl}/functions/v1/api-export?entities=${entities}&format=${exportFormat}`,
         {
