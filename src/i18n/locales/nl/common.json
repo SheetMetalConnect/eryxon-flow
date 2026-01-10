@@ -1,5 +1,8 @@
 {
   "Actions": "Acties",
+  "alphaBanner": {
+    "message": "U gebruikt de alpha-versie in de cloud. Dit is een gratis versie tot nader bericht. Dingen kunnen kapot gaan of de site kan onverwacht offline gaan."
+  },
   "Blocked": "Geblokkeerd",
   "Cancel": "Annuleren",
   "Cell": "Productiecel",
@@ -37,6 +40,7 @@
     "back": "Terug",
     "cancel": "Annuleren",
     "delete": "Verwijderen",
+    "dismiss": "Sluiten",
     "edit": "Bewerken",
     "error": "Fout",
     "loading": "Laden...",

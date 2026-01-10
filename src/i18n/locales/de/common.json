@@ -1,5 +1,8 @@
 {
   "Actions": "Aktionen",
+  "alphaBanner": {
+    "message": "Sie verwenden die Alpha-Version in der Cloud. Dies ist eine kostenlose Version bis auf Weiteres. Es können Fehler auftreten oder die Website kann unerwartet offline gehen."
+  },
   "Blocked": "Blockiert",
   "Cancel": "Abbrechen",
   "Cell": "Fertigungszelle",
@@ -37,6 +40,7 @@
     "back": "Zurück",
     "cancel": "Abbrechen",
     "delete": "Löschen",
+    "dismiss": "Schließen",
     "edit": "Bearbeiten",
     "error": "Fehler",
     "loading": "Wird geladen...",
