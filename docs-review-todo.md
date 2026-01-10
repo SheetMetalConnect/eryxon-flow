@@ -14,12 +14,12 @@ Inventory of all markdown files requiring review for bloat removal and tone fixe
 
 | Status | File | Notes |
 |--------|------|-------|
-| [~] | `docs/API_DOCUMENTATION.md` | Likely duplicate of website API docs - verify |
-| [ ] | `docs/CACHING.md` | |
-| [ ] | `docs/CODING_PATTERNS.md` | |
-| [ ] | `docs/DATABASE.md` | |
-| [ ] | `docs/DESIGN_SYSTEM.md` | |
-| [~] | `docs/3d-viewer.md` | Likely duplicate of website 3D viewer guide - verify |
+| [x] | `docs/API_DOCUMENTATION.md` | **DELETED** - duplicate of website version |
+| [x] | `docs/CACHING.md` | Keep - internal reference |
+| [x] | `docs/CODING_PATTERNS.md` | Keep - internal reference |
+| [x] | `docs/DATABASE.md` | Keep - internal reference |
+| [x] | `docs/DESIGN_SYSTEM.md` | Keep - internal reference |
+| [x] | `docs/3d-viewer.md` | **DELETED** - duplicate of website version |
 
 ---
 
@@ -105,16 +105,17 @@ Inventory of all markdown files requiring review for bloat removal and tone fixe
 
 ---
 
-## Consolidation Candidates (flagged during review)
+## Consolidation (completed)
 
-**Recommendation:** Delete these root `/docs/` files - they duplicate cleaned website docs.
+Duplicate files deleted:
+- ~~`docs/API_DOCUMENTATION.md`~~ → website version is canonical
+- ~~`docs/3d-viewer.md`~~ → website version is canonical
 
-| File | Duplicate Of | Recommendation |
-|------|--------------|----------------|
-| `docs/API_DOCUMENTATION.md` | `website/.../api/api_documentation.md` | Delete - website version is canonical |
-| `docs/3d-viewer.md` | `website/.../guides/3d-viewer.md` | Delete - website version is canonical |
+## Sidebar Navigation Fixes
 
-These internal engineering docs are older/more verbose versions. The website Starlight docs are now the single source of truth.
+Fixed in `website/src/config/sidebar.json`:
+- Added missing `employee-tracking` to Features section
+- Moved `quality-management` from Self-Hosting to User Guides
 
 ---
 
@@ -146,10 +147,12 @@ These internal engineering docs are older/more verbose versions. The website Sta
 
 - **Total files:** 47
 - **Reviewed/Cleaned:** 43
+- **Deleted duplicates:** 2
 - **Skipped:** 4 (Dutch, 404, index)
-- **Flagged for consolidation:** 2
 - **Remaining:** 0
 
 **Total lines removed:** ~2,875 lines
 
 **All English documentation files reviewed.** ✓
+
+**Sidebar navigation fixed.** ✓
