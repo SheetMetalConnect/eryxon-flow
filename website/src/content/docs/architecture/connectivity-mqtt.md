@@ -3,6 +3,10 @@ title: "MQTT & Webhooks"
 description: "Outbound integrations for industrial automation"
 ---
 
+:::caution[Work in Progress]
+MQTT and Webhooks are under active development and **not production-ready**. APIs may change.
+:::
+
 Push real-time production events to external systems via Webhooks (HTTP) or MQTT (Industrial Messaging).
 
 See also: [Connectivity Overview](/architecture/connectivity-overview/), [REST API](/api/api_documentation/), [ERP Integration](/features/erp-integration/)

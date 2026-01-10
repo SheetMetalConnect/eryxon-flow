@@ -3,6 +3,10 @@ title: "Flexible Metadata"
 description: "Custom fields for jobs, parts, operations, and resources"
 ---
 
+:::caution[Work in Progress]
+This feature is under active development and **not production-ready**. Schema and APIs may change.
+:::
+
 Store custom data on jobs, parts, operations, and resources via JSONB `metadata` fields. Includes templates for common manufacturing scenarios.
 
 ## Features

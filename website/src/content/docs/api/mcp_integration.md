@@ -3,6 +3,10 @@ title: "MCP Integration"
 description: "Model Context Protocol for AI agent access"
 ---
 
+:::caution[Work in Progress]
+MCP integration is under active development and **not production-ready**. APIs may change.
+:::
+
 MCP Server enables AI assistants (Claude, etc.) to interact with your manufacturing data. Per-tenant authentication with audit trails.
 
 See also: [API Key Authentication](/api/api_key_authentication/), [Connectivity Overview](/architecture/connectivity-overview/), [REST API](/api/api_documentation/)

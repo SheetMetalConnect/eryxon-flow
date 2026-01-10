@@ -3,6 +3,10 @@ title: "Shipping Management"
 description: "Internal logistics for completed jobs"
 ---
 
+:::caution[Work in Progress]
+This feature is under active development and **not production-ready**. Schema and APIs may change.
+:::
+
 Shipping module for production logistics - group completed jobs by destination, assign to vehicles, track delivery. Not an ERP shipping system.
 
 **Key features:**

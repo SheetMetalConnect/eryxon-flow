@@ -3,6 +3,10 @@ title: "3D CAD Engine"
 description: "3D rendering architecture and PMI strategy"
 ---
 
+:::caution[Work in Progress]
+Server-side PMI extraction is in **alpha** and not production-ready. The client-side 3D viewer works.
+:::
+
 Flexible 3D CAD viewing architecture for metals manufacturing.
 
 ## Client-Side Rendering (Default)
