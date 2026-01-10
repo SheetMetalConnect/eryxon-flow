@@ -1,13 +1,11 @@
 ---
-title: "Interactive Notification System"
-description: "Documentation for Interactive Notification System"
+title: "Notification System"
+description: "Real-time notification architecture"
 ---
 
+Real-time notification system for issues, due dates, assignments, and other events.
 
-
-## Overview
-
-The Eryxon Flow application features a comprehensive interactive notification system that keeps users informed about important events such as new issues, job due dates, new parts, new users, assignments, and more. The system includes both persistent notifications (accessible via the alarm icon in the header) and real-time toast notifications.
+See also: [Database Schema](/architecture/database/), [Workflow Engine](/architecture/workflow-engine/)
 
 ## Features
 

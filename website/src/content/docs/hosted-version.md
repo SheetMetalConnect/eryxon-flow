@@ -1,7 +1,9 @@
 ---
 title: Hosted Version
-description: Information about the hosted demo, early access, and future plans for Eryxon MES.
+description: Hosted demo and early access information
 ---
+
+See also: [Self-Hosting Guide](/guides/self-hosting/), [Quick Start](/guides/quick-start/)
 
 :::note[Early Access]
 Heads up – this is an early version. Free during early access, but expect some bugs or downtime.

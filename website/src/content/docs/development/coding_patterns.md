@@ -1,11 +1,11 @@
 ---
-title: "Coding Patterns  Technical Reference"
-description: "Documentation for Coding Patterns  Technical Reference"
+title: "Coding Patterns"
+description: "Technical patterns and code examples for Eryxon MES"
 ---
 
+Code patterns for Eryxon MES development.
 
-
-Technical patterns and code examples for Eryxon MES development. For high-level principles and guidelines, see [CLAUDE.md](../CLAUDE.md).
+See also: [Claude AI Guide](/development/claude/), [App Architecture](/architecture/app-architecture/), [Error Handling](/architecture/error-handling/)
 
 ---
 

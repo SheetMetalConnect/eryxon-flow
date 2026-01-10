@@ -1,13 +1,11 @@
 ---
 title: "Claude AI Guide"
-description: "AI Assistant Guide for working with the Eryxon Flow codebase."
+description: "AI Assistant Guide for the Eryxon Flow codebase"
 ---
 
+Guide for AI assistants working with Eryxon Flow.
 
-
-**Internal/Proprietary Project**
-
-This document provides comprehensive guidance for AI assistants working with the Eryxon Flow MES (Manufacturing Execution System) codebase.
+See also: [App Architecture](/architecture/app-architecture/), [Coding Patterns](/development/coding_patterns/), [Database Schema](/architecture/database/)
 
 ## Project Overview
 

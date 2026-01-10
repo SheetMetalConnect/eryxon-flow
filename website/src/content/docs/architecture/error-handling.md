@@ -1,29 +1,13 @@
 ---
-title: "Error Handling and Logging Guide"
-description: "Documentation for Error Handling and Logging Guide"
+title: "Error Handling and Logging"
+description: "Error utilities, logging, and error boundaries"
 ---
 
+## Error Utilities
 
-
-This document describes the error handling and logging patterns used in the Eryxon MES application.
-
-## Table of Contents
-
-- [Error Handling Utilities](#error-handling-utilities)
-- [Logging System](#logging-system)
-- [Error Boundary](#error-boundary)
-- [Best Practices](#best-practices)
-- [Migration Guide](#migration-guide)
-
----
-
-## Error Handling Utilities
-
-Location: `src/lib/errors.ts`
+**Location:** `src/lib/errors.ts`
 
 ### Error Codes
-
-Use predefined error codes for consistency:
 
 ```typescript
 import { ErrorCode } from '@/lib/errors';
@@ -266,149 +250,27 @@ import { PageLoadingFallback } from '@/components/ErrorBoundary';
 </Suspense>
 ```
 
----
+## Quick Reference
 
-## Best Practices
-
-### 1. Always Handle Errors
-
-Never leave catch blocks empty:
-
+**Always include context when logging:**
 ```typescript
-// BAD
-try {
-  await operation();
-} catch (error) {
-  // Silent failure
-}
-
-// GOOD
-try {
-  await operation();
-} catch (error) {
-  logger.error('Operation failed', error, { operation: 'myOperation' });
-  toast.error(getErrorMessage(error));
-}
-```
-
-### 2. Use Typed Errors
-
-Avoid `any` in catch blocks:
-
-```typescript
-// BAD
-catch (error: any) {
-  console.error(error.message);
-}
-
-// GOOD
-catch (error) {
-  const message = getErrorMessage(error);
-  logger.error('Operation failed', error);
-}
-```
-
-### 3. Include Context
-
-Always log with relevant context:
-
-```typescript
-// BAD
-logger.error('Error');
-
-// GOOD
 logger.error('Failed to create job', error, {
   operation: 'createJob',
   tenantId,
-  userId,
-  jobData: { name: job.name },
+  entityId: jobId,
 });
 ```
 
-### 4. User-Friendly Messages
-
-Convert technical errors for users:
-
+**User-friendly messages:**
 ```typescript
 const appError = fromSupabaseError(error);
-toast.error(appError.toUserMessage()); // "The requested resource was not found."
+toast.error(appError.toUserMessage());
 ```
 
-### 5. Retry Logic for Transient Errors
-
-Check if error is retryable:
-
+**Retry transient errors:**
 ```typescript
 import { isRetryableError } from '@/lib/errors';
-
-const MAX_RETRIES = 3;
-let attempt = 0;
-
-while (attempt < MAX_RETRIES) {
-  try {
-    await operation();
-    break;
-  } catch (error) {
-    if (!isRetryableError(error) || attempt === MAX_RETRIES - 1) {
-      throw error;
-    }
-    attempt++;
-    await delay(Math.pow(2, attempt) * 1000); // Exponential backoff
-  }
-}
+// Use isRetryableError(error) to check before retrying with exponential backoff
 ```
 
----
-
-## Migration Guide
-
-### Converting Existing Code
-
-#### Before (Old Pattern)
-
-```typescript
-try {
-  const { data, error } = await supabase.from('jobs').select('*');
-  if (error) throw error;
-  return data;
-} catch (error) {
-  console.error('Error fetching jobs:', error);
-  throw error;
-}
-```
-
-#### After (New Pattern)
-
-```typescript
-import { logger } from '@/lib/logger';
-import { fromSupabaseError, getErrorMessage } from '@/lib/errors';
-
-try {
-  const { data, error } = await supabase.from('jobs').select('*');
-  if (error) {
-    throw fromSupabaseError(error, { operation: 'fetchJobs' });
-  }
-  return data;
-} catch (error) {
-  logger.error('Failed to fetch jobs', error, {
-    operation: 'fetchJobs',
-    tenantId,
-  });
-  throw error;
-}
-```
-
-### Priority Areas for Migration
-
-1. **Authentication flows** - Critical for security
-2. **Data mutations** - Important for data integrity
-3. **External integrations** - Webhooks, MQTT, APIs
-4. **File operations** - Upload/download errors
-
----
-
-## Related Documentation
-
-- [Coding Patterns](/development/coding_patterns/) - General coding patterns
-- [Caching](/architecture/caching/) - Query caching patterns
-- [Developer Guide](/development/claude/) - AI agent guidelines
+See [Coding Patterns](/development/coding_patterns/) for more examples.

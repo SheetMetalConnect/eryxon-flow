@@ -1,11 +1,11 @@
 ---
 title: "Self-Hosting Guide"
-description: "Step-by-step guide to hosting Eryxon Flow in your own environment."
+description: "Deploy Eryxon Flow on your own infrastructure"
 ---
 
+Self-host Eryxon Flow on your own infrastructure. Free and unlimited.
 
-
-This guide covers how to self-host Eryxon Flow on your own infrastructure. Self-hosting is free, unlimited, and you manage everything yourself.
+See also: [Edge Functions Setup](/api/edge_functions_setup/), [MCP Integration](/api/mcp_integration/)
 
 > [!IMPORTANT]
 > **License & Usage:** Eryxon Flow is licensed under **BSL 1.1**. This means you are free to self-host, modify, and use it for your own business operations. However, you are **not** permitted to commercially resell the software or provide it as a competing SaaS offering. The license converts to Apache 2.0 after 4 years.

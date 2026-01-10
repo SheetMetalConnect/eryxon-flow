@@ -1,17 +1,9 @@
 ---
 title: "App Architecture"
-description: "Technical and functional architecture overview of Eryxon Flow."
+description: "Technical architecture overview of Eryxon Flow"
 ---
 
-**Eryxon Flow** is a comprehensive manufacturing execution system (MES) designed specifically for sheet metal fabrication operations. It provides end-to-end tracking from job creation through production completion, with real-time visibility, time tracking, issue management, and integration capabilities.
-
-### What Does Eryxon Flow Do?
-
-The system tracks manufacturing work through three hierarchical levels:
-
-1. **Jobs** - Customer orders or manufacturing projects
-2. **Parts** - Individual components within jobs (can be assemblies or components)
-3. **Operations** - Specific tasks performed on parts (cutting, bending, welding, etc.)
+MES for sheet metal fabrication. Tracks work through three levels: **Jobs** (customer orders) → **Parts** (components) → **Operations** (tasks like cutting, bending, welding).
 
 ---
 
@@ -115,109 +107,28 @@ graph TD
 
 ---
 
-## User Roles & Access
+## User Roles
 
-### 1. Admin Role
-
-**Full System Access** - Can do everything operators can do, plus:
-
-**Capabilities:**
-- Create and manage jobs, parts, operations
-- Configure workflow cells (stages)
-- Manage materials catalog
-- Manage resources (tools, fixtures, molds)
-- Manage users and permissions
-- View all operations across all operators
-- Assign work to operators
-- Review and resolve issues
-- Generate API keys
-- Configure webhooks
-- Export data
-- View subscription and usage
-
-**Primary Interface:** Desktop/laptop browser
-**Main Dashboard:** `/dashboard` - overview with KPIs and active work
-
-### 2. Operator Role
-
-**Production Floor Access** - Focused on executing work:
-
-**Capabilities:**
-- View assigned operations
-- Start/stop/pause time tracking
-- View part details and CAD files
-- Report production issues
-- View their activity history
-- Complete operations
-
-**Primary Interface:** Tablet on the shop floor
-**Main Dashboard:** `/work-queue` - operations waiting to be done
-
-### 3. Machine Accounts (Special)
-
-**API-only Access** - For integrations:
-
-**Capabilities:**
-- API access only (no UI login)
-- Same permissions as admin via API
-- Used for ERP integrations, automation scripts
+| Role | Access | Primary Interface |
+|------|--------|-------------------|
+| **Admin** | Full system: jobs, config, users, API keys, webhooks | Desktop (`/dashboard`) |
+| **Operator** | View/execute work, time tracking, report issues | Tablet (`/work-queue`) |
+| **Machine** | API-only, for ERP integrations | None (API only) |
 
 ---
 
-## Security Layers
+## Security
 
-**1. Authentication:**
-- JWT tokens with short expiration
-- Auto-refresh mechanism
+- **Auth:** JWT tokens with auto-refresh
+- **Authorization:** Role-based (Admin/Operator), route protection
+- **Data isolation:** Row-Level Security (RLS), tenant-scoped queries
+- **API:** Key hashing (bcrypt), HMAC signatures for webhooks, rate limiting
+- **Storage:** Private buckets, signed URLs with expiration
 
-**2. Authorization:**
-- Role-based access control (RBAC)
-- Admin vs. Operator permissions
-- UI route protection
-- API endpoint validation
+## Integrations
 
-**3. Data Isolation:**
-- Row-Level Security (RLS)
-- Tenant-scoped queries
-- API key tenant binding
+**API:** Bearer token authentication (`Authorization: Bearer ery_live_xxx`)
 
-**4. API Security:**
-- API key hashing (bcrypt)
-- HMAC signature for webhooks
-- Rate limiting
-- Input validation
+**Webhooks:** Register URL → select events → receive HTTP POST → verify HMAC signature
 
-**5. Storage Security:**
-- Private buckets
-- Signed URLs with expiration
-- Tenant-scoped paths
-- File type validation
-
----
-
-## API & Integrations
-
-### Authentication
-
-**Method:** Bearer token with API key
-
-**Header:**
-```
-Authorization: Bearer ery_live_xxxxxxxxxxxxx
-```
-
-### Webhooks (External Real-Time)
-
-**For external systems:**
-
-1. Register webhook URL in system
-2. Select events to receive
-3. Receive HTTP POST when events occur
-4. Verify HMAC signature
-5. Process event data
-
-**Use Cases:**
-- Update ERP when job completes
-- Send notifications to Slack/Teams
-- Trigger automated workflows
-- Update external dashboards
+See [API Documentation](/api/api_documentation/) for full reference.

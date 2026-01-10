@@ -1,9 +1,11 @@
 ---
 title: "ERP Integration"
-description: "Guide to integrating Eryxon Flow with your ERP system."
+description: "Two-way sync with SAP, NetSuite, Odoo, and other ERP systems"
 ---
 
-Eryxon MES supports two-way data synchronization with external ERP systems like SAP, NetSuite, Odoo, and others.
+Two-way data synchronization with ERP systems (SAP, NetSuite, Odoo, etc.).
+
+See also: [API Sync Endpoints](/api/api_sync/), [CSV Import](/guides/csv_import/), [Database Schema](/architecture/database/)
 
 ## Architecture Overview
 

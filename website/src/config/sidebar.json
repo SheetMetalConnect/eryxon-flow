@@ -14,6 +14,7 @@
         { "label": "Operator Manual", "slug": "guides/operator-manual" },
         { "label": "Admin Manual", "slug": "guides/admin-manual" },
         { "label": "3D Viewer", "slug": "guides/3d-viewer" },
+        { "label": "Quality Management", "slug": "guides/quality-management" },
         { "label": "CSV Import", "slug": "guides/csv_import" },
         { "label": "FAQ", "slug": "guides/faq" },
         { "label": "Troubleshooting", "slug": "guides/troubleshooting" }
@@ -22,18 +23,14 @@
     {
       "label": "Features",
       "items": [
-        { "label": "Batch/Nesting Operations", "slug": "features/batch-operations" },
-        { "label": "ERP Integration", "slug": "features/erp-integration" },
-        { "label": "Shipping Management", "slug": "features/shipping-management" },
-        { "label": "Flexible Metadata", "slug": "features/flexible-metadata" },
-        { "label": "Integrations Marketplace", "slug": "features/integrations-marketplace" }
+        { "label": "Employee Tracking", "slug": "features/employee-tracking" },
+        { "label": "ERP Integration", "slug": "features/erp-integration" }
       ]
     },
     {
       "label": "Self-Hosting",
       "items": [
-        { "label": "Deployment Guide", "slug": "guides/self-hosting" },
-        { "label": "Quality Management", "slug": "guides/quality-management" }
+        { "label": "Deployment Guide", "slug": "guides/self-hosting" }
       ]
     },
     {
@@ -71,10 +68,15 @@
       ]
     },
     {
-      "label": "Roadmap (WIP)",
+      "label": "Roadmap",
       "items": [
-        { "label": "3D Engine", "slug": "architecture/3d-engine" },
-        { "label": "PMI Extraction", "slug": "features/pmi-extraction" }
+        { "label": "Overview", "slug": "roadmap" },
+        { "label": "Batch/Nesting", "slug": "features/batch-operations" },
+        { "label": "Shipping", "slug": "features/shipping-management" },
+        { "label": "Flexible Metadata", "slug": "features/flexible-metadata" },
+        { "label": "Integrations", "slug": "features/integrations-marketplace" },
+        { "label": "PMI Extraction", "slug": "features/pmi-extraction" },
+        { "label": "3D Engine", "slug": "architecture/3d-engine" }
       ]
     },
     {

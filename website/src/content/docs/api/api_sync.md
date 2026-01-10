@@ -5,11 +5,13 @@ description: "Documentation for API Sync Endpoints Reference"
 
 
 
-This document covers the sync endpoints for ERP integration with Eryxon MES.
+Sync endpoints for ERP integration with Eryxon MES. Uses upsert logic—creates new records or updates existing ones based on `external_id`.
+
+See also: [API Key Authentication](/api/api_key_authentication/), [REST API Reference](/api/api_documentation/), [ERP Integration Guide](/features/erp-integration/)
 
 ## Authentication
 
-All requests require an API key in the Authorization header:
+All requests require an API key in the Authorization header. See [API Key Authentication](/api/api_key_authentication/) for details.
 
 ```bash
 Authorization: Bearer ery_live_your_api_key_here

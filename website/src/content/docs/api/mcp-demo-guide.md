@@ -1,9 +1,11 @@
 ---
 title: MCP Server Demo Guide
-description: Step-by-step instructions for demonstrating the Eryxon Flow MCP Server capabilities.
+description: Demo scenarios for Eryxon Flow MCP Server capabilities
 ---
 
-This guide provides step-by-step instructions for demonstrating the Eryxon Flow MCP Server capabilities.
+Demo scenarios for showcasing MCP Server features to stakeholders.
+
+See also: [MCP Integration](/api/mcp_integration/), [Self-Hosting](/guides/self-hosting/)
 
 ## Prerequisites
 

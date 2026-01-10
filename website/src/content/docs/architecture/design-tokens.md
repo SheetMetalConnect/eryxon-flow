@@ -1,9 +1,9 @@
 ---
 title: "Design Tokens"
-description: "Visual foundations: typography, color palette, and animations."
+description: "Typography, color palette, and animations"
 ---
 
-
+See also: [Design Components](/architecture/design-components/), [Design Principles](/architecture/design-principles/)
 
 ## Typography
 

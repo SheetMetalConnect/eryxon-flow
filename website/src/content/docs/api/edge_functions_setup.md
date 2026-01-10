@@ -1,9 +1,11 @@
 ---
-title: "Edge Functions Setup Guide"
-description: "Documentation for Edge Functions Setup Guide"
+title: "Edge Functions Setup"
+description: "Local development and deployment of Supabase Edge Functions"
 ---
 
-This guide explains how to run and test Supabase Edge Functions locally and deploy them to production.
+Run and deploy Supabase Edge Functions for Eryxon MES.
+
+See also: [Self-Hosting Guide](/guides/self-hosting/), [API Documentation](/api/api_documentation/)
 
 ## Prerequisites
 

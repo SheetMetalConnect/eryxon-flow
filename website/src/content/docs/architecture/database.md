@@ -1,27 +1,11 @@
 ---
-title: "Eryxon MES Database Schema"
-description: "Documentation for Eryxon MES Database Schema"
+title: "Database Schema"
+description: "PostgreSQL schema reference for Eryxon MES"
 ---
 
+Database schema for Eryxon MES. Uses Supabase PostgreSQL with Row-Level Security (RLS).
 
-
-This document provides a comprehensive overview of the database schema for AI agents working with the Eryxon Manufacturing Execution System.
-
----
-
-## Table of Contents
-
-- [Core Concepts](#core-concepts)
-- [Entity Relationship Diagram](#entity-relationship-diagram)
-- [Core Tables](#core-tables)
-- [ERP Sync Fields](#erp-sync-fields)
-- [Status Enums](#status-enums)
-- [Key Functions](#key-functions)
-- [Integration Tables](#integration-tables)
-- [Useful Queries](#useful-queries)
-- [MCP Tool Interactions](#mcp-tool-interactions)
-
----
+See also: [API Sync Endpoints](/api/api_sync/), [Workflow Engine](/architecture/workflow-engine/), [ERP Integration](/features/erp-integration/)
 
 ## Core Concepts
 

@@ -1,7 +1,11 @@
 ---
 title: "Operator Manual"
-description: "Complete guide for machine operators using Eryxon Flow."
+description: "Guide for machine operators using Eryxon Flow"
 ---
+
+Daily workflow guide for operators.
+
+See also: [3D Viewer](/guides/3d-viewer/), [Quality Management](/guides/quality-management/), [Admin Manual](/guides/admin-manual/)
 
 ## Daily Workflow
 
