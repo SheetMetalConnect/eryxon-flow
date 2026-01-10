@@ -9,7 +9,7 @@ export function cn(...inputs: ClassValue[]) {
  * Allowed URL protocols for safe navigation.
  * Prevents XSS attacks via javascript: and other dangerous protocols.
  */
-const SAFE_URL_PROTOCOLS = ['http:', 'https:', 'mailto:', 'tel:'];
+const SAFE_URL_PROTOCOLS = ['http:', 'https:', 'mailto:', 'tel:', 'blob:'];
 
 /**
  * Validates and sanitizes a URL to prevent XSS attacks.
