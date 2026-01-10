@@ -371,16 +371,20 @@
       "admin": "Administration"
     },
     "analytics": {
-      "label": "Analyse",
-      "description": "QRM Dashboard, OEE, Qualität, Zuverlässigkeit und Auftragsanalyse"
+      "label": "Analyse (WIP)",
+      "description": "QRM Dashboard, OEE, Qualität, Zuverlässigkeit und Auftragsanalyse - Demnächst verfügbar"
     },
     "monitoring": {
       "label": "Überwachung",
       "description": "Aktivitätsverfolgung, Erwartungen und Ausnahmen-Posteingang"
     },
     "shipping": {
-      "label": "Versand",
-      "description": "Sendungsverfolgung und Liefermanagement"
+      "label": "Versand (WIP)",
+      "description": "Sendungsverfolgung und Liefermanagement - Demnächst verfügbar"
+    },
+    "appStore": {
+      "label": "App Store (WIP)",
+      "description": "Marktplatz für Integrationen und Erweiterungen - Demnächst verfügbar"
     },
     "operatorViews": {
       "label": "Bediener-Ansichten",

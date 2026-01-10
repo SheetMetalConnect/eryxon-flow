@@ -1,5 +1,9 @@
 {
   "Actions": "Actions",
+  "alphaBanner": {
+    "message": "Heads up – this is an early version. Free during early access, but expect some bugs or downtime.",
+    "learnMore": "Learn more"
+  },
   "Blocked": "Blocked",
   "Cancel": "Cancel",
   "Cell": "Cell",
@@ -37,6 +41,7 @@
     "back": "Back",
     "cancel": "Cancel",
     "delete": "Delete",
+    "dismiss": "Dismiss",
     "remove": "Remove",
     "edit": "Edit",
     "error": "Error",

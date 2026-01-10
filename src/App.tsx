@@ -10,6 +10,7 @@ import { ThemeProvider } from "./theme/ThemeProvider";
 import { NotificationToastProvider } from "./components/NotificationToastProvider";
 import { McpActivityToasts } from "./components/admin/McpActivityToasts";
 import { ErrorBoundary, PageLoadingFallback } from "./components/ErrorBoundary";
+import { AlphaBanner } from "./components/AlphaBanner";
 import Layout from "./components/Layout";
 import { Loader2 } from "lucide-react";
 import { queryClient } from "./lib/queryClient";
@@ -849,6 +850,7 @@ const App = () => (
   <ThemeProvider>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <AlphaBanner />
         <Toaster />
         <Sonner />
         <BrowserRouter>

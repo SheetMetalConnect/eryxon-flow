@@ -1,5 +1,9 @@
 {
   "Actions": "Acties",
+  "alphaBanner": {
+    "message": "Even een heads-up – dit is een vroege versie. Gratis tijdens early access, maar bugs of downtime kunnen voorkomen.",
+    "learnMore": "Meer info"
+  },
   "Blocked": "Geblokkeerd",
   "Cancel": "Annuleren",
   "Cell": "Productiecel",
@@ -37,6 +41,7 @@
     "back": "Terug",
     "cancel": "Annuleren",
     "delete": "Verwijderen",
+    "dismiss": "Sluiten",
     "remove": "Verwijderen",
     "edit": "Bewerken",
     "error": "Fout",

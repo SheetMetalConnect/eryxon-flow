@@ -7,11 +7,15 @@ hero:
     MES for <span class="text-primary">Job Shops</span>
   tagline: Open source production tracking for custom manufacturing. Real-time operator terminals, capacity planning, and ERP integration.
   actions:
+    - text: Try Demo
+      link: https://app.eryxon.eu
+      icon: external
+      variant: primary
     - text: Get Started
       link: /guides/quick-start/
       icon: right-arrow
-      variant: primary
-    - text: View on GitHub
+      variant: minimal
+    - text: GitHub
       link: https://github.com/SheetMetalConnect/eryxon-flow
       icon: external
       variant: minimal
@@ -169,6 +173,51 @@ import ListCard from "~/components/user-components/ListCard.astro";
   </div>
 </Section>
 
+<Section title="<span class='text-primary'>Hosted</span> Demo">
+  <div class="bg-dark/50 p-8 rounded-2xl border border-white/5 mb-8">
+    <div class="grid md:grid-cols-2 gap-8 items-center">
+      <div>
+        <h3 class="text-2xl font-bold mb-4">Try it Online</h3>
+        <p class="text-yellow-400 text-sm mb-4 flex items-center gap-2">
+          ⚠️ Early Access – Free during early access, but expect some bugs or downtime.
+        </p>
+        <p class="text-gray-400 mb-6">
+          Test Eryxon Flow with our hosted demo. Limited usage for evaluation and educational purposes only.
+        </p>
+        <div class="space-y-3 text-sm">
+          <div class="flex items-center gap-3 text-gray-400">
+            <span>• Limited jobs and parts</span>
+          </div>
+          <div class="flex items-center gap-3 text-gray-400">
+            <span>• Limited storage</span>
+          </div>
+          <div class="flex items-center gap-3 text-gray-400">
+            <span>• Limited API access</span>
+          </div>
+          <div class="flex items-center gap-3 text-gray-400">
+            <span>• Documentation support only</span>
+          </div>
+        </div>
+      </div>
+      <div class="text-center space-y-4">
+        <LinkButton href="https://app.eryxon.eu" variant="primary">
+          Try Hosted Demo
+        </LinkButton>
+        <br/>
+        <LinkButton href="/hosted-version/" variant="minimal">
+          Learn More About Hosted Options
+        </LinkButton>
+      </div>
+    </div>
+  </div>
+  <div class="bg-blue-900/20 p-6 rounded-xl border border-blue-500/20">
+    <h4 class="text-lg font-semibold mb-2">Paid Hosted Version (Q2 2025)</h4>
+    <p class="text-gray-400 text-sm">
+      A paid hosted version with full production capacity and AI features (agentic processes, chatbots) may become available in Q2 2025 if there is enough interest.
+    </p>
+  </div>
+</Section>
+
 <Section title="Support & <span class='text-primary'>Services</span>">
   <Grid columns={2}>
     <Card title="Community Support" icon="seti:github" iconColor="#4a9eff">
@@ -177,7 +226,7 @@ import ListCard from "~/components/user-components/ListCard.astro";
       <strong>GitHub Issues:</strong> Bug reports<br/>
       <strong>Documentation:</strong> <a href="/introduction/" class="text-primary hover:underline">/docs</a> folder
     </Card>
-    
+
     <Card title="Professional Services" icon="seti:notebook" iconColor="#4a9eff">
       Need help with complex deployments?
       <br/><br/>

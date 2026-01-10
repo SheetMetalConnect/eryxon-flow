@@ -45,6 +45,7 @@ export const ROUTES = {
     ANALYTICS: {
       ROOT: "/admin/analytics",
       OEE: "/admin/analytics/oee",
+      EMPLOYEE_OEE: "/admin/analytics/employee-oee",
       RELIABILITY: "/admin/analytics/reliability",
       QRM: "/admin/analytics/qrm",
       QRM_DASHBOARD: "/admin/analytics/qrm-dashboard",

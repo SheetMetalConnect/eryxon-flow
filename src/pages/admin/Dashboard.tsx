@@ -1,10 +1,9 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ColumnDef } from "@tanstack/react-table";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Users,
@@ -17,6 +16,11 @@ import {
   Trash2,
   Square,
   User,
+  Briefcase,
+  Box,
+  Layers,
+  CheckCircle2,
+  ChevronRight,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -24,7 +28,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { seedDemoData } from "@/lib/seed";
 import { clearMockData } from "@/lib/mockDataGenerator";
 import { QRMDashboard } from "@/components/qrm/QRMDashboard";
-import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
 import {
   Table,
   TableBody,
@@ -42,6 +45,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { adminStopTimeTracking, stopAllActiveTimeEntries } from "@/lib/database";
+import { cn } from "@/lib/utils";
 
 interface ActiveWork {
   id: string;
@@ -65,39 +69,80 @@ interface ActiveWork {
   };
 }
 
-interface StatCardProps {
-  title: string;
-  value: number;
-  description: string;
-  icon: LucideIcon;
-  onClick: () => void;
+// Unified section header component
+function SectionHeader({ 
+  title, 
+  icon: Icon,
+  action,
+  subtitle
+}: { 
+  title: string; 
+  icon?: LucideIcon;
+  action?: React.ReactNode;
+  subtitle?: string;
+}) {
+  return (
+    <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center gap-3">
+        {Icon && (
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+            <Icon className="h-4 w-4 text-primary" />
+          </div>
+        )}
+        <div>
+          <h2 className="text-base font-semibold">{title}</h2>
+          {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+        </div>
+      </div>
+      {action}
+    </div>
+  );
 }
 
-function StatCard({
-  title,
+// Unified metric card
+function MetricCard({
+  label,
   value,
-  description,
   icon: Icon,
-  onClick,
-}: StatCardProps) {
+  href,
+  variant = "default",
+}: {
+  label: string;
+  value: number;
+  icon: LucideIcon;
+  href: string;
+  variant?: "default" | "warning" | "success";
+}) {
+  const navigate = useNavigate();
+  
   return (
-    <Card
-      className="glass-card cursor-pointer transition-all hover:shadow-xl hover:scale-105 active:scale-100 hover:border-white/20"
-      onClick={onClick}
+    <button
+      onClick={() => navigate(href)}
+      className={cn(
+        "flex items-center gap-4 p-4 rounded-xl w-full text-left transition-all",
+        "bg-card border border-border/50 hover:border-border hover:bg-accent/5",
+        "group"
+      )}
     >
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <div className="p-2 rounded-lg bg-primary/10">
-          <Icon className="h-5 w-5 text-primary" />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-          {value}
-        </div>
-        <p className="text-xs text-muted-foreground mt-1">{description}</p>
-      </CardContent>
-    </Card>
+      <div className={cn(
+        "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors",
+        variant === "warning" && value > 0 ? "bg-warning/10 group-hover:bg-warning/20" : "",
+        variant === "success" ? "bg-emerald-500/10 group-hover:bg-emerald-500/20" : "",
+        variant === "default" ? "bg-primary/10 group-hover:bg-primary/20" : ""
+      )}>
+        <Icon className={cn(
+          "h-5 w-5",
+          variant === "warning" && value > 0 ? "text-warning" : "",
+          variant === "success" ? "text-emerald-500" : "",
+          variant === "default" ? "text-primary" : ""
+        )} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-2xl font-bold tabular-nums">{value}</p>
+        <p className="text-sm text-muted-foreground truncate">{label}</p>
+      </div>
+      <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+    </button>
   );
 }
 
@@ -138,11 +183,9 @@ export default function Dashboard() {
     if (!profile?.tenant_id) return;
 
     try {
-      // Load active work
       const { data: activeData } = await supabase
         .from("time_entries")
-        .select(
-          `
+        .select(`
           id,
           start_time,
           operator:profiles!inner(full_name),
@@ -154,15 +197,13 @@ export default function Dashboard() {
             ),
             cell:cells!inner(name, color)
           )
-        `,
-        )
+        `)
         .eq("tenant_id", profile.tenant_id)
         .is("end_time", null)
         .order("start_time", { ascending: false });
 
       if (activeData) setActiveWork(activeData as any);
 
-      // Load stats + check cells
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
 
@@ -185,10 +226,7 @@ export default function Dashboard() {
           .select("id", { count: "exact", head: true })
           .eq("tenant_id", profile.tenant_id)
           .gte("due_date", new Date().toISOString())
-          .lte(
-            "due_date",
-            new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          ),
+          .lte("due_date", new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()),
         supabase
           .from("cells")
           .select("id", { count: "exact", head: true })
@@ -234,7 +272,6 @@ export default function Dashboard() {
     }
   };
 
-  // Check factory hours and set warning if past closing time
   const checkFactoryHours = async () => {
     if (!profile?.tenant_id) return;
 
@@ -247,13 +284,10 @@ export default function Dashboard() {
 
       if (tenant?.factory_closing_time) {
         setFactoryClosingTime(tenant.factory_closing_time.substring(0, 5));
-
-        // Parse closing time and compare with current time
         const now = new Date();
         const [hours, minutes] = tenant.factory_closing_time.split(":").map(Number);
         const closingTime = new Date();
         closingTime.setHours(hours, minutes, 0, 0);
-
         setIsPastClosingTime(now > closingTime);
       }
     } catch (error) {
@@ -261,13 +295,10 @@ export default function Dashboard() {
     }
   };
 
-  // Check factory hours on load and every minute
   useEffect(() => {
     if (!profile?.tenant_id) return;
-
     checkFactoryHours();
-    const interval = setInterval(checkFactoryHours, 60000); // Check every minute
-
+    const interval = setInterval(checkFactoryHours, 60000);
     return () => clearInterval(interval);
   }, [profile?.tenant_id]);
 
@@ -284,9 +315,7 @@ export default function Dashboard() {
           table: "time_entries",
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
-        () => {
-          loadData();
-        },
+        () => loadData(),
       )
       .subscribe();
 
@@ -294,78 +323,6 @@ export default function Dashboard() {
       supabase.removeChannel(channel);
     };
   };
-
-  const columns: ColumnDef<ActiveWork>[] = useMemo(
-    () => [
-      {
-        accessorKey: "operator.full_name",
-        id: "operator",
-        header: ({ column }) => (
-          <DataTableColumnHeader
-            column={column}
-            title={t("dashboard.operator")}
-          />
-        ),
-        cell: ({ row }) => (
-          <span className="font-medium">{row.original.operator.full_name}</span>
-        ),
-      },
-      {
-        accessorKey: "operation.operation_name",
-        id: "operation",
-        header: ({ column }) => (
-          <DataTableColumnHeader
-            column={column}
-            title={t("dashboard.operation")}
-          />
-        ),
-        cell: ({ row }) => row.original.operation.operation_name,
-      },
-      {
-        id: "job",
-        header: t("dashboard.job"),
-        cell: ({ row }) => (
-          <div>
-            <div>{row.original.operation.part.job.job_number}</div>
-            {row.original.operation.part.job.customer && (
-              <div className="text-xs text-muted-foreground">
-                {row.original.operation.part.job.customer}
-              </div>
-            )}
-          </div>
-        ),
-      },
-      {
-        accessorKey: "operation.part.part_number",
-        id: "part",
-        header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={t("dashboard.part")} />
-        ),
-        cell: ({ row }) => row.original.operation.part.part_number,
-      },
-      {
-        id: "cell",
-        header: t("dashboard.cell"),
-        cell: ({ row }) => (
-          <Badge className="bg-accent text-white">
-            {row.original.operation.cell.name}
-          </Badge>
-        ),
-      },
-      {
-        accessorKey: "start_time",
-        header: ({ column }) => (
-          <DataTableColumnHeader
-            column={column}
-            title={t("dashboard.elapsedTime")}
-          />
-        ),
-        cell: ({ row }) =>
-          formatDistanceToNow(new Date(row.getValue("start_time"))),
-      },
-    ],
-    [t],
-  );
 
   if (loading) {
     return (
@@ -399,36 +356,20 @@ export default function Dashboard() {
 
   const handleWipeDemo = async () => {
     if (!profile?.tenant_id) return;
-
-    // Confirm before wiping
-    if (
-      !confirm(
-        "Are you sure you want to wipe all demo data? This cannot be undone.",
-      )
-    ) {
-      return;
-    }
+    if (!confirm("Are you sure you want to wipe all demo data? This cannot be undone.")) return;
 
     setWiping(true);
     try {
       const result = await clearMockData(profile.tenant_id);
-
       if (result.success) {
         await loadData();
         setNeedsSetup(true);
-        toast({
-          title: "Demo Data Wiped",
-          description: "All demo data has been cleared successfully.",
-        });
+        toast({ title: "Demo Data Wiped", description: "All demo data has been cleared successfully." });
       } else {
         throw new Error(result.error || "Failed to clear demo data");
       }
     } catch (e: any) {
-      toast({
-        variant: "destructive",
-        title: "Wipe Failed",
-        description: e?.message || String(e),
-      });
+      toast({ variant: "destructive", title: "Wipe Failed", description: e?.message || String(e) });
     } finally {
       setWiping(false);
     }
@@ -441,7 +382,6 @@ export default function Dashboard() {
 
   const handleStopClocking = async () => {
     if (!selectedWork) return;
-
     setStopping(true);
     try {
       await adminStopTimeTracking(selectedWork.id);
@@ -456,22 +396,14 @@ export default function Dashboard() {
       setSelectedWork(null);
       loadData();
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: t("dashboard.stopFailed"),
-        description: error?.message || String(error),
-      });
+      toast({ variant: "destructive", title: t("dashboard.stopFailed"), description: error?.message || String(error) });
     } finally {
       setStopping(false);
     }
   };
 
   const handleStopAllClockings = async () => {
-    if (!profile?.tenant_id) {
-      console.error("No tenant ID available");
-      return;
-    }
-
+    if (!profile?.tenant_id) return;
     if (activeWork.length === 0) {
       toast({
         title: t("dashboard.noActiveClockings", "No active clockings"),
@@ -489,275 +421,219 @@ export default function Dashboard() {
       });
       await loadData();
     } catch (error: any) {
-      console.error("Failed to stop all clockings:", error);
-      toast({
-        variant: "destructive",
-        title: t("dashboard.stopAllFailed"),
-        description: error?.message || String(error),
-      });
+      toast({ variant: "destructive", title: t("dashboard.stopAllFailed"), description: error?.message || String(error) });
     } finally {
       setStoppingAll(false);
     }
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
-            {t("dashboard.title")}
-          </h1>
-          <p className="text-muted-foreground text-lg">{t("dashboard.description")}</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t("dashboard.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("dashboard.description")}</p>
         </div>
-        {!needsSetup &&
-          profile?.tenant_id === "11111111-1111-1111-1111-111111111111" && (
-            <Button
-              variant="destructive"
-              onClick={handleWipeDemo}
-              disabled={wiping}
-              size="sm"
-            >
-              {wiping ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Wiping...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Wipe Demo Data
-                </>
-              )}
-            </Button>
-          )}
+        {!needsSetup && profile?.tenant_id === "11111111-1111-1111-1111-111111111111" && (
+          <Button variant="ghost" size="sm" onClick={handleWipeDemo} disabled={wiping} className="text-muted-foreground hover:text-destructive">
+            {wiping ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+            {wiping ? "Wiping..." : "Wipe Demo"}
+          </Button>
+        )}
       </div>
 
-      <hr className="title-divider" />
-
+      {/* Setup Banner */}
       {needsSetup && (
-        <Card className="glass-card border-warning/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-warning" />
-              {t("dashboard.initialSetup")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-muted-foreground">
-                {t("dashboard.noStagesFound")}
-              </p>
-              <Button onClick={handleSeed} disabled={seeding} className="cta-button">
-                {seeding ? t("dashboard.seeding") : t("dashboard.seedDemoData")}
-                {!seeding && <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />}
-              </Button>
+        <Card className="border-warning/30 bg-warning/5">
+          <CardContent className="flex items-center justify-between gap-4 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10">
+                <AlertTriangle className="h-5 w-5 text-warning" />
+              </div>
+              <div>
+                <p className="font-medium">{t("dashboard.initialSetup")}</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.noStagesFound")}</p>
+              </div>
             </div>
+            <Button onClick={handleSeed} disabled={seeding}>
+              {seeding ? t("dashboard.seeding") : t("dashboard.seedDemoData")}
+              {!seeding && <ArrowRight className="ml-2 h-4 w-4" />}
+            </Button>
           </CardContent>
         </Card>
       )}
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4" data-tour="dashboard-stats">
-        <StatCard
-          title={t("dashboard.activeWorkers")}
-          value={stats.activeWorkers}
-          description={t("dashboard.currentlyWorking")}
-          icon={Users}
-          onClick={() => navigate("/admin/activity")}
-        />
+      {/* Primary Metrics */}
+      <section data-tour="dashboard-stats">
+        <SectionHeader title={t("dashboard.overview", "Overview")} icon={Activity} />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <MetricCard
+            label={t("dashboard.activeWorkers")}
+            value={stats.activeWorkers}
+            icon={Users}
+            href="/admin/activity"
+          />
+          <MetricCard
+            label={t("dashboard.pendingIssues")}
+            value={stats.pendingIssues}
+            icon={AlertTriangle}
+            href="/admin/issues?status=pending"
+            variant="warning"
+          />
+          <MetricCard
+            label={t("dashboard.inProgress")}
+            value={stats.inProgressTasks}
+            icon={Activity}
+            href="/admin/operations?status=in_progress"
+          />
+          <MetricCard
+            label={t("dashboard.dueThisWeek")}
+            value={stats.dueThisWeek}
+            icon={Clock}
+            href="/admin/jobs?dueWithin=7"
+          />
+        </div>
+      </section>
 
-        <StatCard
-          title={t("dashboard.pendingIssues")}
-          value={stats.pendingIssues}
-          description={t("dashboard.awaitingReview")}
-          icon={AlertTriangle}
-          onClick={() => navigate("/admin/issues")}
-        />
-
-        <StatCard
-          title={t("dashboard.inProgress")}
-          value={stats.inProgressTasks}
-          description={t("dashboard.activeTasks")}
-          icon={Activity}
-          onClick={() => navigate("/admin/operations")}
-        />
-
-        <StatCard
-          title={t("dashboard.dueThisWeek")}
-          value={stats.dueThisWeek}
-          description={t("dashboard.jobsDue")}
-          icon={Clock}
-          onClick={() => navigate("/admin/jobs")}
-        />
-      </div>
-
-      {/* Quick Stats Panel */}
-      <Card className="glass-card">
-        <CardHeader>
-          <CardTitle className="text-xl">{t("dashboard.quickStats")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-6 md:grid-cols-4">
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">{t("dashboard.totalJobs")}</p>
-              <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-                {stats.totalJobs}
-              </p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">{t("dashboard.totalParts")}</p>
-              <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-                {stats.totalParts}
-              </p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">{t("dashboard.activeCells")}</p>
-              <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-                {stats.activeCells}
-              </p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">{t("dashboard.completedToday")}</p>
-              <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-                {stats.completedToday}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Secondary Metrics */}
+      <section>
+        <SectionHeader title={t("dashboard.inventory", "Inventory")} icon={Box} />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <MetricCard
+            label={t("dashboard.totalJobs")}
+            value={stats.totalJobs}
+            icon={Briefcase}
+            href="/admin/jobs"
+          />
+          <MetricCard
+            label={t("dashboard.totalParts")}
+            value={stats.totalParts}
+            icon={Box}
+            href="/admin/parts"
+          />
+          <MetricCard
+            label={t("dashboard.activeCells")}
+            value={stats.activeCells}
+            icon={Layers}
+            href="/admin/config/stages"
+          />
+          <MetricCard
+            label={t("dashboard.completedToday")}
+            value={stats.completedToday}
+            icon={CheckCircle2}
+            href="/admin/operations?status=completed&today=true"
+            variant="success"
+          />
+        </div>
+      </section>
 
       {/* QRM Dashboard */}
-      <QRMDashboard />
+      <section>
+        <QRMDashboard />
+      </section>
 
       {/* Past Closing Time Warning */}
       {isPastClosingTime && activeWork.length > 0 && (
-        <Card className="glass-card border-warning/50 bg-warning/5">
-          <CardContent className="py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-warning/20">
-                  <Clock className="h-5 w-5 text-warning" />
-                </div>
-                <div>
-                  <p className="font-medium text-warning">
-                    {t("dashboard.pastClosingTimeWarning")}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {t("dashboard.pastClosingTimeDescription", {
-                      time: factoryClosingTime,
-                      count: activeWork.length,
-                    })}
-                  </p>
-                </div>
+        <Card className="border-warning/50 bg-warning/5">
+          <CardContent className="flex items-center justify-between gap-4 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10">
+                <Clock className="h-5 w-5 text-warning" />
               </div>
-              <Button
-                variant="outline"
-                className="border-warning text-warning hover:bg-warning hover:text-warning-foreground gap-2"
-                onClick={handleStopAllClockings}
-                disabled={stoppingAll}
-              >
-                {stoppingAll ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    {t("common.stopping")}
-                  </>
-                ) : (
-                  <>
-                    <Square className="h-4 w-4" />
-                    {t("dashboard.stopAllClockings")}
-                  </>
-                )}
-              </Button>
+              <div>
+                <p className="font-medium text-warning">{t("dashboard.pastClosingTimeWarning")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("dashboard.pastClosingTimeDescription", { time: factoryClosingTime, count: activeWork.length })}
+                </p>
+              </div>
             </div>
+            <Button
+              variant="outline"
+              className="border-warning text-warning hover:bg-warning hover:text-warning-foreground"
+              onClick={handleStopAllClockings}
+              disabled={stoppingAll}
+            >
+              {stoppingAll ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Square className="mr-2 h-4 w-4" />}
+              {stoppingAll ? t("common.stopping") : t("dashboard.stopAllClockings")}
+            </Button>
           </CardContent>
         </Card>
       )}
 
-      {/* Active Work Table */}
-      <Card className="glass-card" data-tour="active-operations">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-xl flex items-center gap-2">
-            <Activity className="h-5 w-5 text-primary" />
-            {t("dashboard.activeWork")}
-          </CardTitle>
-          {activeWork.length > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleStopAllClockings}
-              disabled={stoppingAll}
-              className="gap-2"
-            >
-              {stoppingAll ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {t("common.stopping")}
-                </>
-              ) : (
-                <>
-                  <Square className="h-4 w-4" />
-                  {t("dashboard.stopAll")}
-                </>
-              )}
-            </Button>
-          )}
-        </CardHeader>
-        <CardContent>
-          {activeWork.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="informational-text max-w-md mx-auto">
-                {t("dashboard.noActiveWork")}
+      {/* Active Work */}
+      <section data-tour="active-operations">
+        <SectionHeader
+          title={t("dashboard.activeWork")}
+          icon={Activity}
+          subtitle={activeWork.length > 0 ? `${activeWork.length} active session${activeWork.length > 1 ? "s" : ""}` : "No active sessions"}
+          action={
+            activeWork.length > 0 && (
+              <Button variant="outline" size="sm" onClick={handleStopAllClockings} disabled={stoppingAll}>
+                {stoppingAll ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Square className="mr-2 h-4 w-4" />}
+                {stoppingAll ? t("common.stopping") : t("dashboard.stopAll")}
+              </Button>
+            )
+          }
+        />
+        <Card className="border-border/50">
+          <CardContent className="p-0">
+            {activeWork.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/50 mb-4">
+                  <Activity className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="text-muted-foreground">{t("dashboard.noActiveWork")}</p>
               </div>
-            </div>
-          ) : (
-            <div className="rounded-lg border border-white/10 overflow-hidden">
+            ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="border-white/10 hover:bg-white/5">
+                  <TableRow className="hover:bg-transparent border-border/50">
                     <TableHead>{t("dashboard.operator")}</TableHead>
                     <TableHead>{t("dashboard.operation")}</TableHead>
                     <TableHead>{t("dashboard.job")}</TableHead>
                     <TableHead>{t("dashboard.part")}</TableHead>
                     <TableHead>{t("dashboard.cell")}</TableHead>
-                    <TableHead>{t("dashboard.elapsedTime")}</TableHead>
+                    <TableHead className="text-right">{t("dashboard.elapsedTime")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {activeWork.map((work) => (
                     <TableRow
                       key={work.id}
-                      className="border-white/10 hover:bg-white/5 cursor-pointer transition-colors"
+                      className="border-border/50 hover:bg-muted/30 cursor-pointer"
                       onClick={() => handleRowClick(work)}
                     >
-                      <TableCell className="font-medium">
-                        {work.operator.full_name}
-                      </TableCell>
-                      <TableCell>{work.operation.operation_name}</TableCell>
                       <TableCell>
-                        <div>{work.operation.part.job.job_number}</div>
-                        {work.operation.part.job.customer && (
-                          <div className="text-xs text-muted-foreground">
-                            {work.operation.part.job.customer}
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
+                            <User className="h-3.5 w-3.5 text-primary" />
                           </div>
+                          <span className="font-medium">{work.operator.full_name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{work.operation.operation_name}</TableCell>
+                      <TableCell>
+                        <div className="font-medium">{work.operation.part.job.job_number}</div>
+                        {work.operation.part.job.customer && (
+                          <div className="text-xs text-muted-foreground">{work.operation.part.job.customer}</div>
                         )}
                       </TableCell>
-                      <TableCell>{work.operation.part.part_number}</TableCell>
+                      <TableCell className="text-muted-foreground">{work.operation.part.part_number}</TableCell>
                       <TableCell>
-                        <Badge className="bg-primary/20 text-primary border-primary/30">
-                          {work.operation.cell.name}
-                        </Badge>
+                        <Badge variant="secondary">{work.operation.cell.name}</Badge>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
+                      <TableCell className="text-right tabular-nums text-muted-foreground">
                         {formatDistanceToNow(new Date(work.start_time))}
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+          </CardContent>
+        </Card>
+      </section>
 
       {/* Stop Clocking Dialog */}
       <Dialog open={stopDialogOpen} onOpenChange={setStopDialogOpen}>
@@ -767,11 +643,8 @@ export default function Dashboard() {
               <Clock className="h-5 w-5 text-primary" />
               {t("dashboard.stopClockingTitle")}
             </DialogTitle>
-            <DialogDescription>
-              {t("dashboard.stopClockingDescription")}
-            </DialogDescription>
+            <DialogDescription>{t("dashboard.stopClockingDescription")}</DialogDescription>
           </DialogHeader>
-
           {selectedWork && (
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
@@ -796,18 +669,13 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">{t("dashboard.cell")}</p>
-                  <Badge className="bg-primary/20 text-primary border-primary/30">
-                    {selectedWork.operation.cell.name}
-                  </Badge>
+                  <Badge variant="secondary">{selectedWork.operation.cell.name}</Badge>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">{t("dashboard.startedAt")}</p>
-                  <p className="font-medium">
-                    {format(new Date(selectedWork.start_time), "PPp")}
-                  </p>
+                  <p className="font-medium">{format(new Date(selectedWork.start_time), "PPp")}</p>
                 </div>
               </div>
-
               <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
                 <p className="text-sm text-warning flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4" />
@@ -816,32 +684,13 @@ export default function Dashboard() {
               </div>
             </div>
           )}
-
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              variant="outline"
-              onClick={() => setStopDialogOpen(false)}
-              disabled={stopping}
-            >
+            <Button variant="outline" onClick={() => setStopDialogOpen(false)} disabled={stopping}>
               {t("common.cancel")}
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleStopClocking}
-              disabled={stopping}
-              className="gap-2"
-            >
-              {stopping ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {t("common.stopping")}
-                </>
-              ) : (
-                <>
-                  <Square className="h-4 w-4" />
-                  {t("dashboard.stopClocking")}
-                </>
-              )}
+            <Button variant="destructive" onClick={handleStopClocking} disabled={stopping}>
+              {stopping ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Square className="mr-2 h-4 w-4" />}
+              {stopping ? t("common.stopping") : t("dashboard.stopClocking")}
             </Button>
           </DialogFooter>
         </DialogContent>

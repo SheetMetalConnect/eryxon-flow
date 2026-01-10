@@ -1,5 +1,9 @@
 {
   "Actions": "Aktionen",
+  "alphaBanner": {
+    "message": "Kurz zur Info – das ist eine frühe Version. Kostenlos während Early Access, aber Bugs oder Ausfälle sind möglich.",
+    "learnMore": "Mehr erfahren"
+  },
   "Blocked": "Blockiert",
   "Cancel": "Abbrechen",
   "Cell": "Fertigungszelle",
@@ -37,6 +41,7 @@
     "back": "Zurück",
     "cancel": "Abbrechen",
     "delete": "Löschen",
+    "dismiss": "Schließen",
     "remove": "Entfernen",
     "edit": "Bearbeiten",
     "error": "Fehler",

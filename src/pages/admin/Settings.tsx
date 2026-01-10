@@ -42,6 +42,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
+
 export const Settings: React.FC = () => {
   const { t } = useTranslation();
   const { profile, tenant, signOut } = useAuth();
@@ -379,7 +380,6 @@ export const Settings: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-
       {/* GDPR Compliance: Data Deletion */}
       <Card className="border-destructive/50">
         <CardHeader>
