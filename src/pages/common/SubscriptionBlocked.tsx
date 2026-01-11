@@ -96,14 +96,14 @@ export const SubscriptionBlocked: React.FC<SubscriptionBlockedProps> = ({
               asChild
               className="w-full"
             >
-              <a href="mailto:support@eryxonflow.com">
-                Contact Support
+              <a href="https://github.com/SheetMetalConnect/eryxon-flow/issues" target="_blank" rel="noopener noreferrer">
+                Report Issue on GitHub
               </a>
             </Button>
           </div>
 
           <p className="text-xs text-muted-foreground mt-6">
-            Need help? Our support team is here to assist you.
+            Need help? Visit <a href="https://eryxon.eu" target="_blank" rel="noopener noreferrer" className="underline">eryxon.eu</a> or open a GitHub issue.
           </p>
         </CardContent>
       </Card>

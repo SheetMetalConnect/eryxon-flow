@@ -16,7 +16,6 @@ import {
   Monitor, 
   Globe,
   BookOpen,
-  Rocket,
   BarChart3,
   Shield,
   Zap,
@@ -31,9 +30,8 @@ import { cn } from "@/lib/utils";
 import AnimatedBackground from "@/components/AnimatedBackground";
 
 const SITE_URL = "https://eryxon.eu";
-const DOCS_URL = `${SITE_URL}/docs`;
 const GITHUB_URL = "https://github.com/SheetMetalConnect/eryxon-flow";
-const APP_URL = "https://app.eryxon.eu";
+const GITHUB_ISSUES_URL = `${GITHUB_URL}/issues`;
 
 export default function Auth() {
   const { t } = useTranslation();
@@ -151,7 +149,7 @@ export default function Auth() {
             {/* Quick Links */}
             <nav className="flex items-center gap-6">
               <a 
-                href={DOCS_URL} 
+                href={SITE_URL} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -160,13 +158,13 @@ export default function Auth() {
                 Documentation
               </a>
               <a 
-                href={`${DOCS_URL}/guides/quick-start/`} 
+                href={GITHUB_URL} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                <Rocket className="h-4 w-4" />
-                Getting Started
+                <Github className="h-4 w-4" />
+                GitHub
               </a>
               <a 
                 href={GITHUB_URL} 
@@ -224,7 +222,7 @@ export default function Auth() {
           {/* Bottom - Demo CTA */}
           <div className="flex items-center gap-4">
             <Button className="cta-button" asChild>
-              <a href={`${DOCS_URL}/guides/quick-start/`} target="_blank" rel="noopener noreferrer">
+              <a href={SITE_URL} target="_blank" rel="noopener noreferrer">
                 <Play className="h-4 w-4" />
                 Open Docs
               </a>
@@ -458,10 +456,10 @@ export default function Auth() {
               <Link to={ROUTES.COMMON.TERMS_OF_SERVICE} className="hover:text-foreground transition-colors">
                 Terms
               </Link>
-              <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+              <a href={SITE_URL} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
                 Docs
               </a>
-              <a href={`${DOCS_URL}/guides/faq/`} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+              <a href={GITHUB_ISSUES_URL} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
                 Support
               </a>
             </div>

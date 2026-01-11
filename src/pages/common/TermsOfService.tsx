@@ -197,13 +197,13 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-lg font-semibold mb-2">13. Contact Information</h2>
             <p className="text-muted-foreground mb-4">
-              For questions about these Terms, please contact us at:
+              For questions about these Terms, please visit:
             </p>
             <div className="text-muted-foreground space-y-1">
-              <p><strong>Email:</strong> luke@sheetmetalconnect.com</p>
+              <p><strong>Website:</strong> <a href="https://eryxon.eu" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">https://eryxon.eu</a></p>
+              <p><strong>GitHub:</strong> <a href="https://github.com/SheetMetalConnect/eryxon-flow/issues" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">Report an issue</a></p>
               <p><strong>Company:</strong> Sheet Metal Connect e.U.</p>
               <p><strong>Address:</strong> Dr.-Karl-Lueger-Platz 4B / 16, 1010 Vienna, Austria</p>
-              <p><strong>Contact Person:</strong> Luke van Enkhuizen</p>
             </div>
             <p className="text-muted-foreground mt-4">
               {t("legal.termsOfService.impressumLink")}{" "}

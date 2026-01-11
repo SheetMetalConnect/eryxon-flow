@@ -12,8 +12,6 @@ import {
   Calendar,
   CheckCircle,
   BookOpen,
-  Users,
-  Shield,
   HelpCircle,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -71,28 +69,16 @@ export default function Help() {
 
   const docLinks = [
     {
-      href: "https://eryxon.eu/docs/guides/quick-start/",
+      href: "https://eryxon.eu",
       icon: BookOpen,
-      title: "Quick Start",
-      desc: "Get up and running",
+      title: "Documentation",
+      desc: "Full docs & guides",
     },
     {
-      href: "https://eryxon.eu/docs/guides/operator-manual/",
-      icon: Users,
-      title: "Operator Guide",
-      desc: "For shop floor users",
-    },
-    {
-      href: "https://eryxon.eu/docs/guides/admin-manual/",
-      icon: Shield,
-      title: "Admin Guide",
-      desc: "Configuration & setup",
-    },
-    {
-      href: "https://eryxon.eu/docs/guides/faq/",
+      href: "https://github.com/SheetMetalConnect/eryxon-flow/issues",
       icon: HelpCircle,
-      title: "FAQ",
-      desc: "Common questions",
+      title: "Report Issue",
+      desc: "GitHub issues",
     },
   ];
 
@@ -112,7 +98,7 @@ export default function Help() {
       {/* Quick Links */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <a
-          href="https://eryxon.eu/docs"
+          href="https://eryxon.eu"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -192,7 +178,7 @@ export default function Help() {
           </div>
           <div className="mt-4 pt-4 border-t border-white/10 text-center">
             <a
-              href="https://eryxon.eu/docs"
+              href="https://eryxon.eu"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-primary hover:underline inline-flex items-center gap-1"
