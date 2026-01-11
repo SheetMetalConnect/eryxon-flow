@@ -118,12 +118,15 @@ export default function Auth() {
   ];
 
   return (
-    <div className="min-h-screen flex relative">
+    <div className="min-h-screen flex relative bg-background">
       {/* Animated Background Orbs */}
       <AnimatedBackground />
 
       {/* Left Side - Hero/Marketing */}
-      <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] relative bg-gradient-to-br from-primary/5 via-transparent to-transparent overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] relative overflow-hidden">
+        {/* Subtle gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
+        
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute inset-0" style={{
@@ -138,11 +141,11 @@ export default function Auth() {
           <div className="space-y-8">
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
-                <Factory className="h-8 w-8 text-primary" strokeWidth={1.5} />
+              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[#3a4656] to-[#0080ff] flex items-center justify-center text-white font-bold text-sm">
+                SM
               </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight">Eryxon</h1>
+                <h1 className="text-2xl font-bold tracking-tight">ERYXON FLOW</h1>
                 <p className="text-xs text-muted-foreground uppercase tracking-widest">Manufacturing Execution</p>
               </div>
             </div>
@@ -236,13 +239,15 @@ export default function Auth() {
       </div>
 
       {/* Right Side - Auth Form */}
-      <div className="flex-1 flex flex-col min-h-screen bg-background">
+      <div className="flex-1 flex flex-col min-h-screen relative">
         {/* Header */}
         <header className="flex items-center justify-between p-4 lg:p-6">
           {/* Mobile Logo */}
           <div className="flex items-center gap-2 lg:hidden">
-            <Factory className="h-6 w-6 text-primary" strokeWidth={1.5} />
-            <span className="font-semibold">Eryxon</span>
+            <div className="h-7 w-7 rounded-md bg-gradient-to-br from-[#3a4656] to-[#0080ff] flex items-center justify-center text-white font-bold text-xs">
+              SM
+            </div>
+            <span className="font-bold tracking-tight">ERYXON FLOW</span>
           </div>
           <div className="hidden lg:block" />
           
