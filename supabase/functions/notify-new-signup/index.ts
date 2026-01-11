@@ -1,10 +1,11 @@
 /**
- * Edge function to notify admin of new signups
+ * Edge function to notify admin of new signups and add to Resend audience
  * Triggered via database webhook when a new tenant is created.
  *
  * Required secrets (Settings > Edge Functions > Secrets):
  * - RESEND_API_KEY: Your Resend API key
  * - ADMIN_NOTIFICATION_EMAIL: Email to receive notifications
+ * - RESEND_AUDIENCE_ID: (optional) Resend audience ID for onboarding emails
  * - APP_URL: (optional) Your app URL
  */
 
@@ -20,7 +21,10 @@ Deno.serve(async (req: Request) => {
 
   const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
   const ADMIN_EMAIL = Deno.env.get("ADMIN_NOTIFICATION_EMAIL");
+  const RESEND_AUDIENCE_ID = Deno.env.get("RESEND_AUDIENCE_ID");
   const APP_URL = Deno.env.get("APP_URL") || "https://app.eryxon.eu";
+  const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+  const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
   try {
     // Validate secrets
@@ -70,7 +74,41 @@ Deno.serve(async (req: Request) => {
 
     console.log("Processing tenant:", tenant.id, tenant.name || tenant.company_name);
 
-    // Build email
+    // Get the admin user for this tenant
+    let userEmail = "";
+    let userFirstName = "";
+    let userLastName = "";
+
+    if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
+      try {
+        const profileResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/profiles?tenant_id=eq.${tenant.id}&role=eq.admin&limit=1`,
+          {
+            headers: {
+              "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}`,
+              "apikey": SUPABASE_SERVICE_KEY,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (profileResponse.ok) {
+          const profiles = await profileResponse.json();
+          if (profiles.length > 0) {
+            userEmail = profiles[0].email || "";
+            const fullName = profiles[0].full_name || "";
+            const nameParts = fullName.split(" ");
+            userFirstName = nameParts[0] || "";
+            userLastName = nameParts.slice(1).join(" ") || "";
+            console.log("Found user:", userEmail, fullName);
+          }
+        }
+      } catch (e) {
+        console.error("Error fetching profile:", e.message);
+      }
+    }
+
+    // Build admin notification email
     const companyName = tenant.company_name || tenant.name || "Unknown Company";
     const createdAt = tenant.created_at
       ? new Date(tenant.created_at).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })
@@ -105,6 +143,10 @@ Deno.serve(async (req: Request) => {
         <div class="value">${escapeHtml(companyName)}</div>
       </div>
       <div class="info-row">
+        <div class="label">Contact</div>
+        <div class="value">${escapeHtml(userFirstName + " " + userLastName)} (${escapeHtml(userEmail)})</div>
+      </div>
+      <div class="info-row">
         <div class="label">Plan</div>
         <div class="value">${tenant.plan || "trial"} (${tenant.status || "pending"})</div>
       </div>
@@ -125,8 +167,8 @@ Deno.serve(async (req: Request) => {
 </body>
 </html>`.trim();
 
-    // Send via Resend
-    console.log("Sending email to:", ADMIN_EMAIL);
+    // Send admin notification email
+    console.log("Sending admin notification to:", ADMIN_EMAIL);
 
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -142,21 +184,64 @@ Deno.serve(async (req: Request) => {
       }),
     });
 
-    const responseText = await emailResponse.text();
-    console.log("Resend response:", emailResponse.status, responseText);
+    const emailResponseText = await emailResponse.text();
+    console.log("Admin email response:", emailResponse.status, emailResponseText);
+
+    // Add user to Resend audience for onboarding emails
+    let contactResult = null;
+    if (RESEND_AUDIENCE_ID && userEmail) {
+      console.log("Adding contact to Resend audience:", userEmail);
+
+      try {
+        const contactResponse = await fetch(`https://api.resend.com/audiences/${RESEND_AUDIENCE_ID}/contacts`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: userEmail,
+            first_name: userFirstName,
+            last_name: userLastName,
+            unsubscribed: false,
+          }),
+        });
+
+        const contactResponseText = await contactResponse.text();
+        console.log("Resend contact response:", contactResponse.status, contactResponseText);
+
+        if (contactResponse.ok) {
+          contactResult = JSON.parse(contactResponseText);
+          console.log("Contact added successfully:", contactResult.id);
+        } else {
+          console.error("Failed to add contact:", contactResponseText);
+        }
+      } catch (e) {
+        console.error("Error adding contact to audience:", e.message);
+      }
+    } else if (!RESEND_AUDIENCE_ID) {
+      console.log("RESEND_AUDIENCE_ID not configured, skipping audience");
+    } else if (!userEmail) {
+      console.log("No user email found, skipping audience");
+    }
 
     if (!emailResponse.ok) {
       return new Response(
-        JSON.stringify({ error: "Resend failed", status: emailResponse.status, details: responseText }),
+        JSON.stringify({ error: "Admin email failed", status: emailResponse.status, details: emailResponseText }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const result = JSON.parse(responseText);
-    console.log("Email sent successfully:", result.id);
+    const emailResult = JSON.parse(emailResponseText);
+    console.log("Notification complete - Email:", emailResult.id, "Contact:", contactResult?.id);
 
     return new Response(
-      JSON.stringify({ success: true, emailId: result.id }),
+      JSON.stringify({
+        success: true,
+        emailId: emailResult.id,
+        contactId: contactResult?.id || null,
+        addedToAudience: !!contactResult
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
