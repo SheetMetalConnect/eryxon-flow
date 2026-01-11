@@ -10,7 +10,7 @@ export default function PrivacyPolicy() {
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-4">
-      <Link to="/about">
+      <Link to="/auth">
         <Button variant="ghost" className="mb-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
           {t("legal.privacyPolicy.backToAbout")}
