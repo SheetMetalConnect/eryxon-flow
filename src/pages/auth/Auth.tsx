@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, ArrowRight, Factory, CheckCircle2, Info, Monitor } from "lucide-react";
+import { Loader2, ArrowRight, Factory, CheckCircle2, Info, Monitor, Globe } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { AlphaBanner } from "@/components/AlphaBanner";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/routes";
@@ -100,15 +101,25 @@ export default function Auth() {
   };
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
+      {/* Fixed Auth Header - Banner + Language Switcher */}
+      <header className="auth-header">
+        <div className="alpha-banner">
+          <AlphaBanner />
+        </div>
+        <div className="auth-header-controls">
+          <div className="language-switcher-container">
+            <div className="language-switcher-wrapper">
+              <Globe className="language-switcher-icon" />
+              <LanguageSwitcher />
+            </div>
+          </div>
+        </div>
+      </header>
+
       <AnimatedBackground />
 
-      <div className="landing-container">
-        {/* Language Switcher - Top Right */}
-        <div className="absolute top-4 right-4 z-10">
-          <LanguageSwitcher />
-        </div>
-
+      <div className="landing-container flex-1">
         {/* Main Auth Card */}
         <div className="onboarding-card">
           {/* Icon/Logo */}
@@ -319,6 +330,6 @@ export default function Auth() {
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }

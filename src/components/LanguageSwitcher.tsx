@@ -6,7 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Check, Globe } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Language {
@@ -39,10 +39,10 @@ export const LanguageSwitcher = () => {
         <Button
           variant="ghost"
           size="sm"
-          className="gap-2 h-9 px-3 hover:bg-white/10 transition-base"
+          className="gap-1.5 sm:gap-2 h-8 sm:h-9 px-2 sm:px-3 hover:bg-white/10 transition-base text-white"
         >
-          <span className="text-lg leading-none">{currentLanguage.flag}</span>
-          <Globe className="h-4 w-4" />
+          <span className="text-base sm:text-lg leading-none">{currentLanguage.flag}</span>
+          <span className="text-xs sm:text-sm font-medium hidden xs:inline">{currentLanguage.code.toUpperCase()}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-0 glass-card" align="end">
