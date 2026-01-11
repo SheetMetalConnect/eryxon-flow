@@ -1,56 +1,33 @@
 /**
  * Edge function to notify admin of new signups
+ * Triggered via database webhook when a new tenant is created.
  *
- * This function is triggered via database webhook when a new tenant is created.
- * It sends an email notification to the configured admin email via Resend.
- *
- * Required secrets (set via Supabase Dashboard > Settings > Edge Functions > Secrets):
+ * Required secrets (Settings > Edge Functions > Secrets):
  * - RESEND_API_KEY: Your Resend API key
- * - ADMIN_NOTIFICATION_EMAIL: Email address to receive notifications
- *
- * Optional secrets:
- * - APP_URL: Base URL of the application (for approval link)
+ * - ADMIN_NOTIFICATION_EMAIL: Email to receive notifications
+ * - APP_URL: (optional) Your app URL
  */
 
-import { corsHeaders } from "../_shared/cors.ts";
-
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const ADMIN_EMAIL = Deno.env.get("ADMIN_NOTIFICATION_EMAIL");
-const APP_URL = Deno.env.get("APP_URL") || "https://app.eryxon.eu";
-
-interface TenantPayload {
-  type: "INSERT";
-  table: "tenants";
-  schema: "public";
-  record: {
-    id: string;
-    name: string;
-    company_name: string | null;
-    plan: string;
-    status: string;
-    created_at: string;
-  };
-  old_record: null;
-}
-
-interface ProfileInfo {
-  id: string;
-  full_name: string;
-  email: string;
-}
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 Deno.serve(async (req: Request) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+  const ADMIN_EMAIL = Deno.env.get("ADMIN_NOTIFICATION_EMAIL");
+  const APP_URL = Deno.env.get("APP_URL") || "https://app.eryxon.eu";
+
   try {
-    // Validate required secrets
+    // Validate secrets
     if (!RESEND_API_KEY) {
       console.error("RESEND_API_KEY not configured");
       return new Response(
-        JSON.stringify({ error: "Email service not configured" }),
+        JSON.stringify({ error: "RESEND_API_KEY not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -58,58 +35,46 @@ Deno.serve(async (req: Request) => {
     if (!ADMIN_EMAIL) {
       console.error("ADMIN_NOTIFICATION_EMAIL not configured");
       return new Response(
-        JSON.stringify({ error: "Admin email not configured" }),
+        JSON.stringify({ error: "ADMIN_NOTIFICATION_EMAIL not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Parse the webhook payload
-    const payload: TenantPayload = await req.json();
+    // Parse webhook payload
+    const payload = await req.json();
+    console.log("Webhook payload:", JSON.stringify(payload));
 
-    // Only process INSERT events on tenants table
-    if (payload.type !== "INSERT" || payload.table !== "tenants") {
+    // Extract tenant data - handle different payload formats
+    let tenant = null;
+
+    // Format 1: Direct record (from trigger)
+    if (payload.record) {
+      tenant = payload.record;
+    }
+    // Format 2: Wrapped in type/table structure
+    else if (payload.type === "INSERT" && payload.table === "tenants") {
+      tenant = payload.record;
+    }
+    // Format 3: The payload IS the tenant
+    else if (payload.id && payload.name) {
+      tenant = payload;
+    }
+
+    if (!tenant || !tenant.id) {
+      console.log("No valid tenant data found in payload");
       return new Response(
-        JSON.stringify({ message: "Ignored - not a tenant insert" }),
+        JSON.stringify({ message: "No tenant data", payload }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const tenant = payload.record;
+    console.log("Processing tenant:", tenant.id, tenant.name || tenant.company_name);
 
-    // Get the admin user who created this tenant (first profile with this tenant_id)
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    let userInfo: ProfileInfo | null = null;
-
-    if (supabaseUrl && supabaseServiceKey) {
-      const profileResponse = await fetch(
-        `${supabaseUrl}/rest/v1/profiles?tenant_id=eq.${tenant.id}&role=eq.admin&limit=1`,
-        {
-          headers: {
-            "Authorization": `Bearer ${supabaseServiceKey}`,
-            "apikey": supabaseServiceKey,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (profileResponse.ok) {
-        const profiles = await profileResponse.json();
-        if (profiles.length > 0) {
-          userInfo = profiles[0];
-        }
-      }
-    }
-
-    // Build the email content
+    // Build email
     const companyName = tenant.company_name || tenant.name || "Unknown Company";
-    const userEmail = userInfo?.email || "Unknown";
-    const userName = userInfo?.full_name || "Unknown User";
-    const createdAt = new Date(tenant.created_at).toLocaleString("en-US", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
+    const createdAt = tenant.created_at
+      ? new Date(tenant.created_at).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })
+      : new Date().toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
 
     const emailHtml = `
 <!DOCTYPE html>
@@ -140,39 +105,29 @@ Deno.serve(async (req: Request) => {
         <div class="value">${escapeHtml(companyName)}</div>
       </div>
       <div class="info-row">
-        <div class="label">Contact Name</div>
-        <div class="value">${escapeHtml(userName)}</div>
+        <div class="label">Plan</div>
+        <div class="value">${tenant.plan || "trial"} (${tenant.status || "pending"})</div>
       </div>
       <div class="info-row">
-        <div class="label">Email</div>
-        <div class="value">${escapeHtml(userEmail)}</div>
-      </div>
-      <div class="info-row">
-        <div class="label">Requested Plan</div>
-        <div class="value">${tenant.plan} (${tenant.status})</div>
-      </div>
-      <div class="info-row">
-        <div class="label">Signed Up</div>
+        <div class="label">Created</div>
         <div class="value">${createdAt}</div>
       </div>
       <div class="info-row">
         <div class="label">Tenant ID</div>
         <div class="value" style="font-family: monospace; font-size: 12px;">${tenant.id}</div>
       </div>
-
       <a href="${APP_URL}/admin/users" class="button">Review in Admin Panel</a>
-
       <div class="footer">
         <p>This is an automated notification from Eryxon Flow.</p>
-        <p>To approve this signup, log in to the admin panel and change the tenant status to "active".</p>
       </div>
     </div>
   </div>
 </body>
-</html>
-    `.trim();
+</html>`.trim();
 
-    // Send email via Resend
+    // Send via Resend
+    console.log("Sending email to:", ADMIN_EMAIL);
+
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -187,25 +142,26 @@ Deno.serve(async (req: Request) => {
       }),
     });
 
+    const responseText = await emailResponse.text();
+    console.log("Resend response:", emailResponse.status, responseText);
+
     if (!emailResponse.ok) {
-      const errorText = await emailResponse.text();
-      console.error("Resend API error:", errorText);
       return new Response(
-        JSON.stringify({ error: "Failed to send notification email", details: errorText }),
+        JSON.stringify({ error: "Resend failed", status: emailResponse.status, details: responseText }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const emailResult = await emailResponse.json();
-    console.log("Notification email sent:", emailResult);
+    const result = JSON.parse(responseText);
+    console.log("Email sent successfully:", result.id);
 
     return new Response(
-      JSON.stringify({ success: true, emailId: emailResult.id }),
+      JSON.stringify({ success: true, emailId: result.id }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
   } catch (error) {
-    console.error("Error in notify-new-signup:", error);
+    console.error("Error:", error.message);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -213,7 +169,6 @@ Deno.serve(async (req: Request) => {
   }
 });
 
-// Helper to escape HTML
 function escapeHtml(text: string): string {
   return text
     .replace(/&/g, "&amp;")
