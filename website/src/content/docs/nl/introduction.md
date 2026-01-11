@@ -1,13 +1,19 @@
 ---
 title: Welkom bij Eryxon Flow
-description: Het eenvoudige, elegante en krachtige manufacturing execution system waar uw mensen graag mee zullen werken. Gemaakt voor de metaalbewerking.
+description: Het eenvoudige, elegante en krachtige manufacturing execution system waar uw mensen graag mee zullen werken. Gemaakt voor metaalbewerking op maat—plaatwerk, staalconstructie, precisie-verspaning.
 ---
 
-**Het eenvoudige, elegante en krachtige manufacturing execution system waar uw mensen graag mee zullen werken. Gemaakt voor de metaalbewerking.**
+**Het eenvoudige, elegante en krachtige manufacturing execution system waar uw mensen graag mee zullen werken. Gemaakt voor metaalbewerking op maat.**
+
+### Voor Wie Het Is
+
+**Primair:** Metaalbewerkingsbedrijven op maat—plaatwerk, staalconstructie, precisie-verspaning—voor hoog, midden of laag volume productie.
+
+**Ook geschikt voor:** Andere job shops en maatwerkproductiebedrijven in de bouw, meubelindustrie, houtbewerking en vergelijkbare sectoren.
 
 ## Wat Het Doet
 
-Eryxon volgt orders, onderdelen en taken door de productie met een mobiele en tablet-vriendelijke interface. Gegevens komen via een API uit uw ERP.
+Eryxon volgt orders, onderdelen en taken door de productie met een mobiele en tablet-vriendelijke interface. Integreer met uw ERP en publiceer events naar een unified namespace (MQTT/ISA-95).
 
 ### Voor Operators
 De interface toont waaraan gewerkt moet worden, gegroepeerd op materialen en productiestadia—georganiseerd zoals uw werkplaats draait, niet zoals accountants denken. 
@@ -63,7 +69,7 @@ Volg in realtime wie er aanwezig is en waaraan zij werken. Geen gegis, geen vert
 
 ## Integratie-Eerste Architectuur
 
-**100% API-gedreven.** Uw ERP stuurt orders, onderdelen en taken via de REST API. Eryxon stuurt voltooiingsgebeurtenissen terug via webhooks. MCP-server maakt AI/automatisering-integratie mogelijk.
+**100% API-gedreven.** Uw ERP stuurt orders, onderdelen en taken via de REST API. Eryxon stuurt voltooiingsgebeurtenissen terug via webhooks en MQTT (ISA-95 unified namespace). MCP-server maakt AI/automatisering-integratie mogelijk.
 
 ### Bestandsafhandeling
 Vraag een ondertekende upload-URL aan via de API, upload STEP- en PDF-bestanden rechtstreeks naar Supabase Storage en verwijs vervolgens naar het bestandspad bij het maken van orders of onderdelen. Grote bestanden (typisch 5-50MB) worden rechtstreeks naar de storage geüpload—geen timeouts, geen API-knelpunten.

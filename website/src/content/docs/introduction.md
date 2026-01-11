@@ -1,17 +1,23 @@
 ---
 title: Welcome to Eryxon MES
-description: The simple, elegant and powerful manufacturing execution system that your people will love to use. Made for metals fabrication.
+description: The simple, elegant and powerful manufacturing execution system that your people will love to use. Made for custom metals fabrication—sheet metal, structural steel, precision machining.
 ---
 
 :::note[Early Access]
 Heads up – this is an early version. Free during early access, but expect some bugs or downtime. [Try the demo](https://app.eryxon.eu) or see the [Hosted Version](/hosted-version) page for details.
 :::
 
-**The simple, elegant and powerful manufacturing execution system that your people will love to use. Made for metals fabrication.**
+**The simple, elegant and powerful manufacturing execution system that your people will love to use. Made for custom metals fabrication.**
+
+### Who It's For
+
+**Primary:** Custom metals fabrication shops—sheet metal, structural steel, precision machining—handling high, mid, or low volume production.
+
+**Also useful for:** Other job shops and custom manufacturing companies in construction, furniture, woodworking, and similar industries.
 
 ## What It Does
 
-Eryxon tracks jobs, parts, and tasks through production with a mobile and tablet-first interface. Data comes from your ERP via API.
+Eryxon tracks jobs, parts, and tasks through production with a mobile and tablet-first interface. Integrate with your ERP and publish events to a unified namespace (MQTT/ISA-95).
 
 ### For Operators
 The interface shows what to work on, grouped by materials and manufacturing stages—organized the way your shop runs, not the way accountants think. 
@@ -67,7 +73,7 @@ Track who's on-site and what they're working on in real-time. No guessing, no de
 
 ## Integration-First Architecture
 
-**100% API-driven.** Your ERP pushes jobs, parts, and tasks via REST API. Eryxon sends completion events back via webhooks. MCP server enables AI/automation integration.
+**100% API-driven.** Your ERP pushes jobs, parts, and tasks via REST API. Eryxon sends completion events back via webhooks and MQTT (ISA-95 unified namespace). MCP server enables AI/automation integration.
 
 ### File handling
 Request a signed upload URL from the API, upload STEP and PDF files directly to Supabase Storage, then reference the file path when creating jobs or parts. Large files (5-50MB typical) upload directly to storage—no timeouts, no API bottlenecks.
