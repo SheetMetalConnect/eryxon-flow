@@ -60,6 +60,60 @@
       "successCleared": "Demodaten erfolgreich gelöscht",
       "errorCreate": "Erstellen der Demodaten fehlgeschlagen",
       "errorClear": "Löschen der Demodaten fehlgeschlagen"
+    },
+    "gdpr": {
+      "title": "Datenlöschung (DSGVO)",
+      "description": "Löschen Sie dauerhaft Ihr Konto oder alle Organisationsdaten",
+      "deleteAccount": {
+        "title": "Mein Konto löschen",
+        "description": "Löschen Sie dauerhaft Ihr Benutzerkonto und alle zugehörigen persönlichen Daten.",
+        "warning": "Warnung",
+        "warningMessage": "Diese Aktion kann nicht rückgängig gemacht werden. Ihr Konto, Zeiterfassungen, Zuweisungen und Probleme werden dauerhaft gelöscht.",
+        "button": "Mein Konto löschen",
+        "confirmTitle": "Ihr Konto löschen?",
+        "confirmMessage": "Dies löscht dauerhaft Ihr Konto und alle zugehörigen Daten:",
+        "confirmItems": {
+          "profile": "Ihr Benutzerprofil",
+          "timeEntries": "Alle von Ihnen erstellten Zeiterfassungen",
+          "assignments": "Alle Zuweisungen an Sie",
+          "issues": "Alle von Ihnen erstellten Probleme"
+        },
+        "confirmWarning": "Diese Aktion kann nicht rückgängig gemacht werden",
+        "confirmDescription": "Sie werden sofort abgemeldet und können Ihr Konto nicht wiederherstellen.",
+        "confirmButton": "Mein Konto löschen",
+        "deleting": "Wird gelöscht...",
+        "confirmationRequired": "Bitte geben Sie DELETE zur Bestätigung ein",
+        "success": "Ihr Konto und alle zugehörigen Daten wurden dauerhaft gelöscht"
+      },
+      "deleteTenant": {
+        "title": "Gesamte Organisation löschen",
+        "description": "Löschen Sie dauerhaft Ihre Organisation und ALLE Daten für alle Benutzer.",
+        "warningTitle": "Kritische Warnung",
+        "warningMessage": "Dies löscht ALLE Aufträge, Teile, Arbeitsgänge, Benutzer und Daten für Ihre gesamte Organisation. Diese Aktion betrifft ALLE Benutzer in Ihrer Organisation und kann NICHT rückgängig gemacht werden.",
+        "button": "Gesamte Organisation löschen",
+        "confirmTitle": "Gesamte Organisation löschen?",
+        "confirmMessage": "Dies löscht dauerhaft Ihre Organisation und ALLE Daten:",
+        "confirmItems": {
+          "users": "Alle Benutzerkonten und Profile",
+          "jobs": "Alle Aufträge, Teile und Arbeitsgänge",
+          "timeEntries": "Alle Zeiterfassungen und Zuweisungen",
+          "issues": "Alle Probleme und Produktionsdaten",
+          "config": "Alle Zellen, Materialien und Ressourcen",
+          "api": "Alle API-Schlüssel und Webhooks",
+          "all": "Alles andere in Ihrer Organisation"
+        },
+        "confirmWarningTitle": "KRITISCH: Dies betrifft ALLE Benutzer",
+        "confirmWarningMessage": "Dies löscht Daten für ALLE Benutzer in Ihrer Organisation. Alle verlieren den Zugang. Diese Aktion ist DAUERHAFT und kann NICHT rückgängig gemacht werden.",
+        "confirmButton": "Organisation löschen",
+        "deleting": "Wird gelöscht...",
+        "confirmationRequired": "Bitte geben Sie DELETE zur Bestätigung ein",
+        "success": "Ihre Organisation und alle Daten wurden dauerhaft gelöscht"
+      },
+      "typeToConfirm": "Geben Sie \"{{text}}\" zur Bestätigung ein",
+      "exportFirst": "Bevor Sie löschen, können Sie Ihre Daten exportieren über die",
+      "dataExportLink": "Datenexport-Funktion",
+      "privacyPolicyLink": "Datenschutzrichtlinie",
+      "seePolicy": "Bei Fragen zur Datenlöschung siehe unsere"
     }
   },
   "users": {
