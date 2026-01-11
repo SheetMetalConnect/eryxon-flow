@@ -2049,3 +2049,69 @@
     -webkit-backdrop-filter: blur(12px) saturate(170%);
   }
 }
+
+/* ============================================================================
+   AUTH PAGE MOBILE IMPROVEMENTS
+   ============================================================================ */
+
+/* Landing container mobile adjustments */
+@media (max-width: 640px) {
+  .landing-container {
+    padding: 1rem;
+    padding-top: 3.5rem; /* Account for fixed language switcher */
+    align-items: flex-start;
+  }
+
+  .onboarding-card {
+    padding: 1rem 1rem 1.5rem;
+    max-width: 100%;
+    border-radius: var(--radius-lg);
+  }
+
+  .icon-container {
+    padding: 0 0 0.75rem;
+  }
+
+  .browser-icon {
+    width: 80px;
+    height: 80px;
+  }
+
+  .welcome-text {
+    font-size: 0.75rem;
+  }
+
+  .main-title {
+    font-size: 1.25rem;
+  }
+
+  .preview-pill {
+    font-size: 0.875rem;
+  }
+
+  .hero-title {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .informational-text {
+    font-size: 0.875rem;
+    padding: 0.5rem;
+  }
+
+  .title-container {
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .title-divider {
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* Extra small screen breakpoint */
+@media (min-width: 360px) {
+  .xs\\:inline {
+    display: inline !important;
+  }
+}
