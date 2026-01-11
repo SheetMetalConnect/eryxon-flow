@@ -110,7 +110,7 @@ export default function Auth() {
         </div>
         <div className="auth-header-controls">
           <div className="flex items-center gap-2">
-            <ThemeToggle variant="dropdown" />
+            <ThemeToggle variant="icon" />
             <div className="language-switcher-wrapper">
               <Globe className="language-switcher-icon" />
               <LanguageSwitcher />
