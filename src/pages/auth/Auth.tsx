@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import {
   Loader2,
   ArrowRight,
@@ -26,6 +27,9 @@ const SITE_URL = "https://eryxon.eu";
 const GITHUB_URL = "https://github.com/SheetMetalConnect/eryxon-flow";
 const GITHUB_ISSUES_URL = `${GITHUB_URL}/issues`;
 
+// Turnstile site key from environment variable (set in Vercel)
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+
 export default function Auth() {
   const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(true);
@@ -34,11 +38,13 @@ export default function Auth() {
   const [fullName, setFullName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [termsAgreed, setTermsAgreed] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const { signIn, signUp, profile } = useAuth();
   const navigate = useNavigate();
+  const turnstileRef = useRef<TurnstileInstance>(null);
 
   // Redirect if already logged in
   if (profile) {
@@ -60,6 +66,8 @@ export default function Auth() {
     setFullName("");
     setCompanyName("");
     setTermsAgreed(false);
+    setCaptchaToken(null);
+    turnstileRef.current?.reset();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,11 +78,15 @@ export default function Auth() {
 
     try {
       if (isLogin) {
-        const { error } = await signIn(email, password);
+        // Login - pass captcha token if available
+        const { error } = await signIn(email, password, captchaToken || undefined);
         if (error) {
           setError(error.message);
+          turnstileRef.current?.reset();
+          setCaptchaToken(null);
         }
       } else {
+        // Sign up - captcha required
         if (!fullName.trim()) {
           setError(t("auth.fullNameRequired"));
           setLoading(false);
@@ -90,15 +102,22 @@ export default function Auth() {
           setLoading(false);
           return;
         }
+        if (TURNSTILE_SITE_KEY && !captchaToken) {
+          setError(t("auth.captchaRequired"));
+          setLoading(false);
+          return;
+        }
 
         const { error } = await signUp(email, password, {
           full_name: fullName,
           company_name: companyName,
           role: "admin"
-        });
+        }, captchaToken || undefined);
 
         if (error) {
           setError(error.message);
+          turnstileRef.current?.reset();
+          setCaptchaToken(null);
         } else {
           setSuccess(t("auth.pendingApprovalMessage"));
           setEmail("");
@@ -106,10 +125,14 @@ export default function Auth() {
           setFullName("");
           setCompanyName("");
           setTermsAgreed(false);
+          setCaptchaToken(null);
+          turnstileRef.current?.reset();
         }
       }
     } catch (err) {
       setError(t("auth.unexpectedError"));
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -303,6 +326,23 @@ export default function Auth() {
                 </div>
               )}
 
+              {/* Turnstile CAPTCHA - Show for sign up, optional for login */}
+              {TURNSTILE_SITE_KEY && (
+                <div className="flex justify-center pt-2">
+                  <Turnstile
+                    ref={turnstileRef}
+                    siteKey={TURNSTILE_SITE_KEY}
+                    onSuccess={setCaptchaToken}
+                    onError={() => setCaptchaToken(null)}
+                    onExpire={() => setCaptchaToken(null)}
+                    options={{
+                      theme: "auto",
+                      size: "normal",
+                    }}
+                  />
+                </div>
+              )}
+
               {/* Error */}
               {error && (
                 <Alert variant="destructive">
@@ -314,7 +354,7 @@ export default function Auth() {
               <Button
                 type="submit"
                 className="cta-button w-full h-11"
-                disabled={loading || (!isLogin && !termsAgreed)}
+                disabled={loading || (!isLogin && !termsAgreed) || (!isLogin && TURNSTILE_SITE_KEY && !captchaToken)}
               >
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                 {isLogin ? t("auth.signIn") : t("auth.signUp")}
@@ -329,6 +369,8 @@ export default function Auth() {
                     setIsLogin(!isLogin);
                     setError(null);
                     setSuccess(null);
+                    setCaptchaToken(null);
+                    turnstileRef.current?.reset();
                   }}
                   className="text-sm text-primary hover:underline"
                 >
