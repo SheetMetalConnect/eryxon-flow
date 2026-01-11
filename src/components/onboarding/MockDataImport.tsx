@@ -117,13 +117,13 @@ export function MockDataImport({ onComplete, onSkip }: MockDataImportProps) {
         <Wrench className="h-12 w-12 mx-auto text-primary" />
         <h2 className="text-3xl font-bold tracking-tight">Import Sample Data</h2>
         <p className="text-muted-foreground text-lg">
-          Start exploring Eryxon MES with realistic metal fabrication shop data
+          Start exploring Eryxon MES with realistic custom metals fabrication data
         </p>
       </div>
 
       <Alert>
         <AlertDescription>
-          We'll create sample jobs, parts, and operations that represent a typical sheet metal
+          We'll create sample jobs, parts, and operations that represent a typical custom metals
           fabrication workflow. This helps you understand how Eryxon organizes and tracks
           manufacturing work.
         </AlertDescription>
