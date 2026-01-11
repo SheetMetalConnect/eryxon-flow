@@ -265,12 +265,12 @@ export default function Auth() {
             {/* Form Header */}
             <div className="space-y-2 text-center lg:text-left">
               <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
-                {isLogin ? "Welcome back" : "Create your account"}
+                {isLogin ? t("auth.welcomeTo") : t("auth.signUp")}
               </h1>
               <p className="text-muted-foreground">
                 {isLogin 
-                  ? "Sign in to access your manufacturing dashboard" 
-                  : "Start your 14-day free trial. No credit card required."
+                  ? t("auth.signInDescription") 
+                  : t("auth.signUpDescription")
                 }
               </p>
             </div>
@@ -291,7 +291,7 @@ export default function Auth() {
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="fullName">
-                      Full Name <span className="text-destructive">*</span>
+                      {t("auth.fullName")} <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="fullName"
@@ -299,14 +299,14 @@ export default function Auth() {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       required
-                      placeholder="John Doe"
+                      placeholder={t("auth.fullNamePlaceholder")}
                       className="h-11"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="companyName">
-                      Company Name <span className="text-destructive">*</span>
+                      {t("auth.companyNameLabel")} <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="companyName"
@@ -314,7 +314,7 @@ export default function Auth() {
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
                       required
-                      placeholder="Acme Manufacturing"
+                      placeholder={t("auth.companyNamePlaceholder")}
                       className="h-11"
                     />
                   </div>
@@ -323,7 +323,7 @@ export default function Auth() {
 
               <div className="space-y-2">
                 <Label htmlFor="email">
-                  Email <span className="text-destructive">*</span>
+                  {t("auth.email")} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="email"
@@ -331,14 +331,14 @@ export default function Auth() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  placeholder="you@company.com"
+                  placeholder={t("auth.emailPlaceholder")}
                   className="h-11"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="password">
-                  Password <span className="text-destructive">*</span>
+                  {t("auth.password")} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="password"
@@ -347,7 +347,7 @@ export default function Auth() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  placeholder="••••••••"
+                  placeholder={t("auth.passwordPlaceholder")}
                   className="h-11"
                 />
               </div>
@@ -366,13 +366,13 @@ export default function Auth() {
                       htmlFor="termsAgreed"
                       className="text-sm text-muted-foreground leading-relaxed cursor-pointer font-normal"
                     >
-                      I agree to the{" "}
+                      {t("auth.agreeToTerms")}{" "}
                       <Link to={ROUTES.COMMON.PRIVACY_POLICY} className="text-primary hover:underline" target="_blank">
-                        Privacy Policy
+                        {t("auth.privacyPolicy")}
                       </Link>{" "}
-                      and{" "}
+                      {t("auth.and")}{" "}
                       <Link to={ROUTES.COMMON.TERMS_OF_SERVICE} className="text-primary hover:underline" target="_blank">
-                        Terms of Service
+                        {t("auth.termsOfService")}
                       </Link>
                       <span className="text-destructive"> *</span>
                     </Label>
@@ -381,7 +381,7 @@ export default function Auth() {
                   <div className="flex items-start gap-2 p-3 rounded-lg bg-info/10 border border-info/20">
                     <Info className="h-4 w-4 text-info mt-0.5 flex-shrink-0" />
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      Your data is stored securely in the EU. We're GDPR compliant and never share your information.
+                      {t("auth.gdprNotice")}
                     </p>
                   </div>
                 </div>
@@ -401,7 +401,7 @@ export default function Auth() {
                 disabled={loading || (!isLogin && !termsAgreed)}
               >
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                {isLogin ? "Sign In" : "Create Account"}
+                {isLogin ? t("auth.signIn") : t("auth.signUp")}
                 <ArrowRight className="h-4 w-4" />
               </Button>
 
@@ -416,7 +416,7 @@ export default function Auth() {
                   }}
                   className="text-sm text-primary hover:underline"
                 >
-                  {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+                  {isLogin ? t("auth.noAccount") : t("auth.haveAccount")}
                 </button>
               </div>
             </form>
@@ -438,11 +438,11 @@ export default function Auth() {
                 className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Monitor className="h-4 w-4" />
-                Shop Floor Terminal Login
+                {t("auth.shopFloorTerminal")}
                 <ArrowRight className="h-3 w-3" />
               </Link>
               <p className="text-xs text-muted-foreground/60">
-                For operators using shared terminals with PIN login
+                {t("auth.shopFloorTerminalHint")}
               </p>
             </div>
           </div>
