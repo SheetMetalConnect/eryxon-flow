@@ -1,3 +1,0 @@
-# Redirects file
-# Note: SPA routing is handled by wrangler.toml (not_found_handling = "single-page-application")
-# Add custom redirects below if needed:
