@@ -56,21 +56,26 @@
         radial-gradient(at 82% 65%, hsl(218, 39%, 11%) 0, transparent 55%);
 }
 
-/* Redefine what was "Light Mode" to be optional or removed, 
-   but importantly, do NOT let it override the default if user system is light.
-   Ideally, we just effectively disable the light theme or map it to dark too 
-   unless we really want to support it. 
-   For now, we keep it but ensure :root (default) is dark. */
+/* Light Mode - readable colors */
 :root[data-theme="light"] {
-    /* ... existing light mode definitions if we wanted them ... */
-    /* For now, let's just make it same as dark or leave it controllable via toggle */
-    /* If the user wants STRICT dark mode only: */
-    --sl-color-accent-low: color-mix(in srgb, var(--color-primary), #000 90%);
-    --sl-color-accent: var(--color-primary);
-    --sl-color-accent-high: color-mix(in srgb, var(--color-primary), #fff 70%);
-    --sl-color-white: var(--color-light);
-    --sl-color-black: var(--color-dark);
-    /* ... map others to dark ... */
+    --sl-color-accent-low: color-mix(in srgb, var(--color-lightmode-primary), #fff 85%);
+    --sl-color-accent: var(--color-lightmode-primary);
+    --sl-color-accent-high: color-mix(in srgb, var(--color-lightmode-primary), #000 20%);
+
+    /* Starlight uses "white" for foreground/text, "black" for background */
+    --sl-color-white: #1a1a2e;  /* Dark text for light backgrounds */
+    --sl-color-black: #ffffff;  /* Light background */
+
+    /* Gray scale for light mode - inverted (1=lightest bg, 6=darkest text) */
+    --sl-color-gray-1: #f8f9fa;
+    --sl-color-gray-2: #e9ecef;
+    --sl-color-gray-3: #adb5bd;
+    --sl-color-gray-4: #6c757d;
+    --sl-color-gray-5: #495057;
+    --sl-color-gray-6: #343a40;
+
+    --sl-color-hairline: rgba(0, 0, 0, 0.1);
+    --sl-color-hairline-light: #dee2e6;
 }
 
 @theme {
