@@ -102,13 +102,28 @@ export default function Pricing() {
         </CardContent>
       </Card>
 
+      {/* Hosted Version Info */}
+      <div className="text-center max-w-2xl mx-auto">
+        <p className="text-muted-foreground mb-4">
+          Learn more about the hosted version at{" "}
+          <a 
+            href="https://eryxon.eu/hosted-version/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-primary hover:underline"
+          >
+            eryxon.eu/hosted-version
+          </a>
+        </p>
+      </div>
+
       {/* Contact */}
       <div className="text-center max-w-2xl mx-auto">
         <p className="text-muted-foreground mb-4">
           {t("pricing.needHelp")}
         </p>
         <Button variant="outline" asChild>
-          <a href="https://www.sheetmetalconnect.com/" target="_blank" rel="noopener noreferrer">
+          <a href="https://www.vanenkhuizen.com" target="_blank" rel="noopener noreferrer">
             {t("pricing.contactUs")}
             <ExternalLink className="h-4 w-4 ml-2" />
           </a>

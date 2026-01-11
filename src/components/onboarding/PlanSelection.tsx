@@ -20,7 +20,7 @@ export function PlanSelection({ onPlanSelect, onSkip }: PlanSelectionProps) {
   };
 
   const handleContactUs = () => {
-    window.open('https://github.com/SheetMetalConnect/eryxon-flow/issues', '_blank');
+    window.open('https://www.vanenkhuizen.com', '_blank');
   };
 
   return (
