@@ -391,8 +391,8 @@
     "cancelAnytime": "Cancel anytime",
     "moneyBackGuarantee": "30-day money-back guarantee",
     "sampleData": "Import Sample Data",
-    "sampleDataDescription": "Start exploring Eryxon MES with realistic metal fabrication shop data",
-    "sampleDataExplanation": "We'll create sample jobs, parts, and operations that represent a typical sheet metal fabrication workflow.",
+    "sampleDataDescription": "Start exploring Eryxon MES with realistic custom metals fabrication data",
+    "sampleDataExplanation": "We'll create sample jobs, parts, and operations that represent a typical custom metals fabrication workflow.",
     "planSelection": {
       "title": "Choose Your Plan",
       "comingSoon": "Pricing plans are being finalized",
@@ -1216,7 +1216,7 @@
   },
   "apiDocsPage": {
     "title": "Eryxon Flow API",
-    "description": "Production workflow management API for sheet metal manufacturing. Build integrations, automate workflows, and manage your production data programmatically.",
+    "description": "Production workflow management API for custom metals fabrication. Build integrations, automate workflows, and manage your production data programmatically.",
     "version": "v1.0.0",
     "restApi": "REST API",
     "restApiDesc": "JSON-based RESTful API",

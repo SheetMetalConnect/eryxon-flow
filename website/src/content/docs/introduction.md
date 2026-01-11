@@ -1,17 +1,41 @@
 ---
 title: Welcome to Eryxon MES
-description: The simple, elegant and powerful manufacturing execution system that your people will love to use. Made for metals fabrication.
+description: The simple, elegant and powerful manufacturing execution system that your people will love to use. Made for custom metals fabrication—sheet metal, structural steel, precision machining.
 ---
 
 :::note[Early Access]
 Heads up – this is an early version. Free during early access, but expect some bugs or downtime. [Try the demo](https://app.eryxon.eu) or see the [Hosted Version](/hosted-version) page for details.
 :::
 
-**The simple, elegant and powerful manufacturing execution system that your people will love to use. Made for metals fabrication.**
+**The simple, elegant and powerful manufacturing execution system that your people will love to use. Made for custom metals fabrication.**
+
+### Who It's For
+
+**Primary:** Custom metals fabrication shops—sheet metal, structural steel, precision machining—handling high, mid, or low volume production.
+
+**Also useful for:** Other job shops and custom manufacturing companies in construction, furniture, woodworking, and similar industries.
+
+---
+
+## What is MES?
+
+A **Manufacturing Execution System (MES)** bridges the gap between your ERP (business system) and the shop floor. While your ERP manages orders, customers, and invoices, MES tracks *how work actually gets done*—who's working on what, where parts are in production, and whether you're on schedule.
+
+### Our Philosophy
+
+**Go paperless.** Leave paper travelers behind. Instead of printing job packets that get lost, damaged, or outdated the moment something changes, give operators a tablet with live information—drawings, 3D models, instructions, and status—all in one place.
+
+**Collect data.** Every start, stop, and completion is recorded. Know how long operations actually take. Identify bottlenecks. Build a foundation for continuous improvement.
+
+**Improve communication.** When an operator reports an issue, everyone sees it immediately. When a priority changes, everyone knows. No more walking the floor to find out what's happening—real-time visibility across all screens.
+
+**Integrate with your systems.** Eryxon connects to your ERP via REST API and publishes events to a unified namespace (MQTT/ISA-95). Your data flows where it needs to go—no islands, no double entry.
+
+---
 
 ## What It Does
 
-Eryxon tracks jobs, parts, and tasks through production with a mobile and tablet-first interface. Data comes from your ERP via API.
+Eryxon tracks jobs, parts, and tasks through production with a mobile and tablet-first interface. Integrate with your ERP and publish events to a unified namespace (MQTT/ISA-95).
 
 ### For Operators
 The interface shows what to work on, grouped by materials and manufacturing stages—organized the way your shop runs, not the way accountants think. 
@@ -67,7 +91,7 @@ Track who's on-site and what they're working on in real-time. No guessing, no de
 
 ## Integration-First Architecture
 
-**100% API-driven.** Your ERP pushes jobs, parts, and tasks via REST API. Eryxon sends completion events back via webhooks. MCP server enables AI/automation integration.
+**100% API-driven.** Your ERP pushes jobs, parts, and tasks via REST API. Eryxon sends completion events back via webhooks and MQTT (ISA-95 unified namespace). MCP server enables AI/automation integration.
 
 ### File handling
 Request a signed upload URL from the API, upload STEP and PDF files directly to Supabase Storage, then reference the file path when creating jobs or parts. Large files (5-50MB typical) upload directly to storage—no timeouts, no API bottlenecks.

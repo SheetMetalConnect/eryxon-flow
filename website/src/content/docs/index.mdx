@@ -1,11 +1,11 @@
 ---
 title: Eryxon Flow - Open Source MES
-description: Manufacturing Execution System for Job Shops. Self-hostable, API-first, and built for the shop floor.
+description: Manufacturing Execution System for custom metals fabrication. Self-hostable, API-first, and built for the shop floor.
 template: splash
 hero:
   title: |
-    MES for <span class="text-primary">Job Shops</span>
-  tagline: Open source production tracking for custom manufacturing. Real-time operator terminals, capacity planning, and ERP integration.
+    MES for <span class="text-primary">Metals Fabrication</span>
+  tagline: Open source production tracking for custom metals shops—high, mid, and low volume. Real-time operator terminals, QRM capacity planning, and ERP integration via unified namespace.
   actions:
     - text: Try Demo
       link: https://app.eryxon.eu
@@ -40,8 +40,8 @@ import LinkButton from "~/components/LinkButton.astro";
   <Card title="Self-Hostable" icon="seti:lock" iconColor="#4a9eff">
     Keep your production data private. Run on your own server. BSL 1.1 License (Free for internal use).
   </Card>
-  <Card title="ERP Integration" icon="seti:db" iconColor="#4a9eff">
-    Sync jobs and parts from your ERP via REST API. No double entry.
+  <Card title="ERP & Unified Namespace" icon="seti:db" iconColor="#4a9eff">
+    Sync jobs and parts from your ERP via REST API. Publish events to MQTT with ISA-95 unified namespace. No double entry.
   </Card>
   <Card title="Paperless Shop" icon="seti:image" iconColor="#4a9eff">
     Attach drawings, 3D files (STEP), and work instructions directly to the job.
@@ -81,8 +81,8 @@ import LinkButton from "~/components/LinkButton.astro";
 
 <Section title="Why <span class='text-primary'>Eryxon Flow?</span>">
 <Grid columns={2}>
-<Card title="For Job Shops" icon="seti:home" iconColor="#4a9eff">
-  High mix, low volume. Handling thousands of unique parts? We built Eryxon for that.
+<Card title="For Custom Metals" icon="seti:home" iconColor="#4a9eff">
+  Built for custom metals fabrication—sheet metal, structural steel, precision machining. High, mid, or low volume. Also works for job shops in construction, furniture, and other custom manufacturing.
 </Card>
 <Card title="Developer Friendly" icon="seti:code" iconColor="#4a9eff">
   API-first design. Extend functionality, build custom integrations, and own your data.

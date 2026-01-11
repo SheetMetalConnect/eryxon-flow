@@ -174,7 +174,7 @@
   },
   "apiDocsPage": {
     "title": "Eryxon Flow API",
-    "description": "Production workflow management API for sheet metal manufacturing. Build integrations, automate workflows, and manage your production data programmatically.",
+    "description": "Production workflow management API for custom metals fabrication. Build integrations, automate workflows, and manage your production data programmatically.",
     "version": "v1.0.0",
     "restApi": "REST API",
     "restApiDesc": "JSON-based RESTful API",

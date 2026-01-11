@@ -3,7 +3,7 @@ title: "App Architecture"
 description: "Technical architecture overview of Eryxon Flow"
 ---
 
-MES for sheet metal fabrication. Tracks work through three levels: **Jobs** (customer orders) → **Parts** (components) → **Operations** (tasks like cutting, bending, welding).
+MES for custom metals fabrication—sheet metal, structural steel, precision machining. Tracks work through three levels: **Jobs** (customer orders) → **Parts** (components) → **Operations** (tasks like cutting, bending, welding, machining).
 
 ---
 

@@ -1,13 +1,37 @@
 ---
 title: Welkom bij Eryxon Flow
-description: Het eenvoudige, elegante en krachtige manufacturing execution system waar uw mensen graag mee zullen werken. Gemaakt voor de metaalbewerking.
+description: Het eenvoudige, elegante en krachtige manufacturing execution system waar uw mensen graag mee zullen werken. Gemaakt voor metaalbewerking op maat—plaatwerk, staalconstructie, precisie-verspaning.
 ---
 
-**Het eenvoudige, elegante en krachtige manufacturing execution system waar uw mensen graag mee zullen werken. Gemaakt voor de metaalbewerking.**
+**Het eenvoudige, elegante en krachtige manufacturing execution system waar uw mensen graag mee zullen werken. Gemaakt voor metaalbewerking op maat.**
+
+### Voor Wie Het Is
+
+**Primair:** Metaalbewerkingsbedrijven op maat—plaatwerk, staalconstructie, precisie-verspaning—voor hoog, midden of laag volume productie.
+
+**Ook geschikt voor:** Andere job shops en maatwerkproductiebedrijven in de bouw, meubelindustrie, houtbewerking en vergelijkbare sectoren.
+
+---
+
+## Wat is MES?
+
+Een **Manufacturing Execution System (MES)** overbrugt de kloof tussen uw ERP (bedrijfssysteem) en de werkvloer. Terwijl uw ERP orders, klanten en facturen beheert, houdt MES bij *hoe het werk daadwerkelijk wordt uitgevoerd*—wie waaraan werkt, waar onderdelen zich in de productie bevinden en of u op schema ligt.
+
+### Onze Filosofie
+
+**Ga papierloos.** Laat papieren werkbonnen achter. In plaats van werkpakketten te printen die zoekraken, beschadigd raken of verouderd zijn zodra er iets verandert, geef operators een tablet met actuele informatie—tekeningen, 3D-modellen, instructies en status—alles op één plek.
+
+**Verzamel data.** Elke start, stop en voltooiing wordt geregistreerd. Weet hoe lang bewerkingen werkelijk duren. Identificeer knelpunten. Bouw een fundament voor continue verbetering.
+
+**Verbeter communicatie.** Wanneer een operator een probleem meldt, ziet iedereen het direct. Wanneer een prioriteit wijzigt, weet iedereen het. Niet meer de werkvloer op om te ontdekken wat er gebeurt—real-time zichtbaarheid op alle schermen.
+
+**Integreer met uw systemen.** Eryxon verbindt met uw ERP via REST API en publiceert events naar een unified namespace (MQTT/ISA-95). Uw data stroomt waar nodig—geen eilandjes, geen dubbele invoer.
+
+---
 
 ## Wat Het Doet
 
-Eryxon volgt orders, onderdelen en taken door de productie met een mobiele en tablet-vriendelijke interface. Gegevens komen via een API uit uw ERP.
+Eryxon volgt orders, onderdelen en taken door de productie met een mobiele en tablet-vriendelijke interface. Integreer met uw ERP en publiceer events naar een unified namespace (MQTT/ISA-95).
 
 ### Voor Operators
 De interface toont waaraan gewerkt moet worden, gegroepeerd op materialen en productiestadia—georganiseerd zoals uw werkplaats draait, niet zoals accountants denken. 
@@ -63,7 +87,7 @@ Volg in realtime wie er aanwezig is en waaraan zij werken. Geen gegis, geen vert
 
 ## Integratie-Eerste Architectuur
 
-**100% API-gedreven.** Uw ERP stuurt orders, onderdelen en taken via de REST API. Eryxon stuurt voltooiingsgebeurtenissen terug via webhooks. MCP-server maakt AI/automatisering-integratie mogelijk.
+**100% API-gedreven.** Uw ERP stuurt orders, onderdelen en taken via de REST API. Eryxon stuurt voltooiingsgebeurtenissen terug via webhooks en MQTT (ISA-95 unified namespace). MCP-server maakt AI/automatisering-integratie mogelijk.
 
 ### Bestandsafhandeling
 Vraag een ondertekende upload-URL aan via de API, upload STEP- en PDF-bestanden rechtstreeks naar Supabase Storage en verwijs vervolgens naar het bestandspad bij het maken van orders of onderdelen. Grote bestanden (typisch 5-50MB) worden rechtstreeks naar de storage geüpload—geen timeouts, geen API-knelpunten.
