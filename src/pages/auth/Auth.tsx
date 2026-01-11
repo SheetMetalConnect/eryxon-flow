@@ -166,15 +166,6 @@ export default function Auth() {
                 <Github className="h-4 w-4" />
                 GitHub
               </a>
-              <a 
-                href={GITHUB_URL} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Github className="h-4 w-4" />
-                GitHub
-              </a>
             </nav>
           </div>
 
