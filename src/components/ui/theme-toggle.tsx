@@ -59,13 +59,13 @@ export function ThemeToggle({
             size="icon"
             onClick={toggleTheme}
             className={cn(
-              'h-9 w-9 rounded-lg transition-colors',
+              'h-7 w-7 rounded-md transition-colors',
               'hover:bg-muted',
               className
             )}
             aria-label={`Current theme: ${mode}. Click to change.`}
           >
-            <CurrentIcon className="h-4 w-4" />
+            <CurrentIcon className="h-3.5 w-3.5" />
           </Button>
         </TooltipTrigger>
         <TooltipContent side="right">
@@ -113,13 +113,13 @@ export function ThemeToggle({
           variant="ghost"
           size="icon"
           className={cn(
-            'h-9 w-9 rounded-lg transition-colors',
+            'h-7 w-7 rounded-md transition-colors',
             'hover:bg-muted',
             className
           )}
           aria-label="Toggle theme"
         >
-          <CurrentIcon className="h-4 w-4" />
+          <CurrentIcon className="h-3.5 w-3.5" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[140px]">

@@ -776,11 +776,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         )}
         {/* MCP Status, Theme & Language - Inline */}
         <div className={cn("flex items-center gap-2", collapsed ? "justify-center flex-col" : "justify-between px-1")}>
-          <McpServerStatus />
           <div className="flex items-center gap-1">
-            <ThemeToggle variant="dropdown" />
-            <LanguageSwitcher />
+            <McpServerStatus />
+            <ThemeToggle variant="icon" />
           </div>
+          <LanguageSwitcher />
         </div>
         <Button
           variant="outline"
