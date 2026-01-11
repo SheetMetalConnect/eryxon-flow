@@ -1,20 +1,14 @@
+# Cloudflare configuration for Eryxon Flow (main app - Vite + React)
 name = "eryxon-flow"
-compatibility_date = "2024-01-01"
+compatibility_date = "2025-01-01"
 
-[build]
-command = "npm run build"
+# For Cloudflare Pages Git integration, configure build settings in the dashboard:
+#   Build command: npm run build
+#   Build output directory: dist
+#   Node.js version: 20
 
-[build.upload]
-format = "service-worker"
-main = "./dist"
-
-[site]
-bucket = "./dist"
-
-[env.production]
-name = "eryxon-flow"
-route = ""
-vars = { NODE_VERSION = "20" }
-
-[env.preview]
-name = "eryxon-flow-preview"
+# Static assets (for wrangler pages deploy or Workers)
+[assets]
+directory = "./dist"
+html_handling = "auto-trailing-slash"
+not_found_handling = "single-page-application"

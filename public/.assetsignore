@@ -1,0 +1,5 @@
+# Files and folders to exclude from static assets upload
+node_modules
+.git
+.DS_Store
+*.map
