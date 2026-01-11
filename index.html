@@ -1,8 +1,29 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Set theme class ASAP to match saved preference / browser settings (prevents flash) -->
+    <script>
+      (function () {
+        try {
+          const STORAGE_KEY = "eryxon-theme-mode";
+          const stored = localStorage.getItem(STORAGE_KEY);
+          const mode = stored === "dark" || stored === "light" || stored === "auto" ? stored : "auto";
+          const prefersLight =
+            window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+          const resolved = mode === "auto" ? (prefersLight ? "light" : "dark") : mode;
+
+          const root = document.documentElement;
+          root.classList.remove("light", "dark");
+          root.classList.add(resolved);
+        } catch (_) {
+          // no-op
+        }
+      })();
+    </script>
+
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta http-equiv="X-Frame-Options" content="DENY" />
     <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
