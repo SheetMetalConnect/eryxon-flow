@@ -1,11 +1,11 @@
 ---
 title: Eryxon Flow - Open Source MES
-description: Manufacturing Execution System for custom metals fabrication. Self-hostable, API-first, and built for the shop floor.
+description: Manufacturing Execution System for custom metals fabrication. Track jobs, parts, and operations. Go paperless. Integrate with your ERP.
 template: splash
 hero:
   title: |
     MES for <span class="text-primary">Metals Fabrication</span>
-  tagline: Open source production tracking for custom metals shops—high, mid, and low volume. Real-time operator terminals, QRM capacity planning, and ERP integration via unified namespace.
+  tagline: Track jobs, parts, and operations through your shop. Go paperless. Integrate with your ERP.
   actions:
     - text: Try Demo
       link: https://app.eryxon.eu
@@ -28,26 +28,26 @@ import HeroTabs from "~/components/HeroTabs.astro";
 import HeroTabsItem from "~/components/HeroTabsItem.astro";
 import LinkButton from "~/components/LinkButton.astro";
 
-<Section title="Built for <span class='text-primary'>Production</span>" description="Real-time operator terminals, QRM capacity planning, and ERP integration.">
+<Section title="Built for <span class='text-primary'>Production</span>" description="What operators and managers actually need on the shop floor.">
 
 <Grid columns={3}>
-  <Card title="Real-time Tracking" icon="seti:clock" iconColor="#4a9eff">
+  <Card title="Real-time Tracking" icon="seti:clock" iconColor="#5a9bcf">
     Operators track time and status on touch-friendly tablets. Live visibility into every job.
   </Card>
-  <Card title="Job Scheduling" icon="seti:plan" iconColor="#4a9eff">
-    Prioritize work orders and manage capacity with QRM-based polca lanes.
-  </Card>
-  <Card title="Self-Hostable" icon="seti:lock" iconColor="#4a9eff">
-    Keep your production data private. Run on your own server. BSL 1.1 License (Free for internal use).
-  </Card>
-  <Card title="ERP & Unified Namespace" icon="seti:db" iconColor="#4a9eff">
-    Sync jobs and parts from your ERP via REST API. Publish events to MQTT with ISA-95 unified namespace. No double entry.
-  </Card>
-  <Card title="Paperless Shop" icon="seti:image" iconColor="#4a9eff">
+  <Card title="Paperless Shop" icon="seti:image" iconColor="#5a9bcf">
     Attach drawings, 3D files (STEP), and work instructions directly to the job.
   </Card>
-  <Card title="Analytics" icon="seti:chart" iconColor="#4a9eff">
-     Analyze efficiency, scrap rates, and on-time delivery performance.
+  <Card title="ERP Integration" icon="seti:db" iconColor="#5a9bcf">
+    Sync jobs and parts from your ERP via REST API. No double entry.
+  </Card>
+  <Card title="QRM Scheduling" icon="seti:plan" iconColor="#5a9bcf">
+    Manage capacity with visual kanban lanes. See bottlenecks before they happen.
+  </Card>
+  <Card title="Self-Hostable" icon="seti:lock" iconColor="#5a9bcf">
+    Keep your production data private. Run on your own server. BSL 1.1 License.
+  </Card>
+  <Card title="Analytics" icon="seti:chart" iconColor="#5a9bcf">
+    Track efficiency, lead times, and on-time delivery.
   </Card>
 
 </Grid>
@@ -81,10 +81,10 @@ import LinkButton from "~/components/LinkButton.astro";
 
 <Section title="Why <span class='text-primary'>Eryxon Flow?</span>">
 <Grid columns={2}>
-<Card title="For Custom Metals" icon="seti:home" iconColor="#4a9eff">
-  Built for custom metals fabrication—sheet metal, structural steel, precision machining. High, mid, or low volume. Also works for job shops in construction, furniture, and other custom manufacturing.
+<Card title="For Job Shops" icon="seti:home" iconColor="#5a9bcf">
+  Built for high mix, low volume manufacturing. Custom metals fabrication, job shops, and make-to-order production.
 </Card>
-<Card title="Developer Friendly" icon="seti:code" iconColor="#4a9eff">
+<Card title="Developer Friendly" icon="seti:code" iconColor="#5a9bcf">
   API-first design. Extend functionality, build custom integrations, and own your data.
 </Card>
 </Grid>
@@ -220,14 +220,14 @@ import ListCard from "~/components/user-components/ListCard.astro";
 
 <Section title="Support & <span class='text-primary'>Services</span>">
   <Grid columns={2}>
-    <Card title="Community Support" icon="seti:github" iconColor="#4a9eff">
+    <Card title="Community Support" icon="seti:github" iconColor="#5a9bcf">
       Self-hosting is community-supported only.
       <br/><br/>
       <strong>GitHub Issues:</strong> Bug reports<br/>
       <strong>Documentation:</strong> <a href="/introduction/" class="text-primary hover:underline">/docs</a> folder
     </Card>
 
-    <Card title="Professional Services" icon="seti:notebook" iconColor="#4a9eff">
+    <Card title="Professional Services" icon="seti:notebook" iconColor="#5a9bcf">
       Need help with complex deployments?
       <br/><br/>
       Check out <a href="https://www.vanenkhuizen.com/" target="_blank" class="text-primary font-semibold hover:underline">vanenkhuizen.com</a> for consulting services.
