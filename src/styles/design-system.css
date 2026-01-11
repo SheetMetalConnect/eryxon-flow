@@ -2054,19 +2054,44 @@
    AUTH PAGE COMPONENTS
    ============================================================================ */
 
-/* Language switcher container - fixed position glass container */
-.language-switcher-container {
+/* Auth header - Contains banner and language switcher */
+.auth-header {
   position: fixed;
-  top: 0.5rem;
-  right: 0.5rem;
-  z-index: 20;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Alpha banner in auth context - full width sticky */
+.auth-header .alpha-banner {
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* Language switcher row - positions switcher to the right */
+.auth-header-controls {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.5rem;
+  pointer-events: none; /* Allow clicks to pass through empty space */
 }
 
 @media (min-width: 640px) {
-  .language-switcher-container {
-    top: 1rem;
-    right: 1rem;
+  .auth-header-controls {
+    padding: 0.75rem 1rem;
   }
+}
+
+/* Language switcher container - now relative within header */
+.language-switcher-container {
+  position: relative;
+  top: auto;
+  right: auto;
+  z-index: 20;
+  pointer-events: auto; /* Re-enable clicks on the switcher */
 }
 
 /* Language switcher inner wrapper */
@@ -2081,6 +2106,12 @@
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: var(--shadow-lg);
+  transition: var(--transition-smooth);
+}
+
+.language-switcher-wrapper:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 @media (min-width: 640px) {
@@ -2094,6 +2125,12 @@
 :root.light .language-switcher-wrapper {
   background: rgba(255, 255, 255, 0.85);
   border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
+}
+
+:root.light .language-switcher-wrapper:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.15);
 }
 
 /* Language switcher icon */
@@ -2101,6 +2138,7 @@
   width: 0.875rem;
   height: 0.875rem;
   color: rgba(255, 255, 255, 0.7);
+  flex-shrink: 0;
 }
 
 @media (min-width: 640px) {
@@ -2118,11 +2156,22 @@
    AUTH PAGE MOBILE IMPROVEMENTS
    ============================================================================ */
 
-/* Landing container mobile adjustments */
+/* Landing container - accounts for fixed auth header */
+.landing-container {
+  padding-top: 5rem; /* Default: banner (~40px) + controls (~40px) */
+}
+
+@media (min-width: 640px) {
+  .landing-container {
+    padding-top: 5.5rem;
+  }
+}
+
+/* Mobile adjustments */
 @media (max-width: 640px) {
   .landing-container {
     padding: 1rem;
-    padding-top: 3.5rem; /* Account for fixed language switcher */
+    padding-top: 6rem; /* More space on mobile for touch targets */
     align-items: flex-start;
   }
 
@@ -2130,9 +2179,9 @@
     padding: 1rem 1rem 1.5rem;
     max-width: 100%;
     border-radius: var(--radius-lg);
-    margin-left: 1rem;
-    margin-right: 1rem;
-    margin-top: 3rem; /* Offset for fixed language switcher */
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+    margin-top: 0;
   }
 
   .icon-container {

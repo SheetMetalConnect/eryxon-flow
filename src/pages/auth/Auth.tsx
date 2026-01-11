@@ -102,20 +102,24 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Alpha Banner - Top of page */}
-      <AlphaBanner />
+      {/* Fixed Auth Header - Banner + Language Switcher */}
+      <header className="auth-header">
+        <div className="alpha-banner">
+          <AlphaBanner />
+        </div>
+        <div className="auth-header-controls">
+          <div className="language-switcher-container">
+            <div className="language-switcher-wrapper">
+              <Globe className="language-switcher-icon" />
+              <LanguageSwitcher />
+            </div>
+          </div>
+        </div>
+      </header>
 
       <AnimatedBackground />
 
       <div className="landing-container flex-1">
-        {/* Language Switcher - Top Right - Enhanced for mobile */}
-        <div className="language-switcher-container">
-          <div className="language-switcher-wrapper">
-            <Globe className="language-switcher-icon" />
-            <LanguageSwitcher />
-          </div>
-        </div>
-
         {/* Main Auth Card */}
         <div className="onboarding-card">
           {/* Icon/Logo */}
