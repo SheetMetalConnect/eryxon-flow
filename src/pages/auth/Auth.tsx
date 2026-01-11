@@ -141,13 +141,10 @@ export default function Auth() {
           <div className="space-y-8">
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[#3a4656] to-[#0080ff] flex items-center justify-center text-white font-bold text-sm">
-                SM
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight">ERYXON FLOW</h1>
-                <p className="text-xs text-muted-foreground uppercase tracking-widest">Manufacturing Execution</p>
-              </div>
+              <h1 className="text-2xl font-bold tracking-tight">
+                <span className="text-foreground">ERYXON</span>
+                <span className="text-muted-foreground font-normal ml-1">FLOW</span>
+              </h1>
             </div>
 
             {/* Quick Links */}
@@ -244,10 +241,10 @@ export default function Auth() {
         <header className="flex items-center justify-between p-4 lg:p-6">
           {/* Mobile Logo */}
           <div className="flex items-center gap-2 lg:hidden">
-            <div className="h-7 w-7 rounded-md bg-gradient-to-br from-[#3a4656] to-[#0080ff] flex items-center justify-center text-white font-bold text-xs">
-              SM
-            </div>
-            <span className="font-bold tracking-tight">ERYXON FLOW</span>
+            <span className="text-lg font-bold tracking-tight">
+              <span className="text-foreground">ERYXON</span>
+              <span className="text-muted-foreground font-normal ml-1">FLOW</span>
+            </span>
           </div>
           <div className="hidden lg:block" />
           
