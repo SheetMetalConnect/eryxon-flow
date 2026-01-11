@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -7,13 +7,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, ArrowRight, Factory, CheckCircle2, Info, Monitor, Globe } from "lucide-react";
+import { 
+  Loader2, 
+  ArrowRight, 
+  Factory, 
+  CheckCircle2, 
+  Info, 
+  Monitor, 
+  Globe,
+  BookOpen,
+  Rocket,
+  BarChart3,
+  Shield,
+  Zap,
+  ExternalLink,
+  Github,
+  Play
+} from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { AlphaBanner } from "@/components/AlphaBanner";
-import AnimatedBackground from "@/components/AnimatedBackground";
-import { Link } from "react-router-dom";
 import { ROUTES } from "@/routes";
+import { cn } from "@/lib/utils";
+
+const DOCS_URL = "https://docs.eryxon.io";
+const GITHUB_URL = "https://github.com/eryxon-io";
 
 export default function Auth() {
   const { t } = useTranslation();
@@ -23,7 +40,6 @@ export default function Auth() {
   const [fullName, setFullName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [termsAgreed, setTermsAgreed] = useState(false);
-  const [emailConsent, setEmailConsent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -53,27 +69,22 @@ export default function Auth() {
           setError(error.message);
         }
       } else {
-        // Validate required fields
         if (!fullName.trim()) {
           setError(t("auth.fullNameRequired"));
           setLoading(false);
           return;
         }
-
         if (!companyName.trim()) {
           setError(t("auth.companyNameRequired"));
           setLoading(false);
           return;
         }
-
-        // Validate terms agreement
         if (!termsAgreed) {
           setError(t("auth.mustAgreeToTerms"));
           setLoading(false);
           return;
         }
 
-        // Sign up creates tenant with 'suspended' status - requires admin approval
         const { error } = await signUp(email, password, {
           full_name: fullName,
           company_name: companyName,
@@ -83,15 +94,12 @@ export default function Auth() {
         if (error) {
           setError(error.message);
         } else {
-          // Show success message
           setSuccess(t("auth.pendingApprovalMessage"));
-          // Clear form
           setEmail("");
           setPassword("");
           setFullName("");
           setCompanyName("");
           setTermsAgreed(false);
-          setEmailConsent(false);
         }
       }
     } catch (err) {
@@ -101,236 +109,361 @@ export default function Auth() {
     }
   };
 
+  const features = [
+    { icon: BarChart3, title: "Real-time Analytics", description: "Track OEE, efficiency, and quality metrics" },
+    { icon: Zap, title: "AI-Powered", description: "MCP integration for intelligent automation" },
+    { icon: Shield, title: "Enterprise Security", description: "Multi-tenant isolation & GDPR compliant" },
+  ];
+
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Fixed Auth Header - Banner + Language Switcher */}
-      <header className="auth-header">
-        <div className="alpha-banner">
-          <AlphaBanner />
+    <div className="min-h-screen flex">
+      {/* Left Side - Hero/Marketing */}
+      <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] relative bg-gradient-to-br from-primary/20 via-background to-background overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--primary) / 0.15) 1px, transparent 0)`,
+            backgroundSize: '32px 32px'
+          }} />
         </div>
-        <div className="auth-header-controls">
+
+        {/* Gradient Orbs */}
+        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-10 w-64 h-64 bg-primary/10 rounded-full blur-2xl" />
+
+        {/* Content */}
+        <div className="relative z-10 flex flex-col justify-between p-8 lg:p-12 xl:p-16 w-full">
+          {/* Top - Logo & Navigation */}
+          <div className="space-y-8">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
+                <Factory className="h-8 w-8 text-primary" strokeWidth={1.5} />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Eryxon</h1>
+                <p className="text-xs text-muted-foreground uppercase tracking-widest">Manufacturing Execution</p>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <nav className="flex items-center gap-6">
+              <a 
+                href={DOCS_URL} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <BookOpen className="h-4 w-4" />
+                Documentation
+              </a>
+              <a 
+                href={`${DOCS_URL}/getting-started`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Rocket className="h-4 w-4" />
+                Getting Started
+              </a>
+              <a 
+                href={GITHUB_URL} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Github className="h-4 w-4" />
+                GitHub
+              </a>
+            </nav>
+          </div>
+
+          {/* Center - Main Marketing */}
+          <div className="flex-1 flex flex-col justify-center py-12 max-w-xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium w-fit mb-6">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+              </span>
+              Now in Public Preview
+            </div>
+
+            <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight leading-[1.1] mb-6">
+              Modern MES for{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60">
+                Sheet Metal
+              </span>
+            </h2>
+
+            <p className="text-lg text-muted-foreground leading-relaxed mb-8">
+              Track jobs, parts, and operations in real-time. Built for manufacturers who need 
+              visibility without complexity.
+            </p>
+
+            {/* Feature Pills */}
+            <div className="space-y-4">
+              {features.map((feature, idx) => (
+                <div 
+                  key={idx}
+                  className="flex items-center gap-4 p-4 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50 transition-colors hover:bg-card/80"
+                >
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <feature.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-sm">{feature.title}</h3>
+                    <p className="text-xs text-muted-foreground">{feature.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom - Demo CTA */}
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="lg" className="gap-2" asChild>
+              <a href={`${DOCS_URL}/demo`} target="_blank" rel="noopener noreferrer">
+                <Play className="h-4 w-4" />
+                Watch Demo
+              </a>
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              No credit card required
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Side - Auth Form */}
+      <div className="flex-1 flex flex-col min-h-screen bg-background">
+        {/* Header */}
+        <header className="flex items-center justify-between p-4 lg:p-6">
+          {/* Mobile Logo */}
+          <div className="flex items-center gap-2 lg:hidden">
+            <Factory className="h-6 w-6 text-primary" strokeWidth={1.5} />
+            <span className="font-semibold">Eryxon</span>
+          </div>
+          <div className="hidden lg:block" />
+          
+          {/* Controls */}
           <div className="flex items-center gap-2">
             <ThemeToggle variant="icon" />
-            <div className="language-switcher-wrapper">
-              <Globe className="language-switcher-icon" />
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors">
+              <Globe className="h-4 w-4 text-muted-foreground" />
               <LanguageSwitcher />
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <AnimatedBackground />
-
-      <div className="landing-container flex-1">
-        {/* Main Auth Card */}
-        <div className="onboarding-card">
-          {/* Icon/Logo */}
-          <div className="icon-container">
-            <Factory className="w-32 h-32 text-primary browser-icon" strokeWidth={1.5} />
-          </div>
-
-          {/* Welcome Text */}
-          <p className="welcome-text">
-            {t("auth.welcomeTo")}
-          </p>
-
-          {/* Title Container with Preview Pill */}
-          <div className="title-container">
-            <h1 className="main-title">{t("auth.appName")}</h1>
-            <p className="preview-pill">{t("auth.subtitle")}</p>
-          </div>
-
-          {/* Divider */}
-          <hr className="title-divider" />
-
-          {/* Hero Section Title */}
-          <h2 className="hero-title">
-            {isLogin ? t("auth.signIn") : t("auth.signUp")}
-          </h2>
-
-          {/* Informational Text */}
-          <p className="informational-text">
-            {isLogin ? t("auth.signInDescription") : t("auth.signUpDescription")}
-          </p>
-
-          {/* Success Message */}
-          {success && (
-            <Alert className="mb-4 border-green-500/50 bg-green-500/10">
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
-              <AlertDescription className="text-green-200">
-                {success}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Auth Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 text-left">
-            {!isLogin && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="fullName" className="text-sm font-medium">
-                    {t("auth.fullName")} <span className="text-red-400">*</span>
-                  </Label>
-                  <Input
-                    id="fullName"
-                    type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                    placeholder={t("auth.fullNamePlaceholder")}
-                    className="bg-input-background border-input"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="companyName" className="text-sm font-medium">
-                    {t("auth.companyNameLabel")} <span className="text-red-400">*</span>
-                  </Label>
-                  <Input
-                    id="companyName"
-                    type="text"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    required
-                    placeholder={t("auth.companyNamePlaceholder")}
-                    className="bg-input-background border-input"
-                  />
-                </div>
-              </>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">
-                {t("auth.email")} <span className="text-red-400">*</span>
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder={t("auth.emailPlaceholder")}
-                className="bg-input-background border-input"
-              />
+        {/* Form Container */}
+        <div className="flex-1 flex items-center justify-center p-4 lg:p-8">
+          <div className="w-full max-w-md space-y-6">
+            {/* Form Header */}
+            <div className="space-y-2 text-center lg:text-left">
+              <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
+                {isLogin ? "Welcome back" : "Create your account"}
+              </h1>
+              <p className="text-muted-foreground">
+                {isLogin 
+                  ? "Sign in to access your manufacturing dashboard" 
+                  : "Start your 14-day free trial. No credit card required."
+                }
+              </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium">
-                {t("auth.password")} <span className="text-red-400">*</span>
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                placeholder={t("auth.passwordPlaceholder")}
-                className="bg-input-background border-input"
-              />
-            </div>
-
-            {/* GDPR Checkboxes - Only show on Sign Up */}
-            {!isLogin && (
-              <div className="space-y-4 pt-2">
-                {/* Terms and Privacy Policy Agreement */}
-                <div className="flex items-start gap-3">
-                  <Checkbox
-                    id="termsAgreed"
-                    checked={termsAgreed}
-                    onCheckedChange={(checked) => setTermsAgreed(checked === true)}
-                    className="mt-1"
-                  />
-                  <Label
-                    htmlFor="termsAgreed"
-                    className="text-sm text-muted-foreground leading-relaxed cursor-pointer"
-                  >
-                    {t("auth.agreeToTerms")}{" "}
-                    <Link
-                      to={ROUTES.COMMON.PRIVACY_POLICY}
-                      className="text-primary hover:underline"
-                      target="_blank"
-                    >
-                      {t("auth.privacyPolicy")}
-                    </Link>{" "}
-                    {t("auth.and")}{" "}
-                    <Link
-                      to={ROUTES.COMMON.TERMS_OF_SERVICE}
-                      className="text-primary hover:underline"
-                      target="_blank"
-                    >
-                      {t("auth.termsOfService")}
-                    </Link>
-                    {t("auth.emailConsent")}
-                    <span className="text-red-400"> *</span>
-                  </Label>
-                </div>
-
-                {/* GDPR Notice */}
-                <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                  <Info className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {t("auth.gdprNotice")}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
+            {/* Success Message */}
+            {success && (
+              <Alert className="border-green-500/50 bg-green-500/10">
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <AlertDescription className="text-green-500">
+                  {success}
+                </AlertDescription>
               </Alert>
             )}
 
-            <div className="pt-2">
+            {/* Auth Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {!isLogin && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">
+                      Full Name <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="fullName"
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                      placeholder="John Doe"
+                      className="h-11"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="companyName">
+                      Company Name <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="companyName"
+                      type="text"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      required
+                      placeholder="Acme Manufacturing"
+                      className="h-11"
+                    />
+                  </div>
+                </>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="email">
+                  Email <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="you@company.com"
+                  className="h-11"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">
+                  Password <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  placeholder="••••••••"
+                  className="h-11"
+                />
+              </div>
+
+              {/* Terms - Sign Up Only */}
+              {!isLogin && (
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="termsAgreed"
+                      checked={termsAgreed}
+                      onCheckedChange={(checked) => setTermsAgreed(checked === true)}
+                      className="mt-0.5"
+                    />
+                    <Label
+                      htmlFor="termsAgreed"
+                      className="text-sm text-muted-foreground leading-relaxed cursor-pointer font-normal"
+                    >
+                      I agree to the{" "}
+                      <Link to={ROUTES.COMMON.PRIVACY_POLICY} className="text-primary hover:underline" target="_blank">
+                        Privacy Policy
+                      </Link>{" "}
+                      and{" "}
+                      <Link to={ROUTES.COMMON.TERMS_OF_SERVICE} className="text-primary hover:underline" target="_blank">
+                        Terms of Service
+                      </Link>
+                      <span className="text-destructive"> *</span>
+                    </Label>
+                  </div>
+
+                  <div className="flex items-start gap-2 p-3 rounded-lg bg-info/10 border border-info/20">
+                    <Info className="h-4 w-4 text-info mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Your data is stored securely in the EU. We're GDPR compliant and never share your information.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Error */}
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {/* Submit */}
               <Button
                 type="submit"
-                className="w-full cta-button"
+                className="w-full h-11 gap-2"
                 disabled={loading || (!isLogin && !termsAgreed)}
               >
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isLogin ? t("auth.signIn") : t("auth.signUp")}
-                <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {isLogin ? "Sign In" : "Create Account"}
+                <ArrowRight className="h-4 w-4" />
               </Button>
-            </div>
 
-            <div className="text-center pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setError(null);
-                  setSuccess(null);
-                }}
-                className="text-sm text-primary hover:underline"
-              >
-                {isLogin ? t("auth.noAccount") : t("auth.haveAccount")}
-              </button>
-            </div>
-          </form>
-
-          {/* Coming Soon Notice */}
-          {!isLogin && (
-            <div className="mt-4 pt-4 border-t border-white/10">
-              <p className="text-xs text-muted-foreground text-center">
-                {t("auth.comingSoonNotice")}
-              </p>
-            </div>
-          )}
-
-          {/* Shop Floor Terminal Info */}
-          {isLogin && (
-            <div className="mt-4 pt-4 border-t border-white/10">
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <Monitor className="h-4 w-4" />
-                <span>{t("auth.shopFloorTerminal")}</span>
+              {/* Toggle */}
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsLogin(!isLogin);
+                    setError(null);
+                    setSuccess(null);
+                  }}
+                  className="text-sm text-primary hover:underline"
+                >
+                  {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+                </button>
               </div>
-              <p className="text-xs text-muted-foreground/60 text-center mt-2 leading-relaxed">
-                {t("auth.shopFloorTerminalHint")}
+            </form>
+
+            {/* Divider */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">or</span>
+              </div>
+            </div>
+
+            {/* Shop Floor Terminal */}
+            <div className="text-center space-y-2">
+              <Link 
+                to={ROUTES.OPERATOR.TERMINAL_LOGIN}
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Monitor className="h-4 w-4" />
+                Shop Floor Terminal Login
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+              <p className="text-xs text-muted-foreground/60">
+                For operators using shared terminals with PIN login
               </p>
             </div>
-          )}
+          </div>
         </div>
+
+        {/* Footer */}
+        <footer className="p-4 lg:p-6 border-t border-border/50">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-4">
+              <Link to={ROUTES.COMMON.PRIVACY_POLICY} className="hover:text-foreground transition-colors">
+                Privacy
+              </Link>
+              <Link to={ROUTES.COMMON.TERMS_OF_SERVICE} className="hover:text-foreground transition-colors">
+                Terms
+              </Link>
+              <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+                Docs
+              </a>
+              <a href={`${DOCS_URL}/support`} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+                Support
+              </a>
+            </div>
+            <p>© {new Date().getFullYear()} Eryxon. All rights reserved.</p>
+          </div>
+        </footer>
       </div>
     </div>
   );
