@@ -22,10 +22,10 @@ const AnimatedBackground: React.FC = () => {
   const { resolvedTheme } = useThemeMode();
   const isDark = resolvedTheme === 'dark';
 
-  // Adjust opacity for light mode (more subtle)
-  const primaryOpacity = isDark ? 0.5 : 0.25;
-  const secondaryOpacity = isDark ? 0.4 : 0.2;
-  const accentOpacity = isDark ? 0.35 : 0.18;
+  // Adjust opacity - visible in both modes
+  const primaryOpacity = isDark ? 0.5 : 0.55;
+  const secondaryOpacity = isDark ? 0.4 : 0.45;
+  const accentOpacity = isDark ? 0.35 : 0.4;
 
   return (
     <div
@@ -39,7 +39,7 @@ const AnimatedBackground: React.FC = () => {
         style={{
           background: isDark
             ? 'linear-gradient(135deg, rgba(30, 144, 255, 0.08) 0%, rgba(139, 92, 246, 0.06) 50%, rgba(6, 182, 212, 0.05) 100%)'
-            : 'linear-gradient(135deg, rgba(30, 144, 255, 0.04) 0%, rgba(139, 92, 246, 0.03) 50%, rgba(6, 182, 212, 0.025) 100%)',
+            : 'linear-gradient(135deg, rgba(30, 144, 255, 0.08) 0%, rgba(139, 92, 246, 0.06) 50%, rgba(6, 182, 212, 0.05) 100%)',
         }}
       />
 
@@ -49,7 +49,7 @@ const AnimatedBackground: React.FC = () => {
         style={{
           background: isDark
             ? 'linear-gradient(225deg, rgba(251, 188, 5, 0.05) 0%, rgba(234, 67, 53, 0.04) 50%, rgba(52, 168, 83, 0.05) 100%)'
-            : 'linear-gradient(225deg, rgba(251, 188, 5, 0.025) 0%, rgba(234, 67, 53, 0.02) 50%, rgba(52, 168, 83, 0.025) 100%)',
+            : 'linear-gradient(225deg, rgba(251, 188, 5, 0.06) 0%, rgba(234, 67, 53, 0.05) 50%, rgba(52, 168, 83, 0.06) 100%)',
           mixBlendMode: 'screen',
         }}
       />
