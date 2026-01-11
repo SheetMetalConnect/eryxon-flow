@@ -119,7 +119,9 @@
         "confirmWarning": "This action cannot be undone",
         "confirmDescription": "You will be immediately signed out and will not be able to recover your account.",
         "confirmButton": "Delete My Account",
-        "deleting": "Deleting..."
+        "deleting": "Deleting...",
+        "confirmationRequired": "Please type DELETE to confirm",
+        "success": "Your account and all associated data have been permanently deleted"
       },
       "deleteTenant": {
         "title": "Delete Entire Organization",
@@ -141,8 +143,11 @@
         "confirmWarningTitle": "CRITICAL: This affects ALL users",
         "confirmWarningMessage": "This will delete data for ALL users in your organization. Everyone will lose access. This action is PERMANENT and CANNOT be undone.",
         "confirmButton": "Delete Organization",
-        "deleting": "Deleting..."
+        "deleting": "Deleting...",
+        "confirmationRequired": "Please type DELETE to confirm",
+        "success": "Your organization and all data have been permanently deleted"
       },
+      "typeToConfirm": "Type \"{{text}}\" to confirm",
       "exportFirst": "Before deleting, you can export your data using the",
       "dataExportLink": "Data Export feature",
       "privacyPolicyLink": "Privacy Policy",

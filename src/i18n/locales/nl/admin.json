@@ -269,7 +269,9 @@
         "confirmWarning": "Deze actie kan niet ongedaan worden gemaakt",
         "confirmDescription": "U wordt onmiddellijk afgemeld en kunt uw account niet meer herstellen.",
         "confirmButton": "Mijn account verwijderen",
-        "deleting": "Verwijderen..."
+        "deleting": "Verwijderen...",
+        "confirmationRequired": "Typ DELETE om te bevestigen",
+        "success": "Uw account en alle bijbehorende gegevens zijn permanent verwijderd"
       },
       "deleteTenant": {
         "title": "Hele organisatie verwijderen",
@@ -291,8 +293,11 @@
         "confirmWarningTitle": "KRITIEK: Dit heeft invloed op ALLE gebruikers",
         "confirmWarningMessage": "Dit verwijdert gegevens voor ALLE gebruikers in uw organisatie. Iedereen verliest toegang. Deze actie is PERMANENT en kan NIET ongedaan worden gemaakt.",
         "confirmButton": "Organisatie verwijderen",
-        "deleting": "Verwijderen..."
+        "deleting": "Verwijderen...",
+        "confirmationRequired": "Typ DELETE om te bevestigen",
+        "success": "Uw organisatie en alle gegevens zijn permanent verwijderd"
       },
+      "typeToConfirm": "Typ \"{{text}}\" om te bevestigen",
       "exportFirst": "Voordat u verwijdert, kunt u uw gegevens exporteren via de",
       "dataExportLink": "Gegevensexport functie",
       "privacyPolicyLink": "Privacybeleid",

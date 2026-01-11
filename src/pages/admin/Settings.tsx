@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useTranslation } from "react-i18next";
@@ -53,6 +54,10 @@ export const Settings: React.FC = () => {
   const [showDeleteTenantDialog, setShowDeleteTenantDialog] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [isDeletingTenant, setIsDeletingTenant] = useState(false);
+  const [deleteAccountConfirmation, setDeleteAccountConfirmation] = useState("");
+  const [deleteTenantConfirmation, setDeleteTenantConfirmation] = useState("");
+
+  const CONFIRMATION_TEXT = "DELETE";
 
   useEffect(() => {
     if (!profile?.tenant_id) return;
@@ -96,35 +101,79 @@ export const Settings: React.FC = () => {
   };
 
   const handleDeleteAccount = async () => {
+    if (deleteAccountConfirmation !== CONFIRMATION_TEXT) {
+      toast.error(t("settings.gdpr.deleteAccount.confirmationRequired"));
+      return;
+    }
+
     setIsDeletingAccount(true);
     try {
-      // Delete account by signing out and clearing session
+      // Call the database function to delete all user data
+      const { data, error } = await supabase.rpc('delete_user_account');
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success(t("settings.gdpr.deleteAccount.success"));
+
+      // Sign out after successful deletion
       await signOut();
-      toast.success("Account deleted successfully");
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error deleting account:', error);
-      toast.error(error.message || "Failed to delete account");
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete account";
+      toast.error(errorMessage);
       setIsDeletingAccount(false);
       setShowDeleteAccountDialog(false);
+      setDeleteAccountConfirmation("");
     }
   };
 
   const handleDeleteTenant = async () => {
     if (!tenant?.id) return;
 
+    if (deleteTenantConfirmation !== CONFIRMATION_TEXT) {
+      toast.error(t("settings.gdpr.deleteTenant.confirmationRequired"));
+      return;
+    }
+
     setIsDeletingTenant(true);
     try {
-      // Clear all tenant data by signing out
+      // Call the database function to delete all tenant data
+      const { data, error } = await supabase.rpc('delete_tenant_data', {
+        p_tenant_id: tenant.id
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success(t("settings.gdpr.deleteTenant.success"));
+
+      // Sign out after successful deletion
       await signOut();
-      toast.success("Tenant deleted successfully");
-      setTimeout(async () => {
-        await signOut();
-      }, 1000);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error deleting tenant:', error);
-      toast.error(error.message || "Failed to delete tenant");
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete tenant";
+      toast.error(errorMessage);
       setIsDeletingTenant(false);
       setShowDeleteTenantDialog(false);
+      setDeleteTenantConfirmation("");
+    }
+  };
+
+  // Reset confirmation when dialog closes
+  const handleAccountDialogChange = (open: boolean) => {
+    setShowDeleteAccountDialog(open);
+    if (!open) {
+      setDeleteAccountConfirmation("");
+    }
+  };
+
+  const handleTenantDialogChange = (open: boolean) => {
+    setShowDeleteTenantDialog(open);
+    if (!open) {
+      setDeleteTenantConfirmation("");
     }
   };
 
@@ -463,34 +512,49 @@ export const Settings: React.FC = () => {
       </Card>
 
       {/* Delete Account Confirmation Dialog */}
-      <AlertDialog open={showDeleteAccountDialog} onOpenChange={setShowDeleteAccountDialog}>
+      <AlertDialog open={showDeleteAccountDialog} onOpenChange={handleAccountDialogChange}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("settings.gdpr.deleteAccount.confirmTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("settings.gdpr.deleteAccount.confirmMessage")}
-              <ul className="mt-3 space-y-1 text-sm list-disc list-inside">
-                <li>{t("settings.gdpr.deleteAccount.confirmItems.profile")}</li>
-                <li>{t("settings.gdpr.deleteAccount.confirmItems.timeEntries")}</li>
-                <li>{t("settings.gdpr.deleteAccount.confirmItems.assignments")}</li>
-                <li>{t("settings.gdpr.deleteAccount.confirmItems.issues")}</li>
-              </ul>
-              <Alert className="mt-4" variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>{t("settings.gdpr.deleteAccount.confirmWarning")}</AlertTitle>
-                <AlertDescription>
-                  {t("settings.gdpr.deleteAccount.confirmDescription")}
-                </AlertDescription>
-              </Alert>
+            <AlertDialogDescription asChild>
+              <div>
+                <p>{t("settings.gdpr.deleteAccount.confirmMessage")}</p>
+                <ul className="mt-3 space-y-1 text-sm list-disc list-inside">
+                  <li>{t("settings.gdpr.deleteAccount.confirmItems.profile")}</li>
+                  <li>{t("settings.gdpr.deleteAccount.confirmItems.timeEntries")}</li>
+                  <li>{t("settings.gdpr.deleteAccount.confirmItems.assignments")}</li>
+                  <li>{t("settings.gdpr.deleteAccount.confirmItems.issues")}</li>
+                </ul>
+                <Alert className="mt-4" variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>{t("settings.gdpr.deleteAccount.confirmWarning")}</AlertTitle>
+                  <AlertDescription>
+                    {t("settings.gdpr.deleteAccount.confirmDescription")}
+                  </AlertDescription>
+                </Alert>
+                <div className="mt-4 space-y-2">
+                  <Label htmlFor="delete-account-confirm" className="text-sm font-medium">
+                    {t("settings.gdpr.typeToConfirm", { text: CONFIRMATION_TEXT })}
+                  </Label>
+                  <Input
+                    id="delete-account-confirm"
+                    value={deleteAccountConfirmation}
+                    onChange={(e) => setDeleteAccountConfirmation(e.target.value)}
+                    placeholder={CONFIRMATION_TEXT}
+                    disabled={isDeletingAccount}
+                    className="font-mono"
+                  />
+                </div>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeletingAccount}>
-              {t("Cancel")}
+              {t("common.cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteAccount}
-              disabled={isDeletingAccount}
+              disabled={isDeletingAccount || deleteAccountConfirmation !== CONFIRMATION_TEXT}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isDeletingAccount ? (
@@ -507,37 +571,52 @@ export const Settings: React.FC = () => {
       </AlertDialog>
 
       {/* Delete Tenant Confirmation Dialog */}
-      <AlertDialog open={showDeleteTenantDialog} onOpenChange={setShowDeleteTenantDialog}>
+      <AlertDialog open={showDeleteTenantDialog} onOpenChange={handleTenantDialogChange}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("settings.gdpr.deleteTenant.confirmTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("settings.gdpr.deleteTenant.confirmMessage")}
-              <ul className="mt-3 space-y-1 text-sm list-disc list-inside">
-                <li>{t("settings.gdpr.deleteTenant.confirmItems.users")}</li>
-                <li>{t("settings.gdpr.deleteTenant.confirmItems.jobs")}</li>
-                <li>{t("settings.gdpr.deleteTenant.confirmItems.timeEntries")}</li>
-                <li>{t("settings.gdpr.deleteTenant.confirmItems.issues")}</li>
-                <li>{t("settings.gdpr.deleteTenant.confirmItems.config")}</li>
-                <li>{t("settings.gdpr.deleteTenant.confirmItems.api")}</li>
-                <li>{t("settings.gdpr.deleteTenant.confirmItems.all")}</li>
-              </ul>
-              <Alert className="mt-4" variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>{t("settings.gdpr.deleteTenant.confirmWarningTitle")}</AlertTitle>
-                <AlertDescription>
-                  {t("settings.gdpr.deleteTenant.confirmWarningMessage")}
-                </AlertDescription>
-              </Alert>
+            <AlertDialogDescription asChild>
+              <div>
+                <p>{t("settings.gdpr.deleteTenant.confirmMessage")}</p>
+                <ul className="mt-3 space-y-1 text-sm list-disc list-inside">
+                  <li>{t("settings.gdpr.deleteTenant.confirmItems.users")}</li>
+                  <li>{t("settings.gdpr.deleteTenant.confirmItems.jobs")}</li>
+                  <li>{t("settings.gdpr.deleteTenant.confirmItems.timeEntries")}</li>
+                  <li>{t("settings.gdpr.deleteTenant.confirmItems.issues")}</li>
+                  <li>{t("settings.gdpr.deleteTenant.confirmItems.config")}</li>
+                  <li>{t("settings.gdpr.deleteTenant.confirmItems.api")}</li>
+                  <li>{t("settings.gdpr.deleteTenant.confirmItems.all")}</li>
+                </ul>
+                <Alert className="mt-4" variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>{t("settings.gdpr.deleteTenant.confirmWarningTitle")}</AlertTitle>
+                  <AlertDescription>
+                    {t("settings.gdpr.deleteTenant.confirmWarningMessage")}
+                  </AlertDescription>
+                </Alert>
+                <div className="mt-4 space-y-2">
+                  <Label htmlFor="delete-tenant-confirm" className="text-sm font-medium">
+                    {t("settings.gdpr.typeToConfirm", { text: CONFIRMATION_TEXT })}
+                  </Label>
+                  <Input
+                    id="delete-tenant-confirm"
+                    value={deleteTenantConfirmation}
+                    onChange={(e) => setDeleteTenantConfirmation(e.target.value)}
+                    placeholder={CONFIRMATION_TEXT}
+                    disabled={isDeletingTenant}
+                    className="font-mono"
+                  />
+                </div>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeletingTenant}>
-              {t("Cancel")}
+              {t("common.cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteTenant}
-              disabled={isDeletingTenant}
+              disabled={isDeletingTenant || deleteTenantConfirmation !== CONFIRMATION_TEXT}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isDeletingTenant ? (
