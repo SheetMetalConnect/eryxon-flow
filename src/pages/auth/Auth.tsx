@@ -119,14 +119,14 @@ export default function Auth() {
   ];
 
   return (
-    <div className="min-h-screen flex relative bg-background">
-      {/* Animated Background Orbs */}
+    <div className="min-h-screen flex relative">
+      {/* Animated Background Orbs - renders behind everything */}
       <AnimatedBackground />
 
       {/* Left Side - Hero/Marketing */}
       <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] relative overflow-hidden">
-        {/* Subtle gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
+        {/* Gradient overlay for depth */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
         
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-20">
@@ -207,7 +207,7 @@ export default function Auth() {
               {features.map((feature, idx) => (
                 <div 
                   key={idx}
-                  className="flex items-center gap-4 p-4 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50 transition-colors hover:bg-card/80"
+                  className="flex items-center gap-4 p-4 rounded-xl glass-card transition-all hover:scale-[1.02]"
                 >
                   <div className="p-2 rounded-lg bg-primary/10">
                     <feature.icon className="h-5 w-5 text-primary" />
@@ -223,7 +223,7 @@ export default function Auth() {
 
           {/* Bottom - Demo CTA */}
           <div className="flex items-center gap-4">
-            <Button variant="outline" size="lg" className="gap-2" asChild>
+            <Button className="cta-button" asChild>
               <a href={`${DOCS_URL}/guides/quick-start/`} target="_blank" rel="noopener noreferrer">
                 <Play className="h-4 w-4" />
                 Open Docs
@@ -261,11 +261,11 @@ export default function Auth() {
 
         {/* Form Container */}
         <div className="flex-1 flex items-center justify-center p-4 lg:p-8">
-          <div className="w-full max-w-md space-y-6">
+          <div className="w-full max-w-md space-y-6 glass-card p-6 lg:p-8">
             {/* Form Header */}
             <div className="space-y-2 text-center lg:text-left">
               <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
-                {isLogin ? t("auth.welcomeTo") : t("auth.signUp")}
+                {isLogin ? `${t("auth.welcomeTo")} ${t("auth.appName")}` : t("auth.signUp")}
               </h1>
               <p className="text-muted-foreground">
                 {isLogin 
@@ -397,7 +397,7 @@ export default function Auth() {
               {/* Submit */}
               <Button
                 type="submit"
-                className="w-full h-11 gap-2"
+                className="cta-button w-full h-11"
                 disabled={loading || (!isLogin && !termsAgreed)}
               >
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
