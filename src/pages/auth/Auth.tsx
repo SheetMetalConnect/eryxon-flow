@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,17 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import {
   Loader2,
   ArrowRight,
   CheckCircle2,
   Info,
-  Monitor,
   Globe,
   BookOpen,
-  ClipboardList,
-  Clock,
-  Activity,
   Github,
   Factory
 } from "lucide-react";
@@ -30,6 +27,9 @@ const SITE_URL = "https://eryxon.eu";
 const GITHUB_URL = "https://github.com/SheetMetalConnect/eryxon-flow";
 const GITHUB_ISSUES_URL = `${GITHUB_URL}/issues`;
 
+// Turnstile site key from environment variable (set in Vercel)
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+
 export default function Auth() {
   const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(true);
@@ -38,11 +38,13 @@ export default function Auth() {
   const [fullName, setFullName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [termsAgreed, setTermsAgreed] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const { signIn, signUp, profile } = useAuth();
   const navigate = useNavigate();
+  const turnstileRef = useRef<TurnstileInstance>(null);
 
   // Redirect if already logged in
   if (profile) {
@@ -54,6 +56,20 @@ export default function Auth() {
     return null;
   }
 
+  const handleLogoClick = () => {
+    // Reset to login state
+    setIsLogin(true);
+    setError(null);
+    setSuccess(null);
+    setEmail("");
+    setPassword("");
+    setFullName("");
+    setCompanyName("");
+    setTermsAgreed(false);
+    setCaptchaToken(null);
+    turnstileRef.current?.reset();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -62,11 +78,15 @@ export default function Auth() {
 
     try {
       if (isLogin) {
-        const { error } = await signIn(email, password);
+        // Login - pass captcha token if available
+        const { error } = await signIn(email, password, captchaToken || undefined);
         if (error) {
           setError(error.message);
+          turnstileRef.current?.reset();
+          setCaptchaToken(null);
         }
       } else {
+        // Sign up - captcha required
         if (!fullName.trim()) {
           setError(t("auth.fullNameRequired"));
           setLoading(false);
@@ -82,15 +102,22 @@ export default function Auth() {
           setLoading(false);
           return;
         }
+        if (TURNSTILE_SITE_KEY && !captchaToken) {
+          setError(t("auth.captchaRequired"));
+          setLoading(false);
+          return;
+        }
 
         const { error } = await signUp(email, password, {
           full_name: fullName,
           company_name: companyName,
           role: "admin"
-        });
+        }, captchaToken || undefined);
 
         if (error) {
           setError(error.message);
+          turnstileRef.current?.reset();
+          setCaptchaToken(null);
         } else {
           setSuccess(t("auth.pendingApprovalMessage"));
           setEmail("");
@@ -98,35 +125,18 @@ export default function Auth() {
           setFullName("");
           setCompanyName("");
           setTermsAgreed(false);
+          setCaptchaToken(null);
+          turnstileRef.current?.reset();
         }
       }
     } catch (err) {
       setError(t("auth.unexpectedError"));
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
   };
-
-  const features = [
-    {
-      icon: ClipboardList,
-      titleKey: "auth.features.analytics.title",
-      descKey: "auth.features.analytics.description",
-      iconClass: "icon-blue"
-    },
-    {
-      icon: Clock,
-      titleKey: "auth.features.aiPowered.title",
-      descKey: "auth.features.aiPowered.description",
-      iconClass: "icon-yellow"
-    },
-    {
-      icon: Activity,
-      titleKey: "auth.features.security.title",
-      descKey: "auth.features.security.description",
-      iconClass: "icon-green"
-    },
-  ];
 
   return (
     <div className="min-h-screen flex flex-col relative">
@@ -137,14 +147,17 @@ export default function Auth() {
       <header className="relative z-10 w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
+            {/* Logo - Clickable */}
+            <button
+              onClick={handleLogoClick}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
               <Factory className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
               <span className="text-xl sm:text-2xl font-bold tracking-tight">
                 <span className="text-foreground">ERYXON</span>
                 <span className="text-muted-foreground font-normal ml-1">FLOW</span>
               </span>
-            </div>
+            </button>
 
             {/* Navigation & Controls */}
             <div className="flex items-center gap-2 sm:gap-4">
@@ -313,6 +326,23 @@ export default function Auth() {
                 </div>
               )}
 
+              {/* Turnstile CAPTCHA - Show for sign up, optional for login */}
+              {TURNSTILE_SITE_KEY && (
+                <div className="flex justify-center pt-2">
+                  <Turnstile
+                    ref={turnstileRef}
+                    siteKey={TURNSTILE_SITE_KEY}
+                    onSuccess={setCaptchaToken}
+                    onError={() => setCaptchaToken(null)}
+                    onExpire={() => setCaptchaToken(null)}
+                    options={{
+                      theme: "auto",
+                      size: "normal",
+                    }}
+                  />
+                </div>
+              )}
+
               {/* Error */}
               {error && (
                 <Alert variant="destructive">
@@ -324,7 +354,7 @@ export default function Auth() {
               <Button
                 type="submit"
                 className="cta-button w-full h-11"
-                disabled={loading || (!isLogin && !termsAgreed)}
+                disabled={loading || (!isLogin && !termsAgreed) || (!isLogin && TURNSTILE_SITE_KEY && !captchaToken)}
               >
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                 {isLogin ? t("auth.signIn") : t("auth.signUp")}
@@ -339,6 +369,8 @@ export default function Auth() {
                     setIsLogin(!isLogin);
                     setError(null);
                     setSuccess(null);
+                    setCaptchaToken(null);
+                    turnstileRef.current?.reset();
                   }}
                   className="text-sm text-primary hover:underline"
                 >
@@ -346,49 +378,6 @@ export default function Auth() {
                 </button>
               </div>
             </form>
-
-            {/* Divider */}
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">{t("auth.or")}</span>
-              </div>
-            </div>
-
-            {/* Shop Floor Terminal Link */}
-            <div className="text-center space-y-2">
-              <Link
-                to={ROUTES.OPERATOR.TERMINAL_LOGIN}
-                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group"
-              >
-                <Monitor className="h-4 w-4" />
-                {t("auth.shopFloorTerminal")}
-                <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-              </Link>
-              <p className="text-xs text-muted-foreground/70 max-w-xs mx-auto">
-                {t("auth.shopFloorTerminalHint")}
-              </p>
-            </div>
-          </div>
-
-          {/* Features Section - Below Card */}
-          <div className="mt-8 hidden sm:block">
-            <div className="grid grid-cols-3 gap-3">
-              {features.map((feature, idx) => (
-                <div
-                  key={idx}
-                  className="glass-card p-3 text-center transition-all hover:scale-[1.02]"
-                >
-                  <div className="inline-flex p-2 rounded-lg bg-primary/10 mb-2">
-                    <feature.icon className={`h-4 w-4 ${feature.iconClass}`} />
-                  </div>
-                  <h3 className="font-medium text-xs mb-0.5">{t(feature.titleKey)}</h3>
-                  <p className="text-[10px] text-muted-foreground leading-tight">{t(feature.descKey)}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </main>
