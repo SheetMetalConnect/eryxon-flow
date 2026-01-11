@@ -77,7 +77,7 @@ const AnimatedBackground: React.FC = () => {
           filter: 'blur(90px)',
           top: '-5%',
           right: '10%',
-          animation: 'orbFloat 25s ease-in-out infinite, orbPulse 4s ease-in-out infinite alternate',
+          animation: 'orbFloat 16s ease-in-out infinite, orbPulse 2.5s ease-in-out infinite alternate',
         }}
       />
 
@@ -104,7 +104,7 @@ const AnimatedBackground: React.FC = () => {
           filter: 'blur(80px)',
           bottom: '10%',
           left: '-8%',
-          animation: 'orbFloat 22s ease-in-out infinite reverse, orbGlow 5s ease-in-out infinite alternate',
+          animation: 'orbFloat 14s ease-in-out infinite reverse, orbGlow 3s ease-in-out infinite alternate',
         }}
       />
 
@@ -132,7 +132,7 @@ const AnimatedBackground: React.FC = () => {
           filter: 'blur(60px)',
           top: '25%',
           right: '25%',
-          animation: 'orbFloat 18s ease-in-out infinite 2s',
+          animation: 'orbFloat 11s ease-in-out infinite 1s',
         }}
       />
 
@@ -145,7 +145,7 @@ const AnimatedBackground: React.FC = () => {
           filter: 'blur(50px)',
           bottom: '30%',
           left: '30%',
-          animation: 'orbFloat 16s ease-in-out infinite 4s reverse',
+          animation: 'orbFloat 10s ease-in-out infinite 2s reverse',
         }}
       />
 
@@ -162,10 +162,10 @@ const AnimatedBackground: React.FC = () => {
         @keyframes orbPulse {
           0% {
             transform: scale(1);
-            opacity: 0.8;
+            opacity: 0.75;
           }
           100% {
-            transform: scale(1.15);
+            transform: scale(1.2);
             opacity: 1;
           }
         }
@@ -185,32 +185,32 @@ const AnimatedBackground: React.FC = () => {
             transform: rotate(0deg) scale(1);
           }
           33% {
-            opacity: 0.85;
-            transform: rotate(3deg) scale(1.02);
+            opacity: 0.8;
+            transform: rotate(5deg) scale(1.04);
           }
           66% {
-            opacity: 0.95;
-            transform: rotate(-2deg) scale(0.98);
+            opacity: 0.9;
+            transform: rotate(-4deg) scale(0.96);
           }
         }
 
         @keyframes gradient-shift-secondary {
           0%, 100% {
-            opacity: 0.8;
+            opacity: 0.75;
             transform: rotate(0deg) scale(1);
           }
           50% {
             opacity: 1;
-            transform: rotate(-3deg) scale(1.03);
+            transform: rotate(-5deg) scale(1.05);
           }
         }
 
         .animate-gradient-shift-primary {
-          animation: gradient-shift-primary 30s ease-in-out infinite;
+          animation: gradient-shift-primary 18s ease-in-out infinite;
         }
 
         .animate-gradient-shift-secondary {
-          animation: gradient-shift-secondary 25s ease-in-out infinite;
+          animation: gradient-shift-secondary 15s ease-in-out infinite;
         }
       `}</style>
     </div>
