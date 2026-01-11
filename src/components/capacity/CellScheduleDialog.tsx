@@ -223,12 +223,12 @@ export function CellScheduleDialog({
             {isNonWorking ? (
               <span className="flex items-center gap-1 text-muted-foreground">
                 <CalendarOff className="h-4 w-4" />
-                {dayInfo.label || (dayInfo.type === "weekend" ? "Weekend" : "Non-working day")}
+                {dayInfo.label || (dayInfo.type === "weekend" ? t("capacity.weekend") : t("capacity.nonWorkingDay"))}
               </span>
             ) : (
               <span className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
-                {totalHours.toFixed(1)}h / {capacity}h scheduled
+                {t("capacity.hoursScheduled", { hours: totalHours.toFixed(1), capacity })}
               </span>
             )}
           </DialogDescription>
@@ -239,7 +239,7 @@ export function CellScheduleDialog({
             {/* Capacity bar */}
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Utilization</span>
+                <span className="text-muted-foreground">{t("capacity.utilization")}</span>
                 <span className="font-medium">{Math.round(utilizationPercent)}%</span>
               </div>
               <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -250,7 +250,7 @@ export function CellScheduleDialog({
               </div>
               {utilizationPercent > 100 && (
                 <p className="text-xs text-red-500">
-                  Over capacity by {(totalHours - capacity).toFixed(1)}h
+                  {t("capacity.overCapacityBy", { hours: (totalHours - capacity).toFixed(1) })}
                 </p>
               )}
             </div>
@@ -258,18 +258,18 @@ export function CellScheduleDialog({
             {/* Allocations list */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium text-sm">Scheduled Operations</h4>
+                <h4 className="font-medium text-sm">{t("capacity.scheduledOperations")}</h4>
                 <span className="text-xs text-muted-foreground">
-                  {allocations.length} operation{allocations.length !== 1 ? "s" : ""}
+                  {t("capacity.operationCount", { count: allocations.length })}
                 </span>
               </div>
 
               {allocations.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No operations scheduled for this day</p>
+                  <p className="text-sm">{t("capacity.noOperationsScheduled")}</p>
                   <p className="text-xs mt-1">
-                    Use Auto Schedule or manually assign operations
+                    {t("capacity.useAutoSchedule")}
                   </p>
                 </div>
               ) : (
@@ -286,7 +286,7 @@ export function CellScheduleDialog({
                               {allocation.operation?.part?.job?.job_number || "—"}
                             </Badge>
                             <span className="font-medium truncate">
-                              {allocation.operation?.operation_name || "Operation"}
+                              {allocation.operation?.operation_name || t("capacity.operation")}
                             </span>
                           </div>
                           <div className="text-xs text-muted-foreground mt-1 truncate">
@@ -370,9 +370,9 @@ export function CellScheduleDialog({
         {isNonWorking && (
           <div className="text-center py-8 text-muted-foreground">
             <CalendarOff className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p className="font-medium">{dayInfo.label || "Non-working Day"}</p>
+            <p className="font-medium">{dayInfo.label || t("capacity.nonWorkingDay")}</p>
             <p className="text-sm mt-1">
-              No operations can be scheduled on this day
+              {t("capacity.noOperationsOnDay")}
             </p>
           </div>
         )}
