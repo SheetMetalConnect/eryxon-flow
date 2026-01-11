@@ -32,9 +32,9 @@ export default function Auth() {
   // Redirect if already logged in
   if (profile) {
     if (profile.role === "admin") {
-      navigate("/dashboard");
+      navigate(ROUTES.ADMIN.DASHBOARD);
     } else {
-      navigate("/queue");
+      navigate(ROUTES.OPERATOR.WORK_QUEUE);
     }
     return null;
   }
@@ -245,7 +245,7 @@ export default function Auth() {
                   >
                     {t("auth.agreeToTerms")}{" "}
                     <Link
-                      to="/privacy"
+                      to={ROUTES.COMMON.PRIVACY_POLICY}
                       className="text-primary hover:underline"
                       target="_blank"
                     >
@@ -253,7 +253,7 @@ export default function Auth() {
                     </Link>{" "}
                     {t("auth.and")}{" "}
                     <Link
-                      to="/terms"
+                      to={ROUTES.COMMON.TERMS_OF_SERVICE}
                       className="text-primary hover:underline"
                       target="_blank"
                     >
