@@ -116,7 +116,7 @@ Deno.serve(async (req: Request) => {
         <div class="label">Tenant ID</div>
         <div class="value" style="font-family: monospace; font-size: 12px;">${tenant.id}</div>
       </div>
-      <a href="${APP_URL}/admin/config/users" class="button">Review in Admin Panel</a>
+      <a href="${APP_URL}/admin/dashboard" class="button">Review in Admin Panel</a>
       <div class="footer">
         <p>This is an automated notification from Eryxon Flow.</p>
       </div>
