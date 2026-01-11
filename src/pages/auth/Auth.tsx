@@ -28,9 +28,11 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { ROUTES } from "@/routes";
 import { cn } from "@/lib/utils";
+import AnimatedBackground from "@/components/AnimatedBackground";
 
-const DOCS_URL = "https://docs.eryxon.io";
-const GITHUB_URL = "https://github.com/eryxon-io";
+const DOCS_URL = "https://docs.eryxon.eu";
+const GITHUB_URL = "https://github.com/SheetMetalConnect/eryxon-flow";
+const APP_URL = "https://app.eryxon.eu";
 
 export default function Auth() {
   const { t } = useTranslation();
@@ -116,20 +118,19 @@ export default function Auth() {
   ];
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex relative">
+      {/* Animated Background Orbs */}
+      <AnimatedBackground />
+
       {/* Left Side - Hero/Marketing */}
-      <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] relative bg-gradient-to-br from-primary/20 via-background to-background overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] relative bg-gradient-to-br from-primary/5 via-transparent to-transparent overflow-hidden">
         {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-30">
+        <div className="absolute inset-0 opacity-20">
           <div className="absolute inset-0" style={{
             backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--primary) / 0.15) 1px, transparent 0)`,
             backgroundSize: '32px 32px'
           }} />
         </div>
-
-        {/* Gradient Orbs */}
-        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-10 w-64 h-64 bg-primary/10 rounded-full blur-2xl" />
 
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-between p-8 lg:p-12 xl:p-16 w-full">
@@ -461,7 +462,7 @@ export default function Auth() {
                 Support
               </a>
             </div>
-            <p>© {new Date().getFullYear()} Eryxon. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Sheet Metal Connect e.U. All rights reserved.</p>
           </div>
         </footer>
       </div>
