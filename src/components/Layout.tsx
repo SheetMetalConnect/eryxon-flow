@@ -15,8 +15,13 @@ export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
 
   // Show nothing while loading to prevent layout flicker
-  if (loading || !profile) {
+  if (loading) {
     return null;
+  }
+
+  // Public pages (privacy policy, terms, etc.) render without a role-based layout
+  if (!profile) {
+    return <>{children}</>;
   }
 
   // Check if current path is an operator view path

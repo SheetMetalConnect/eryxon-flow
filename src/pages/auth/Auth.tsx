@@ -30,7 +30,8 @@ import { ROUTES } from "@/routes";
 import { cn } from "@/lib/utils";
 import AnimatedBackground from "@/components/AnimatedBackground";
 
-const DOCS_URL = "https://docs.eryxon.eu";
+const SITE_URL = "https://eryxon.eu";
+const DOCS_URL = `${SITE_URL}/docs`;
 const GITHUB_URL = "https://github.com/SheetMetalConnect/eryxon-flow";
 const APP_URL = "https://app.eryxon.eu";
 
@@ -159,7 +160,7 @@ export default function Auth() {
                 Documentation
               </a>
               <a 
-                href={`${DOCS_URL}/getting-started`} 
+                href={`${DOCS_URL}/guides/quick-start/`} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -223,9 +224,9 @@ export default function Auth() {
           {/* Bottom - Demo CTA */}
           <div className="flex items-center gap-4">
             <Button variant="outline" size="lg" className="gap-2" asChild>
-              <a href={`${DOCS_URL}/demo`} target="_blank" rel="noopener noreferrer">
+              <a href={`${DOCS_URL}/guides/quick-start/`} target="_blank" rel="noopener noreferrer">
                 <Play className="h-4 w-4" />
-                Watch Demo
+                Open Docs
               </a>
             </Button>
             <span className="text-sm text-muted-foreground">
@@ -460,7 +461,7 @@ export default function Auth() {
               <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
                 Docs
               </a>
-              <a href={`${DOCS_URL}/support`} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+              <a href={`${DOCS_URL}/guides/faq/`} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
                 Support
               </a>
             </div>
