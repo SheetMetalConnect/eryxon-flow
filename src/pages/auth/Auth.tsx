@@ -109,15 +109,15 @@ export default function Auth() {
 
       <div className="landing-container flex-1">
         {/* Language Switcher - Top Right - Enhanced for mobile */}
-        <div className="fixed top-2 right-2 sm:top-4 sm:right-4 z-20">
-          <div className="flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
-            <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white/70" />
+        <div className="language-switcher-container">
+          <div className="language-switcher-wrapper">
+            <Globe className="language-switcher-icon" />
             <LanguageSwitcher />
           </div>
         </div>
 
         {/* Main Auth Card */}
-        <div className="onboarding-card mx-4 sm:mx-auto mt-12 sm:mt-0">
+        <div className="onboarding-card">
           {/* Icon/Logo */}
           <div className="icon-container">
             <Factory className="w-32 h-32 text-primary browser-icon" strokeWidth={1.5} />
