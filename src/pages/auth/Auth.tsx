@@ -7,26 +7,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  Loader2, 
-  ArrowRight, 
-  Factory, 
-  CheckCircle2, 
-  Info, 
-  Monitor, 
+import {
+  Loader2,
+  ArrowRight,
+  CheckCircle2,
+  Info,
+  Monitor,
   Globe,
   BookOpen,
-  BarChart3,
-  Shield,
-  Zap,
-  ExternalLink,
+  ClipboardList,
+  Clock,
+  Activity,
   Github,
-  Play
+  Factory
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { ROUTES } from "@/routes";
-import { cn } from "@/lib/utils";
 import AnimatedBackground from "@/components/AnimatedBackground";
 
 const SITE_URL = "https://eryxon.eu";
@@ -111,154 +108,94 @@ export default function Auth() {
   };
 
   const features = [
-    { icon: BarChart3, title: "Real-time Analytics", description: "Track OEE, efficiency, and quality metrics" },
-    { icon: Zap, title: "AI-Powered", description: "MCP integration for intelligent automation" },
-    { icon: Shield, title: "Enterprise Security", description: "Multi-tenant isolation & GDPR compliant" },
+    {
+      icon: ClipboardList,
+      titleKey: "auth.features.analytics.title",
+      descKey: "auth.features.analytics.description",
+      iconClass: "icon-blue"
+    },
+    {
+      icon: Clock,
+      titleKey: "auth.features.aiPowered.title",
+      descKey: "auth.features.aiPowered.description",
+      iconClass: "icon-yellow"
+    },
+    {
+      icon: Activity,
+      titleKey: "auth.features.security.title",
+      descKey: "auth.features.security.description",
+      iconClass: "icon-green"
+    },
   ];
 
   return (
-    <div className="min-h-screen flex relative">
-      {/* Animated Background Orbs - renders behind everything */}
+    <div className="min-h-screen flex flex-col relative">
+      {/* Animated Background */}
       <AnimatedBackground />
 
-      {/* Left Side - Hero/Marketing */}
-      <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] relative overflow-hidden">
-        {/* Gradient overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
-        
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--primary) / 0.15) 1px, transparent 0)`,
-            backgroundSize: '32px 32px'
-          }} />
-        </div>
-
-        {/* Content */}
-        <div className="relative z-10 flex flex-col justify-between p-8 lg:p-12 xl:p-16 w-full">
-          {/* Top - Logo & Navigation */}
-          <div className="space-y-8">
+      {/* Header - Full Width */}
+      <header className="relative z-10 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 sm:h-20">
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight">
+              <Factory className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
+              <span className="text-xl sm:text-2xl font-bold tracking-tight">
                 <span className="text-foreground">ERYXON</span>
                 <span className="text-muted-foreground font-normal ml-1">FLOW</span>
-              </h1>
+              </span>
             </div>
 
-            {/* Quick Links */}
-            <nav className="flex items-center gap-6">
-              <a 
-                href={SITE_URL} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <BookOpen className="h-4 w-4" />
-                Documentation
-              </a>
-              <a 
-                href={GITHUB_URL} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Github className="h-4 w-4" />
-                GitHub
-              </a>
-            </nav>
-          </div>
-
-          {/* Center - Main Marketing */}
-          <div className="flex-1 flex flex-col justify-center py-12 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium w-fit mb-6">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-              </span>
-              Now in Public Preview
-            </div>
-
-            <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight leading-[1.1] mb-6">
-              Modern MES for{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60">
-                Sheet Metal
-              </span>
-            </h2>
-
-            <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-              Track jobs, parts, and operations in real-time. Built for manufacturers who need 
-              visibility without complexity.
-            </p>
-
-            {/* Feature Pills */}
-            <div className="space-y-4">
-              {features.map((feature, idx) => (
-                <div 
-                  key={idx}
-                  className="flex items-center gap-4 p-4 rounded-xl glass-card transition-all hover:scale-[1.02]"
+            {/* Navigation & Controls */}
+            <div className="flex items-center gap-2 sm:gap-4">
+              {/* Nav Links - Hidden on mobile */}
+              <nav className="hidden md:flex items-center gap-4 mr-4">
+                <a
+                  href={SITE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <feature.icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-sm">{feature.title}</h3>
-                    <p className="text-xs text-muted-foreground">{feature.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+                  <BookOpen className="h-4 w-4" />
+                  {t("auth.nav.docs")}
+                </a>
+                <a
+                  href={GITHUB_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Github className="h-4 w-4" />
+                  GitHub
+                </a>
+              </nav>
 
-          {/* Bottom - Demo CTA */}
-          <div className="flex items-center gap-4">
-            <Button className="cta-button" asChild>
-              <a href={SITE_URL} target="_blank" rel="noopener noreferrer">
-                <Play className="h-4 w-4" />
-                Open Docs
-              </a>
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              No credit card required
-            </span>
+              {/* Controls */}
+              <div className="flex items-center gap-1 sm:gap-2">
+                <ThemeToggle variant="icon" />
+                <div className="flex items-center gap-1 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors">
+                  <Globe className="h-4 w-4 text-muted-foreground" />
+                  <LanguageSwitcher />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Right Side - Auth Form */}
-      <div className="flex-1 flex flex-col min-h-screen relative">
-        {/* Header */}
-        <header className="flex items-center justify-between p-4 lg:p-6">
-          {/* Mobile Logo */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <span className="text-lg font-bold tracking-tight">
-              <span className="text-foreground">ERYXON</span>
-              <span className="text-muted-foreground font-normal ml-1">FLOW</span>
-            </span>
-          </div>
-          <div className="hidden lg:block" />
-          
-          {/* Controls */}
-          <div className="flex items-center gap-2">
-            <ThemeToggle variant="icon" />
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors">
-              <Globe className="h-4 w-4 text-muted-foreground" />
-              <LanguageSwitcher />
-            </div>
-          </div>
-        </header>
-
-        {/* Form Container */}
-        <div className="flex-1 flex items-center justify-center p-4 lg:p-8">
-          <div className="w-full max-w-md space-y-6 glass-card p-6 lg:p-8">
-            {/* Form Header */}
-            <div className="space-y-2 text-center lg:text-left">
-              <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
-                {isLogin ? `${t("auth.welcomeTo")} ${t("auth.appName")}` : t("auth.signUp")}
+      {/* Main Content - Centered */}
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-12">
+        <div className="w-full max-w-md">
+          {/* Auth Card */}
+          <div className="glass-card p-6 sm:p-8 animate-fade-in-up">
+            {/* Card Header */}
+            <div className="text-center mb-6">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
+                {isLogin ? t("auth.welcomeBack") : t("auth.createAccount")}
               </h1>
-              <p className="text-muted-foreground">
-                {isLogin 
-                  ? t("auth.signInDescription") 
+              <p className="text-muted-foreground text-sm sm:text-base">
+                {isLogin
+                  ? t("auth.signInDescription")
                   : t("auth.signUpDescription")
                 }
               </p>
@@ -266,7 +203,7 @@ export default function Auth() {
 
             {/* Success Message */}
             {success && (
-              <Alert className="border-green-500/50 bg-green-500/10">
+              <Alert className="mb-4 border-green-500/50 bg-green-500/10">
                 <CheckCircle2 className="h-4 w-4 text-green-500" />
                 <AlertDescription className="text-green-500">
                   {success}
@@ -343,7 +280,7 @@ export default function Auth() {
 
               {/* Terms - Sign Up Only */}
               {!isLogin && (
-                <div className="space-y-4 pt-2">
+                <div className="space-y-3 pt-2">
                   <div className="flex items-start gap-3">
                     <Checkbox
                       id="termsAgreed"
@@ -394,8 +331,8 @@ export default function Auth() {
                 <ArrowRight className="h-4 w-4" />
               </Button>
 
-              {/* Toggle */}
-              <div className="text-center">
+              {/* Toggle Auth Mode */}
+              <div className="text-center pt-2">
                 <button
                   type="button"
                   onClick={() => {
@@ -411,53 +348,78 @@ export default function Auth() {
             </form>
 
             {/* Divider */}
-            <div className="relative">
+            <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">or</span>
+                <span className="bg-background px-2 text-muted-foreground">{t("auth.or")}</span>
               </div>
             </div>
 
-            {/* Shop Floor Terminal */}
+            {/* Shop Floor Terminal Link */}
             <div className="text-center space-y-2">
-              <Link 
+              <Link
                 to={ROUTES.OPERATOR.TERMINAL_LOGIN}
-                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group"
               >
                 <Monitor className="h-4 w-4" />
                 {t("auth.shopFloorTerminal")}
-                <ArrowRight className="h-3 w-3" />
+                <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
               </Link>
-              <p className="text-xs text-muted-foreground/60">
+              <p className="text-xs text-muted-foreground/70 max-w-xs mx-auto">
                 {t("auth.shopFloorTerminalHint")}
               </p>
             </div>
           </div>
-        </div>
 
-        {/* Footer */}
-        <footer className="p-4 lg:p-6 border-t border-border/50">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-4">
+          {/* Features Section - Below Card */}
+          <div className="mt-8 hidden sm:block">
+            <div className="grid grid-cols-3 gap-3">
+              {features.map((feature, idx) => (
+                <div
+                  key={idx}
+                  className="glass-card p-3 text-center transition-all hover:scale-[1.02]"
+                >
+                  <div className="inline-flex p-2 rounded-lg bg-primary/10 mb-2">
+                    <feature.icon className={`h-4 w-4 ${feature.iconClass}`} />
+                  </div>
+                  <h3 className="font-medium text-xs mb-0.5">{t(feature.titleKey)}</h3>
+                  <p className="text-[10px] text-muted-foreground leading-tight">{t(feature.descKey)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Footer - Full Width */}
+      <footer className="relative z-10 w-full border-t border-border/50 bg-background/30 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 py-4 text-xs text-muted-foreground">
+            {/* Footer Links */}
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
               <Link to={ROUTES.COMMON.PRIVACY_POLICY} className="hover:text-foreground transition-colors">
-                Privacy
+                {t("auth.footer.privacy")}
               </Link>
               <Link to={ROUTES.COMMON.TERMS_OF_SERVICE} className="hover:text-foreground transition-colors">
-                Terms
+                {t("auth.footer.terms")}
               </Link>
               <a href={SITE_URL} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-                Docs
+                {t("auth.footer.docs")}
               </a>
               <a href={GITHUB_ISSUES_URL} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-                Support
+                {t("auth.footer.support")}
               </a>
             </div>
-            <p>© {new Date().getFullYear()} Sheet Metal Connect e.U. All rights reserved.</p>
+
+            {/* Copyright */}
+            <p className="text-center sm:text-right">
+              © {new Date().getFullYear()} Sheet Metal Connect e.U. {t("auth.footer.allRightsReserved")}
+            </p>
           </div>
-        </footer>
-      </div>
+        </div>
+      </footer>
     </div>
   );
 }
