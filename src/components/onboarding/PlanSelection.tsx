@@ -1,4 +1,4 @@
-import { Clock, Mail } from 'lucide-react';
+import { Clock, ExternalLink } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
@@ -20,7 +20,7 @@ export function PlanSelection({ onPlanSelect, onSkip }: PlanSelectionProps) {
   };
 
   const handleContactUs = () => {
-    window.location.href = `mailto:office@sheetmetalconnect.com?subject=${encodeURIComponent('Pricing Inquiry')}`;
+    window.open('https://github.com/SheetMetalConnect/eryxon-flow/issues', '_blank');
   };
 
   return (
@@ -40,7 +40,7 @@ export function PlanSelection({ onPlanSelect, onSkip }: PlanSelectionProps) {
             {t('pricing.comingSoonDescription')}
           </p>
           <Button size="lg" onClick={handleContactUs} variant="outline">
-            <Mail className="h-4 w-4 mr-2" />
+            <ExternalLink className="h-4 w-4 mr-2" />
             {t('pricing.contactUs')}
           </Button>
         </CardContent>

@@ -300,7 +300,7 @@ apiClient.post('/api-jobs', jobData)
                 <CardDescription className="text-base">
                   Production workflow management API for custom metals fabrication.
                   Build integrations, automate workflows, and manage your production data programmatically.
-                  See <a href="https://eryxon.eu/api/api_documentation/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">full API documentation</a>.
+                  See <a href="https://eryxon.eu" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">full documentation</a>.
                 </CardDescription>
               </div>
               <Badge variant="secondary" className="text-sm">

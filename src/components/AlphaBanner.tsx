@@ -32,7 +32,7 @@ export function AlphaBanner() {
       <span className="text-center font-medium">
         {t("alphaBanner.message")}{" "}
         <a 
-          href="https://eryxon.eu/introduction/" 
+          href="https://eryxon.eu"
           target="_blank" 
           rel="noopener noreferrer"
           className="underline hover:no-underline font-semibold"
