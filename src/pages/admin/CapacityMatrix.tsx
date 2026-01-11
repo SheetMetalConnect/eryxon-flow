@@ -57,6 +57,7 @@ const CapacityCell = memo(function CapacityCell({
     allocations,
     operations,
     onClick,
+    t,
 }: {
     cellId: string;
     cellName: string;
@@ -68,6 +69,7 @@ const CapacityCell = memo(function CapacityCell({
     allocations: DayAllocation[];
     operations: any[];
     onClick: () => void;
+    t: (key: string, options?: any) => string;
 }) {
     const items = allocations.length > 0 ? allocations : operations;
 
@@ -96,11 +98,11 @@ const CapacityCell = memo(function CapacityCell({
                         {dayInfo.type === 'holiday' || dayInfo.type === 'closure' ? (
                             <div className="flex flex-col items-center">
                                 <CalendarOff className="h-4 w-4" />
-                                <span className="text-[10px]">Closed</span>
+                                <span className="text-[10px]">{t("capacity.closed")}</span>
                             </div>
                         ) : dayInfo.type === 'weekend' ? (
                             <div className="flex flex-col items-center">
-                                <span className="text-[10px]">Weekend</span>
+                                <span className="text-[10px]">{t("capacity.weekend")}</span>
                             </div>
                         ) : (
                             <>
@@ -122,12 +124,12 @@ const CapacityCell = memo(function CapacityCell({
                         )}
                         {capacity > 0 && (
                             <div>
-                                {hours.toFixed(1)}h scheduled / {capacity}h capacity
+                                {t("capacity.scheduledCapacity", { hours: hours.toFixed(1), capacity })}
                             </div>
                         )}
                         {items.length > 0 && (
                             <div className="border-t pt-1 mt-1">
-                                <div className="text-xs font-medium mb-1">Operations:</div>
+                                <div className="text-xs font-medium mb-1">{t("capacity.operations")}:</div>
                                 {items.slice(0, 3).map((item: any, idx: number) => (
                                     <div key={idx} className="text-xs">
                                         • {item.operation?.part?.job?.job_number || item.part?.job?.job_number || 'Job'}:
@@ -143,7 +145,7 @@ const CapacityCell = memo(function CapacityCell({
                             </div>
                         )}
                         <div className="text-xs text-primary mt-2 font-medium">
-                            Click to manage schedule →
+                            {t("capacity.clickToManageSchedule")}
                         </div>
                     </div>
                 </TooltipContent>
@@ -487,6 +489,7 @@ export default function CapacityMatrix() {
                                                     allocations={allocations}
                                                     operations={opsOnDate}
                                                     onClick={() => handleCellClick(cell, date)}
+                                                    t={t}
                                                 />
                                             );
                                         })}
