@@ -7,7 +7,8 @@ import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Download, Wrench, PlayCircle, CheckCircle2, UserCheck } from "lucide-react";
+import { Loader2, Download, Wrench, PlayCircle, CheckCircle2, UserCheck, Plus } from "lucide-react";
+import CreateOperationModal from "@/components/admin/CreateOperationModal";
 import { useTranslation } from "react-i18next";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { PageStatsRow } from "@/components/admin/PageStatsRow";
@@ -42,6 +43,7 @@ interface Operation {
 export const Operations: React.FC = () => {
   const { t } = useTranslation();
   const [selectedOperationId, setSelectedOperationId] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const { profile } = useAuth();
   const navigate = useNavigate();
 
@@ -354,11 +356,16 @@ export const Operations: React.FC = () => {
         title={t("operations.title", "Operations")}
         description={t("operations.subtitle", "Monitor all manufacturing operations across cells and jobs")}
         action={{
-          label: t("common.export", "Export"),
-          onClick: handleExport,
-          icon: Download,
+          label: t("operations.createOperation", "Add Operation"),
+          onClick: () => setShowCreateModal(true),
+          icon: Plus,
         }}
-      />
+      >
+        <Button variant="outline" onClick={handleExport} className="w-full sm:w-auto">
+          <Download className="mr-2 h-4 w-4" />
+          {t("common.export", "Export")}
+        </Button>
+      </AdminPageHeader>
 
       {/* Stats Row */}
       <PageStatsRow
@@ -393,6 +400,14 @@ export const Operations: React.FC = () => {
           operationId={selectedOperationId}
           onClose={() => setSelectedOperationId(null)}
           onUpdate={() => refetch()}
+        />
+      )}
+
+      {/* Create Operation Modal */}
+      {showCreateModal && (
+        <CreateOperationModal
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={() => refetch()}
         />
       )}
     </div>

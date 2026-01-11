@@ -241,7 +241,7 @@ export default function DataImport() {
   const updateMapping = (csvField: string, entityField: string) => {
     setFieldMappings(prev => {
       const existing = prev.findIndex(m => m.csvField === csvField);
-      if (entityField === '') {
+      if (entityField === '__ignore__') {
         // Remove mapping
         return prev.filter(m => m.csvField !== csvField);
       }
@@ -256,7 +256,7 @@ export default function DataImport() {
 
   // Get mapped entity field for CSV field
   const getMappedField = (csvField: string) => {
-    return fieldMappings.find(m => m.csvField === csvField)?.entityField || '';
+    return fieldMappings.find(m => m.csvField === csvField)?.entityField || '__ignore__';
   };
 
   // Transform data according to mappings
@@ -645,7 +645,7 @@ export default function DataImport() {
                             <SelectValue placeholder={t('dataImport.selectField')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">{t('dataImport.ignore')}</SelectItem>
+                            <SelectItem value="__ignore__">{t('dataImport.ignore')}</SelectItem>
                             {entityConfig && [...entityConfig.requiredFields, ...entityConfig.optionalFields].map(field => (
                               <SelectItem key={field} value={field}>
                                 {field}

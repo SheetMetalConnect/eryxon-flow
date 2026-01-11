@@ -6,6 +6,7 @@ import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import PartDetailModal from "@/components/admin/PartDetailModal";
+import CreatePartModal from "@/components/admin/CreatePartModal";
 import {
   Package,
   ChevronRight,
@@ -15,6 +16,7 @@ import {
   Layers,
   PlayCircle,
   CheckCircle2,
+  Plus,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
@@ -52,6 +54,7 @@ export default function Parts() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // File viewer state
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
@@ -433,6 +436,11 @@ export default function Parts() {
       <AdminPageHeader
         title={t("parts.title")}
         description={t("parts.subtitle")}
+        action={{
+          label: t("parts.createPart"),
+          onClick: () => setShowCreateModal(true),
+          icon: Plus,
+        }}
       />
 
       {/* Stats Row */}
@@ -466,6 +474,14 @@ export default function Parts() {
           partId={selectedPartId}
           onClose={() => setSelectedPartId(null)}
           onUpdate={() => refetch()}
+        />
+      )}
+
+      {/* Create Part Modal */}
+      {showCreateModal && (
+        <CreatePartModal
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={() => refetch()}
         />
       )}
 
