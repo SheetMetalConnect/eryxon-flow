@@ -51,6 +51,7 @@ const getStoredTheme = (): ThemeMode => {
   if (stored === 'dark' || stored === 'light' || stored === 'auto') {
     return stored;
   }
+  // Default to 'auto' which follows browser settings
   return 'auto';
 };
 
