@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, ArrowRight, Factory, CheckCircle2, Info, Monitor, Globe } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { AlphaBanner } from "@/components/AlphaBanner";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { Link } from "react-router-dom";
@@ -108,7 +109,8 @@ export default function Auth() {
           <AlphaBanner />
         </div>
         <div className="auth-header-controls">
-          <div className="language-switcher-container">
+          <div className="flex items-center gap-2">
+            <ThemeToggle variant="dropdown" />
             <div className="language-switcher-wrapper">
               <Globe className="language-switcher-icon" />
               <LanguageSwitcher />
