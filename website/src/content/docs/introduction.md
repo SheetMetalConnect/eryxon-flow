@@ -15,6 +15,24 @@ Heads up – this is an early version. Free during early access, but expect some
 
 **Also useful for:** Other job shops and custom manufacturing companies in construction, furniture, woodworking, and similar industries.
 
+---
+
+## What is MES?
+
+A **Manufacturing Execution System (MES)** bridges the gap between your ERP (business system) and the shop floor. While your ERP manages orders, customers, and invoices, MES tracks *how work actually gets done*—who's working on what, where parts are in production, and whether you're on schedule.
+
+### Our Philosophy
+
+**Go paperless.** Leave paper travelers behind. Instead of printing job packets that get lost, damaged, or outdated the moment something changes, give operators a tablet with live information—drawings, 3D models, instructions, and status—all in one place.
+
+**Collect data.** Every start, stop, and completion is recorded. Know how long operations actually take. Identify bottlenecks. Build a foundation for continuous improvement.
+
+**Improve communication.** When an operator reports an issue, everyone sees it immediately. When a priority changes, everyone knows. No more walking the floor to find out what's happening—real-time visibility across all screens.
+
+**Integrate with your systems.** Eryxon connects to your ERP via REST API and publishes events to a unified namespace (MQTT/ISA-95). Your data flows where it needs to go—no islands, no double entry.
+
+---
+
 ## What It Does
 
 Eryxon tracks jobs, parts, and tasks through production with a mobile and tablet-first interface. Integrate with your ERP and publish events to a unified namespace (MQTT/ISA-95).

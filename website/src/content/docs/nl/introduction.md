@@ -11,6 +11,24 @@ description: Het eenvoudige, elegante en krachtige manufacturing execution syste
 
 **Ook geschikt voor:** Andere job shops en maatwerkproductiebedrijven in de bouw, meubelindustrie, houtbewerking en vergelijkbare sectoren.
 
+---
+
+## Wat is MES?
+
+Een **Manufacturing Execution System (MES)** overbrugt de kloof tussen uw ERP (bedrijfssysteem) en de werkvloer. Terwijl uw ERP orders, klanten en facturen beheert, houdt MES bij *hoe het werk daadwerkelijk wordt uitgevoerd*—wie waaraan werkt, waar onderdelen zich in de productie bevinden en of u op schema ligt.
+
+### Onze Filosofie
+
+**Ga papierloos.** Laat papieren werkbonnen achter. In plaats van werkpakketten te printen die zoekraken, beschadigd raken of verouderd zijn zodra er iets verandert, geef operators een tablet met actuele informatie—tekeningen, 3D-modellen, instructies en status—alles op één plek.
+
+**Verzamel data.** Elke start, stop en voltooiing wordt geregistreerd. Weet hoe lang bewerkingen werkelijk duren. Identificeer knelpunten. Bouw een fundament voor continue verbetering.
+
+**Verbeter communicatie.** Wanneer een operator een probleem meldt, ziet iedereen het direct. Wanneer een prioriteit wijzigt, weet iedereen het. Niet meer de werkvloer op om te ontdekken wat er gebeurt—real-time zichtbaarheid op alle schermen.
+
+**Integreer met uw systemen.** Eryxon verbindt met uw ERP via REST API en publiceert events naar een unified namespace (MQTT/ISA-95). Uw data stroomt waar nodig—geen eilandjes, geen dubbele invoer.
+
+---
+
 ## Wat Het Doet
 
 Eryxon volgt orders, onderdelen en taken door de productie met een mobiele en tablet-vriendelijke interface. Integreer met uw ERP en publiceer events naar een unified namespace (MQTT/ISA-95).
