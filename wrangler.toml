@@ -1,20 +1,16 @@
+# Cloudflare Pages configuration
 name = "eryxon-flow"
 compatibility_date = "2024-01-01"
 
-[build]
-command = "npm run build"
+# Pages-specific settings
+pages_build_output_dir = "./dist"
 
-[build.upload]
-format = "service-worker"
-main = "./dist"
+[vars]
+NODE_VERSION = "20"
 
-[site]
-bucket = "./dist"
+# Environment-specific configuration
+[env.production.vars]
+VITE_ENVIRONMENT = "production"
 
-[env.production]
-name = "eryxon-flow"
-route = ""
-vars = { NODE_VERSION = "20" }
-
-[env.preview]
-name = "eryxon-flow-preview"
+[env.preview.vars]
+VITE_ENVIRONMENT = "preview"
