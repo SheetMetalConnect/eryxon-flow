@@ -220,10 +220,12 @@ export function useRestartTenantOnboarding() {
     if (!profile?.tenant_id) return;
 
     try {
-      await supabase
+      const { error } = await supabase
         .from('tenants')
         .update({ onboarding_completed_at: null })
         .eq('id', profile.tenant_id);
+
+      if (error) throw error;
 
       await refreshTenant();
       toast.success(t('onboarding.tenant.reset'));
