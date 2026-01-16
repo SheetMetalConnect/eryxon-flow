@@ -236,11 +236,6 @@ function AppRoutes() {
         }
       />
 
-      {/* Legacy operator route redirects */}
-      <Route path="/work-queue" element={<Navigate to="/operator/work-queue" replace />} />
-      <Route path="/my-activity" element={<Navigate to="/operator/my-activity" replace />} />
-      <Route path="/my-issues" element={<Navigate to="/operator/my-issues" replace />} />
-      <Route path="/operator-view" element={<Navigate to="/operator/view" replace />} />
 
       {/* Admin Routes */}
       <Route
@@ -256,8 +251,6 @@ function AppRoutes() {
         }
       />
 
-      {/* Legacy dashboard redirect */}
-      <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
 
       <Route
         path="/admin/config/stages"
@@ -855,15 +848,6 @@ function AppRoutes() {
         }
       />
 
-      {/* Legacy redirects */}
-      <Route path="/admin/stages" element={<Navigate to="/admin/config/stages" replace />} />
-      <Route path="/admin/materials" element={<Navigate to="/admin/config/materials" replace />} />
-      <Route path="/admin/resources" element={<Navigate to="/admin/config/resources" replace />} />
-      <Route path="/admin/users" element={<Navigate to="/admin/config/users" replace />} />
-      <Route path="/api-docs" element={<Navigate to="/admin/api-docs" replace />} />
-      <Route path="/pricing" element={<Navigate to="/admin/pricing" replace />} />
-      <Route path="/my-plan" element={<Navigate to="/admin/my-plan" replace />} />
-      <Route path="/help" element={<Navigate to="/admin/help" replace />} />
 
       <Route path="*" element={
         <LazyRoute>

@@ -154,21 +154,6 @@ Response:
 }
 ```
 
-### Extract PMI Only (Legacy)
-
-```
-POST /extract
-X-API-Key: your-api-key-here
-Content-Type: application/json
-
-Request:
-{
-  "file_url": "https://storage.example.com/path/to/model.step"
-}
-```
-
-This endpoint is maintained for backwards compatibility. It calls `/process` with `include_geometry=false`.
-
 ### Async Processing with Supabase Realtime
 
 ```

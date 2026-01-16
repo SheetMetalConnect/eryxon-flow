@@ -25,8 +25,7 @@ import {
 import { formatDistanceToNow, format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { seedDemoData } from "@/lib/seed";
-import { clearMockData } from "@/lib/mockDataGenerator";
+import { generateMockData, clearMockData } from "@/lib/mockDataGenerator";
 import { QRMDashboard } from "@/components/qrm/QRMDashboard";
 import {
   Table,
@@ -336,7 +335,10 @@ export default function Dashboard() {
     if (!profile?.tenant_id) return;
     setSeeding(true);
     try {
-      await seedDemoData(profile.tenant_id);
+      const result = await generateMockData(profile.tenant_id);
+      if (!result.success) {
+        throw new Error(result.error || "Failed to generate demo data");
+      }
       await loadData();
       setNeedsSetup(false);
       toast({

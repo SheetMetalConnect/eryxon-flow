@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { EnumConstants, Constants } from './types/index'
+import { EnumConstants } from './types/index'
 import type {
   Database,
   Tables,
@@ -137,17 +137,6 @@ describe('Supabase Types Module', () => {
       ]
 
       expect(Object.keys(EnumConstants).sort()).toEqual(expectedKeys.sort())
-    })
-  })
-
-  describe('Constants backward compatibility', () => {
-    it('exports Constants.public.Enums with same values as EnumConstants', () => {
-      expect(Constants.public.Enums).toEqual(EnumConstants)
-    })
-
-    it('allows accessing enums via Constants.public.Enums path', () => {
-      expect(Constants.public.Enums.app_role).toEqual(['operator', 'admin'])
-      expect(Constants.public.Enums.job_status).toContain('in_progress')
     })
   })
 
