@@ -11,7 +11,8 @@ interface TenantOnboardingProps {
 }
 
 export function TenantOnboarding({ onComplete }: TenantOnboardingProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('auth');
+  const { t: tCommon } = useTranslation('common');
   const { profile, tenant, refreshTenant } = useAuth();
   const location = useLocation();
   const [run, setRun] = useState(false);
@@ -133,9 +134,9 @@ export function TenantOnboarding({ onComplete }: TenantOnboardingProps) {
       toast.success(t('onboarding.tenant.completed'));
     } catch (error) {
       console.error('Error completing onboarding:', error);
-      toast.error(t('common.error'));
+      toast.error(tCommon('error'));
     }
-  }, [profile?.tenant_id, refreshTenant, t]);
+  }, [profile?.tenant_id, refreshTenant, t, tCommon]);
 
   const handleJoyrideCallback = useCallback(
     async (data: CallBackProps) => {
@@ -201,10 +202,10 @@ export function TenantOnboarding({ onComplete }: TenantOnboardingProps) {
         },
       }}
       locale={{
-        back: t('common.back'),
-        close: t('common.close'),
+        back: tCommon('back'),
+        close: tCommon('close'),
         last: t('onboarding.tenant.getStarted'),
-        next: t('common.next'),
+        next: tCommon('next'),
         skip: t('onboarding.tenant.skipTour'),
       }}
     />
@@ -214,7 +215,8 @@ export function TenantOnboarding({ onComplete }: TenantOnboardingProps) {
 // Hook to manually restart tenant onboarding
 export function useRestartTenantOnboarding() {
   const { profile, refreshTenant } = useAuth();
-  const { t } = useTranslation();
+  const { t } = useTranslation('auth');
+  const { t: tCommon } = useTranslation('common');
 
   const restartOnboarding = useCallback(async () => {
     if (!profile?.tenant_id) return;
@@ -232,9 +234,9 @@ export function useRestartTenantOnboarding() {
       window.location.reload();
     } catch (error) {
       console.error('Error restarting onboarding:', error);
-      toast.error(t('common.error'));
+      toast.error(tCommon('error'));
     }
-  }, [profile?.tenant_id, refreshTenant, t]);
+  }, [profile?.tenant_id, refreshTenant, t, tCommon]);
 
   return { restartOnboarding };
 }
