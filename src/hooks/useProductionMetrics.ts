@@ -161,6 +161,7 @@ export function useOperationProductionMetrics(operationId: string | undefined) {
 
 /**
  * Hook for fetching production metrics for a job (all operations)
+ * Optimized: Uses single query with joins instead of 3 sequential queries
  */
 export function useJobProductionMetrics(jobId: string | undefined) {
   const { profile } = useAuth();
@@ -171,32 +172,8 @@ export function useJobProductionMetrics(jobId: string | undefined) {
     queryFn: async (): Promise<ProductionMetrics | null> => {
       if (!jobId) return null;
 
-      // First get all parts for this job
-      const { data: parts, error: partsError } = await supabase
-        .from("parts")
-        .select("id")
-        .eq("job_id", jobId);
-
-      if (partsError || !parts || parts.length === 0) {
-        return null;
-      }
-
-      const partIds = parts.map((p) => p.id);
-
-      // Get all operations for these parts
-      const { data: operations, error: opsError } = await supabase
-        .from("operations")
-        .select("id, estimated_time, actual_time")
-        .in("part_id", partIds);
-
-      if (opsError || !operations) {
-        return null;
-      }
-
-      const operationIds = operations.map((o) => o.id);
-
-      // Get all quantity records for these operations
-      const { data: quantities, error: qtyError } = await supabase
+      // Single query with joins - replaces 3 sequential queries
+      const { data: quantitiesWithOps, error: qtyError } = await supabase
         .from("operation_quantities")
         .select(`
           quantity_produced,
@@ -209,28 +186,65 @@ export function useJobProductionMetrics(jobId: string | undefined) {
             code,
             description,
             category
+          ),
+          operation:operations!inner (
+            id,
+            estimated_time,
+            actual_time,
+            part:parts!inner (
+              job_id
+            )
           )
         `)
-        .in("operation_id", operationIds);
+        .eq("operation.part.job_id", jobId);
 
       if (qtyError) {
-        console.error("Error fetching quantities:", qtyError);
+        // If join query fails, return null
+        return null;
       }
 
-      const records = quantities || [];
+      const records = quantitiesWithOps || [];
 
-      const totalProduced = records.reduce((sum, r) => sum + (r.quantity_produced || 0), 0);
-      const totalGood = records.reduce((sum, r) => sum + (r.quantity_good || 0), 0);
-      const totalScrap = records.reduce((sum, r) => sum + (r.quantity_scrap || 0), 0);
-      const totalRework = records.reduce((sum, r) => sum + (r.quantity_rework || 0), 0);
+      if (records.length === 0) {
+        return null;
+      }
+
+      // Track unique operations for time metrics
+      const operationTimeMap = new Map<string, { estimated: number; actual: number }>();
+
+      // Single pass to calculate all totals and collect operation times
+      const totals = records.reduce(
+        (acc, r) => {
+          const op = r.operation as { id: string; estimated_time: number | null; actual_time: number | null };
+          if (op && !operationTimeMap.has(op.id)) {
+            operationTimeMap.set(op.id, {
+              estimated: op.estimated_time || 0,
+              actual: op.actual_time || 0,
+            });
+          }
+          return {
+            produced: acc.produced + (r.quantity_produced || 0),
+            good: acc.good + (r.quantity_good || 0),
+            scrap: acc.scrap + (r.quantity_scrap || 0),
+            rework: acc.rework + (r.quantity_rework || 0),
+          };
+        },
+        { produced: 0, good: 0, scrap: 0, rework: 0 }
+      );
+
+      const { produced: totalProduced, good: totalGood, scrap: totalScrap, rework: totalRework } = totals;
 
       const overallYield = totalProduced > 0 ? (totalGood / totalProduced) * 100 : 0;
       const scrapRate = totalProduced > 0 ? (totalScrap / totalProduced) * 100 : 0;
       const reworkRate = totalProduced > 0 ? (totalRework / totalProduced) * 100 : 0;
 
-      // Calculate time metrics
-      const totalActualTime = operations.reduce((sum, o) => sum + (o.actual_time || 0), 0);
-      const totalEstimatedTime = operations.reduce((sum, o) => sum + (o.estimated_time || 0), 0);
+      // Calculate time metrics from collected operation data
+      let totalActualTime = 0;
+      let totalEstimatedTime = 0;
+      operationTimeMap.forEach((times) => {
+        totalActualTime += times.actual;
+        totalEstimatedTime += times.estimated;
+      });
       const timeEfficiency = totalEstimatedTime > 0 ? (totalEstimatedTime / totalActualTime) * 100 : null;
 
       // Calculate average cycle time per unit

@@ -329,11 +329,12 @@ export function useBatchStats() {
 // Get Groupable Operations (for batch creation UI)
 // ============================================================================
 
+// Optimized: Uses LEFT JOIN to get batch info in single query instead of 2 separate queries
 export function useGroupableOperations(cellId?: string) {
   return useQuery({
     queryKey: [...batchKeys.groupable(), cellId],
     queryFn: async () => {
-      // Get operations that are not yet in a batch and not completed
+      // Single query with LEFT JOIN to batch_operations - replaces 2 separate queries
       let query = supabase
         .from('operations')
         .select(`
@@ -358,6 +359,9 @@ export function useGroupableOperations(cellId?: string) {
               customer,
               due_date
             )
+          ),
+          batch_operations (
+            batch_id
           )
         `)
         .in('status', ['not_started', 'on_hold'])
@@ -370,36 +374,30 @@ export function useGroupableOperations(cellId?: string) {
       const { data: operations, error: opsError } = await query;
       if (opsError) throw opsError;
 
-      // Get operations that are already in batches
-      const { data: batchedOps, error: batchedError } = await supabase
-        .from('batch_operations')
-        .select('operation_id, batch_id');
-
-      if (batchedError) throw batchedError;
-
-      const batchedOperationIds = new Set(batchedOps?.map(bo => bo.operation_id) || []);
-      const batchIdByOperation = new Map(batchedOps?.map(bo => [bo.operation_id, bo.batch_id]) || []);
-
-      // Transform and filter
+      // Transform operations - batch info is now included in the query result
       const groupableOps: GroupableOperation[] = (operations || [])
-        .map((op: any) => ({
-          id: op.id,
-          operation_name: op.operation_name,
-          cell_id: op.cell_id,
-          cell_name: op.cell?.name || 'Unknown',
-          part_id: op.part?.id || '',
-          part_number: op.part?.part_number || '',
-          material: op.part?.material || '',
-          thickness_mm: op.part?.height_mm || null, // Using height_mm as thickness for sheet metal
-          quantity: op.part?.quantity || null,
-          job_id: op.part?.job?.id || '',
-          job_number: op.part?.job?.job_number || '',
-          customer: op.part?.job?.customer || null,
-          due_date: op.part?.job?.due_date || null,
-          status: op.status,
-          estimated_time: op.estimated_time || 0,
-          existing_batch_id: batchIdByOperation.get(op.id) || null,
-        }));
+        .map((op: any) => {
+          // batch_operations is an array (LEFT JOIN), get first batch_id if exists
+          const existingBatchId = op.batch_operations?.[0]?.batch_id || null;
+          return {
+            id: op.id,
+            operation_name: op.operation_name,
+            cell_id: op.cell_id,
+            cell_name: op.cell?.name || 'Unknown',
+            part_id: op.part?.id || '',
+            part_number: op.part?.part_number || '',
+            material: op.part?.material || '',
+            thickness_mm: op.part?.height_mm || null, // Using height_mm as thickness for sheet metal
+            quantity: op.part?.quantity || null,
+            job_id: op.part?.job?.id || '',
+            job_number: op.part?.job?.job_number || '',
+            customer: op.part?.job?.customer || null,
+            due_date: op.part?.job?.due_date || null,
+            status: op.status,
+            estimated_time: op.estimated_time || 0,
+            existing_batch_id: existingBatchId,
+          };
+        });
 
       // Group by material + thickness + cell
       const groups: Record<string, MaterialGroup> = {};

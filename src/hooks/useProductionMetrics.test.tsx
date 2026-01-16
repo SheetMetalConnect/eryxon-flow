@@ -180,42 +180,31 @@ describe('useJobProductionMetrics', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
+    // Mock data for optimized single-query approach (with joins)
+    // The new implementation uses a single query with nested joins
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'parts') {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({
-              data: [{ id: 'p1' }, { id: 'p2' }],
-              error: null,
-            }),
-          }),
-        };
-      }
-      if (table === 'operations') {
-        return {
-          select: vi.fn().mockReturnValue({
-            in: vi.fn().mockResolvedValue({
-              data: [
-                { id: 'op1', estimated_time: 60, actual_time: 55 },
-                { id: 'op2', estimated_time: 40, actual_time: 45 },
-              ],
-              error: null,
-            }),
-          }),
-        };
-      }
       if (table === 'operation_quantities') {
         return {
           select: vi.fn().mockReturnValue({
-            in: vi.fn().mockResolvedValue({
+            eq: vi.fn().mockResolvedValue({
               data: [
                 {
-                  quantity_produced: 100,
-                  quantity_good: 90,
-                  quantity_scrap: 8,
-                  quantity_rework: 2,
+                  quantity_produced: 50,
+                  quantity_good: 45,
+                  quantity_scrap: 4,
+                  quantity_rework: 1,
                   scrap_reason_id: 'sr-1',
                   scrap_reason: { id: 'sr-1', code: 'D1', description: 'Defect', category: 'Mat' },
+                  operation: { id: 'op1', estimated_time: 60, actual_time: 55, part: { job_id: 'job-1' } },
+                },
+                {
+                  quantity_produced: 50,
+                  quantity_good: 45,
+                  quantity_scrap: 4,
+                  quantity_rework: 1,
+                  scrap_reason_id: 'sr-1',
+                  scrap_reason: { id: 'sr-1', code: 'D1', description: 'Defect', category: 'Mat' },
+                  operation: { id: 'op2', estimated_time: 40, actual_time: 45, part: { job_id: 'job-1' } },
                 },
               ],
               error: null,
@@ -242,7 +231,7 @@ describe('useJobProductionMetrics', () => {
     expect(result.current.data ?? null).toBeNull();
   });
 
-  it('returns job production metrics', async () => {
+  it('returns job production metrics with optimized query', async () => {
     const { result } = renderHook(() => useJobProductionMetrics('job-1'), {
       wrapper: createWrapper(),
     });
@@ -252,7 +241,9 @@ describe('useJobProductionMetrics', () => {
     });
 
     expect(result.current.data).toBeDefined();
+    // Total from both records: 50 + 50 = 100
     expect(result.current.data?.totalProduced).toBe(100);
+    // Total good: 45 + 45 = 90
     expect(result.current.data?.totalGood).toBe(90);
   });
 
@@ -271,7 +262,7 @@ describe('useJobProductionMetrics', () => {
     expect(result.current.data?.scrapRate).toBeCloseTo(8, 0);
   });
 
-  it('calculates time metrics', async () => {
+  it('calculates time metrics from unique operations', async () => {
     const { result } = renderHook(() => useJobProductionMetrics('job-1'), {
       wrapper: createWrapper(),
     });
@@ -280,6 +271,8 @@ describe('useJobProductionMetrics', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
+    // Operations are deduplicated by ID, so we get unique times
+    // op1: actual=55, estimated=60; op2: actual=45, estimated=40
     expect(result.current.data?.totalActualTime).toBe(100); // 55 + 45
     expect(result.current.data?.totalEstimatedTime).toBe(100); // 60 + 40
   });
@@ -295,6 +288,21 @@ describe('useJobProductionMetrics', () => {
 
     expect(result.current.data?.scrapByReason).toBeDefined();
     expect(Array.isArray(result.current.data?.scrapByReason)).toBe(true);
+  });
+
+  it('uses single query instead of 3 sequential queries (performance test)', async () => {
+    const { result } = renderHook(() => useJobProductionMetrics('job-1'), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // Verify the mock was called only once (for operation_quantities with joins)
+    // Not 3 times (parts, operations, operation_quantities)
+    expect(mockFrom).toHaveBeenCalledTimes(1);
+    expect(mockFrom).toHaveBeenCalledWith('operation_quantities');
   });
 });
 
