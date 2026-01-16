@@ -42,10 +42,37 @@ export async function generateMockData(
       `Starting comprehensive mock data generation for tenant: ${tenantId}...`,
     );
 
+    // Step 0: Ensure tenant exists (Self-healing for broken data)
+    const { data: tenantExists } = await supabase
+      .from("tenants")
+      .select("id")
+      .eq("id", tenantId)
+      .maybeSingle();
+
+    if (!tenantExists) {
+      console.log(`⚠️ Tenant ${tenantId} not found. creating it now...`);
+      const { error: createTenantError } = await supabase.from("tenants").insert({
+        id: tenantId,
+        name: "Demo Organization",
+        company_name: "Demo Company",
+        plan: "free",
+        status: "active",
+      });
+
+      if (createTenantError) {
+        console.error("Failed to create missing tenant:", createTenantError);
+        return {
+          success: false,
+          error: `Failed to restore missing tenant: ${createTenantError.message}`,
+        };
+      }
+      console.log("✓ Restored missing tenant record");
+    }
+
     // Check if tenant already has demo data to prevent duplicates
     // Skip this check for testing/specific tenants
     const skipDemoCheck = tenantId === "11111111-1111-1111-1111-111111111111";
-    
+
     if (!skipDemoCheck) {
       const { data: isDemoMode, error: demoCheckError } = await supabase.rpc(
         "is_demo_mode",
