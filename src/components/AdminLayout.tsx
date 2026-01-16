@@ -51,6 +51,7 @@ import {
   Building2,
 } from "lucide-react";
 import { TenantSwitcher } from "@/components/admin/TenantSwitcher";
+import { TenantOnboarding } from "@/components/onboarding";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -603,12 +604,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
         {/* Configuration Section - Collapsible */}
         {!collapsed && (
-          <Collapsible open={configOpen} onOpenChange={setConfigOpen} className="space-y-0.5">
+          <Collapsible open={configOpen} onOpenChange={setConfigOpen} className="space-y-0.5" data-tour="config-section">
             <CollapsibleTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start gap-2 font-medium text-muted-foreground h-7 text-xs"
+                data-tour="config-nav"
               >
                 <Settings className="h-3.5 w-3.5" />
                 <span className="flex-1 text-left">{t("navigation.configuration")}</span>
@@ -852,6 +854,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             "hidden border-r sidebar-glass transition-all md:block",
             collapsed ? "w-14" : "w-52 xl:w-56"
           )}
+          data-tour="sidebar"
         >
           <div className="relative h-full">
             <SidebarContent />
@@ -871,6 +874,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Tenant Switcher Modal (Root Admin Only) */}
       <TenantSwitcher open={tenantSwitcherOpen} onClose={() => setTenantSwitcherOpen(false)} />
+
+      {/* Tenant Onboarding Tour */}
+      <TenantOnboarding />
     </>
   );
 }
