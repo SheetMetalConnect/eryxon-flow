@@ -137,7 +137,15 @@ echo -e "\n${YELLOW}[5/6] Starting Eryxon Flow...${NC}"
 # Track which compose file to use consistently
 COMPOSE_FILE="docker-compose.yml"
 if [ -f "docker-compose.prod.yml" ]; then
-    COMPOSE_FILE="docker-compose.prod.yml"
+    echo -e "\n${BLUE}Select deployment target:${NC}"
+    echo "1) Local build with your config (docker-compose.yml) - Recommended"
+    echo "2) Production with Caddy SSL (docker-compose.prod.yml) - Uses prebuilt image"
+    read -p "Enter choice [1]: " DEPLOY_TARGET
+    DEPLOY_TARGET=${DEPLOY_TARGET:-1}
+    if [ "$DEPLOY_TARGET" == "2" ]; then
+        COMPOSE_FILE="docker-compose.prod.yml"
+        echo -e "${YELLOW}Note: Production mode uses prebuilt image. Your .env config applies at runtime.${NC}"
+    fi
 fi
 docker-compose -f "$COMPOSE_FILE" up -d --build
 
@@ -147,22 +155,22 @@ echo -e "\n${YELLOW}[6/6] Verifying Deployment...${NC}"
 # Simple Health Check
 MAX_RETRIES=12
 COUNT=0
-URL="http://localhost/health"
-if [ "$MODE" == "1" ]; then
-  # For cloud, we assume app is on port 80? docker-compose.yml maps 80:80.
-  URL="http://localhost:8080/health" # Depending on compose port mapping
-  if [ -f "docker-compose.prod.yml" ]; then
-    URL="http://localhost:80/health"
-  fi
-fi
+CURL_OPTS="-f -s --max-time 5"
 
-# Override URL if localhost port mapping is known to be 80 from earlier steps
-URL="http://localhost:80/health"
+# Set health check URL based on compose file
+if [ "$COMPOSE_FILE" == "docker-compose.prod.yml" ]; then
+    # Prod uses Caddy proxy - need to hit app container directly or use Host header
+    URL="http://localhost:80/health"
+    CURL_OPTS="$CURL_OPTS -H 'Host: localhost'"
+else
+    # Local build exposes port 80 directly
+    URL="http://localhost:80/health"
+fi
 
 echo "Waiting for service at $URL..."
 
 while [ $COUNT -lt $MAX_RETRIES ]; do
-    if curl -f -s --max-time 5 "$URL" > /dev/null; then
+    if curl $CURL_OPTS "$URL" > /dev/null 2>&1; then
         echo -e "${GREEN}✓ Health Check Passed!${NC}"
         break
     fi
