@@ -349,7 +349,7 @@ export function usePMI(partId: string | undefined) {
   }, [partId, session?.access_token]);
 
   /**
-   * Extract PMI synchronously - returns result directly
+   * Extract PMI synchronously (legacy) - returns result directly
    */
   const extractPMI = useCallback(async (
     fileUrl: string,
@@ -389,14 +389,12 @@ export function usePMI(partId: string | undefined) {
         headers['X-API-Key'] = PMI_SERVICE_API_KEY;
       }
 
-      const response = await fetch(`${PMI_SERVICE_URL}/process`, {
+      const response = await fetch(`${PMI_SERVICE_URL}/extract`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
           file_url: fileUrl,
           file_name: fileName,
-          include_geometry: false,
-          include_pmi: true,
         }),
       });
 
@@ -541,7 +539,7 @@ export function usePMI(partId: string | undefined) {
     extractionError,
 
     // Actions
-    extractPMI,        // Sync extraction
+    extractPMI,        // Sync extraction (legacy)
     extractPMIAsync,   // Async extraction with realtime updates
     clearPMI,
     refetchPMI,
@@ -594,14 +592,12 @@ export function usePMIExtraction() {
         headers['X-API-Key'] = PMI_SERVICE_API_KEY;
       }
 
-      const response = await fetch(`${PMI_SERVICE_URL}/process`, {
+      const response = await fetch(`${PMI_SERVICE_URL}/extract`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
           file_url: fileUrl,
           file_name: fileName,
-          include_geometry: false,
-          include_pmi: true,
         }),
       });
 

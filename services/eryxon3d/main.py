@@ -530,6 +530,18 @@ async def process_cad(
         )
 
 
+# Legacy endpoint for backwards compatibility
+@app.post("/extract", response_model=ProcessResponse)
+async def extract_pmi_legacy(
+    request: ProcessRequest,
+    api_key: Optional[str] = Depends(verify_api_key)
+):
+    """Legacy endpoint - redirects to /process with PMI only."""
+    request.include_geometry = False
+    request.include_pmi = True
+    return await process_cad(request, api_key)
+
+
 # =============================================================================
 # Async Processing (Supabase Realtime)
 # =============================================================================

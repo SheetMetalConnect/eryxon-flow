@@ -116,6 +116,8 @@ describe('Supabase Types Module', () => {
       const expectedKeys = [
         'app_role',
         'assignment_status',
+        'batch_status',
+        'batch_type',
         'integration_category',
         'integration_status',
         'invoice_payment_status',
