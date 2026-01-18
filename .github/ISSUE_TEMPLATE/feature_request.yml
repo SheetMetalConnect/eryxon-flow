@@ -1,0 +1,46 @@
+name: Feature Request
+description: Suggest a new feature for Eryxon Flow
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea? Let us know! Please check [discussions](https://github.com/SheetMetalConnect/eryxon-flow/discussions) first for complex features.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the manufacturing workflow or pain point
+      placeholder: "As a [shop floor operator / production manager / etc], I need..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How should it work?
+      placeholder: Describe what you'd like to see
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What workarounds are you using now?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: How important is this?
+      options:
+        - Nice to have
+        - Would improve workflow
+        - Critical for our operation
+    validations:
+      required: false

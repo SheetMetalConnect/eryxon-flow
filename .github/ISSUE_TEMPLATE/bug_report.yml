@@ -1,0 +1,57 @@
+name: Bug Report
+description: Report a bug in Eryxon Flow
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting a bug! Please provide details below.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the bug and steps to reproduce
+      placeholder: |
+        Steps to reproduce:
+        1. Go to Jobs page
+        2. Click create job
+        3. Error appears
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      description: What should have happened instead?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: How are you running it?
+      options:
+        - Cloud Supabase (recommended)
+        - Self-hosted (Docker)
+        - Development (npm run dev)
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser & OS
+      placeholder: "Chrome on macOS / Firefox on Windows / Safari on iOS"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console errors (if any)
+      description: Open browser console (F12) and copy any errors
+      render: shell
+    validations:
+      required: false
