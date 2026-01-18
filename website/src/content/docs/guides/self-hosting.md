@@ -28,6 +28,15 @@ chmod +x deploy.sh
 
 Follow the interactive prompts to choose your deployment mode.
 
+### Getting Started (Local Mode)
+If you choose **Mode 2 (Self-Hosted)**:
+1. The system creates a **Demo Tenant** automatically
+2. **Sign up** with any email to create your admin account
+3. Go to **Dashboard > Generate Demo Data** to populate the app
+
+> [!TIP]
+> **Populate Test Data:** After logging in, go to **Dashboard > Generate Demo Data** to fill the system with realistic manufacturing data.
+
 ---
 
 ## Deployment Modes
