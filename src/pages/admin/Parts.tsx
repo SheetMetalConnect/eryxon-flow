@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
+import { useDeepLink } from "@/hooks/useDeepLink";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import PartDetailModal from "@/components/admin/PartDetailModal";
@@ -51,7 +52,7 @@ interface PartData {
 export default function Parts() {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
+  const { selectedId: selectedPartId, setSelectedId: setSelectedPartId, clearSelection: clearPartSelection } = useDeepLink("id");
 
   // File viewer state
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
@@ -464,7 +465,7 @@ export default function Parts() {
       {selectedPartId && (
         <PartDetailModal
           partId={selectedPartId}
-          onClose={() => setSelectedPartId(null)}
+          onClose={clearPartSelection}
           onUpdate={() => refetch()}
         />
       )}

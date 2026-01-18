@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
+import { useDeepLink } from "@/hooks/useDeepLink";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -71,7 +72,7 @@ export default function Jobs() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const { selectedId: selectedJobId, setSelectedId: setSelectedJobId, clearSelection: clearJobSelection } = useDeepLink("id");
   const [overrideJobId, setOverrideJobId] = useState<string | null>(null);
 
   // File viewer state
@@ -526,7 +527,7 @@ export default function Jobs() {
       {selectedJobId && (
         <JobDetailModal
           jobId={selectedJobId}
-          onClose={() => setSelectedJobId(null)}
+          onClose={clearJobSelection}
           onUpdate={() => refetch()}
         />
       )}

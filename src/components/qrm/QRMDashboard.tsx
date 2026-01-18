@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { useNavigate } from "react-router-dom";
+import { useEntityNavigation } from "@/hooks/useDeepLink";
 import { cn } from "@/lib/utils";
 
 interface Operation {
@@ -58,7 +58,7 @@ function SectionHeader({
 export function QRMDashboard() {
   const { profile } = useAuth();
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const { navigateToOperation } = useEntityNavigation();
   const { cellsMetrics, loading } = useAllCellsQRMMetrics(profile?.tenant_id || null);
   const [expandedCells, setExpandedCells] = useState<Set<string>>(new Set());
 
@@ -282,7 +282,7 @@ export function QRMDashboard() {
                               <button
                                 key={op.id}
                                 className="flex items-center justify-between w-full text-sm p-2.5 bg-emerald-500/5 border border-emerald-500/10 rounded-lg hover:bg-emerald-500/10 transition-colors"
-                                onClick={() => navigate(`/admin/operations`)}
+                                onClick={() => navigateToOperation(op.id)}
                               >
                                 <span className="font-medium">{op.part.job.job_number}</span>
                                 <span className="text-muted-foreground">{op.part.part_number}</span>
@@ -304,7 +304,7 @@ export function QRMDashboard() {
                               <button
                                 key={op.id}
                                 className="flex items-center justify-between w-full text-sm p-2.5 bg-blue-500/5 border border-blue-500/10 rounded-lg hover:bg-blue-500/10 transition-colors"
-                                onClick={() => navigate(`/admin/operations`)}
+                                onClick={() => navigateToOperation(op.id)}
                               >
                                 <span className="font-medium">{op.part.job.job_number}</span>
                                 <span className="text-muted-foreground">{op.part.part_number}</span>
@@ -326,7 +326,7 @@ export function QRMDashboard() {
                               <button
                                 key={op.id}
                                 className="flex items-center justify-between w-full text-sm p-2.5 bg-muted/30 border border-border/50 rounded-lg hover:bg-muted/50 transition-colors"
-                                onClick={() => navigate(`/admin/operations`)}
+                                onClick={() => navigateToOperation(op.id)}
                               >
                                 <span className="font-medium">{op.part.job.job_number}</span>
                                 <span className="text-muted-foreground">{op.part.part_number}</span>

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useEntityNavigation } from "@/hooks/useDeepLink";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -50,14 +51,18 @@ import { cn } from "@/lib/utils";
 interface ActiveWork {
   id: string;
   start_time: string;
+  operation_id: string;
   operator: {
     full_name: string;
   };
   operation: {
+    id: string;
     operation_name: string;
     part: {
+      id: string;
       part_number: string;
       job: {
+        id: string;
         job_number: string;
         customer: string | null;
       };
@@ -150,6 +155,7 @@ export default function Dashboard() {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const { navigateToJob, navigateToPart, navigateToOperation } = useEntityNavigation();
   const [activeWork, setActiveWork] = useState<ActiveWork[]>([]);
   const [stats, setStats] = useState({
     activeWorkers: 0,
@@ -188,12 +194,15 @@ export default function Dashboard() {
         .select(`
           id,
           start_time,
+          operation_id,
           operator:profiles!inner(full_name),
           operation:operations!inner(
+            id,
             operation_name,
             part:parts!inner(
+              id,
               part_number,
-              job:jobs!inner(job_number, customer)
+              job:jobs!inner(id, job_number, customer)
             ),
             cell:cells!inner(name, color)
           )
@@ -612,14 +621,42 @@ export default function Dashboard() {
                           <span className="font-medium">{work.operator.full_name}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">{work.operation.operation_name}</TableCell>
                       <TableCell>
-                        <div className="font-medium">{work.operation.part.job.job_number}</div>
+                        <span
+                          className="text-primary cursor-pointer hover:underline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigateToOperation(work.operation.id);
+                          }}
+                        >
+                          {work.operation.operation_name}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div
+                          className="font-medium text-primary cursor-pointer hover:underline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigateToJob(work.operation.part.job.id);
+                          }}
+                        >
+                          {work.operation.part.job.job_number}
+                        </div>
                         {work.operation.part.job.customer && (
                           <div className="text-xs text-muted-foreground">{work.operation.part.job.customer}</div>
                         )}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">{work.operation.part.part_number}</TableCell>
+                      <TableCell>
+                        <span
+                          className="text-primary cursor-pointer hover:underline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigateToPart(work.operation.part.id);
+                          }}
+                        >
+                          {work.operation.part.part_number}
+                        </span>
+                      </TableCell>
                       <TableCell>
                         <Badge variant="secondary">{work.operation.cell.name}</Badge>
                       </TableCell>

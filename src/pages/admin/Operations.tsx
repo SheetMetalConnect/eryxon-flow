@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
-import { useNavigate } from "react-router-dom";
+import { useDeepLink, useEntityNavigation } from "@/hooks/useDeepLink";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, Download, Wrench, PlayCircle, CheckCircle2, UserCheck } from "lucide-react";
@@ -41,9 +41,9 @@ interface Operation {
 
 export const Operations: React.FC = () => {
   const { t } = useTranslation();
-  const [selectedOperationId, setSelectedOperationId] = useState<string | null>(null);
+  const { selectedId: selectedOperationId, setSelectedId: setSelectedOperationId, clearSelection: clearOperationSelection } = useDeepLink("id");
+  const { navigateToPart, navigateToJob } = useEntityNavigation();
   const { profile } = useAuth();
-  const navigate = useNavigate();
 
   // Fetch operations using React Query
   const { data: operations = [], isLoading, refetch } = useQuery({
@@ -212,7 +212,10 @@ export const Operations: React.FC = () => {
       cell: ({ row }) => (
         <span
           className="text-primary cursor-pointer hover:underline"
-          onClick={() => navigate("/admin/parts")}
+          onClick={(e) => {
+            e.stopPropagation();
+            navigateToPart(row.original.part_id);
+          }}
         >
           #{row.getValue("part_number")}
         </span>
@@ -226,7 +229,10 @@ export const Operations: React.FC = () => {
       cell: ({ row }) => (
         <span
           className="text-primary cursor-pointer hover:underline"
-          onClick={() => navigate("/admin/jobs")}
+          onClick={(e) => {
+            e.stopPropagation();
+            navigateToJob(row.original.job_id);
+          }}
         >
           JOB-{row.getValue("job_number")}
         </span>
@@ -286,7 +292,7 @@ export const Operations: React.FC = () => {
         return value.includes(row.getValue(id));
       },
     },
-  ], [navigate]);
+  ], [navigateToPart, navigateToJob]);
 
   const uniqueCells = useMemo(() =>
     [...new Set(operations.map((op) => op.cell))],
@@ -391,7 +397,7 @@ export const Operations: React.FC = () => {
       {selectedOperationId && (
         <OperationDetailModal
           operationId={selectedOperationId}
-          onClose={() => setSelectedOperationId(null)}
+          onClose={clearOperationSelection}
           onUpdate={() => refetch()}
         />
       )}
