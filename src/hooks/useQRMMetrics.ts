@@ -630,16 +630,25 @@ export function useAllCellsQRMMetrics(tenantId: string | null) {
       for (let i = 0; i < cells.length; i += CHUNK_SIZE) {
         const chunk = cells.slice(i, i + CHUNK_SIZE);
         const chunkPromises = chunk.map(async (cell) => {
-          const { data } = await supabase.rpc("get_cell_qrm_metrics", {
+          const { data, error: rpcError } = await supabase.rpc("get_cell_qrm_metrics", {
             cell_id_param: cell.id,
             tenant_id_param: tenantId,
           });
-          return { cellId: cell.id, data: data as unknown as CellQRMMetrics };
+          if (rpcError) {
+            logger.warn("Failed to fetch QRM metrics for cell", rpcError, {
+              operation: "useAllCellsQRMMetrics",
+              entityType: "cell",
+              entityId: cell.id,
+              tenantId,
+            });
+            return { cellId: cell.id, data: null, error: rpcError };
+          }
+          return { cellId: cell.id, data: data as unknown as CellQRMMetrics, error: null };
         });
 
         const chunkResults = await Promise.all(chunkPromises);
-        chunkResults.forEach(({ cellId, data }) => {
-          if (data) metricsMap[cellId] = data;
+        chunkResults.forEach(({ cellId, data, error: cellError }) => {
+          if (!cellError && data) metricsMap[cellId] = data;
         });
       }
 
