@@ -7,6 +7,10 @@
     {
       "name": "Documentation",
       "url": "/introduction/"
+    },
+    {
+      "name": "Demo",
+      "url": "https://app.eryxon.eu"
     }
   ],
   "footer": {
@@ -24,6 +28,10 @@
         {
           "name": "Issues",
           "url": "https://github.com/SheetMetalConnect/eryxon-flow/issues"
+        },
+        {
+          "name": "Releases",
+          "url": "https://github.com/SheetMetalConnect/eryxon-flow/releases"
         }
       ]
     },
@@ -33,6 +41,10 @@
         {
           "name": "Documentation",
           "url": "/introduction/"
+        },
+        {
+          "name": "Quick Start",
+          "url": "/guides/quick-start/"
         },
         {
           "name": "Self Hosting",
@@ -45,14 +57,18 @@
       ]
     },
     "company": {
-      "title": "Company",
+      "title": "Services",
       "links": [
         {
           "name": "Sheet Metal Connect",
           "url": "https://www.sheetmetalconnect.com/"
         },
         {
-          "name": "Contact",
+          "name": "Consulting Services",
+          "url": "https://www.sheetmetalconnect.com/contact"
+        },
+        {
+          "name": "Contact Us",
           "url": "https://www.sheetmetalconnect.com/contact"
         }
       ]
