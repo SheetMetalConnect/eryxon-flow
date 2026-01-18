@@ -1,6 +1,11 @@
 # Eryxon Flow Design System
 
-**Modern design system for manufacturing execution with dark/light/auto theme support**
+Modern design system for manufacturing execution with dark/light/auto theme support.
+
+**Related Documentation:**
+- [CLAUDE.md](../CLAUDE.md) - AI agent guidelines
+- [CODING_PATTERNS.md](CODING_PATTERNS.md) - Technical code patterns
+- [Full Documentation](https://eryxon.eu/docs)
 
 ---
 

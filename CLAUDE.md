@@ -1,6 +1,10 @@
-# Claude Agent Guidelines for Eryxon MES
+# Claude Agent Guidelines for Eryxon Flow
 
-This document provides essential guidelines for AI agents (Claude) working on the Eryxon MES codebase. Following these rules ensures consistency, quality, and maintainability.
+> **Docs:** [eryxon.eu/docs](https://eryxon.eu/docs) | **Hosted:** [app.eryxon.eu](https://app.eryxon.eu)
+
+This document provides essential guidelines for AI agents (Claude) working on the Eryxon Flow codebase. Following these rules ensures consistency, quality, and maintainability.
+
+**For other AI agents:** See also [CODEX.md](CODEX.md) for OpenAI Codex/GPT-based tools, or [.cursorrules](.cursorrules) for Cursor IDE.
 
 ---
 
@@ -60,6 +64,71 @@ Work until the goal is **fully achieved**:
 3. Execute each item completely
 4. Verify all requirements are met
 5. Stop when done - do not gold-plate
+
+### Git Branch Discipline
+
+**NEVER work directly on `main` or `master`.** Always create a descriptive feature branch.
+
+```bash
+# CORRECT - Create descriptive branch names
+git checkout -b feature/add-job-export
+git checkout -b fix/operator-time-calculation
+git checkout -b docs/update-api-reference
+git checkout -b refactor/simplify-auth-flow
+
+# WRONG - Never commit directly to main
+git checkout main && git commit  # NEVER DO THIS!
+```
+
+**Branch naming conventions:**
+- `feature/` - New features or enhancements
+- `fix/` - Bug fixes
+- `docs/` - Documentation changes
+- `refactor/` - Code improvements (no behavior change)
+- `test/` - Test additions or fixes
+- `chore/` - Maintenance tasks
+
+### Pull Request Guidelines
+
+**When creating PRs, ALWAYS use the full template format:**
+
+```markdown
+## What does this PR do?
+
+[Brief description of the changes]
+
+## Why?
+
+[Explain the motivation - what problem does this solve?]
+
+## How to test
+
+1. [Step 1]
+2. [Step 2]
+3. [Step 3]
+
+## Screenshots (if UI changes)
+
+[Add before/after screenshots for visual changes, or "N/A"]
+
+## Checklist
+
+- [ ] Code follows project style (see CLAUDE.md or CODEX.md)
+- [ ] All user-facing text is localized (EN/DE/NL)
+- [ ] Tests pass (`npm test`)
+- [ ] TypeScript has no errors (`npm run typecheck`)
+- [ ] Updated documentation if needed
+- [ ] No mock data or hardcoded strings
+
+## Related issues
+
+[Link any related issues: Fixes #123, Closes #456]
+```
+
+**PR Title Format:** Use conventional commits: `type(scope): description`
+- `feat(jobs): add bulk delete functionality`
+- `fix(operator): correct time calculation`
+- `docs(api): update webhook documentation`
 
 ---
 
@@ -763,4 +832,30 @@ npx shadcn@latest add [component-name]
 
 ---
 
-*This document is the source of truth for Claude agents working on Eryxon MES. When in doubt, refer to these guidelines.*
+## Resources
+
+### Local Documentation (For AI Agents)
+Refer to these local files instead of web links:
+
+| Topic | Local Path |
+|-------|------------|
+| Quick Start | `website/src/content/docs/guides/quick-start.md` |
+| Self-Hosting | `website/src/content/docs/guides/self-hosting.md` |
+| API Documentation | `website/src/content/docs/api/api_documentation.md` |
+| Database Schema | `website/src/content/docs/architecture/database.md` |
+| Operator Manual | `website/src/content/docs/guides/operator-manual.md` |
+| Admin Manual | `website/src/content/docs/guides/admin-manual.md` |
+| Design System | `docs/DESIGN_SYSTEM.md` |
+| Coding Patterns | `docs/CODING_PATTERNS.md` |
+| App Architecture | `website/src/content/docs/architecture/app-architecture.md` |
+| Roadmap | `website/src/content/docs/roadmap.md` |
+
+### External Resources
+- **Live Docs:** [eryxon.eu/docs](https://eryxon.eu/docs)
+- **Hosted Version:** [app.eryxon.eu](https://app.eryxon.eu)
+- **GitHub:** [github.com/SheetMetalConnect/eryxon-flow](https://github.com/SheetMetalConnect/eryxon-flow)
+- **Contributing:** [CONTRIBUTING.md](CONTRIBUTING.md)
+
+---
+
+*This document is the source of truth for Claude agents working on Eryxon Flow. When in doubt, refer to these guidelines.*

@@ -184,15 +184,20 @@ Include:
 
 ## Development Resources
 
-- [CLAUDE.md](CLAUDE.md) - Detailed development guidelines
+- [CLAUDE.md](CLAUDE.md) - AI agent guidelines (Claude)
+- [CODEX.md](CODEX.md) - AI agent guidelines (OpenAI Codex/GPT)
 - [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) - UI design system
 - [docs/CODING_PATTERNS.md](docs/CODING_PATTERNS.md) - Code patterns
 - [docs/DATABASE.md](docs/DATABASE.md) - Database schema
 
+### Full Documentation
+- **Online:** [eryxon.eu/docs](https://eryxon.eu/docs)
+- **Local:** `website/src/content/docs/` (Astro markdown files)
+
 ## Questions?
 
 - Open a [GitHub Discussion](https://github.com/SheetMetalConnect/eryxon-flow/discussions)
-- Check existing documentation in `/docs`
+- Check [documentation](https://eryxon.eu/docs)
 
 ## Code of Conduct
 

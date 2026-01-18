@@ -6,7 +6,11 @@ body:
   - type: markdown
     attributes:
       value: |
-        Have an idea? Let us know! Please check [discussions](https://github.com/SheetMetalConnect/eryxon-flow/discussions) first for complex features.
+        Have an idea? Let us know!
+
+        **Before submitting**, please check:
+        - [Roadmap](https://eryxon.eu/docs/roadmap) to see planned features
+        - [Discussions](https://github.com/SheetMetalConnect/eryxon-flow/discussions) for complex feature ideas
 
   - type: textarea
     id: problem

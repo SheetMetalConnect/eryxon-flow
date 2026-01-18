@@ -1,6 +1,12 @@
 # Coding Patterns & Technical Reference
 
-Technical patterns and code examples for Eryxon MES development. For high-level principles and guidelines, see [CLAUDE.md](../CLAUDE.md).
+Technical patterns and code examples for Eryxon Flow development.
+
+**Related Documentation:**
+- [CLAUDE.md](../CLAUDE.md) - AI agent guidelines
+- [CODEX.md](../CODEX.md) - OpenAI agent guidelines
+- [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) - UI design system
+- [Full Documentation](https://eryxon.eu/docs)
 
 ---
 
