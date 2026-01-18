@@ -133,18 +133,24 @@ export const AnalyticsRefreshInterval = {
 
 /**
  * Helper to validate date range is within allowed bounds
+ * Guards against non-finite inputs (NaN, Infinity) by defaulting to DAY
  */
 export function validateDateRange(
   range: number,
   feature: keyof typeof AnalyticsMaxRange
 ): number {
+  // Guard against non-finite inputs
+  const safeRange = Number.isFinite(range) ? range : AnalyticsDateRange.DAY;
   const maxRange = AnalyticsMaxRange[feature];
-  return Math.min(Math.max(range, AnalyticsDateRange.DAY), maxRange);
+  return Math.min(Math.max(safeRange, AnalyticsDateRange.DAY), maxRange);
 }
 
 /**
  * Helper to get appropriate sample interval for trend charts
+ * Guards against non-finite inputs (NaN, Infinity) by defaulting to 1
  */
 export function getTrendSampleInterval(dateRange: number): number {
-  return Math.max(1, Math.floor(dateRange / TrendConfig.sampleIntervalDivisor));
+  // Guard against non-finite inputs
+  const safeRange = Number.isFinite(dateRange) ? dateRange : AnalyticsDateRange.DAY;
+  return Math.max(1, Math.floor(safeRange / TrendConfig.sampleIntervalDivisor));
 }

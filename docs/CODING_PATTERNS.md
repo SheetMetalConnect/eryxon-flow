@@ -437,6 +437,37 @@ const mutation = useMutation({
 
 ---
 
+## Analytics Configuration
+
+Centralized configuration for analytics timeframes is in `src/lib/analyticsConfig.ts`:
+
+```typescript
+import {
+  AnalyticsDateRange,
+  AnalyticsDefaults,
+  validateDateRange,
+  getTrendSampleInterval
+} from '@/lib/analyticsConfig';
+
+// Use preset date ranges
+const dateRange = AnalyticsDefaults.qrmDashboard; // 30 days
+
+// Validate user-provided ranges (guards against NaN/Infinity)
+const safeRange = validateDateRange(userRange, 'qrmDashboard');
+
+// Calculate sample intervals for trend charts
+const interval = getTrendSampleInterval(dateRange); // e.g., 3 for 30 days
+```
+
+**Date Range Presets:**
+- `DAY` (1) - Real-time operational views
+- `WEEK` (7) - Weekly trends, employee metrics
+- `MONTH` (30) - Default for most dashboards
+- `QUARTER` (90) - Quarterly analysis
+- `YEAR` (365) - Year-over-year comparisons
+
+---
+
 ## Quick Reference Commands
 
 ```bash
