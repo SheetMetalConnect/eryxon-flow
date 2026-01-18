@@ -50,7 +50,7 @@ export async function seedBatches(
                 const batch = {
                     tenant_id: tenantId,
                     batch_number: batchNum,
-                    batch_type: "nesting", // or generic batch
+                    batch_type: "laser_nesting", // valid enum: laser_nesting, tube_batch, saw_batch, finishing_batch, general
                     status: isCompleted ? "completed" : "in_progress",
                     cell_id: cellId,
                     material: "Mixed", // Could be specific if we tracked it
