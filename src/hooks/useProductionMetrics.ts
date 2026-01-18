@@ -161,44 +161,46 @@ export function useOperationProductionMetrics(operationId: string | undefined) {
 
 /**
  * Hook for fetching production metrics for a job (all operations)
+ * Returns time metrics even if no quantities have been recorded yet
  */
 export function useJobProductionMetrics(jobId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["job-production-metrics", jobId],
+    queryKey: ["job-production-metrics", jobId, profile?.tenant_id],
     enabled: !!jobId && !!profile?.tenant_id,
     queryFn: async (): Promise<ProductionMetrics | null> => {
-      if (!jobId) return null;
+      if (!jobId || !profile?.tenant_id) return null;
 
-      // First get all parts for this job
-      const { data: parts, error: partsError } = await supabase
-        .from("parts")
-        .select("id")
-        .eq("job_id", jobId);
-
-      if (partsError || !parts || parts.length === 0) {
-        return null;
-      }
-
-      const partIds = parts.map((p) => p.id);
-
-      // Get all operations for these parts
+      // First, get all operations for this job (via parts)
+      // This ensures we return time metrics even when no quantities exist
       const { data: operations, error: opsError } = await supabase
         .from("operations")
-        .select("id, estimated_time, actual_time")
-        .in("part_id", partIds);
+        .select(`
+          id,
+          estimated_time,
+          actual_time,
+          part:parts!inner (
+            job_id
+          )
+        `)
+        .eq("tenant_id", profile.tenant_id)
+        .eq("part.job_id", jobId);
 
-      if (opsError || !operations) {
+      if (opsError) return null;
+
+      // No operations means no job data
+      if (!operations || operations.length === 0) {
         return null;
       }
 
-      const operationIds = operations.map((o) => o.id);
+      const operationIds = operations.map((op) => op.id);
 
-      // Get all quantity records for these operations
+      // Get quantities for these operations (may be empty for new jobs)
       const { data: quantities, error: qtyError } = await supabase
         .from("operation_quantities")
         .select(`
+          operation_id,
           quantity_produced,
           quantity_good,
           quantity_scrap,
@@ -211,27 +213,42 @@ export function useJobProductionMetrics(jobId: string | undefined) {
             category
           )
         `)
+        .eq("tenant_id", profile.tenant_id)
         .in("operation_id", operationIds);
 
-      if (qtyError) {
-        console.error("Error fetching quantities:", qtyError);
-      }
+      if (qtyError) return null;
 
       const records = quantities || [];
 
-      const totalProduced = records.reduce((sum, r) => sum + (r.quantity_produced || 0), 0);
-      const totalGood = records.reduce((sum, r) => sum + (r.quantity_good || 0), 0);
-      const totalScrap = records.reduce((sum, r) => sum + (r.quantity_scrap || 0), 0);
-      const totalRework = records.reduce((sum, r) => sum + (r.quantity_rework || 0), 0);
+      // Calculate time metrics from ALL operations (not just those with quantities)
+      let totalActualTime = 0;
+      let totalEstimatedTime = 0;
+      operations.forEach((op) => {
+        totalActualTime += op.actual_time || 0;
+        totalEstimatedTime += op.estimated_time || 0;
+      });
+
+      // Calculate quantity totals from records (may be zero if no quantities yet)
+      const totals = records.reduce(
+        (acc, r) => ({
+          produced: acc.produced + (r.quantity_produced || 0),
+          good: acc.good + (r.quantity_good || 0),
+          scrap: acc.scrap + (r.quantity_scrap || 0),
+          rework: acc.rework + (r.quantity_rework || 0),
+        }),
+        { produced: 0, good: 0, scrap: 0, rework: 0 }
+      );
+
+      const { produced: totalProduced, good: totalGood, scrap: totalScrap, rework: totalRework } = totals;
 
       const overallYield = totalProduced > 0 ? (totalGood / totalProduced) * 100 : 0;
       const scrapRate = totalProduced > 0 ? (totalScrap / totalProduced) * 100 : 0;
       const reworkRate = totalProduced > 0 ? (totalRework / totalProduced) * 100 : 0;
 
-      // Calculate time metrics
-      const totalActualTime = operations.reduce((sum, o) => sum + (o.actual_time || 0), 0);
-      const totalEstimatedTime = operations.reduce((sum, o) => sum + (o.estimated_time || 0), 0);
-      const timeEfficiency = totalEstimatedTime > 0 ? (totalEstimatedTime / totalActualTime) * 100 : null;
+      // Guard against division by zero - both times must be > 0 for meaningful efficiency
+      const timeEfficiency = (totalEstimatedTime > 0 && totalActualTime > 0)
+        ? (totalEstimatedTime / totalActualTime) * 100
+        : null;
 
       // Calculate average cycle time per unit
       const avgCycleTimePerUnit = totalGood > 0 ? totalActualTime / totalGood : null;

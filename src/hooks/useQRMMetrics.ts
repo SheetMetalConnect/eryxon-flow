@@ -586,6 +586,10 @@ export function useMultipleJobsRouting(jobIds: string[]) {
 
 /**
  * Hook to fetch all cells with their QRM metrics
+ *
+ * Note: This hook makes one RPC call per cell. For optimal performance with many cells,
+ * consider creating a batch RPC function `get_all_cells_qrm_metrics` on the database.
+ * Current optimization: Uses chunked parallel execution to limit concurrent requests.
  */
 export function useAllCellsQRMMetrics(tenantId: string | null) {
   const [cellsMetrics, setCellsMetrics] = useState<
@@ -613,23 +617,31 @@ export function useAllCellsQRMMetrics(tenantId: string | null) {
 
       if (cellsError) throw cellsError;
 
-      // Fetch metrics for each cell
-      const metricsPromises = (cells || []).map(async (cell) => {
-        const { data } = await supabase.rpc("get_cell_qrm_metrics", {
-          cell_id_param: cell.id,
-          tenant_id_param: tenantId,
-        });
-        return { cellId: cell.id, data: data as unknown as CellQRMMetrics };
-      });
+      if (!cells || cells.length === 0) {
+        setCellsMetrics({});
+        return;
+      }
 
-      const results = await Promise.all(metricsPromises);
-      const metricsMap = results.reduce(
-        (acc, { cellId, data }) => {
-          if (data) acc[cellId] = data;
-          return acc;
-        },
-        {} as Record<string, CellQRMMetrics>,
-      );
+      // Process cells in chunks to avoid overwhelming the database
+      // Chunk size of 5 provides good parallelism while limiting concurrent connections
+      const CHUNK_SIZE = 5;
+      const metricsMap: Record<string, CellQRMMetrics> = {};
+
+      for (let i = 0; i < cells.length; i += CHUNK_SIZE) {
+        const chunk = cells.slice(i, i + CHUNK_SIZE);
+        const chunkPromises = chunk.map(async (cell) => {
+          const { data } = await supabase.rpc("get_cell_qrm_metrics", {
+            cell_id_param: cell.id,
+            tenant_id_param: tenantId,
+          });
+          return { cellId: cell.id, data: data as unknown as CellQRMMetrics };
+        });
+
+        const chunkResults = await Promise.all(chunkPromises);
+        chunkResults.forEach(({ cellId, data }) => {
+          if (data) metricsMap[cellId] = data;
+        });
+      }
 
       setCellsMetrics(metricsMap);
     } catch (err) {

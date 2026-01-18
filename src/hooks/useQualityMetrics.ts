@@ -258,65 +258,87 @@ export function useScrapReasonUsage() {
 }
 
 // Hook to fetch quality metrics for a specific job
+// Optimized: Uses parallel queries for quantities and issues
 export function useJobQualityMetrics(jobId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["job-quality-metrics", jobId],
+    queryKey: ["job-quality-metrics", jobId, profile?.tenant_id],
     queryFn: async () => {
       if (!jobId || !profile?.tenant_id) {
         return null;
       }
 
-      // Get all operations for this job's parts
-      const { data: parts, error: partsError } = await supabase
-        .from("parts")
-        .select("id")
-        .eq("job_id", jobId);
-
-      if (partsError) throw partsError;
-      if (!parts || parts.length === 0) return null;
-
-      const partIds = parts.map((p) => p.id);
-
-      // Get all operation IDs for these parts
+      // Get all operation IDs for this job (via parts -> operations)
+      // This ensures we catch issues even for operations without quantities yet
       const { data: operations, error: opsError } = await supabase
         .from("operations")
-        .select("id")
-        .in("part_id", partIds);
+        .select(`
+          id,
+          part:parts!inner (
+            job_id
+          )
+        `)
+        .eq("tenant_id", profile.tenant_id)
+        .eq("part.job_id", jobId);
 
       if (opsError) throw opsError;
-      if (!operations || operations.length === 0) return null;
 
-      const operationIds = operations.map((o) => o.id);
+      const operationIds = operations?.map((op) => op.id) || [];
 
-      // Get production quantities for these operations
-      const { data: quantities, error: quantitiesError } = await supabase
-        .from("operation_quantities")
-        .select(`
-          quantity_produced,
-          quantity_good,
-          quantity_scrap,
-          quantity_rework
-        `)
-        .in("operation_id", operationIds);
+      // Run quantities and issues queries in parallel for better performance
+      const [quantitiesResult, issuesResult] = await Promise.all([
+        // Get quantity metrics
+        operationIds.length > 0
+          ? supabase
+              .from("operation_quantities")
+              .select(`
+                quantity_produced,
+                quantity_good,
+                quantity_scrap,
+                quantity_rework
+              `)
+              .eq("tenant_id", profile.tenant_id)
+              .in("operation_id", operationIds)
+          : Promise.resolve({ data: [], error: null }),
+        // Get issues for ALL operations (not just those with quantities)
+        operationIds.length > 0
+          ? supabase
+              .from("issues")
+              .select("id, status, severity")
+              .eq("tenant_id", profile.tenant_id)
+              .in("operation_id", operationIds)
+          : Promise.resolve({ data: [], error: null }),
+      ]);
 
-      if (quantitiesError) throw quantitiesError;
+      if (quantitiesResult.error) throw quantitiesResult.error;
+      if (issuesResult.error) throw issuesResult.error;
 
-      // Get issues for these operations
-      const { data: issues, error: issuesError } = await supabase
-        .from("issues")
-        .select("id, status, severity")
-        .in("operation_id", operationIds);
+      const quantities = quantitiesResult.data || [];
+      const issues = issuesResult.data || [];
 
-      if (issuesError) throw issuesError;
+      // Single pass to calculate all totals
+      const totals = quantities.reduce(
+        (acc, q) => ({
+          produced: acc.produced + (q.quantity_produced || 0),
+          good: acc.good + (q.quantity_good || 0),
+          scrap: acc.scrap + (q.quantity_scrap || 0),
+          rework: acc.rework + (q.quantity_rework || 0),
+        }),
+        { produced: 0, good: 0, scrap: 0, rework: 0 }
+      );
 
-      // Calculate metrics
-      const totalProduced = quantities?.reduce((sum, q) => sum + (q.quantity_produced || 0), 0) || 0;
-      const totalGood = quantities?.reduce((sum, q) => sum + (q.quantity_good || 0), 0) || 0;
-      const totalScrap = quantities?.reduce((sum, q) => sum + (q.quantity_scrap || 0), 0) || 0;
-      const totalRework = quantities?.reduce((sum, q) => sum + (q.quantity_rework || 0), 0) || 0;
+      const { produced: totalProduced, good: totalGood, scrap: totalScrap, rework: totalRework } = totals;
       const yieldRate = totalProduced > 0 ? (totalGood / totalProduced) * 100 : 100;
+
+      // Single pass for issue counts
+      const issueCounts = issues.reduce(
+        (acc, i) => ({
+          pending: acc.pending + (i.status === "pending" ? 1 : 0),
+          critical: acc.critical + (i.severity === "critical" ? 1 : 0),
+        }),
+        { pending: 0, critical: 0 }
+      );
 
       return {
         totalProduced,
@@ -324,9 +346,9 @@ export function useJobQualityMetrics(jobId: string | undefined) {
         totalScrap,
         totalRework,
         yieldRate,
-        issueCount: issues?.length || 0,
-        pendingIssues: issues?.filter((i) => i.status === "pending").length || 0,
-        criticalIssues: issues?.filter((i) => i.severity === "critical").length || 0,
+        issueCount: issues.length,
+        pendingIssues: issueCounts.pending,
+        criticalIssues: issueCounts.critical,
       };
     },
     enabled: !!jobId && !!profile?.tenant_id,
@@ -335,20 +357,23 @@ export function useJobQualityMetrics(jobId: string | undefined) {
 }
 
 // Hook to fetch quality metrics for a specific part
+// Optimized: Uses single-pass reduce for totals and issue counts
 export function usePartQualityMetrics(partId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["part-quality-metrics", partId],
+    queryKey: ["part-quality-metrics", partId, profile?.tenant_id],
     queryFn: async () => {
       if (!partId || !profile?.tenant_id) {
         return null;
       }
 
       // Get all operation IDs for this part
+      // Includes explicit tenant_id filter for defense-in-depth security
       const { data: operations, error: opsError } = await supabase
         .from("operations")
         .select("id")
+        .eq("tenant_id", profile.tenant_id)
         .eq("part_id", partId);
 
       if (opsError) throw opsError;
@@ -357,6 +382,7 @@ export function usePartQualityMetrics(partId: string | undefined) {
       const operationIds = operations.map((o) => o.id);
 
       // Get production quantities for these operations
+      // Includes explicit tenant_id filter for defense-in-depth security
       const { data: quantities, error: quantitiesError } = await supabase
         .from("operation_quantities")
         .select(`
@@ -366,24 +392,43 @@ export function usePartQualityMetrics(partId: string | undefined) {
           quantity_rework,
           scrap_reason:scrap_reasons(code, description)
         `)
+        .eq("tenant_id", profile.tenant_id)
         .in("operation_id", operationIds);
 
       if (quantitiesError) throw quantitiesError;
 
       // Get issues for these operations
+      // Includes explicit tenant_id filter for defense-in-depth security
       const { data: issues, error: issuesError } = await supabase
         .from("issues")
         .select("id, status, severity")
+        .eq("tenant_id", profile.tenant_id)
         .in("operation_id", operationIds);
 
       if (issuesError) throw issuesError;
 
-      // Calculate metrics
-      const totalProduced = quantities?.reduce((sum, q) => sum + (q.quantity_produced || 0), 0) || 0;
-      const totalGood = quantities?.reduce((sum, q) => sum + (q.quantity_good || 0), 0) || 0;
-      const totalScrap = quantities?.reduce((sum, q) => sum + (q.quantity_scrap || 0), 0) || 0;
-      const totalRework = quantities?.reduce((sum, q) => sum + (q.quantity_rework || 0), 0) || 0;
+      // Single pass to calculate all totals
+      const totals = quantities?.reduce(
+        (acc, q) => ({
+          produced: acc.produced + (q.quantity_produced || 0),
+          good: acc.good + (q.quantity_good || 0),
+          scrap: acc.scrap + (q.quantity_scrap || 0),
+          rework: acc.rework + (q.quantity_rework || 0),
+        }),
+        { produced: 0, good: 0, scrap: 0, rework: 0 }
+      ) || { produced: 0, good: 0, scrap: 0, rework: 0 };
+
+      const { produced: totalProduced, good: totalGood, scrap: totalScrap, rework: totalRework } = totals;
       const yieldRate = totalProduced > 0 ? (totalGood / totalProduced) * 100 : 100;
+
+      // Single pass for issue counts
+      const issueCounts = issues?.reduce(
+        (acc, i) => ({
+          pending: acc.pending + (i.status === "pending" ? 1 : 0),
+          critical: acc.critical + (i.severity === "critical" ? 1 : 0),
+        }),
+        { pending: 0, critical: 0 }
+      ) || { pending: 0, critical: 0 };
 
       return {
         totalProduced,
@@ -392,8 +437,8 @@ export function usePartQualityMetrics(partId: string | undefined) {
         totalRework,
         yieldRate,
         issueCount: issues?.length || 0,
-        pendingIssues: issues?.filter((i) => i.status === "pending").length || 0,
-        criticalIssues: issues?.filter((i) => i.severity === "critical").length || 0,
+        pendingIssues: issueCounts.pending,
+        criticalIssues: issueCounts.critical,
         hasQualityData: (quantities?.length || 0) > 0,
       };
     },
