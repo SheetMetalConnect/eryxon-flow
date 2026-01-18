@@ -173,7 +173,7 @@ export default function OperatorFooterBar() {
 
   const handleReportIssue = () => {
     // Navigate to work queue which has the operation detail modal
-    navigate("/work-queue");
+    navigate("/operator/work-queue");
     toast.info("Open the operation to report an issue");
   };
 

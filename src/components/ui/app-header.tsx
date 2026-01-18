@@ -60,22 +60,22 @@ export function AppHeader({ className }: AppHeaderProps) {
 
   // Admin navigation items
   const adminNavItems: NavItem[] = [
-    { path: "/dashboard", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
-    { path: "/work-queue", label: "Work Queue", icon: <List className="h-4 w-4" /> },
+    { path: "/admin/dashboard", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
+    { path: "/operator/work-queue", label: "Work Queue", icon: <List className="h-4 w-4" /> },
     { path: "/admin/jobs", label: "Jobs", icon: <Briefcase className="h-4 w-4" /> },
     { path: "/admin/parts", label: "Parts", icon: <Package className="h-4 w-4" /> },
     { path: "/admin/issues", label: "Issues", icon: <AlertTriangle className="h-4 w-4" /> },
     { path: "/admin/assignments", label: "Assignments", icon: <ClipboardCheck className="h-4 w-4" /> },
     { path: "/admin/config/api-keys", label: "API", icon: <Settings className="h-4 w-4" /> },
-    { path: "/api-docs", label: "API Docs", icon: <FileText className="h-4 w-4" /> },
+    { path: "/admin/api-docs", label: "API Docs", icon: <FileText className="h-4 w-4" /> },
   ];
 
   // Operator navigation items
   const operatorNavItems: NavItem[] = [
-    { path: "/work-queue", label: "Work Queue", icon: <List className="h-4 w-4" /> },
-    { path: "/my-activity", label: "My Activity", icon: <Clock className="h-4 w-4" /> },
-    { path: "/my-issues", label: "My Issues", icon: <AlertTriangle className="h-4 w-4" /> },
-    { path: "/api-docs", label: "API Docs", icon: <FileText className="h-4 w-4" /> },
+    { path: "/operator/work-queue", label: "Work Queue", icon: <List className="h-4 w-4" /> },
+    { path: "/operator/my-activity", label: "My Activity", icon: <Clock className="h-4 w-4" /> },
+    { path: "/operator/my-issues", label: "My Issues", icon: <AlertTriangle className="h-4 w-4" /> },
+    { path: "/admin/api-docs", label: "API Docs", icon: <FileText className="h-4 w-4" /> },
   ];
 
   const navItems = profile?.role === "admin" ? adminNavItems : operatorNavItems;

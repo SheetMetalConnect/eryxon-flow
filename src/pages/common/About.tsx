@@ -31,11 +31,11 @@ export default function About() {
 
       <div className="space-y-2">
         <p className="text-sm text-muted-foreground">
-          <Link to="/help" className="hover:underline">
+          <Link to="/admin/help" className="hover:underline">
             Help
           </Link>{" "}
           ·{" "}
-          <Link to="/api-docs" className="hover:underline">
+          <Link to="/admin/api-docs" className="hover:underline">
             API Docs
           </Link>{" "}
           ·{" "}

@@ -224,7 +224,7 @@ export function createLimitErrorResponse(
         limit: quotaResult.limit,
         current: quotaResult.current,
         remaining: quotaResult.remaining,
-        upgrade_url: '/pricing',
+        upgrade_url: '/admin/pricing',
       },
     }),
     {

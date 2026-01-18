@@ -431,7 +431,7 @@ apiClient.post('/api-jobs', jobData)
                   CSV Import Wizard
                 </Button>
               </Link>
-              <Link to="/help">
+              <Link to="/admin/help">
                 <Button variant="outline" size="sm" className="gap-2">
                   <HelpCircle className="h-4 w-4" />
                   Help & Guides
