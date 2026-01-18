@@ -180,33 +180,47 @@ describe('useJobProductionMetrics', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Mock data for optimized single-query approach (with joins)
-    // The new implementation uses a single query with nested joins
-    // Updated to handle chained .eq() calls for tenant isolation
+    // Mock data for two-query approach (operations first, then quantities)
+    // Operations are fetched first to get time metrics even without quantities
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'operation_quantities') {
+      if (table === 'operations') {
         return {
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
               eq: vi.fn().mockResolvedValue({
                 data: [
+                  { id: 'op1', estimated_time: 60, actual_time: 55, part: { job_id: 'job-1' } },
+                  { id: 'op2', estimated_time: 40, actual_time: 45, part: { job_id: 'job-1' } },
+                ],
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === 'operation_quantities') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              in: vi.fn().mockResolvedValue({
+                data: [
                   {
+                    operation_id: 'op1',
                     quantity_produced: 50,
                     quantity_good: 45,
                     quantity_scrap: 4,
                     quantity_rework: 1,
                     scrap_reason_id: 'sr-1',
                     scrap_reason: { id: 'sr-1', code: 'D1', description: 'Defect', category: 'Mat' },
-                    operation: { id: 'op1', estimated_time: 60, actual_time: 55, part: { job_id: 'job-1' } },
                   },
                   {
+                    operation_id: 'op2',
                     quantity_produced: 50,
                     quantity_good: 45,
                     quantity_scrap: 4,
                     quantity_rework: 1,
                     scrap_reason_id: 'sr-1',
                     scrap_reason: { id: 'sr-1', code: 'D1', description: 'Defect', category: 'Mat' },
-                    operation: { id: 'op2', estimated_time: 40, actual_time: 45, part: { job_id: 'job-1' } },
                   },
                 ],
                 error: null,
@@ -293,7 +307,7 @@ describe('useJobProductionMetrics', () => {
     expect(Array.isArray(result.current.data?.scrapByReason)).toBe(true);
   });
 
-  it('uses single query instead of 3 sequential queries (performance test)', async () => {
+  it('uses two queries instead of 3 sequential queries (performance test)', async () => {
     const { result } = renderHook(() => useJobProductionMetrics('job-1'), {
       wrapper: createWrapper(),
     });
@@ -302,10 +316,116 @@ describe('useJobProductionMetrics', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    // Verify the mock was called only once (for operation_quantities with joins)
+    // Verify the mock was called twice (operations first, then quantities)
     // Not 3 times (parts, operations, operation_quantities)
-    expect(mockFrom).toHaveBeenCalledTimes(1);
+    // Operations query is needed to get time metrics even without quantities
+    expect(mockFrom).toHaveBeenCalledTimes(2);
+    expect(mockFrom).toHaveBeenCalledWith('operations');
     expect(mockFrom).toHaveBeenCalledWith('operation_quantities');
+  });
+
+  it('preserves time metrics when no quantity rows exist', async () => {
+    // Override mock to return no quantity records but operations with time data
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'operations') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({
+                data: [
+                  { id: 'op1', estimated_time: 60, actual_time: 55, part: { job_id: 'job-1' } },
+                  { id: 'op2', estimated_time: 40, actual_time: 45, part: { job_id: 'job-1' } },
+                ],
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === 'operation_quantities') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              in: vi.fn().mockResolvedValue({
+                data: [], // No quantity records
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockResolvedValue({ data: [], error: null }),
+      };
+    });
+
+    const { result } = renderHook(() => useJobProductionMetrics('job-1'), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // Time metrics should be preserved from operations
+    expect(result.current.data?.totalActualTime).toBe(100); // 55 + 45
+    expect(result.current.data?.totalEstimatedTime).toBe(100); // 60 + 40
+
+    // Quantity metrics should be zero
+    expect(result.current.data?.totalProduced).toBe(0);
+    expect(result.current.data?.totalGood).toBe(0);
+    expect(result.current.data?.totalScrap).toBe(0);
+
+    // timeEfficiency should be null (not divide by zero) when actualTime is 0 quantities recorded
+    // Since we have actual time but no production, this tests the guard condition
+    // Actually, timeEfficiency depends on both times being > 0, which they are here
+    expect(result.current.data?.timeEfficiency).toBeCloseTo(100, 0); // 100/100 * 100 = 100%
+  });
+
+  it('returns null timeEfficiency when totalActualTime is zero', async () => {
+    // Override mock to return operations with no actual time
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'operations') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({
+                data: [
+                  { id: 'op1', estimated_time: 60, actual_time: 0, part: { job_id: 'job-1' } },
+                ],
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === 'operation_quantities') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              in: vi.fn().mockResolvedValue({
+                data: [],
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockResolvedValue({ data: [], error: null }),
+      };
+    });
+
+    const { result } = renderHook(() => useJobProductionMetrics('job-1'), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // timeEfficiency should be null when actual time is zero (avoid division by zero)
+    expect(result.current.data?.timeEfficiency).toBeNull();
   });
 });
 

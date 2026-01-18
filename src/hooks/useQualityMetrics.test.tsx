@@ -237,22 +237,35 @@ describe('useJobQualityMetrics', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Mock data for optimized single-query approach (with joins)
-    // The new implementation uses a single query with nested joins
-    // Updated to handle chained .eq() calls for tenant isolation
+    // Mock data for operations-first approach
+    // Operations are fetched first to get all operation IDs (even those without quantities)
+    // Then quantities and issues are fetched in parallel
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'operation_quantities') {
+      if (table === 'operations') {
         return {
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
               eq: vi.fn().mockResolvedValue({
+                data: [
+                  { id: 'op1', part: { job_id: 'job-1' } },
+                ],
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === 'operation_quantities') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              in: vi.fn().mockResolvedValue({
                 data: [
                   {
                     quantity_produced: 100,
                     quantity_good: 95,
                     quantity_scrap: 4,
                     quantity_rework: 1,
-                    operation: { id: 'op1', part: { job_id: 'job-1' } },
                   },
                 ],
                 error: null,
@@ -306,7 +319,7 @@ describe('useJobQualityMetrics', () => {
     expect(result.current.data?.issueCount).toBe(1);
   });
 
-  it('uses optimized single query for quantities (performance test)', async () => {
+  it('uses optimized query pattern (operations first, then parallel queries)', async () => {
     const { result } = renderHook(() => useJobQualityMetrics('job-1'), {
       wrapper: createWrapper(),
     });
@@ -315,11 +328,80 @@ describe('useJobQualityMetrics', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    // First call should be for operation_quantities (with joins)
-    // Second call should be for issues
-    // Not 4 calls (parts, operations, operation_quantities, issues)
+    // First call should be for operations (to get all op IDs including those without quantities)
+    // Second and third calls should be for quantities and issues in parallel
+    // This ensures issues are captured even for operations without quantity records
+    expect(mockFrom).toHaveBeenCalledWith('operations');
     expect(mockFrom).toHaveBeenCalledWith('operation_quantities');
     expect(mockFrom).toHaveBeenCalledWith('issues');
+  });
+
+  it('captures issues for operations without quantity records', async () => {
+    // Override mock to return operations but no quantities, with issues
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'operations') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({
+                data: [
+                  { id: 'op1', part: { job_id: 'job-1' } },
+                  { id: 'op2', part: { job_id: 'job-1' } }, // This op has no quantities
+                ],
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === 'operation_quantities') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              in: vi.fn().mockResolvedValue({
+                data: [], // No quantity records at all
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === 'issues') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              in: vi.fn().mockResolvedValue({
+                data: [
+                  { id: 'i1', status: 'pending', severity: 'critical' }, // Issue on op2
+                  { id: 'i2', status: 'pending', severity: 'high' },
+                ],
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockResolvedValue({ data: [], error: null }),
+      };
+    });
+
+    const { result } = renderHook(() => useJobQualityMetrics('job-1'), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // Issues should be captured even though there are no quantities
+    expect(result.current.data?.issueCount).toBe(2);
+    expect(result.current.data?.pendingIssues).toBe(2);
+    expect(result.current.data?.criticalIssues).toBe(1);
+
+    // Quantity metrics should be zero
+    expect(result.current.data?.totalProduced).toBe(0);
+    expect(result.current.data?.yieldRate).toBe(100); // 100% yield with no production
   });
 });
 
