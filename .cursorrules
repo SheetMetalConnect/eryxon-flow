@@ -11,6 +11,33 @@ Multi-tenant SaaS with Row-Level Security (RLS)
 - ALWAYS create feature branches: feature/, fix/, docs/, refactor/
 - Example: git checkout -b feature/add-job-export
 
+## PR Template - ALWAYS USE
+PR Title: `type(scope): description` (e.g., `feat(jobs): add export`)
+
+```
+## What does this PR do?
+[Description]
+
+## Why?
+[Motivation]
+
+## How to test
+1. [Steps]
+
+## Screenshots (if UI changes)
+[Or "N/A"]
+
+## Checklist
+- [ ] Code follows project style
+- [ ] Text localized (EN/DE/NL)
+- [ ] Tests pass
+- [ ] TypeScript clean
+- [ ] No mock data
+
+## Related issues
+[Fixes #123]
+```
+
 ## Core Rules
 
 ### 1. No Mock Data

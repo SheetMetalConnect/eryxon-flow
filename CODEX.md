@@ -48,6 +48,37 @@ git checkout main && git commit  # NO!
 - `refactor/` - Code improvements
 - `test/` - Test additions
 
+### Pull Requests - Use Full Template
+
+**Always fill out the complete PR template:**
+
+```markdown
+## What does this PR do?
+[Brief description]
+
+## Why?
+[Motivation - what problem does this solve?]
+
+## How to test
+1. [Steps to verify]
+
+## Screenshots (if UI changes)
+[Before/after or "N/A"]
+
+## Checklist
+- [ ] Code follows project style
+- [ ] All text localized (EN/DE/NL)
+- [ ] Tests pass (`npm test`)
+- [ ] TypeScript clean (`npm run typecheck`)
+- [ ] Docs updated if needed
+- [ ] No mock data or hardcoded strings
+
+## Related issues
+[Fixes #123]
+```
+
+**PR Title:** `type(scope): description` (e.g., `feat(jobs): add export`)
+
 ### 1. NO Mock Data
 Always fetch from Supabase. Never create placeholder/test data.
 
