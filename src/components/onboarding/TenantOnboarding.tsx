@@ -172,13 +172,17 @@ export function TenantOnboarding({ onComplete }: TenantOnboardingProps) {
         options: {
           primaryColor: 'hsl(var(--primary))',
           zIndex: 10000,
-          overlayColor: 'rgba(0, 0, 0, 0.7)',
+          overlayColor: 'rgba(0, 0, 0, 0.75)',
         },
         tooltip: {
-          borderRadius: 12,
-          padding: 20,
+          borderRadius: 16,
+          padding: 24,
           backgroundColor: 'hsl(var(--card))',
           color: 'hsl(var(--card-foreground))',
+          border: '1px solid hsl(var(--border) / 0.5)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(16px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(180%)',
         },
         tooltipContent: {
           padding: '8px 0',
