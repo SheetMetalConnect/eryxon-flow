@@ -1,0 +1,90 @@
+{
+  "main": [
+    {
+      "label": "Getting Started",
+      "items": [
+        { "label": "Introduction", "slug": "introduction" },
+        { "label": "Quick Start", "slug": "guides/quick-start" },
+        { "label": "Hosted Version", "slug": "hosted-version" }
+      ]
+    },
+    {
+      "label": "User Guides",
+      "items": [
+        { "label": "Operator Manual", "slug": "guides/operator-manual" },
+        { "label": "Admin Manual", "slug": "guides/admin-manual" },
+        { "label": "3D Viewer", "slug": "guides/3d-viewer" },
+        { "label": "Quality Management", "slug": "guides/quality-management" },
+        { "label": "CSV Import", "slug": "guides/csv_import" },
+        { "label": "FAQ", "slug": "guides/faq" },
+        { "label": "Troubleshooting", "slug": "guides/troubleshooting" }
+      ]
+    },
+    {
+      "label": "Features",
+      "items": [
+        { "label": "Employee Tracking", "slug": "features/employee-tracking" },
+        { "label": "ERP Integration", "slug": "features/erp-integration" }
+      ]
+    },
+    {
+      "label": "Self-Hosting",
+      "items": [
+        { "label": "Deployment Guide", "slug": "guides/self-hosting" }
+      ]
+    },
+    {
+      "label": "API Reference",
+      "items": [
+        { "label": "API Documentation", "slug": "api/api_documentation" },
+        { "label": "Authentication", "slug": "api/api_key_authentication" },
+        { "label": "Sync Endpoints", "slug": "api/api_sync" },
+        { "label": "Edge Functions", "slug": "api/edge_functions_setup" },
+        { "label": "MCP Integration", "slug": "api/mcp_integration" },
+        { "label": "MCP Demo", "slug": "api/mcp-demo-guide" }
+      ]
+    },
+    {
+      "label": "Architecture",
+      "items": [
+        { "label": "App Architecture", "slug": "architecture/app-architecture" },
+        { "label": "Database Schema", "slug": "architecture/database" },
+        { "label": "Connectivity Overview", "slug": "architecture/connectivity-overview" },
+        { "label": "REST API", "slug": "architecture/connectivity-rest-api" },
+        { "label": "MQTT & Webhooks", "slug": "architecture/connectivity-mqtt" },
+        { "label": "Caching", "slug": "architecture/caching" },
+        { "label": "Error Handling", "slug": "architecture/error-handling" },
+        { "label": "Notifications", "slug": "architecture/notifications-system" },
+        { "label": "Workflow Engine", "slug": "architecture/workflow-engine" }
+      ]
+    },
+    {
+      "label": "Design System",
+      "items": [
+        { "label": "Design Principles", "slug": "architecture/design-principles" },
+        { "label": "Design Tokens", "slug": "architecture/design-tokens" },
+        { "label": "Components", "slug": "architecture/design-components" },
+        { "label": "Responsive UI", "slug": "architecture/responsive-ui-patterns" }
+      ]
+    },
+    {
+      "label": "Roadmap",
+      "items": [
+        { "label": "Overview", "slug": "roadmap" },
+        { "label": "Batch/Nesting", "slug": "features/batch-operations" },
+        { "label": "Shipping", "slug": "features/shipping-management" },
+        { "label": "Flexible Metadata", "slug": "features/flexible-metadata" },
+        { "label": "Integrations", "slug": "features/integrations-marketplace" },
+        { "label": "PMI Extraction", "slug": "features/pmi-extraction" },
+        { "label": "3D Engine", "slug": "architecture/3d-engine" }
+      ]
+    },
+    {
+      "label": "Development",
+      "items": [
+        { "label": "Developer Guide", "slug": "development/claude" },
+        { "label": "Coding Patterns", "slug": "development/coding_patterns" }
+      ]
+    }
+  ]
+}

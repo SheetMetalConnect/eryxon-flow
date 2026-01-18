@@ -1,0 +1,40 @@
+# Eryxon Flow - Production Deployment
+# Deploy on Hetzner with Docker
+
+services:
+  eryxon-flow:
+    build:
+      context: .
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
+    container_name: eryxon-flow
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+  # Optional: Caddy reverse proxy for HTTPS (recommended)
+  # Uncomment below to enable automatic SSL with Let's Encrypt
+  #
+  # caddy:
+  #   image: caddy:alpine
+  #   container_name: caddy
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./Caddyfile:/etc/caddy/Caddyfile
+  #     - caddy_data:/data
+  #     - caddy_config:/config
+  #   depends_on:
+  #     - eryxon-flow
+
+  # volumes:
+  #   caddy_data:
+  #   caddy_config:

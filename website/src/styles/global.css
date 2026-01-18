@@ -1,0 +1,91 @@
+@layer base, starlight, theme, components, utilities;
+
+@import "@astrojs/starlight-tailwind";
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@plugin "../tailwind-plugin/tw-theme";
+@plugin "../tailwind-plugin/tw-bs-grid";
+
+:root {
+    /* Enforce Dark Mode by default */
+    --sl-color-accent-low: color-mix(in srgb,
+            var(--color-primary),
+            #000 90%);
+    --sl-color-accent: var(--color-primary);
+    --sl-color-accent-high: color-mix(in srgb,
+            var(--color-primary),
+            #fff 70%);
+
+    /* Default to Dark Mode colors */
+    --sl-color-white: var(--color-light);
+    --sl-color-gray-1: color-mix(in srgb, var(--color-dark) 6%, var(--color-light) 94%);
+    --sl-color-gray-2: color-mix(in srgb, var(--color-dark) 24%, var(--color-light) 76%);
+    --sl-color-gray-3: color-mix(in srgb, var(--color-dark) 45%, var(--color-light) 55%);
+    --sl-color-gray-4: color-mix(in srgb, var(--color-dark) 65%, var(--color-light) 35%);
+    --sl-color-gray-5: color-mix(in srgb, var(--color-dark) 78%, var(--color-light) 22%);
+    --sl-color-gray-6: color-mix(in srgb, var(--color-dark) 85%, var(--color-light) 15%);
+
+    --sl-color-black: var(--color-dark);
+    --sl-sidebar-width: 320px;
+    --sl-color-hairline: color-mix(in srgb, var(--sl-color-white) 10%, transparent);
+    --sl-color-hairline-light: #252525;
+
+    /* Semantic Colors */
+    --color-success: 140 60% 52%;
+    /* #34a853 - Green */
+    --color-warning: 45 100% 51%;
+    /* #fbbc05 - Yellow */
+    --color-error: 4 90% 58%;
+    /* #ea4335 - Red */
+    --color-info: 199 89% 48%;
+    /* #0891b2 - Cyan */
+
+    /* MES Status Colors */
+    --status-active: 45 100% 51%;
+    --status-completed: 140 60% 52%;
+    --status-on-hold: 25 95% 53%;
+    --status-blocked: 4 90% 58%;
+    --status-pending: 220 12% 72%;
+}
+
+.ambient-field {
+    background-color: #111927;
+    background-image:
+        radial-gradient(at 47% 33%, hsl(205.47, 77%, 40%) 0, transparent 59%),
+        radial-gradient(at 82% 65%, hsl(218, 39%, 11%) 0, transparent 55%);
+}
+
+/* Light Mode - readable colors */
+:root[data-theme="light"] {
+    --sl-color-accent-low: color-mix(in srgb, var(--color-lightmode-primary), #fff 85%);
+    --sl-color-accent: var(--color-lightmode-primary);
+    --sl-color-accent-high: color-mix(in srgb, var(--color-lightmode-primary), #000 20%);
+
+    /* Starlight uses "white" for foreground/text, "black" for background */
+    --sl-color-white: #1a1a2e;  /* Dark text for light backgrounds */
+    --sl-color-black: #ffffff;  /* Light background */
+
+    /* Gray scale for light mode - inverted (1=lightest bg, 6=darkest text) */
+    --sl-color-gray-1: #f8f9fa;
+    --sl-color-gray-2: #e9ecef;
+    --sl-color-gray-3: #adb5bd;
+    --sl-color-gray-4: #6c757d;
+    --sl-color-gray-5: #495057;
+    --sl-color-gray-6: #343a40;
+
+    --sl-color-hairline: rgba(0, 0, 0, 0.1);
+    --sl-color-hairline-light: #dee2e6;
+}
+
+@theme {
+    --color-primary-gradient: linear-gradient(35.65deg,
+            #3a1c71 -10.94%,
+            var(--color-primary) 61.04%,
+            #ffca7b 133.01%);
+}
+
+@import "./base.css";
+@import "./navigation.css";
+@import "./components.css";
+@import "./button.css";

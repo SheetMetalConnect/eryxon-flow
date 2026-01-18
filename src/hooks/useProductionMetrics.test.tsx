@@ -1,0 +1,518 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { renderHook, waitFor, act } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React from 'react';
+import {
+  useOperationProductionMetrics,
+  useJobProductionMetrics,
+  useRecordProduction,
+} from './useProductionMetrics';
+
+// Mock Supabase
+const mockFrom = vi.fn();
+
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
+    from: (...args: any[]) => mockFrom(...args),
+  },
+}));
+
+vi.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => ({
+    profile: { id: 'user-1', tenant_id: 'tenant-1' },
+  }),
+}));
+
+// Create wrapper with QueryClient
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+  return ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+};
+
+describe('useOperationProductionMetrics', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    // Mock operation data
+    const operationData = {
+      id: 'op1',
+      operation_name: 'Cutting',
+      estimated_time: 60,
+      actual_time: 55,
+      part: { quantity: 100 },
+    };
+
+    // Mock quantities data
+    const quantitiesData = [
+      {
+        quantity_produced: 80,
+        quantity_good: 75,
+        quantity_scrap: 4,
+        quantity_rework: 1,
+        scrap_reason_id: 'sr-1',
+        scrap_reason: { id: 'sr-1', code: 'DEF1', description: 'Defect', category: 'Material' },
+      },
+    ];
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'operations') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: operationData,
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === 'operation_quantities') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({
+              data: quantitiesData,
+              error: null,
+            }),
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockResolvedValue({ data: [], error: null }),
+      };
+    });
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('returns no data when no operationId', async () => {
+    const { result } = renderHook(() => useOperationProductionMetrics(undefined), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // Data will be null (from queryFn) or undefined (before query runs)
+    expect(result.current.data ?? null).toBeNull();
+  });
+
+  it('returns operation production metrics', async () => {
+    const { result } = renderHook(() => useOperationProductionMetrics('op1'), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.data).toBeDefined();
+    expect(result.current.data?.operationId).toBe('op1');
+    expect(result.current.data?.operationName).toBe('Cutting');
+  });
+
+  it('calculates quantity metrics correctly', async () => {
+    const { result } = renderHook(() => useOperationProductionMetrics('op1'), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.data?.quantityGood).toBe(75);
+    expect(result.current.data?.quantityScrap).toBe(4);
+    expect(result.current.data?.quantityRework).toBe(1);
+  });
+
+  it('calculates remaining quantity', async () => {
+    const { result } = renderHook(() => useOperationProductionMetrics('op1'), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // Planned: 100, Good: 75, Remaining: 25
+    expect(result.current.data?.remaining).toBe(25);
+  });
+
+  it('calculates completion percentage', async () => {
+    const { result } = renderHook(() => useOperationProductionMetrics('op1'), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // 75/100 * 100 = 75%
+    expect(result.current.data?.completionPercentage).toBe(75);
+  });
+
+  it('includes scrap reasons', async () => {
+    const { result } = renderHook(() => useOperationProductionMetrics('op1'), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.data?.scrapReasons).toBeDefined();
+    expect(result.current.data?.scrapReasons.length).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe('useJobProductionMetrics', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    // Mock data for two-query approach (operations first, then quantities)
+    // Operations are fetched first to get time metrics even without quantities
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'operations') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({
+                data: [
+                  { id: 'op1', estimated_time: 60, actual_time: 55, part: { job_id: 'job-1' } },
+                  { id: 'op2', estimated_time: 40, actual_time: 45, part: { job_id: 'job-1' } },
+                ],
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === 'operation_quantities') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              in: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    operation_id: 'op1',
+                    quantity_produced: 50,
+                    quantity_good: 45,
+                    quantity_scrap: 4,
+                    quantity_rework: 1,
+                    scrap_reason_id: 'sr-1',
+                    scrap_reason: { id: 'sr-1', code: 'D1', description: 'Defect', category: 'Mat' },
+                  },
+                  {
+                    operation_id: 'op2',
+                    quantity_produced: 50,
+                    quantity_good: 45,
+                    quantity_scrap: 4,
+                    quantity_rework: 1,
+                    scrap_reason_id: 'sr-1',
+                    scrap_reason: { id: 'sr-1', code: 'D1', description: 'Defect', category: 'Mat' },
+                  },
+                ],
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockResolvedValue({ data: [], error: null }),
+      };
+    });
+  });
+
+  it('returns no data when no jobId', async () => {
+    const { result } = renderHook(() => useJobProductionMetrics(undefined), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // Data will be null (from queryFn) or undefined (before query runs)
+    expect(result.current.data ?? null).toBeNull();
+  });
+
+  it('returns job production metrics with optimized query', async () => {
+    const { result } = renderHook(() => useJobProductionMetrics('job-1'), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.data).toBeDefined();
+    // Total from both records: 50 + 50 = 100
+    expect(result.current.data?.totalProduced).toBe(100);
+    // Total good: 45 + 45 = 90
+    expect(result.current.data?.totalGood).toBe(90);
+  });
+
+  it('calculates yield metrics', async () => {
+    const { result } = renderHook(() => useJobProductionMetrics('job-1'), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // Overall yield = 90/100 * 100 = 90%
+    expect(result.current.data?.overallYield).toBeCloseTo(90, 0);
+    // Scrap rate = 8/100 * 100 = 8%
+    expect(result.current.data?.scrapRate).toBeCloseTo(8, 0);
+  });
+
+  it('calculates time metrics from unique operations', async () => {
+    const { result } = renderHook(() => useJobProductionMetrics('job-1'), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // Operations are deduplicated by ID, so we get unique times
+    // op1: actual=55, estimated=60; op2: actual=45, estimated=40
+    expect(result.current.data?.totalActualTime).toBe(100); // 55 + 45
+    expect(result.current.data?.totalEstimatedTime).toBe(100); // 60 + 40
+  });
+
+  it('includes scrap by reason breakdown', async () => {
+    const { result } = renderHook(() => useJobProductionMetrics('job-1'), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.data?.scrapByReason).toBeDefined();
+    expect(Array.isArray(result.current.data?.scrapByReason)).toBe(true);
+  });
+
+  it('uses two queries instead of 3 sequential queries (performance test)', async () => {
+    const { result } = renderHook(() => useJobProductionMetrics('job-1'), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // Verify the mock was called twice (operations first, then quantities)
+    // Not 3 times (parts, operations, operation_quantities)
+    // Operations query is needed to get time metrics even without quantities
+    expect(mockFrom).toHaveBeenCalledTimes(2);
+    expect(mockFrom).toHaveBeenCalledWith('operations');
+    expect(mockFrom).toHaveBeenCalledWith('operation_quantities');
+  });
+
+  it('preserves time metrics when no quantity rows exist', async () => {
+    // Override mock to return no quantity records but operations with time data
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'operations') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({
+                data: [
+                  { id: 'op1', estimated_time: 60, actual_time: 55, part: { job_id: 'job-1' } },
+                  { id: 'op2', estimated_time: 40, actual_time: 45, part: { job_id: 'job-1' } },
+                ],
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === 'operation_quantities') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              in: vi.fn().mockResolvedValue({
+                data: [], // No quantity records
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockResolvedValue({ data: [], error: null }),
+      };
+    });
+
+    const { result } = renderHook(() => useJobProductionMetrics('job-1'), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // Time metrics should be preserved from operations
+    expect(result.current.data?.totalActualTime).toBe(100); // 55 + 45
+    expect(result.current.data?.totalEstimatedTime).toBe(100); // 60 + 40
+
+    // Quantity metrics should be zero
+    expect(result.current.data?.totalProduced).toBe(0);
+    expect(result.current.data?.totalGood).toBe(0);
+    expect(result.current.data?.totalScrap).toBe(0);
+
+    // timeEfficiency should be null (not divide by zero) when actualTime is 0 quantities recorded
+    // Since we have actual time but no production, this tests the guard condition
+    // Actually, timeEfficiency depends on both times being > 0, which they are here
+    expect(result.current.data?.timeEfficiency).toBeCloseTo(100, 0); // 100/100 * 100 = 100%
+  });
+
+  it('returns null timeEfficiency when totalActualTime is zero', async () => {
+    // Override mock to return operations with no actual time
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'operations') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({
+                data: [
+                  { id: 'op1', estimated_time: 60, actual_time: 0, part: { job_id: 'job-1' } },
+                ],
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === 'operation_quantities') {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              in: vi.fn().mockResolvedValue({
+                data: [],
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockResolvedValue({ data: [], error: null }),
+      };
+    });
+
+    const { result } = renderHook(() => useJobProductionMetrics('job-1'), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // timeEfficiency should be null when actual time is zero (avoid division by zero)
+    expect(result.current.data?.timeEfficiency).toBeNull();
+  });
+});
+
+describe('useRecordProduction', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'operation_quantities') {
+        return {
+          insert: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: { id: 'qty-1' },
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+      if (table === 'operation_quantity_scrap_reasons') {
+        return {
+          insert: vi.fn().mockResolvedValue({ error: null }),
+        };
+      }
+      return {
+        select: vi.fn().mockResolvedValue({ data: [], error: null }),
+      };
+    });
+  });
+
+  it('returns recordQuantity function', () => {
+    const { result } = renderHook(() => useRecordProduction(), {
+      wrapper: createWrapper(),
+    });
+
+    expect(result.current.recordQuantity).toBeDefined();
+    expect(typeof result.current.recordQuantity).toBe('function');
+  });
+
+  it('records production quantity', async () => {
+    const { result } = renderHook(() => useRecordProduction(), {
+      wrapper: createWrapper(),
+    });
+
+    let recordResult;
+    await act(async () => {
+      recordResult = await result.current.recordQuantity({
+        operationId: 'op-1',
+        quantityGood: 10,
+        quantityScrap: 2,
+        quantityRework: 1,
+      });
+    });
+
+    expect(recordResult).toBeDefined();
+    expect(recordResult.id).toBe('qty-1');
+  });
+
+  it('handles error during record', async () => {
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'operation_quantities') {
+        return {
+          insert: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: null,
+                error: new Error('Insert failed'),
+              }),
+            }),
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockResolvedValue({ data: [], error: null }),
+      };
+    });
+
+    const { result } = renderHook(() => useRecordProduction(), {
+      wrapper: createWrapper(),
+    });
+
+    await expect(
+      result.current.recordQuantity({
+        operationId: 'op-1',
+        quantityGood: 10,
+      })
+    ).rejects.toThrow();
+  });
+});

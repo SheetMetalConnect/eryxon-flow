@@ -1,0 +1,29 @@
+{
+  "site": {
+    "title": "Eryxon Flow",
+    "logo": "",
+    "logo_darkmode": "",
+    "logo_width": "127",
+    "logo_height": "32",
+    "logo_text": "ERYXON FLOW"
+  },
+  "settings": {
+    "search": true,
+    "theme_switcher": true
+  },
+  "params": {
+    "footer_contact": {
+      "enable": true,
+      "action": "#"
+    },
+    "copyright": "App by <a class=\"text-primary hover:underline no-underline\" href=\"https://www.sheetmetalconnect.com/\" target=\"_blank\" rel=\"noopener\" aria-label=\"Sheet Metal Connect\">Sheet Metal Connect e.U.</a> | Docs Design by <a class=\"text-primary hover:underline no-underline\" href=\"https://themefisher.com/\" target=\"_blank\" rel=\"noopener\">Themefisher</a> Copyright &copy; 2025."
+  },
+  "navigation_button": {
+    "enable": true,
+    "label": "Get Started",
+    "translations": {
+      "fr": "Erste Schritte"
+    },
+    "link": "/guides/quick-start/"
+  }
+}

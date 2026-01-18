@@ -1,0 +1,237 @@
+---
+title: Eryxon Flow - Open Source MES
+description: Open source Manufacturing Execution System for custom metals fabrication. Track jobs, parts, and operations. Go paperless. Integrate with your ERP and Unified Namespace.
+template: splash
+hero:
+  title: |
+    <span class="text-primary">Open Source</span> MES for Metals Fabrication
+  tagline: Track jobs, parts, and operations through your shop. Go paperless. Integrate with your ERP and Unified Namespace. Free and open source.
+  actions:
+    - text: Try Demo
+      link: https://app.eryxon.eu
+      icon: external
+      variant: primary
+    - text: Get Started
+      link: /guides/quick-start/
+      icon: right-arrow
+      variant: minimal
+    - text: GitHub
+      link: https://github.com/SheetMetalConnect/eryxon-flow
+      icon: external
+      variant: minimal
+---
+
+import Section from "~/components/Section.astro";
+import Card from "~/components/user-components/NewCard.astro";
+import Grid from "~/components/user-components/Grid.astro";
+import HeroTabs from "~/components/HeroTabs.astro";
+import HeroTabsItem from "~/components/HeroTabsItem.astro";
+import LinkButton from "~/components/LinkButton.astro";
+
+<Section title="Built for <span class='text-primary'>Production</span>" description="What operators and managers actually need on the shop floor.">
+
+<Grid columns={3}>
+  <Card title="Real-time Tracking" icon="seti:clock" iconColor="#5a9bcf">
+    Operators track time and status on touch-friendly tablets. Live visibility into every job.
+  </Card>
+  <Card title="Paperless Shop" icon="seti:image" iconColor="#5a9bcf">
+    Attach drawings, 3D files (STEP), and work instructions directly to the job.
+  </Card>
+  <Card title="ERP & UNS Integration" icon="seti:db" iconColor="#5a9bcf">
+    Sync with your ERP via REST API. Publish events to MQTT using ISA-95 Unified Namespace.
+  </Card>
+  <Card title="QRM Scheduling" icon="seti:plan" iconColor="#5a9bcf">
+    Manage capacity with visual kanban lanes. See bottlenecks before they happen.
+  </Card>
+  <Card title="Self-Hostable" icon="seti:lock" iconColor="#5a9bcf">
+    Keep your production data private. Run on your own server. BSL 1.1 License.
+  </Card>
+  <Card title="Analytics" icon="seti:chart" iconColor="#5a9bcf">
+    Track efficiency, lead times, and on-time delivery.
+  </Card>
+
+</Grid>
+</Section>
+
+<Section
+  title="How it <span class='text-primary'>Works</span>"
+  description="Simple workflow from order to delivery."
+>
+  <HeroTabs>
+    <HeroTabsItem
+      title="Create or Sync Jobs"
+      subtitle="Import orders from your ERP or create them manually in Eryxon Flow."
+      number={1}
+      imageAlt="Job creation screenshot"
+    />
+    <HeroTabsItem
+      title="Operators Log Work"
+      subtitle="Shop floor staff use tablets to start/stop operations and view files."
+      number={2}
+      imageAlt="Operator tablet screenshot"
+    />
+    <HeroTabsItem
+      title="Track Progress"
+      subtitle="Managers see live status and prevent bottlenecks before they happen."
+      number={3}
+      imageAlt="Dashboard screenshot"
+    />
+  </HeroTabs>
+</Section>
+
+<Section title="Why <span class='text-primary'>Eryxon Flow?</span>">
+<Grid columns={2}>
+<Card title="For Job Shops" icon="seti:home" iconColor="#5a9bcf">
+  Built for high mix, low volume manufacturing. Custom metals fabrication, job shops, and make-to-order production.
+</Card>
+<Card title="Developer Friendly" icon="seti:code" iconColor="#5a9bcf">
+  API-first design. Extend functionality, build custom integrations, and own your data.
+</Card>
+</Grid>
+
+<div class="flex flex-wrap justify-center gap-4 mt-12 pb-12">
+    <LinkButton href="/guides/quick-start/" variant="primary">Start Quick Guide</LinkButton>
+    <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow" variant="minimal">Star on GitHub</LinkButton>
+</div>
+
+</Section>
+
+import ListCard from "~/components/user-components/ListCard.astro";
+
+<Section title="Quick <span class='text-primary'>Navigation</span>" description="Jump straight to the docs you need.">
+  <Grid columns={3}>
+    <ListCard title="Getting Started" icon="rocket" number="2">
+      - [Installation](/guides/quick-start/)
+      - [Initial Setup](/guides/quick-start/)
+    </ListCard>
+
+    <ListCard title="Guides" icon="open-book" number="4">
+      - [Operator Guides](/guides/quick-start/)
+      - [Manager Guides](/guides/quick-start/)
+      - [Admin Guides](/guides/quick-start/)
+      - [Self Hosting](/guides/self-hosting/)
+    </ListCard>
+
+    <ListCard title="Architecture" icon="puzzle" number="3">
+      - [System Design](/architecture/connectivity-rest-api/)
+      - [Data Flow](/architecture/connectivity-rest-api/)
+      - [Database Schema](/architecture/database/)
+    </ListCard>
+  </Grid>
+  <Grid columns={3}>
+    <ListCard title="Reference" icon="document" number="2">
+      - [Configuration](/architecture/database/)
+      - [Plugin Reference](/architecture/database/)
+    </ListCard>
+
+    <ListCard title="Features" icon="list-format" number="2">
+      - [Job Tracking](/guides/quick-start/)
+      - [Scheduling](/guides/quick-start/)
+    </ListCard>
+
+    <ListCard title="API" icon="seti:json" number="1">
+       - [REST API](/architecture/connectivity-rest-api/)
+    </ListCard>
+  </Grid>
+</Section>
+
+
+
+<Section title="License & <span class='text-primary'>Terms</span>">
+  <div class="bg-dark/50 p-8 rounded-2xl border border-white/5">
+    <div class="grid md:grid-cols-2 gap-8 items-center">
+      <div>
+        <h3 class="text-2xl font-bold mb-4">Business Source License 1.1</h3>
+        <p class="text-gray-400 mb-6">
+          Eryxon Flow is source-available and free to use for your own manufacturing operations. 
+          We believe in keeping the core platform open for shops to customize and own.
+        </p>
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <div class="text-primary font-bold">✓</div>
+            <span>Free for internal business use</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="text-primary font-bold">✓</div>
+            <span>Modify, fork, and self-host</span>
+          </div>
+          <div class="flex items-center gap-3 text-red-400">
+            <div class="font-bold">✕</div>
+            <span>No commercial resale or competitive SaaS</span>
+          </div>
+        </div>
+      </div>
+      <div class="text-center">
+        <p class="mb-6 text-sm italic text-gray-500">
+          "Use it, modify it, make it yours. Just don't host it and charge others for access."
+        </p>
+        <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" variant="minimal">
+          Read Full License terms on GitHub
+        </LinkButton>
+      </div>
+    </div>
+  </div>
+</Section>
+
+<Section title="<span class='text-primary'>Hosted</span> Demo">
+  <div class="bg-dark/50 p-8 rounded-2xl border border-white/5 mb-8">
+    <div class="grid md:grid-cols-2 gap-8 items-center">
+      <div>
+        <h3 class="text-2xl font-bold mb-4">Try it Online</h3>
+        <p class="text-yellow-400 text-sm mb-4 flex items-center gap-2">
+          ⚠️ Early Access – Free during early access, but expect some bugs or downtime.
+        </p>
+        <p class="text-gray-400 mb-6">
+          Test Eryxon Flow with our hosted demo. Limited usage for evaluation and educational purposes only.
+        </p>
+        <div class="space-y-3 text-sm">
+          <div class="flex items-center gap-3 text-gray-400">
+            <span>• Limited jobs and parts</span>
+          </div>
+          <div class="flex items-center gap-3 text-gray-400">
+            <span>• Limited storage</span>
+          </div>
+          <div class="flex items-center gap-3 text-gray-400">
+            <span>• Limited API access</span>
+          </div>
+          <div class="flex items-center gap-3 text-gray-400">
+            <span>• Documentation support only</span>
+          </div>
+        </div>
+      </div>
+      <div class="text-center space-y-4">
+        <LinkButton href="https://app.eryxon.eu" variant="primary">
+          Try Hosted Demo
+        </LinkButton>
+        <br/>
+        <LinkButton href="/hosted-version/" variant="minimal">
+          Learn More About Hosted Options
+        </LinkButton>
+      </div>
+    </div>
+  </div>
+  <div class="bg-blue-900/20 p-6 rounded-xl border border-blue-500/20">
+    <h4 class="text-lg font-semibold mb-2">Paid Hosted Version (Q2 2025)</h4>
+    <p class="text-gray-400 text-sm">
+      A paid hosted version with full production capacity and AI features (agentic processes, chatbots) may become available in Q2 2025 if there is enough interest.
+    </p>
+  </div>
+</Section>
+
+<Section title="Support & <span class='text-primary'>Services</span>">
+  <Grid columns={2}>
+    <Card title="Community Support" icon="seti:github" iconColor="#5a9bcf">
+      Self-hosting is community-supported only.
+      <br/><br/>
+      <strong>GitHub Issues:</strong> Bug reports<br/>
+      <strong>Documentation:</strong> <a href="/introduction/" class="text-primary hover:underline">/docs</a> folder
+    </Card>
+
+    <Card title="Professional Services" icon="seti:notebook" iconColor="#5a9bcf">
+      Need help with complex deployments?
+      <br/><br/>
+      Check out <a href="https://www.vanenkhuizen.com/" target="_blank" class="text-primary font-semibold hover:underline">vanenkhuizen.com</a> for consulting services.
+    </Card>
+  </Grid>
+
+</Section>
