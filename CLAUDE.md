@@ -446,6 +446,53 @@ function JobsPage() {
 
 ---
 
+## Deployment Architecture
+
+### Two Deployment Modes
+
+Eryxon Flow supports two deployment approaches:
+
+1. **Cloud Supabase + App Container (Recommended)**
+   - App runs on your infrastructure (Docker, VPS, Cloudflare Pages)
+   - Database and backend services run on Supabase Cloud
+   - Minimal disk space (~500MB for app)
+   - No database maintenance required
+
+2. **Fully Self-Hosted (Air-Gapped)**
+   - All services run on your infrastructure
+   - Requires `supabase-docker/` setup (10+ containers)
+   - Significant disk space required (20GB+ minimum, 50GB+ recommended)
+   - Full control over all components
+   - Only needed for air-gapped environments or strict data sovereignty
+
+### Database Schema Considerations
+
+When making database schema changes:
+
+- **Test both deployment modes** - Cloud Supabase and self-hosted use the same PostgreSQL, but verify migrations work in both
+- **Use Supabase migrations** - All schema changes go in `supabase/migrations/`
+- **Follow migration naming convention** - `YYYYMMDDHHMMSS_description.sql`
+- **Test migration rollback** - Ensure migrations can be safely applied and reverted
+- **Document breaking changes** - If a migration requires data transformation or manual steps, document it clearly
+
+### Environment Variables
+
+Different deployment modes require different environment variables:
+
+**App Container (both modes):**
+```env
+VITE_SUPABASE_URL=<supabase-url>
+VITE_SUPABASE_PUBLISHABLE_KEY=<anon-key>
+```
+
+**Self-Hosted Supabase:**
+- See `supabase-docker/.env.example` for full list
+- Includes PostgreSQL credentials, JWT secrets, SMTP config, etc.
+
+**Important:** Never commit `.env` files to git. Use `.env.example` as template.
+
+---
+
 ## Navigation & Menu Updates
 
 ### ALWAYS Update Navigation

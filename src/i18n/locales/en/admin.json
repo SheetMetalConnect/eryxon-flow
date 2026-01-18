@@ -500,7 +500,7 @@
     },
     "advancedCAD": {
       "label": "Advanced CAD (PMI/MBD)",
-      "description": "Server-side CAD processing with PMI/MBD extraction. Requires external eryxon3d service."
+      "description": "Server-side CAD processing with PMI/MBD extraction. Planned feature - requires external service."
     },
     "externalServiceNote": "This feature requires an external service. See the Self-Hosting Guide for deployment instructions."
   }

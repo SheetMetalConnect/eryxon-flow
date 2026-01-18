@@ -4,7 +4,7 @@ description: "Group operations for laser nesting, tube batching, and finishing"
 ---
 
 :::caution[Work in Progress]
-This feature is under active development and **not production-ready**. Schema and APIs may change.
+This feature is under active development. Schema and APIs may change.
 :::
 
 Batch operations group multiple parts processed together - laser nesting, tube cutting, saw programs, finishing batches.

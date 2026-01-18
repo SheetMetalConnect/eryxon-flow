@@ -1,30 +1,30 @@
 ---
 title: "Roadmap"
-description: "Development roadmap and planned features"
+description: "Development roadmap and feature status"
 ---
 
-Current development priorities and planned features.
+Feature status for Eryxon Flow v0.1 alpha.
 
 ## Status Overview
 
 | Status | Meaning |
 |--------|---------|
-| ✅ **Stable** | Production-ready |
-| 🚧 **WIP** | Under development, not production-ready |
+| ✅ **Implemented** | Available and functional |
+| 🚧 **WIP** | Under active development |
 | 📋 **Planned** | On the roadmap, not started |
 
 ## Core Features
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Job/Part/Operation tracking | ✅ Stable | Core workflow |
-| Operator terminal | ✅ Stable | Real-time work queue |
-| Time tracking | ✅ Stable | Start/pause/stop with history |
-| Issue reporting | ✅ Stable | With photo uploads |
-| 3D STEP viewer (browser) | ✅ Stable | Client-side rendering |
-| CSV import | ✅ Stable | Bulk data import |
-| Employee tracking | ✅ Stable | QRM capacity management |
-| Multi-tenancy | ✅ Stable | Full isolation with RLS |
+| Job/Part/Operation tracking | ✅ Implemented | Core workflow |
+| Operator terminal | ✅ Implemented | Real-time work queue |
+| Time tracking | ✅ Implemented | Start/pause/stop with history |
+| Issue reporting | ✅ Implemented | With photo uploads |
+| 3D STEP viewer (browser) | ✅ Implemented | Client-side rendering |
+| CSV import | ✅ Implemented | Bulk data import |
+| Employee tracking | ✅ Implemented | Capacity management |
+| Multi-tenancy | ✅ Implemented | Row-level security |
 
 ## Work in Progress
 
@@ -33,8 +33,6 @@ Current development priorities and planned features.
 | Batch/Nesting operations | 🚧 WIP | Schema may change |
 | Shipping management | 🚧 WIP | Internal logistics |
 | Flexible metadata | 🚧 WIP | Custom fields system |
-| PMI extraction | 🚧 WIP | Server-side CAD processing |
-| 3D Engine (server) | 🚧 WIP | External CAD processor |
 | MCP integration | 🚧 WIP | AI agent access |
 | MQTT publishing | 🚧 WIP | Industrial messaging |
 | Webhooks | 🚧 WIP | Event notifications |
@@ -46,6 +44,7 @@ Current development priorities and planned features.
 |---------|----------|-------|
 | Code refactor/overhaul | High | Clean up technical debt |
 | Fix existing features | High | Stabilize WIP features |
+| PMI extraction | Medium | Extract manufacturing annotations from STEP files |
 | MCP improvements | Medium | Better AI agent support |
 | Pre-built integrations | Medium | ERP connectors |
 | Mobile app | Low | Native iOS/Android |

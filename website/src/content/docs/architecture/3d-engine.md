@@ -1,37 +1,40 @@
 ---
 title: "3D CAD Engine"
-description: "3D rendering architecture and PMI strategy"
+description: "Browser-based 3D rendering for STEP CAD files"
 ---
 
-:::caution[Work in Progress]
-Server-side PMI extraction is in **alpha** and not production-ready. The client-side 3D viewer works.
-:::
+Browser-based 3D CAD viewing for STEP files using Three.js and occt-import-js WASM parser.
 
-Flexible 3D CAD viewing architecture for metals manufacturing.
+## Architecture
 
-## Client-Side Rendering (Default)
-
-Recommended for production. Three.js + occt-import-js WASM parser.
+All 3D rendering happens client-side in the browser. No server-side CAD processing.
 
 - **Formats:** .step, .stp
+- **Parser:** occt-import-js (WASM-based STEP parser)
+- **Renderer:** Three.js WebGL
 - **Controls:** Zoom, orbit, pan, exploded view, wireframe
-- **PMI:** Not supported in client-side viewer
 - **Infrastructure:** None required - runs entirely in browser
 
 See [3D Viewer Guide](/guides/3d-viewer/) for usage.
 
-## Server-Side PMI Extraction (Alpha)
+## Technical Stack
 
-Experimental backend for extracting dimensions and tolerances from STEP AP242 files.
+| Component | Technology |
+|-----------|------------|
+| 3D Rendering | Three.js |
+| STEP Parsing | occt-import-js (WASM) |
+| Controls | OrbitControls |
+| Storage | Supabase Storage with RLS |
+| File Handling | Client-side blob fetch |
 
-- **Status:** Alpha - not production ready
-- **Approach:** Text parsing of STEP structures
-- **Usage:** Quality checks, operation planning automation
+## Limitations
 
-See [PMI Extraction](/features/pmi-extraction/) for details.
+- **File size:** Recommended < 10MB (max 50MB)
+- **Formats:** .step/.stp only
+- **PMI:** Manufacturing annotations not extracted (planned feature)
 
 ## Extensibility
 
-Bring your own engine:
-- **FreeCAD:** Server-side processing
-- **CAD Exchanger:** Multi-format + PMI (commercial license)
+Eryxon Flow uses browser-based rendering by design for simplicity and zero infrastructure requirements. For advanced use cases requiring PMI extraction or server-side processing, this is on the roadmap as a planned feature.
+
+See [Roadmap](/roadmap/) for planned features.

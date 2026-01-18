@@ -1,81 +1,54 @@
 ---
 title: "PMI Extraction"
-description: "Extract manufacturing annotations from STEP CAD files"
+description: "Extract manufacturing annotations from STEP CAD files (Planned)"
 ---
 
-:::caution[Alpha Feature]
-Currently in **ALPHA** - not recommended for production. Use the default browser-based [3D Viewer](/guides/3d-viewer/) for now.
+:::note[Planned Feature]
+PMI extraction is currently **PLANNED** and not yet available. Use the browser-based [3D Viewer](/guides/3d-viewer/) for viewing STEP files.
 :::
 
-Extract Product Manufacturing Information (PMI) from STEP AP242 files with fallback support for AP203/AP214 legacy formats.
+Product Manufacturing Information (PMI) extraction will enable automatic reading of dimensions, tolerances, and annotations directly from STEP CAD files.
 
-**Extracted annotations:** Dimensions, GD&T tolerances, datums, surface finishes (Ra/Rz), weld symbols, notes
+## What is PMI?
 
-## Architecture
+PMI (Product Manufacturing Information) includes manufacturing annotations embedded in CAD files:
 
-Frontend (React + Three.js) → Backend (Python/FastAPI) → Text parser → 7 specialized extractors
+- **Dimensions:** Linear, angular, diameter, radius measurements
+- **GD&T Tolerances:** Geometric dimensioning and tolerancing symbols
+- **Datums:** Reference labels (A, B, C) for measurements
+- **Surface Finishes:** Ra/Rz roughness values
+- **Weld Symbols:** Fillet, groove, spot weld annotations
+- **Notes:** Manufacturing instructions
 
-Backend modes: `custom` (Eryxon3D Docker), `byob` (Bring Your Own), `frontend` (browser-only fallback)
+## Planned Capabilities
 
-## Extractors
+When implemented, PMI extraction will:
 
-| Extractor | Output |
-|-----------|--------|
-| Dimension | Linear, angular, diameter, radius |
-| Tolerance | GD&T symbols with datum refs |
-| Datum | Reference labels (A, B, C) |
-| SurfaceFinish | Ra, Rz values |
-| WeldSymbol | Fillet, groove, spot welds |
-| AP203/AP214 | Graphical PMI for legacy files |
+- Read semantic PMI data from STEP AP242 files
+- Support legacy graphical PMI from AP203/AP214 files
+- Display annotations overlaid on the 3D model
+- Enable automatic quality checks from CAD tolerances
+- Assist with operation planning by extracting critical dimensions
 
-## GD&T Symbols (ASME Y14.5 / ISO 1101)
-
-| Type | Symbol | Type | Symbol |
-|------|--------|------|--------|
-| Flatness | ⏥ | Perpendicularity | ⊥ |
-| Circularity | ○ | Position | ⌖ |
-| Cylindricity | ⌭ | Concentricity | ◎ |
-| Profile (Surface) | ⌓ | Runout | ↗ |
-
-**Modifiers:** Ⓜ (MMC), Ⓛ (LMC)
-
-## Configuration
-
-```bash
-VITE_CAD_SERVICE_URL=http://localhost:8888
-VITE_CAD_SERVICE_API_KEY=your-api-key
-VITE_CAD_BACKEND_MODE=custom  # custom | byob | frontend
-```
-
-## Visualization
-
-PMI overlay via CSS2DRenderer with leader lines. Color-coded by type:
-- **Cyan:** Dimensions | **Purple:** GD&T | **Green:** Datums
-- **Orange:** Surface | **Red:** Welds | **Slate:** Notes
-
-## File Format Support
+## File Format Support (Planned)
 
 | Format | PMI Support |
 |--------|-------------|
-| STEP AP242 | ✅ Full semantic PMI |
-| STEP AP214/AP203 | ⚠️ Graphical only |
-| IGES | ❌ None |
+| STEP AP242 | Full semantic PMI |
+| STEP AP214/AP203 | Graphical annotations only |
+| IGES | No PMI support |
 
-## API
+## Use Cases
 
-```http
-POST /process
-X-API-Key: your-api-key
+- **Quality Control:** Compare actual measurements against CAD tolerances
+- **Operation Planning:** Auto-populate inspection requirements
+- **Manufacturing Prep:** Extract critical dimensions for setup sheets
+- **Documentation:** Generate inspection reports from CAD data
 
-{ "file_url": "...", "include_pmi": true }
-```
+## Current Status
 
-Returns geometry meshes + PMI data (dimensions, tolerances, datums, surface finishes).
+This feature is on the roadmap. See [Roadmap](/roadmap/) for development priorities.
 
-## Limitations
-
-- PMI positions default to origin if no annotation placement data
-- AP203/AP214 files contain graphical (presentation) PMI only
-- Composite tolerances may not render all modifier symbols
+For now, use the [3D Viewer](/guides/3d-viewer/) to view STEP geometry without PMI annotations.
 
 See also: [3D Viewer Guide](/guides/3d-viewer/), [3D Engine Architecture](/architecture/3d-engine/)

@@ -58,7 +58,7 @@ export interface CADBackendConfig {
  */
 const defaultConfig: CADBackendConfig = {
   // Default to frontend-only processing.
-  // Server-side PMI/MBD extraction is WIP and must be explicitly configured.
+  // Server-side PMI/MBD extraction is planned (not yet available).
   mode: 'frontend',
 
   custom: {
