@@ -263,13 +263,14 @@ export function useJobQualityMetrics(jobId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["job-quality-metrics", jobId],
+    queryKey: ["job-quality-metrics", jobId, profile?.tenant_id],
     queryFn: async () => {
       if (!jobId || !profile?.tenant_id) {
         return null;
       }
 
       // Single query with joins - replaces 3 sequential queries for quantities
+      // Includes explicit tenant_id filter for defense-in-depth security
       const { data: quantities, error: quantitiesError } = await supabase
         .from("operation_quantities")
         .select(`
@@ -284,6 +285,7 @@ export function useJobQualityMetrics(jobId: string | undefined) {
             )
           )
         `)
+        .eq("tenant_id", profile.tenant_id)
         .eq("operation.part.job_id", jobId);
 
       if (quantitiesError) throw quantitiesError;
@@ -296,11 +298,13 @@ export function useJobQualityMetrics(jobId: string | undefined) {
       });
 
       // Get issues for these operations (only if we have operations)
+      // Includes explicit tenant_id filter for defense-in-depth security
       let issues: { id: string; status: string; severity: string }[] = [];
       if (operationIds.size > 0) {
         const { data: issuesData, error: issuesError } = await supabase
           .from("issues")
           .select("id, status, severity")
+          .eq("tenant_id", profile.tenant_id)
           .in("operation_id", Array.from(operationIds));
 
         if (issuesError) throw issuesError;
@@ -352,16 +356,18 @@ export function usePartQualityMetrics(partId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["part-quality-metrics", partId],
+    queryKey: ["part-quality-metrics", partId, profile?.tenant_id],
     queryFn: async () => {
       if (!partId || !profile?.tenant_id) {
         return null;
       }
 
       // Get all operation IDs for this part
+      // Includes explicit tenant_id filter for defense-in-depth security
       const { data: operations, error: opsError } = await supabase
         .from("operations")
         .select("id")
+        .eq("tenant_id", profile.tenant_id)
         .eq("part_id", partId);
 
       if (opsError) throw opsError;
@@ -370,6 +376,7 @@ export function usePartQualityMetrics(partId: string | undefined) {
       const operationIds = operations.map((o) => o.id);
 
       // Get production quantities for these operations
+      // Includes explicit tenant_id filter for defense-in-depth security
       const { data: quantities, error: quantitiesError } = await supabase
         .from("operation_quantities")
         .select(`
@@ -379,14 +386,17 @@ export function usePartQualityMetrics(partId: string | undefined) {
           quantity_rework,
           scrap_reason:scrap_reasons(code, description)
         `)
+        .eq("tenant_id", profile.tenant_id)
         .in("operation_id", operationIds);
 
       if (quantitiesError) throw quantitiesError;
 
       // Get issues for these operations
+      // Includes explicit tenant_id filter for defense-in-depth security
       const { data: issues, error: issuesError } = await supabase
         .from("issues")
         .select("id, status, severity")
+        .eq("tenant_id", profile.tenant_id)
         .in("operation_id", operationIds);
 
       if (issuesError) throw issuesError;

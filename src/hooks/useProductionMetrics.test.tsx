@@ -182,32 +182,35 @@ describe('useJobProductionMetrics', () => {
 
     // Mock data for optimized single-query approach (with joins)
     // The new implementation uses a single query with nested joins
+    // Updated to handle chained .eq() calls for tenant isolation
     mockFrom.mockImplementation((table: string) => {
       if (table === 'operation_quantities') {
         return {
           select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({
-              data: [
-                {
-                  quantity_produced: 50,
-                  quantity_good: 45,
-                  quantity_scrap: 4,
-                  quantity_rework: 1,
-                  scrap_reason_id: 'sr-1',
-                  scrap_reason: { id: 'sr-1', code: 'D1', description: 'Defect', category: 'Mat' },
-                  operation: { id: 'op1', estimated_time: 60, actual_time: 55, part: { job_id: 'job-1' } },
-                },
-                {
-                  quantity_produced: 50,
-                  quantity_good: 45,
-                  quantity_scrap: 4,
-                  quantity_rework: 1,
-                  scrap_reason_id: 'sr-1',
-                  scrap_reason: { id: 'sr-1', code: 'D1', description: 'Defect', category: 'Mat' },
-                  operation: { id: 'op2', estimated_time: 40, actual_time: 45, part: { job_id: 'job-1' } },
-                },
-              ],
-              error: null,
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    quantity_produced: 50,
+                    quantity_good: 45,
+                    quantity_scrap: 4,
+                    quantity_rework: 1,
+                    scrap_reason_id: 'sr-1',
+                    scrap_reason: { id: 'sr-1', code: 'D1', description: 'Defect', category: 'Mat' },
+                    operation: { id: 'op1', estimated_time: 60, actual_time: 55, part: { job_id: 'job-1' } },
+                  },
+                  {
+                    quantity_produced: 50,
+                    quantity_good: 45,
+                    quantity_scrap: 4,
+                    quantity_rework: 1,
+                    scrap_reason_id: 'sr-1',
+                    scrap_reason: { id: 'sr-1', code: 'D1', description: 'Defect', category: 'Mat' },
+                    operation: { id: 'op2', estimated_time: 40, actual_time: 45, part: { job_id: 'job-1' } },
+                  },
+                ],
+                error: null,
+              }),
             }),
           }),
         };

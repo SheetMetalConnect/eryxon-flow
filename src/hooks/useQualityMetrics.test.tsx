@@ -239,21 +239,24 @@ describe('useJobQualityMetrics', () => {
 
     // Mock data for optimized single-query approach (with joins)
     // The new implementation uses a single query with nested joins
+    // Updated to handle chained .eq() calls for tenant isolation
     mockFrom.mockImplementation((table: string) => {
       if (table === 'operation_quantities') {
         return {
           select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({
-              data: [
-                {
-                  quantity_produced: 100,
-                  quantity_good: 95,
-                  quantity_scrap: 4,
-                  quantity_rework: 1,
-                  operation: { id: 'op1', part: { job_id: 'job-1' } },
-                },
-              ],
-              error: null,
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    quantity_produced: 100,
+                    quantity_good: 95,
+                    quantity_scrap: 4,
+                    quantity_rework: 1,
+                    operation: { id: 'op1', part: { job_id: 'job-1' } },
+                  },
+                ],
+                error: null,
+              }),
             }),
           }),
         };
@@ -261,9 +264,11 @@ describe('useJobQualityMetrics', () => {
       if (table === 'issues') {
         return {
           select: vi.fn().mockReturnValue({
-            in: vi.fn().mockResolvedValue({
-              data: [{ id: 'i1', status: 'pending', severity: 'high' }],
-              error: null,
+            eq: vi.fn().mockReturnValue({
+              in: vi.fn().mockResolvedValue({
+                data: [{ id: 'i1', status: 'pending', severity: 'high' }],
+                error: null,
+              }),
             }),
           }),
         };
@@ -322,13 +327,16 @@ describe('usePartQualityMetrics', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
+    // Updated mock to handle chained .eq() calls for tenant isolation
     mockFrom.mockImplementation((table: string) => {
       if (table === 'operations') {
         return {
           select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({
-              data: [{ id: 'op1' }],
-              error: null,
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({
+                data: [{ id: 'op1' }],
+                error: null,
+              }),
             }),
           }),
         };
@@ -336,11 +344,13 @@ describe('usePartQualityMetrics', () => {
       if (table === 'operation_quantities') {
         return {
           select: vi.fn().mockReturnValue({
-            in: vi.fn().mockResolvedValue({
-              data: [
-                { quantity_produced: 50, quantity_good: 48, quantity_scrap: 2, quantity_rework: 0 },
-              ],
-              error: null,
+            eq: vi.fn().mockReturnValue({
+              in: vi.fn().mockResolvedValue({
+                data: [
+                  { quantity_produced: 50, quantity_good: 48, quantity_scrap: 2, quantity_rework: 0 },
+                ],
+                error: null,
+              }),
             }),
           }),
         };
@@ -348,9 +358,11 @@ describe('usePartQualityMetrics', () => {
       if (table === 'issues') {
         return {
           select: vi.fn().mockReturnValue({
-            in: vi.fn().mockResolvedValue({
-              data: [],
-              error: null,
+            eq: vi.fn().mockReturnValue({
+              in: vi.fn().mockResolvedValue({
+                data: [],
+                error: null,
+              }),
             }),
           }),
         };

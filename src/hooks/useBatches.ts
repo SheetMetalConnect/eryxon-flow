@@ -331,10 +331,16 @@ export function useBatchStats() {
 
 // Optimized: Uses LEFT JOIN to get batch info in single query instead of 2 separate queries
 export function useGroupableOperations(cellId?: string) {
+  const { profile } = useAuth();
+
   return useQuery({
-    queryKey: [...batchKeys.groupable(), cellId],
+    queryKey: [...batchKeys.groupable(), cellId, profile?.tenant_id],
+    enabled: !!profile?.tenant_id,
     queryFn: async () => {
+      if (!profile?.tenant_id) return { operations: [], materialGroups: [] };
+
       // Single query with LEFT JOIN to batch_operations - replaces 2 separate queries
+      // Includes explicit tenant_id filter for defense-in-depth security
       let query = supabase
         .from('operations')
         .select(`
@@ -364,6 +370,7 @@ export function useGroupableOperations(cellId?: string) {
             batch_id
           )
         `)
+        .eq('tenant_id', profile.tenant_id)
         .in('status', ['not_started', 'on_hold'])
         .is('deleted_at', null);
 

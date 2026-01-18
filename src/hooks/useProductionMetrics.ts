@@ -167,12 +167,13 @@ export function useJobProductionMetrics(jobId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["job-production-metrics", jobId],
+    queryKey: ["job-production-metrics", jobId, profile?.tenant_id],
     enabled: !!jobId && !!profile?.tenant_id,
     queryFn: async (): Promise<ProductionMetrics | null> => {
-      if (!jobId) return null;
+      if (!jobId || !profile?.tenant_id) return null;
 
       // Single query with joins - replaces 3 sequential queries
+      // Includes explicit tenant_id filter for defense-in-depth security
       const { data: quantitiesWithOps, error: qtyError } = await supabase
         .from("operation_quantities")
         .select(`
@@ -196,6 +197,7 @@ export function useJobProductionMetrics(jobId: string | undefined) {
             )
           )
         `)
+        .eq("tenant_id", profile.tenant_id)
         .eq("operation.part.job_id", jobId);
 
       if (qtyError) {
