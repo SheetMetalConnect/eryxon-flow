@@ -44,15 +44,15 @@
                 },
                 {
                     "name": "Snel starten",
-                    "url": "/nl/guides/quick-start/"
+                    "url": "/guides/quick-start/"
                 },
                 {
                     "name": "Zelf hosten",
-                    "url": "/nl/guides/self-hosting/"
+                    "url": "/guides/self-hosting/"
                 },
                 {
                     "name": "FAQ",
-                    "url": "/nl/guides/faq/"
+                    "url": "/guides/faq/"
                 }
             ]
         },
