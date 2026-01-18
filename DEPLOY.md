@@ -1,5 +1,9 @@
 # Deploy Eryxon Flow
 
+Quick deployment guide. For detailed instructions, see:
+- [Self-Hosting Guide](website/src/content/docs/guides/self-hosting.md)
+- [Online Documentation](https://eryxon.eu/docs/guides/self-hosting)
+
 ## Prerequisites
 
 - Supabase account
@@ -47,7 +51,13 @@ VITE_SUPABASE_PROJECT_ID = YOUR_REF
 
 In Cloudflare Pages:
 - Custom domains → Add domain
-- Enter: app.eryxon.eu
-- DNS: CNAME app → eryxon-flow.pages.dev
+- Enter: your-domain.com
+- DNS: CNAME app → your-project.pages.dev
 
 Done.
+
+## More Information
+
+- **Hosted Version:** [app.eryxon.eu](https://app.eryxon.eu) (30-day free trial)
+- **Full Self-Hosting Guide:** [eryxon.eu/docs/guides/self-hosting](https://eryxon.eu/docs/guides/self-hosting)
+- **API Documentation:** [eryxon.eu/docs/api/api_documentation](https://eryxon.eu/docs/api/api_documentation)

@@ -1,6 +1,6 @@
 # Codex/GPT Agent Guidelines for Eryxon Flow
 
-> **Version:** 0.1.0 (Alpha) | **Docs:** [eryxon.eu/docs](https://eryxon.eu/docs) | **Hosted:** [app.eryxon.eu](https://app.eryxon.eu)
+> **Docs:** [eryxon.eu/docs](https://eryxon.eu/docs) | **Hosted:** [app.eryxon.eu](https://app.eryxon.eu)
 
 Guidelines for OpenAI Codex, GPT-4, and similar AI agents working on the Eryxon Flow codebase.
 

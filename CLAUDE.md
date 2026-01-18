@@ -1,6 +1,6 @@
 # Claude Agent Guidelines for Eryxon Flow
 
-> **Version:** 0.1.0 (Alpha) | **Docs:** [eryxon.eu/docs](https://eryxon.eu/docs) | **Hosted:** [app.eryxon.eu](https://app.eryxon.eu)
+> **Docs:** [eryxon.eu/docs](https://eryxon.eu/docs) | **Hosted:** [app.eryxon.eu](https://app.eryxon.eu)
 
 This document provides essential guidelines for AI agents (Claude) working on the Eryxon Flow codebase. Following these rules ensures consistency, quality, and maintainability.
 
