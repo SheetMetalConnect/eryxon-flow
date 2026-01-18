@@ -115,7 +115,6 @@ const metrics = await getCachedQRMMetrics(supabase, cellId, tenantId);
 ```typescript
 import { checkRateLimit, createRateLimitResponse } from '../_shared/rate-limiter.ts';
 
-// Async version (uses Redis if available)
 const result = await checkRateLimit(apiKey, {
   maxRequests: 100,
   windowMs: 60000, // 1 minute
@@ -125,9 +124,6 @@ const result = await checkRateLimit(apiKey, {
 if (!result.allowed) {
   return createRateLimitResponse(result, corsHeaders);
 }
-
-// Sync version (in-memory only, for backward compatibility)
-const syncResult = checkRateLimitSync(apiKey, config);
 ```
 
 ## Client-Side Caching (React Query)

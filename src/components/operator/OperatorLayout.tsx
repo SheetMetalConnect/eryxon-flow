@@ -183,7 +183,7 @@ export const OperatorLayout = ({ children, showBackToAdmin = false }: OperatorLa
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
-                    onClick={() => navigate('/help')}
+                    onClick={() => navigate('/admin/help')}
                     className="gap-1.5 cursor-pointer focus:bg-white/5 text-xs"
                   >
                     <HelpCircle className="h-3.5 w-3.5" />

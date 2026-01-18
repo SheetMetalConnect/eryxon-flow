@@ -118,9 +118,9 @@ export function OnboardingWizard() {
 
     // Navigate based on user role
     if (profile?.role === 'admin') {
-      navigate('/dashboard');
+      navigate('/admin/dashboard');
     } else {
-      navigate('/work-queue');
+      navigate('/operator/work-queue');
     }
   };
 

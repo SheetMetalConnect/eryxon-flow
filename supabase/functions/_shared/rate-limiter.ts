@@ -90,68 +90,6 @@ export async function checkRateLimit(
 }
 
 /**
- * Synchronous version for backward compatibility
- * Uses in-memory only (no Redis) for immediate response
- *
- * @deprecated Use async checkRateLimit instead for persistent rate limiting
- */
-const syncRateLimitStore = new Map<string, { count: number; resetAt: number }>();
-
-// Cleanup old entries every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of syncRateLimitStore.entries()) {
-    if (entry.resetAt < now) {
-      syncRateLimitStore.delete(key);
-    }
-  }
-}, 5 * 60 * 1000);
-
-export function checkRateLimitSync(
-  identifier: string,
-  config: RateLimitConfig
-): RateLimitResult {
-  const key = `${config.keyPrefix || 'default'}:${identifier}`;
-  const now = Date.now();
-
-  let entry = syncRateLimitStore.get(key);
-
-  // Create new entry if doesn't exist or window expired
-  if (!entry || entry.resetAt < now) {
-    entry = {
-      count: 1,
-      resetAt: now + config.windowMs,
-    };
-    syncRateLimitStore.set(key, entry);
-
-    return {
-      allowed: true,
-      remaining: config.maxRequests - 1,
-      resetAt: entry.resetAt,
-    };
-  }
-
-  // Increment count
-  entry.count++;
-
-  // Check if exceeded
-  if (entry.count > config.maxRequests) {
-    return {
-      allowed: false,
-      remaining: 0,
-      resetAt: entry.resetAt,
-      retryAfter: Math.ceil((entry.resetAt - now) / 1000),
-    };
-  }
-
-  return {
-    allowed: true,
-    remaining: config.maxRequests - entry.count,
-    resetAt: entry.resetAt,
-  };
-}
-
-/**
  * Get rate limit headers for response
  */
 export function getRateLimitHeaders(result: RateLimitResult): Record<string, string> {
