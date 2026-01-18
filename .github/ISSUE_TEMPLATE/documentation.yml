@@ -1,0 +1,51 @@
+name: Documentation Improvement
+description: Suggest improvements to documentation
+title: "[Docs]: "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help us improve our documentation!
+
+        **Current documentation:** [eryxon.eu/docs](https://eryxon.eu/docs)
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: Which documentation?
+      options:
+        - Getting Started / Quick Start
+        - Self-Hosting Guide
+        - API Documentation
+        - Operator Manual
+        - Admin Manual
+        - Architecture / Technical Docs
+        - Contributing Guidelines
+        - Other / New Topic
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-issue
+    attributes:
+      label: What's the issue?
+      description: Is something unclear, missing, or incorrect?
+      placeholder: "The self-hosting guide doesn't explain how to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested-improvement
+    attributes:
+      label: Suggested improvement
+      description: How would you improve this?
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Are you willing to contribute?
+      options:
+        - label: I'd like to submit a PR to fix this

@@ -34,7 +34,7 @@ Traditional MES systems are expensive, complex, and designed for high-volume pro
 
 ### Hosted (Easiest)
 
-Visit [eryxon.com](https://eryxon.com) for a managed instance with 30-day free trial.
+Visit **[app.eryxon.eu](https://app.eryxon.eu)** for the hosted version with 30-day free trial.
 
 ### Self-Hosted
 
@@ -72,11 +72,14 @@ npm run dev
 
 ## Documentation
 
-- **[Getting Started](website/src/content/docs/guides/quick-start.md)**
-- **[Self-Hosting Guide](website/src/content/docs/guides/self-hosting.md)**
-- **[API Documentation](docs/API_DOCUMENTATION.md)**
-- **[Database Schema](docs/DATABASE.md)**
-- **[Full Documentation](https://eryxon.com/docs)**
+Full documentation is available at **[eryxon.eu/docs](https://eryxon.eu/docs)**.
+
+- **[Getting Started](https://eryxon.eu/docs/guides/quick-start)**
+- **[Self-Hosting Guide](https://eryxon.eu/docs/guides/self-hosting)**
+- **[API Documentation](https://eryxon.eu/docs/api/api_documentation)**
+- **[Database Schema](https://eryxon.eu/docs/architecture/database)**
+- **[Operator Manual](https://eryxon.eu/docs/guides/operator-manual)**
+- **[Admin Manual](https://eryxon.eu/docs/guides/admin-manual)**
 
 ## Contributing
 
@@ -104,7 +107,8 @@ See [LICENSE](LICENSE) for full terms.
 
 ## Support
 
-- **Documentation**: [eryxon.com/docs](https://eryxon.com/docs)
+- **Documentation**: [eryxon.eu/docs](https://eryxon.eu/docs)
+- **Hosted Version**: [app.eryxon.eu](https://app.eryxon.eu)
 - **Issues**: [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/SheetMetalConnect/eryxon-flow/discussions)
 - **Commercial Support**: office@sheetmetalconnect.com

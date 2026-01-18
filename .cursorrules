@@ -1,0 +1,120 @@
+# Eryxon Flow - Cursor Rules
+# v0.1.0 (Alpha) | Docs: eryxon.eu/docs | Hosted: app.eryxon.eu
+
+## Project Overview
+Manufacturing Execution System (MES) for job shops.
+Stack: React + TypeScript + Vite + Supabase + shadcn/ui
+Multi-tenant SaaS with Row-Level Security (RLS)
+
+## Git Rules - CRITICAL
+- NEVER commit to main/master directly
+- ALWAYS create feature branches: feature/, fix/, docs/, refactor/
+- Example: git checkout -b feature/add-job-export
+
+## Core Rules
+
+### 1. No Mock Data
+- ALWAYS fetch real data from Supabase
+- NEVER create placeholder or test data
+- Use useQuery from @tanstack/react-query
+
+### 2. Full Localization Required
+- NEVER hardcode user-facing strings
+- ALWAYS use translation keys: t('namespace.key')
+- Add to ALL 3 languages: en, nl, de
+- Location: src/i18n/locales/{lang}/*.json
+
+### 3. Design System Required
+- NEVER use inline styles or arbitrary Tailwind values
+- ALWAYS use design system classes from src/styles/design-system.css
+- Key classes: glass-card, hero-title, cta-button, title-divider
+- Use CSS variables for colors, never hex codes
+
+### 4. TypeScript Strict
+- NEVER use 'any' type
+- ALWAYS define interfaces for data structures
+- Import types from src/integrations/supabase/types.ts
+
+### 5. Scope Discipline
+- Only implement what was explicitly requested
+- Don't add "nice to have" features
+- Don't refactor unrelated code
+
+## Key Patterns
+
+### Data Fetching
+```tsx
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+
+const { data, isLoading } = useQuery({
+  queryKey: ['jobs', tenantId],
+  queryFn: async () => {
+    const { data, error } = await supabase.from('jobs').select('*');
+    if (error) throw error;
+    return data;
+  }
+});
+```
+
+### Translations
+```tsx
+import { useTranslation } from 'react-i18next';
+const { t } = useTranslation();
+<Button>{t('common.save')}</Button>
+```
+
+### Components
+```tsx
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+```
+
+## File Structure
+- Pages: src/pages/{admin,auth,operator,common}/
+- Components: src/components/{admin,operator,ui}/
+- Hooks: src/hooks/
+- Translations: src/i18n/locales/{en,nl,de}/
+
+## Translation Namespaces
+| Area | File | Example |
+|------|------|---------|
+| Common | common.json | common.save |
+| Auth | auth.json | auth.signIn |
+| Navigation | navigation.json | navigation.dashboard |
+| Admin | admin.json | dashboard.title |
+| Jobs | jobs.json | jobs.createJob |
+| Config | config.json | stages.title |
+| Analytics | analytics.json | oee.availability |
+
+## Before Completing Tasks
+- [ ] No mock data
+- [ ] All strings localized (EN/NL/DE)
+- [ ] Design system classes used
+- [ ] TypeScript strict (no any)
+- [ ] Feature branch created (not main)
+- [ ] Navigation updated if new page
+
+## Commands
+```bash
+npm run dev       # Development
+npm run build     # Build
+npm run typecheck # Type check
+npm test          # Tests
+```
+
+## Documentation (Local Files - For AI Agents)
+Always reference local markdown files, not web links:
+
+- Quick Start: website/src/content/docs/guides/quick-start.md
+- Self-Hosting: website/src/content/docs/guides/self-hosting.md
+- API Docs: website/src/content/docs/api/api_documentation.md
+- Database Schema: website/src/content/docs/architecture/database.md
+- Design System: docs/DESIGN_SYSTEM.md
+- Coding Patterns: docs/CODING_PATTERNS.md
+- App Architecture: website/src/content/docs/architecture/app-architecture.md
+- Detailed AI Guidelines: CLAUDE.md
+
+## External Links (For Users)
+- Live docs: eryxon.eu/docs
+- Hosted version: app.eryxon.eu

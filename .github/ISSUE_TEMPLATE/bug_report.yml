@@ -5,7 +5,12 @@ labels: ["bug"]
 body:
   - type: markdown
     attributes:
-      value: Thanks for reporting a bug! Please provide details below.
+      value: |
+        Thanks for reporting a bug! Please provide details below.
+
+        **Before submitting**, please check:
+        - [Documentation](https://eryxon.eu/docs) for known solutions
+        - [Existing issues](https://github.com/SheetMetalConnect/eryxon-flow/issues) to avoid duplicates
 
   - type: textarea
     id: what-happened
@@ -33,8 +38,9 @@ body:
     attributes:
       label: How are you running it?
       options:
-        - Cloud Supabase (recommended)
-        - Self-hosted (Docker)
+        - Hosted (app.eryxon.eu)
+        - Cloud Supabase + App Container (recommended self-host)
+        - Fully Self-hosted (Docker)
         - Development (npm run dev)
     validations:
       required: true
