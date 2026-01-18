@@ -247,7 +247,7 @@ services:
   eryxon-flow:
     build: .
     ports:
-      - "8080:80"
+      - "80:80"
     environment:
       - VITE_SUPABASE_URL=${SUPABASE_URL}
       - VITE_SUPABASE_PUBLISHABLE_KEY=${SUPABASE_ANON_KEY}
