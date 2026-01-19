@@ -209,34 +209,46 @@ export const Operations: React.FC = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Part" />
       ),
-      cell: ({ row }) => (
-        <span
-          className="text-primary cursor-pointer hover:underline"
-          onClick={(e) => {
-            e.stopPropagation();
-            navigateToPart(row.original.part_id);
-          }}
-        >
-          #{row.getValue("part_number")}
-        </span>
-      ),
+      cell: ({ row }) => {
+        const partId = row.original.part_id;
+        if (!partId) {
+          return <span className="text-muted-foreground">#{row.getValue("part_number")}</span>;
+        }
+        return (
+          <span
+            className="text-primary cursor-pointer hover:underline"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigateToPart(partId);
+            }}
+          >
+            #{row.getValue("part_number")}
+          </span>
+        );
+      },
     },
     {
       accessorKey: "job_number",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Job" />
       ),
-      cell: ({ row }) => (
-        <span
-          className="text-primary cursor-pointer hover:underline"
-          onClick={(e) => {
-            e.stopPropagation();
-            navigateToJob(row.original.job_id);
-          }}
-        >
-          JOB-{row.getValue("job_number")}
-        </span>
-      ),
+      cell: ({ row }) => {
+        const jobId = row.original.job_id;
+        if (!jobId) {
+          return <span className="text-muted-foreground">JOB-{row.getValue("job_number")}</span>;
+        }
+        return (
+          <span
+            className="text-primary cursor-pointer hover:underline"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigateToJob(jobId);
+            }}
+          >
+            JOB-{row.getValue("job_number")}
+          </span>
+        );
+      },
     },
     {
       accessorKey: "cell",

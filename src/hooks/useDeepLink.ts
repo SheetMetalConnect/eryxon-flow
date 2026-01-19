@@ -88,6 +88,12 @@ export const deepLinkBuilders = {
         return deepLinkBuilders.part(id, additionalParams);
       case "operation":
         return deepLinkBuilders.operation(id, additionalParams);
+      default: {
+        // Defensive guard for runtime calls with unexpected entity types
+        const _exhaustiveCheck: never = type;
+        console.warn(`Unknown entity type: ${_exhaustiveCheck}`);
+        return ROUTES.ADMIN.JOBS;
+      }
     }
   },
 };
