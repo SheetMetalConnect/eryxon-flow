@@ -3,9 +3,12 @@
 Modern design system for manufacturing execution with dark/light/auto theme support.
 
 **Related Documentation:**
-- [CLAUDE.md](../CLAUDE.md) - AI agent guidelines
-- [CODING_PATTERNS.md](CODING_PATTERNS.md) - Technical code patterns
+- [UX_STANDARDS.md](UX_STANDARDS.md) — UX philosophy and requirements ("why" and "what")
+- [CLAUDE.md](../CLAUDE.md) — AI agent guidelines
+- [CODING_PATTERNS.md](CODING_PATTERNS.md) — Technical code patterns
 - [Full Documentation](https://eryxon.eu/docs)
+
+> **This document defines the "how" of visual implementation. For the "why" (philosophy, principles, requirements), see UX_STANDARDS.md.**
 
 ---
 

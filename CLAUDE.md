@@ -386,7 +386,8 @@ This script reads the namespace mappings and regenerates all namespace files fro
 ### CRITICAL: Read Before Any UI Work
 
 **Before writing any UI code, ALWAYS read:**
-- `docs/DESIGN_SYSTEM.md` - Complete design guidelines
+- `docs/UX_STANDARDS.md` - UX philosophy and requirements (the "why")
+- `docs/DESIGN_SYSTEM.md` - Complete design guidelines (the "how")
 - `src/styles/design-system.css` - All CSS tokens and classes
 
 ### Never Improvise Styles
@@ -708,6 +709,7 @@ function JobCard({ job, onEdit, onDelete }: JobCardProps) {
 
 | Path | Purpose |
 |------|---------|
+| `docs/UX_STANDARDS.md` | UX philosophy and requirements |
 | `docs/DESIGN_SYSTEM.md` | Design guidelines (READ FIRST for UI work) |
 | `src/styles/design-system.css` | CSS tokens and classes |
 | `src/routes.ts` | Centralized route definitions |
@@ -845,6 +847,7 @@ Refer to these local files instead of web links:
 | Database Schema | `website/src/content/docs/architecture/database.md` |
 | Operator Manual | `website/src/content/docs/guides/operator-manual.md` |
 | Admin Manual | `website/src/content/docs/guides/admin-manual.md` |
+| UX Standards | `docs/UX_STANDARDS.md` |
 | Design System | `docs/DESIGN_SYSTEM.md` |
 | Coding Patterns | `docs/CODING_PATTERNS.md` |
 | App Architecture | `website/src/content/docs/architecture/app-architecture.md` |
