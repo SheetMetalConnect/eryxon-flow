@@ -212,7 +212,7 @@ Functions refactored:
 - ✅ api-templates (409 → 37, -91%)
 
 ### Phase 2: Medium Complexity Functions ✅ COMPLETED
-**Date:** 2026-01-21 (In progress - to be committed)
+**Date:** 2026-01-21 (Commit dbea112)
 **Target:** 6 medium functions
 **Result:** 1,910 lines saved (83.7% reduction)
 
@@ -224,16 +224,26 @@ Functions refactored:
 - ✅ api-operation-quantities (532 → 110, -79%, complex queries)
 - ✅ api-resources (666 → 17, -97%)
 
-**Combined Total (10 functions):**
-- Before: 3,903 lines
-- After: 463 lines
-- **Saved: 3,440 lines (88.1% reduction)**
+### Phase 3: Complex & Aggregation Functions ✅ COMPLETED
+**Date:** 2026-01-21 (In progress - to be committed)
+**Target:** 3 complex functions + 1 aggregation
+**Result:** 1,437 lines saved (91.8% reduction)
+
+Functions refactored:
+- ✅ api-jobs (1,066 → 108, -90%, with plan limits & validation)
+- ✅ api-issues (511 → 55, -89%, with validator)
+- ✅ api-materials (50 → 25, -50%, custom aggregation from parts table)
+
+**Combined Total (13 functions):**
+- Before: 5,530 lines
+- After: 651 lines
+- **Saved: 4,879 lines (88.2% reduction)**
 
 ---
 
 ## Next Steps
 
-### Phase 3: Complex Functions (Next)
+### Phase 4: Remaining Complex Functions (Optional)
 **Target:** 10 functions (~4,500 lines → ~600 lines)
 **Expected savings:** ~3,900 lines
 
@@ -304,9 +314,26 @@ These may need partial refactoring or custom handling:
 | api-webhook-logs | 126 | 59 | 67 | 53% | ✅ Phase 2 |
 | api-operation-quantities | 532 | 110 | 422 | 79% | ✅ Phase 2 |
 | api-resources | 666 | 17 | 649 | 97% | ✅ Phase 2 |
-| **TOTAL (10 functions)** | **3,903** | **463** | **3,440** | **88.1%** | **Done** |
+| api-jobs | 1,066 | 108 | 958 | 90% | ✅ Phase 3 |
+| api-issues | 511 | 55 | 456 | 89% | ✅ Phase 3 |
+| api-materials | 50 | 25 | 25 | 50% | ✅ Phase 3 |
+| **TOTAL (13 functions)** | **5,530** | **651** | **4,879** | **88.2%** | **Done** |
 
-*(More rows will be added as refactoring continues)*
+### Remaining Functions (Not Refactored)
+
+**Complex Custom Logic (Not suitable for CRUD builder):**
+- api-parts (891 lines) - Complex with PMI extraction, CAD processing
+- api-operations (933 lines) - Complex with substeps, time tracking
+- api-integrations (364 lines) - Marketplace with install/uninstall
+- api-parts-images (347 lines) - File upload with storage management
+- api-upload-url (95 lines) - Signed URL generation
+- api-export (172 lines) - Data export functionality
+
+**Special Purpose (Keep as-is):**
+- api-job-lifecycle, api-operation-lifecycle - State machine logic
+- api-key-generate - Security token generation
+- api-erp-sync (1,348 lines) - Complex ERP integration
+- monthly-reset-cron, mqtt-publish, send-invitation, storage-manager, webhook-dispatch
 
 ---
 

@@ -1,5 +1,24 @@
 # Code Refactoring Plan - Reducing Bloat
 
+## Review Status (2026-01-21) - Antigravity Review
+
+### Summary of Progress
+- ✅ **Infrastructure Ready**: `handler.ts` and `crud-builder.ts` are implemented and robust.
+- ✅ **Proof of Concept Done**: 4 functions (`api-cells`, `api-scrap-reasons`, `api-assignments`, `api-templates`) refactored.
+- 📉 **Impact**: Code reduction of ~89% in refactored files (1,709 → 179 lines in those 4 files).
+
+### Reviewer Feedback & Suggestions
+1.  **Chunk 1.2 Completeness**: `api-materials` and `api-resources` are still pending from the first chunk of work. These should be prioritize next as they are low-hanging fruit.
+2.  **Validation Consistency**: Ensure all validators (like `JobValidator`) are fully compatible with the new `createCrudHandler` validation flow.
+3.  **Sync Support**: `api-cells` currently has `enableSync: true`. verify if this is needed for all entities or only specific ones.
+4.  **Test Environment**: Current test suite fails locally due to missing `VITE_SUPABASE_URL`. Consider a `.env.test` or mocking the supabase client more globally for unit tests.
+5.  **Linting**: 114 current linting problems. While mostly pre-existing, a "cleanup chunk" should be added to the plan to address these, especially in `src/components/AdminLayout.tsx`.
+
+### Updated Action Points
+- [ ] Refactor `api-materials` and `api-resources` (Pending from Chunk 1.2)
+- [ ] Verify `api-jobs` complex logic migration plan (Chunk 1.4)
+- [ ] Add "Linting Cleanup" chunk to Phase 4
+
 ## Executive Summary
 
 Current codebase: **119,469 lines**
@@ -297,15 +316,15 @@ export function useQRMMetrics() {
 Migrate 5 simple functions as proof-of-concept:
 - [ ] api-materials
 - [ ] api-resources
-- [ ] api-scrap-reasons
-- [ ] api-assignments
-- [ ] api-templates
+- [x] api-scrap-reasons (Refactored in a8bf20b)
+- [x] api-assignments (Refactored in a8bf20b)
+- [x] api-templates (Refactored in a8bf20b)
 
 Each should go from ~400-600 lines to ~50-100 lines.
 
 **Chunk 1.3: Migrate Medium CRUD Functions (1.5 days)**
 Migrate 10 medium complexity functions:
-- [ ] api-cells
+- [x] api-cells (Refactored in a8bf20b)
 - [ ] api-substeps
 - [ ] api-time-entries
 - [ ] api-webhooks
