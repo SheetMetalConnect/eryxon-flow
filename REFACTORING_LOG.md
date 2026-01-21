@@ -201,21 +201,39 @@ When reviewing refactored functions, verify:
 ## Current Progress
 
 ### Phase 1: Proof of Concept ✅ COMPLETED
+**Date:** 2026-01-21 (Commit a8bf20b)
 **Target:** 4 simple functions
 **Result:** 1,530 lines saved (89.5% reduction)
-**Status:** Committed (a8bf20b)
 
 Functions refactored:
-- ✅ api-scrap-reasons (342 → 78)
-- ✅ api-cells (630 → 18)
-- ✅ api-assignments (328 → 46)
-- ✅ api-templates (409 → 37)
+- ✅ api-scrap-reasons (342 → 78, -77%)
+- ✅ api-cells (630 → 18, -97%)
+- ✅ api-assignments (328 → 46, -86%)
+- ✅ api-templates (409 → 37, -91%)
+
+### Phase 2: Medium Complexity Functions ✅ COMPLETED
+**Date:** 2026-01-21 (In progress - to be committed)
+**Target:** 6 medium functions
+**Result:** 1,910 lines saved (83.7% reduction)
+
+Functions refactored:
+- ✅ api-substeps (273 → 31, -89%)
+- ✅ api-time-entries (337 → 55, -84%)
+- ✅ api-webhooks (260 → 15, -94%)
+- ✅ api-webhook-logs (126 → 59, -53%, read-only with custom logic)
+- ✅ api-operation-quantities (532 → 110, -79%, complex queries)
+- ✅ api-resources (666 → 17, -97%)
+
+**Combined Total (10 functions):**
+- Before: 3,903 lines
+- After: 463 lines
+- **Saved: 3,440 lines (88.1% reduction)**
 
 ---
 
 ## Next Steps
 
-### Phase 2: Medium Complexity Functions (In Progress)
+### Phase 3: Complex Functions (Next)
 **Target:** 10 functions (~4,500 lines → ~600 lines)
 **Expected savings:** ~3,900 lines
 
@@ -274,13 +292,19 @@ These may need partial refactoring or custom handling:
 
 ### Line Count Reduction by Function
 
-| Function | Original | Current | Saved | Status |
-|----------|----------|---------|-------|--------|
-| api-scrap-reasons | 342 | 78 | 264 | ✅ Done |
-| api-cells | 630 | 18 | 612 | ✅ Done |
-| api-assignments | 328 | 46 | 282 | ✅ Done |
-| api-templates | 409 | 37 | 372 | ✅ Done |
-| **SUBTOTAL** | **1,709** | **179** | **1,530** | **Phase 1** |
+| Function | Original | Current | Saved | % Reduction | Status |
+|----------|----------|---------|-------|-------------|--------|
+| api-scrap-reasons | 342 | 78 | 264 | 77% | ✅ Phase 1 |
+| api-cells | 630 | 17 | 613 | 97% | ✅ Phase 1 |
+| api-assignments | 328 | 45 | 283 | 86% | ✅ Phase 1 |
+| api-templates | 409 | 36 | 373 | 91% | ✅ Phase 1 |
+| api-substeps | 273 | 31 | 242 | 89% | ✅ Phase 2 |
+| api-time-entries | 337 | 55 | 282 | 84% | ✅ Phase 2 |
+| api-webhooks | 260 | 15 | 245 | 94% | ✅ Phase 2 |
+| api-webhook-logs | 126 | 59 | 67 | 53% | ✅ Phase 2 |
+| api-operation-quantities | 532 | 110 | 422 | 79% | ✅ Phase 2 |
+| api-resources | 666 | 17 | 649 | 97% | ✅ Phase 2 |
+| **TOTAL (10 functions)** | **3,903** | **463** | **3,440** | **88.1%** | **Done** |
 
 *(More rows will be added as refactoring continues)*
 
