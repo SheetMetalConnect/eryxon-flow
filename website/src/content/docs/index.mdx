@@ -5,7 +5,7 @@ template: splash
 hero:
   title: |
     MES for <span class="text-primary">Job Shops</span>
-  tagline: Open source production tracking for custom manufacturing. Real-time operator terminals, capacity planning, and ERP integration.
+  tagline: Open source production tracking for custom manufacturing. Real-time operator terminals, job management, and ERP integration. Version 0.2 - focused on core capabilities.
   actions:
     - text: Get Started
       link: /guides/quick-start/
@@ -24,26 +24,26 @@ import HeroTabs from "~/components/HeroTabs.astro";
 import HeroTabsItem from "~/components/HeroTabsItem.astro";
 import LinkButton from "~/components/LinkButton.astro";
 
-<Section title="Built for <span class='text-primary'>Production</span>" description="Real-time operator terminals, QRM capacity planning, and ERP integration.">
+<Section title="Built for <span class='text-primary'>Production</span>" description="Real-time operator terminals, job tracking, and ERP integration. Version 0.2 focuses on core capabilities.">
 
 <Grid columns={3}>
   <Card title="Real-time Tracking" icon="seti:clock" iconColor="#4a9eff">
-    Operators track time and status on touch-friendly tablets. Live visibility into every job.
+    Operators track time and status on touch-friendly tablets. Live visibility via WebSockets into every job.
   </Card>
-  <Card title="Job Scheduling" icon="seti:plan" iconColor="#4a9eff">
-    Prioritize work orders and manage capacity with QRM-based polca lanes.
+  <Card title="Job Management" icon="seti:plan" iconColor="#4a9eff">
+    Track jobs, parts, and operations through production. Visual work queues organized by stages.
   </Card>
   <Card title="Self-Hostable" icon="seti:lock" iconColor="#4a9eff">
     Keep your production data private. Run on your own server. BSL 1.1 License (Free for internal use).
   </Card>
   <Card title="ERP Integration" icon="seti:db" iconColor="#4a9eff">
-    Sync jobs and parts from your ERP via REST API. No double entry.
+    Sync jobs and parts from your ERP via REST API and webhooks. CSV import/export included.
   </Card>
   <Card title="Paperless Shop" icon="seti:image" iconColor="#4a9eff">
-    Attach drawings, 3D files (STEP), and work instructions directly to the job.
+    Attach drawings, 3D STEP files, and work instructions. Client-side 3D viewer included.
   </Card>
-  <Card title="Analytics" icon="seti:chart" iconColor="#4a9eff">
-     Analyze efficiency, scrap rates, and on-time delivery performance.
+  <Card title="Dashboard Stats" icon="seti:chart" iconColor="#4a9eff">
+    Real-time production stats, active jobs, and operator activity on the main dashboard.
   </Card>
 
 </Grid>

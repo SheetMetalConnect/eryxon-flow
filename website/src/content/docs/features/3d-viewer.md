@@ -3,11 +3,11 @@ title: "3D STEP Viewer"
 description: "Documentation for 3D STEP Viewer"
 ---
 
-
-
 ## Overview
 
-A browser-based 3D STEP file viewer integrated into the EryxonFlow parts management system. Built with React, Three.js, and occt-import-js to parse and render CAD models directly in the browser.
+A **client-side** browser-based 3D STEP file viewer integrated into Eryxon Flow. Built with React, Three.js, and occt-import-js to parse and render CAD models entirely in the browser with no backend service required.
+
+**Key Point:** This is a purely client-side implementation. STEP files are parsed in the browser using WebAssembly (occt-import-js), not on a server.
 
 ## Features
 
