@@ -161,24 +161,32 @@
 
 ### 🔒 SECURITY FINDINGS & REQUIRED ACTIONS
 
+**Summary:**
+- ✅ 2 of 8 items fixed automatically
+- ⚠️ 3 items require manual user action (database/config access)
+- 🟢 3 items acceptable risk or recommended improvements
+
 **HIGH Priority (Must Address Before Production):**
 
-1. **React Router Vulnerabilities** 🔴
+1. **React Router Vulnerabilities** 🔴 ✅ FIXED
    - **Issue**: Multiple HIGH severity vulnerabilities in react-router-dom
    - **Vulnerabilities**: XSS via Open Redirects, XSS via Scroll Restoration, CSRF in Request Processing
-   - **Current Version**: < 7.12.0
-   - **Action Required**: `npm install react-router-dom@latest` (>= 7.12.0)
-   - **Impact**: User security compromise, session hijacking risk
-   - **Status**: ⏳ Pending
+   - **Resolution**: Upgraded to react-router-dom >= 7.12.0
+   - **Impact**: Eliminated user security risks including session hijacking
+   - **Status**: ✅ Fixed in commit `0a5d545`
+   - **Verification**: npm audit now shows 0 vulnerabilities
 
-2. **Database Migrations Out of Sync** 🔴
+2. **Database Migrations Out of Sync** 🔴 ⚠️ MANUAL ACTION REQUIRED
    - **Issue**: Production DB has 5 migrations (Jan 9-10) missing from local repository
    - **Production Head**: 20260110200337
    - **Local Head**: 20260101000000
    - **Risk**: Dev-prod parity broken, new deployments may fail or corrupt data
-   - **Action Required**: `supabase db pull` or manually sync 5 migration files
+   - **Action Required**:
+     1. Run `supabase link` to connect to production project
+     2. Run `supabase db pull` to sync 5 missing migration files
+     3. Commit synced migrations to repository
    - **Impact**: Deployment failures, schema mismatches
-   - **Status**: ⏳ Pending
+   - **Status**: ⚠️ Requires user action (CLI not linked to project)
 
 3. **Supabase Function Search Paths** 🟠
    - **Issue**: Functions like `generate_sync_hash` and `generate_tenant_abbreviation` don't set explicit `search_path`
@@ -220,11 +228,12 @@
    - **Mitigation**: Config values are admin-controlled, low risk
    - **Status**: Acceptable risk, no action required
 
-8. **Mixed Package Managers** 🟡
+8. **Mixed Package Managers** 🟡 ✅ FIXED
    - **Issue**: Both package-lock.json and bun.lockb present in root
    - **Risk**: Dependency resolution drift, reproducibility issues
-   - **Action Required**: Choose one package manager (npm or bun) and remove other lockfile
-   - **Status**: ⏳ Pending
+   - **Resolution**: Removed bun.lockb, standardized on npm
+   - **Rationale**: All builds and deployments use npm as primary package manager
+   - **Status**: ✅ Fixed in commit `1224a67`
 
 ### ⚠️ REMAINING ISSUES (Future Improvements)
 
