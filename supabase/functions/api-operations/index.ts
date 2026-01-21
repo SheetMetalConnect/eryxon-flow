@@ -426,7 +426,8 @@ export default serveApi(
       )
     `,
     searchFields: ['operation_name', 'notes'],
-    allowedFilters: ['part_id', 'cell_id', 'status', 'assigned_operator_id'],
+    allowedFilters: ['part_id', 'cell_id', 'status', 'assigned_operator_id', 'operation_name'],
+    fuzzyFilters: ['operation_name'],
     sortableFields: ['sequence', 'created_at', 'estimated_time', 'actual_time', 'status', 'completion_percentage'],
     defaultSort: { field: 'created_at', direction: 'desc' },
     softDelete: false,

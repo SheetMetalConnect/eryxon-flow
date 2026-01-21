@@ -166,8 +166,8 @@ export default serveApi(
       )
     `,
     searchFields: ['job_number', 'customer'],
-    allowedFilters: ['status', 'customer', 'priority'],
-    fuzzyFilters: ['customer'],
+    allowedFilters: ['status', 'customer', 'priority', 'job_number'],
+    fuzzyFilters: ['customer', 'job_number'],
     sortableFields: ['job_number', 'customer', 'due_date', 'created_at', 'status', 'priority'],
     defaultSort: { field: 'created_at', direction: 'desc' },
     softDelete: true,

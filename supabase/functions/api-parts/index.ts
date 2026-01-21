@@ -311,6 +311,7 @@ export default serveApi(
     `,
     searchFields: ['part_number', 'notes'],
     allowedFilters: ['job_id', 'material', 'status', 'part_number', 'material_lot'],
+    fuzzyFilters: ['part_number'],
     sortableFields: ['part_number', 'material', 'status', 'created_at', 'quantity'],
     defaultSort: { field: 'created_at', direction: 'desc' },
     softDelete: false,
