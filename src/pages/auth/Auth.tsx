@@ -237,6 +237,7 @@ export default function Auth() {
                       to="/privacy"
                       className="text-primary hover:underline"
                       target="_blank"
+                      rel="noopener noreferrer"
                     >
                       {t("auth.privacyPolicy")}
                     </Link>{" "}
@@ -245,6 +246,7 @@ export default function Auth() {
                       to="/terms"
                       className="text-primary hover:underline"
                       target="_blank"
+                      rel="noopener noreferrer"
                     >
                       {t("auth.termsOfService")}
                     </Link>
