@@ -10,9 +10,9 @@
 
 ---
 
-### ✅ COMPLETED: Edge Functions Refactoring (Phases 1-4)
+### ✅ COMPLETED: Edge Functions Refactoring (Phases 1-4) + Cleanup
 
-**15 Functions Refactored** | **5,934 Lines Saved** (80.7% reduction)
+**15 Functions Refactored + 1 Removed** | **6,707 Lines Saved** (87.4% reduction)
 
 | Function | Before | After | Saved | % | Phase |
 |----------|--------|-------|-------|---|-------|
@@ -31,9 +31,11 @@
 | api-materials | 50 | 25 | 25 | 50% | 3 |
 | api-parts | 891 | 326 | 565 | 63% | 4 |
 | api-operations | 933 | 443 | 490 | 53% | 4 |
-| **TOTAL** | **7,354** | **1,420** | **5,934** | **80.7%** | - |
+| api-integrations | 364 | 0 | 364 | 100% | Cleanup |
+| IntegrationsMarketplace.tsx | 409 | 0 | 409 | 100% | Cleanup |
+| **TOTAL** | **8,127** | **1,420** | **6,707** | **82.5%** | - |
 
-**Commits:**
+**Commits (Complete History):**
 - `a8bf20b` - Phase 1: 4 functions refactored (1,775 lines saved)
 - `dbea112` - Phase 2: 6 functions refactored (2,304 lines saved)
 - `9822eb1` - Phase 3: 3 functions refactored (1,439 lines saved)
@@ -41,6 +43,15 @@
 - `9cd6c93` - Bug fix: validation calling convention & error handling
 - `2a8edeb` - Bug fix: PATCH validation & response format issues
 - `a91db4b` - Bug fix: nested creation, sync safety, bulk-sync compatibility
+- `ae97c7e` - Bug fix: bulk-sync backward compatibility and partial success handling
+- `07e5c18` - Bug fix: restore return statement in custom GET handler
+- `f652c0d` - CRITICAL fix: async validation bug in api-parts and api-operations
+- `d094560` - Cleanup: remove integrations marketplace (773 lines deleted)
+- `cf5fa9f` - Feature: add fuzzy filter support to crud-builder
+- `f90d3b1` - feat: Introduce 30-day trial for hosted alpha
+- `d17ea3d` - Merge pull request #306 from SheetMetalConnect/claude/supabase-cloudflare-migration-Gwk5i
+- `d9d8834` - Merge pull request #305 from SheetMetalConnect/feature/website-redo-dockit
+- `06da358` - chore: remove bloated documentation and scripts
 
 **Testing:**
 - ✅ Build: Successful (7.62s)
@@ -48,24 +59,95 @@
 - ⚠️ Tests: 9/30 failing (pre-existing)
 
 **Critical Bug Fixes (All Resolved):**
-- ✅ Validator instantiation (class → instance)
-- ✅ Validation property checking (isValid → valid)
-- ✅ ValidationException format (full result vs errors)
-- ✅ PaymentRequiredError signature in api-jobs
-- ✅ PATCH validation (removed full validation for partial updates)
-- ✅ Response format consistency (api-jobs returns {job: data})
-- ✅ Nested creation restored (api-jobs creates parts & operations)
-- ✅ Bulk-sync backward compatibility (accepts both {items} and {jobs})
-- ✅ Sync soft-delete protection (excludes deleted_at records)
-- ✅ Sync external_source scoping (prevents ID collisions)
-- ✅ Sync tracking metadata (synced_at, sync_hash, updated_at)
+
+1. **CRITICAL: Silent Validation Bypass** (`f652c0d`)
+   - **Issue**: api-parts and api-operations were missing `await` on validation calls
+   - **Impact**: Validation was completely bypassed, allowing invalid data into database
+   - **Fix**: Added `await` keyword to validation calls in both endpoints
+   - **Severity**: Data integrity violation - would have allowed null FKs, invalid statuses
+
+2. **CRITICAL: Nested Creation Regression** (`a91db4b`)
+   - **Issue**: api-jobs POST stopped creating nested parts and operations
+   - **Impact**: "Manual Job Entry" and "Template Application" flows completely broken
+   - **Fix**: Restored full nested creation logic with failure tracking
+   - **Details**: Now creates parts[] and operations[] arrays, returns warnings on partial failures
+
+3. **CRITICAL: Bulk-sync Crashes on Legacy Payloads** (`ae97c7e`)
+   - **Issue**: Used `body.items.length` but legacy requests send `{jobs: [...]}` format
+   - **Impact**: Every legacy sync request throws TypeError and terminates
+   - **Fix**: Changed to use local `items` variable that handles both formats
+   - **Backward Compatibility**: Now accepts both `{items: [...]}` and `{jobs: [...], parts: [...]}` formats
+
+4. **HIGH: Validator Instantiation** (`9cd6c93`)
+   - **Issue**: crud-builder called `validator.validate()` on class instead of instance
+   - **Fix**: Changed to `new validator().validate()`
+   - **Impact**: All validation was failing before this fix
+
+5. **HIGH: Validation Property Checking** (`9cd6c93`)
+   - **Issue**: Checked `validation.isValid` instead of `validation.valid`
+   - **Fix**: Updated to use correct property name `.valid`
+   - **Impact**: Validation results were not being read correctly
+
+6. **HIGH: PaymentRequiredError Signature** (`2a8edeb`)
+   - **Issue**: api-jobs custom handler had wrong error constructor params
+   - **Fix**: Updated to match PaymentRequiredError(limitType, current, limit) signature
+   - **Impact**: Plan limit checks were throwing generic errors instead of proper payment errors
+
+7. **MEDIUM: PATCH Over-validation** (`2a8edeb`)
+   - **Issue**: PATCH was running full validation including required fields
+   - **Impact**: Partial updates would fail if not all required fields provided
+   - **Fix**: Removed full validation from PATCH, only validate provided fields
+   - **Details**: PATCH is for partial updates, POST is for full validation
+
+8. **MEDIUM: Response Format Inconsistency** (`2a8edeb`)
+   - **Issue**: api-jobs returned `{job: data}` but crud-builder returned raw data
+   - **Fix**: Updated custom POST handler to use `createSuccessResponse`
+   - **Impact**: Frontend expects consistent response shapes
+
+9. **MEDIUM: Missing Return Statement** (`07e5c18`)
+   - **Issue**: Custom GET handler processed filters but didn't return, falling through to crud-builder
+   - **Fix**: Added explicit `return null as any` to signal passthrough to crud-builder
+   - **Impact**: Custom filters (job_id, cell_name) were not working correctly
+
+10. **LOW: Sync Soft-delete Protection** (`a91db4b`)
+    - **Issue**: Sync could match deleted records by external_id
+    - **Fix**: Added `.is('deleted_at', null)` filter to sync queries
+    - **Impact**: Prevents "ghost" records from being updated
+
+11. **LOW: Sync External Source Scoping** (`a91db4b`)
+    - **Issue**: Different ERPs could collide on same external_id
+    - **Fix**: Added `external_source` to upsert conditions
+    - **Impact**: Prevents ID collisions between integration sources
+
+12. **LOW: Sync Metadata Tracking** (`a91db4b`)
+    - **Issue**: No tracking of when/how records were synced
+    - **Fix**: Added `synced_at`, `sync_hash`, `updated_at` to all syncs
+    - **Impact**: Better audit trail and change detection
+
+**Feature Additions:**
+
+1. **Fuzzy Filter Support** (`cf5fa9f`)
+   - **Feature**: Added `fuzzyFilters` config option to crud-builder
+   - **Benefit**: Text filters now use `ilike '%value%'` for partial matching
+   - **Use Case**: Filtering by customer name - "Apple" now finds "Apple Inc"
+   - **Configuration**: Set `fuzzyFilters: ['customer', 'job_number']` in crud config
+   - **Implementation**: Applied to api-jobs for customer filter
+   - **Consistency**: Aligns column filters with global search behavior
+
+2. **Integrations Marketplace Removal** (`d094560`)
+   - **Change**: Removed unused integrations marketplace feature
+   - **Impact**: 773 lines deleted (api-integrations + IntegrationsMarketplace.tsx)
+   - **Reason**: Feature was not being used, simplified codebase
+   - **Files Removed**:
+     - `supabase/functions/api-integrations/index.ts` (364 lines)
+     - `src/pages/admin/IntegrationsMarketplace.tsx` (409 lines)
+   - **Route Cleanup**: Removed `/admin/integrations` route from App.tsx
 
 ### ❌ NOT REFACTORED (Intentional)
 
 **Specialized Functions** (custom logic, not suitable for CRUD builder):
-- api-integrations (364 lines) - Marketplace (to be removed)
 - api-parts-images (347 lines) - File upload handling
-- api-erp-sync (1,348 lines) - Complex ERP synchronization
+- api-erp-sync (1,348 lines) - Complex ERP synchronization (see recommendations below)
 - api-export (172 lines) - Data export utility
 - api-upload-url (95 lines) - Signed URL generation
 - Lifecycle endpoints (api-job-lifecycle, api-operation-lifecycle)
@@ -77,15 +159,81 @@
 - Only used for demo data generation
 - Splitting would add complexity without benefit
 
-### ⚠️ REMAINING ISSUES (Future Work)
+### 🔒 SECURITY FINDINGS & REQUIRED ACTIONS
 
-**MEDIUM Priority:**
-- API filter compatibility: Some filters now require exact match instead of partial (e.g., job_number, customer)
+**HIGH Priority (Must Address Before Production):**
+
+1. **React Router Vulnerabilities** 🔴
+   - **Issue**: Multiple HIGH severity vulnerabilities in react-router-dom
+   - **Vulnerabilities**: XSS via Open Redirects, XSS via Scroll Restoration, CSRF in Request Processing
+   - **Current Version**: < 7.12.0
+   - **Action Required**: `npm install react-router-dom@latest` (>= 7.12.0)
+   - **Impact**: User security compromise, session hijacking risk
+   - **Status**: ⏳ Pending
+
+2. **Database Migrations Out of Sync** 🔴
+   - **Issue**: Production DB has 5 migrations (Jan 9-10) missing from local repository
+   - **Production Head**: 20260110200337
+   - **Local Head**: 20260101000000
+   - **Risk**: Dev-prod parity broken, new deployments may fail or corrupt data
+   - **Action Required**: `supabase db pull` or manually sync 5 migration files
+   - **Impact**: Deployment failures, schema mismatches
+   - **Status**: ⏳ Pending
+
+3. **Supabase Function Search Paths** 🟠
+   - **Issue**: Functions like `generate_sync_hash` and `generate_tenant_abbreviation` don't set explicit `search_path`
+   - **Risk**: Malicious user could execute unintended code by placing objects in different schema
+   - **Action Required**: Update function definitions with `SET search_path = public, extensions;`
+   - **Functions Affected**:
+     - `public.generate_sync_hash`
+     - `public.generate_tenant_abbreviation`
+   - **Status**: ⏳ Pending
+
+**MEDIUM Priority (Recommended):**
+
+4. **send-invitation RLS Bypass** 🟠
+   - **Issue**: Uses service-role key and accepts tenant_id from request body without explicit role check
+   - **Risk**: Cross-tenant invitation creation if RPC doesn't enforce tenant/role internally
+   - **Location**: `supabase/functions/send-invitation/index.ts:72, :124`
+   - **Action Required**: Add explicit tenant/role validation before calling create_invitation RPC
+   - **Status**: ⏳ Pending
+
+5. **Auth Security Settings** 🟠
+   - **Issue**: "Leaked Password Protection" disabled in Supabase
+   - **Risk**: Users can use passwords compromised in other breaches
+   - **Action Required**: Enable leaked password protection in Supabase dashboard
+   - **Status**: ⏳ Pending
+
+6. **Inconsistent Supabase Versions** 🟡
+   - **Issue**: @supabase/supabase-js versions differ across edge functions (v2 vs v2.39.3)
+   - **Risk**: Subtle auth/API differences across endpoints
+   - **Locations**: `handler.ts:23`, `send-invitation/index.ts:11`
+   - **Action Required**: Standardize to latest @supabase/supabase-js version
+   - **Status**: ⏳ Pending
+
+**LOW Priority (Best Practices):**
+
+7. **ChartStyle CSS Injection Surface** 🟡
+   - **Issue**: Injects CSS via dangerouslySetInnerHTML based on runtime config values
+   - **Risk**: CSS injection if config values influenced by untrusted input
+   - **Location**: `src/components/ui/chart.tsx:69`
+   - **Mitigation**: Config values are admin-controlled, low risk
+   - **Status**: Acceptable risk, no action required
+
+8. **Mixed Package Managers** 🟡
+   - **Issue**: Both package-lock.json and bun.lockb present in root
+   - **Risk**: Dependency resolution drift, reproducibility issues
+   - **Action Required**: Choose one package manager (npm or bun) and remove other lockfile
+   - **Status**: ⏳ Pending
+
+### ⚠️ REMAINING ISSUES (Future Improvements)
+
+**Code Quality:**
 - Response object consistency: Some endpoints return `{data: record}`, others `{data: {entity: record}}`
-- Consider adding partial match support for text filters in crud-builder
+- Consider standardizing response wrapper format across all endpoints
 
-**Cleanup:**
-- Remove integrations marketplace (user requested but not yet done)
+**Refactoring Opportunities:**
+- api-erp-sync (1,348 lines) - Largest remaining edge function, could benefit from partial refactoring using serveApi wrapper (~500 line reduction possible)
 
 ---
 
