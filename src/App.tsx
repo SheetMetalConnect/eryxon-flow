@@ -47,7 +47,6 @@ const ActivityMonitor = lazy(() => import("./pages/admin/ActivityMonitor").then(
 const CapacityMatrix = lazy(() => import("./pages/admin/CapacityMatrix"));
 const Operations = lazy(() => import("./pages/admin/Operations").then(m => ({ default: m.Operations })));
 const Settings = lazy(() => import("./pages/admin/Settings").then(m => ({ default: m.Settings })));
-const IntegrationsMarketplace = lazy(() => import("./pages/admin/IntegrationsMarketplace"));
 const Shipments = lazy(() => import("./pages/admin/Shipments"));
 const StepsTemplatesView = lazy(() => import("./pages/admin/StepsTemplatesView"));
 const AnalyticsDashboard = lazy(() => import("./pages/admin/AnalyticsDashboard"));
@@ -587,19 +586,6 @@ function AppRoutes() {
             <Layout>
               <LazyRoute>
                 <Settings />
-              </LazyRoute>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/admin/integrations"
-        element={
-          <ProtectedRoute adminOnly>
-            <Layout>
-              <LazyRoute>
-                <IntegrationsMarketplace />
               </LazyRoute>
             </Layout>
           </ProtectedRoute>
