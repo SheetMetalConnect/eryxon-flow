@@ -3,7 +3,7 @@ import { createCrudHandler } from "../_shared/crud-builder.ts";
 import { canCreateJob } from "../_shared/plan-limits.ts";
 import { JobValidator } from "../_shared/validation/validators/JobValidator.ts";
 import type { HandlerContext } from "../_shared/handler.ts";
-import { PaymentRequiredError } from "../_shared/validation/errorHandler.ts";
+import { PaymentRequiredError, ValidationException, createSuccessResponse } from "../_shared/validation/errorHandler.ts";
 
 // Custom POST handler with plan limits check
 async function handleCreateWithLimits(req: Request, ctx: HandlerContext): Promise<Response> {
@@ -12,16 +12,21 @@ async function handleCreateWithLimits(req: Request, ctx: HandlerContext): Promis
   // Check plan limits before creating
   const canCreate = await canCreateJob(supabase, tenantId, plan);
   if (!canCreate.allowed) {
-    throw new PaymentRequiredError(canCreate.message);
+    throw new PaymentRequiredError(
+      canCreate.reason || "Job creation limit reached",
+      canCreate.current || 0,
+      canCreate.limit || 0
+    );
   }
 
   // Parse and validate body
   const body = await req.json();
 
   if (JobValidator) {
-    const validation = await JobValidator.validate(body, { tenantId, supabase });
-    if (!validation.isValid) {
-      throw new Error(JSON.stringify(validation.errors));
+    const validator = new JobValidator();
+    const validation = await validator.validate(body, { tenantId, supabase });
+    if (!validation.valid) {
+      throw new ValidationException(validation);
     }
   }
 
@@ -60,13 +65,7 @@ async function handleCreateWithLimits(req: Request, ctx: HandlerContext): Promis
     throw new Error(`Failed to create job: ${error.message}`);
   }
 
-  return new Response(
-    JSON.stringify({ success: true, data: { job: data } }),
-    {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' }
-    }
-  );
+  return createSuccessResponse(data, 201);
 }
 
 // Configure CRUD handler for jobs with validation and sync

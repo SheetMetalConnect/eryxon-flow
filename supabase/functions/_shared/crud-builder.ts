@@ -288,9 +288,10 @@ async function handlePost(
 
   // Validate if validator provided
   if (validator) {
-    const validation = await validator.validate(body, { tenantId, supabase });
-    if (!validation.isValid) {
-      throw new ValidationException(validation.errors);
+    const validatorInstance = new validator();
+    const validation = await validatorInstance.validate(body, { tenantId, supabase });
+    if (!validation.valid) {
+      throw new ValidationException(validation);
     }
   }
 
@@ -334,9 +335,10 @@ async function handlePatch(
 
   // Validate if validator provided
   if (validator) {
-    const validation = await validator.validateUpdate(body, { tenantId, supabase, id });
-    if (!validation.isValid) {
-      throw new ValidationException(validation.errors);
+    const validatorInstance = new validator();
+    const validation = await validatorInstance.validate(body, { tenantId, supabase, id });
+    if (!validation.valid) {
+      throw new ValidationException(validation);
     }
   }
 
@@ -435,9 +437,10 @@ async function handleSync(
 
   // Validate if validator provided
   if (validator) {
-    const validation = await validator.validate(body, { tenantId, supabase });
-    if (!validation.isValid) {
-      throw new ValidationException(validation.errors);
+    const validatorInstance = new validator();
+    const validation = await validatorInstance.validate(body, { tenantId, supabase });
+    if (!validation.valid) {
+      throw new ValidationException(validation);
     }
   }
 
