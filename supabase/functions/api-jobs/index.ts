@@ -51,6 +51,9 @@ async function handleCreateWithLimits(req: Request, ctx: HandlerContext): Promis
 
   // Create nested parts if provided
   const createdParts = [];
+  const failedParts = [];
+  const failedOperations = [];
+
   if (parts && Array.isArray(parts) && parts.length > 0) {
     for (const part of parts) {
       const { operations, ...partData } = part;
@@ -69,6 +72,10 @@ async function handleCreateWithLimits(req: Request, ctx: HandlerContext): Promis
 
       if (partError) {
         console.error('Failed to create part:', partError);
+        failedParts.push({
+          part: partData,
+          error: partError.message,
+        });
         continue; // Skip this part but continue with others
       }
 
@@ -92,6 +99,11 @@ async function handleCreateWithLimits(req: Request, ctx: HandlerContext): Promis
 
           if (opError) {
             console.error('Failed to create operation:', opError);
+            failedOperations.push({
+              operation,
+              part_id: createdPart.id,
+              error: opError.message,
+            });
             continue;
           }
 
@@ -106,11 +118,24 @@ async function handleCreateWithLimits(req: Request, ctx: HandlerContext): Promis
     }
   }
 
-  // Construct final response with nested data
-  const responseData = {
+  // Construct final response with nested data and warnings
+  const responseData: any = {
     ...job,
     parts: createdParts,
   };
+
+  // Add warnings if any parts or operations failed
+  if (failedParts.length > 0 || failedOperations.length > 0) {
+    responseData.warnings = {
+      message: 'Job created but some nested resources failed',
+      failed_parts: failedParts.length,
+      failed_operations: failedOperations.length,
+      details: {
+        parts: failedParts,
+        operations: failedOperations,
+      },
+    };
+  }
 
   // Maintain original response format for backward compatibility
   return createSuccessResponse({ job: responseData }, 201);

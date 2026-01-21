@@ -633,6 +633,6 @@ async function handleBulkSync(
 
   return createSuccessResponse({
     results,
-    total: body.items.length,
+    total: items.length,
   });
 }
