@@ -42,6 +42,9 @@ export interface CrudConfig {
   /** URL params that can be used as filters (default: []) */
   allowedFilters?: string[];
 
+  /** Filters that should use fuzzy matching (ilike) instead of exact match (eq). Useful for text fields like customer, job_number */
+  fuzzyFilters?: string[];
+
   /** Fields that can be used for sorting (default: ['created_at']) */
   sortableFields?: string[];
 
@@ -169,6 +172,7 @@ async function handleGet(
     selectFields,
     searchFields,
     allowedFilters,
+    fuzzyFilters = [],
     sortableFields,
     defaultSort,
     softDelete,
@@ -219,7 +223,12 @@ async function handleGet(
   for (const filter of allowedFilters) {
     const value = url.searchParams.get(filter);
     if (value !== null) {
-      query = query.eq(filter, value);
+      // Use fuzzy matching for text fields like customer, job_number
+      if (fuzzyFilters.includes(filter)) {
+        query = query.ilike(filter, `%${value}%`);
+      } else {
+        query = query.eq(filter, value);
+      }
     }
   }
 
