@@ -97,10 +97,10 @@ export function createCrudHandler(config: CrudConfig) {
     // Handle sync endpoints if enabled
     if (enableSync) {
       if (lastSegment === 'sync' && req.method === 'PUT') {
-        return handleSync(req, ctx, table, syncIdField, validator);
+        return handleSync(req, ctx, table, syncIdField, validator, softDelete);
       }
       if (lastSegment === 'bulk-sync' && req.method === 'POST') {
-        return handleBulkSync(req, ctx, table, syncIdField, validator);
+        return handleBulkSync(req, ctx, table, syncIdField, validator, softDelete);
       }
     }
 
@@ -421,7 +421,8 @@ async function handleSync(
   ctx: HandlerContext,
   table: string,
   syncIdField: string,
-  validator: any
+  validator: any,
+  softDelete: boolean = false
 ): Promise<Response> {
   const { supabase, tenantId } = ctx;
 
@@ -429,6 +430,11 @@ async function handleSync(
 
   if (!body[syncIdField]) {
     throw new BadRequestError(`${syncIdField} is required for sync operations`);
+  }
+
+  // Require external_source for proper scoping
+  if (!body.external_source) {
+    throw new BadRequestError('external_source is required for sync operations');
   }
 
   // Validate if validator provided
@@ -440,24 +446,44 @@ async function handleSync(
     }
   }
 
-  // Check if record exists
-  const { data: existing } = await supabase
+  // Check if record exists (with external_source scoping and soft-delete protection)
+  let query = supabase
     .from(table)
     .select('id')
     .eq(syncIdField, body[syncIdField])
     .eq('tenant_id', tenantId)
-    .maybeSingle();
+    .eq('external_source', body.external_source);
 
+  // Exclude soft-deleted records
+  if (softDelete) {
+    query = query.is('deleted_at', null);
+  }
+
+  const { data: existing } = await query.maybeSingle();
+
+  // Generate sync hash for change detection
+  const encoder = new TextEncoder();
+  const data = encoder.encode(JSON.stringify(body));
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const syncHash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("").substring(0, 32);
+
+  const now = new Date().toISOString();
   const dataToUpsert = {
     ...body,
     tenant_id: tenantId,
+    synced_at: now,
+    sync_hash: syncHash,
   };
 
   if (existing) {
     // Update existing
     const { data, error } = await supabase
       .from(table)
-      .update(dataToUpsert)
+      .update({
+        ...dataToUpsert,
+        updated_at: now,
+      })
       .eq('id', existing.id)
       .select()
       .single();
@@ -491,14 +517,22 @@ async function handleBulkSync(
   ctx: HandlerContext,
   table: string,
   syncIdField: string,
-  validator: any
+  validator: any,
+  softDelete: boolean = false
 ): Promise<Response> {
   const { supabase, tenantId } = ctx;
 
   const body = await req.json();
 
-  if (!Array.isArray(body.items)) {
-    throw new BadRequestError('Request body must contain an "items" array');
+  // Support both new format {items: [...]} and legacy format {jobs: [...], parts: [...], etc.}
+  let items: any[];
+  if (Array.isArray(body.items)) {
+    items = body.items;
+  } else if (Array.isArray(body[table])) {
+    // Legacy format: {jobs: [...]} or {parts: [...]}
+    items = body[table];
+  } else {
+    throw new BadRequestError(`Request body must contain either "items" array or "${table}" array`);
   }
 
   const results = {
@@ -508,7 +542,7 @@ async function handleBulkSync(
     errors: [] as any[],
   };
 
-  for (const item of body.items) {
+  for (const item of items) {
     try {
       if (!item[syncIdField]) {
         results.failed++;
@@ -519,10 +553,21 @@ async function handleBulkSync(
         continue;
       }
 
+      // Require external_source for proper scoping
+      if (!item.external_source) {
+        results.failed++;
+        results.errors.push({
+          item,
+          error: 'external_source is required',
+        });
+        continue;
+      }
+
       // Validate if validator provided
       if (validator) {
-        const validation = await validator.validate(item, { tenantId, supabase });
-        if (!validation.isValid) {
+        const validatorInstance = new validator();
+        const validation = await validatorInstance.validate(item, { tenantId, supabase });
+        if (!validation.valid) {
           results.failed++;
           results.errors.push({
             item,
@@ -532,23 +577,43 @@ async function handleBulkSync(
         }
       }
 
-      // Check if record exists
-      const { data: existing } = await supabase
+      // Check if record exists (with external_source scoping and soft-delete protection)
+      let query = supabase
         .from(table)
         .select('id')
         .eq(syncIdField, item[syncIdField])
         .eq('tenant_id', tenantId)
-        .maybeSingle();
+        .eq('external_source', item.external_source);
 
+      // Exclude soft-deleted records
+      if (softDelete) {
+        query = query.is('deleted_at', null);
+      }
+
+      const { data: existing } = await query.maybeSingle();
+
+      // Generate sync hash
+      const encoder = new TextEncoder();
+      const data = encoder.encode(JSON.stringify(item));
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const syncHash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("").substring(0, 32);
+
+      const now = new Date().toISOString();
       const dataToUpsert = {
         ...item,
         tenant_id: tenantId,
+        synced_at: now,
+        sync_hash: syncHash,
       };
 
       if (existing) {
         await supabase
           .from(table)
-          .update(dataToUpsert)
+          .update({
+            ...dataToUpsert,
+            updated_at: now,
+          })
           .eq('id', existing.id);
         results.updated++;
       } else {

@@ -30,43 +30,90 @@ async function handleCreateWithLimits(req: Request, ctx: HandlerContext): Promis
     }
   }
 
+  // Extract nested data before creating job
+  const { parts, ...jobData } = body;
+
   // Create the job
   const dataToInsert = {
-    ...body,
+    ...jobData,
     tenant_id: tenantId,
   };
 
-  const { data, error } = await supabase
+  const { data: job, error: jobError } = await supabase
     .from('jobs')
     .insert(dataToInsert)
-    .select(`
-      id,
-      job_number,
-      customer,
-      due_date,
-      due_date_override,
-      status,
-      priority,
-      notes,
-      metadata,
-      created_at,
-      updated_at,
-      parts (
-        id,
-        part_number,
-        material,
-        quantity,
-        status
-      )
-    `)
+    .select()
     .single();
 
-  if (error) {
-    throw new Error(`Failed to create job: ${error.message}`);
+  if (jobError) {
+    throw new Error(`Failed to create job: ${jobError.message}`);
   }
 
+  // Create nested parts if provided
+  const createdParts = [];
+  if (parts && Array.isArray(parts) && parts.length > 0) {
+    for (const part of parts) {
+      const { operations, ...partData } = part;
+
+      // Create part
+      const { data: createdPart, error: partError } = await supabase
+        .from('parts')
+        .insert({
+          ...partData,
+          job_id: job.id,
+          tenant_id: tenantId,
+          status: partData.status || 'not_started',
+        })
+        .select()
+        .single();
+
+      if (partError) {
+        console.error('Failed to create part:', partError);
+        continue; // Skip this part but continue with others
+      }
+
+      // Create nested operations if provided
+      const createdOperations = [];
+      if (operations && Array.isArray(operations) && operations.length > 0) {
+        for (let i = 0; i < operations.length; i++) {
+          const operation = operations[i];
+
+          const { data: createdOp, error: opError } = await supabase
+            .from('operations')
+            .insert({
+              ...operation,
+              part_id: createdPart.id,
+              tenant_id: tenantId,
+              sequence: operation.sequence || (i + 1),
+              status: operation.status || 'not_started',
+            })
+            .select()
+            .single();
+
+          if (opError) {
+            console.error('Failed to create operation:', opError);
+            continue;
+          }
+
+          createdOperations.push(createdOp);
+        }
+      }
+
+      createdParts.push({
+        ...createdPart,
+        operations: createdOperations,
+      });
+    }
+  }
+
+  // Construct final response with nested data
+  const responseData = {
+    ...job,
+    parts: createdParts,
+  };
+
   // Maintain original response format for backward compatibility
-  return createSuccessResponse({ job: data }, 201);
+  return createSuccessResponse({ job: responseData }, 201);
 }
 
 // Configure CRUD handler for jobs with validation and sync
