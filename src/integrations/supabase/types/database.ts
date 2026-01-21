@@ -52,10 +52,6 @@ import type {
   MqttLogsTable,
 } from './tables/mqtt'
 import type {
-  ShipmentsTable,
-  ShipmentJobsTable,
-} from './tables/shipping'
-import type {
   ResourcesTable,
   OperationResourcesTable,
   OperatorsTable,
@@ -125,9 +121,6 @@ export type Database = {
       mqtt_logs: MqttLogsTable
 
       // Shipping domain
-      shipments: ShipmentsTable
-      shipment_jobs: ShipmentJobsTable
-
       // Resources domain
       resources: ResourcesTable
       operation_resources: OperationResourcesTable

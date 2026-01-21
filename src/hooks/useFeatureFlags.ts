@@ -22,7 +22,6 @@ export interface FeatureFlags {
   // Toggleable feature groups
   analytics: boolean;       // Analytics section: QRM, OEE, Quality, Reliability, Jobs Analytics
   monitoring: boolean;      // Monitoring section: Activity, Expectations, Exceptions
-  shipping: boolean;        // Shipping module
   operatorViews: boolean;   // Operator views: Cell Overview, Terminal, My Activity, My Issues
   integrations: boolean;    // Integrations: App Store, API Keys, Webhooks, MQTT, etc.
   issues: boolean;          // Issues tracking
@@ -40,7 +39,6 @@ export interface FeatureFlags {
 export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   analytics: true,
   monitoring: true,
-  shipping: true,
   operatorViews: true,
   integrations: true,
   issues: true,
@@ -75,13 +73,6 @@ export const FEATURE_FLAG_METADATA: FeatureFlagMeta[] = [
     descriptionKey: 'featureFlags.monitoring.description',
     icon: 'Activity',
     category: 'analytics',
-  },
-  {
-    key: 'shipping',
-    labelKey: 'featureFlags.shipping.label',
-    descriptionKey: 'featureFlags.shipping.description',
-    icon: 'Truck',
-    category: 'operations',
   },
   {
     key: 'operatorViews',
@@ -213,7 +204,6 @@ export function useFeatureFlags() {
     const allDisabled: FeatureFlags = {
       analytics: false,
       monitoring: false,
-      shipping: false,
       operatorViews: false,
       integrations: false,
       issues: false,

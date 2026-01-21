@@ -93,7 +93,8 @@
     "packageCount": "Package Count",
     "packages": "packages",
     "noDeliveryAddress": "No delivery address set",
-    "fromParts": "from parts"
+    "fromParts": "from parts",
+    "status": "Status"
   },
   "parts": {
     "title": "Parts Management",

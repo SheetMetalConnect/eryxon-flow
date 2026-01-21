@@ -435,10 +435,6 @@
       "label": "Monitoring",
       "description": "Activity tracking and Exceptions inbox"
     },
-    "shipping": {
-      "label": "Shipping",
-      "description": "Shipment tracking and delivery management"
-    },
     "operatorViews": {
       "label": "Operator Views",
       "description": "Cell Overview, Terminal View, My Activity, and My Issues"

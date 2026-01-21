@@ -15,7 +15,6 @@
  *   - integrations.ts: api_keys, webhooks, integrations, etc.
  *   - mcp.ts: MCP server tables
  *   - mqtt.ts: MQTT publisher tables
- *   - shipping.ts: shipments, shipment_jobs
  *   - resources.ts: resources, operators, materials
  *   - activity.ts: activity_log, notifications
  *   - calendar.ts: factory_calendar

@@ -24,7 +24,6 @@ export const ROUTES = {
     ACTIVITY: "/admin/activity",
     INTEGRATIONS: "/admin/integrations",
     DATA_EXPORT: "/admin/data-export",
-    SHIPPING: "/admin/shipping",
     SETTINGS: "/admin/settings",
 
     CONFIG: {
@@ -42,15 +41,6 @@ export const ROUTES = {
       MCP_SERVER: "/admin/config/mcp-server",
     },
 
-    ANALYTICS: {
-      ROOT: "/admin/analytics",
-      OEE: "/admin/analytics/oee",
-      RELIABILITY: "/admin/analytics/reliability",
-      QRM: "/admin/analytics/qrm",
-      QRM_DASHBOARD: "/admin/analytics/qrm-dashboard",
-      JOBS: "/admin/analytics/jobs",
-      QUALITY: "/admin/analytics/quality",
-    }
   },
 
   COMMON: {

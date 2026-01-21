@@ -42,26 +42,9 @@ export type DatabaseEnums = {
     | "failed"
     | "cancelled"
   payment_transaction_type: "charge" | "refund" | "chargeback" | "dispute"
-  shipment_status:
-    | "draft"
-    | "planned"
-    | "loading"
-    | "in_transit"
-    | "delivered"
-    | "cancelled"
   subscription_plan: "free" | "pro" | "premium" | "enterprise"
   subscription_status: "active" | "cancelled" | "suspended" | "trial"
   task_status: "not_started" | "in_progress" | "completed" | "on_hold"
-  vehicle_type:
-    | "truck"
-    | "van"
-    | "car"
-    | "bike"
-    | "freight"
-    | "air"
-    | "sea"
-    | "rail"
-    | "other"
   waitlist_status: "pending" | "approved" | "rejected" | "converted"
 }
 
@@ -111,27 +94,8 @@ export const EnumConstants = {
     "cancelled",
   ],
   payment_transaction_type: ["charge", "refund", "chargeback", "dispute"],
-  shipment_status: [
-    "draft",
-    "planned",
-    "loading",
-    "in_transit",
-    "delivered",
-    "cancelled",
-  ],
   subscription_plan: ["free", "pro", "premium", "enterprise"],
   subscription_status: ["active", "cancelled", "suspended", "trial"],
   task_status: ["not_started", "in_progress", "completed", "on_hold"],
-  vehicle_type: [
-    "truck",
-    "van",
-    "car",
-    "bike",
-    "freight",
-    "air",
-    "sea",
-    "rail",
-    "other",
-  ],
   waitlist_status: ["pending", "approved", "rejected", "converted"],
 } as const

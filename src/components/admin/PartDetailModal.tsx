@@ -613,9 +613,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               <TabsTrigger value="files" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 shrink-0">
                 {t("parts.files", "Files")} ({filesCount})
               </TabsTrigger>
-              <TabsTrigger value="shipping" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 shrink-0">
-                {t("parts.shippingInfo", "Shipping")}
-              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -711,627 +708,543 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               <IssuesSummarySection partId={partId} />
             </TabsContent>
 
-            {/* Shipping Tab */}
-            <TabsContent value="shipping" className="p-4 sm:p-6 space-y-4 m-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Weight */}
-              <div>
-                <Label htmlFor="weight-kg">{t("parts.weightKg")}</Label>
-                <Input
-                  id="weight-kg"
-                  type="number"
-                  step="0.001"
-                  min="0"
-                  value={weightKg}
-                  onChange={(e) => handleFieldChange(setWeightKg, e.target.value)}
-                  placeholder={t("parts.weightKgPlaceholder")}
-                  className="mt-1"
-                />
-              </div>
-
-              {/* Dimensions Header */}
-              <div className="sm:col-span-2 mt-2">
-                <Label className="text-sm flex items-center gap-2 text-muted-foreground">
-                  <Ruler className="h-4 w-4" />
-                  {t("parts.dimensions")} (mm)
-                </Label>
-              </div>
-
-              {/* Length */}
-              <div>
-                <Label htmlFor="length-mm">{t("parts.lengthMm")}</Label>
-                <Input
-                  id="length-mm"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={lengthMm}
-                  onChange={(e) => handleFieldChange(setLengthMm, e.target.value)}
-                  placeholder={t("parts.lengthPlaceholder")}
-                  className="mt-1"
-                />
-              </div>
-
-              {/* Width */}
-              <div>
-                <Label htmlFor="width-mm">{t("parts.widthMm")}</Label>
-                <Input
-                  id="width-mm"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={widthMm}
-                  onChange={(e) => handleFieldChange(setWidthMm, e.target.value)}
-                  placeholder={t("parts.widthPlaceholder")}
-                  className="mt-1"
-                />
-              </div>
-
-              {/* Height */}
-              <div>
-                <Label htmlFor="height-mm">{t("parts.heightMm")}</Label>
-                <Input
-                  id="height-mm"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={heightMm}
-                  onChange={(e) => handleFieldChange(setHeightMm, e.target.value)}
-                  placeholder={t("parts.heightPlaceholder")}
-                  className="mt-1"
-                />
-              </div>
-
-              {/* Volume calculation display */}
-              {lengthMm && widthMm && heightMm && (
-                <div className="sm:col-span-2 p-3 border rounded-md bg-card">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                    <span className="text-sm text-muted-foreground">{t("parts.calculatedVolume")}</span>
-                    <span className="font-mono font-medium text-sm sm:text-base">
-                      {((parseFloat(lengthMm) * parseFloat(widthMm) * parseFloat(heightMm)) / 1000000000).toFixed(6)} m³
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-            </TabsContent>
 
             {/* Operations Tab */}
             <TabsContent value="operations" className="p-4 sm:p-6 space-y-5 m-0">
               {/* Routing Visualization */}
-          <div>
-            <Label className="text-lg">{t("qrm.routing")}</Label>
-            <div className="mt-3 border rounded-lg p-4 bg-muted">
-              <RoutingVisualization routing={routing} loading={routingLoading} compact />
-            </div>
-          </div>
-
-          {/* Notes */}
-          {part?.notes && (
-            <div>
-              <Label>{t("parts.notes")}</Label>
-              <p className="mt-1 text-sm text-muted-foreground">{part.notes}</p>
-            </div>
-          )}
-
-          {/* Metadata */}
-          {part?.metadata && Object.keys(part.metadata).length > 0 && (
-            <div>
-              <Label>{t("parts.customMetadata")}</Label>
-              <div className="mt-2 border rounded-md p-3">
-                <table className="w-full text-sm">
-                  <tbody>
-                    {Object.entries(part.metadata).map(([key, value]) => (
-                      <tr key={key}>
-                        <td className="font-medium py-1 pr-4">{key}:</td>
-                        <td className="py-1">{String(value)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div>
+                <Label className="text-lg">{t("qrm.routing")}</Label>
+                <div className="mt-3 border rounded-lg p-4 bg-muted">
+                  <RoutingVisualization routing={routing} loading={routingLoading} compact />
+                </div>
               </div>
-            </div>
-          )}
 
-          {/* Assembly Tracking Section */}
-          {(parentPart || (childParts && childParts.length > 0)) && (
-            <div className="border-t pt-6">
-              <Label className="text-lg flex items-center gap-2 mb-4">
-                <Package className="h-5 w-5" />
-                {t("parts.assemblyRelationships")}
-              </Label>
+              {/* Notes */}
+              {part?.notes && (
+                <div>
+                  <Label>{t("parts.notes")}</Label>
+                  <p className="mt-1 text-sm text-muted-foreground">{part.notes}</p>
+                </div>
+              )}
 
-              {/* Parent Part */}
-              {parentPart && (
-                <div className="mb-4">
-                  <Label className="text-sm text-muted-foreground">{t("parts.parentAssembly")}</Label>
-                  <div className="mt-2 border rounded-lg p-3 bg-alert-info-bg border-alert-info-border">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <ChevronRight className="h-4 w-4 text-muted-foreground rotate-180" />
-                        <div>
-                          <p className="font-medium">{parentPart.part_number}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {parentPart.material} | {t("jobs.job")}: {parentPart.job?.job_number}
-                          </p>
-                        </div>
-                      </div>
-                      <Badge variant="outline">{parentPart.status?.replace("_", " ")}</Badge>
-                    </div>
+              {/* Metadata */}
+              {part?.metadata && Object.keys(part.metadata).length > 0 && (
+                <div>
+                  <Label>{t("parts.customMetadata")}</Label>
+                  <div className="mt-2 border rounded-md p-3">
+                    <table className="w-full text-sm">
+                      <tbody>
+                        {Object.entries(part.metadata).map(([key, value]) => (
+                          <tr key={key}>
+                            <td className="font-medium py-1 pr-4">{key}:</td>
+                            <td className="py-1">{String(value)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
 
-              {/* Child Parts */}
-              {childParts && childParts.length > 0 && (
-                <div>
-                  <Label className="text-sm text-muted-foreground">
-                    {t("parts.childComponents")} ({childParts.length})
+              {/* Assembly Tracking Section */}
+              {(parentPart || (childParts && childParts.length > 0)) && (
+                <div className="border-t pt-6">
+                  <Label className="text-lg flex items-center gap-2 mb-4">
+                    <Package className="h-5 w-5" />
+                    {t("parts.assemblyRelationships")}
                   </Label>
 
-                  {/* Dependency Warning */}
-                  {dependencies && !dependencies.dependenciesMet && (
-                    <Alert variant="destructive" className="my-3">
-                      <AlertTriangle className="h-4 w-4" />
-                      <AlertTitle>{t("parts.dependencyWarning")}</AlertTitle>
-                      <AlertDescription>
-                        {t("parts.dependencyWarningDesc", { count: dependencies.warnings.length })}
-                      </AlertDescription>
-                    </Alert>
-                  )}
-
-                  <div className="mt-2 space-y-2">
-                    {childParts.map((child: any) => {
-                      const completedOps = child.operations?.filter((op: any) => op.status === "completed").length || 0;
-                      const totalOps = child.operations?.length || 0;
-                      const isComplete = child.status === "completed";
-
-                      return (
-                        <div
-                          key={child.id}
-                          className={`border rounded-lg p-3 ${isComplete ? "bg-alert-success-bg" : "bg-card"
-                            }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                              <div>
-                                <p className="font-medium">{child.part_number}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {child.material} | {totalOps} {t("operations.operation", { count: totalOps })}
-                                  {totalOps > 0 && ` (${completedOps}/${totalOps} ${t("parts.done")})`}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Badge
-                                variant={isComplete ? "default" : "secondary"}
-                                className={isComplete ? "bg-success text-success-foreground" : ""}
-                              >
-                                {child.status?.replace("_", " ")}
-                              </Badge>
+                  {/* Parent Part */}
+                  {parentPart && (
+                    <div className="mb-4">
+                      <Label className="text-sm text-muted-foreground">{t("parts.parentAssembly")}</Label>
+                      <div className="mt-2 border rounded-lg p-3 bg-alert-info-bg border-alert-info-border">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <ChevronRight className="h-4 w-4 text-muted-foreground rotate-180" />
+                            <div>
+                              <p className="font-medium">{parentPart.part_number}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {parentPart.material} | {t("jobs.job")}: {parentPart.job?.job_number}
+                              </p>
                             </div>
                           </div>
+                          <Badge variant="outline">{parentPart.status?.replace("_", " ")}</Badge>
                         </div>
-                      );
-                    })}
-                  </div>
-
-                  {dependencies && dependencies.dependenciesMet && (
-                    <div className="mt-3 p-3 bg-alert-success-bg border border-alert-success-border rounded-lg">
-                      <p className="text-sm text-success flex items-center gap-2">
-                        <Package className="h-4 w-4" />
-                        {t("parts.readyForAssembly")}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-            </TabsContent>
-
-            {/* Files Tab */}
-            <TabsContent value="files" className="p-4 sm:p-6 space-y-5 m-0">
-          {/* Files Section */}
-          <div>
-            <div className="flex justify-between items-center mb-3">
-              <Label className="text-lg flex items-center gap-2">
-                <Box className="h-5 w-5" />
-                {t("parts.files")} ({part?.file_paths?.length || 0})
-              </Label>
-            </div>
-
-            {/* File Upload */}
-            <div className="border rounded-lg p-4 mb-3 bg-muted">
-              <div className="flex items-center gap-3">
-                <label
-                  htmlFor="cad-upload"
-                  className="flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed rounded-lg cursor-pointer hover:bg-card transition flex-1"
-                >
-                  <Upload className="h-4 w-4" />
-                  <span className="text-sm">
-                    {cadFiles && cadFiles.length > 0
-                      ? t("parts.filesSelected", { count: cadFiles.length })
-                      : t("parts.chooseStepOrPdf")}
-                  </span>
-                </label>
-                <input
-                  id="cad-upload"
-                  type="file"
-                  accept=".step,.stp,.pdf"
-                  multiple
-                  onChange={(e) => setCadFiles(e.target.files)}
-                  className="hidden"
-                />
-                <Button
-                  onClick={handleCADUpload}
-                  disabled={!cadFiles || cadFiles.length === 0 || isUploading}
-                  size="sm"
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  {isUploading ? t("parts.uploading") : t("parts.upload")}
-                </Button>
-              </div>
-            </div>
-
-            {/* Upload Progress */}
-            {uploadProgress.length > 0 && (
-              <UploadProgress progress={uploadProgress} className="mb-4" />
-            )}
-
-            {/* Existing Files List */}
-            <div className="space-y-2">
-              {part?.file_paths?.map((filePath: string, index: number) => {
-                const fileName = filePath.split("/").pop() || "Unknown";
-                const fileExt = filePath.split(".").pop()?.toLowerCase();
-                const isSTEP = fileExt === "step" || fileExt === "stp";
-                const isPDF = fileExt === "pdf";
-
-                if (!isSTEP && !isPDF) return null;
-
-                return (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between border rounded-md p-3 bg-card"
-                  >
-                    <div className="flex items-center gap-3">
-                      {isSTEP ? (
-                        <Box className="h-5 w-5 text-brand-primary" />
-                      ) : (
-                        <FileText className="h-5 w-5 text-destructive" />
-                      )}
-                      <div>
-                        <p className="font-medium text-sm">{fileName}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {isSTEP ? t("parts.3dModel") : t("parts.drawing")}
-                        </p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleViewCADFile(filePath)}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        {t("parts.view")}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDeleteCADFile(filePath)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-              {(!part?.file_paths || part.file_paths.length === 0) && (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  {t("parts.noFilesYet")}
-                </p>
-              )}
-            </div>
-          </div>
+                  )}
 
-          {/* Images Section */}
-          <div>
-            <div className="flex justify-between items-center mb-3">
-              <Label className="text-lg flex items-center gap-2">
-                <ImageIcon className="h-5 w-5" />
-                {t("parts.images.title")} ({part?.image_paths?.length || 0})
-              </Label>
-            </div>
+                  {/* Child Parts */}
+                  {childParts && childParts.length > 0 && (
+                    <div>
+                      <Label className="text-sm text-muted-foreground">
+                        {t("parts.childComponents")} ({childParts.length})
+                      </Label>
 
-            {/* Image Gallery */}
-            {part?.image_paths && part.image_paths.length > 0 && (
-              <div className="mb-4">
-                <ImageGallery
-                  partId={partId}
-                  imagePaths={part.image_paths}
-                  onImageDeleted={async () => {
-                    // Refresh modal data and parent list
-                    await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
-                    onUpdate();
-                  }}
-                  editable={true}
-                />
-              </div>
-            )}
+                      {/* Dependency Warning */}
+                      {dependencies && !dependencies.dependenciesMet && (
+                        <Alert variant="destructive" className="my-3">
+                          <AlertTriangle className="h-4 w-4" />
+                          <AlertTitle>{t("parts.dependencyWarning")}</AlertTitle>
+                          <AlertDescription>
+                            {t("parts.dependencyWarningDesc", { count: dependencies.warnings.length })}
+                          </AlertDescription>
+                        </Alert>
+                      )}
 
-            {/* Image Upload */}
-            <ImageUpload
-              partId={partId}
-              onUploadComplete={async () => {
-                // Refresh modal data and parent list
-                await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
-                onUpdate();
-              }}
-            />
-          </div>
-            </TabsContent>
+                      <div className="mt-2 space-y-2">
+                        {childParts.map((child: any) => {
+                          const completedOps = child.operations?.filter((op: any) => op.status === "completed").length || 0;
+                          const totalOps = child.operations?.length || 0;
+                          const isComplete = child.status === "completed";
 
-            {/* Operations Tab - Second Section (NCRs and Operations List) */}
-            <TabsContent value="operations" className="p-4 sm:p-6 space-y-5 m-0">
-          {/* NCRs / Issues Summary */}
-          <IssuesSummarySection partId={partId} />
-
-          {/* Operations */}
-          <div>
-            <div className="flex justify-between items-center mb-3">
-              <Label className="text-lg">{t("operations.title")} ({operations?.length || 0})</Label>
-              <Button size="sm" onClick={() => setAddingOperation(true)}>
-                <Plus className="h-4 w-4 mr-2" /> {t("operations.addOperation")}
-              </Button>
-            </div>
-
-            {/* Add Operation Form */}
-            {addingOperation && (
-              <div className="border rounded-lg p-3 sm:p-4 mb-4 bg-alert-info-bg border-alert-info-border">
-                <h4 className="font-semibold mb-3 text-sm sm:text-base">{t("operations.newOperation")}</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <Label>{t("operations.operationName")} *</Label>
-                    <Input
-                      value={newOperation.operation_name}
-                      onChange={(e) =>
-                        setNewOperation({ ...newOperation, operation_name: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <Label>{t("operations.cell")} *</Label>
-                    <Select
-                      value={newOperation.cell_id}
-                      onValueChange={(value) =>
-                        setNewOperation({ ...newOperation, cell_id: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("operations.selectCell")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {cells?.map((cell: any) => (
-                          <SelectItem key={cell.id} value={cell.id}>
-                            {cell.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>{t("operations.estimatedTimeMinutes")}</Label>
-                    <Input
-                      type="number"
-                      value={newOperation.estimated_time || ""}
-                      onChange={(e) =>
-                        setNewOperation({
-                          ...newOperation,
-                          estimated_time: parseInt(e.target.value) || 0,
-                        })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <Label>{t("operations.sequence")}</Label>
-                    <Input
-                      type="number"
-                      value={newOperation.sequence}
-                      onChange={(e) =>
-                        setNewOperation({
-                          ...newOperation,
-                          sequence: parseInt(e.target.value) || 1,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <Label>{t("operations.notes")}</Label>
-                    <Textarea
-                      value={newOperation.notes}
-                      onChange={(e) =>
-                        setNewOperation({ ...newOperation, notes: e.target.value })
-                      }
-                      rows={2}
-                    />
-                  </div>
-
-                  {/* Resource Linking Section */}
-                  <div className="sm:col-span-2">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Wrench className="h-4 w-4 text-orange-600" />
-                      <Label>{t("operations.requiredResourcesOptional")}</Label>
-                    </div>
-
-                    {/* Resource Selection Dropdown */}
-                    <Select
-                      onValueChange={(resourceId) => {
-                        // Add resource to selected list if not already added
-                        if (!newOperation.selected_resources.find(r => r.resource_id === resourceId)) {
-                          setNewOperation({
-                            ...newOperation,
-                            selected_resources: [
-                              ...newOperation.selected_resources,
-                              { resource_id: resourceId, quantity: 1, notes: "" }
-                            ]
-                          });
-                        }
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("operations.addResource")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableResources
-                          ?.filter(res => !newOperation.selected_resources.find(sr => sr.resource_id === res.id))
-                          .map((resource: any) => (
-                            <SelectItem key={resource.id} value={resource.id}>
-                              <div className="flex items-center gap-2">
-                                <span>{resource.name}</span>
-                                <Badge variant="outline" className="text-xs">
-                                  {resource.type}
-                                </Badge>
-                              </div>
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-
-                    {/* Selected Resources List */}
-                    {newOperation.selected_resources.length > 0 && (
-                      <div className="mt-3 space-y-2">
-                        {newOperation.selected_resources.map((selectedRes, idx) => {
-                          const resource = availableResources?.find(r => r.id === selectedRes.resource_id);
                           return (
-                            <div key={idx} className="border rounded-md p-3 bg-white">
-                              <div className="flex items-start justify-between mb-2">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <Wrench className="h-3 w-3 text-orange-600" />
-                                    <span className="font-medium text-sm">{resource?.name}</span>
-                                    <Badge variant="outline" className="text-xs">
-                                      {resource?.type}
-                                    </Badge>
+                            <div
+                              key={child.id}
+                              className={`border rounded-lg p-3 ${isComplete ? "bg-alert-success-bg" : "bg-card"
+                                }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                                  <div>
+                                    <p className="font-medium">{child.part_number}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {child.material} | {totalOps} {t("operations.operation", { count: totalOps })}
+                                      {totalOps > 0 && ` (${completedOps}/${totalOps} ${t("parts.done")})`}
+                                    </p>
                                   </div>
-                                  {resource?.description && (
-                                    <p className="text-xs text-muted-foreground">{resource.description}</p>
-                                  )}
                                 </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-6 p-0"
-                                  onClick={() => {
-                                    setNewOperation({
-                                      ...newOperation,
-                                      selected_resources: newOperation.selected_resources.filter((_, i) => i !== idx)
-                                    });
-                                  }}
-                                >
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              </div>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <div>
-                                  <Label className="text-xs">{t("operations.quantity")}</Label>
-                                  <Input
-                                    type="number"
-                                    min="0.1"
-                                    step="0.1"
-                                    value={selectedRes.quantity}
-                                    onChange={(e) => {
-                                      const updated = [...newOperation.selected_resources];
-                                      updated[idx].quantity = parseFloat(e.target.value) || 1;
-                                      setNewOperation({ ...newOperation, selected_resources: updated });
-                                    }}
-                                    className="h-8 text-xs"
-                                  />
-                                </div>
-                                <div>
-                                  <Label className="text-xs">{t("operations.instructionsOptional")}</Label>
-                                  <Input
-                                    value={selectedRes.notes}
-                                    onChange={(e) => {
-                                      const updated = [...newOperation.selected_resources];
-                                      updated[idx].notes = e.target.value;
-                                      setNewOperation({ ...newOperation, selected_resources: updated });
-                                    }}
-                                    placeholder={t("operations.specialInstructions")}
-                                    className="h-8 text-xs"
-                                  />
+                                <div className="flex items-center gap-2">
+                                  <Badge
+                                    variant={isComplete ? "default" : "secondary"}
+                                    className={isComplete ? "bg-success text-success-foreground" : ""}
+                                  >
+                                    {child.status?.replace("_", " ")}
+                                  </Badge>
                                 </div>
                               </div>
                             </div>
                           );
                         })}
                       </div>
-                    )}
+
+                      {dependencies && dependencies.dependenciesMet && (
+                        <div className="mt-3 p-3 bg-alert-success-bg border border-alert-success-border rounded-lg">
+                          <p className="text-sm text-success flex items-center gap-2">
+                            <Package className="h-4 w-4" />
+                            {t("parts.readyForAssembly")}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Files Tab */}
+            <TabsContent value="files" className="p-4 sm:p-6 space-y-5 m-0">
+              {/* Files Section */}
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <Label className="text-lg flex items-center gap-2">
+                    <Box className="h-5 w-5" />
+                    {t("parts.files")} ({part?.file_paths?.length || 0})
+                  </Label>
+                </div>
+
+                {/* File Upload */}
+                <div className="border rounded-lg p-4 mb-3 bg-muted">
+                  <div className="flex items-center gap-3">
+                    <label
+                      htmlFor="cad-upload"
+                      className="flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed rounded-lg cursor-pointer hover:bg-card transition flex-1"
+                    >
+                      <Upload className="h-4 w-4" />
+                      <span className="text-sm">
+                        {cadFiles && cadFiles.length > 0
+                          ? t("parts.filesSelected", { count: cadFiles.length })
+                          : t("parts.chooseStepOrPdf")}
+                      </span>
+                    </label>
+                    <input
+                      id="cad-upload"
+                      type="file"
+                      accept=".step,.stp,.pdf"
+                      multiple
+                      onChange={(e) => setCadFiles(e.target.files)}
+                      className="hidden"
+                    />
+                    <Button
+                      onClick={handleCADUpload}
+                      disabled={!cadFiles || cadFiles.length === 0 || isUploading}
+                      size="sm"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {isUploading ? t("parts.uploading") : t("parts.upload")}
+                    </Button>
                   </div>
                 </div>
-                <div className="flex gap-2 mt-3">
-                  <Button onClick={handleAddOperation} disabled={addOperationMutation.isPending}>
-                    <Save className="h-4 w-4 mr-2" />
-                    {addOperationMutation.isPending ? t("operations.saving") : t("operations.saveOperation")}
-                  </Button>
-                  <Button variant="outline" onClick={() => setAddingOperation(false)}>
-                    <X className="h-4 w-4 mr-2" /> {t("common.cancel")}
-                  </Button>
+
+                {/* Upload Progress */}
+                {uploadProgress.length > 0 && (
+                  <UploadProgress progress={uploadProgress} className="mb-4" />
+                )}
+
+                {/* Existing Files List */}
+                <div className="space-y-2">
+                  {part?.file_paths?.map((filePath: string, index: number) => {
+                    const fileName = filePath.split("/").pop() || "Unknown";
+                    const fileExt = filePath.split(".").pop()?.toLowerCase();
+                    const isSTEP = fileExt === "step" || fileExt === "stp";
+                    const isPDF = fileExt === "pdf";
+
+                    if (!isSTEP && !isPDF) return null;
+
+                    return (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between border rounded-md p-3 bg-card"
+                      >
+                        <div className="flex items-center gap-3">
+                          {isSTEP ? (
+                            <Box className="h-5 w-5 text-brand-primary" />
+                          ) : (
+                            <FileText className="h-5 w-5 text-destructive" />
+                          )}
+                          <div>
+                            <p className="font-medium text-sm">{fileName}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {isSTEP ? t("parts.3dModel") : t("parts.drawing")}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleViewCADFile(filePath)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            {t("parts.view")}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteCADFile(filePath)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {(!part?.file_paths || part.file_paths.length === 0) && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      {t("parts.noFilesYet")}
+                    </p>
+                  )}
                 </div>
               </div>
-            )}
 
-            {/* Operations List */}
-            <div className="space-y-2">
-              {operations?.map((op: any) => (
-                <div
-                  key={op.id}
-                  className="flex items-center justify-between border rounded-md p-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <Badge
-                      variant="outline"
-                      style={{
-                        borderColor: op.cell?.color,
-                        backgroundColor: `${op.cell?.color || "#999"}20`,
+              {/* Images Section */}
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <Label className="text-lg flex items-center gap-2">
+                    <ImageIcon className="h-5 w-5" />
+                    {t("parts.images.title")} ({part?.image_paths?.length || 0})
+                  </Label>
+                </div>
+
+                {/* Image Gallery */}
+                {part?.image_paths && part.image_paths.length > 0 && (
+                  <div className="mb-4">
+                    <ImageGallery
+                      partId={partId}
+                      imagePaths={part.image_paths}
+                      onImageDeleted={async () => {
+                        // Refresh modal data and parent list
+                        await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
+                        onUpdate();
                       }}
-                    >
-                      {op.cell?.name}
-                    </Badge>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{op.operation_name}</p>
-                        {op.resources_count > 0 && (
-                          <Badge variant="outline" className="gap-1 text-xs px-1.5 py-0">
-                            <Wrench className="h-3 w-3 text-orange-600" />
-                            {op.resources_count}
-                          </Badge>
+                      editable={true}
+                    />
+                  </div>
+                )}
+
+                {/* Image Upload */}
+                <ImageUpload
+                  partId={partId}
+                  onUploadComplete={async () => {
+                    // Refresh modal data and parent list
+                    await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
+                    onUpdate();
+                  }}
+                />
+              </div>
+            </TabsContent>
+
+            {/* Operations Tab - Second Section (NCRs and Operations List) */}
+            <TabsContent value="operations" className="p-4 sm:p-6 space-y-5 m-0">
+              {/* NCRs / Issues Summary */}
+              <IssuesSummarySection partId={partId} />
+
+              {/* Operations */}
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <Label className="text-lg">{t("operations.title")} ({operations?.length || 0})</Label>
+                  <Button size="sm" onClick={() => setAddingOperation(true)}>
+                    <Plus className="h-4 w-4 mr-2" /> {t("operations.addOperation")}
+                  </Button>
+                </div>
+
+                {/* Add Operation Form */}
+                {addingOperation && (
+                  <div className="border rounded-lg p-3 sm:p-4 mb-4 bg-alert-info-bg border-alert-info-border">
+                    <h4 className="font-semibold mb-3 text-sm sm:text-base">{t("operations.newOperation")}</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <Label>{t("operations.operationName")} *</Label>
+                        <Input
+                          value={newOperation.operation_name}
+                          onChange={(e) =>
+                            setNewOperation({ ...newOperation, operation_name: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <Label>{t("operations.cell")} *</Label>
+                        <Select
+                          value={newOperation.cell_id}
+                          onValueChange={(value) =>
+                            setNewOperation({ ...newOperation, cell_id: value })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={t("operations.selectCell")} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {cells?.map((cell: any) => (
+                              <SelectItem key={cell.id} value={cell.id}>
+                                {cell.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>{t("operations.estimatedTimeMinutes")}</Label>
+                        <Input
+                          type="number"
+                          value={newOperation.estimated_time || ""}
+                          onChange={(e) =>
+                            setNewOperation({
+                              ...newOperation,
+                              estimated_time: parseInt(e.target.value) || 0,
+                            })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <Label>{t("operations.sequence")}</Label>
+                        <Input
+                          type="number"
+                          value={newOperation.sequence}
+                          onChange={(e) =>
+                            setNewOperation({
+                              ...newOperation,
+                              sequence: parseInt(e.target.value) || 1,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <Label>{t("operations.notes")}</Label>
+                        <Textarea
+                          value={newOperation.notes}
+                          onChange={(e) =>
+                            setNewOperation({ ...newOperation, notes: e.target.value })
+                          }
+                          rows={2}
+                        />
+                      </div>
+
+                      {/* Resource Linking Section */}
+                      <div className="sm:col-span-2">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Wrench className="h-4 w-4 text-orange-600" />
+                          <Label>{t("operations.requiredResourcesOptional")}</Label>
+                        </div>
+
+                        {/* Resource Selection Dropdown */}
+                        <Select
+                          onValueChange={(resourceId) => {
+                            // Add resource to selected list if not already added
+                            if (!newOperation.selected_resources.find(r => r.resource_id === resourceId)) {
+                              setNewOperation({
+                                ...newOperation,
+                                selected_resources: [
+                                  ...newOperation.selected_resources,
+                                  { resource_id: resourceId, quantity: 1, notes: "" }
+                                ]
+                              });
+                            }
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={t("operations.addResource")} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableResources
+                              ?.filter(res => !newOperation.selected_resources.find(sr => sr.resource_id === res.id))
+                              .map((resource: any) => (
+                                <SelectItem key={resource.id} value={resource.id}>
+                                  <div className="flex items-center gap-2">
+                                    <span>{resource.name}</span>
+                                    <Badge variant="outline" className="text-xs">
+                                      {resource.type}
+                                    </Badge>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+
+                        {/* Selected Resources List */}
+                        {newOperation.selected_resources.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            {newOperation.selected_resources.map((selectedRes, idx) => {
+                              const resource = availableResources?.find(r => r.id === selectedRes.resource_id);
+                              return (
+                                <div key={idx} className="border rounded-md p-3 bg-white">
+                                  <div className="flex items-start justify-between mb-2">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <Wrench className="h-3 w-3 text-orange-600" />
+                                        <span className="font-medium text-sm">{resource?.name}</span>
+                                        <Badge variant="outline" className="text-xs">
+                                          {resource?.type}
+                                        </Badge>
+                                      </div>
+                                      {resource?.description && (
+                                        <p className="text-xs text-muted-foreground">{resource.description}</p>
+                                      )}
+                                    </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 w-6 p-0"
+                                      onClick={() => {
+                                        setNewOperation({
+                                          ...newOperation,
+                                          selected_resources: newOperation.selected_resources.filter((_, i) => i !== idx)
+                                        });
+                                      }}
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <div>
+                                      <Label className="text-xs">{t("operations.quantity")}</Label>
+                                      <Input
+                                        type="number"
+                                        min="0.1"
+                                        step="0.1"
+                                        value={selectedRes.quantity}
+                                        onChange={(e) => {
+                                          const updated = [...newOperation.selected_resources];
+                                          updated[idx].quantity = parseFloat(e.target.value) || 1;
+                                          setNewOperation({ ...newOperation, selected_resources: updated });
+                                        }}
+                                        className="h-8 text-xs"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs">{t("operations.instructionsOptional")}</Label>
+                                      <Input
+                                        value={selectedRes.notes}
+                                        onChange={(e) => {
+                                          const updated = [...newOperation.selected_resources];
+                                          updated[idx].notes = e.target.value;
+                                          setNewOperation({ ...newOperation, selected_resources: updated });
+                                        }}
+                                        placeholder={t("operations.specialInstructions")}
+                                        className="h-8 text-xs"
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {t("operations.seq")}: {op.sequence}
-                        {op.estimated_time && ` | ${t("operations.est")}: ${op.estimated_time}${t("operations.min")}`}
-                        {op.assigned_operator && (
-                          <span className="ml-2">
-                            | {t("operations.assigned")}: {op.assigned_operator.full_name}
-                          </span>
-                        )}
-                      </p>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <Button onClick={handleAddOperation} disabled={addOperationMutation.isPending}>
+                        <Save className="h-4 w-4 mr-2" />
+                        {addOperationMutation.isPending ? t("operations.saving") : t("operations.saveOperation")}
+                      </Button>
+                      <Button variant="outline" onClick={() => setAddingOperation(false)}>
+                        <X className="h-4 w-4 mr-2" /> {t("common.cancel")}
+                      </Button>
                     </div>
                   </div>
-                  <Badge variant={op.status === "completed" ? "default" : "secondary"}>
-                    {op.status?.replace("_", " ")}
-                  </Badge>
+                )}
+
+                {/* Operations List */}
+                <div className="space-y-2">
+                  {operations?.map((op: any) => (
+                    <div
+                      key={op.id}
+                      className="flex items-center justify-between border rounded-md p-3"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Badge
+                          variant="outline"
+                          style={{
+                            borderColor: op.cell?.color,
+                            backgroundColor: `${op.cell?.color || "#999"}20`,
+                          }}
+                        >
+                          {op.cell?.name}
+                        </Badge>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium">{op.operation_name}</p>
+                            {op.resources_count > 0 && (
+                              <Badge variant="outline" className="gap-1 text-xs px-1.5 py-0">
+                                <Wrench className="h-3 w-3 text-orange-600" />
+                                {op.resources_count}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {t("operations.seq")}: {op.sequence}
+                            {op.estimated_time && ` | ${t("operations.est")}: ${op.estimated_time}${t("operations.min")}`}
+                            {op.assigned_operator && (
+                              <span className="ml-2">
+                                | {t("operations.assigned")}: {op.assigned_operator.full_name}
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant={op.status === "completed" ? "default" : "secondary"}>
+                        {op.status?.replace("_", " ")}
+                      </Badge>
+                    </div>
+                  ))}
+                  {(operations?.length || 0) === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      {t("operations.noOperationsYet")}
+                    </p>
+                  )}
                 </div>
-              ))}
-              {(operations?.length || 0) === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  {t("operations.noOperationsYet")}
-                </p>
-              )}
-            </div>
-          </div>
+              </div>
             </TabsContent>
           </div>
         </Tabs>

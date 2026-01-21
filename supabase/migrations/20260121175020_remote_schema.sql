@@ -281,17 +281,8 @@ CREATE TYPE "public"."payment_transaction_type" AS ENUM (
 ALTER TYPE "public"."payment_transaction_type" OWNER TO "postgres";
 
 
-CREATE TYPE "public"."shipment_status" AS ENUM (
-    'draft',
-    'planned',
-    'loading',
-    'in_transit',
-    'delivered',
-    'cancelled'
-);
 
 
-ALTER TYPE "public"."shipment_status" OWNER TO "postgres";
 
 
 CREATE TYPE "public"."subscription_plan" AS ENUM (
@@ -327,20 +318,8 @@ CREATE TYPE "public"."task_status" AS ENUM (
 ALTER TYPE "public"."task_status" OWNER TO "postgres";
 
 
-CREATE TYPE "public"."vehicle_type" AS ENUM (
-    'truck',
-    'van',
-    'car',
-    'bike',
-    'freight',
-    'air',
-    'sea',
-    'rail',
-    'other'
-);
 
 
-ALTER TYPE "public"."vehicle_type" OWNER TO "postgres";
 
 
 CREATE TYPE "public"."waitlist_status" AS ENUM (
@@ -354,51 +333,6 @@ CREATE TYPE "public"."waitlist_status" AS ENUM (
 ALTER TYPE "public"."waitlist_status" OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."accept_invitation"("p_token" "text", "p_user_id" "uuid") RETURNS boolean
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO 'public'
-    AS $$
-DECLARE
-  v_invitation RECORD;
-  v_existing_profile_id UUID;
-BEGIN
-  SELECT id, tenant_id, email, role
-  INTO v_invitation
-  FROM invitations
-  WHERE token = p_token
-    AND status = 'pending'
-    AND expires_at > NOW();
-
-  IF v_invitation.id IS NULL THEN
-    RAISE EXCEPTION 'Invalid or expired invitation';
-  END IF;
-
-  SELECT id INTO v_existing_profile_id 
-  FROM profiles 
-  WHERE id = p_user_id AND tenant_id = v_invitation.tenant_id;
-
-  IF v_existing_profile_id IS NOT NULL THEN
-    UPDATE invitations
-    SET status = 'accepted',
-        accepted_at = NOW(),
-        accepted_by = p_user_id
-    WHERE id = v_invitation.id;
-    
-    RETURN TRUE;
-  END IF;
-
-  UPDATE invitations
-  SET status = 'accepted',
-      accepted_at = NOW(),
-      accepted_by = p_user_id
-  WHERE id = v_invitation.id;
-
-  RETURN TRUE;
-END;
-$$;
-
-
-ALTER FUNCTION "public"."accept_invitation"("p_token" "text", "p_user_id" "uuid") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."acknowledge_demo_mode"("p_tenant_id" "uuid") RETURNS "void"
@@ -464,36 +398,6 @@ $$;
 ALTER FUNCTION "public"."auto_close_stale_attendance"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."auto_create_operation_expectation"() RETURNS "trigger"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO 'public'
-    AS $$
-DECLARE
-  v_existing_id uuid;
-BEGIN
-  IF NEW.planned_end IS NOT NULL AND NEW.status NOT IN ('completed') THEN
-    SELECT id INTO v_existing_id
-    FROM expectations
-    WHERE entity_type = 'operation' AND entity_id = NEW.id 
-      AND expectation_type = 'completion_time' AND superseded_by IS NULL;
-    
-    IF v_existing_id IS NULL THEN
-      INSERT INTO expectations (tenant_id, entity_type, entity_id, expectation_type,
-        belief_statement, expected_value, expected_at, source, context)
-      VALUES (NEW.tenant_id, 'operation', NEW.id, 'completion_time',
-        format('Operation %s should complete by %s', NEW.operation_name, to_char(NEW.planned_end, 'YYYY-MM-DD HH24:MI')),
-        jsonb_build_object('status', 'completed', 'operation_name', NEW.operation_name),
-        NEW.planned_end,
-        CASE WHEN TG_OP = 'INSERT' THEN 'operation_creation' ELSE 'operation_update' END,
-        jsonb_build_object('operation_id', NEW.id, 'operation_name', NEW.operation_name));
-    END IF;
-  END IF;
-  RETURN NEW;
-END;
-$$;
-
-
-ALTER FUNCTION "public"."auto_create_operation_expectation"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."can_create_job"("p_tenant_id" "uuid") RETURNS boolean
@@ -1607,29 +1511,6 @@ $$;
 ALTER FUNCTION "public"."generate_mcp_key"("p_tenant_id" "uuid", "p_name" "text", "p_description" "text", "p_environment" "text", "p_allowed_tools" "jsonb", "p_created_by" "uuid") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."generate_shipment_number"("p_tenant_id" "uuid") RETURNS "text"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO 'public'
-    AS $$
-DECLARE
-  v_count INTEGER;
-  v_number TEXT;
-BEGIN
-  -- Count existing shipments for this tenant this year
-  SELECT COUNT(*) + 1 INTO v_count
-  FROM shipments
-  WHERE tenant_id = p_tenant_id
-    AND EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM NOW());
-
-  -- Generate number format: SHP-YYYY-XXXXX
-  v_number := 'SHP-' || TO_CHAR(NOW(), 'YYYY') || '-' || LPAD(v_count::TEXT, 5, '0');
-
-  RETURN v_number;
-END;
-$$;
-
-
-ALTER FUNCTION "public"."generate_shipment_number"("p_tenant_id" "uuid") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."generate_sync_hash"("payload" "jsonb") RETURNS "text"
@@ -4486,28 +4367,7 @@ BEGIN
   SET
     current_weight_kg = COALESCE((
       SELECT SUM(weight_kg)
-      FROM shipment_jobs
-      WHERE shipment_id = v_shipment_id
-    ), 0),
-    current_volume_m3 = COALESCE((
-      SELECT SUM(volume_m3)
-      FROM shipment_jobs
-      WHERE shipment_id = v_shipment_id
-    ), 0),
-    items_count = (
-      SELECT COUNT(*)
-      FROM shipment_jobs
-      WHERE shipment_id = v_shipment_id
-    ),
-    updated_at = NOW()
-  WHERE id = v_shipment_id;
 
-  RETURN COALESCE(NEW, OLD);
-END;
-$$;
-
-
-ALTER FUNCTION "public"."update_shipment_totals"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."update_tenant_feature_flags"("p_tenant_id" "uuid", "p_flags" "jsonb") RETURNS "jsonb"
@@ -4999,7 +4859,8 @@ CREATE TABLE IF NOT EXISTS "public"."expectations" (
     "source" "text" NOT NULL,
     "context" "jsonb" DEFAULT '{}'::"jsonb",
     "search_vector" "tsvector",
-    CONSTRAINT "expectations_entity_type_check" CHECK (("entity_type" = ANY (ARRAY['job'::"text", 'operation'::"text", 'part'::"text", 'shipment'::"text"]))),
+    CONSTRAINT "expectations_entity_type_check" CHECK (("entity_type" = ANY (ARRAY['job'::"text", 'operation'::"text", 'part'::"text"]))),
+
     CONSTRAINT "expectations_source_check" CHECK (("source" = ANY (ARRAY['erp_sync'::"text", 'manual'::"text", 'scheduler'::"text", 'auto_replan'::"text", 'system'::"text", 'backfill'::"text", 'job_creation'::"text", 'job_update'::"text", 'operation_creation'::"text", 'operation_update'::"text", 'due_date_change'::"text"])))
 );
 
@@ -5827,82 +5688,9 @@ CREATE TABLE IF NOT EXISTS "public"."scrap_reasons" (
 ALTER TABLE "public"."scrap_reasons" OWNER TO "postgres";
 
 
-CREATE TABLE IF NOT EXISTS "public"."shipment_jobs" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "shipment_id" "uuid" NOT NULL,
-    "job_id" "uuid" NOT NULL,
-    "tenant_id" "uuid" NOT NULL,
-    "weight_kg" numeric(10,2),
-    "volume_m3" numeric(10,3),
-    "packages_count" integer DEFAULT 1,
-    "loading_sequence" integer,
-    "loaded_at" timestamp with time zone,
-    "loaded_by" "uuid",
-    "delivered_at" timestamp with time zone,
-    "delivery_notes" "text",
-    "delivery_signature" "text",
-    "notes" "text",
-    "metadata" "jsonb",
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    "updated_at" timestamp with time zone DEFAULT "now"()
-);
 
 
-ALTER TABLE "public"."shipment_jobs" OWNER TO "postgres";
 
-
-CREATE TABLE IF NOT EXISTS "public"."shipments" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "tenant_id" "uuid" NOT NULL,
-    "shipment_number" "text" NOT NULL,
-    "name" "text",
-    "description" "text",
-    "status" "public"."shipment_status" DEFAULT 'draft'::"public"."shipment_status" NOT NULL,
-    "scheduled_date" "date",
-    "scheduled_time" time without time zone,
-    "actual_departure" timestamp with time zone,
-    "actual_arrival" timestamp with time zone,
-    "estimated_arrival" timestamp with time zone,
-    "vehicle_type" "public"."vehicle_type" DEFAULT 'truck'::"public"."vehicle_type",
-    "vehicle_identifier" "text",
-    "driver_name" "text",
-    "driver_phone" "text",
-    "max_weight_kg" numeric(10,2),
-    "max_volume_m3" numeric(10,3),
-    "max_length_cm" numeric(10,2),
-    "max_width_cm" numeric(10,2),
-    "max_height_cm" numeric(10,2),
-    "current_weight_kg" numeric(10,2) DEFAULT 0,
-    "current_volume_m3" numeric(10,3) DEFAULT 0,
-    "items_count" integer DEFAULT 0,
-    "destination_name" "text",
-    "destination_address" "text",
-    "destination_city" "text",
-    "destination_postal_code" "text",
-    "destination_country" "text" DEFAULT 'NL'::"text",
-    "destination_lat" numeric(10,8),
-    "destination_lng" numeric(11,8),
-    "origin_name" "text",
-    "origin_address" "text",
-    "origin_city" "text",
-    "origin_postal_code" "text",
-    "origin_country" "text" DEFAULT 'NL'::"text",
-    "origin_lat" numeric(10,8),
-    "origin_lng" numeric(11,8),
-    "distance_km" numeric(10,2),
-    "estimated_duration_minutes" integer,
-    "route_notes" "text",
-    "shipping_cost" numeric(10,2),
-    "currency" "text" DEFAULT 'EUR'::"text",
-    "notes" "text",
-    "metadata" "jsonb",
-    "created_by" "uuid",
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    "updated_at" timestamp with time zone DEFAULT "now"()
-);
-
-
-ALTER TABLE "public"."shipments" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."subscription_events" (

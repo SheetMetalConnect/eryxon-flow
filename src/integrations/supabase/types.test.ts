@@ -75,31 +75,6 @@ describe('Supabase Types Module', () => {
       ])
     })
 
-    it('exports shipment_status enum values', () => {
-      expect(EnumConstants.shipment_status).toEqual([
-        'draft',
-        'planned',
-        'loading',
-        'in_transit',
-        'delivered',
-        'cancelled',
-      ])
-    })
-
-    it('exports vehicle_type enum values', () => {
-      expect(EnumConstants.vehicle_type).toEqual([
-        'truck',
-        'van',
-        'car',
-        'bike',
-        'freight',
-        'air',
-        'sea',
-        'rail',
-        'other',
-      ])
-    })
-
     it('exports integration_category enum values', () => {
       expect(EnumConstants.integration_category).toEqual([
         'erp',
@@ -128,11 +103,9 @@ describe('Supabase Types Module', () => {
         'payment_provider',
         'payment_transaction_status',
         'payment_transaction_type',
-        'shipment_status',
         'subscription_plan',
         'subscription_status',
         'task_status',
-        'vehicle_type',
         'waitlist_status',
       ]
 

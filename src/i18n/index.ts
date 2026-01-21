@@ -11,7 +11,6 @@ import enOperator from './locales/en/operator.json';
 import enJobs from './locales/en/jobs.json';
 import enConfig from './locales/en/config.json';
 import enIntegrations from './locales/en/integrations.json';
-import enShipping from './locales/en/shipping.json';
 
 // Dutch namespace imports
 import nlCommon from './locales/nl/common.json';
@@ -22,7 +21,6 @@ import nlOperator from './locales/nl/operator.json';
 import nlJobs from './locales/nl/jobs.json';
 import nlConfig from './locales/nl/config.json';
 import nlIntegrations from './locales/nl/integrations.json';
-import nlShipping from './locales/nl/shipping.json';
 
 // German namespace imports
 import deCommon from './locales/de/common.json';
@@ -33,7 +31,6 @@ import deOperator from './locales/de/operator.json';
 import deJobs from './locales/de/jobs.json';
 import deConfig from './locales/de/config.json';
 import deIntegrations from './locales/de/integrations.json';
-import deShipping from './locales/de/shipping.json';
 
 /**
  * i18n Namespace Structure
@@ -67,8 +64,7 @@ const resources = {
       enOperator,
       enJobs,
       enConfig,
-      enIntegrations,
-      enShipping
+      enIntegrations
     ),
     // Also expose individual namespaces for future use
     common: enCommon,
@@ -79,7 +75,6 @@ const resources = {
     jobs: enJobs,
     config: enConfig,
     integrations: enIntegrations,
-    shipping: enShipping,
   },
   nl: {
     translation: mergeNamespaces(
@@ -90,8 +85,7 @@ const resources = {
       nlOperator,
       nlJobs,
       nlConfig,
-      nlIntegrations,
-      nlShipping
+      nlIntegrations
     ),
     common: nlCommon,
     auth: nlAuth,
@@ -101,7 +95,6 @@ const resources = {
     jobs: nlJobs,
     config: nlConfig,
     integrations: nlIntegrations,
-    shipping: nlShipping,
   },
   de: {
     translation: mergeNamespaces(
@@ -112,8 +105,7 @@ const resources = {
       deOperator,
       deJobs,
       deConfig,
-      deIntegrations,
-      deShipping
+      deIntegrations
     ),
     common: deCommon,
     auth: deAuth,
@@ -123,7 +115,6 @@ const resources = {
     jobs: deJobs,
     config: deConfig,
     integrations: deIntegrations,
-    shipping: deShipping,
   },
 };
 
@@ -145,7 +136,6 @@ i18n
       'jobs',
       'config',
       'integrations',
-      'shipping',
     ],
 
     interpolation: {

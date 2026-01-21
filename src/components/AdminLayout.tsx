@@ -36,6 +36,7 @@ import {
   Code,
   Eye,
   ListTodo,
+  Activity,
   Flag,
   Info,
   Factory,
@@ -124,12 +125,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       path: "/admin/capacity",
       label: t("navigation.capacity"),
       icon: CalendarClock,
-      exact: true,
-    }] : []),
-    ...(featureFlags.shipping ? [{
-      path: "/admin/shipping",
-      label: t("navigation.shipping"),
-      icon: Truck,
       exact: true,
     }] : []),
   ];

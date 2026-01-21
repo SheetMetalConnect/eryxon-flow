@@ -45,7 +45,6 @@ const ActivityMonitor = lazy(() => import("./pages/admin/ActivityMonitor").then(
 const CapacityMatrix = lazy(() => import("./pages/admin/CapacityMatrix"));
 const Operations = lazy(() => import("./pages/admin/Operations").then(m => ({ default: m.Operations })));
 const Settings = lazy(() => import("./pages/admin/Settings").then(m => ({ default: m.Settings })));
-const Shipments = lazy(() => import("./pages/admin/Shipments"));
 const StepsTemplatesView = lazy(() => import("./pages/admin/StepsTemplatesView"));
 
 // Admin config pages - lazy loaded
@@ -555,18 +554,6 @@ function AppRoutes() {
         }
       />
 
-      <Route
-        path="/admin/shipping"
-        element={
-          <ProtectedRoute adminOnly>
-            <Layout>
-              <LazyRoute>
-                <Shipments />
-              </LazyRoute>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
 
       <Route
         path="/admin/config/steps-templates"
