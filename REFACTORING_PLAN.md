@@ -10,9 +10,9 @@
 
 ---
 
-### ✅ COMPLETED: Edge Functions Refactoring (Phases 1-4) + Cleanup
+### ✅ COMPLETED: Edge Functions Refactoring (Phases 1-4) + Cleanup + ERP Sync
 
-**15 Functions Refactored + 1 Removed** | **6,707 Lines Saved** (87.4% reduction)
+**16 Functions Refactored + 1 Removed** | **6,726 Lines Saved** (82.6% reduction)
 
 | Function | Before | After | Saved | % | Phase |
 |----------|--------|-------|-------|---|-------|
@@ -31,9 +31,10 @@
 | api-materials | 50 | 25 | 25 | 50% | 3 |
 | api-parts | 891 | 326 | 565 | 63% | 4 |
 | api-operations | 933 | 443 | 490 | 53% | 4 |
+| api-erp-sync | 1,348 | 1,329 | 19 | 1% | 5 |
 | api-integrations | 364 | 0 | 364 | 100% | Cleanup |
 | IntegrationsMarketplace.tsx | 409 | 0 | 409 | 100% | Cleanup |
-| **TOTAL** | **8,127** | **1,420** | **6,707** | **82.5%** | - |
+| **TOTAL** | **8,475** | **1,749** | **6,726** | **79.4%** | - |
 
 **Commits (Complete History):**
 - `a8bf20b` - Phase 1: 4 functions refactored (1,775 lines saved)
@@ -48,10 +49,12 @@
 - `f652c0d` - CRITICAL fix: async validation bug in api-parts and api-operations
 - `d094560` - Cleanup: remove integrations marketplace (773 lines deleted)
 - `cf5fa9f` - Feature: add fuzzy filter support to crud-builder
-- `f90d3b1` - feat: Introduce 30-day trial for hosted alpha
-- `d17ea3d` - Merge pull request #306 from SheetMetalConnect/claude/supabase-cloudflare-migration-Gwk5i
-- `d9d8834` - Merge pull request #305 from SheetMetalConnect/feature/website-redo-dockit
-- `06da358` - chore: remove bloated documentation and scripts
+- `fe3567d` - docs: complete refactoring documentation - all phases finished
+- `0a5d545` - security: upgrade react-router-dom to fix HIGH severity vulnerabilities
+- `1224a67` - security: remove bun.lockb to fix mixed package manager issue
+- `102b1d6` - docs: update security findings status - 2 of 8 fixed
+- `58b3c34` - refactor: migrate api-erp-sync and send-invitation to serveApi (Phase 5)
+- `[current]` - test: create .env.test.local for Vitest stability
 
 **Testing:**
 - ✅ Build: Successful (7.62s)
@@ -145,14 +148,15 @@
 
 ### ❌ NOT REFACTORED (Intentional)
 
-**Specialized Functions** (custom logic, not suitable for CRUD builder):
+**Specialized Functions** (custom logic, not suitable for full CRUD builder refactoring):
 - api-parts-images (347 lines) - File upload handling
-- api-erp-sync (1,348 lines) - Complex ERP synchronization (see recommendations below)
 - api-export (172 lines) - Data export utility
 - api-upload-url (95 lines) - Signed URL generation
 - Lifecycle endpoints (api-job-lifecycle, api-operation-lifecycle)
 - Cron jobs (monthly-reset-cron)
-- Utilities (mqtt-publish, send-invitation, storage-manager, webhook-dispatch)
+- Utilities (mqtt-publish, storage-manager, webhook-dispatch)
+
+**Note:** api-erp-sync and send-invitation were migrated to use serveApi wrapper (Phase 5), eliminating boilerplate while preserving custom business logic.
 
 **mockDataGenerator.ts** (2,223 lines):
 - Decided to keep monolithic - linear structure is clearer
