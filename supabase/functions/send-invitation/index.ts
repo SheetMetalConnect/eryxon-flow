@@ -10,7 +10,7 @@
  * - EMAIL_FROM: Sender email address (e.g., noreply@eryxon.com)
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders, handleCors } from '../_shared/cors.ts'
 
 interface InvitationRequest {
@@ -84,9 +84,9 @@ Deno.serve(async (req: Request) => {
     if (userError || !user) {
       console.error('User verification failed:', userError?.message || 'No user found')
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: 'Session expired. Please refresh the page and try again.',
-          details: userError?.message 
+          details: userError?.message
         }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
@@ -104,6 +104,17 @@ Deno.serve(async (req: Request) => {
       return new Response(
         JSON.stringify({ error: 'Unable to get user profile' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // SECURITY: Verify that the user is not trying to invite to a different tenant
+    // This prevents cross-tenant invitation abuse even though we use service-role key
+    // The tenant_id from the body must match the authenticated user's tenant_id from their profile
+    if (tenant_id && tenant_id !== profile.tenant_id) {
+      console.warn(`User ${user.id} attempted to invite to different tenant: ${tenant_id}`)
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized: You can only invite users to your own organization' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 

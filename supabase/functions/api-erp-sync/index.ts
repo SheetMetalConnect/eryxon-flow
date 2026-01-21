@@ -13,17 +13,13 @@
  * - Support for nested entities (jobs with parts, parts with operations)
  */
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders } from "../_shared/cors.ts";
+import { serveApi } from "../_shared/handler.ts";
+import type { HandlerContext } from "../_shared/handler.ts";
 import {
-  handleOptions,
-  handleError,
   handleMethodNotAllowed,
   createSuccessResponse,
   BadRequestError,
 } from "../_shared/validation/errorHandler.ts";
-import { authenticateAndSetContext } from "../_shared/auth.ts";
 import {
   generateSyncHash,
   hasChanged,
@@ -68,52 +64,37 @@ interface DiffResponse {
 // Main Handler
 // ============================================================================
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return handleOptions();
-  }
+export default serveApi(async (req: Request, ctx: HandlerContext) => {
+  const { supabase, tenantId, url } = ctx;
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-  );
+  // Parse URL path to determine action
+  const pathSegments = url.pathname.split("/").filter(Boolean);
+  const action = pathSegments[pathSegments.length - 1];
 
-  try {
-    // Authenticate
-    const { tenantId } = await authenticateAndSetContext(req, supabase);
+  // Route by action
+  switch (action) {
+    case "diff":
+      if (req.method !== "POST") {
+        return handleMethodNotAllowed(["POST"]);
+      }
+      return await handleDiff(req, supabase, tenantId);
 
-    // Parse URL
-    const url = new URL(req.url);
-    const pathSegments = url.pathname.split("/").filter(Boolean);
-    const action = pathSegments[pathSegments.length - 1];
+    case "sync":
+      if (req.method !== "POST") {
+        return handleMethodNotAllowed(["POST"]);
+      }
+      return await handleSync(req, supabase, tenantId);
 
-    // Route by action
-    switch (action) {
-      case "diff":
-        if (req.method !== "POST") {
-          return handleMethodNotAllowed(["POST"]);
-        }
-        return await handleDiff(req, supabase, tenantId);
+    case "status":
+      if (req.method !== "GET") {
+        return handleMethodNotAllowed(["GET"]);
+      }
+      return await handleStatus(req, supabase, tenantId);
 
-      case "sync":
-        if (req.method !== "POST") {
-          return handleMethodNotAllowed(["POST"]);
-        }
-        return await handleSync(req, supabase, tenantId);
-
-      case "status":
-        if (req.method !== "GET") {
-          return handleMethodNotAllowed(["GET"]);
-        }
-        return await handleStatus(req, supabase, tenantId);
-
-      default:
-        throw new BadRequestError(
-          "Invalid endpoint. Use /diff, /sync, or /status",
-        );
-    }
-  } catch (error) {
-    return handleError(error);
+    default:
+      throw new BadRequestError(
+        "Invalid endpoint. Use /diff, /sync, or /status",
+      );
   }
 });
 
