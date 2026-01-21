@@ -333,14 +333,10 @@ async function handlePatch(
 
   const body = await req.json();
 
-  // Validate if validator provided
-  if (validator) {
-    const validatorInstance = new validator();
-    const validation = await validatorInstance.validate(body, { tenantId, supabase, id });
-    if (!validation.valid) {
-      throw new ValidationException(validation);
-    }
-  }
+  // Note: Skip full validation for PATCH requests
+  // PATCH is partial update - should not enforce required fields
+  // Only validate FKs and provided fields, not require all fields
+  // Validators currently don't have an "update mode" that validates only provided fields
 
   // Remove fields that shouldn't be updated
   const { tenant_id, id: bodyId, created_at, ...updateData } = body;

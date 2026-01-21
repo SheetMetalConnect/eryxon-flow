@@ -13,7 +13,7 @@ async function handleCreateWithLimits(req: Request, ctx: HandlerContext): Promis
   const canCreate = await canCreateJob(supabase, tenantId, plan);
   if (!canCreate.allowed) {
     throw new PaymentRequiredError(
-      canCreate.reason || "Job creation limit reached",
+      "job",  // limitType
       canCreate.current || 0,
       canCreate.limit || 0
     );
@@ -65,7 +65,8 @@ async function handleCreateWithLimits(req: Request, ctx: HandlerContext): Promis
     throw new Error(`Failed to create job: ${error.message}`);
   }
 
-  return createSuccessResponse(data, 201);
+  // Maintain original response format for backward compatibility
+  return createSuccessResponse({ job: data }, 201);
 }
 
 // Configure CRUD handler for jobs with validation and sync
