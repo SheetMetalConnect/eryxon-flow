@@ -114,13 +114,13 @@ export function OnboardingWizard() {
   };
 
   const completeOnboarding = () => {
-    toast.success('Onboarding complete! Welcome to Eryxon MES 🎉');
+    toast.success('Onboarding complete! Welcome to Eryxon Flow 🎉');
 
     // Navigate based on user role
     if (profile?.role === 'admin') {
-      navigate('/dashboard');
+      navigate('/admin/dashboard');
     } else {
-      navigate('/work-queue');
+      navigate('/operator/work-queue');
     }
   };
 
@@ -143,98 +143,98 @@ export function OnboardingWizard() {
             </p>
           </div>
 
-        {/* Progress Stepper */}
-        <nav aria-label="Progress" className="mb-12">
-          <ol className="flex items-center justify-center max-w-3xl mx-auto">
-            {steps.map((step, stepIdx) => (
-              <li
-                key={step.id}
-                className={`relative ${stepIdx !== steps.length - 1 ? 'pr-8 sm:pr-20 flex-1' : ''
-                  }`}
-              >
-                {/* Connector Line */}
-                {stepIdx !== steps.length - 1 && (
-                  <div
-                    className="absolute top-4 left-0 -ml-px mt-0.5 h-0.5 w-full"
-                    aria-hidden="true"
-                  >
+          {/* Progress Stepper */}
+          <nav aria-label="Progress" className="mb-12">
+            <ol className="flex items-center justify-center max-w-3xl mx-auto">
+              {steps.map((step, stepIdx) => (
+                <li
+                  key={step.id}
+                  className={`relative ${stepIdx !== steps.length - 1 ? 'pr-8 sm:pr-20 flex-1' : ''
+                    }`}
+                >
+                  {/* Connector Line */}
+                  {stepIdx !== steps.length - 1 && (
                     <div
-                      className={`h-full ${currentStep > step.id
+                      className="absolute top-4 left-0 -ml-px mt-0.5 h-0.5 w-full"
+                      aria-hidden="true"
+                    >
+                      <div
+                        className={`h-full ${currentStep > step.id
                           ? 'bg-primary'
                           : 'bg-muted'
-                        }`}
-                    />
-                  </div>
-                )}
+                          }`}
+                      />
+                    </div>
+                  )}
 
-                {/* Step Circle */}
-                <div className="group relative flex items-center">
-                  <span className="flex h-9 items-center">
-                    <span
-                      className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full ${currentStep > step.id
+                  {/* Step Circle */}
+                  <div className="group relative flex items-center">
+                    <span className="flex h-9 items-center">
+                      <span
+                        className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full ${currentStep > step.id
                           ? 'bg-primary'
                           : currentStep === step.id
                             ? 'bg-primary border-2 border-primary'
                             : 'bg-card border-2 border-border'
-                        }`}
-                    >
-                      {currentStep > step.id ? (
-                        <Check className="h-5 w-5 text-white" />
-                      ) : (
-                        <span
-                          className={`h-2.5 w-2.5 rounded-full ${currentStep === step.id
+                          }`}
+                      >
+                        {currentStep > step.id ? (
+                          <Check className="h-5 w-5 text-white" />
+                        ) : (
+                          <span
+                            className={`h-2.5 w-2.5 rounded-full ${currentStep === step.id
                               ? 'bg-card'
                               : 'bg-transparent group-hover:bg-muted'
-                            }`}
-                        />
-                      )}
+                              }`}
+                          />
+                        )}
+                      </span>
                     </span>
-                  </span>
-                  <span className="ml-4 flex min-w-0 flex-col">
-                    <span
-                      className={`text-sm font-medium ${currentStep >= step.id
+                    <span className="ml-4 flex min-w-0 flex-col">
+                      <span
+                        className={`text-sm font-medium ${currentStep >= step.id
                           ? 'text-primary'
                           : 'text-muted-foreground'
-                        }`}
-                    >
-                      {step.name}
+                          }`}
+                      >
+                        {step.name}
+                      </span>
+                      <span className="text-xs text-muted-foreground hidden sm:block">
+                        {step.description}
+                      </span>
                     </span>
-                    <span className="text-xs text-muted-foreground hidden sm:block">
-                      {step.description}
-                    </span>
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </nav>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </nav>
 
-        {/* Content Area */}
-        <Card className="max-w-6xl mx-auto glass-card">
-          <CardContent className="p-8 sm:p-12">
-            {currentStep === 1 && (
-              <TeamSetup onComplete={handleTeamSetupComplete} onSkip={handleTeamSetupSkip} />
-            )}
-            {currentStep === 2 && (
-              <PlanSelection onPlanSelect={handlePlanSelect} defaultPlan={selectedPlan} />
-            )}
-            {currentStep === 3 && (
-              <MockDataImport onComplete={handleMockDataComplete} onSkip={handleMockDataSkip} />
-            )}
-          </CardContent>
-        </Card>
+          {/* Content Area */}
+          <Card className="max-w-6xl mx-auto glass-card">
+            <CardContent className="p-8 sm:p-12">
+              {currentStep === 1 && (
+                <TeamSetup onComplete={handleTeamSetupComplete} onSkip={handleTeamSetupSkip} />
+              )}
+              {currentStep === 2 && (
+                <PlanSelection onPlanSelect={handlePlanSelect} defaultPlan={selectedPlan} />
+              )}
+              {currentStep === 3 && (
+                <MockDataImport onComplete={handleMockDataComplete} onSkip={handleMockDataSkip} />
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Footer */}
-        <div className="text-center mt-8 text-sm text-muted-foreground">
-          <p>
-            Need help? Check out our{' '}
-            <a href="/api-docs" className="text-primary hover:underline">
-              documentation
-            </a>{' '}
-            or contact support.
-          </p>
+          {/* Footer */}
+          <div className="text-center mt-8 text-sm text-muted-foreground">
+            <p>
+              Need help? Check out our{' '}
+              <a href="/api-docs" className="text-primary hover:underline">
+                documentation
+              </a>{' '}
+              or contact support.
+            </p>
+          </div>
         </div>
-      </div>
       </div>
     </>
   );

@@ -296,31 +296,6 @@
     "statsResolved": "Resolved Today",
     "statsDismissed": "Dismissed"
   },
-  "expectations": {
-    "title": "Expectations",
-    "description": "Explicit beliefs about what should happen. Each expectation is versioned and immutable.",
-    "total": "Total",
-    "active": "Active",
-    "fulfilled": "Fulfilled",
-    "violated": "Violated",
-    "overdue": "Overdue",
-    "superseded": "Superseded",
-    "all": "All",
-    "due": "Due",
-    "type": "Type",
-    "source": "Source",
-    "supersededNote": "This expectation was superseded by a newer version",
-    "violatedNote": "This expectation was violated - see Exception Inbox",
-    "noExpectations": "No expectations found",
-    "noExpectationsDescription": "Expectations are created automatically when jobs get due dates or operations are scheduled.",
-    "whatIsTitle": "What is an Expectation?",
-    "whatIsDescription": "An expectation is an explicit belief about what should happen in the future. Unlike alerts, expectations are created before reality unfolds. When reality diverges from expectation, an exception is raised.",
-    "onlyActiveEvaluated": "Only Active expectations are evaluated against reality",
-    "created": "Expectation created",
-    "createFailed": "Failed to create expectation",
-    "updated": "Expectation updated (history preserved)",
-    "updateFailed": "Failed to update expectation"
-  },
   "myActivity": {
     "title": "My Activity",
     "completed": "Completed",
@@ -454,16 +429,11 @@
     "updateError": "Failed to update feature flags",
     "categories": {
       "operations": "Operations",
-      "analytics": "Analytics & Monitoring",
       "admin": "Administration"
-    },
-    "analytics": {
-      "label": "Analytics",
-      "description": "QRM Dashboard, OEE, Quality, Reliability, and Jobs Analytics"
     },
     "monitoring": {
       "label": "Monitoring",
-      "description": "Activity tracking, Expectations, and Exceptions inbox"
+      "description": "Activity tracking and Exceptions inbox"
     },
     "shipping": {
       "label": "Shipping",

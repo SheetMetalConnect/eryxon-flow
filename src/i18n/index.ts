@@ -11,7 +11,6 @@ import enOperator from './locales/en/operator.json';
 import enJobs from './locales/en/jobs.json';
 import enConfig from './locales/en/config.json';
 import enIntegrations from './locales/en/integrations.json';
-import enAnalytics from './locales/en/analytics.json';
 import enShipping from './locales/en/shipping.json';
 
 // Dutch namespace imports
@@ -23,7 +22,6 @@ import nlOperator from './locales/nl/operator.json';
 import nlJobs from './locales/nl/jobs.json';
 import nlConfig from './locales/nl/config.json';
 import nlIntegrations from './locales/nl/integrations.json';
-import nlAnalytics from './locales/nl/analytics.json';
 import nlShipping from './locales/nl/shipping.json';
 
 // German namespace imports
@@ -35,7 +33,6 @@ import deOperator from './locales/de/operator.json';
 import deJobs from './locales/de/jobs.json';
 import deConfig from './locales/de/config.json';
 import deIntegrations from './locales/de/integrations.json';
-import deAnalytics from './locales/de/analytics.json';
 import deShipping from './locales/de/shipping.json';
 
 /**
@@ -51,7 +48,6 @@ import deShipping from './locales/de/shipping.json';
  * - jobs: Jobs, parts, operations, issues
  * - config: Configuration (stages, materials, resources, assignments)
  * - integrations: API keys, webhooks, MQTT, data import/export
- * - analytics: QRM, OEE, quality, reliability, capacity
  * - shipping: Shipping module
  *
  * AI agents should edit individual namespace files rather than the monolithic translation.json
@@ -72,7 +68,6 @@ const resources = {
       enJobs,
       enConfig,
       enIntegrations,
-      enAnalytics,
       enShipping
     ),
     // Also expose individual namespaces for future use
@@ -84,7 +79,6 @@ const resources = {
     jobs: enJobs,
     config: enConfig,
     integrations: enIntegrations,
-    analytics: enAnalytics,
     shipping: enShipping,
   },
   nl: {
@@ -97,7 +91,6 @@ const resources = {
       nlJobs,
       nlConfig,
       nlIntegrations,
-      nlAnalytics,
       nlShipping
     ),
     common: nlCommon,
@@ -108,7 +101,6 @@ const resources = {
     jobs: nlJobs,
     config: nlConfig,
     integrations: nlIntegrations,
-    analytics: nlAnalytics,
     shipping: nlShipping,
   },
   de: {
@@ -121,7 +113,6 @@ const resources = {
       deJobs,
       deConfig,
       deIntegrations,
-      deAnalytics,
       deShipping
     ),
     common: deCommon,
@@ -132,7 +123,6 @@ const resources = {
     jobs: deJobs,
     config: deConfig,
     integrations: deIntegrations,
-    analytics: deAnalytics,
     shipping: deShipping,
   },
 };
@@ -155,7 +145,6 @@ i18n
       'jobs',
       'config',
       'integrations',
-      'analytics',
       'shipping',
     ],
 

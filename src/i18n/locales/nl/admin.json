@@ -446,31 +446,6 @@
     "markResolved": "Markeer als opgelost",
     "resolution": "Oplossing"
   },
-  "expectations": {
-    "title": "Verwachtingen",
-    "description": "Expliciete overtuigingen over wat zou moeten gebeuren. Elke verwachting is geversioned en onveranderlijk.",
-    "total": "Totaal",
-    "active": "Actief",
-    "fulfilled": "Vervuld",
-    "violated": "Geschonden",
-    "overdue": "Te laat",
-    "superseded": "Vervangen",
-    "all": "Alles",
-    "due": "Verwacht",
-    "type": "Type",
-    "source": "Bron",
-    "supersededNote": "Deze verwachting is vervangen door een nieuwere versie",
-    "violatedNote": "Deze verwachting is geschonden - zie Uitzondering Inbox",
-    "noExpectations": "Geen verwachtingen gevonden",
-    "noExpectationsDescription": "Verwachtingen worden automatisch aangemaakt wanneer opdrachten een vervaldatum krijgen of bewerkingen worden gepland.",
-    "whatIsTitle": "Wat is een Verwachting?",
-    "whatIsDescription": "Een verwachting is een expliciete overtuiging over wat in de toekomst zou moeten gebeuren. Wanneer de werkelijkheid afwijkt van de verwachting, wordt een uitzondering gemaakt.",
-    "onlyActiveEvaluated": "Alleen actieve verwachtingen worden geëvalueerd tegen de werkelijkheid",
-    "created": "Verwachting aangemaakt",
-    "createFailed": "Aanmaken verwachting mislukt",
-    "updated": "Verwachting bijgewerkt (historie behouden)",
-    "updateFailed": "Bijwerken verwachting mislukt"
-  },
   "myActivity": {
     "title": "Mijn activiteit",
     "completed": "Voltooid",
@@ -613,16 +588,11 @@
     "updateError": "Functievlaggen bijwerken mislukt",
     "categories": {
       "operations": "Operaties",
-      "analytics": "Analyse & Monitoring",
       "admin": "Administratie"
-    },
-    "analytics": {
-      "label": "Analyse",
-      "description": "QRM Dashboard, OEE, Kwaliteit, Betrouwbaarheid en Opdracht Analyse"
     },
     "monitoring": {
       "label": "Monitoring",
-      "description": "Activiteiten bijhouden, Verwachtingen en Uitzonderingen inbox"
+      "description": "Activiteiten bijhouden en real-time tracking"
     },
     "shipping": {
       "label": "Verzending",

@@ -79,9 +79,9 @@ Timestamp of the last successful sync, useful for incremental updates.
 
 ## Related Documentation
 
-- [API Sync Reference](./API_SYNC.md) - Detailed API endpoint documentation
-- [CSV Import Guide](./CSV_IMPORT.md) - Step-by-step CSV import instructions
-- [API Documentation](./API_DOCUMENTATION.md) - Full API reference
+- [CSV Import](./csv-import.md) - Step-by-step CSV import instructions
+- [REST API Overview](/architecture/connectivity-rest-api/) - Endpoints and auth
+- Swagger/OpenAPI - Available in the app at `/api-docs`
 
 ## Database Schema
 

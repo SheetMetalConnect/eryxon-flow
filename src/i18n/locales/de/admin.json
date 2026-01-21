@@ -209,31 +209,6 @@
     "markResolved": "Als gelöst markieren",
     "resolution": "Lösung"
   },
-  "expectations": {
-    "title": "Erwartungen",
-    "description": "Explizite Überzeugungen darüber, was passieren sollte. Jede Erwartung ist versioniert und unveränderlich.",
-    "total": "Gesamt",
-    "active": "Aktiv",
-    "fulfilled": "Erfüllt",
-    "violated": "Verletzt",
-    "overdue": "Überfällig",
-    "superseded": "Ersetzt",
-    "all": "Alle",
-    "due": "Fällig",
-    "type": "Typ",
-    "source": "Quelle",
-    "supersededNote": "Diese Erwartung wurde durch eine neuere Version ersetzt",
-    "violatedNote": "Diese Erwartung wurde verletzt - siehe Ausnahme-Posteingang",
-    "noExpectations": "Keine Erwartungen gefunden",
-    "noExpectationsDescription": "Erwartungen werden automatisch erstellt, wenn Aufträge ein Fälligkeitsdatum erhalten oder Vorgänge geplant werden.",
-    "whatIsTitle": "Was ist eine Erwartung?",
-    "whatIsDescription": "Eine Erwartung ist eine explizite Überzeugung darüber, was in der Zukunft passieren sollte. Wenn die Realität von der Erwartung abweicht, wird eine Ausnahme ausgelöst.",
-    "onlyActiveEvaluated": "Nur aktive Erwartungen werden gegen die Realität ausgewertet",
-    "created": "Erwartung erstellt",
-    "createFailed": "Erwartung konnte nicht erstellt werden",
-    "updated": "Erwartung aktualisiert (Verlauf beibehalten)",
-    "updateFailed": "Erwartung konnte nicht aktualisiert werden"
-  },
   "myActivity": {
     "title": "Meine Aktivität",
     "completed": "Abgeschlossen",
@@ -367,16 +342,11 @@
     "updateError": "Feature-Flags konnten nicht aktualisiert werden",
     "categories": {
       "operations": "Betrieb",
-      "analytics": "Analyse & Überwachung",
       "admin": "Administration"
-    },
-    "analytics": {
-      "label": "Analyse",
-      "description": "QRM Dashboard, OEE, Qualität, Zuverlässigkeit und Auftragsanalyse"
     },
     "monitoring": {
       "label": "Überwachung",
-      "description": "Aktivitätsverfolgung, Erwartungen und Ausnahmen-Posteingang"
+      "description": "Aktivitätsverfolgung und Echtzeit-Tracking"
     },
     "shipping": {
       "label": "Versand",

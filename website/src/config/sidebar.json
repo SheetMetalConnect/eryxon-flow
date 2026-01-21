@@ -120,26 +120,6 @@
       "label": "API Reference",
       "items": [
         {
-          "label": "API Documentation",
-          "slug": "api/api_documentation"
-        },
-        {
-          "label": "Authentication",
-          "slug": "api/api_key_authentication"
-        },
-        {
-          "label": "Sync Endpoints",
-          "slug": "api/api_sync"
-        },
-        {
-          "label": "Edge Functions",
-          "slug": "api/edge_functions_setup"
-        },
-        {
-          "label": "MCP Integration",
-          "slug": "api/mcp_integration"
-        },
-        {
           "label": "MCP Demo",
           "slug": "api/mcp-demo-guide"
         }

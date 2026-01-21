@@ -36,16 +36,11 @@ import {
   Code,
   Eye,
   ListTodo,
-  Activity,
   Flag,
   Info,
   Factory,
   CalendarClock,
-  BarChart3,
   Radio,
-  Gauge,
-  Target,
-  TrendingUp,
   Truck,
   Search,
   Building2,
@@ -74,7 +69,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [operatorViewsOpen, setOperatorViewsOpen] = useState(false);
-  const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [monitoringOpen, setMonitoringOpen] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
   const [integrationsOpen, setIntegrationsOpen] = useState(false);
@@ -140,7 +134,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     }] : []),
   ];
 
-  // Monitoring - Expectations, Exceptions, Activity
+  // Monitoring - Activity tracking only
   const monitoringNavItems = [
     {
       path: "/admin/activity",
@@ -148,53 +142,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       icon: Clock,
       exact: true,
     },
-    {
-      path: "/admin/expectations",
-      label: t("navigation.expectations"),
-      icon: Target,
-      exact: true,
-    },
-    {
-      path: "/admin/exceptions",
-      label: t("navigation.exceptions"),
-      icon: Flag,
-      exact: true,
-    },
   ];
 
-  // Analytics - Production insights and metrics
-  const analyticsNavItems = [
-    {
-      path: "/admin/analytics/qrm-dashboard",
-      label: t("navigation.qrmDashboard"),
-      icon: Activity,
-      exact: true,
-    },
-    {
-      path: "/admin/analytics/jobs",
-      label: t("navigation.jobsAnalytics"),
-      icon: Briefcase,
-      exact: true,
-    },
-    {
-      path: "/admin/analytics/quality",
-      label: t("navigation.qualityAnalytics"),
-      icon: Gauge,
-      exact: true,
-    },
-    {
-      path: "/admin/analytics/oee",
-      label: t("navigation.oeeAnalytics"),
-      icon: Gauge,
-      exact: true,
-    },
-    {
-      path: "/admin/analytics/reliability",
-      label: t("navigation.reliabilityAnalytics"),
-      icon: TrendingUp,
-      exact: true,
-    },
-  ];
 
   // Operator views - Admin can see what operators see
   const operatorViewItems = [
@@ -509,53 +458,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-0.5 pl-3">
               {monitoringNavItems.map((item) => {
-                const isItemActive = item.exact
-                  ? isActive(item.path)
-                  : location.pathname.startsWith(item.path);
-
-                return (
-                  <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)}>
-                    <Button
-                      variant="ghost"
-                      className={cn(
-                        "w-full justify-start gap-2 nav-item-hover h-7 text-xs",
-                        isItemActive && "nav-item-active"
-                      )}
-                      size="sm"
-                    >
-                      <item.icon className="h-3.5 w-3.5 shrink-0" />
-                      <span>{item.label}</span>
-                    </Button>
-                  </Link>
-                );
-              })}
-            </CollapsibleContent>
-          </Collapsible>
-        )}
-
-        {!collapsed && featureFlags.analytics && <Separator className="my-2" />}
-
-        {/* Analytics Section - Collapsible */}
-        {!collapsed && featureFlags.analytics && (
-          <Collapsible open={analyticsOpen} onOpenChange={setAnalyticsOpen} className="space-y-0.5">
-            <CollapsibleTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start gap-2 font-medium text-muted-foreground h-7 text-xs"
-              >
-                <BarChart3 className="h-3.5 w-3.5" />
-                <span className="flex-1 text-left">{t("navigation.analytics")}</span>
-                <ChevronDown
-                  className={cn(
-                    "h-3 w-3 transition-transform",
-                    analyticsOpen && "rotate-180"
-                  )}
-                />
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-0.5 pl-3">
-              {analyticsNavItems.map((item) => {
                 const isItemActive = item.exact
                   ? isActive(item.path)
                   : location.pathname.startsWith(item.path);

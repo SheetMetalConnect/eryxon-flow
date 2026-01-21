@@ -1,18 +1,13 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders } from "../_shared/cors.ts";
+import { serveApi } from "../_shared/handler.ts";
+import type { HandlerContext } from "../_shared/handler.ts";
 import {
-  createErrorResponse,
   createSuccessResponse,
-  handleError,
   handleMethodNotAllowed,
-  handleOptions,
   NotFoundError,
   ValidationException,
   UnauthorizedError,
   BadRequestError,
 } from "../_shared/validation/errorHandler.ts";
-import { authenticateAndSetContext } from "../_shared/auth.ts";
 
 // Allowed image MIME types
 const ALLOWED_IMAGE_TYPES = [
@@ -26,23 +21,10 @@ const ALLOWED_IMAGE_TYPES = [
 // Max file size: 10MB
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-serve(async (req) => {
-  // Handle OPTIONS (CORS preflight)
-  if (req.method === "OPTIONS") {
-    return handleOptions();
-  }
+export default serveApi(async (req: Request, ctx: HandlerContext) => {
+  const { supabase, tenantId, url } = ctx;
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-  );
-
-  try {
-    // Authenticate and set tenant context for RLS
-    const { tenantId } = await authenticateAndSetContext(req, supabase);
-
-    const url = new URL(req.url);
-    const pathParts = url.pathname.split("/").filter((p) => p);
+  const pathParts = url.pathname.split("/").filter((p) => p);
 
     // Extract part_id from path: /api-parts-images/{part_id}/...
     const partId = pathParts[1]; // Index 0 is 'api-parts-images', 1 is part_id
@@ -85,9 +67,6 @@ serve(async (req) => {
       default:
         return handleMethodNotAllowed(["GET", "POST", "DELETE"]);
     }
-  } catch (error) {
-    return handleError(error);
-  }
 });
 
 /**

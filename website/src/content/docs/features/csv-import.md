@@ -195,5 +195,6 @@ Ensure all required fields have values. Empty cells for required fields will fai
 
 ## Related Documentation
 
-- [ERP Integration Overview](./ERP_INTEGRATION.md)
-- [API Sync Reference](./API_SYNC.md)
+- [ERP Integration Overview](./erp-integration.md)
+- [REST API Overview](/architecture/connectivity-rest-api/)
+- Swagger/OpenAPI - Available in the app at `/api-docs`

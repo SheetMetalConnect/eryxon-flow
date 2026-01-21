@@ -2,6 +2,9 @@
 title: "REST API Reference"
 description: "Inbound integration reference for Jobs, Parts, Operations, and ERP Sync."
 ---
+## API Reference
+The full API reference is provided via Swagger/OpenAPI in the app at `/api-docs`.
+
 ## Authentication
 Use your API Key in the `Authorization` header as a Bearer token.
 

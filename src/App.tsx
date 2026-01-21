@@ -31,8 +31,6 @@ const OperatorView = lazy(() => import("./pages/operator/OperatorView"));
 // Admin pages - lazy loaded
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
 const IssueQueue = lazy(() => import("./pages/admin/IssueQueue"));
-const ExceptionInbox = lazy(() => import("./pages/admin/ExceptionInbox"));
-const ExpectationsView = lazy(() => import("./pages/admin/ExpectationsView"));
 const FactoryCalendar = lazy(() => import("./pages/admin/FactoryCalendar"));
 const OrganizationSettings = lazy(() => import("./pages/admin/OrganizationSettings"));
 const Assignments = lazy(() => import("./pages/admin/Assignments"));
@@ -49,7 +47,6 @@ const Operations = lazy(() => import("./pages/admin/Operations").then(m => ({ de
 const Settings = lazy(() => import("./pages/admin/Settings").then(m => ({ default: m.Settings })));
 const Shipments = lazy(() => import("./pages/admin/Shipments"));
 const StepsTemplatesView = lazy(() => import("./pages/admin/StepsTemplatesView"));
-const AnalyticsDashboard = lazy(() => import("./pages/admin/AnalyticsDashboard"));
 
 // Admin config pages - lazy loaded
 const ConfigApiKeys = lazy(() => import("./pages/admin/config/ApiKeys"));
@@ -61,14 +58,6 @@ const ConfigScrapReasons = lazy(() => import("./pages/admin/config/ScrapReasons"
 const ConfigStages = lazy(() => import("./pages/admin/config/Stages"));
 const ConfigUsers = lazy(() => import("./pages/admin/config/Users"));
 const ConfigWebhooks = lazy(() => import("./pages/admin/config/Webhooks"));
-
-// Admin analytics pages - lazy loaded
-const OEEAnalytics = lazy(() => import("./pages/admin/analytics/OEEAnalytics"));
-const ReliabilityAnalytics = lazy(() => import("./pages/admin/analytics/ReliabilityAnalytics"));
-const QRMAnalytics = lazy(() => import("./pages/admin/analytics/QRMAnalytics"));
-const QRMDashboard = lazy(() => import("./pages/admin/analytics/QRMDashboard"));
-const JobsAnalytics = lazy(() => import("./pages/admin/analytics/JobsAnalytics"));
-const QualityAnalytics = lazy(() => import("./pages/admin/analytics/QualityAnalytics"));
 
 // Common pages - lazy loaded
 const ApiDocs = lazy(() => import("./pages/common/ApiDocs"));
@@ -359,32 +348,6 @@ function AppRoutes() {
       />
 
       <Route
-        path="/admin/exceptions"
-        element={
-          <ProtectedRoute adminOnly>
-            <Layout>
-              <LazyRoute>
-                <ExceptionInbox />
-              </LazyRoute>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/admin/expectations"
-        element={
-          <ProtectedRoute adminOnly>
-            <Layout>
-              <LazyRoute>
-                <ExpectationsView />
-              </LazyRoute>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
         path="/admin/assignments"
         element={
           <ProtectedRoute adminOnly>
@@ -599,98 +562,6 @@ function AppRoutes() {
             <Layout>
               <LazyRoute>
                 <Shipments />
-              </LazyRoute>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Analytics Routes */}
-      <Route
-        path="/admin/analytics"
-        element={
-          <ProtectedRoute adminOnly>
-            <Layout>
-              <LazyRoute>
-                <AnalyticsDashboard />
-              </LazyRoute>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/admin/analytics/oee"
-        element={
-          <ProtectedRoute adminOnly>
-            <Layout>
-              <LazyRoute>
-                <OEEAnalytics />
-              </LazyRoute>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/admin/analytics/reliability"
-        element={
-          <ProtectedRoute adminOnly>
-            <Layout>
-              <LazyRoute>
-                <ReliabilityAnalytics />
-              </LazyRoute>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/admin/analytics/qrm"
-        element={
-          <ProtectedRoute adminOnly>
-            <Layout>
-              <LazyRoute>
-                <QRMAnalytics />
-              </LazyRoute>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/admin/analytics/qrm-dashboard"
-        element={
-          <ProtectedRoute adminOnly>
-            <Layout>
-              <LazyRoute>
-                <QRMDashboard />
-              </LazyRoute>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/admin/analytics/jobs"
-        element={
-          <ProtectedRoute adminOnly>
-            <Layout>
-              <LazyRoute>
-                <JobsAnalytics />
-              </LazyRoute>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/admin/analytics/quality"
-        element={
-          <ProtectedRoute adminOnly>
-            <Layout>
-              <LazyRoute>
-                <QualityAnalytics />
               </LazyRoute>
             </Layout>
           </ProtectedRoute>

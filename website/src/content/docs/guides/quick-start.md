@@ -104,9 +104,10 @@ Want to see the app with sample data?
 ## What's Next?
 
 - **[Self-Hosting Guide](/guides/self-hosting/)** - Production deployment options
-- **[API Documentation](/api/api_documentation/)** - REST API reference
-- **[MCP Integration](/api/mcp_integration/)** - AI assistant integration
-- **[How It Works](/architecture/how-the-app-works/)** - Deep dive into features
+- **[REST API Overview](/architecture/connectivity-rest-api/)** - Endpoints and auth
+- **Swagger/OpenAPI** - Available in the app at `/api-docs`
+- **[MCP Demo](/api/mcp-demo-guide/)** - AI assistant integration
+- **[App Architecture](/architecture/app-architecture/)** - Deep dive into features
 - **[FAQ](/guides/faq/)** - Frequently asked questions
 
 ---

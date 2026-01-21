@@ -591,6 +591,6 @@ Potential future additions to the shipping module:
 
 ## Related Documentation
 
-- [API Documentation](./API_DOCUMENTATION.md) - Full API reference including job/part fields
-- [ERP Integration](./ERP_INTEGRATION.md) - Syncing jobs with delivery addresses from ERP
-- [Webhook Events](./API_DOCUMENTATION.md#webhook-events) - Event-driven integrations
+- [REST API Overview](/architecture/connectivity-rest-api/) - Endpoints and auth
+- [ERP Integration](/features/erp-integration/) - Syncing jobs with delivery addresses from ERP
+- Swagger/OpenAPI - Available in the app at `/api-docs`

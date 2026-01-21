@@ -73,6 +73,9 @@ export interface CrudConfig {
 
   /** External ID field for sync operations (default: 'external_id') */
   syncIdField?: string;
+
+  /** Entity key for response wrapping (default: singularized table name). Examples: 'job', 'part', 'operation' */
+  entityKey?: string;
 }
 
 /**
@@ -84,6 +87,7 @@ export function createCrudHandler(config: CrudConfig) {
     selectFields = '*',
     searchFields = [],
     allowedFilters = [],
+    fuzzyFilters = [],
     sortableFields = ['created_at'],
     defaultSort = { field: 'created_at', direction: 'desc' as const },
     softDelete = true,
@@ -92,7 +96,11 @@ export function createCrudHandler(config: CrudConfig) {
     queryModifier,
     enableSync = false,
     syncIdField = 'external_id',
+    entityKey,
   } = config;
+
+  // Compute entity key for singular responses (default: naive singularization)
+  const responseEntityKey = entityKey || table.replace(/s$/, '');
 
   return async (req: Request, ctx: HandlerContext): Promise<Response> => {
     const { supabase, tenantId, url, lastSegment } = ctx;
@@ -100,10 +108,10 @@ export function createCrudHandler(config: CrudConfig) {
     // Handle sync endpoints if enabled
     if (enableSync) {
       if (lastSegment === 'sync' && req.method === 'PUT') {
-        return handleSync(req, ctx, table, syncIdField, validator, softDelete);
+        return handleSync(req, ctx, table, syncIdField, validator, softDelete, responseEntityKey);
       }
       if (lastSegment === 'bulk-sync' && req.method === 'POST') {
-        return handleBulkSync(req, ctx, table, syncIdField, validator, softDelete);
+        return handleBulkSync(req, ctx, table, syncIdField, validator, softDelete, responseEntityKey);
       }
     }
 
@@ -118,6 +126,7 @@ export function createCrudHandler(config: CrudConfig) {
           selectFields,
           searchFields,
           allowedFilters,
+          fuzzyFilters,
           sortableFields,
           defaultSort,
           softDelete,
@@ -128,14 +137,14 @@ export function createCrudHandler(config: CrudConfig) {
         if (customHandlers.post) {
           return customHandlers.post(req, ctx);
         }
-        return handlePost(req, ctx, table, validator, softDelete);
+        return handlePost(req, ctx, table, validator, softDelete, responseEntityKey);
 
       case 'PATCH':
       case 'PUT':
         if (customHandlers.patch) {
           return customHandlers.patch(req, ctx);
         }
-        return handlePatch(req, ctx, table, validator, softDelete);
+        return handlePatch(req, ctx, table, validator, softDelete, responseEntityKey);
 
       case 'DELETE':
         if (customHandlers.delete) {
@@ -160,6 +169,7 @@ async function handleGet(
     selectFields: string;
     searchFields: string[];
     allowedFilters: string[];
+    fuzzyFilters?: string[];
     sortableFields: string[];
     defaultSort: { field: string; direction: 'asc' | 'desc' };
     softDelete: boolean;
@@ -289,7 +299,8 @@ async function handlePost(
   ctx: HandlerContext,
   table: string,
   validator: any,
-  softDelete: boolean
+  softDelete: boolean,
+  entityKey: string
 ): Promise<Response> {
   const { supabase, tenantId } = ctx;
 
@@ -320,7 +331,7 @@ async function handlePost(
     throw new Error(`Failed to create ${table}: ${error.message}`);
   }
 
-  return createSuccessResponse({ [table.replace(/s$/, '')]: data }, 201);
+  return createSuccessResponse({ [entityKey]: data }, 201);
 }
 
 /**
@@ -331,7 +342,8 @@ async function handlePatch(
   ctx: HandlerContext,
   table: string,
   validator: any,
-  softDelete: boolean
+  softDelete: boolean,
+  entityKey: string
 ): Promise<Response> {
   const { supabase, tenantId, url } = ctx;
 
@@ -369,7 +381,7 @@ async function handlePatch(
     throw new Error(`Failed to update ${table}: ${error.message}`);
   }
 
-  return createSuccessResponse({ [table.replace(/s$/, '')]: data });
+  return createSuccessResponse({ [entityKey]: data });
 }
 
 /**
@@ -431,7 +443,8 @@ async function handleSync(
   table: string,
   syncIdField: string,
   validator: any,
-  softDelete: boolean = false
+  softDelete: boolean = false,
+  entityKey: string
 ): Promise<Response> {
   const { supabase, tenantId } = ctx;
 
@@ -501,7 +514,7 @@ async function handleSync(
       throw new Error(`Failed to sync ${table}: ${error.message}`);
     }
 
-    return createSuccessResponse({ [table.replace(/s$/, '')]: data, action: 'updated' });
+    return createSuccessResponse({ [entityKey]: data, action: 'updated' });
   } else {
     // Insert new
     const { data, error } = await supabase
@@ -514,7 +527,7 @@ async function handleSync(
       throw new Error(`Failed to sync ${table}: ${error.message}`);
     }
 
-    return createSuccessResponse({ [table.replace(/s$/, '')]: data, action: 'created' }, 201);
+    return createSuccessResponse({ [entityKey]: data, action: 'created' }, 201);
   }
 }
 
@@ -527,7 +540,8 @@ async function handleBulkSync(
   table: string,
   syncIdField: string,
   validator: any,
-  softDelete: boolean = false
+  softDelete: boolean = false,
+  entityKey: string
 ): Promise<Response> {
   const { supabase, tenantId } = ctx;
 
