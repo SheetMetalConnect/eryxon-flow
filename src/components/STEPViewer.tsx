@@ -1266,7 +1266,7 @@ export function STEPViewer({
           labelDiv.title = `${dim.type}: ${dim.text}`;
 
           const label = new CSS2DObject(labelDiv);
-          let transformedPos = transformPMIPosition(dim.position, index);
+          const transformedPos = transformPMIPosition(dim.position, index);
           
           // Apply slight offset for better visibility - move annotations slightly away from geometry
           if (meshesRef.current.length > 0) {

@@ -1381,7 +1381,7 @@ const checkResourceAvailability: ToolHandler = async (args, supabase) => {
 
     // Get current usage if requested
     const shouldIncludeUsage = include_usage ?? true;
-    let usageMap = new Map<string, any[]>();
+    const usageMap = new Map<string, any[]>();
 
     if (shouldIncludeUsage && resources && resources.length > 0) {
       const resourceIds = resources.map((r: any) => r.id);

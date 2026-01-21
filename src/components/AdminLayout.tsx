@@ -294,7 +294,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     },
   ];
 
-  const SidebarContent = () => (
+  const renderSidebarContent = () => (
     <div className="flex h-full flex-col">
       {/* Logo/Brand - Compact */}
       <div className="flex h-12 items-center border-b border-border-subtle px-3">
@@ -721,7 +721,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             mobileOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >
-          <SidebarContent />
+          {renderSidebarContent()}
         </aside>
 
         {/* Sidebar - Desktop (auto-collapse on tablet) */}
@@ -732,7 +732,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           )}
         >
           <div className="relative h-full">
-            <SidebarContent />
+            {renderSidebarContent()}
           </div>
         </aside>
 

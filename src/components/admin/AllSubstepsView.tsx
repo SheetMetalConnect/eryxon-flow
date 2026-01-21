@@ -68,15 +68,6 @@ export function AllSubstepsView() {
     status: "not_started",
   });
 
-  useEffect(() => {
-    if (!profile?.tenant_id) return;
-    loadSubsteps();
-  }, [profile?.tenant_id]);
-
-  useEffect(() => {
-    filterSubsteps();
-  }, [searchTerm, statusFilter, substeps]);
-
   const loadSubsteps = async () => {
     if (!profile?.tenant_id) return;
     setLoading(true);
@@ -149,6 +140,15 @@ export function AllSubstepsView() {
 
     setFilteredSubsteps(filtered);
   };
+
+  useEffect(() => {
+    if (!profile?.tenant_id) return;
+    loadSubsteps();
+  }, [profile?.tenant_id]);
+
+  useEffect(() => {
+    filterSubsteps();
+  }, [searchTerm, statusFilter, substeps]);
 
   const handleOpenEditDialog = (substep: Substep) => {
     setEditingSubstep(substep);
