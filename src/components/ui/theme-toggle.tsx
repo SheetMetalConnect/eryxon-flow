@@ -26,6 +26,11 @@ const themeOptions: { value: ThemeMode; label: string; icon: typeof Sun }[] = [
   { value: 'auto', label: 'System', icon: Monitor },
 ];
 
+const renderModeIcon = (mode: ThemeMode, className: string) => {
+  if (mode === 'auto') return <Monitor className={className} />;
+  return mode === 'dark' ? <Moon className={className} /> : <Sun className={className} />;
+};
+
 /**
  * ThemeToggle Component
  *
@@ -40,14 +45,6 @@ export function ThemeToggle({
   showLabel = false,
 }: ThemeToggleProps) {
   const { mode, resolvedTheme, setTheme, toggleTheme } = useThemeMode();
-
-  // Get current theme icon based on mode
-  const getCurrentIcon = () => {
-    if (mode === 'auto') return Monitor;
-    return mode === 'dark' ? Moon : Sun;
-  };
-
-  const CurrentIcon = getCurrentIcon();
 
   // Icon variant - click to cycle
   if (variant === 'icon') {
@@ -65,7 +62,7 @@ export function ThemeToggle({
             )}
             aria-label={`Current theme: ${mode}. Click to change.`}
           >
-            <CurrentIcon className="h-4 w-4" />
+            {renderModeIcon(mode, "h-4 w-4")}
           </Button>
         </TooltipTrigger>
         <TooltipContent side="right">
@@ -119,7 +116,7 @@ export function ThemeToggle({
           )}
           aria-label="Toggle theme"
         >
-          <CurrentIcon className="h-4 w-4" />
+          {renderModeIcon(mode, "h-4 w-4")}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[140px]">
@@ -151,13 +148,6 @@ export function ThemeToggle({
  */
 export function SidebarThemeToggle({ collapsed = false }: { collapsed?: boolean }) {
   const { mode, resolvedTheme, setTheme } = useThemeMode();
-
-  const getCurrentIcon = () => {
-    if (mode === 'auto') return Monitor;
-    return mode === 'dark' ? Moon : Sun;
-  };
-
-  const CurrentIcon = getCurrentIcon();
   const modeLabel = mode === 'auto' ? `Auto (${resolvedTheme})` : mode.charAt(0).toUpperCase() + mode.slice(1);
 
   if (collapsed) {
@@ -170,7 +160,7 @@ export function SidebarThemeToggle({ collapsed = false }: { collapsed?: boolean 
             className="h-9 w-9 rounded-lg hover:bg-muted mx-auto"
             aria-label="Toggle theme"
           >
-            <CurrentIcon className="h-4 w-4" />
+            {renderModeIcon(mode, "h-4 w-4")}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="right" align="start" className="min-w-[140px]">
@@ -195,7 +185,7 @@ export function SidebarThemeToggle({ collapsed = false }: { collapsed?: boolean 
   return (
     <div className="flex items-center justify-between px-2 py-1.5">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <CurrentIcon className="h-4 w-4" />
+        {renderModeIcon(mode, "h-4 w-4")}
         <span>Theme</span>
       </div>
       <DropdownMenu>

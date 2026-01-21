@@ -65,7 +65,9 @@ export default function CurrentlyTimingWidget() {
   useEffect(() => {
     if (!operatorId) return;
 
-    loadActiveEntries();
+    const loadTimeout = window.setTimeout(() => {
+      void loadActiveEntries();
+    }, 0);
 
     // Update every second for elapsed time
     const interval = setInterval(() => {
@@ -90,6 +92,7 @@ export default function CurrentlyTimingWidget() {
       .subscribe();
 
     return () => {
+      clearTimeout(loadTimeout);
       clearInterval(interval);
       supabase.removeChannel(channel);
     };

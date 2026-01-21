@@ -36,12 +36,6 @@ export default function MyIssues() {
   const [loading, setLoading] = useState(true);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (!profile?.id) return;
-    loadIssues();
-    return setupRealtime();
-  }, [profile?.id]);
-
   // Load signed URLs for issue images
   useEffect(() => {
     const loadImageUrls = async () => {
@@ -110,6 +104,18 @@ export default function MyIssues() {
       supabase.removeChannel(channel);
     };
   };
+
+  useEffect(() => {
+    if (!profile?.id) return;
+    const loadTimeout = window.setTimeout(() => {
+      void loadIssues();
+    }, 0);
+    const cleanup = setupRealtime();
+    return () => {
+      clearTimeout(loadTimeout);
+      cleanup();
+    };
+  }, [profile?.id]);
 
   const severityColors = {
     low: "bg-severity-low",

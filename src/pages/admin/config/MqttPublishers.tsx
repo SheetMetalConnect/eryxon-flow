@@ -87,13 +87,6 @@ export default function ConfigMqttPublishers() {
   const [useTls, setUseTls] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (profile?.tenant_id) {
-      fetchPublishers();
-      fetchMqttLogs();
-    }
-  }, [profile?.tenant_id]);
-
   const fetchPublishers = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -149,6 +142,17 @@ export default function ConfigMqttPublishers() {
     }
     setLogsLoading(false);
   };
+
+  useEffect(() => {
+    if (profile?.tenant_id) {
+      const loadTimeout = window.setTimeout(() => {
+        void fetchPublishers();
+        void fetchMqttLogs();
+      }, 0);
+      return () => clearTimeout(loadTimeout);
+    }
+    return;
+  }, [profile?.tenant_id]);
 
   const resetForm = () => {
     setPublisherName("");

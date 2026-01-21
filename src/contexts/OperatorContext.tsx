@@ -47,12 +47,13 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
     }
 
     const stored = localStorage.getItem(STORAGE_KEY);
+    let nextOperator: ActiveOperator | null = null;
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
         // Validate that the stored operator belongs to current tenant
         if (parsed.tenant_id === tenant.id) {
-          setActiveOperator(parsed);
+          nextOperator = parsed;
         } else {
           // Only clear if we have a valid tenant and it doesn't match
           localStorage.removeItem(STORAGE_KEY);
@@ -61,15 +62,23 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem(STORAGE_KEY);
       }
     }
-    setIsLoading(false);
+    const loadTimeout = window.setTimeout(() => {
+      setActiveOperator(nextOperator);
+      setIsLoading(false);
+    }, 0);
+    return () => clearTimeout(loadTimeout);
   }, [tenant?.id]);
 
   // Clear active operator when user logs out or changes tenant
   useEffect(() => {
     if (!profile) {
-      setActiveOperator(null);
-      localStorage.removeItem(STORAGE_KEY);
+      const clearTimeoutId = window.setTimeout(() => {
+        setActiveOperator(null);
+        localStorage.removeItem(STORAGE_KEY);
+      }, 0);
+      return () => clearTimeout(clearTimeoutId);
     }
+    return;
   }, [profile]);
 
   const verifyAndSwitchOperator = useCallback(async (

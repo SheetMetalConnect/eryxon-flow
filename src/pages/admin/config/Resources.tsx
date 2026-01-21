@@ -62,11 +62,6 @@ export default function ConfigResources() {
     metadata: {} as BaseMetadata,
   });
 
-  useEffect(() => {
-    if (!profile?.tenant_id) return;
-    loadResources();
-  }, [profile?.tenant_id]);
-
   const loadResources = async () => {
     if (!profile?.tenant_id) return;
 
@@ -82,6 +77,14 @@ export default function ConfigResources() {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (!profile?.tenant_id) return;
+    const loadTimeout = window.setTimeout(() => {
+      void loadResources();
+    }, 0);
+    return () => clearTimeout(loadTimeout);
+  }, [profile?.tenant_id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

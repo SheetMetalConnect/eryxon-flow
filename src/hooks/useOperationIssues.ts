@@ -13,35 +13,6 @@ export function useOperationIssues(operationId: string, tenantId: string | undef
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!tenantId || !operationId) {
-      setLoading(false);
-      return;
-    }
-
-    loadIssues();
-    
-    const channel = supabase
-      .channel(`operation-issues-${operationId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "issues",
-          filter: `operation_id=eq.${operationId}`,
-        },
-        () => {
-          loadIssues();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [operationId, tenantId]);
-
   const loadIssues = async () => {
     if (!tenantId || !operationId) return;
 
@@ -54,6 +25,40 @@ export function useOperationIssues(operationId: string, tenantId: string | undef
     setIssues(data || []);
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (!tenantId || !operationId) {
+      const resetTimeout = window.setTimeout(() => {
+        setLoading(false);
+      }, 0);
+      return () => clearTimeout(resetTimeout);
+    }
+
+    const loadTimeout = window.setTimeout(() => {
+      void loadIssues();
+    }, 0);
+
+    const channel = supabase
+      .channel(`operation-issues-${operationId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "issues",
+          filter: `operation_id=eq.${operationId}`,
+        },
+        () => {
+          void loadIssues();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      clearTimeout(loadTimeout);
+      supabase.removeChannel(channel);
+    };
+  }, [operationId, tenantId]);
 
   const pendingIssues = issues.filter(i => i.status === "pending");
   const highestSeverity = pendingIssues.length > 0

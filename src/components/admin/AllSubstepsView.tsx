@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -56,7 +56,6 @@ export function AllSubstepsView() {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const [substeps, setSubsteps] = useState<Substep[]>([]);
-  const [filteredSubsteps, setFilteredSubsteps] = useState<Substep[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -117,7 +116,7 @@ export function AllSubstepsView() {
     setLoading(false);
   };
 
-  const filterSubsteps = () => {
+  const filteredSubsteps = useMemo(() => {
     let filtered = [...substeps];
 
     // Filter by search term
@@ -138,17 +137,16 @@ export function AllSubstepsView() {
       filtered = filtered.filter((substep) => substep.status === statusFilter);
     }
 
-    setFilteredSubsteps(filtered);
-  };
+    return filtered;
+  }, [searchTerm, statusFilter, substeps]);
 
   useEffect(() => {
     if (!profile?.tenant_id) return;
-    loadSubsteps();
+    const loadTimeout = window.setTimeout(() => {
+      void loadSubsteps();
+    }, 0);
+    return () => clearTimeout(loadTimeout);
   }, [profile?.tenant_id]);
-
-  useEffect(() => {
-    filterSubsteps();
-  }, [searchTerm, statusFilter, substeps]);
 
   const handleOpenEditDialog = (substep: Substep) => {
     setEditingSubstep(substep);

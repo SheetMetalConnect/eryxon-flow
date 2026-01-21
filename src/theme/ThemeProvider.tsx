@@ -89,17 +89,18 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     return defaultMode ?? getStoredTheme();
   });
 
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => {
-    return resolveTheme(mode);
+  const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(() => {
+    return getSystemTheme();
   });
 
-  // Update resolved theme when mode changes
+  const resolvedTheme = useMemo(() => {
+    return mode === 'auto' ? systemTheme : mode;
+  }, [mode, systemTheme]);
+
   useEffect(() => {
-    const resolved = resolveTheme(mode);
-    setResolvedTheme(resolved);
-    applyThemeToDocument(resolved);
+    applyThemeToDocument(resolvedTheme);
     localStorage.setItem(STORAGE_KEY, mode);
-  }, [mode]);
+  }, [mode, resolvedTheme]);
 
   // Listen for system theme changes when in auto mode
   useEffect(() => {
@@ -109,18 +110,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
 
     const handleChange = (e: MediaQueryListEvent) => {
       const newTheme = e.matches ? 'light' : 'dark';
-      setResolvedTheme(newTheme);
-      applyThemeToDocument(newTheme);
+      setSystemTheme(newTheme);
     };
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [mode]);
-
-  // Apply initial theme on mount
-  useEffect(() => {
-    applyThemeToDocument(resolvedTheme);
-  }, []);
 
   const setTheme = useCallback((newMode: ThemeMode) => {
     setModeState(newMode);

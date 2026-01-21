@@ -70,22 +70,29 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
  */
 export function useThrottle<T>(value: T, interval: number = 300): T {
   const [throttledValue, setThrottledValue] = useState<T>(value);
-  const lastUpdated = useRef<number>(Date.now());
+  const lastUpdated = useRef<number>(0);
 
   useEffect(() => {
     const now = Date.now();
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     if (now >= lastUpdated.current + interval) {
-      lastUpdated.current = now;
-      setThrottledValue(value);
+      timeoutId = setTimeout(() => {
+        lastUpdated.current = Date.now();
+        setThrottledValue(value);
+      }, 0);
     } else {
-      const id = setTimeout(() => {
+      timeoutId = setTimeout(() => {
         lastUpdated.current = Date.now();
         setThrottledValue(value);
       }, interval - (now - lastUpdated.current));
-
-      return () => clearTimeout(id);
     }
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [value, interval]);
 
   return throttledValue;

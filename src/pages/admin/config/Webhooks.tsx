@@ -64,13 +64,6 @@ export default function ConfigWebhooks() {
   const [webhookUrl, setWebhookUrl] = useState("");
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (profile?.tenant_id) {
-      fetchWebhooks();
-      fetchWebhookLogs();
-    }
-  }, [profile?.tenant_id]);
-
   const fetchWebhooks = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -135,6 +128,17 @@ export default function ConfigWebhooks() {
     }
     setLogsLoading(false);
   };
+
+  useEffect(() => {
+    if (profile?.tenant_id) {
+      const loadTimeout = window.setTimeout(() => {
+        void fetchWebhooks();
+        void fetchWebhookLogs();
+      }, 0);
+      return () => clearTimeout(loadTimeout);
+    }
+    return;
+  }, [profile?.tenant_id]);
 
   const generateSecretKey = () => {
     return Array.from(crypto.getRandomValues(new Uint8Array(32)))
@@ -299,7 +303,7 @@ export default function ConfigWebhooks() {
         );
       },
     },
-  ], [t]);
+  ], [t, deleteWebhook, toggleWebhook]);
 
   const logColumns: ColumnDef<WebhookLog>[] = useMemo(() => [
     {

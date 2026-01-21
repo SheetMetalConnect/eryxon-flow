@@ -54,12 +54,6 @@ export default function MyActivity() {
   const [loading, setLoading] = useState(true);
   const [days] = useState(7);
 
-  useEffect(() => {
-    if (profile?.id) {
-      loadActivity();
-    }
-  }, [profile?.id, days]);
-
   const loadActivity = async () => {
     if (!profile?.id) return;
 
@@ -90,6 +84,16 @@ export default function MyActivity() {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (profile?.id) {
+      const loadTimeout = window.setTimeout(() => {
+        void loadActivity();
+      }, 0);
+      return () => clearTimeout(loadTimeout);
+    }
+    return;
+  }, [profile?.id, days]);
 
   const groupByDate = (): DayGroup[] => {
     const groups: { [key: string]: TimeEntry[] } = {};

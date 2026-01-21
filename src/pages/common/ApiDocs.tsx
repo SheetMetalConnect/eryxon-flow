@@ -94,7 +94,7 @@ export default function ApiDocs() {
     if (Array.isArray(obj)) {
       for (const item of obj) {
         if (typeof item === 'object' && item !== null) {
-          result += `${spaces}-\n${jsonToYaml(item, indent + 1).replace(/^  /, '')}`;
+          result += `${spaces}-\n${jsonToYaml(item, indent + 1).replace(/^ {2}/, '')}`;
         } else {
           result += `${spaces}- ${formatYamlValue(item)}\n`;
         }
