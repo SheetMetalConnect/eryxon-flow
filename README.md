@@ -2,15 +2,24 @@
 
 Open source Manufacturing Execution System (MES) for job shops and make-to-order manufacturers.
 
+**Version 0.2** - Focused on core production tracking capabilities with improved scalability.
+
 ## Features
 
-- Job and part tracking with real-time status updates
-- Production planning and scheduling
-- Multi-tenant SaaS architecture with row-level security
-- Analytics and reporting (OEE, QRM, quality metrics)
-- REST API with webhooks for ERP integration
-- Shipping and logistics management
-- Multi-language support (English, Dutch, German)
+- **Job and part tracking** with real-time status updates via WebSockets
+- **Operator terminals** for time tracking and work queue management
+- **Multi-tenant SaaS architecture** with row-level security (RLS)
+- **REST API** with webhooks for ERP integration and automation
+- **CSV import/export** for bulk data operations
+- **3D STEP file viewer** (client-side, browser-based)
+- **Multi-language support** (English, Dutch, German)
+- **Real-time dashboard** with production stats and metrics
+
+### Scope
+
+Eryxon focuses on **core MES functionality**: production tracking, operator management, and quality documentation.
+
+This is **not** an ERP, analytics platform, or logistics system. We do one thing well.
 
 ## Quick Deploy
 
@@ -48,14 +57,16 @@ See `.env.example` for complete list.
 ## Architecture
 
 **Frontend**: React + TypeScript + Vite
-**UI**: shadcn/ui + Tailwind CSS
-**Backend**: Supabase (PostgreSQL + Edge Functions)
+**UI**: shadcn/ui + Tailwind CSS + Custom Design System
+**Backend**: Supabase (PostgreSQL + Edge Functions + Realtime)
 **Deployment**: Cloudflare Pages
-**Database**: 85 migrations, multi-tenant schema
-**API**: 28 Edge Functions
+**Database**: 87 migrations, multi-tenant schema with RLS
+**API**: 28 Edge Functions (refactored with shared CRUD builder)
+**3D Rendering**: Three.js + occt-import-js (client-side STEP parsing)
 
 ## Documentation
 
+- [CHANGELOG.md](CHANGELOG.md) - Version history and release notes
 - [DEPLOY.md](DEPLOY.md) - Deployment guide
 - [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) - API reference
 - [docs/SELF_HOSTING_GUIDE.md](docs/SELF_HOSTING_GUIDE.md) - Self-hosting
