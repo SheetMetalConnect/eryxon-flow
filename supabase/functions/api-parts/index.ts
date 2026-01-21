@@ -58,7 +58,7 @@ async function handleCreateWithLimits(req: Request, ctx: HandlerContext): Promis
   // Validate request
   const partWithJobId = { ...body, job_id: body.job_id };
   const validator = new PartValidator();
-  const validationResult = validator.validate(partWithJobId, context);
+  const validationResult = await validator.validate(partWithJobId, context);
 
   if (!validationResult.valid) {
     throw new ValidationException(validationResult);

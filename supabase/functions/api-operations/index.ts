@@ -42,7 +42,7 @@ async function handleCreateWithSequence(req: Request, ctx: HandlerContext): Prom
 
   // Validate request
   const validator = new OperationValidator();
-  const validationResult = validator.validate(body, context);
+  const validationResult = await validator.validate(body, context);
 
   if (!validationResult.valid) {
     throw new ValidationException(validationResult);
