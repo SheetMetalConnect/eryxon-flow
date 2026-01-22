@@ -1,20 +1,11 @@
 name = "eryxon-flow"
 compatibility_date = "2024-01-01"
 
-[build]
-command = "npm run build"
-
-[build.upload]
-format = "service-worker"
-main = "./dist"
-
-[site]
-bucket = "./dist"
+# Static assets deployment
+assets = { directory = "./dist" }
 
 [env.production]
 name = "eryxon-flow"
-route = ""
-vars = { NODE_VERSION = "20" }
 
 [env.preview]
 name = "eryxon-flow-preview"
