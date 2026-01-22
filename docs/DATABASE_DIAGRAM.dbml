@@ -1,0 +1,1510 @@
+// Eryxon MES Database Schema
+// Generated: 2025-12-08
+// Open this file with dbdiagram.io for visual diagram
+
+Project eryxon_mes {
+  database_type: 'PostgreSQL'
+  Note: '''
+    # Eryxon MES Database Schema
+    Multi-tenant Manufacturing Execution System
+
+    ## Key Concepts:
+    - All tables have tenant_id for multi-tenancy with RLS
+    - Soft delete via deleted_at/deleted_by columns
+    - ERP sync fields: external_id, external_source, synced_at, sync_hash
+  '''
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+Enum app_role {
+  operator
+  admin
+}
+
+Enum assignment_status {
+  assigned
+  accepted
+  in_progress
+  completed
+}
+
+Enum integration_category {
+  erp
+  accounting
+  crm
+  inventory
+  shipping
+  analytics
+  other
+}
+
+Enum integration_status {
+  draft
+  published
+  deprecated
+  archived
+}
+
+Enum issue_severity {
+  low
+  medium
+  high
+  critical
+}
+
+Enum issue_status {
+  pending
+  approved
+  rejected
+  closed
+}
+
+Enum issue_type {
+  general
+  ncr
+}
+
+Enum job_status {
+  not_started
+  in_progress
+  completed
+  on_hold
+}
+
+Enum ncr_category {
+  material_defect
+  dimensional
+  surface_finish
+  process_error
+  other
+}
+
+Enum ncr_disposition {
+  scrap
+  rework
+  use_as_is
+  return_to_supplier
+}
+
+Enum payment_provider {
+  invoice
+  stripe
+  sumup
+}
+
+Enum shipment_status {
+  draft
+  planned
+  loading
+  in_transit
+  delivered
+  cancelled
+}
+
+Enum subscription_plan {
+  free
+  pro
+  premium
+  enterprise
+}
+
+Enum subscription_status {
+  active
+  cancelled
+  suspended
+  trial
+}
+
+Enum task_status {
+  not_started
+  in_progress
+  completed
+  on_hold
+}
+
+Enum vehicle_type {
+  truck
+  van
+  car
+  bike
+  freight
+  air
+  sea
+  rail
+  other
+}
+
+Enum waitlist_status {
+  pending
+  approved
+  rejected
+  converted
+}
+
+// ============================================
+// CORE TABLES
+// ============================================
+
+Table tenants {
+  id uuid [pk]
+  name text [not null]
+  company_name text
+  abbreviation text
+
+  // Subscription
+  plan subscription_plan [default: 'free']
+  status subscription_status [default: 'active']
+  trial_ends_at timestamptz
+  grace_period_ends_at timestamptz
+
+  // Plan Limits
+  max_jobs int
+  max_parts_per_month int
+  max_storage_gb numeric
+  current_jobs int [default: 0]
+  current_parts_this_month int [default: 0]
+  current_storage_gb numeric [default: 0]
+  last_parts_reset_date date
+
+  // Billing
+  billing_enabled bool [default: false]
+  billing_email text
+  billing_country_code text
+  vat_number text
+  preferred_payment_method payment_provider
+  stripe_customer_id text
+  stripe_subscription_id text
+  subscription_started_at timestamptz
+  subscription_updated_at timestamptz
+  payment_failed_at timestamptz
+
+  // Factory Settings
+  timezone text [default: 'UTC']
+  factory_opening_time time [default: '08:00']
+  factory_closing_time time [default: '17:00']
+  working_days_mask int [default: 31, note: 'Bitmask: Mon=1, Tue=2, Wed=4, Thu=8, Fri=16']
+  auto_stop_tracking bool [default: false]
+
+  // Demo Mode
+  demo_mode_enabled bool [default: false]
+  demo_mode_acknowledged bool [default: false]
+  demo_data_seeded_at timestamptz
+  demo_data_seeded_by uuid
+
+  // Whitelabeling
+  whitelabel_enabled bool [default: false]
+  whitelabel_app_name text
+  whitelabel_logo_url text
+  whitelabel_favicon_url text
+  whitelabel_primary_color text
+
+  // Auto-increment
+  next_operator_number int [default: 1]
+
+  // Onboarding
+  onboarding_completed_at timestamptz
+
+  // Timestamps
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  Note: 'Root table for multi-tenant isolation'
+}
+
+Table profiles {
+  id uuid [pk, note: 'Matches auth.users.id']
+  tenant_id uuid [not null, ref: > tenants.id]
+  email text [not null]
+  username text [not null]
+  full_name text [not null]
+  role app_role [not null]
+
+  // Operator specific
+  employee_id text
+  pin_hash text [note: 'For terminal login']
+  has_email_login bool [default: true]
+
+  // Flags
+  active bool [default: true]
+  is_machine bool [default: false]
+  is_root_admin bool [default: false]
+
+  // Onboarding
+  onboarding_completed bool [default: false]
+  onboarding_step int [default: 1]
+  tour_completed bool [default: false]
+  mock_data_imported bool [default: false]
+
+  // Search
+  search_vector tsvector
+
+  // Timestamps
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (tenant_id, email) [unique]
+  }
+
+  Note: 'User accounts linked to Supabase auth'
+}
+
+Table user_roles {
+  id uuid [pk]
+  user_id uuid [not null, ref: > profiles.id]
+  role app_role [not null]
+  created_at timestamptz [default: `now()`]
+
+  Note: 'Additional roles for users'
+}
+
+Table invitations {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  email text [not null]
+  role app_role [default: 'operator']
+  token text [not null, unique]
+  status text [default: 'pending']
+  expires_at timestamptz [not null]
+
+  // Who sent/accepted
+  invited_by uuid [not null, ref: > profiles.id]
+  accepted_by uuid [ref: > profiles.id]
+  accepted_at timestamptz
+
+  metadata jsonb
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  Note: 'User invitation system'
+}
+
+// ============================================
+// JOBS DOMAIN
+// ============================================
+
+Table jobs {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  job_number text [not null]
+  customer text
+  status job_status [default: 'not_started']
+
+  // Dates
+  due_date timestamptz
+  due_date_override timestamptz
+
+  // Location/Shipping
+  delivery_address text
+  delivery_city text
+  delivery_postal_code text
+  delivery_country text
+  delivery_lat numeric
+  delivery_lng numeric
+
+  // Shipping totals (auto-calculated)
+  total_weight_kg numeric
+  total_volume_m3 numeric
+  package_count int
+
+  // Current location
+  current_cell_id uuid [ref: > cells.id]
+
+  notes text
+  metadata jsonb
+  search_vector tsvector
+
+  // ERP Sync
+  external_id text
+  external_source text
+  sync_hash text
+  synced_at timestamptz
+
+  // Soft delete
+  deleted_at timestamptz
+  deleted_by uuid [ref: > profiles.id]
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (tenant_id, job_number) [unique, where: 'deleted_at IS NULL']
+    (tenant_id, external_source, external_id) [unique, where: 'external_id IS NOT NULL']
+  }
+
+  Note: 'Sales orders / production orders'
+}
+
+Table parts {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  job_id uuid [not null, ref: > jobs.id]
+  part_number text [not null]
+  material text [not null]
+  quantity int [default: 1]
+  status job_status [default: 'not_started']
+
+  // Current location
+  current_cell_id uuid [ref: > cells.id]
+
+  // Dimensions
+  length_mm numeric
+  width_mm numeric
+  height_mm numeric
+  weight_kg numeric
+
+  // Manufacturing info
+  drawing_no text
+  cnc_program_name text
+  is_bullet_card bool [default: false]
+
+  // Material traceability
+  material_lot text
+  material_supplier text
+  material_cert_number text
+
+  // Sub-assemblies
+  parent_part_id uuid [ref: > parts.id]
+
+  // Attachments
+  image_paths text[]
+  file_paths text[]
+
+  notes text
+  metadata jsonb
+  search_vector tsvector
+
+  // ERP Sync
+  external_id text
+  external_source text
+  sync_hash text
+  synced_at timestamptz
+
+  // Soft delete
+  deleted_at timestamptz
+  deleted_by uuid [ref: > profiles.id]
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (tenant_id, external_source, external_id) [unique, where: 'external_id IS NOT NULL']
+  }
+
+  Note: 'Work orders / line items within jobs'
+}
+
+Table operations {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  part_id uuid [not null, ref: > parts.id]
+  cell_id uuid [not null, ref: > cells.id]
+  operation_name text [not null]
+  sequence int [not null]
+  status task_status [default: 'not_started']
+
+  // Time estimates
+  estimated_time numeric [not null, note: 'Hours']
+  actual_time numeric
+  setup_time numeric
+  run_time_per_unit numeric
+  changeover_time numeric
+  wait_time numeric
+
+  // Scheduling
+  planned_start timestamptz
+  planned_end timestamptz
+  completed_at timestamptz
+  completion_percentage int [default: 0]
+
+  // Assignment
+  assigned_operator_id uuid [ref: > profiles.id]
+
+  // Display
+  icon_name text
+  notes text
+  metadata jsonb
+  search_vector tsvector
+
+  // ERP Sync
+  external_id text
+  external_source text
+  synced_at timestamptz
+
+  // Soft delete
+  deleted_at timestamptz
+  deleted_by uuid [ref: > profiles.id]
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (tenant_id, external_source, external_id) [unique, where: 'external_id IS NOT NULL']
+    (part_id, sequence)
+  }
+
+  Note: 'Routing steps / manufacturing operations'
+}
+
+Table cells {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  name text [not null]
+  description text
+  sequence int [not null]
+
+  // Display
+  color text
+  icon_name text
+  image_url text
+
+  // Capacity
+  capacity_hours_per_day numeric
+  wip_limit int
+  wip_warning_threshold int
+  enforce_wip_limit bool [default: false]
+  show_capacity_warning bool [default: true]
+
+  active bool [default: true]
+
+  // ERP Sync
+  external_id text
+  external_source text
+  synced_at timestamptz
+
+  // Soft delete
+  deleted_at timestamptz
+  deleted_by uuid [ref: > profiles.id]
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  Note: 'Work centers / manufacturing stages'
+}
+
+Table assignments {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  job_id uuid [ref: > jobs.id]
+  part_id uuid [ref: > parts.id]
+  operator_id uuid [ref: > profiles.id]
+  shop_floor_operator_id uuid [ref: > operators.id]
+  assigned_by uuid [not null, ref: > profiles.id]
+  status assignment_status [default: 'assigned']
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  Note: 'Job/Part assignments to operators'
+}
+
+// ============================================
+// ISSUES DOMAIN
+// ============================================
+
+Table issues {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  operation_id uuid [not null, ref: > operations.id]
+  title text
+  description text [not null]
+  severity issue_severity [not null]
+  status issue_status [default: 'pending']
+  issue_type issue_type [default: 'general']
+
+  // NCR specific
+  ncr_category ncr_category
+  disposition ncr_disposition
+  affected_quantity int
+
+  // Resolution
+  root_cause text
+  corrective_action text
+  preventive_action text
+  resolution_notes text
+  verification_required bool [default: false]
+
+  // Tracking
+  created_by uuid [not null, ref: > profiles.id]
+  reported_by_id uuid [ref: > profiles.id]
+  reviewed_by uuid [ref: > profiles.id]
+  reviewed_at timestamptz
+
+  image_paths text[]
+  search_vector tsvector
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  Note: 'Quality issues and NCRs'
+}
+
+Table issue_categories {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  code text [not null]
+  description text [not null]
+  severity_default text
+  active bool [default: true]
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (tenant_id, code) [unique]
+  }
+
+  Note: 'Predefined issue categories'
+}
+
+Table scrap_reasons {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  code text [not null]
+  category text [not null]
+  description text [not null]
+  active bool [default: true]
+  metadata jsonb
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (tenant_id, code) [unique]
+  }
+
+  Note: 'Predefined scrap reason codes'
+}
+
+// ============================================
+// TIME TRACKING DOMAIN
+// ============================================
+
+Table time_entries {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  operation_id uuid [not null, ref: > operations.id]
+  operator_id uuid [not null, ref: > profiles.id]
+
+  time_type text [default: 'work', note: 'work, setup, wait']
+  start_time timestamptz [not null]
+  end_time timestamptz
+  duration numeric [note: 'Calculated minutes']
+  is_paused bool [default: false]
+
+  notes text
+
+  created_at timestamptz [default: `now()`]
+
+  Note: 'Time tracking for operations'
+}
+
+Table time_entry_pauses {
+  id uuid [pk]
+  time_entry_id uuid [not null, ref: > time_entries.id]
+  paused_at timestamptz [not null]
+  resumed_at timestamptz
+  duration numeric [note: 'Calculated minutes']
+
+  created_at timestamptz [default: `now()`]
+
+  Note: 'Pause/resume tracking'
+}
+
+Table operation_quantities {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  operation_id uuid [not null, ref: > operations.id]
+  recorded_by uuid [ref: > profiles.id]
+
+  recorded_at timestamptz [not null]
+  quantity_produced int [default: 0]
+  quantity_good int [default: 0]
+  quantity_scrap int [default: 0]
+  quantity_rework int [default: 0]
+
+  scrap_reason_id uuid [ref: > scrap_reasons.id]
+
+  // Material traceability
+  material_lot text
+  material_supplier text
+  material_cert_number text
+
+  notes text
+  metadata jsonb
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  Note: 'Production quantity tracking'
+}
+
+Table operation_day_allocations {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  operation_id uuid [not null, ref: > operations.id]
+  cell_id uuid [not null, ref: > cells.id]
+
+  date date [not null]
+  start_time time [not null]
+  end_time time [not null]
+  hours_allocated numeric [not null]
+
+  created_at timestamptz [default: `now()`]
+
+  indexes {
+    (operation_id, date) [unique]
+  }
+
+  Note: 'Scheduler day allocations'
+}
+
+// ============================================
+// RESOURCES DOMAIN
+// ============================================
+
+Table resources {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  name text [not null]
+  type text [not null, note: 'equipment, tool, fixture, etc.']
+  identifier text [note: 'Asset tag / serial number']
+  description text
+  location text
+  status text [default: 'available', note: 'available, in_use, maintenance']
+  active bool [default: true]
+  metadata jsonb
+
+  // ERP Sync
+  external_id text
+  external_source text
+  synced_at timestamptz
+
+  // Soft delete
+  deleted_at timestamptz
+  deleted_by uuid [ref: > profiles.id]
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  Note: 'Equipment, tooling, fixtures'
+}
+
+Table operation_resources {
+  id uuid [pk]
+  operation_id uuid [not null, ref: > operations.id]
+  resource_id uuid [not null, ref: > resources.id]
+  quantity int [default: 1]
+  notes text
+
+  created_at timestamptz [default: `now()`]
+
+  indexes {
+    (operation_id, resource_id) [unique]
+  }
+
+  Note: 'M:N link between operations and resources'
+}
+
+Table operators {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  employee_id text [not null]
+  full_name text [not null]
+  pin_hash text [not null]
+  active bool [default: true]
+  created_by uuid [ref: > profiles.id]
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (tenant_id, employee_id) [unique]
+  }
+
+  Note: 'Shop floor operators (PIN login only)'
+}
+
+Table materials {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  name text [not null]
+  description text
+  color text
+  active bool [default: true]
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (tenant_id, name) [unique]
+  }
+
+  Note: 'Material definitions'
+}
+
+// ============================================
+// SUBSTEPS DOMAIN
+// ============================================
+
+Table substeps {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  operation_id uuid [not null, ref: > operations.id]
+  name text [not null]
+  sequence int [not null]
+  status text [default: 'pending']
+  icon_name text
+  notes text
+
+  completed_at timestamptz
+  completed_by uuid [ref: > profiles.id]
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (operation_id, sequence)
+  }
+
+  Note: 'Checklist items within operations'
+}
+
+Table substep_templates {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  name text [not null]
+  description text
+  operation_type text
+  is_global bool [default: false]
+  created_by uuid [ref: > profiles.id]
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  Note: 'Reusable substep templates'
+}
+
+Table substep_template_items {
+  id uuid [pk]
+  template_id uuid [not null, ref: > substep_templates.id]
+  name text [not null]
+  sequence int [not null]
+  notes text
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (template_id, sequence)
+  }
+
+  Note: 'Items within substep templates'
+}
+
+// ============================================
+// SHIPPING DOMAIN
+// ============================================
+
+Table shipments {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  shipment_number text [not null]
+  name text
+  description text
+  status shipment_status [default: 'draft']
+
+  // Schedule
+  scheduled_date date
+  scheduled_time time
+  estimated_arrival timestamptz
+  estimated_duration_minutes int
+  actual_departure timestamptz
+  actual_arrival timestamptz
+
+  // Origin
+  origin_name text
+  origin_address text
+  origin_city text
+  origin_postal_code text
+  origin_country text
+  origin_lat numeric
+  origin_lng numeric
+
+  // Destination
+  destination_name text
+  destination_address text
+  destination_city text
+  destination_postal_code text
+  destination_country text
+  destination_lat numeric
+  destination_lng numeric
+
+  // Vehicle
+  vehicle_type vehicle_type
+  vehicle_identifier text
+  driver_name text
+  driver_phone text
+
+  // Capacity
+  max_weight_kg numeric
+  max_volume_m3 numeric
+  max_length_cm numeric
+  max_width_cm numeric
+  max_height_cm numeric
+  current_weight_kg numeric [default: 0]
+  current_volume_m3 numeric [default: 0]
+  items_count int [default: 0]
+
+  // Cost
+  distance_km numeric
+  shipping_cost numeric
+  currency text [default: 'EUR']
+
+  notes text
+  route_notes text
+  metadata jsonb
+
+  created_by uuid [ref: > profiles.id]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (tenant_id, shipment_number) [unique]
+  }
+
+  Note: 'Shipment management'
+}
+
+Table shipment_jobs {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  shipment_id uuid [not null, ref: > shipments.id]
+  job_id uuid [not null, ref: > jobs.id]
+
+  loading_sequence int
+  weight_kg numeric
+  volume_m3 numeric
+  packages_count int
+
+  loaded_at timestamptz
+  loaded_by uuid [ref: > profiles.id]
+  delivered_at timestamptz
+  delivery_notes text
+  delivery_signature text
+
+  notes text
+  metadata jsonb
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (shipment_id, job_id) [unique]
+  }
+
+  Note: 'Jobs assigned to shipments'
+}
+
+// ============================================
+// CALENDAR DOMAIN
+// ============================================
+
+Table factory_calendar {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  date date [not null]
+  day_type text [default: 'working', note: 'working, holiday, maintenance']
+  name text
+  notes text
+
+  opening_time time
+  closing_time time
+  capacity_multiplier numeric [default: 1.0]
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (tenant_id, date) [unique]
+  }
+
+  Note: 'Factory calendar overrides'
+}
+
+// ============================================
+// ACTIVITY DOMAIN
+// ============================================
+
+Table activity_log {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  user_id uuid [ref: > profiles.id]
+
+  action text [not null, note: 'create, update, delete, login, etc.']
+  entity_type text
+  entity_id text
+  entity_name text
+  description text
+
+  changes jsonb
+  metadata jsonb
+
+  // Audit info
+  user_name text
+  user_email text
+  ip_address inet
+  user_agent text
+  session_id text
+
+  search_vector tsvector
+
+  created_at timestamptz [default: `now()`]
+
+  Note: 'System activity audit log'
+}
+
+Table notifications {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  user_id uuid [ref: > profiles.id, note: 'null = all users in tenant']
+
+  type text [not null, note: 'info, warning, error, success']
+  severity text [default: 'info']
+  title text [not null]
+  message text [not null]
+  link text
+
+  reference_type text
+  reference_id text
+
+  // State
+  read bool [default: false]
+  read_at timestamptz
+  dismissed bool [default: false]
+  dismissed_at timestamptz
+  pinned bool [default: false]
+  pinned_at timestamptz
+
+  metadata jsonb
+
+  created_at timestamptz [default: `now()`]
+
+  Note: 'User notifications'
+}
+
+// ============================================
+// BILLING DOMAIN
+// ============================================
+
+Table billing_waitlist {
+  id uuid [pk]
+  company_name text [not null]
+  contact_name text [not null]
+  contact_email text [not null]
+  contact_phone text
+  country_code text [not null]
+  vat_number text [not null]
+  vat_valid bool
+  vat_validated_at timestamptz
+  company_registration_number text
+  company_size text
+  industry text
+  interested_plan subscription_plan
+  preferred_payment_method payment_provider
+  status waitlist_status [default: 'pending']
+  notes text
+
+  created_at timestamptz [default: `now()`]
+
+  Note: 'EU billing waitlist'
+}
+
+Table subscription_events {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  event_type text [not null]
+
+  old_plan subscription_plan
+  new_plan subscription_plan
+  old_status subscription_status
+  new_status subscription_status
+
+  stripe_event_id text
+  metadata jsonb
+
+  created_at timestamptz [default: `now()`]
+
+  Note: 'Subscription change events'
+}
+
+Table monthly_reset_logs {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  reset_date date [not null]
+  previous_count int [not null]
+  reset_successful bool [default: true]
+  error_message text
+
+  created_at timestamptz [default: `now()`]
+
+  Note: 'Monthly usage reset logs'
+}
+
+// ============================================
+// INTEGRATIONS DOMAIN
+// ============================================
+
+Table api_keys {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  name text [not null]
+  key_hash text [not null]
+  key_prefix text [not null, note: 'First 8 chars for lookup']
+  active bool [default: true]
+  created_by uuid [not null, ref: > profiles.id]
+  last_used_at timestamptz
+
+  created_at timestamptz [default: `now()`]
+
+  Note: 'REST API authentication keys'
+}
+
+Table webhooks {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  url text [not null]
+  secret_key text [not null]
+  events text[] [not null]
+  active bool [default: true]
+
+  created_at timestamptz [default: `now()`]
+
+  Note: 'Outbound webhook configurations'
+}
+
+Table webhook_logs {
+  id uuid [pk]
+  webhook_id uuid [not null, ref: > webhooks.id]
+  event_type text [not null]
+  payload jsonb [not null]
+  status_code int
+  error_message text
+
+  created_at timestamptz [default: `now()`]
+
+  Note: 'Webhook delivery logs'
+}
+
+Table integrations {
+  id uuid [pk]
+  slug text [not null, unique]
+  name text [not null]
+  provider_name text [not null]
+  provider_email text
+  provider_url text
+
+  description text [not null]
+  long_description text
+  category integration_category [default: 'other']
+  status integration_status [default: 'draft']
+
+  // Media
+  logo_url text
+  banner_url text
+  screenshots jsonb
+  demo_video_url text
+
+  // Links
+  documentation_url text
+  github_repo_url text
+  install_url text
+  pricing_url text
+
+  // Details
+  version text
+  features jsonb
+  requirements jsonb
+  supported_systems jsonb
+  webhook_template jsonb
+  requires_api_key bool [default: false]
+  min_plan_tier text
+
+  // Pricing
+  is_free bool [default: true]
+  pricing_description text
+
+  // Stats
+  install_count int [default: 0]
+  rating_average numeric
+  rating_count int [default: 0]
+
+  published_at timestamptz
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  Note: 'Integration marketplace catalog'
+}
+
+Table installed_integrations {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  integration_id uuid [not null, ref: > integrations.id]
+
+  config jsonb
+  is_active bool [default: true]
+  last_sync_at timestamptz
+
+  api_key_id uuid [ref: > api_keys.id]
+  webhook_id uuid [ref: > webhooks.id]
+
+  installed_by uuid [ref: > profiles.id]
+  installed_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (tenant_id, integration_id) [unique]
+  }
+
+  Note: 'Installed integrations per tenant'
+}
+
+// ============================================
+// MCP DOMAIN
+// ============================================
+
+Table mcp_authentication_keys {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  name text [not null]
+  description text
+  key_hash text [not null]
+  key_prefix text [not null]
+  environment text [default: 'production']
+  enabled bool [default: true]
+
+  allowed_tools jsonb [note: 'null = all tools']
+  rate_limit int [default: 60]
+  usage_count int [default: 0]
+
+  created_by uuid [ref: > profiles.id]
+  last_used_at timestamptz
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  Note: 'MCP server authentication keys'
+}
+
+Table mcp_key_usage_logs {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  key_id uuid [ref: > mcp_authentication_keys.id]
+
+  tool_name text [not null]
+  tool_arguments jsonb
+  success bool [not null]
+  error_message text
+  response_time_ms int
+
+  ip_address inet
+  user_agent text
+
+  created_at timestamptz [default: `now()`]
+
+  Note: 'MCP tool usage logs'
+}
+
+Table mcp_server_config {
+  id uuid [pk]
+  tenant_id uuid [not null, unique, ref: > tenants.id]
+  server_name text [default: 'eryxon-mcp']
+  server_version text [default: '1.0.0']
+  supabase_url text [not null]
+  enabled bool [default: true]
+  features jsonb
+  last_connected_at timestamptz
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  Note: 'MCP server configuration per tenant'
+}
+
+Table mcp_server_health {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  status text [not null, note: 'healthy, degraded, down']
+  last_check timestamptz
+  response_time_ms int
+  error_message text
+  metadata jsonb
+
+  created_at timestamptz [default: `now()`]
+
+  Note: 'MCP server health checks'
+}
+
+Table mcp_server_logs {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  event_type text [not null]
+  message text [not null]
+  metadata jsonb
+
+  created_at timestamptz [default: `now()`]
+
+  Note: 'MCP server event logs'
+}
+
+// ============================================
+// MQTT DOMAIN
+// ============================================
+
+Table mqtt_publishers {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  name text [not null]
+  description text
+
+  broker_url text [not null]
+  port int [default: 1883]
+  username text
+  password text
+  use_tls bool [default: false]
+
+  topic_pattern text [not null, note: 'Pattern with {event}, {tenant}, etc.']
+  events text[] [not null]
+  active bool [default: true]
+
+  // ISA-95 defaults
+  default_enterprise text
+  default_site text
+  default_area text
+
+  last_connected_at timestamptz
+  last_error text
+
+  created_by uuid [ref: > profiles.id]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  Note: 'MQTT publisher configurations'
+}
+
+Table mqtt_logs {
+  id uuid [pk]
+  mqtt_publisher_id uuid [not null, ref: > mqtt_publishers.id]
+
+  event_type text [not null]
+  topic text [not null]
+  payload jsonb [not null]
+  success bool [default: true]
+  error_message text
+  latency_ms int
+
+  created_at timestamptz [default: `now()`]
+
+  Note: 'MQTT publish logs'
+}
+
+// ============================================
+// TABLE GROUPS (for visual organization)
+// ============================================
+
+TableGroup core {
+  tenants
+  profiles
+  user_roles
+  invitations
+}
+
+TableGroup jobs_domain {
+  jobs
+  parts
+  operations
+  cells
+  assignments
+}
+
+TableGroup quality {
+  issues
+  issue_categories
+  scrap_reasons
+}
+
+TableGroup time_tracking {
+  time_entries
+  time_entry_pauses
+  operation_quantities
+  operation_day_allocations
+}
+
+TableGroup manufacturing {
+  resources
+  operation_resources
+  operators
+  materials
+  substeps
+  substep_templates
+  substep_template_items
+}
+
+// ============================================
+// SYNC/IMPORT DOMAIN
+// ============================================
+
+Table sync_imports {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+  source text [not null, note: 'csv, api, erp_sap, etc.']
+  entity_type text [not null, note: 'jobs, parts, operations, etc.']
+  status text [default: 'pending', note: 'pending, processing, completed, failed']
+
+  total_records int [default: 0]
+  created_count int [default: 0]
+  updated_count int [default: 0]
+  skipped_count int [default: 0]
+  error_count int [default: 0]
+  errors jsonb [note: 'Array of error details']
+
+  file_name text [note: 'Original filename for CSV imports']
+  started_at timestamptz
+  completed_at timestamptz
+  created_by uuid [ref: > profiles.id]
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (tenant_id, created_at)
+    (tenant_id, status)
+  }
+
+  Note: 'Tracks batch import operations for audit and monitoring'
+}
+
+// ============================================
+// VIEWS
+// ============================================
+
+Table issues_with_context {
+  id uuid [pk, note: 'VIEW - Read only']
+  tenant_id uuid
+  operation_id uuid
+  part_id uuid
+  job_id uuid
+
+  // Issue fields
+  description text
+  severity issue_severity
+  status issue_status
+  resolution_notes text
+  image_paths text[]
+  search_vector tsvector
+
+  // Joined fields
+  operation_name text
+  part_number text
+  job_number text
+  customer text
+  creator_name text
+  reviewer_name text
+
+  created_by uuid
+  reviewed_by uuid
+  reviewed_at timestamptz
+  created_at timestamptz
+  updated_at timestamptz
+
+  Note: 'VIEW: Issues with operation, part, job context'
+}
+
+// ============================================
+// TABLE GROUPS (for visual organization)
+// ============================================
+
+TableGroup core {
+  tenants
+  profiles
+  user_roles
+  invitations
+}
+
+TableGroup jobs_domain {
+  jobs
+  parts
+  operations
+  cells
+  assignments
+}
+
+TableGroup quality {
+  issues
+  issue_categories
+  scrap_reasons
+}
+
+TableGroup time_tracking {
+  time_entries
+  time_entry_pauses
+  operation_quantities
+  operation_day_allocations
+}
+
+TableGroup manufacturing {
+  resources
+  operation_resources
+  operators
+  materials
+  substeps
+  substep_templates
+  substep_template_items
+}
+
+TableGroup logistics {
+  shipments
+  shipment_jobs
+}
+
+TableGroup system {
+  activity_log
+  notifications
+  factory_calendar
+  sync_imports
+}
+
+TableGroup billing {
+  billing_waitlist
+  subscription_events
+  monthly_reset_logs
+}
+
+TableGroup integrations {
+  api_keys
+  webhooks
+  webhook_logs
+  integrations
+  installed_integrations
+}
+
+TableGroup mcp {
+  mcp_authentication_keys
+  mcp_key_usage_logs
+  mcp_server_config
+  mcp_server_health
+  mcp_server_logs
+}
+
+TableGroup mqtt {
+  mqtt_publishers
+  mqtt_logs
+}
+
+TableGroup views {
+  issues_with_context
+}
