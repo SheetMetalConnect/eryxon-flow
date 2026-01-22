@@ -2,6 +2,7 @@
   "name": "eryxon-flow-mcp-server",
   "version": "2.3.0",
   "description": "MCP Server for Eryxon Flow MES",
+  "license": "BSL-1.1",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
