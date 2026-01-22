@@ -81,7 +81,7 @@ async function main(): Promise<void> {
       await webToNodeResponse(webResponse, res);
     } catch (error) {
       console.error("Request error:", error);
-      res.statusCode = 500;
+      res.writeHead(500, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "Internal server error" }));
     }
   });

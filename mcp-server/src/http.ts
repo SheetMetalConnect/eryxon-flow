@@ -44,7 +44,7 @@ export interface MCPRequest {
 
 export interface MCPResponse {
   jsonrpc: "2.0";
-  id: string | number;
+  id: string | number | null;
   result?: unknown;
   error?: {
     code: number;
@@ -70,7 +70,7 @@ function createErrorResponse(
 ): MCPResponse {
   return {
     jsonrpc: "2.0",
-    id: id ?? 0,
+    id,
     error: { code, message, data },
   };
 }
@@ -180,6 +180,14 @@ export function createHTTPHandler(options: HTTPHandlerOptions = {}) {
   const supabaseUrl = options.supabaseUrl || SUPABASE_URL;
   const supabaseServiceKey = options.supabaseServiceKey || SUPABASE_SERVICE_KEY;
   const allowUnauthenticated = options.allowUnauthenticated || false;
+
+  // Fail fast if service key is not configured and auth is required
+  if (!supabaseServiceKey && !allowUnauthenticated) {
+    throw new Error(
+      "MCP Server misconfigured: SUPABASE_SERVICE_KEY is required. " +
+        "Set the environment variable or pass supabaseServiceKey in options."
+    );
+  }
 
   return async (req: Request): Promise<Response> => {
     const url = new URL(req.url);
@@ -342,6 +350,20 @@ export function createHTTPHandler(options: HTTPHandlerOptions = {}) {
 
       // Handle batch requests
       if (Array.isArray(body)) {
+        // Empty batch is invalid per JSON-RPC 2.0 spec
+        if (body.length === 0) {
+          return new Response(
+            JSON.stringify(createErrorResponse(null, -32600, "Invalid Request")),
+            {
+              status: 200,
+              headers: {
+                "Content-Type": "application/json",
+                ...CORS_HEADERS,
+              },
+            }
+          );
+        }
+
         const responses = await Promise.all(
           body.map((request) => handleMCPRequest(request, supabase))
         );

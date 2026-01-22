@@ -73,15 +73,11 @@ export async function validateToken(
       return { valid: false, error: "Endpoint is disabled" };
     }
 
-    // Update last_used_at and usage_count
+    // Update usage tracking atomically (two operations)
+    await adminSupabase.rpc("increment_mcp_usage", { endpoint_id: endpoint.id });
     await adminSupabase
       .from("mcp_endpoints")
-      .update({
-        last_used_at: new Date().toISOString(),
-        usage_count: adminSupabase.rpc("increment_usage_count", {
-          endpoint_id: endpoint.id,
-        }),
-      })
+      .update({ last_used_at: new Date().toISOString() })
       .eq("id", endpoint.id);
 
     return {

@@ -7,7 +7,7 @@
   "rewrites": [
     {
       "source": "/api/mcp/:path*",
-      "destination": "/api/mcp"
+      "destination": "/api/mcp/:path*"
     }
   ],
   "headers": [

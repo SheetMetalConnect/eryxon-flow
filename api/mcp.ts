@@ -27,8 +27,7 @@ import { createHash } from "crypto";
 const MCP_SERVER_VERSION = "3.0.0";
 const MCP_SERVER_NAME = "eryxon-flow-mcp";
 
-const SUPABASE_URL =
-  process.env.SUPABASE_URL || "https://vatgianzotsurljznsry.supabase.co";
+const SUPABASE_URL = process.env.SUPABASE_URL || "";
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "";
 
 // ============================================================================
@@ -99,15 +98,11 @@ async function validateToken(
       return { valid: false, error: "Endpoint is disabled" };
     }
 
-    // Update usage tracking
+    // Update usage tracking atomically
+    await supabase.rpc("increment_mcp_usage", { endpoint_id: endpoint.id });
     await supabase
       .from("mcp_endpoints")
-      .update({
-        last_used_at: new Date().toISOString(),
-        usage_count: (endpoint as { usage_count?: number }).usage_count
-          ? (endpoint as { usage_count: number }).usage_count + 1
-          : 1,
-      })
+      .update({ last_used_at: new Date().toISOString() })
       .eq("id", endpoint.id);
 
     return { valid: true, tenantId: endpoint.tenant_id };
@@ -567,7 +562,15 @@ export default async function handler(
     return;
   }
 
-  // Validate service key is configured
+  // Validate environment is configured
+  if (!SUPABASE_URL) {
+    res.status(500).json({
+      error: "Server configuration error",
+      message: "SUPABASE_URL not configured",
+    });
+    return;
+  }
+
   if (!SUPABASE_SERVICE_KEY) {
     res.status(500).json({
       error: "Server configuration error",
