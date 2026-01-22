@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +12,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/routes";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 export default function Auth() {
   const { t } = useTranslation();
@@ -25,6 +26,8 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
   const { signIn, signUp, profile } = useAuth();
   const navigate = useNavigate();
 
@@ -45,22 +48,36 @@ export default function Auth() {
     setLoading(true);
 
     try {
+      // Validate captcha token
+      if (!captchaToken) {
+        setError(t("auth.captchaRequired"));
+        setLoading(false);
+        turnstileRef.current?.reset();
+        return;
+      }
+
       if (isLogin) {
-        const { error } = await signIn(email, password);
+        const { error } = await signIn(email, password, captchaToken);
         if (error) {
           setError(error.message);
+          turnstileRef.current?.reset();
+          setCaptchaToken(null);
         }
       } else {
         // Validate required fields
         if (!fullName.trim()) {
           setError(t("auth.fullNameRequired"));
           setLoading(false);
+          turnstileRef.current?.reset();
+          setCaptchaToken(null);
           return;
         }
 
         if (!companyName.trim()) {
           setError(t("auth.companyNameRequired"));
           setLoading(false);
+          turnstileRef.current?.reset();
+          setCaptchaToken(null);
           return;
         }
 
@@ -68,6 +85,8 @@ export default function Auth() {
         if (!termsAgreed) {
           setError(t("auth.mustAgreeToTerms"));
           setLoading(false);
+          turnstileRef.current?.reset();
+          setCaptchaToken(null);
           return;
         }
 
@@ -76,10 +95,12 @@ export default function Auth() {
           full_name: fullName,
           company_name: companyName,
           role: "admin"
-        });
+        }, captchaToken);
 
         if (error) {
           setError(error.message);
+          turnstileRef.current?.reset();
+          setCaptchaToken(null);
         } else {
           // Show success message
           setSuccess(t("auth.pendingApprovalMessage"));
@@ -90,10 +111,13 @@ export default function Auth() {
           setCompanyName("");
           setTermsAgreed(false);
           setEmailConsent(false);
+          setCaptchaToken(null);
         }
       }
     } catch (err) {
       setError(t("auth.unexpectedError"));
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -269,11 +293,32 @@ export default function Auth() {
               </Alert>
             )}
 
+            {/* Cloudflare Turnstile Captcha */}
+            <div className="flex justify-center">
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || ""}
+                onSuccess={(token) => setCaptchaToken(token)}
+                onError={() => {
+                  setError(t("auth.captchaError"));
+                  setCaptchaToken(null);
+                }}
+                onExpire={() => {
+                  setCaptchaToken(null);
+                  turnstileRef.current?.reset();
+                }}
+                options={{
+                  theme: "dark",
+                  size: "normal",
+                }}
+              />
+            </div>
+
             <div className="pt-2">
               <Button
                 type="submit"
                 className="w-full cta-button"
-                disabled={loading || (!isLogin && !termsAgreed)}
+                disabled={loading || (!isLogin && !termsAgreed) || !captchaToken}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isLogin ? t("auth.signIn") : t("auth.signUp")}
