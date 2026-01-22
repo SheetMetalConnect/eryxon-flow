@@ -1,7 +1,7 @@
 ---
 title: |
   Start Manufacturing <span class='text-primary'>Smarter Today</span>
-description: Join our community and digitize your shop floor with Eryxon Flow — source available under BSL 1.1.
+description: Join our community and digitize your shop floor with Eryxon Flow.
 enable: true
 fill_button:
   enable: true

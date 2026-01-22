@@ -1,6 +1,6 @@
 # Eryxon Flow
 
-Source available Manufacturing Execution System (MES) for job shops and make-to-order manufacturers.
+Manufacturing Execution System (MES) for job shops and make-to-order manufacturers.
 
 ## Features
 
@@ -84,17 +84,16 @@ See [LICENSE](LICENSE) for full terms.
 
 **Change Date**: 2029-01-01 (converts to Apache 2.0)
 
-### Why BSL Instead of MIT/GPL?
+### Why BSL?
 
-We chose the Business Source License for transparency:
+We chose the Business Source License because it's honest about what it is:
 
-- **It's not "open source"** by the [OSI definition](https://opensource.org/osd) — we don't claim it is
-- **Source is available** — you can read, modify, and learn from the code
-- **Free for internal use** — run it for your own manufacturing business at no cost
-- **Protects sustainability** — prevents competitors from reselling our hosted service
-- **Becomes truly open source** — converts to Apache 2.0 on 2029-01-01
+- **Not OSI "open source"** — and we don't pretend it is
+- **Free for your business** — use, modify, and self-host at no cost
+- **Sustainable** — prevents reselling as a competing hosted service
+- **Converts to Apache 2.0** on 2029-01-01
 
-This model lets us build a sustainable business while keeping the code transparent and accessible. We believe this is more honest than "open core" models that hide features behind proprietary licenses.
+More honest than "open core" models that hide features behind proprietary add-ons.
 
 ## Support
 
