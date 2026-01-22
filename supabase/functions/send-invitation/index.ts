@@ -165,7 +165,7 @@ Deno.serve(async (req: Request) => {
     // Get environment variables for email
     const resendApiKey = Deno.env.get('RESEND_API_KEY')
     const appUrl = Deno.env.get('APP_URL') || 'https://eryxon-flow.lovable.app'
-    const emailFrom = Deno.env.get('EMAIL_FROM') || 'Eryxon Flow <noreply@resend.dev>'
+    const emailFrom = Deno.env.get('EMAIL_FROM') || 'Eryxon Flow <noreply@send.eryxon.eu>'
 
     // Build invitation URL
     const invitationUrl = `${appUrl}/accept-invitation/${invitation.token}`
