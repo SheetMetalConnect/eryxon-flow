@@ -22,7 +22,8 @@
     "enable": true,
     "label": "Get Started",
     "translations": {
-      "fr": "Erste Schritte"
+      "de": "Erste Schritte",
+      "nl": "Aan de slag"
     },
     "link": "/guides/quick-start/"
   }
