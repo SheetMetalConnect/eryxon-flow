@@ -2,8 +2,6 @@
 
 Open source Manufacturing Execution System (MES) for job shops and make-to-order manufacturers.
 
-**Version 0.2** - Focused on core production tracking capabilities with improved scalability.
-
 ## Features
 
 - **Job and part tracking** with real-time status updates via WebSockets
