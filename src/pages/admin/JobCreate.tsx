@@ -461,16 +461,16 @@ export default function JobCreate() {
                   <div>
                     <Label>{t("parts.parentPartOptional")}</Label>
                     <Select
-                      value={editingPart.parent_part_id}
+                      value={editingPart.parent_part_id || "__none__"}
                       onValueChange={(value) =>
-                        setEditingPart({ ...editingPart, parent_part_id: value })
+                        setEditingPart({ ...editingPart, parent_part_id: value === "__none__" ? undefined : value })
                       }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder={t("parts.none")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">{t("parts.none")}</SelectItem>
+                        <SelectItem value="__none__">{t("parts.none")}</SelectItem>
                         {parts.map((part) => (
                           <SelectItem key={part.id} value={part.id}>
                             {part.part_number}
