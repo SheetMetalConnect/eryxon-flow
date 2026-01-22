@@ -11,10 +11,10 @@ import {
   Box,
   Hexagon,
   Ruler,
-  Maximize2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import { getCADConfig } from '@/config/cadBackend';
 
 // Interface for calculated dimensions
 interface ModelDimensions {
@@ -81,12 +81,26 @@ export function STEPViewer({
   // Dimension lines ref
   const dimensionLinesRef = useRef<THREE.Group | null>(null);
 
+  // Refs for visibility state (to avoid re-renders when toggling)
+  const edgesVisibleRef = useRef(edgesVisible);
+  const gridVisibleRef = useRef(gridVisible);
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    edgesVisibleRef.current = edgesVisible;
+  }, [edgesVisible]);
+
+  useEffect(() => {
+    gridVisibleRef.current = gridVisible;
+  }, [gridVisible]);
+
   // Load occt-import-js library from CDN
   useEffect(() => {
     const loadOcct = async () => {
       if (!window.occtimportjs) {
+        const config = getCADConfig();
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/occt-import-js@0.0.23/dist/occt-import-js.js';
+        script.src = config.frontend.wasmUrl;
 
         script.onload = () => {
           // Wait for library initialization
@@ -258,12 +272,12 @@ export function STEPViewer({
       transparent: true,
     });
     const edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
-    edges.visible = edgesVisible;
+    edges.visible = edgesVisibleRef.current;
 
     // Position edges with mesh (for exploded view)
     mesh.add(edges);
     edgesRef.current.push(edges);
-  }, [edgesVisible]);
+  }, []);
 
   // Calculate dimensions from bounding box
   const calculateDimensions = useCallback(() => {
@@ -341,11 +355,11 @@ export function STEPViewer({
     const newGrid = new THREE.GridHelper(gridSize, divisions, 0x444444, 0x888888);
     newGrid.material.transparent = true;
     newGrid.material.opacity = 0.35;
-    newGrid.visible = gridVisible;
+    newGrid.visible = gridVisibleRef.current;
 
     sceneRef.current.add(newGrid);
     gridRef.current = newGrid;
-  }, [gridVisible]);
+  }, []);
 
   // Load and render STEP file using frontend processing
   useEffect(() => {
@@ -454,7 +468,7 @@ export function STEPViewer({
     };
 
     loadSTEP();
-  }, [url, librariesLoaded, edgesVisible, gridVisible, clearMeshes, addMeshToScene, calculateDimensions, fitCameraToMeshes, updateGridSize]);
+  }, [url, librariesLoaded, clearMeshes, addMeshToScene, calculateDimensions, fitCameraToMeshes, updateGridSize]);
 
 
   // Initialize explosion data
@@ -845,17 +859,6 @@ export function STEPViewer({
               <Ruler className="h-3.5 w-3.5" />
             </Button>
           </div>
-
-          {/* Expand button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs gap-1"
-            title={t('parts.cadViewer.expand')}
-          >
-            <Maximize2 className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">{t('parts.cadViewer.expand')}</span>
-          </Button>
         </div>
       </div>
 
