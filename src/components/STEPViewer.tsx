@@ -384,9 +384,10 @@ export function STEPViewer({ url }: STEPViewerProps) {
 
   /**
    * Extract and render CAD edges from OCCT data when available
+   * Edges are added to the parent mesh so they inherit transforms during explosion
    */
-  const addCadEdgesToScene = useCallback((meshData: OcctMeshData) => {
-    if (!sceneRef.current || !meshData.brep_faces) return;
+  const addCadEdgesToScene = useCallback((parentMesh: THREE.Object3D, meshData: OcctMeshData) => {
+    if (!parentMesh || !meshData.brep_faces) return;
 
     meshData.brep_faces.forEach(face => {
       if (!face.edge_loops) return;
@@ -398,7 +399,7 @@ export function STEPViewer({ url }: STEPViewerProps) {
           const geometry = new THREE.BufferGeometry().setFromPoints(points);
           const line = new THREE.Line(geometry, getSharedEdgeMaterial());
           line.visible = edgesVisibleRef.current;
-          sceneRef.current!.add(line);
+          parentMesh.add(line);
           edgesRef.current.push(line);
         });
       });
@@ -537,7 +538,13 @@ export function STEPViewer({ url }: STEPViewerProps) {
 
           if (meshData.index?.array) {
             const indexArray = meshData.index.array;
-            const maxIndex = Array.isArray(indexArray) ? Math.max(...indexArray) : Math.max(...Array.from(indexArray));
+            // Compute maxIndex safely without spreading (avoids JS argument limit for large arrays)
+            let maxIndex = 0;
+            for (let j = 0; j < indexArray.length; j++) {
+              if (indexArray[j] > maxIndex) {
+                maxIndex = indexArray[j];
+              }
+            }
             const indices = maxIndex > 65535 ? new Uint32Array(indexArray) : new Uint16Array(indexArray);
             geometry.setIndex(new THREE.BufferAttribute(indices, 1));
           }
@@ -550,7 +557,8 @@ export function STEPViewer({ url }: STEPViewerProps) {
           mesh.userData.partIndex = i;
           
           addMeshToScene(mesh);
-          addCadEdgesToScene(meshData);
+          // Add CAD edges to mesh (not scene) so they inherit transforms during explosion
+          addCadEdgesToScene(mesh, meshData);
 
           // Track part info for assembly tree
           parts.push({
@@ -830,7 +838,8 @@ export function STEPViewer({ url }: STEPViewerProps) {
     if (pressed) {
       createDimensionVisualization();
     } else if (dimensionLinesRef.current && sceneRef.current) {
-      sceneRef.current.remove(dimensionLinesRef.current);
+      // Use dispose utility to properly free GPU resources (geometries/materials)
+      disposeDimensionLines(dimensionLinesRef.current, sceneRef.current);
       dimensionLinesRef.current = null;
     }
     setShowDimensions(pressed);
