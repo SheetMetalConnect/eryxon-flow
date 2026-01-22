@@ -441,7 +441,7 @@
     },
     "integrations": {
       "label": "Integrations",
-      "description": "App Store, API Keys, Webhooks, MQTT, and Data Import/Export"
+      "description": "API Keys, Webhooks, MQTT, and Data Import/Export"
     },
     "issues": {
       "label": "Issues",

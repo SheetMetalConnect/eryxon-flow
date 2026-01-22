@@ -131,7 +131,6 @@
     "capacity": "Capacity",
     "cells": "Cells",
     "calendar": "Calendar",
-    "appStore": "App Store",
     "mcpKeys": "MCP Keys",
     "mcpServer": "MCP Server",
     "mqttPublishers": "MQTT Publishers",

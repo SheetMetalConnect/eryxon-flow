@@ -19,7 +19,6 @@ import {
   ChevronRight,
   ChevronDown,
   Menu,
-  Store,
   Clock,
   Layers,
   Database,
@@ -210,12 +209,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   // Integrations - Developer tools, APIs, and external connections
   const integrationsNavItems = [
-    {
-      path: "/admin/integrations",
-      label: t("navigation.appStore"),
-      icon: Store,
-      exact: true,
-    },
     {
       path: "/admin/config/api-keys",
       label: t("navigation.apiKeys"),

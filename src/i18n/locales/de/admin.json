@@ -358,7 +358,7 @@
     },
     "integrations": {
       "label": "Integrationen",
-      "description": "App Store, API-Schlüssel, Webhooks, MQTT und Daten-Import/Export"
+      "description": "API-Schlüssel, Webhooks, MQTT und Daten-Import/Export"
     },
     "issues": {
       "label": "Probleme",
