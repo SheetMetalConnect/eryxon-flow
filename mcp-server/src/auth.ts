@@ -95,6 +95,14 @@ export async function validateToken(
 /**
  * Create an authenticated context for a validated token
  * Returns a tenant-scoped Supabase client
+ *
+ * SECURITY NOTE: This uses the service key which bypasses RLS.
+ * The x-tenant-id header is set for RLS policies that use:
+ *   current_setting('request.headers.x-tenant-id', true)
+ *
+ * If RLS policies don't read this header, tool handlers MUST
+ * explicitly filter queries by tenant_id using the tenantId
+ * from the returned context.
  */
 export function createAuthenticatedContext(
   authResult: AuthResult,
@@ -105,8 +113,10 @@ export function createAuthenticatedContext(
     return null;
   }
 
-  // Create a Supabase client with service key
-  // RLS policies will filter by tenant_id automatically
+  // Create Supabase client with service key.
+  // IMPORTANT: Service key bypasses RLS. Either:
+  // 1. RLS policies must read x-tenant-id via current_setting(), or
+  // 2. Tool handlers must explicitly filter by context.tenantId
   const supabase = createClient(supabaseUrl, supabaseServiceKey, {
     auth: {
       autoRefreshToken: false,

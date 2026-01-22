@@ -19,8 +19,7 @@ import { authenticateRequest, extractBearerToken } from "./auth.js";
 import type { ToolResult } from "./types/index.js";
 
 // Environment configuration
-const SUPABASE_URL =
-  process.env.SUPABASE_URL || "https://vatgianzotsurljznsry.supabase.co";
+const SUPABASE_URL = process.env.SUPABASE_URL || "";
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "";
 
 // Use any for SupabaseClient to avoid complex type inference issues
@@ -181,7 +180,14 @@ export function createHTTPHandler(options: HTTPHandlerOptions = {}) {
   const supabaseServiceKey = options.supabaseServiceKey || SUPABASE_SERVICE_KEY;
   const allowUnauthenticated = options.allowUnauthenticated || false;
 
-  // Fail fast if service key is not configured and auth is required
+  // Fail fast if required config is missing
+  if (!supabaseUrl) {
+    throw new Error(
+      "MCP Server misconfigured: SUPABASE_URL is required. " +
+        "Set the environment variable or pass supabaseUrl in options."
+    );
+  }
+
   if (!supabaseServiceKey && !allowUnauthenticated) {
     throw new Error(
       "MCP Server misconfigured: SUPABASE_SERVICE_KEY is required. " +
