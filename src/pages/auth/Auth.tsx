@@ -84,7 +84,7 @@ export default function Auth() {
           return;
         }
 
-        // Sign up creates tenant with 'suspended' status - requires admin approval
+        // Sign up creates tenant with 'active' status and 30-day free trial
         const { error } = await signUp(email, password, {
           full_name: fullName,
           company_name: companyName,
