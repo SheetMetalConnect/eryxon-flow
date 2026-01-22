@@ -54,14 +54,15 @@ export interface CADBackendConfig {
 }
 
 /**
- * Default configuration with custom backend enabled
+ * Default configuration with frontend-only mode
+ * Backend processing will be enabled in a future update
  */
 const defaultConfig: CADBackendConfig = {
-  mode: 'custom',
+  mode: 'frontend',
 
   custom: {
-    enabled: true,
-    url: import.meta.env.VITE_CAD_SERVICE_URL || 'http://localhost:8888',
+    enabled: false, // Disabled - backend not yet available
+    url: import.meta.env.VITE_CAD_SERVICE_URL || '',
     apiKey: import.meta.env.VITE_CAD_SERVICE_API_KEY || '',
     timeout: 120000, // 2 minutes
   },
@@ -75,14 +76,14 @@ const defaultConfig: CADBackendConfig = {
   },
 
   frontend: {
-    enabled: true, // Always available as fallback
+    enabled: true, // Frontend-only mode active
     wasmUrl: 'https://cdn.jsdelivr.net/npm/occt-import-js@0.0.24/dist/occt-import-js.js',
     maxFileSize: 50 * 1024 * 1024, // 50MB
   },
 
   features: {
-    pmiExtraction: true,
-    thumbnails: false, // Not yet fully supported
+    pmiExtraction: false, // Disabled - requires backend
+    thumbnails: false, // Disabled - requires backend
     geometry: true,
   },
 };
@@ -195,18 +196,11 @@ export function determineBestBackend(): CADBackendMode {
 
 /**
  * Initialize configuration from environment variables
+ * Currently defaults to frontend-only mode until backend is available
  */
 export function initCADConfig(): void {
-  // Check for mode override from environment
-  const envMode = import.meta.env.VITE_CAD_BACKEND_MODE as CADBackendMode | undefined;
-  if (envMode && ['custom', 'byob', 'frontend'].includes(envMode)) {
-    activeConfig.mode = envMode;
-  } else {
-    // Auto-detect best available backend
-    activeConfig.mode = determineBestBackend();
-  }
-
-  console.log(`[CAD Config] Active backend mode: ${activeConfig.mode}`);
+  // Force frontend mode until backend is available
+  activeConfig.mode = 'frontend';
 }
 
 // Initialize on module load
