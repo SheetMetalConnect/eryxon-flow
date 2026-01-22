@@ -214,35 +214,97 @@ export function STEPViewer({ url }: STEPViewerProps) {
   useEffect(() => { edgesVisibleRef.current = edgesVisible; }, [edgesVisible]);
   useEffect(() => { gridVisibleRef.current = gridVisible; }, [gridVisible]);
 
-  // Load occt-import-js library from CDN
+  // Load occt-import-js library from CDN with robust initialization
   useEffect(() => {
-    const loadOcct = async () => {
-      if (!window.occtimportjs) {
-        const config = getCADConfig();
-        const script = document.createElement('script');
-        script.src = config.frontend.wasmUrl;
+    let mounted = true;
+    let retryCount = 0;
+    const maxRetries = 3;
+    const retryDelay = 1000;
 
-        script.onload = () => {
-          setTimeout(() => {
-            if (window.occtimportjs) {
-              setLibrariesLoaded(true);
-            } else {
-              setLoadingError('Failed to initialize STEP parser');
+    const waitForOcctInit = async (): Promise<boolean> => {
+      // Wait for the library to expose the global function
+      const maxWaitTime = 10000; // 10 seconds max
+      const checkInterval = 100;
+      let waited = 0;
+
+      while (waited < maxWaitTime) {
+        if (window.occtimportjs) {
+          try {
+            // Actually initialize the WASM to verify it's fully loaded
+            const occt = await window.occtimportjs();
+            if (occt && typeof occt.ReadStepFile === 'function') {
+              return true;
             }
-          }, 500);
+          } catch (err) {
+            console.warn('[STEPViewer] WASM initialization check failed:', err);
+          }
+        }
+        await new Promise(resolve => setTimeout(resolve, checkInterval));
+        waited += checkInterval;
+      }
+      return false;
+    };
+
+    const loadOcct = async () => {
+      // Check if already loaded and initialized
+      if (window.occtimportjs) {
+        try {
+          const occt = await window.occtimportjs();
+          if (occt && typeof occt.ReadStepFile === 'function') {
+            if (mounted) setLibrariesLoaded(true);
+            return;
+          }
+        } catch {
+          // Library exists but failed to init, continue to reload
+          console.warn('[STEPViewer] Existing library failed to initialize, reloading...');
+        }
+      }
+
+      const config = getCADConfig();
+
+      // Remove any existing failed script
+      const existingScript = document.querySelector(`script[src="${config.frontend.wasmUrl}"]`);
+      if (existingScript) {
+        existingScript.remove();
+      }
+
+      const script = document.createElement('script');
+      script.src = config.frontend.wasmUrl;
+      script.async = true;
+
+      const loadPromise = new Promise<boolean>((resolve) => {
+        script.onload = async () => {
+          const success = await waitForOcctInit();
+          resolve(success);
         };
 
         script.onerror = () => {
-          setLoadingError('Failed to load STEP parser library');
+          console.error('[STEPViewer] Failed to load script from CDN');
+          resolve(false);
         };
+      });
 
-        document.head.appendChild(script);
+      document.head.appendChild(script);
+
+      const success = await loadPromise;
+
+      if (success) {
+        if (mounted) setLibrariesLoaded(true);
+      } else if (retryCount < maxRetries) {
+        retryCount++;
+        console.warn(`[STEPViewer] Retrying STEP parser load (attempt ${retryCount}/${maxRetries})...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay * retryCount));
+        if (mounted) await loadOcct();
       } else {
-        setLibrariesLoaded(true);
+        if (mounted) setLoadingError('Failed to initialize STEP parser after multiple attempts');
       }
     };
 
     loadOcct();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // Initialize Three.js scene
@@ -478,19 +540,45 @@ export function STEPViewer({ url }: STEPViewerProps) {
         setLoadingError(null);
         setAssemblyInfo(null);
 
+        // Verify library is still available (defensive check)
         if (!window.occtimportjs) {
-          throw new Error('STEP parser not loaded');
+          console.error('[STEPViewer] STEP parser not available on window object');
+          throw new Error('STEP parser not loaded. Please refresh the page and try again.');
         }
-        const occt = await window.occtimportjs();
 
+        // Initialize OCCT with error handling
+        let occt;
+        try {
+          occt = await window.occtimportjs();
+          if (!occt || typeof occt.ReadStepFile !== 'function') {
+            throw new Error('STEP parser initialization failed');
+          }
+        } catch (initErr) {
+          console.error('[STEPViewer] Failed to initialize OCCT:', initErr);
+          throw new Error('STEP parser failed to initialize. Please refresh and try again.');
+        }
+
+        // Fetch the STEP file
         const response = await fetch(url);
         if (!response.ok) {
-          throw new Error(`Failed to fetch file: ${response.statusText}`);
+          throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`);
         }
         const arrayBuffer = await response.arrayBuffer();
+
+        if (arrayBuffer.byteLength === 0) {
+          throw new Error('STEP file is empty');
+        }
+
         const fileBuffer = new Uint8Array(arrayBuffer);
 
-        const result = occt.ReadStepFile(fileBuffer, null);
+        // Parse the STEP file
+        let result;
+        try {
+          result = occt.ReadStepFile(fileBuffer, null);
+        } catch (parseErr) {
+          console.error('[STEPViewer] Failed to parse STEP file:', parseErr);
+          throw new Error('Failed to parse STEP file. The file may be corrupted or in an unsupported format.');
+        }
 
         if (!result.meshes || result.meshes.length === 0) {
           throw new Error('No geometry found in STEP file');
