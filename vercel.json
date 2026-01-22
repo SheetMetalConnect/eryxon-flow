@@ -8,6 +8,10 @@
     {
       "source": "/api/mcp/:path*",
       "destination": "/api/mcp/:path*"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
