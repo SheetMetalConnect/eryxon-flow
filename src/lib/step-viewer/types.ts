@@ -85,6 +85,32 @@ export interface ExplosionData {
 }
 
 // =============================================================================
+// ASSEMBLY / PART INFO
+// =============================================================================
+
+/** Information about a single part in the assembly */
+export interface PartInfo {
+  /** Part index in the meshes array */
+  index: number;
+  /** Part name from STEP file (if available) */
+  name: string;
+  /** Whether this part is currently visible */
+  visible: boolean;
+  /** Whether this part is currently selected/highlighted */
+  selected: boolean;
+}
+
+/** Assembly information extracted from STEP file */
+export interface AssemblyInfo {
+  /** Total number of parts */
+  partCount: number;
+  /** List of parts with their info */
+  parts: PartInfo[];
+  /** Whether this is an assembly (multiple parts) or single part */
+  isAssembly: boolean;
+}
+
+// =============================================================================
 // DISPOSAL
 // =============================================================================
 

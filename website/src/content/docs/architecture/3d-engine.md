@@ -1,40 +1,139 @@
 ---
 title: "3D CAD Engine"
-description: "Overview of Eryxon Flow's 3D rendering architecture and PMI strategy in 0.1 BETA."
+description: "Overview of Eryxon Flow's 3D rendering architecture for STEP file visualization."
 ---
 
+Eryxon Flow features a modern, browser-based 3D CAD viewing architecture designed specifically for the metals industry.
 
+## Architecture Overview
 
-Eryxon Flow features a modern, flexible 3D CAD viewing architecture designed specifically for the unique needs of the metals industry.
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     STEPViewer Component                     │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │  Three.js   │  │ OrbitControls│  │  UI Components     │  │
+│  │   Scene     │  │   Camera     │  │  (Design System)   │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+├─────────────────────────────────────────────────────────────┤
+│                    occt-import-js (WASM)                     │
+│              OpenCASCADE STEP Parser via CDN                 │
+└─────────────────────────────────────────────────────────────┘
+```
 
-## Recommended: Client-Side Rendering (Default)
+## Client-Side Rendering (Default)
 
-For the **0.1 BETA** release, we recommend the **browser-based (Client)** renderer for all standard production environments.
+For production environments, we use **browser-based rendering** with zero server infrastructure required.
 
-- **Technology**: Three.js + custom WASM-based STEP parser.
-- **Support**: Native support for `.step` and `.stp` files directly in the browser.
-- **Capabilities**: Zoom, Orbit, Pan, Exploded views, and Wireframe modes.
-- **PMI Support**: **No PMI support** in the default client-side viewer.
-- **Why we recommend it**: It requires zero additional server infrastructure, provides instant loading times, and handles most visualization needs for cutting, bending, and welding.
+### Technology Stack
+- **Three.js**: WebGL-based 3D rendering
+- **occt-import-js**: WASM-compiled OpenCASCADE for STEP parsing
+- **React**: Component architecture with hooks
 
-## Experimental: PMI Data Extraction
+### Capabilities
+- STEP/STP file support
+- Orbit, Zoom, Pan controls
+- Exploded view for assemblies
+- Wireframe and edge rendering
+- Bounding box dimensions
+- Assembly tree with part visibility
 
-We are currently working on an **experimental custom back-end** specifically for automated PMI (Product Manufacturing Information) data extraction.
+### File Structure
+```
+src/
+├── components/
+│   └── STEPViewer.tsx              # Main viewer component
+├── lib/
+│   └── step-viewer/
+│       ├── constants.ts            # Rendering configuration
+│       ├── types.ts                # TypeScript interfaces
+│       └── dispose.ts              # Memory management
+└── config/
+    └── cadBackend.ts               # Backend configuration
+```
 
-- **Status**: Experimental / Development in progress.
-- **Approach**: Parsing STEP file text structures directly on the server to extract critical dimensions and tolerances.
-- **Usage**: Intended for automated quality checks and advanced operation planning.
+## Rendering Pipeline
+
+1. **Load**: Fetch STEP file as ArrayBuffer
+2. **Parse**: occt-import-js converts to tessellated meshes
+3. **Extract**: Part names and geometry from OCCT output
+4. **Build**: Three.js BufferGeometry from mesh data
+5. **Render**: Scene with lighting, materials, and controls
+
+### Data Flow
+```
+STEP File → occt-import-js → Mesh Data → Three.js Geometry → WebGL Render
+                              ↓
+                         Part Names
+                         Assembly Info
+                         Edge Data
+```
+
+## Lighting Configuration
+
+Following CAD visualization best practices:
+
+| Light Type | Purpose | Settings |
+|------------|---------|----------|
+| HemisphereLight | Ambient fill | Sky: white, Ground: gray |
+| DirectionalLight | Key light | Positioned relative to model size |
+
+## Material System
+
+Using MeshPhysicalMaterial for realistic metal appearance:
+
+| Property | Value | Purpose |
+|----------|-------|---------|
+| metalness | 0.4 | Subtle metallic reflection |
+| roughness | 0.8 | Matte finish typical of raw metal |
+| side | DoubleSide | Correct rendering of thin walls |
+
+## Performance Optimizations
+
+### Memory Management
+- Shared material instances (not duplicated per mesh)
+- Safe disposal with try-catch error handling
+- Proper cleanup on component unmount
+
+### Rendering
+- devicePixelRatio/1.5 for HiDPI displays
+- Damped orbit controls (smooth interaction)
+- RequestAnimationFrame render loop
+
+### Edge Rendering
+- CAD kernel edges when available (from B-Rep data)
+- EdgesGeometry fallback for computed edges
+- Configurable threshold angle (15 degrees)
+
+## Backend Configuration
+
+The system supports multiple backend modes configured in `cadBackend.ts`:
+
+| Mode | Status | Use Case |
+|------|--------|----------|
+| `frontend` | **Active** | Browser-only processing (default) |
+| `custom` | Planned | Docker-based CAD backend |
+| `byob` | Planned | Bring Your Own Backend integration |
+
+## PMI Support
+
+**Current Status**: Not supported in client-side viewer.
+
+PMI (Product Manufacturing Information) extraction requires server-side processing. Future options:
+
+- Custom backend with STEP text parsing
+- Integration with commercial engines (CAD Exchanger)
+- FreeCAD server-side processing
 
 ## Engine Extensibility
 
-Eryxon is built for flexibility. Organizations with specific high-fidelity needs can integrate their own engines:
+Organizations with specific needs can integrate alternative engines:
 
-- **FreeCAD**: Can be deployed as a server-side processing node.
-- **Commercial Engines**: Integration-ready for engines like **CAD Exchanger** if you wish to purchase specific licenses for multi-format or high-fidelity PMI support.
+- **FreeCAD**: Server-side processing node
+- **CAD Exchanger**: Commercial multi-format support
+- **Custom WASM**: Alternative geometry kernels
 
 ---
 
-> [!NOTE]
 > **Status**: Eryxon Flow 0.1 BETA
-> **Author**: Luke van Enkhuizen
-> **Company**: [Sheet Metal Connect e.U.](https://www.sheetmetalconnect.com/)
+> **Maintainer**: [Sheet Metal Connect e.U.](https://www.sheetmetalconnect.com/)

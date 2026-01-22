@@ -18,6 +18,9 @@ import {
   Hexagon,
   Ruler,
   RotateCcw,
+  ListTree,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -41,6 +44,8 @@ import type {
   OcctMeshData,
   OcctImportResult,
   ExplosionData,
+  AssemblyInfo,
+  PartInfo,
 } from '@/lib/step-viewer/types';
 import {
   disposeMeshArray,
@@ -173,6 +178,8 @@ export function STEPViewer({ url }: STEPViewerProps) {
   const [edgesVisible, setEdgesVisible] = useState(true);
   const [showDimensions, setShowDimensions] = useState(false);
   const [dimensions, setDimensions] = useState<ModelDimensions | null>(null);
+  const [assemblyInfo, setAssemblyInfo] = useState<AssemblyInfo | null>(null);
+  const [showAssemblyTree, setShowAssemblyTree] = useState(false);
 
   // Three.js refs
   const containerRef = useRef<HTMLDivElement>(null);
@@ -468,6 +475,7 @@ export function STEPViewer({ url }: STEPViewerProps) {
       try {
         setStepLoading(true);
         setLoadingError(null);
+        setAssemblyInfo(null);
 
         if (!window.occtimportjs) {
           throw new Error('STEP parser not loaded');
@@ -487,7 +495,24 @@ export function STEPViewer({ url }: STEPViewerProps) {
           throw new Error('No geometry found in STEP file');
         }
 
+        // Debug: Log the result structure to understand what occt-import-js provides
+        if (import.meta.env.DEV) {
+          console.log('[STEPViewer] occt-import-js result:', {
+            meshCount: result.meshes.length,
+            meshes: result.meshes.map((m, i) => ({
+              index: i,
+              name: m.name,
+              color: m.color,
+              hasPosition: !!m.attributes?.position,
+              hasBrepFaces: !!m.brep_faces?.length,
+            })),
+          });
+        }
+
         clearMeshes();
+
+        // Build assembly info from parsed STEP data
+        const parts: PartInfo[] = [];
 
         // Create individual meshes (preserves explosion view functionality)
         for (let i = 0; i < result.meshes.length; i++) {
@@ -518,8 +543,34 @@ export function STEPViewer({ url }: STEPViewerProps) {
           }
 
           const mesh = new THREE.Mesh(geometry, getSharedMaterial());
+          
+          // Store part name on the mesh for later reference
+          const partName = meshData.name || `Part ${i + 1}`;
+          mesh.name = partName;
+          mesh.userData.partIndex = i;
+          
           addMeshToScene(mesh);
           addCadEdgesToScene(meshData);
+
+          // Track part info for assembly tree
+          parts.push({
+            index: i,
+            name: partName,
+            visible: true,
+            selected: false,
+          });
+        }
+
+        // Set assembly info
+        const newAssemblyInfo: AssemblyInfo = {
+          partCount: parts.length,
+          parts,
+          isAssembly: parts.length > 1,
+        };
+        setAssemblyInfo(newAssemblyInfo);
+
+        if (import.meta.env.DEV) {
+          console.log('[STEPViewer] Assembly info:', newAssemblyInfo);
         }
 
         calculateDimensions();
@@ -621,6 +672,34 @@ export function STEPViewer({ url }: STEPViewerProps) {
       edges.visible = pressed;
     });
     setEdgesVisible(pressed);
+  };
+
+  // Toggle part visibility in assembly tree
+  const handlePartVisibilityToggle = (partIndex: number) => {
+    if (!assemblyInfo) return;
+
+    const mesh = meshesRef.current[partIndex];
+    if (!mesh) return;
+
+    const newVisible = !mesh.visible;
+    mesh.visible = newVisible;
+
+    // Also toggle edges associated with this mesh
+    // Edges are added as children of the mesh
+    mesh.traverse((child) => {
+      child.visible = newVisible;
+    });
+
+    // Update assembly info state
+    setAssemblyInfo(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        parts: prev.parts.map((part, idx) =>
+          idx === partIndex ? { ...part, visible: newVisible } : part
+        ),
+      };
+    });
   };
 
   // Dimension visualization
@@ -823,13 +902,17 @@ export function STEPViewer({ url }: STEPViewerProps) {
               <ToolbarToggle
                 pressed={explodedView}
                 onPressedChange={handleExplodedViewChange}
-                disabled={stepLoading || !hasMeshes}
-                tooltip={t('parts.cadViewer.explodedView')}
+                disabled={stepLoading || !hasMeshes || !assemblyInfo?.isAssembly}
+                tooltip={
+                  assemblyInfo?.isAssembly
+                    ? t('parts.cadViewer.explodedView')
+                    : t('parts.cadViewer.explodedViewSinglePart', 'Explode (requires assembly)')
+                }
               >
                 <Boxes className="h-4 w-4" />
               </ToolbarToggle>
 
-              {explodedView && (
+              {explodedView && assemblyInfo?.isAssembly && (
                 <div className="flex items-center gap-1.5 ml-1">
                   <Slider
                     value={[explosionFactor]}
@@ -843,6 +926,18 @@ export function STEPViewer({ url }: STEPViewerProps) {
                     {explosionFactor.toFixed(1)}
                   </span>
                 </div>
+              )}
+
+              {/* Assembly Tree Toggle - only show for assemblies */}
+              {assemblyInfo?.isAssembly && (
+                <ToolbarToggle
+                  pressed={showAssemblyTree}
+                  onPressedChange={setShowAssemblyTree}
+                  disabled={stepLoading || !hasMeshes}
+                  tooltip={t('parts.cadViewer.assemblyTree', 'Assembly Tree')}
+                >
+                  <ListTree className="h-4 w-4" />
+                </ToolbarToggle>
               )}
 
               <div className="w-px h-5 bg-border mx-1" />
@@ -862,6 +957,55 @@ export function STEPViewer({ url }: STEPViewerProps) {
         {/* 3D Viewer Container */}
         <div className="flex-1 relative bg-surface">
           <div ref={containerRef} className="absolute inset-0" />
+
+          {/* Assembly Tree Overlay Panel */}
+          {showAssemblyTree && assemblyInfo && assemblyInfo.isAssembly && (
+            <div className="absolute top-3 left-3 z-10">
+              <div className="glass-card p-3 min-w-[200px] max-w-[280px] max-h-[300px] overflow-auto">
+                <div className="flex items-center gap-2 mb-2.5">
+                  <ListTree className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-semibold text-foreground">
+                    {t('parts.cadViewer.assemblyTree', 'Assembly')}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground ml-auto">
+                    {assemblyInfo.partCount} {t('parts.cadViewer.parts', 'parts')}
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  {assemblyInfo.parts.map((part) => (
+                    <div
+                      key={part.index}
+                      className="flex items-center gap-2 py-1 px-1.5 rounded hover:bg-muted/50 cursor-pointer group"
+                      onClick={() => handlePartVisibilityToggle(part.index)}
+                    >
+                      <button
+                        className="flex-shrink-0 p-0.5 rounded hover:bg-muted"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePartVisibilityToggle(part.index);
+                        }}
+                      >
+                        {part.visible ? (
+                          <Eye className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+                        ) : (
+                          <EyeOff className="h-3 w-3 text-muted-foreground/50" />
+                        )}
+                      </button>
+                      <span
+                        className={cn(
+                          "text-[11px] truncate flex-1",
+                          part.visible ? "text-foreground" : "text-muted-foreground/50"
+                        )}
+                        title={part.name}
+                      >
+                        {part.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Dimension Overlay Panel */}
           {showDimensions && dimensions && (
