@@ -1,16 +1,42 @@
 {
   "name": "eryxon-flow-mcp-server",
-  "version": "2.3.0",
-  "description": "MCP Server for Eryxon Flow MES",
+  "version": "3.0.0",
+  "description": "MCP Server for Eryxon Flow MES - Supports stdio and HTTP transports",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
     "eryxon-mcp": "./dist/index.js"
   },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./http": {
+      "import": "./dist/http.js",
+      "types": "./dist/http.d.ts"
+    },
+    "./core": {
+      "import": "./dist/core.js",
+      "types": "./dist/core.d.ts"
+    },
+    "./auth": {
+      "import": "./dist/auth.js",
+      "types": "./dist/auth.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
-    "start": "node dist/index.js"
+    "dev:http": "tsx watch src/http-dev.ts",
+    "start": "node dist/index.js",
+    "start:http": "node dist/http-dev.js",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.24.3",
@@ -21,5 +47,23 @@
     "@types/node": "^24.10.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
-  }
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "manufacturing",
+    "mes",
+    "ai",
+    "claude",
+    "supabase"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SheetMetalConnect/eryxon-flow.git",
+    "directory": "mcp-server"
+  },
+  "license": "MIT"
 }
