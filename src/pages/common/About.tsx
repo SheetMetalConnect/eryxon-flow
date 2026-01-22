@@ -31,9 +31,14 @@ export default function About() {
 
       <div className="space-y-2">
         <p className="text-sm text-muted-foreground">
-          <Link to="/help" className="hover:underline">
-            Help
-          </Link>{" "}
+          <a
+            href="https://flow.eryxon.io/guides/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:underline"
+          >
+            Documentation
+          </a>{" "}
           ·{" "}
           <Link to="/api-docs" className="hover:underline">
             API Docs

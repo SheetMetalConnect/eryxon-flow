@@ -62,7 +62,6 @@ const ConfigWebhooks = lazy(() => import("./pages/admin/config/Webhooks"));
 const ApiDocs = lazy(() => import("./pages/common/ApiDocs"));
 const Pricing = lazy(() => import("./pages/common/Pricing"));
 const MyPlan = lazy(() => import("./pages/common/MyPlan"));
-const Help = lazy(() => import("./pages/common/Help"));
 const About = lazy(() => import("./pages/common/About"));
 const PrivacyPolicy = lazy(() => import("./pages/common/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/common/TermsOfService"));
@@ -608,19 +607,6 @@ function AppRoutes() {
       />
 
       <Route
-        path="/admin/help"
-        element={
-          <ProtectedRoute>
-            <Layout>
-              <LazyRoute>
-                <Help />
-              </LazyRoute>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
         path="/admin/about"
         element={
           <ProtectedRoute>
@@ -664,7 +650,6 @@ function AppRoutes() {
       <Route path="/api-docs" element={<Navigate to="/admin/api-docs" replace />} />
       <Route path="/pricing" element={<Navigate to="/admin/pricing" replace />} />
       <Route path="/my-plan" element={<Navigate to="/admin/my-plan" replace />} />
-      <Route path="/help" element={<Navigate to="/admin/help" replace />} />
 
       <Route path="*" element={
         <LazyRoute>

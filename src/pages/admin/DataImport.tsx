@@ -411,12 +411,12 @@ export default function DataImport() {
         <AlertTitle>Need Help?</AlertTitle>
         <AlertDescription className="flex flex-wrap items-center gap-3 mt-2">
           <span className="text-sm">Learn more about data sync options:</span>
-          <Link to="/help?tab=erp-integration">
+          <a href="https://flow.eryxon.io/features/erp-integration/" target="_blank" rel="noopener noreferrer">
             <Button variant="outline" size="sm" className="h-7 gap-1.5">
               <HelpCircle className="h-3.5 w-3.5" />
               ERP Integration Guide
             </Button>
-          </Link>
+          </a>
           <Link to="/admin/api-docs">
             <Button variant="outline" size="sm" className="h-7 gap-1.5">
               <Code className="h-3.5 w-3.5" />
