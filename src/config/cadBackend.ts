@@ -77,7 +77,7 @@ const defaultConfig: CADBackendConfig = {
 
   frontend: {
     enabled: true, // Frontend-only mode active
-    wasmUrl: 'https://cdn.jsdelivr.net/npm/occt-import-js@0.0.24/dist/occt-import-js.js',
+    wasmUrl: 'https://cdn.jsdelivr.net/npm/occt-import-js@0.0.23/dist/occt-import-js.js',
     maxFileSize: 50 * 1024 * 1024, // 50MB
   },
 
