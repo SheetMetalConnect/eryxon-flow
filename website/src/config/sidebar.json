@@ -21,20 +21,8 @@
       "label": "Features",
       "items": [
         {
-          "label": "Integrations Marketplace",
-          "slug": "features/integrations-marketplace"
-        },
-        {
           "label": "ERP Integration",
           "slug": "features/erp-integration"
-        },
-        {
-          "label": "Shipping Management",
-          "slug": "features/shipping-management"
-        },
-        {
-          "label": "PMI Extraction",
-          "slug": "features/pmi-extraction"
         },
         {
           "label": "3D Viewer",

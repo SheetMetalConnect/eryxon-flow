@@ -179,19 +179,15 @@ cp .env.example .env
 ### Step 2: Configure Environment
 
 Edit `.env`:
-```env
-
+```ini
 POSTGRES_PASSWORD=your-secure-password
 JWT_SECRET=your-jwt-secret-min-32-chars
-
 
 ANON_KEY=your-anon-key
 SERVICE_ROLE_KEY=your-service-role-key
 
-
 SITE_URL=https://your-domain.com
 API_EXTERNAL_URL=https://your-domain.com
-
 
 SMTP_HOST=smtp.your-provider.com
 SMTP_PORT=587
@@ -281,7 +277,7 @@ npm run build
 ### Configuration
 
 Create `mcp-server/.env`:
-```env
+```ini
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_KEY=your-service-role-key
 ```
