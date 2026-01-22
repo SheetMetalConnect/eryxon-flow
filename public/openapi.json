@@ -1,0 +1,2387 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Eryxon Flow API",
+    "description": "Production workflow management API for sheet metal manufacturing. This API allows you to manage jobs, parts, tasks, and track production progress through various stages.\n\n## Authentication\n\nAll API requests require an API key. Include your API key in the `Authorization` header:\n\n```\nAuthorization: Bearer ery_live_your_api_key_here\n```\n\n## Getting Started\n\n1. **Generate an API Key**: Navigate to Admin > API Keys in the web interface\n2. **Test the Connection**: Use the `/api-stages` endpoint (read-only) to verify your key works\n3. **Create Your First Job**: Use POST `/api-jobs` to create a job with parts and tasks\n4. **Track Progress**: Use GET endpoints to retrieve and monitor job status\n\n## Rate Limiting\n\nAPI requests are rate-limited based on your subscription plan:\n\n| Plan | Daily Limit |\n|------|-------------|\n| Free | 100 requests/day |\n| Pro | 1,000 requests/day |\n| Premium | 10,000 requests/day |\n| Enterprise | Unlimited |\n\nRate limit information is included in response headers:\n- `X-RateLimit-Remaining`: Remaining requests in current window\n- `X-RateLimit-Reset`: Timestamp when the limit resets\n- `Retry-After`: Seconds until you can retry (when rate limited)\n\nWhen you exceed your rate limit, you'll receive a `429 Too Many Requests` response.\n\n## Base URL\n\n```\nhttps://vatgianzotsurljznsry.supabase.co/functions/v1\n```",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support",
+      "url": "https://github.com/yourusername/eryxon-flow"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://vatgianzotsurljznsry.supabase.co/functions/v1",
+      "description": "Production Server"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Jobs",
+      "description": "Manage production jobs. Jobs contain multiple parts and track overall progress."
+    },
+    {
+      "name": "Parts",
+      "description": "Manage individual parts within jobs. Each part has its own material, quantity, and files."
+    },
+    {
+      "name": "Tasks",
+      "description": "Manage production tasks. Tasks represent individual work items within a job stage."
+    },
+    {
+      "name": "Stages",
+      "description": "View available production stages (e.g., Cutting, Bending, Welding)."
+    },
+    {
+      "name": "Materials",
+      "description": "View materials currently in use across jobs."
+    },
+    {
+      "name": "File Upload",
+      "description": "Generate secure upload URLs for CAD files, drawings, and images."
+    },
+    {
+      "name": "ERP Sync",
+      "description": "Endpoints for syncing data with external ERP systems (SAP, NetSuite, Odoo, etc.). Use external_id for upsert operations."
+    },
+    {
+      "name": "Unified ERP Sync",
+      "description": "Optimized unified endpoint for ERP integrations. Supports multi-entity sync with change detection, batch operations, and detailed status reporting."
+    },
+    {
+      "name": "Resources",
+      "description": "Manage tools, fixtures, molds, and equipment used in manufacturing operations."
+    }
+  ],
+  "paths": {
+    "/api-jobs": {
+      "get": {
+        "tags": ["Jobs"],
+        "summary": "List and filter jobs",
+        "description": "Retrieve a list of jobs with optional filtering by status, customer, or date range. Supports pagination.",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by job status",
+            "schema": {
+              "type": "string",
+              "enum": ["pending", "in_progress", "completed", "on_hold"]
+            }
+          },
+          {
+            "name": "customer",
+            "in": "query",
+            "description": "Filter by customer name (partial match supported)",
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return (default: 100, max: 1000)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 100
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Number of results to skip (for pagination)",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with jobs list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "jobs": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Job"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Jobs"],
+        "summary": "Create a new job",
+        "description": "Create a new production job with parts and tasks. Parts and tasks can be created in the same request.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateJobRequest"
+              },
+              "examples": {
+                "basic": {
+                  "summary": "Basic job with one part",
+                  "value": {
+                    "job_number": "JOB-2024-001",
+                    "customer": "Acme Corp",
+                    "due_date": "2024-12-31",
+                    "notes": "Standard fabrication project",
+                    "parts": [
+                      {
+                        "part_number": "PART-001",
+                        "material": "Steel 304",
+                        "thickness": "3mm",
+                        "quantity": 10
+                      }
+                    ]
+                  }
+                },
+                "complete": {
+                  "summary": "Complete job with parts and tasks",
+                  "value": {
+                    "job_number": "JOB-2024-002",
+                    "customer": "TechCo Industries",
+                    "due_date": "2024-12-15",
+                    "notes": "Complex multi-part assembly",
+                    "metadata": {
+                      "po_number": "PO-12345",
+                      "priority": "high"
+                    },
+                    "parts": [
+                      {
+                        "part_number": "BRACKET-A",
+                        "material": "Aluminum 6061",
+                        "thickness": "5mm",
+                        "quantity": 25,
+                        "notes": "Needs deburring"
+                      }
+                    ],
+                    "tasks": [
+                      {
+                        "stage_id": "uuid-cutting-stage",
+                        "task_name": "Laser cut brackets",
+                        "sequence": 1,
+                        "estimated_time_minutes": 120
+                      },
+                      {
+                        "stage_id": "uuid-bending-stage",
+                        "task_name": "Bend to 90 degrees",
+                        "sequence": 2,
+                        "estimated_time_minutes": 60
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Job created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "job": {
+                          "$ref": "#/components/schemas/Job"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Jobs"],
+        "summary": "Update a job",
+        "description": "Update job fields such as status, customer, due date, or notes.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "description": "Job UUID to update",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateJobRequest"
+              },
+              "examples": {
+                "status": {
+                  "summary": "Update job status",
+                  "value": {
+                    "status": "completed"
+                  }
+                },
+                "multiple": {
+                  "summary": "Update multiple fields",
+                  "value": {
+                    "status": "in_progress",
+                    "notes": "Customer requested expedited delivery",
+                    "metadata": {
+                      "priority": "high",
+                      "expedited": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Job updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "job": {
+                          "$ref": "#/components/schemas/Job"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        }
+      }
+    },
+    "/api-parts": {
+      "get": {
+        "tags": ["Parts"],
+        "summary": "List and filter parts",
+        "description": "Retrieve parts with filtering by job, material, or status.",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "query",
+            "description": "Filter by job UUID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "material",
+            "in": "query",
+            "description": "Filter by material name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by part status",
+            "schema": {
+              "type": "string",
+              "enum": ["pending", "in_progress", "completed"]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "maximum": 1000
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "parts": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Part"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Parts"],
+        "summary": "Update a part",
+        "description": "Update part fields such as status, quantity, or material.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "description": "Part UUID to update",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePartRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Part updated successfully"
+          }
+        }
+      }
+    },
+    "/api-tasks": {
+      "get": {
+        "tags": ["Tasks"],
+        "summary": "List and filter tasks",
+        "description": "Retrieve tasks with filtering by job, stage, or status.",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "query",
+            "description": "Filter by job UUID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "stage_name",
+            "in": "query",
+            "description": "Filter by stage name (e.g., 'Cutting', 'Welding')",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by task status",
+            "schema": {
+              "type": "string",
+              "enum": ["pending", "in_progress", "completed"]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 100
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "tasks": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Task"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Tasks"],
+        "summary": "Update a task",
+        "description": "Update task status, completion percentage, or other fields.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "description": "Task UUID to update",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTaskRequest"
+              },
+              "examples": {
+                "progress": {
+                  "summary": "Update task progress",
+                  "value": {
+                    "status": "in_progress",
+                    "completion_percentage": 50
+                  }
+                },
+                "complete": {
+                  "summary": "Mark task as completed",
+                  "value": {
+                    "status": "completed",
+                    "completion_percentage": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task updated successfully"
+          }
+        }
+      }
+    },
+    "/api-stages": {
+      "get": {
+        "tags": ["Stages"],
+        "summary": "List production stages",
+        "description": "Get all available production stages. This is a read-only endpoint, perfect for testing your API key.",
+        "parameters": [
+          {
+            "name": "active",
+            "in": "query",
+            "description": "Filter by active status",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "stages": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Stage"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "stages": [
+                      {
+                        "id": "550e8400-e29b-41d4-a716-446655440000",
+                        "name": "Cutting",
+                        "color": "#3b82f6",
+                        "sequence": 1,
+                        "active": true
+                      },
+                      {
+                        "id": "550e8400-e29b-41d4-a716-446655440001",
+                        "name": "Bending",
+                        "color": "#8b5cf6",
+                        "sequence": 2,
+                        "active": true
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/api-materials": {
+      "get": {
+        "tags": ["Materials"],
+        "summary": "List materials in use",
+        "description": "Get a list of all materials currently used in the system.",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "materials": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "example": ["Steel 304", "Aluminum 6061", "Mild Steel"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api-upload-url": {
+      "post": {
+        "tags": ["File Upload"],
+        "summary": "Generate secure upload URL",
+        "description": "Generate a pre-signed URL for uploading files to cloud storage. Use the returned URL to upload your file directly.\n\n## Upload Process\n\n1. Call this endpoint with the filename and content type\n2. Receive a signed URL and file path\n3. Use the signed URL to upload your file (PUT request)\n4. Store the file path in your job/part metadata",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["filename", "content_type"],
+                "properties": {
+                  "filename": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "description": "Name of the file (no path traversal allowed)",
+                    "example": "bracket-drawing.pdf"
+                  },
+                  "content_type": {
+                    "type": "string",
+                    "description": "MIME type of the file",
+                    "enum": [
+                      "image/jpeg",
+                      "image/png",
+                      "image/gif",
+                      "image/webp",
+                      "application/pdf",
+                      "text/plain",
+                      "text/csv",
+                      "application/json",
+                      "application/dxf",
+                      "application/step"
+                    ],
+                    "example": "application/pdf"
+                  }
+                }
+              },
+              "examples": {
+                "pdf": {
+                  "summary": "Upload a PDF drawing",
+                  "value": {
+                    "filename": "part-drawing.pdf",
+                    "content_type": "application/pdf"
+                  }
+                },
+                "image": {
+                  "summary": "Upload an image",
+                  "value": {
+                    "filename": "inspection-photo.jpg",
+                    "content_type": "image/jpeg"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload URL generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "upload_url": {
+                          "type": "string",
+                          "format": "uri",
+                          "description": "Pre-signed URL for uploading (valid for 60 seconds)"
+                        },
+                        "file_path": {
+                          "type": "string",
+                          "description": "Path to store in your records"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          }
+        }
+      }
+    },
+    "/api-jobs/sync": {
+      "put": {
+        "tags": ["ERP Sync"],
+        "summary": "Sync a single job from ERP",
+        "description": "Upsert a job by external_id. Creates new job if external_id doesn't exist, updates if it does. Supports nested parts and operations.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncJobRequest"
+              },
+              "examples": {
+                "basic": {
+                  "summary": "Sync job from SAP",
+                  "value": {
+                    "external_id": "SO-12345",
+                    "external_source": "SAP",
+                    "job_number": "JOB-2024-001",
+                    "customer": "Acme Corp",
+                    "due_date": "2024-12-31",
+                    "notes": "Synced from SAP"
+                  }
+                },
+                "with_parts": {
+                  "summary": "Sync job with nested parts and operations",
+                  "value": {
+                    "external_id": "SO-12345",
+                    "external_source": "SAP",
+                    "job_number": "JOB-2024-001",
+                    "customer": "Acme Corp",
+                    "parts": [
+                      {
+                        "external_id": "SO-12345-10",
+                        "part_number": "BRACKET-A",
+                        "material": "Steel 304",
+                        "quantity": 25,
+                        "operations": [
+                          {
+                            "external_id": "SO-12345-10-010",
+                            "operation_name": "Cutting",
+                            "cell_name": "CNC-01",
+                            "sequence": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Job synced (updated)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncResponse"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Job synced (created)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          }
+        }
+      }
+    },
+    "/api-jobs/bulk-sync": {
+      "post": {
+        "tags": ["ERP Sync"],
+        "summary": "Bulk sync jobs from ERP",
+        "description": "Upsert up to 1000 jobs in a single request. Each job is processed individually with its own success/error status.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkSyncJobsRequest"
+              },
+              "examples": {
+                "basic": {
+                  "summary": "Sync multiple jobs",
+                  "value": {
+                    "jobs": [
+                      {
+                        "external_id": "SO-12345",
+                        "external_source": "SAP",
+                        "job_number": "JOB-2024-001",
+                        "customer": "Acme Corp"
+                      },
+                      {
+                        "external_id": "SO-12346",
+                        "external_source": "SAP",
+                        "job_number": "JOB-2024-002",
+                        "customer": "TechCo"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bulk sync completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkSyncResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api-parts/sync": {
+      "put": {
+        "tags": ["ERP Sync"],
+        "summary": "Sync a single part from ERP",
+        "description": "Upsert a part by external_id. Requires job_external_id to link to parent job.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncPartRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Part synced (updated)"
+          },
+          "201": {
+            "description": "Part synced (created)"
+          }
+        }
+      }
+    },
+    "/api-parts/bulk-sync": {
+      "post": {
+        "tags": ["ERP Sync"],
+        "summary": "Bulk sync parts from ERP",
+        "description": "Upsert up to 1000 parts. Requires job_external_id for each part to resolve parent job.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkSyncPartsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bulk sync completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkSyncResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api-operations/sync": {
+      "put": {
+        "tags": ["ERP Sync"],
+        "summary": "Sync a single operation from ERP",
+        "description": "Upsert an operation by external_id. Requires part_external_id and cell_name.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncOperationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Operation synced"
+          }
+        }
+      }
+    },
+    "/api-operations/bulk-sync": {
+      "post": {
+        "tags": ["ERP Sync"],
+        "summary": "Bulk sync operations from ERP",
+        "description": "Upsert up to 1000 operations. Requires part_external_id and cell_name for each.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkSyncOperationsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bulk sync completed"
+          }
+        }
+      }
+    },
+    "/api-resources": {
+      "get": {
+        "tags": ["Resources"],
+        "summary": "List resources",
+        "description": "Retrieve tools, fixtures, molds, and equipment with optional filtering.",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Filter by resource type",
+            "schema": {
+              "type": "string",
+              "enum": ["tooling", "fixture", "mold", "material", "equipment"]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status",
+            "schema": {
+              "type": "string",
+              "enum": ["available", "in_use", "maintenance"]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "maximum": 1000
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "resources": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Resource"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Resources"],
+        "summary": "Create a resource",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateResourceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Resource created"
+          }
+        }
+      }
+    },
+    "/api-resources/sync": {
+      "put": {
+        "tags": ["ERP Sync"],
+        "summary": "Sync a single resource from ERP",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncResourceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resource synced"
+          }
+        }
+      }
+    },
+    "/api-resources/bulk-sync": {
+      "post": {
+        "tags": ["ERP Sync"],
+        "summary": "Bulk sync resources from ERP",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkSyncResourcesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bulk sync completed"
+          }
+        }
+      }
+    },
+    "/api-cells/sync": {
+      "put": {
+        "tags": ["ERP Sync"],
+        "summary": "Sync a single cell/work center from ERP",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncCellRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cell synced"
+          }
+        }
+      }
+    },
+    "/api-cells/bulk-sync": {
+      "post": {
+        "tags": ["ERP Sync"],
+        "summary": "Bulk sync cells/work centers from ERP",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkSyncCellsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bulk sync completed"
+          }
+        }
+      }
+    },
+    "/api-erp-sync/diff": {
+      "post": {
+        "tags": ["Unified ERP Sync"],
+        "summary": "Preview sync changes (diff)",
+        "description": "Check what would change when syncing data from ERP without making any modifications. Returns status for each record (create, update, unchanged, error). Use this for incremental sync validation before executing.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnifiedSyncRequest"
+              },
+              "examples": {
+                "multi_entity": {
+                  "summary": "Check multiple entity types",
+                  "value": {
+                    "jobs": [
+                      { "external_id": "SO-001", "external_source": "SAP", "job_number": "JOB-001", "customer_name": "Acme Corp" },
+                      { "external_id": "SO-002", "external_source": "SAP", "job_number": "JOB-002", "customer_name": "Beta Inc" }
+                    ],
+                    "parts": [
+                      { "external_id": "SO-001-10", "external_source": "SAP", "job_external_id": "SO-001", "part_number": "BRACKET-A", "quantity": 25 }
+                    ],
+                    "resources": [
+                      { "external_id": "TOOL-001", "external_source": "SAP", "name": "CNC Mill #1", "type": "machine" }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Diff results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnifiedDiffResponse"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequestError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    },
+    "/api-erp-sync/sync": {
+      "post": {
+        "tags": ["Unified ERP Sync"],
+        "summary": "Execute unified sync",
+        "description": "Sync jobs, parts, and resources in a single request. Automatically skips unchanged records via sync_hash comparison. Supports batch operations with detailed results per record.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnifiedSyncRequest"
+              },
+              "examples": {
+                "full_sync": {
+                  "summary": "Sync jobs with parts",
+                  "value": {
+                    "jobs": [
+                      {
+                        "external_id": "SO-12345",
+                        "external_source": "SAP",
+                        "job_number": "JOB-2024-001",
+                        "customer_name": "Acme Corp",
+                        "due_date": "2024-12-31"
+                      }
+                    ],
+                    "parts": [
+                      {
+                        "external_id": "SO-12345-10",
+                        "external_source": "SAP",
+                        "job_external_id": "SO-12345",
+                        "part_number": "BRACKET-A",
+                        "material": "Steel 1018",
+                        "quantity": 25
+                      }
+                    ],
+                    "options": {
+                      "skip_unchanged": true,
+                      "continue_on_error": true,
+                      "record_history": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sync completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnifiedSyncResponse"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequestError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    },
+    "/api-erp-sync/status": {
+      "get": {
+        "tags": ["Unified ERP Sync"],
+        "summary": "Get sync status and history",
+        "description": "View sync history and statistics for auditing and troubleshooting.",
+        "parameters": [
+          {
+            "name": "entity_type",
+            "in": "query",
+            "description": "Filter by entity type",
+            "schema": { "type": "string", "enum": ["jobs", "parts", "resources", "operations"] }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "description": "Filter by sync source",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of records (default: 20, max: 100)",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sync status and history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncStatusResponse"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API Key",
+        "description": "Enter your API key in the format: ery_live_xxxxx or ery_test_xxxxx"
+      }
+    },
+    "schemas": {
+      "Job": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "job_number": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "JOB-2024-001"
+          },
+          "customer": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "Acme Corporation"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-12-31"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed", "on_hold"],
+            "example": "in_progress"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 5000,
+            "example": "Standard fabrication with powder coating"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Custom key-value pairs for additional data",
+            "example": {
+              "po_number": "PO-12345",
+              "priority": "high"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Part": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "job_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "part_number": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "BRACKET-001"
+          },
+          "material": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "Steel 304"
+          },
+          "thickness": {
+            "type": "string",
+            "maxLength": 50,
+            "example": "3mm"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000,
+            "example": 25
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed"]
+          },
+          "file_paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of file paths from upload endpoint"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "metadata": {
+            "type": "object"
+          }
+        }
+      },
+      "Task": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "job_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "stage_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "task_name": {
+            "type": "string",
+            "maxLength": 200,
+            "example": "Laser cut brackets"
+          },
+          "sequence": {
+            "type": "integer",
+            "description": "Order of task execution",
+            "example": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed"]
+          },
+          "estimated_time_minutes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000,
+            "example": 120
+          },
+          "completion_percentage": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "example": 75
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 5000
+          }
+        }
+      },
+      "Stage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Cutting"
+          },
+          "color": {
+            "type": "string",
+            "example": "#3b82f6"
+          },
+          "sequence": {
+            "type": "integer",
+            "example": 1
+          },
+          "active": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "example": 100
+          },
+          "offset": {
+            "type": "integer",
+            "example": 0
+          },
+          "total": {
+            "type": "integer",
+            "example": 250
+          }
+        }
+      },
+      "CreateJobRequest": {
+        "type": "object",
+        "required": ["job_number", "customer"],
+        "properties": {
+          "job_number": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Unique job identifier"
+          },
+          "customer": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "parts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["part_number"],
+              "properties": {
+                "part_number": {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "material": {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "thickness": {
+                  "type": "string",
+                  "maxLength": 50
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000
+                },
+                "notes": {
+                  "type": "string",
+                  "maxLength": 5000
+                }
+              }
+            }
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["stage_id", "task_name"],
+              "properties": {
+                "stage_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "task_name": {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                "sequence": {
+                  "type": "integer"
+                },
+                "estimated_time_minutes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100000
+                }
+              }
+            }
+          }
+        }
+      },
+      "UpdateJobRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed", "on_hold"]
+          },
+          "customer": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "metadata": {
+            "type": "object"
+          }
+        }
+      },
+      "UpdatePartRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed"]
+          },
+          "material": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "thickness": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "metadata": {
+            "type": "object"
+          }
+        }
+      },
+      "UpdateTaskRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed"]
+          },
+          "completion_percentage": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 5000
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "example": "UNAUTHORIZED"
+              },
+              "message": {
+                "type": "string",
+                "example": "Invalid or missing API key"
+              }
+            }
+          }
+        }
+      },
+      "Resource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "CNC Mill #1"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["tooling", "fixture", "mold", "material", "equipment"],
+            "example": "equipment"
+          },
+          "description": {
+            "type": "string"
+          },
+          "identifier": {
+            "type": "string",
+            "example": "MILL-001"
+          },
+          "location": {
+            "type": "string",
+            "example": "Building A, Bay 3"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["available", "in_use", "maintenance"]
+          },
+          "external_id": {
+            "type": "string",
+            "description": "ID from external ERP system"
+          },
+          "external_source": {
+            "type": "string",
+            "description": "Source system identifier",
+            "example": "SAP"
+          }
+        }
+      },
+      "CreateResourceRequest": {
+        "type": "object",
+        "required": ["name", "type"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["tooling", "fixture", "mold", "material", "equipment"]
+          },
+          "description": {
+            "type": "string"
+          },
+          "identifier": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["available", "in_use", "maintenance"],
+            "default": "available"
+          }
+        }
+      },
+      "SyncJobRequest": {
+        "type": "object",
+        "required": ["external_id", "external_source", "job_number"],
+        "properties": {
+          "external_id": {
+            "type": "string",
+            "description": "Unique identifier from ERP system",
+            "example": "SO-12345"
+          },
+          "external_source": {
+            "type": "string",
+            "description": "Source system name",
+            "example": "SAP"
+          },
+          "job_number": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "customer": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10
+          },
+          "parts": {
+            "type": "array",
+            "description": "Nested parts to sync with the job",
+            "items": {
+              "$ref": "#/components/schemas/SyncPartRequest"
+            }
+          }
+        }
+      },
+      "SyncPartRequest": {
+        "type": "object",
+        "required": ["external_id", "external_source", "part_number"],
+        "properties": {
+          "external_id": {
+            "type": "string"
+          },
+          "external_source": {
+            "type": "string"
+          },
+          "job_external_id": {
+            "type": "string",
+            "description": "External ID of parent job (required for flat sync)"
+          },
+          "part_number": {
+            "type": "string"
+          },
+          "material": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "notes": {
+            "type": "string"
+          },
+          "operations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SyncOperationRequest"
+            }
+          }
+        }
+      },
+      "SyncOperationRequest": {
+        "type": "object",
+        "required": ["external_id", "external_source", "operation_name", "cell_name"],
+        "properties": {
+          "external_id": {
+            "type": "string"
+          },
+          "external_source": {
+            "type": "string"
+          },
+          "part_external_id": {
+            "type": "string",
+            "description": "External ID of parent part (required for flat sync)"
+          },
+          "operation_name": {
+            "type": "string"
+          },
+          "cell_name": {
+            "type": "string",
+            "description": "Name of the cell/work center"
+          },
+          "sequence": {
+            "type": "integer"
+          },
+          "estimated_time_minutes": {
+            "type": "integer"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "SyncResourceRequest": {
+        "type": "object",
+        "required": ["external_id", "external_source", "name", "type"],
+        "properties": {
+          "external_id": {
+            "type": "string"
+          },
+          "external_source": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["tooling", "fixture", "mold", "material", "equipment"]
+          },
+          "description": {
+            "type": "string"
+          },
+          "identifier": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["available", "in_use", "maintenance"]
+          }
+        }
+      },
+      "SyncCellRequest": {
+        "type": "object",
+        "required": ["external_id", "external_source", "name"],
+        "properties": {
+          "external_id": {
+            "type": "string"
+          },
+          "external_source": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string",
+            "example": "#3b82f6"
+          },
+          "sequence": {
+            "type": "integer"
+          },
+          "active": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "BulkSyncJobsRequest": {
+        "type": "object",
+        "required": ["jobs"],
+        "properties": {
+          "jobs": {
+            "type": "array",
+            "maxItems": 1000,
+            "items": {
+              "$ref": "#/components/schemas/SyncJobRequest"
+            }
+          }
+        }
+      },
+      "BulkSyncPartsRequest": {
+        "type": "object",
+        "required": ["parts"],
+        "properties": {
+          "parts": {
+            "type": "array",
+            "maxItems": 1000,
+            "items": {
+              "$ref": "#/components/schemas/SyncPartRequest"
+            }
+          }
+        }
+      },
+      "BulkSyncOperationsRequest": {
+        "type": "object",
+        "required": ["operations"],
+        "properties": {
+          "operations": {
+            "type": "array",
+            "maxItems": 1000,
+            "items": {
+              "$ref": "#/components/schemas/SyncOperationRequest"
+            }
+          }
+        }
+      },
+      "BulkSyncResourcesRequest": {
+        "type": "object",
+        "required": ["resources"],
+        "properties": {
+          "resources": {
+            "type": "array",
+            "maxItems": 1000,
+            "items": {
+              "$ref": "#/components/schemas/SyncResourceRequest"
+            }
+          }
+        }
+      },
+      "BulkSyncCellsRequest": {
+        "type": "object",
+        "required": ["cells"],
+        "properties": {
+          "cells": {
+            "type": "array",
+            "maxItems": 1000,
+            "items": {
+              "$ref": "#/components/schemas/SyncCellRequest"
+            }
+          }
+        }
+      },
+      "SyncResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": ["created", "updated"],
+                "description": "Whether record was created or updated"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Internal UUID of the synced record"
+              },
+              "external_id": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "BulkSyncResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "description": "Total records processed"
+              },
+              "created": {
+                "type": "integer",
+                "description": "New records created"
+              },
+              "updated": {
+                "type": "integer",
+                "description": "Existing records updated"
+              },
+              "errors": {
+                "type": "integer",
+                "description": "Records that failed"
+              },
+              "results": {
+                "type": "array",
+                "description": "Individual results for each record",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "external_id": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "action": {
+                      "type": "string",
+                      "enum": ["created", "updated", "error"]
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "Error message if action is 'error'"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "example": {
+          "success": true,
+          "data": {
+            "total": 3,
+            "created": 2,
+            "updated": 1,
+            "errors": 0,
+            "results": [
+              { "external_id": "SO-001", "id": "uuid-1", "action": "created" },
+              { "external_id": "SO-002", "id": "uuid-2", "action": "updated" },
+              { "external_id": "SO-003", "id": "uuid-3", "action": "created" }
+            ]
+          }
+        }
+      },
+      "UnifiedSyncRequest": {
+        "type": "object",
+        "description": "Unified ERP sync request supporting multiple entity types",
+        "properties": {
+          "jobs": {
+            "type": "array",
+            "description": "Jobs to sync",
+            "items": {
+              "type": "object",
+              "required": ["external_id", "external_source", "job_number"],
+              "properties": {
+                "external_id": { "type": "string", "description": "ERP system ID" },
+                "external_source": { "type": "string", "description": "ERP system name (e.g., SAP, NetSuite)" },
+                "job_number": { "type": "string" },
+                "customer_name": { "type": "string" },
+                "due_date": { "type": "string", "format": "date" },
+                "priority": { "type": "integer" },
+                "notes": { "type": "string" },
+                "metadata": { "type": "object" }
+              }
+            }
+          },
+          "parts": {
+            "type": "array",
+            "description": "Parts to sync",
+            "items": {
+              "type": "object",
+              "required": ["external_id", "external_source", "part_number"],
+              "properties": {
+                "external_id": { "type": "string" },
+                "external_source": { "type": "string" },
+                "job_id": { "type": "string", "format": "uuid", "description": "Internal job UUID" },
+                "job_external_id": { "type": "string", "description": "Parent job's external_id" },
+                "part_number": { "type": "string" },
+                "material": { "type": "string" },
+                "quantity": { "type": "integer" },
+                "notes": { "type": "string" },
+                "metadata": { "type": "object" }
+              }
+            }
+          },
+          "resources": {
+            "type": "array",
+            "description": "Resources to sync",
+            "items": {
+              "type": "object",
+              "required": ["external_id", "external_source", "name", "type"],
+              "properties": {
+                "external_id": { "type": "string" },
+                "external_source": { "type": "string" },
+                "name": { "type": "string" },
+                "type": { "type": "string" },
+                "description": { "type": "string" },
+                "identifier": { "type": "string" },
+                "location": { "type": "string" },
+                "metadata": { "type": "object" }
+              }
+            }
+          },
+          "options": {
+            "type": "object",
+            "description": "Sync options",
+            "properties": {
+              "skip_unchanged": { "type": "boolean", "default": true, "description": "Skip records with unchanged sync_hash" },
+              "continue_on_error": { "type": "boolean", "default": true, "description": "Continue syncing if an error occurs" },
+              "record_history": { "type": "boolean", "default": true, "description": "Log sync to sync_imports table" }
+            }
+          },
+          "source": { "type": "string", "description": "Source identifier for webhook events" }
+        }
+      },
+      "UnifiedDiffResponse": {
+        "type": "object",
+        "description": "Response from diff endpoint showing what would change",
+        "properties": {
+          "summary": {
+            "type": "object",
+            "properties": {
+              "total_entities": { "type": "integer" },
+              "total_records": { "type": "integer" },
+              "total_to_create": { "type": "integer" },
+              "total_to_update": { "type": "integer" },
+              "total_unchanged": { "type": "integer" },
+              "total_errors": { "type": "integer" }
+            }
+          },
+          "entities": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "entity_type": { "type": "string" },
+                "total": { "type": "integer" },
+                "to_create": { "type": "integer" },
+                "to_update": { "type": "integer" },
+                "unchanged": { "type": "integer" },
+                "errors": { "type": "integer" },
+                "records": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "external_id": { "type": "string" },
+                      "external_source": { "type": "string" },
+                      "status": { "type": "string", "enum": ["create", "update", "unchanged", "error"] },
+                      "existing_id": { "type": "string", "format": "uuid" },
+                      "changes": { "type": "array", "items": { "type": "string" } },
+                      "error": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "UnifiedSyncResponse": {
+        "type": "object",
+        "description": "Response from sync endpoint with detailed results",
+        "properties": {
+          "summary": {
+            "type": "object",
+            "properties": {
+              "total_entities": { "type": "integer" },
+              "total_records": { "type": "integer" },
+              "total_created": { "type": "integer" },
+              "total_updated": { "type": "integer" },
+              "total_skipped": { "type": "integer" },
+              "total_errors": { "type": "integer" },
+              "duration_ms": { "type": "integer" }
+            }
+          },
+          "entities": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "total": { "type": "integer" },
+                "created": { "type": "integer" },
+                "updated": { "type": "integer" },
+                "skipped": { "type": "integer" },
+                "errors": { "type": "integer" },
+                "duration_ms": { "type": "integer" },
+                "results": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "external_id": { "type": "string" },
+                      "id": { "type": "string", "format": "uuid" },
+                      "action": { "type": "string", "enum": ["created", "updated", "skipped", "error"] },
+                      "error": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "SyncStatusResponse": {
+        "type": "object",
+        "description": "Sync status and history response",
+        "properties": {
+          "stats": {
+            "type": "object",
+            "properties": {
+              "total_syncs": { "type": "integer" },
+              "successful": { "type": "integer" },
+              "failed": { "type": "integer" },
+              "total_created": { "type": "integer" },
+              "total_updated": { "type": "integer" },
+              "total_errors": { "type": "integer" }
+            }
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string", "format": "uuid" },
+                "source": { "type": "string" },
+                "entity_type": { "type": "string" },
+                "status": { "type": "string", "enum": ["pending", "processing", "completed", "failed"] },
+                "total_records": { "type": "integer" },
+                "created_count": { "type": "integer" },
+                "updated_count": { "type": "integer" },
+                "skipped_count": { "type": "integer" },
+                "error_count": { "type": "integer" },
+                "errors": { "type": "object" },
+                "started_at": { "type": "string", "format": "date-time" },
+                "completed_at": { "type": "string", "format": "date-time" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "UnauthorizedError": {
+        "description": "Invalid or missing API key",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "UNAUTHORIZED",
+                "message": "Invalid or missing API key"
+              }
+            }
+          }
+        }
+      },
+      "BadRequestError": {
+        "description": "Invalid request parameters",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "VALIDATION_ERROR",
+                "message": "Invalid input parameters"
+              }
+            }
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "NOT_FOUND",
+                "message": "Resource not found"
+              }
+            }
+          }
+        }
+      },
+      "RateLimitError": {
+        "description": "Rate limit exceeded. Your subscription plan's daily request limit has been reached.",
+        "headers": {
+          "X-RateLimit-Remaining": {
+            "description": "Number of requests remaining in current window",
+            "schema": {
+              "type": "integer",
+              "example": 0
+            }
+          },
+          "X-RateLimit-Reset": {
+            "description": "ISO 8601 timestamp when the rate limit resets",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-12-10T00:00:00Z"
+            }
+          },
+          "Retry-After": {
+            "description": "Seconds until the rate limit resets",
+            "schema": {
+              "type": "integer",
+              "example": 3600
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "RATE_LIMIT_EXCEEDED",
+                "message": "Rate limit exceeded. Your free plan allows 100 requests per day. Please upgrade your plan or wait until the limit resets.",
+                "statusCode": 429,
+                "details": {
+                  "remaining": 0,
+                  "resetAt": "2024-12-10T00:00:00Z",
+                  "retryAfter": 3600
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

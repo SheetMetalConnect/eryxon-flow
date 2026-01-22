@@ -1,0 +1,12 @@
+# Replace app.eryxon-flow.com with your domain
+app.eryxon-flow.com {
+    reverse_proxy app:80
+
+    # Security headers (Caddy adds many by default)
+    header {
+        X-Frame-Options "DENY"
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+}
