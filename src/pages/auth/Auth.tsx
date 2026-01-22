@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +12,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/routes";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 export default function Auth() {
   const { t } = useTranslation();
@@ -25,6 +26,8 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
   const { signIn, signUp, profile } = useAuth();
   const navigate = useNavigate();
 
@@ -42,13 +45,23 @@ export default function Auth() {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+
+    // Check for captcha token
+    if (!captchaToken) {
+      setError(t("auth.captchaRequired"));
+      return;
+    }
+
     setLoading(true);
 
     try {
       if (isLogin) {
-        const { error } = await signIn(email, password);
+        const { error } = await signIn(email, password, captchaToken);
         if (error) {
           setError(error.message);
+          // Reset captcha on error
+          turnstileRef.current?.reset();
+          setCaptchaToken(null);
         }
       } else {
         // Validate required fields
@@ -71,15 +84,18 @@ export default function Auth() {
           return;
         }
 
-        // Sign up creates tenant with 'suspended' status - requires admin approval
+        // Sign up creates tenant with 'active' status and 30-day free trial
         const { error } = await signUp(email, password, {
           full_name: fullName,
           company_name: companyName,
           role: "admin"
-        });
+        }, captchaToken);
 
         if (error) {
           setError(error.message);
+          // Reset captcha on error
+          turnstileRef.current?.reset();
+          setCaptchaToken(null);
         } else {
           // Show success message
           setSuccess(t("auth.pendingApprovalMessage"));
@@ -94,6 +110,9 @@ export default function Auth() {
       }
     } catch (err) {
       setError(t("auth.unexpectedError"));
+      // Reset captcha on unexpected error
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -217,6 +236,25 @@ export default function Auth() {
               />
             </div>
 
+            {/* Turnstile Captcha */}
+            <div className="flex justify-center pt-2">
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || ""}
+                onSuccess={(token) => setCaptchaToken(token)}
+                onError={() => {
+                  setCaptchaToken(null);
+                  setError(t("auth.captchaError"));
+                }}
+                onExpire={() => {
+                  setCaptchaToken(null);
+                }}
+                options={{
+                  theme: "dark",
+                }}
+              />
+            </div>
+
             {/* GDPR Checkboxes - Only show on Sign Up */}
             {!isLogin && (
               <div className="space-y-4 pt-2">
@@ -237,6 +275,7 @@ export default function Auth() {
                       to="/privacy"
                       className="text-primary hover:underline"
                       target="_blank"
+                      rel="noopener noreferrer"
                     >
                       {t("auth.privacyPolicy")}
                     </Link>{" "}
@@ -245,6 +284,7 @@ export default function Auth() {
                       to="/terms"
                       className="text-primary hover:underline"
                       target="_blank"
+                      rel="noopener noreferrer"
                     >
                       {t("auth.termsOfService")}
                     </Link>
@@ -288,6 +328,9 @@ export default function Auth() {
                   setIsLogin(!isLogin);
                   setError(null);
                   setSuccess(null);
+                  // Reset captcha when switching modes
+                  turnstileRef.current?.reset();
+                  setCaptchaToken(null);
                 }}
                 className="text-sm text-primary hover:underline"
               >

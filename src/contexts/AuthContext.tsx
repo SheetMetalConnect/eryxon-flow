@@ -39,8 +39,8 @@ interface AuthContextType {
   profile: Profile | null;
   tenant: TenantInfo | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, userData: Partial<Profile> & { company_name?: string }) => Promise<{ error: Error | null; data?: any }>;
+  signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, userData: Partial<Profile> & { company_name?: string }, captchaToken?: string) => Promise<{ error: Error | null; data?: any }>;
   signOut: () => Promise<void>;
   switchTenant: (tenantId: string) => Promise<void>;
   refreshTenant: () => Promise<void>;
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         if (session?.user) {
           // Fetch profile data after session is established
           setTimeout(() => {
@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
         fetchProfile(session.user.id);
       } else {
@@ -166,11 +166,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await fetchTenant();
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, captchaToken?: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
+        options: captchaToken ? { captchaToken } : undefined,
       });
       return { error };
     } catch (error) {
@@ -181,7 +182,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (
     email: string,
     password: string,
-    userData: Partial<Profile> & { company_name?: string }
+    userData: Partial<Profile> & { company_name?: string },
+    captchaToken?: string
   ) => {
     try {
       // Generate username from email (part before @)
@@ -192,6 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
+          captchaToken,
           data: {
             username,
             full_name: userData.full_name,
