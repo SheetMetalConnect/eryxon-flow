@@ -1,7 +1,7 @@
 ---
 title: |
   Start Manufacturing <span class='text-primary'>Smarter Today</span>
-description: Join the open source community and digitize your shop floor with Eryxon Flow.
+description: Digitize your shop floor and take control of production with Eryxon Flow.
 enable: true
 fill_button:
   enable: true
