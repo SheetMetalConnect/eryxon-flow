@@ -430,12 +430,12 @@ apiClient.post('/api-jobs', jobData)
                   CSV Import Wizard
                 </Button>
               </Link>
-              <Link to="/help">
+              <a href="https://flow.eryxon.io/guides/" target="_blank" rel="noopener noreferrer">
                 <Button variant="outline" size="sm" className="gap-2">
                   <HelpCircle className="h-4 w-4" />
-                  Help & Guides
+                  Documentation
                 </Button>
-              </Link>
+              </a>
             </div>
           </CardContent>
         </Card>

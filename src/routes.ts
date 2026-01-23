@@ -47,7 +47,6 @@ export const ROUTES = {
     API_DOCS: "/admin/api-docs",
     PRICING: "/admin/pricing",
     MY_PLAN: "/admin/my-plan",
-    HELP: "/admin/help",
     ABOUT: "/admin/about",
     PRIVACY_POLICY: "/privacy-policy",
     TERMS_OF_SERVICE: "/terms-of-service",
