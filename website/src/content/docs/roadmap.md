@@ -1,117 +1,102 @@
 ---
 title: Roadmap
-description: Future development plans and planned features for Eryxon MES
+description: Feature considerations and future direction for Eryxon MES
 ---
 
-This roadmap outlines planned features and improvements for Eryxon MES. Features are grouped by theme and represent our development direction—not commitments with fixed timelines.
+This page lists features we're **considering** for future development. Nothing here is planned, promised, or guaranteed. These are ideas gathered from job shop feedback that we may explore.
 
----
-
-## Current State (v0.2)
-
-The following core capabilities are already implemented:
-
-### Production Tracking
-- **Time tracking** — Operators start/stop time on operations
-- **Production quantities** — Record good parts produced per operation
-- **Scrap tracking** — Categorized scrap reason codes with statistics
-- **Quality issues** — NCR creation with severity levels and approval workflow
-
-### Visibility
-- **Activity Monitor** — Real-time feed of all system activity
-- **Dashboard stats** — Active jobs, operators on-site, work in progress
-- **WebSocket updates** — Changes appear instantly on all screens
-
-### Integration
-- **REST API** — Full CRUD for jobs, parts, operations
-- **Webhooks** — Event notifications for external systems
-- **CSV import/export** — Bulk data operations
-- **MCP server** — AI/automation integration
+**We're considering moving this roadmap to GitHub Discussions** for better community interaction. Feature requests, votes, and discussions would happen there instead of in static documentation.
 
 ---
 
-## Planned Features
+## How This Works
 
-### Operator Enhancements
-
-#### Completed Quantity Display
-Show the number of parts completed directly in the operator work queue. Currently tracked internally but not prominently displayed per operation.
-
-**Status:** Planned
-
-#### Cycle Time Measurement
-Calculate cycle time per unit based on multiple time measurements. The system already calculates average cycle time from total time / quantity, but explicit multi-sample averaging for more accurate cycle time estimation is planned.
-
-**Status:** Planned
-**Existing foundation:** `useProductionMetrics.ts` already calculates `avgCycleTimePerUnit`
-
-#### Work Order Remarks
-Add a dedicated remarks field for operators to leave notes on work orders (werkbon). Notes currently exist on issues and operations, but a streamlined "operator remarks" feature for work order handoff is planned.
-
-**Status:** Planned
-**Existing foundation:** Notes fields exist on multiple entities
+- Items listed here are **considerations only** — not commitments
+- We gather feedback from real job shops to understand needs
+- Features may be built, modified, deprioritized, or dropped entirely
+- If you want to influence direction, open a [GitHub Issue](https://github.com/SheetMetalConnect/eryxon-flow/issues)
 
 ---
 
-### Quality & Scrap
+## Under Consideration
 
-#### Enhanced Scrap Reporting
-Scrap reasons are already implemented with categories (Material, Process, Equipment, Operator, Design, Other). Future improvements may include:
-- Scrap quantity entry per reason during production
-- Trend analysis over time
-- Automated alerts for recurring scrap patterns
+### Completed Quantity Display
 
-**Status:** Partially implemented
-**Location:** `/admin/config/scrap-reasons`
+**What:** Show the number of parts completed (aantal gereed) prominently in the operator work queue, per operation.
 
----
+**Why we're considering it:** Operators want to see at a glance how many pieces are done vs. remaining, especially for batch production. Currently this data exists in `operation_quantities` but isn't displayed prominently in the work queue interface.
 
-### Machine Integration
-
-#### DNC Connection
-Enable NC file transfer directly to CNC machines. This would allow operators to push NC programs from the Eryxon interface to connected machines.
-
-**Status:** Planned
-**Considerations:**
-- Protocol support (FTP, shared folders, machine-specific APIs)
-- Security and access control
-- File versioning and traceability
+**Current state:** Production quantities are tracked internally. The `ProductionQuantityModal` records good parts, and `useProductionMetrics.ts` aggregates totals. Display could be enhanced.
 
 ---
 
-### Production Management
+### Cycle Time from Multiple Measurements
 
-#### Job Progress Dashboard
-A dedicated dashboard for production managers to monitor job progress in real-time. This would go beyond the current Activity Monitor to show:
-- Overall job completion percentages
-- Parts progress through stages
-- Bottleneck identification
-- Estimated completion times
+**What:** Calculate accurate cycle time per piece based on averaging multiple production measurements, not just total time / total quantity.
 
-**Status:** Planned
-**Existing foundation:**
-- Activity Monitor provides real-time logging
-- Stage-based workflow already tracks operation status
-- Production metrics hooks calculate quantities and yields
+**Why we're considering it:** A single averaged cycle time can be skewed by setup time or anomalies. Job shops want per-piece cycle times derived from multiple individual measurements to get accurate standards for quoting and planning.
+
+**Current state:** `useProductionMetrics.ts` calculates `avgCycleTimePerUnit` as `actualTime / totalGood`. This is a simple division, not multi-sample statistical averaging.
 
 ---
 
-## Contributing
+### Work Order Remarks
 
-Eryxon MES is open for contributions. If you're interested in implementing any of these features or have suggestions for the roadmap:
+**What:** A dedicated remarks field for operators to leave notes on work orders (werkbon) for handoff to the next shift or production management.
 
-1. Check our [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow) for existing discussions
-2. Open an issue to discuss implementation approaches
-3. Submit a pull request with your contribution
+**Why we're considering it:** Operators often need to communicate issues, deviations, or status that doesn't fit into formal issue reporting. A quick "remarks" field on the work order level would help with shift handoffs.
+
+**Current state:** Notes fields exist on issues, jobs, parts, and operations. No dedicated "operator remarks" field specifically for work order handoff.
 
 ---
 
-## Not Planned
+### Scrap with Reasons During Production
 
-These features are explicitly out of scope for Eryxon MES (see [Introduction](/introduction/)):
+**What:** Allow operators to record scrap quantity with specific reason codes during production reporting, not just good parts.
+
+**Why we're considering it:** Currently operators report good parts. Scrap reasons are configured in the system (`/admin/config/scrap-reasons`) but the production quantity flow focuses on good parts. Shops want to capture reject quantities with reasons in the same workflow.
+
+**Current state:** Scrap reason configuration is fully implemented with categories (Material, Process, Equipment, Operator, Design, Other). The `operation_quantities` table has `quantity_scrap` and `scrap_reason_id` fields. The operator modal focuses on good parts.
+
+---
+
+### DNC Connection
+
+**What:** Transfer NC/G-code files directly from Eryxon to CNC machines.
+
+**Why we're considering it:** Operators currently download NC files and transfer them manually (USB, network share). Direct machine connectivity would reduce errors and save time.
+
+**Current state:** Not implemented. Would require protocol support (FTP, CIFS, machine-specific APIs), security considerations, and significant development effort.
+
+---
+
+### Job Progress Dashboard
+
+**What:** A real-time dashboard for production management showing job progress, completion percentages, and bottleneck identification.
+
+**Why we're considering it:** Managers want to monitor production status from their desk without walking the shop floor. Current Activity Monitor shows events, but not aggregated job progress views.
+
+**Current state:** Activity Monitor (`/admin/activity`) provides real-time event logging. Dashboard shows stats. No dedicated "job progress" view with completion percentages per job/part.
+
+---
+
+## Not In Scope
+
+These features are explicitly **not** part of Eryxon's direction (see [Introduction](/introduction/)):
 
 - **Financial tracking** — No costs, prices, or margins
-- **Purchasing/PO management** — Task status only, no vendor transactions
-- **Multi-level BOM management** — Parent-child assembly links only
-- **Scheduling optimization** — Manual date control, no automatic scheduling
-- **Built-in historical reports** — Real-time stats only (data accessible via API)
+- **Purchasing/PO management** — No vendor transactions
+- **Multi-level BOM management** — Assembly links only, not full BOMs
+- **Scheduling optimization** — Manual date control only
+- **Built-in historical reports** — Real-time stats only (data via API)
+
+---
+
+## Provide Feedback
+
+If you have opinions on these features or want to suggest others:
+
+- [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues) — Feature requests and discussion
+- [GitHub Discussions](https://github.com/SheetMetalConnect/eryxon-flow/discussions) — General feedback (if enabled)
+
+We read everything. No promises, but feedback shapes direction.
