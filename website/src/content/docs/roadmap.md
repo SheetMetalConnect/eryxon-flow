@@ -80,6 +80,45 @@ This page lists features we're **considering** for future development. Nothing h
 
 ---
 
+### Enhanced 3D Viewer with PMI Support
+
+**What:** Improve the 3D STEP viewer to display PMI (Product Manufacturing Information) — dimensions, tolerances, GD&T annotations, and notes embedded in CAD files.
+
+**Why we're considering it:** The current viewer shows geometry only. Operators and inspectors need to see dimensions and tolerances directly in the 3D view without opening separate drawings. PMI-enabled STEP files (AP242) contain this data, but we don't extract or display it yet.
+
+**Current state:** The 3D viewer (`STEPViewer.tsx`) uses Three.js + occt-import-js to render STEP geometry. It supports exploded view, wireframe, and interactive controls. PMI extraction requires additional parsing of semantic PMI data from AP242 files — a significant undertaking.
+
+**See:** [3D Viewer Documentation](/features/3d-viewer/)
+
+---
+
+### Standard ERP Connectors
+
+**What:** Pre-built connectors for common ERP systems like SAP, Odoo, Microsoft Dynamics, NetSuite, or industry-specific systems.
+
+**Why we're considering it:** Currently, ERP integration requires custom development using our REST API. Job shops without development resources struggle to connect their ERP. Pre-built connectors would lower the barrier to adoption.
+
+**Current state:** The API supports sync operations with `external_id` tracking, webhooks, and bulk import. Integration partners build custom connectors. No out-of-the-box connectors exist for specific ERP systems.
+
+**See:** [ERP Integration Guide](/features/erp-integration/)
+
+---
+
+### Enhanced Real-time Connectors
+
+**What:** Improve and expand real-time connectivity options — MQTT bidirectional communication, MCP server enhancements, additional event types, and better configuration UI.
+
+**Why we're considering it:** Industrial environments increasingly expect real-time data flow. Current MQTT publishing is outbound-only. MCP server enables AI/automation but could support more tools. More granular events and easier configuration would improve adoption.
+
+**Current state:**
+- **MQTT:** Outbound publishing with ISA-95 topic patterns. No inbound message handling.
+- **MCP:** Server implemented for AI integration with tool access to jobs, parts, operations.
+- **Webhooks:** HTTP POST on events with HMAC signature verification.
+
+**See:** [MQTT & Webhooks](/architecture/connectivity-mqtt/), [Connectivity Overview](/architecture/connectivity-overview/)
+
+---
+
 ## Not In Scope
 
 These features are explicitly **not** part of Eryxon's direction (see [Introduction](/introduction/)):
