@@ -1,6 +1,6 @@
 # Eryxon Flow
 
-Open source Manufacturing Execution System (MES) for job shops and make-to-order manufacturers.
+Source-available Manufacturing Execution System (MES) for job shops and make-to-order manufacturers. Licensed under BSL 1.1.
 
 ## Features
 
