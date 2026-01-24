@@ -3,18 +3,17 @@ title: Roadmap
 description: Feature considerations and future direction for Eryxon MES
 ---
 
-This page lists features we're **considering** for future development. Nothing here is planned, promised, or guaranteed. These are ideas gathered from job shop feedback that we may explore.
+Features we're **considering** — nothing planned, promised, or guaranteed.
 
-**We're considering moving this roadmap to GitHub Discussions** for better community interaction. Feature requests, votes, and discussions would happen there instead of in static documentation.
+**We're considering moving this to GitHub** for better community interaction.
 
 ---
 
 ## How This Works
 
-- Items listed here are **considerations only** — not commitments
-- We gather feedback from real job shops to understand needs
-- Features may be built, modified, deprioritized, or dropped entirely
-- If you want to influence direction, open a [GitHub Issue](https://github.com/SheetMetalConnect/eryxon-flow/issues)
+- Items listed are **considerations only** — not commitments
+- Features may be built, modified, or dropped
+- To influence direction: [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues)
 
 ---
 
@@ -22,120 +21,107 @@ This page lists features we're **considering** for future development. Nothing h
 
 ### Completed Quantity Display
 
-**What:** Show the number of parts completed (aantal gereed) prominently in the operator work queue, per operation.
+Show parts completed (aantal gereed) in operator work queue per operation.
 
-**Why we're considering it:** Operators want to see at a glance how many pieces are done vs. remaining, especially for batch production. Currently this data exists in `operation_quantities` but isn't displayed prominently in the work queue interface.
+**Why:** Operators want to see done vs. remaining at a glance for batch production.
 
-**Current state:** Production quantities are tracked internally. The `ProductionQuantityModal` records good parts, and `useProductionMetrics.ts` aggregates totals. Display could be enhanced.
+**Current:** Data exists in `operation_quantities` but isn't prominently displayed.
 
 ---
 
 ### Cycle Time from Multiple Measurements
 
-**What:** Calculate accurate cycle time per piece based on averaging multiple production measurements, not just total time / total quantity.
+Calculate cycle time per piece from multiple samples, not just total time / quantity.
 
-**Why we're considering it:** A single averaged cycle time can be skewed by setup time or anomalies. Job shops want per-piece cycle times derived from multiple individual measurements to get accurate standards for quoting and planning.
+**Why:** Simple averages are skewed by setup time. Shops want accurate per-piece times for quoting.
 
-**Current state:** `useProductionMetrics.ts` calculates `avgCycleTimePerUnit` as `actualTime / totalGood`. This is a simple division, not multi-sample statistical averaging.
+**Current:** Basic calculation exists (`actualTime / totalGood`). No multi-sample averaging.
 
 ---
 
 ### Work Order Remarks
 
-**What:** A dedicated remarks field for operators to leave notes on work orders (werkbon) for handoff to the next shift or production management.
+Dedicated remarks field for operators to leave notes for shift handoff.
 
-**Why we're considering it:** Operators often need to communicate issues, deviations, or status that doesn't fit into formal issue reporting. A quick "remarks" field on the work order level would help with shift handoffs.
+**Why:** Quick notes that don't fit formal issue reporting.
 
-**Current state:** Notes fields exist on issues, jobs, parts, and operations. No dedicated "operator remarks" field specifically for work order handoff.
+**Current:** Notes exist on various entities. No dedicated "werkbon" remarks field.
 
 ---
 
 ### Scrap with Reasons During Production
 
-**What:** Allow operators to record scrap quantity with specific reason codes during production reporting, not just good parts.
+Record scrap quantity with reason codes during production, not just good parts.
 
-**Why we're considering it:** Currently operators report good parts. Scrap reasons are configured in the system (`/admin/config/scrap-reasons`) but the production quantity flow focuses on good parts. Shops want to capture reject quantities with reasons in the same workflow.
+**Why:** Capture rejects with reasons in the same workflow as production reporting.
 
-**Current state:** Scrap reason configuration is fully implemented with categories (Material, Process, Equipment, Operator, Design, Other). The `operation_quantities` table has `quantity_scrap` and `scrap_reason_id` fields. The operator modal focuses on good parts.
+**Current:** Scrap reasons configured. Database fields exist. Operator modal focuses on good parts only.
 
 ---
 
 ### DNC Connection
 
-**What:** Transfer NC/G-code files directly from Eryxon to CNC machines.
+Transfer NC files directly from Eryxon to CNC machines.
 
-**Why we're considering it:** Operators currently download NC files and transfer them manually (USB, network share). Direct machine connectivity would reduce errors and save time.
+**Why:** Eliminate manual file transfers (USB, network shares).
 
-**Current state:** Not implemented. Would require protocol support (FTP, CIFS, machine-specific APIs), security considerations, and significant development effort.
+**Current:** Not implemented. Requires protocol support and significant effort.
 
 ---
 
 ### Job Progress Dashboard
 
-**What:** A real-time dashboard for production management showing job progress, completion percentages, and bottleneck identification.
+Real-time dashboard showing job progress, completion percentages, bottlenecks.
 
-**Why we're considering it:** Managers want to monitor production status from their desk without walking the shop floor. Current Activity Monitor shows events, but not aggregated job progress views.
+**Why:** Managers want to monitor production without walking the floor.
 
-**Current state:** Activity Monitor (`/admin/activity`) provides real-time event logging. Dashboard shows stats. No dedicated "job progress" view with completion percentages per job/part.
+**Current:** Activity Monitor shows events. No aggregated job progress view.
 
 ---
 
-### Enhanced 3D Viewer with PMI Support
+### Enhanced 3D Viewer with PMI
 
-**What:** Improve the 3D STEP viewer to display PMI (Product Manufacturing Information) — dimensions, tolerances, GD&T annotations, and notes embedded in CAD files.
+Display PMI (dimensions, tolerances, GD&T) from STEP files in the 3D viewer.
 
-**Why we're considering it:** The current viewer shows geometry only. Operators and inspectors need to see dimensions and tolerances directly in the 3D view without opening separate drawings. PMI-enabled STEP files (AP242) contain this data, but we don't extract or display it yet.
+**Why:** Operators need dimensions without opening separate drawings.
 
-**Current state:** The 3D viewer (`STEPViewer.tsx`) uses Three.js + occt-import-js to render STEP geometry. It supports exploded view, wireframe, and interactive controls. PMI extraction requires additional parsing of semantic PMI data from AP242 files — a significant undertaking.
-
-**See:** [3D Viewer Documentation](/features/3d-viewer/)
+**Current:** 3D viewer is **usable for geometry**. PMI would require a backend CAD service — browser-based approach has limitations.
 
 ---
 
 ### Standard ERP Connectors
 
-**What:** Pre-built connectors for common ERP systems like SAP, Odoo, Microsoft Dynamics, NetSuite, or industry-specific systems.
+Pre-built connectors for common manufacturing ERP systems.
 
-**Why we're considering it:** Currently, ERP integration requires custom development using our REST API. Job shops without development resources struggle to connect their ERP. Pre-built connectors would lower the barrier to adoption.
+**Why:** Lower barrier for shops without development resources.
 
-**Current state:** The API supports sync operations with `external_id` tracking, webhooks, and bulk import. Integration partners build custom connectors. No out-of-the-box connectors exist for specific ERP systems.
-
-**See:** [ERP Integration Guide](/features/erp-integration/)
+**Current:** API supports sync with `external_id`. No out-of-the-box connectors.
 
 ---
 
-### Enhanced Real-time Connectors
+### Production-Ready Real-time Connectors
 
-**What:** Improve and expand real-time connectivity options — MQTT bidirectional communication, MCP server enhancements, additional event types, and better configuration UI.
+Make MQTT, webhooks, and MCP connectors production-ready. Then expand features.
 
-**Why we're considering it:** Industrial environments increasingly expect real-time data flow. Current MQTT publishing is outbound-only. MCP server enables AI/automation but could support more tools. More granular events and easier configuration would improve adoption.
+**Why:** Industrial environments expect reliable real-time data flow.
 
-**Current state:**
-- **MQTT:** Outbound publishing with ISA-95 topic patterns. No inbound message handling.
-- **MCP:** Server implemented for AI integration with tool access to jobs, parts, operations.
-- **Webhooks:** HTTP POST on events with HMAC signature verification.
-
-**See:** [MQTT & Webhooks](/architecture/connectivity-mqtt/), [Connectivity Overview](/architecture/connectivity-overview/)
+**Current:** Code exists but is **untested and experimental** — not production-ready.
 
 ---
 
 ## Not In Scope
 
-These features are explicitly **not** part of Eryxon's direction (see [Introduction](/introduction/)):
+See [Introduction](/introduction/) for what Eryxon explicitly does not do:
 
-- **Financial tracking** — No costs, prices, or margins
-- **Purchasing/PO management** — No vendor transactions
-- **Multi-level BOM management** — Assembly links only, not full BOMs
-- **Scheduling optimization** — Manual date control only
-- **Built-in historical reports** — Real-time stats only (data via API)
+- Financial tracking
+- Purchasing/PO management
+- Multi-level BOM management
+- Scheduling optimization
+- Built-in historical reports
 
 ---
 
-## Provide Feedback
+## Feedback
 
-If you have opinions on these features or want to suggest others:
-
-- [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues) — Feature requests and discussion
-- [GitHub Discussions](https://github.com/SheetMetalConnect/eryxon-flow/discussions) — General feedback (if enabled)
-
-We read everything. No promises, but feedback shapes direction.
+- [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues)
+- [GitHub Discussions](https://github.com/SheetMetalConnect/eryxon-flow/discussions)
