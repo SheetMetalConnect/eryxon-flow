@@ -12,13 +12,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 import { useDebouncedCallback } from "@/hooks/useDebounce";
 import type { PartRouting, JobRouting } from "@/types/qrm";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 /**
  * Shared type for cell routing data
+ * cell_name is nullable to let UI/localization layer render translated fallback
  */
 interface CellRoutingData {
   cell_id: string;
-  cell_name: string;
+  cell_name: string | null;
   cell_color: string | null;
   sequence: number;
   operation_count: number;
@@ -27,11 +29,12 @@ interface CellRoutingData {
 
 /**
  * Helper to group operations by cell
+ * Returns null for missing cell names - UI should provide localized fallback
  */
 function groupOperationsByCell(
   operations: Array<{
     cell_id: string;
-    cell_name?: string;
+    cell_name?: string | null;
     cell_color?: string | null;
     sequence: number;
     status: string;
@@ -52,8 +55,8 @@ function groupOperationsByCell(
     } else {
       cellMap.set(op.cell_id, {
         cell_id: op.cell_id,
-        cell_name: op.cell_name || "Unknown",
-        cell_color: op.cell_color || null,
+        cell_name: op.cell_name ?? null,
+        cell_color: op.cell_color ?? null,
         sequence: op.sequence,
         operation_count: 1,
         completed_operations: op.status === "completed" ? 1 : 0,
@@ -68,12 +71,12 @@ function groupOperationsByCell(
  * Hook to fetch part routing
  *
  * @param partId - The part ID to fetch routing for
- * @param tenantId - Optional tenant ID (used for realtime subscription scope)
+ * @param tenantId - Tenant ID for RLS filtering and realtime subscription scope
  * @returns Routing data, loading state, error, and refetch function
  */
 export function usePartRouting(
   partId: string | null,
-  tenantId?: string | null
+  tenantId: string | null
 ) {
   const [routing, setRouting] = useState<PartRouting>([]);
   const [loading, setLoading] = useState(false);
@@ -135,34 +138,42 @@ export function usePartRouting(
 
     fetchRouting();
 
-    // Subscribe to real-time updates on operations for this part
-    const channel = supabase
-      .channel(`part-routing-${partId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "operations",
-          filter: `part_id=eq.${partId}`,
-        },
-        () => {
-          debouncedFetch();
-        }
-      )
-      .subscribe((status) => {
-        if (status === "CHANNEL_ERROR") {
-          logger.error("Realtime subscription error", undefined, {
-            operation: "usePartRouting",
-            channelName: `part-routing-${partId}`,
-          });
-        }
-      });
+    // Subscribe to real-time updates on operations
+    // Use tenant_id filter for RLS compliance; client-side filter by part_id
+    if (tenantId) {
+      const channel = supabase
+        .channel(`part-routing-${partId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "operations",
+            filter: `tenant_id=eq.${tenantId}`,
+          },
+          (payload: RealtimePostgresChangesPayload<{ part_id?: string }>) => {
+            // Client-side filter: only refetch if event matches our part
+            const record = payload.new as { part_id?: string } | undefined;
+            const oldRecord = payload.old as { part_id?: string } | undefined;
+            if (record?.part_id === partId || oldRecord?.part_id === partId) {
+              debouncedFetch();
+            }
+          }
+        )
+        .subscribe((status) => {
+          if (status === "CHANNEL_ERROR") {
+            logger.error("Realtime subscription error", undefined, {
+              operation: "usePartRouting",
+              channelName: `part-routing-${partId}`,
+            });
+          }
+        });
 
-    return () => {
-      channel.unsubscribe();
-    };
-  }, [partId, fetchRouting, debouncedFetch]);
+      return () => {
+        channel.unsubscribe();
+      };
+    }
+  }, [partId, tenantId, fetchRouting, debouncedFetch]);
 
   return { routing, loading, error, refetch: fetchRouting };
 }
@@ -171,16 +182,16 @@ export function usePartRouting(
  * Hook to fetch job routing
  *
  * @param jobId - The job ID to fetch routing for
- * @param tenantId - Optional tenant ID for realtime subscription scope
+ * @param tenantId - Tenant ID for RLS filtering (required)
  * @returns Routing data, loading state, error, and refetch function
  */
-export function useJobRouting(jobId: string | null, tenantId?: string | null) {
+export function useJobRouting(jobId: string | null, tenantId: string | null) {
   const [routing, setRouting] = useState<JobRouting>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchRouting = useCallback(async () => {
-    if (!jobId) {
+    if (!jobId || !tenantId) {
       setRouting([]);
       return;
     }
@@ -190,6 +201,7 @@ export function useJobRouting(jobId: string | null, tenantId?: string | null) {
 
     try {
       // Fetch all operations for the job's parts with cell information
+      // Include tenant_id filter for RLS compliance
       const { data, error: queryError } = await supabase
         .from("operations")
         .select(
@@ -210,6 +222,7 @@ export function useJobRouting(jobId: string | null, tenantId?: string | null) {
           )
         `
         )
+        .eq("tenant_id", tenantId)
         .eq("parts.job_id", jobId);
 
       if (queryError) throw queryError;
@@ -243,17 +256,18 @@ export function useJobRouting(jobId: string | null, tenantId?: string | null) {
         operation: "useJobRouting",
         entityType: "job",
         entityId: jobId,
+        tenantId,
       });
     } finally {
       setLoading(false);
     }
-  }, [jobId]);
+  }, [jobId, tenantId]);
 
   // Debounced fetch
   const debouncedFetch = useDebouncedCallback(fetchRouting, 200);
 
   useEffect(() => {
-    if (!jobId) {
+    if (!jobId || !tenantId) {
       setRouting([]);
       return;
     }
@@ -261,36 +275,33 @@ export function useJobRouting(jobId: string | null, tenantId?: string | null) {
     fetchRouting();
 
     // Subscribe to real-time updates
-    // Note: We can't filter by job_id directly on operations since it's through a join
-    // If tenantId is available, use it to reduce scope; otherwise skip realtime
-    if (tenantId) {
-      const channel = supabase
-        .channel(`job-routing-${jobId}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "operations",
-            filter: `tenant_id=eq.${tenantId}`,
-          },
-          () => {
-            debouncedFetch();
-          }
-        )
-        .subscribe((status) => {
-          if (status === "CHANNEL_ERROR") {
-            logger.error("Realtime subscription error", undefined, {
-              operation: "useJobRouting",
-              channelName: `job-routing-${jobId}`,
-            });
-          }
-        });
+    // Filter by tenant_id for RLS compliance
+    const channel = supabase
+      .channel(`job-routing-${jobId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "operations",
+          filter: `tenant_id=eq.${tenantId}`,
+        },
+        () => {
+          debouncedFetch();
+        }
+      )
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR") {
+          logger.error("Realtime subscription error", undefined, {
+            operation: "useJobRouting",
+            channelName: `job-routing-${jobId}`,
+          });
+        }
+      });
 
-      return () => {
-        channel.unsubscribe();
-      };
-    }
+    return () => {
+      channel.unsubscribe();
+    };
   }, [jobId, tenantId, fetchRouting, debouncedFetch]);
 
   return { routing, loading, error, refetch: fetchRouting };
@@ -301,15 +312,16 @@ export function useJobRouting(jobId: string | null, tenantId?: string | null) {
  * Note: This hook does not use realtime subscriptions to avoid excessive updates
  *
  * @param jobIds - Array of job IDs to fetch routing for
+ * @param tenantId - Tenant ID for RLS filtering (required)
  * @returns Map of routing by job ID
  */
-export function useMultipleJobsRouting(jobIds: string[]) {
+export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null) {
   const [routings, setRoutings] = useState<Record<string, JobRouting>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchRoutings = useCallback(async () => {
-    if (jobIds.length === 0) {
+    if (jobIds.length === 0 || !tenantId) {
       setRoutings({});
       return;
     }
@@ -318,7 +330,7 @@ export function useMultipleJobsRouting(jobIds: string[]) {
     setError(null);
 
     try {
-      // Fetch all operations for all jobs in one query
+      // Fetch all operations for all jobs in one query with tenant filter
       const { data, error: queryError } = await supabase
         .from("operations")
         .select(
@@ -339,6 +351,7 @@ export function useMultipleJobsRouting(jobIds: string[]) {
           )
         `
         )
+        .eq("tenant_id", tenantId)
         .in("parts.job_id", jobIds);
 
       if (queryError) throw queryError;
@@ -409,11 +422,12 @@ export function useMultipleJobsRouting(jobIds: string[]) {
         operation: "useMultipleJobsRouting",
         entityType: "job",
         jobCount: jobIds.length,
+        tenantId,
       });
     } finally {
       setLoading(false);
     }
-  }, [JSON.stringify(jobIds)]);
+  }, [JSON.stringify(jobIds), tenantId]);
 
   useEffect(() => {
     fetchRoutings();

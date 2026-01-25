@@ -3,6 +3,13 @@
  *
  * Defines search behavior for each entity type.
  * Open/Closed Principle - add new entities by adding configs, not modifying code.
+ *
+ * IMPORTANT: No user-facing strings in this file.
+ * All fallbacks should be null - UI layer handles localization.
+ *
+ * Join strategy:
+ * - !inner joins: Used when relation is required (e.g., parts must have jobs)
+ * - Regular joins: Used when relation is optional (e.g., operations may not have cells)
  */
 
 import type { EntitySearchConfig, SearchResult } from "./types";
@@ -24,6 +31,7 @@ interface PartRow {
   material: string | null;
   status: string | null;
   notes: string | null;
+  // !inner join - parts must have jobs
   jobs: { job_number: string; customer: string | null } | null;
 }
 
@@ -32,11 +40,14 @@ interface OperationRow {
   operation_name: string;
   status: string | null;
   notes: string | null;
+  // !inner join - operations must have parts with jobs
   parts: {
     part_number: string;
     jobs: { job_number: string; customer: string | null } | null;
   } | null;
+  // Regular join - cell assignment is optional
   cells: { name: string } | null;
+  // Regular join - operator assignment is optional
   profiles: { full_name: string | null; email: string } | null;
 }
 
@@ -55,6 +66,7 @@ interface IssueRow {
   severity: string;
   status: string | null;
   resolution_notes: string | null;
+  // !inner join - issues must have operations with parts
   operations: {
     operation_name: string;
     parts: {
@@ -83,6 +95,19 @@ interface MaterialRow {
 }
 
 /**
+ * Helper to build subtitle with optional segments
+ * Returns null if all segments are null/undefined
+ */
+function buildSubtitle(
+  ...segments: Array<string | null | undefined>
+): string | null {
+  const validSegments = segments.filter(
+    (s): s is string => s !== null && s !== undefined && s !== ""
+  );
+  return validSegments.length > 0 ? validSegments.join(" • ") : null;
+}
+
+/**
  * Job search configuration
  */
 export const jobSearchConfig: EntitySearchConfig<JobRow> = {
@@ -92,28 +117,30 @@ export const jobSearchConfig: EntitySearchConfig<JobRow> = {
     "id, job_number, customer, due_date, due_date_override, status, notes",
   searchColumns: ["job_number", "customer", "notes"],
   resultPath: "/admin/jobs",
-  mapResult: (job) => ({
+  mapResult: (job): SearchResult => ({
     id: job.id,
     type: "job",
     title: `JOB-${job.job_number}`,
-    subtitle: job.customer || "No customer",
-    description: job.notes || undefined,
+    subtitle: job.customer, // null if no customer - UI handles fallback
+    description: job.notes,
     path: "/admin/jobs",
-    status: job.status || "not_started",
+    status: job.status ?? undefined,
     metadata: {
       jobNumber: job.job_number,
-      customer: job.customer || undefined,
-      dueDate: job.due_date_override || job.due_date || undefined,
+      customer: job.customer ?? undefined,
+      dueDate: job.due_date_override ?? job.due_date ?? undefined,
     },
   }),
 };
 
 /**
  * Part search configuration
+ * Uses !inner join on jobs - parts must belong to a job
  */
 export const partSearchConfig: EntitySearchConfig<PartRow> = {
   tableName: "parts",
   type: "part",
+  // !inner: Parts must have jobs - excludes orphaned parts
   selectFields: `
     id,
     part_number,
@@ -124,29 +151,36 @@ export const partSearchConfig: EntitySearchConfig<PartRow> = {
   `,
   searchColumns: ["part_number", "material", "notes"],
   resultPath: "/admin/parts",
-  mapResult: (part) => ({
+  mapResult: (part): SearchResult => ({
     id: part.id,
     type: "part",
     title: `Part #${part.part_number}`,
-    subtitle: `${part.material || "No material"} • JOB-${part.jobs?.job_number || "N/A"}`,
-    description: part.notes || undefined,
+    subtitle: buildSubtitle(
+      part.material,
+      part.jobs?.job_number ? `JOB-${part.jobs.job_number}` : null
+    ),
+    description: part.notes,
     path: "/admin/parts",
-    status: part.status || "not_started",
+    status: part.status ?? undefined,
     metadata: {
       partNumber: part.part_number,
-      material: part.material || undefined,
+      material: part.material ?? undefined,
       jobNumber: part.jobs?.job_number,
-      customer: part.jobs?.customer || undefined,
+      customer: part.jobs?.customer ?? undefined,
     },
   }),
 };
 
 /**
  * Operation search configuration
+ * Uses !inner join on parts/jobs - operations must belong to parts with jobs
+ * Uses regular join on cells/profiles - these are optional
  */
 export const operationSearchConfig: EntitySearchConfig<OperationRow> = {
   tableName: "operations",
   type: "operation",
+  // !inner on parts/jobs: Operations must have parts with jobs
+  // Regular join on cells/profiles: Cell and operator assignment are optional
   selectFields: `
     id,
     operation_name,
@@ -158,20 +192,23 @@ export const operationSearchConfig: EntitySearchConfig<OperationRow> = {
   `,
   searchColumns: ["operation_name", "notes"],
   resultPath: "/admin/assignments",
-  mapResult: (op) => ({
+  mapResult: (op): SearchResult => ({
     id: op.id,
     type: "operation",
     title: op.operation_name,
-    subtitle: `Part #${op.parts?.part_number || "N/A"} • ${op.cells?.name || "No Cell"}`,
-    description: op.notes || undefined,
+    subtitle: buildSubtitle(
+      op.parts?.part_number ? `Part #${op.parts.part_number}` : null,
+      op.cells?.name
+    ),
+    description: op.notes,
     path: "/admin/assignments",
-    status: op.status || "not_started",
+    status: op.status ?? undefined,
     metadata: {
       operationName: op.operation_name,
       partNumber: op.parts?.part_number,
       jobNumber: op.parts?.jobs?.job_number,
       cellName: op.cells?.name,
-      assignedTo: op.profiles?.full_name || op.profiles?.email,
+      assignedTo: op.profiles?.full_name ?? op.profiles?.email,
     },
   }),
 };
@@ -185,13 +222,14 @@ export const userSearchConfig: EntitySearchConfig<UserRow> = {
   selectFields: "id, full_name, email, username, role, active",
   searchColumns: ["full_name", "email", "username"],
   resultPath: "/admin/config/users",
-  mapResult: (user) => ({
+  mapResult: (user): SearchResult => ({
     id: user.id,
     type: "user",
-    title: user.full_name || user.username,
-    subtitle: `${user.email} • ${user.role}`,
-    description: user.active ? "Active" : "Inactive",
+    title: user.full_name ?? user.username,
+    subtitle: buildSubtitle(user.email, user.role),
+    description: null, // No description for users
     path: "/admin/config/users",
+    active: user.active,
     metadata: {
       email: user.email,
       role: user.role,
@@ -201,10 +239,12 @@ export const userSearchConfig: EntitySearchConfig<UserRow> = {
 
 /**
  * Issue search configuration
+ * Uses !inner joins - issues must have operations with parts
  */
 export const issueSearchConfig: EntitySearchConfig<IssueRow> = {
   tableName: "issues",
   type: "issue",
+  // !inner: Issues must have operations with parts - excludes orphaned issues
   selectFields: `
     id,
     description,
@@ -218,14 +258,17 @@ export const issueSearchConfig: EntitySearchConfig<IssueRow> = {
   `,
   searchColumns: ["description", "resolution_notes"],
   resultPath: "/admin/issues",
-  mapResult: (issue) => ({
+  mapResult: (issue): SearchResult => ({
     id: issue.id,
     type: "issue",
-    title: issue.description || "Untitled Issue",
-    subtitle: `${issue.severity} severity • ${issue.operations?.operation_name || "N/A"}`,
-    description: issue.resolution_notes || undefined,
+    title: issue.description, // null if no description - UI handles fallback
+    subtitle: buildSubtitle(
+      issue.severity,
+      issue.operations?.operation_name
+    ),
+    description: issue.resolution_notes,
     path: "/admin/issues",
-    status: issue.status || "open",
+    status: issue.status ?? undefined,
     metadata: {
       operationName: issue.operations?.operation_name,
       partNumber: issue.operations?.parts?.part_number,
@@ -243,18 +286,18 @@ export const resourceSearchConfig: EntitySearchConfig<ResourceRow> = {
   selectFields: "id, name, type, description, identifier, location, active",
   searchColumns: ["name", "type", "description", "identifier", "location"],
   resultPath: "/admin/config/resources",
-  mapResult: (resource) => ({
+  mapResult: (resource): SearchResult => ({
     id: resource.id,
     type: "resource",
     title: resource.name,
-    subtitle: `${resource.type}${resource.location ? ` • ${resource.location}` : ""}`,
-    description: resource.description || undefined,
+    subtitle: buildSubtitle(resource.type, resource.location),
+    description: resource.description,
     path: "/admin/config/resources",
-    status: resource.active ? "active" : "inactive",
+    active: resource.active,
     metadata: {
       resourceType: resource.type,
-      location: resource.location || undefined,
-      identifier: resource.identifier || undefined,
+      location: resource.location ?? undefined,
+      identifier: resource.identifier ?? undefined,
     },
   }),
 };
@@ -268,16 +311,16 @@ export const materialSearchConfig: EntitySearchConfig<MaterialRow> = {
   selectFields: "id, name, description, color, active",
   searchColumns: ["name", "description"],
   resultPath: "/admin/config/materials",
-  mapResult: (material) => ({
+  mapResult: (material): SearchResult => ({
     id: material.id,
     type: "material",
     title: material.name,
-    subtitle: material.description || "No description",
-    description: material.active ? "Active" : "Inactive",
+    subtitle: material.description, // null if no description - UI handles fallback
+    description: null, // No additional description
     path: "/admin/config/materials",
-    status: material.active ? "active" : "inactive",
+    active: material.active,
     metadata: {
-      color: material.color || undefined,
+      color: material.color ?? undefined,
     },
   }),
 };

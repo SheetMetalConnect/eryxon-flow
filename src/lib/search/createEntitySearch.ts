@@ -12,6 +12,20 @@ import { supabase } from "@/integrations/supabase/client";
 import type { EntitySearchConfig, SearchResult } from "./types";
 
 /**
+ * Escapes LIKE metacharacters to prevent wildcard injection
+ * Escapes: backslash, percent, underscore
+ *
+ * @param query - Raw search query
+ * @returns Escaped query safe for LIKE patterns
+ */
+function escapeLikePattern(query: string): string {
+  return query
+    .replace(/\\/g, "\\\\") // Escape backslashes first
+    .replace(/%/g, "\\%") // Escape percent
+    .replace(/_/g, "\\_"); // Escape underscore
+}
+
+/**
  * Creates a search function for a given entity configuration
  *
  * @param config - The entity search configuration
@@ -30,9 +44,12 @@ export function createEntitySearch<T>(
     }
 
     try {
-      // Build the ilike filter for search columns
+      // Escape LIKE metacharacters to prevent wildcard injection
+      const escapedQuery = escapeLikePattern(query.trim());
+
+      // Build the ilike filter for search columns with escaped query
       const searchFilter = config.searchColumns
-        .map((col) => `${col}.ilike.%${query}%`)
+        .map((col) => `${col}.ilike.%${escapedQuery}%`)
         .join(",");
 
       const { data, error } = await supabase

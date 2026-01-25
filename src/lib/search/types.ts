@@ -16,15 +16,19 @@ export type SearchResultType =
 
 /**
  * A single search result item
+ * Note: subtitle and description can be null - UI layer should provide localized fallbacks
  */
 export interface SearchResult {
   id: string;
   type: SearchResultType;
   title: string;
-  subtitle: string;
-  description?: string;
+  /** Subtitle text - null values should be handled by UI with localized fallback */
+  subtitle: string | null;
+  description?: string | null;
   path: string;
   status?: string;
+  /** Active state for entities that have it (users, resources, materials) */
+  active?: boolean;
   metadata?: SearchResultMetadata;
 }
 

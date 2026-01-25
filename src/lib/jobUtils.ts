@@ -13,7 +13,7 @@ import { isBefore, addDays } from "date-fns";
 /**
  * Job data with parts and operations
  */
-interface JobWithParts {
+export interface JobWithParts {
   id: string;
   status: string;
   due_date: string;
@@ -155,7 +155,7 @@ export function calculateJobShippingMetrics(
   const parts = job.parts || [];
 
   const totalWeight = parts.reduce(
-    (sum, part) => sum + (part.weight_kg || 0) * (part.quantity || 1),
+    (sum, part) => sum + (part.weight_kg ?? 0) * (part.quantity ?? 1),
     0
   );
 
@@ -164,7 +164,7 @@ export function calculateJobShippingMetrics(
       // Convert mm³ to m³
       const volumeM3 =
         (part.length_mm * part.width_mm * part.height_mm) / 1_000_000_000;
-      return sum + volumeM3 * (part.quantity || 1);
+      return sum + volumeM3 * (part.quantity ?? 1);
     }
     return sum;
   }, 0);

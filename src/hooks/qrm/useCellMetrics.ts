@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 import { useDebouncedCallback } from "@/hooks/useDebounce";
 import type { CellQRMMetrics } from "@/types/qrm";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 /**
  * Hook to fetch QRM metrics for a specific cell
@@ -72,7 +73,8 @@ export function useCellQRMMetrics(
 
     fetchMetrics();
 
-    // Subscribe to real-time updates with proper filtering
+    // Subscribe to real-time updates with tenant-level filtering
+    // Supabase RLS requires single-filter; we filter by tenant and check cell client-side
     const channel = supabase
       .channel(`qrm-cell-${cellId}`)
       .on(
@@ -81,10 +83,15 @@ export function useCellQRMMetrics(
           event: "*",
           schema: "public",
           table: "operations",
-          filter: `cell_id=eq.${cellId}`,
+          filter: `tenant_id=eq.${tenantId}`,
         },
-        () => {
-          debouncedFetch();
+        (payload: RealtimePostgresChangesPayload<{ cell_id?: string }>) => {
+          // Client-side filter: only refetch if event matches our cell
+          const record = payload.new as { cell_id?: string } | undefined;
+          const oldRecord = payload.old as { cell_id?: string } | undefined;
+          if (record?.cell_id === cellId || oldRecord?.cell_id === cellId) {
+            debouncedFetch();
+          }
         }
       )
       .on(
@@ -93,10 +100,15 @@ export function useCellQRMMetrics(
           event: "*",
           schema: "public",
           table: "cells",
-          filter: `id=eq.${cellId}`,
+          filter: `tenant_id=eq.${tenantId}`,
         },
-        () => {
-          debouncedFetch();
+        (payload: RealtimePostgresChangesPayload<{ id?: string }>) => {
+          // Client-side filter: only refetch if event matches our cell
+          const record = payload.new as { id?: string } | undefined;
+          const oldRecord = payload.old as { id?: string } | undefined;
+          if (record?.id === cellId || oldRecord?.id === cellId) {
+            debouncedFetch();
+          }
         }
       )
       .subscribe((status) => {
@@ -148,17 +160,52 @@ export function useAllCellsQRMMetrics(tenantId: string | null) {
 
       if (cellsError) throw cellsError;
 
-      // Fetch metrics for each cell
+      // Fetch metrics for each cell with proper error handling
       const metricsPromises = (cells || []).map(async (cell) => {
-        const { data } = await supabase.rpc("get_cell_qrm_metrics", {
-          cell_id_param: cell.id,
-          tenant_id_param: tenantId,
-        });
+        const { data, error: rpcError } = await supabase.rpc(
+          "get_cell_qrm_metrics",
+          {
+            cell_id_param: cell.id,
+            tenant_id_param: tenantId,
+          }
+        );
+
+        if (rpcError) {
+          throw new Error(
+            `Failed to fetch metrics for cell ${cell.id}: ${rpcError.message}`
+          );
+        }
+
         return { cellId: cell.id, data: data as unknown as CellQRMMetrics };
       });
 
-      const results = await Promise.all(metricsPromises);
-      const metricsMap = results.reduce(
+      // Use Promise.allSettled to capture all results
+      const results = await Promise.allSettled(metricsPromises);
+
+      // Check for any failures
+      const failures = results.filter(
+        (r): r is PromiseRejectedResult => r.status === "rejected"
+      );
+
+      if (failures.length > 0) {
+        // Aggregate error messages from all failures
+        const errorMessages = failures
+          .map((f) => f.reason?.message || "Unknown error")
+          .join("; ");
+        throw new Error(`Failed to fetch cell metrics: ${errorMessages}`);
+      }
+
+      // All succeeded - extract values
+      const successResults = results
+        .filter(
+          (r): r is PromiseFulfilledResult<{
+            cellId: string;
+            data: CellQRMMetrics;
+          }> => r.status === "fulfilled"
+        )
+        .map((r) => r.value);
+
+      const metricsMap = successResults.reduce(
         (acc, { cellId, data }) => {
           if (data) acc[cellId] = data;
           return acc;
