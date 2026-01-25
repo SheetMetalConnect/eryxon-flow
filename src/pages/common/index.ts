@@ -1,7 +1,6 @@
 // Common pages barrel export
 export { default as About } from './About';
 export { default as ApiDocs } from './ApiDocs';
-export { default as Help } from './Help';
 export { default as MyPlan } from './MyPlan';
 export { default as Pricing } from './Pricing';
 export { default as PrivacyPolicy } from './PrivacyPolicy';

@@ -23,7 +23,7 @@ export interface FeatureFlags {
   analytics: boolean;       // Analytics section: QRM, OEE, Quality, Reliability, Jobs Analytics
   monitoring: boolean;      // Monitoring section: Activity, Expectations, Exceptions
   operatorViews: boolean;   // Operator views: Cell Overview, Terminal, My Activity, My Issues
-  integrations: boolean;    // Integrations: App Store, API Keys, Webhooks, MQTT, etc.
+  integrations: boolean;    // Integrations: API Keys, Webhooks, MQTT, Data Import/Export, etc.
   issues: boolean;          // Issues tracking
   capacity: boolean;        // Capacity planning
   assignments: boolean;     // Assignments management

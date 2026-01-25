@@ -18,6 +18,23 @@
       ]
     },
     {
+      "label": "User Guides",
+      "items": [
+        {
+          "label": "Operator Manual",
+          "slug": "guides/operator-manual"
+        },
+        {
+          "label": "Admin Manual",
+          "slug": "guides/admin-manual"
+        },
+        {
+          "label": "Quality Management",
+          "slug": "guides/quality-management"
+        }
+      ]
+    },
+    {
       "label": "Features",
       "items": [
         {
@@ -25,12 +42,12 @@
           "slug": "features/erp-integration"
         },
         {
-          "label": "3D Viewer",
-          "slug": "features/3d-viewer"
-        },
-        {
           "label": "CSV Import",
           "slug": "features/csv-import"
+        },
+        {
+          "label": "3D Viewer",
+          "slug": "features/3d-viewer"
         },
         {
           "label": "Flexible Metadata",
@@ -101,6 +118,19 @@
         {
           "label": "Responsive UI",
           "slug": "architecture/responsive-ui-patterns"
+        }
+      ]
+    },
+    {
+      "label": "Help",
+      "items": [
+        {
+          "label": "FAQ",
+          "slug": "guides/faq"
+        },
+        {
+          "label": "Troubleshooting",
+          "slug": "guides/troubleshooting"
         }
       ]
     },

@@ -19,7 +19,6 @@ import {
   ChevronRight,
   ChevronDown,
   Menu,
-  Store,
   Clock,
   Layers,
   Database,
@@ -211,12 +210,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // Integrations - Developer tools, APIs, and external connections
   const integrationsNavItems = [
     {
-      path: "/admin/integrations",
-      label: t("navigation.appStore"),
-      icon: Store,
-      exact: true,
-    },
-    {
       path: "/admin/config/api-keys",
       label: t("navigation.apiKeys"),
       icon: Key,
@@ -281,16 +274,19 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       exact: true,
     },
     {
-      path: "/admin/help",
-      label: t("navigation.help"),
-      icon: HelpCircle,
-      exact: true,
-    },
-    {
       path: "/admin/about",
       label: t("navigation.about"),
       icon: Info,
       exact: true,
+    },
+  ];
+
+  // External links (open in new tab)
+  const externalLinks = [
+    {
+      href: "https://flow.eryxon.io/guides/",
+      label: t("navigation.docsAndHelp"),
+      icon: BookOpen,
     },
   ];
 
@@ -614,6 +610,25 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   </Link>
                 );
               })}
+              {/* External Links */}
+              {externalLinks.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 nav-item-hover h-7 text-xs"
+                    size="sm"
+                  >
+                    <item.icon className="h-3.5 w-3.5 shrink-0" />
+                    <span>{item.label}</span>
+                  </Button>
+                </a>
+              ))}
             </CollapsibleContent>
           </Collapsible>
         )}

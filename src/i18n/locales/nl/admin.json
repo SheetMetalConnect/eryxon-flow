@@ -489,7 +489,7 @@
   },
   "pricing": {
     "title": "Aan de slag",
-    "subtitle": "MES voor metaalbewerking. Zelf hosten voor alle functies.",
+    "subtitle": "De MES voor metaalbewerking waar u graag mee werkt. Zelf hosten voor alle functies."
     "contactUs": "Neem contact op",
     "recommended": "Aanbevolen",
     "needHelp": "Hulp nodig bij zelf hosten of aanpassen?",
@@ -604,7 +604,7 @@
     },
     "integrations": {
       "label": "Integraties",
-      "description": "App Store, API Sleutels, Webhooks, MQTT en Data Import/Export"
+      "description": "API Sleutels, Webhooks, MQTT en Data Import/Export"
     },
     "issues": {
       "label": "Problemen",

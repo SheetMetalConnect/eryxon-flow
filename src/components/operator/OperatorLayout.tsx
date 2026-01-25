@@ -183,11 +183,13 @@ export const OperatorLayout = ({ children, showBackToAdmin = false }: OperatorLa
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
-                    onClick={() => navigate('/help')}
+                    asChild
                     className="gap-1.5 cursor-pointer focus:bg-white/5 text-xs"
                   >
-                    <HelpCircle className="h-3.5 w-3.5" />
-                    {t('common.helpAndDocs')}
+                    <a href="https://flow.eryxon.io/guides/" target="_blank" rel="noopener noreferrer">
+                      <HelpCircle className="h-3.5 w-3.5" />
+                      {t('common.helpAndDocs')}
+                    </a>
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
