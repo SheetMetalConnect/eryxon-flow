@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { DOCS_GUIDES_URL } from '@/lib/config';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -186,7 +187,7 @@ export const OperatorLayout = ({ children, showBackToAdmin = false }: OperatorLa
                     asChild
                     className="gap-1.5 cursor-pointer focus:bg-white/5 text-xs"
                   >
-                    <a href="https://flow.eryxon.io/guides/" target="_blank" rel="noopener noreferrer">
+                    <a href={DOCS_GUIDES_URL} target="_blank" rel="noopener noreferrer">
                       <HelpCircle className="h-3.5 w-3.5" />
                       {t('common.helpAndDocs')}
                     </a>

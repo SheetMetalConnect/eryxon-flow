@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { DOCS_GUIDES_URL } from "@/lib/config";
 import SwaggerUI from "swagger-ui-react";
 import "swagger-ui-react/swagger-ui.css";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -430,7 +431,7 @@ apiClient.post('/api-jobs', jobData)
                   CSV Import Wizard
                 </Button>
               </Link>
-              <a href="https://flow.eryxon.io/guides/" target="_blank" rel="noopener noreferrer">
+              <a href={DOCS_GUIDES_URL} target="_blank" rel="noopener noreferrer">
                 <Button variant="outline" size="sm" className="gap-2">
                   <HelpCircle className="h-4 w-4" />
                   Documentation

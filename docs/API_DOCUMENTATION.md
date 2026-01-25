@@ -1067,9 +1067,9 @@ API access is governed by your subscription plan:
 ## Support
 
 For API support:
-- Documentation: https://docs.eryxon.com
-- Email: api-support@eryxon.com
-- Status Page: https://status.eryxon.com
+- Documentation: https://docs.eryxon.eu
+- Email: api-support@eryxon.eu
+- Status Page: https://status.eryxon.eu
 
 ---
 

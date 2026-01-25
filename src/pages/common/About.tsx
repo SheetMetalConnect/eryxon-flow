@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { DOCS_GUIDES_URL } from "@/lib/config";
 
 export default function About() {
   return (
@@ -32,7 +33,7 @@ export default function About() {
       <div className="space-y-2">
         <p className="text-sm text-muted-foreground">
           <a
-            href="https://flow.eryxon.io/guides/"
+            href={DOCS_GUIDES_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="hover:underline"

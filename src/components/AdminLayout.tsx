@@ -1,4 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { DOCS_GUIDES_URL } from "@/lib/config";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -284,7 +285,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // External links (open in new tab)
   const externalLinks = [
     {
-      href: "https://flow.eryxon.io/guides/",
+      href: DOCS_GUIDES_URL,
       label: t("navigation.docsAndHelp"),
       icon: BookOpen,
     },
