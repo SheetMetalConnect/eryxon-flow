@@ -280,9 +280,10 @@ export async function startTimeTracking(
       operator_id: operatorId,
       operator_name: operator?.full_name || 'Unknown',
       started_at: startedAt,
-    }).catch(error => {
-      console.error('Failed to dispatch operation.started event:', error);
-      // Don't fail the operation if event dispatch fails
+    }).then(result => {
+      if (!result.success) {
+        console.error('Failed to dispatch operation.started event:', result.errors);
+      }
     });
   }
 
@@ -707,9 +708,10 @@ export async function completeOperation(operationId: string, tenantId: string, o
     completed_at: completedAt,
     actual_time: operationData.actual_time || 0,
     estimated_time: operationData.estimated_time || 0,
-  }).catch(error => {
-    console.error('Failed to dispatch operation.completed event:', error);
-    // Don't fail the operation if event dispatch fails
+  }).then(result => {
+    if (!result.success) {
+      console.error('Failed to dispatch operation.completed event:', result.errors);
+    }
   });
 
   // Check if all operations in part are completed

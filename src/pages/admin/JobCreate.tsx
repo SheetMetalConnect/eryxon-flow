@@ -164,9 +164,10 @@ export default function JobCreate() {
         parts_count: parts.length,
         operations_count: totalOperations,
         created_at: job.created_at,
-      }).catch(error => {
-        console.error('Failed to dispatch job.created event:', error);
-        // Don't fail job creation if event dispatch fails
+      }).then(result => {
+        if (!result.success) {
+          console.error('Failed to dispatch job.created event:', result.errors);
+        }
       });
 
       return job;

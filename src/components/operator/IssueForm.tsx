@@ -184,8 +184,10 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
           severity,
           description: fullDescription,
           created_at: createdAt,
-        }).catch(error => {
-          console.error('Failed to dispatch issue.created event:', error);
+        }).then(result => {
+          if (!result.success) {
+            console.error('Failed to dispatch issue.created event:', result.errors);
+          }
         });
       }
 
