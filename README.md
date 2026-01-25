@@ -1,23 +1,32 @@
 # Eryxon Flow
 
-Source-available Manufacturing Execution System (MES) for job shops and make-to-order manufacturers. Licensed under BSL 1.1.
+Manufacturing Execution System (MES) for job shops and make-to-order manufacturers. Track jobs through production, give operators tablet-friendly work queues, and integrate with your ERP.
+
+## Who It's For
+
+**Job shops** running high-mix, low-volume production — sheet metal, machine shops, custom fabrication. If you're tracking thousands of unique parts through multiple operations, this is built for you.
 
 ## Features
 
-- **Job and part tracking** with real-time status updates via WebSockets
-- **Operator terminals** for time tracking and work queue management
-- **Multi-tenant SaaS architecture** with row-level security (RLS)
-- **REST API** with webhooks for ERP integration and automation
-- **CSV import/export** for bulk data operations
-- **3D STEP file viewer** (client-side, browser-based)
-- **Multi-language support** (English, Dutch, German)
-- **Real-time dashboard** with production stats and metrics
+### Shop Floor
+- **Operator terminals** — Touch-friendly tablets for starting/stopping jobs, viewing drawings, and logging time
+- **Work queues** — Visual job lists organized by stage (cutting, bending, welding, etc.)
+- **Real-time tracking** — Live status updates via WebSockets to dashboards and managers
 
-### Scope
+### Management
+- **Job & part tracking** — Follow orders through production with full visibility
+- **Dashboard stats** — Active jobs, operator activity, and production metrics at a glance
+- **3D STEP viewer** — Browser-based CAD viewer for operators (no software install)
 
-Eryxon focuses on **core MES functionality**: production tracking, operator management, and quality documentation.
+### Integration
+- **REST API** — Full CRUD for jobs, parts, operations with webhook notifications
+- **CSV import/export** — Bulk data operations for ERP sync
+- **Multi-tenant SaaS** — Row-level security for hosted deployments
 
-This is **not** an ERP, analytics platform, or logistics system. We do one thing well.
+### Built for Teams
+- **Multi-language** — English, Dutch, German
+- **Self-hostable** — Run on your own infrastructure
+- **API-first** — Build custom integrations and own your data
 
 ## Quick Deploy
 
@@ -83,6 +92,8 @@ See `.env.example` for complete list.
 See [LICENSE](LICENSE) for full terms.
 
 **Change Date**: 2029-01-01 (converts to Apache 2.0)
+
+**Why BSL?** Free for your business, prevents competitors from reselling our hosted service. Converts to Apache 2.0 on 2029-01-01. [Learn more about BSL](https://mariadb.com/bsl-faq-adopting/).
 
 ## Support
 
