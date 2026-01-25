@@ -479,5 +479,71 @@
   "jobCreate": {
     "title": "Neuen Auftrag erstellen",
     "subtitle": "Erstellen Sie Ihren Auftrag Schritt für Schritt: definieren Sie Details, fügen Sie Teile hinzu, konfigurieren Sie Arbeitsgänge und überprüfen Sie"
+  },
+  "batches": {
+    "title": "Chargenverwaltung",
+    "description": "Gruppieren Sie Arbeitsgänge für gleichzeitige Verarbeitung (Schachtelung, Stapelscannen)",
+    "createBatch": "Charge erstellen",
+    "createDescription": "Erstellen Sie eine neue Charge, um Arbeitsgänge für gleichzeitige Verarbeitung zu gruppieren",
+    "backToBatches": "Zurück zu Chargen",
+    "batchNumber": "Chargennummer",
+    "batchDetails": "Chargendetails",
+    "type": "Typ",
+    "cell": "Zelle",
+    "selectCell": "Zelle auswählen",
+    "material": "Material",
+    "selectMaterial": "Material auswählen",
+    "thickness": "Dicke (mm)",
+    "notes": "Notizen",
+    "generate": "Generieren",
+    "creating": "Erstellen...",
+    "selectOperations": "Arbeitsgänge auswählen",
+    "searchOperations": "Nach Auftrag, Teil oder Arbeitsgang suchen...",
+    "selectCellFirst": "Wählen Sie zuerst eine Zelle, um verfügbare Arbeitsgänge zu sehen",
+    "noOperationsAvailable": "Keine Arbeitsgänge für diese Zelle verfügbar",
+    "operationsSelected": "{{count}} Arbeitsgang/Arbeitsgänge ausgewählt",
+    "clearSelection": "Auswahl löschen",
+    "operationsCount": "Arbeitsgänge",
+    "createdAt": "Erstellt",
+    "types": {
+      "laserNesting": "Laser-Schachtelung",
+      "tubeBatch": "Rohrstapel",
+      "sawBatch": "Sägestapel",
+      "finishingBatch": "Endbearbeitung",
+      "general": "Allgemein"
+    },
+    "status": {
+      "label": "Status",
+      "draft": "Entwurf",
+      "ready": "Bereit",
+      "inProgress": "In Bearbeitung",
+      "completed": "Abgeschlossen",
+      "cancelled": "Storniert"
+    },
+    "actions": {
+      "start": "Charge starten",
+      "complete": "Charge abschließen",
+      "cancel": "Charge stornieren"
+    },
+    "stats": {
+      "total": "Chargen gesamt",
+      "draft": "Entwurf",
+      "inProgress": "In Bearbeitung",
+      "completed": "Abgeschlossen"
+    },
+    "createSuccess": "Charge erfolgreich erstellt",
+    "createSuccessDesc": "Die Charge wurde erstellt und ist bereit für Arbeitsgänge",
+    "operationsAdded": "Arbeitsgänge zur Charge hinzugefügt",
+    "deleteSuccess": "Charge gelöscht",
+    "deleteConfirm": {
+      "title": "Charge löschen",
+      "description": "Sind Sie sicher, dass Sie diese Charge löschen möchten? Alle Arbeitsgangsverknüpfungen werden entfernt."
+    },
+    "timeTracking": {
+      "title": "Chargen-Zeiterfassung",
+      "totalTime": "Gesamtzeit",
+      "perOperation": "Pro Arbeitsgang",
+      "distributed": "Zeit wird auf {{count}} Arbeitsgänge verteilt"
+    }
   }
 }

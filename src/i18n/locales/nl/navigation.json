@@ -4,6 +4,7 @@
     "workQueue": "Werkwachtrij",
     "jobs": "Orders",
     "parts": "Onderdelen",
+    "batches": "Batches",
     "issues": "Problemen",
     "monitoring": "Monitoring",
     "assignments": "Toewijzingen",

@@ -479,5 +479,71 @@
   "jobCreate": {
     "title": "Nieuwe Order Aanmaken",
     "subtitle": "Bouw uw order stap voor stap: definieer details, voeg onderdelen toe, configureer bewerkingen en controleer"
+  },
+  "batches": {
+    "title": "Batchbeheer",
+    "description": "Groepeer bewerkingen voor gelijktijdige verwerking (nesting, stapelscannen)",
+    "createBatch": "Batch Aanmaken",
+    "createDescription": "Maak een nieuwe batch om bewerkingen te groeperen voor gelijktijdige verwerking",
+    "backToBatches": "Terug naar Batches",
+    "batchNumber": "Batchnummer",
+    "batchDetails": "Batchdetails",
+    "type": "Type",
+    "cell": "Cel",
+    "selectCell": "Selecteer een cel",
+    "material": "Materiaal",
+    "selectMaterial": "Selecteer materiaal",
+    "thickness": "Dikte (mm)",
+    "notes": "Notities",
+    "generate": "Genereren",
+    "creating": "Aanmaken...",
+    "selectOperations": "Selecteer Bewerkingen",
+    "searchOperations": "Zoek op order, onderdeel of bewerking...",
+    "selectCellFirst": "Selecteer eerst een cel om beschikbare bewerkingen te zien",
+    "noOperationsAvailable": "Geen bewerkingen beschikbaar voor deze cel",
+    "operationsSelected": "{{count}} bewerking(en) geselecteerd",
+    "clearSelection": "Selectie Wissen",
+    "operationsCount": "Bewerkingen",
+    "createdAt": "Aangemaakt",
+    "types": {
+      "laserNesting": "Laser Nesting",
+      "tubeBatch": "Buizen Batch",
+      "sawBatch": "Zaag Batch",
+      "finishingBatch": "Afwerking Batch",
+      "general": "Algemeen"
+    },
+    "status": {
+      "label": "Status",
+      "draft": "Concept",
+      "ready": "Gereed",
+      "inProgress": "In Uitvoering",
+      "completed": "Voltooid",
+      "cancelled": "Geannuleerd"
+    },
+    "actions": {
+      "start": "Start Batch",
+      "complete": "Voltooi Batch",
+      "cancel": "Annuleer Batch"
+    },
+    "stats": {
+      "total": "Totaal Batches",
+      "draft": "Concept",
+      "inProgress": "In Uitvoering",
+      "completed": "Voltooid"
+    },
+    "createSuccess": "Batch succesvol aangemaakt",
+    "createSuccessDesc": "De batch is aangemaakt en klaar voor bewerkingen",
+    "operationsAdded": "Bewerkingen toegevoegd aan batch",
+    "deleteSuccess": "Batch verwijderd",
+    "deleteConfirm": {
+      "title": "Batch Verwijderen",
+      "description": "Weet u zeker dat u deze batch wilt verwijderen? Dit verwijdert alle bewerkingskoppelingen."
+    },
+    "timeTracking": {
+      "title": "Batch Tijdregistratie",
+      "totalTime": "Totale Tijd",
+      "perOperation": "Per Bewerking",
+      "distributed": "Tijd wordt verdeeld over {{count}} bewerkingen"
+    }
   }
 }
