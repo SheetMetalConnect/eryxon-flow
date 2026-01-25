@@ -29,8 +29,9 @@ export interface AdvancedSearchOptions {
 /**
  * Converts a search query to a tsquery-compatible format
  * Handles multiple words and creates a prefix search
+ * @public Exported for testing
  */
-function toTsQuery(query: string): string {
+export function toTsQuery(query: string): string {
   // Remove special characters and split into words
   const words = query
     .trim()

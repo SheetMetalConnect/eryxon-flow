@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { Camera, AlertTriangle, Package } from "lucide-react";
-import { triggerIssueCreatedWebhook } from "@/lib/webhooks";
+import { dispatchIssueCreated } from "@/lib/event-dispatch";
 import { useTranslation } from "react-i18next";
 
 interface PrefilledData {
@@ -165,10 +165,13 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
 
       if (error) throw error;
 
-      // Trigger webhook for issue created
+      // Dispatch event (webhooks + MQTT) for issue created
       if (operationData) {
-        const operation: any = operationData;
-        triggerIssueCreatedWebhook(profile.tenant_id, {
+        const operation = operationData as {
+          operation_name: string;
+          part: { id: string; part_number: string; job: { id: string; job_number: string } };
+        };
+        dispatchIssueCreated(profile.tenant_id, {
           issue_id: issueId,
           operation_id: operationId,
           operation_name: operation.operation_name,
@@ -181,8 +184,10 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
           severity,
           description: fullDescription,
           created_at: createdAt,
-        }).catch(error => {
-          console.error('Failed to trigger issue.created webhook:', error);
+        }).then(result => {
+          if (!result.success) {
+            console.error('Failed to dispatch issue.created event:', result.errors);
+          }
         });
       }
 

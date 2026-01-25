@@ -453,3 +453,60 @@ export async function dispatchScrapRecorded(
     part_number: data.part_number,
   });
 }
+
+/**
+ * Dispatch operation.paused event
+ */
+export async function dispatchOperationPaused(
+  tenantId: string,
+  data: {
+    operation_id: string;
+    operation_name: string;
+    part_id: string;
+    part_number: string;
+    job_id: string;
+    job_number: string;
+    operator_id: string;
+    operator_name: string;
+    paused_at: string;
+    time_entry_id: string;
+  },
+  context?: EventContext
+) {
+  return dispatchEvent(tenantId, 'operation.paused', data, {
+    ...context,
+    operation: data.operation_name,
+    job_number: data.job_number,
+    part_number: data.part_number,
+    operator_name: data.operator_name,
+  });
+}
+
+/**
+ * Dispatch operation.resumed event
+ */
+export async function dispatchOperationResumed(
+  tenantId: string,
+  data: {
+    operation_id: string;
+    operation_name: string;
+    part_id: string;
+    part_number: string;
+    job_id: string;
+    job_number: string;
+    operator_id: string;
+    operator_name: string;
+    resumed_at: string;
+    time_entry_id: string;
+    pause_duration_seconds: number;
+  },
+  context?: EventContext
+) {
+  return dispatchEvent(tenantId, 'operation.resumed', data, {
+    ...context,
+    operation: data.operation_name,
+    job_number: data.job_number,
+    part_number: data.part_number,
+    operator_name: data.operator_name,
+  });
+}

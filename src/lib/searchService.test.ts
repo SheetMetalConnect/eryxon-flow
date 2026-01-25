@@ -1,24 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mockSupabase, createMockQueryBuilder } from '../test/mocks/supabase';
 
-// We need to test the toTsQuery function - let's extract it for testing
-// Since it's not exported, we'll test it through searchAll
+// Mock supabase client before importing anything else
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      textSearch: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+    })),
+    rpc: vi.fn().mockResolvedValue({ data: [], error: null }),
+  },
+}));
 
-// Test the toTsQuery function behavior through integration tests
-describe('searchService - toTsQuery behavior', () => {
-  // Create a local implementation to test the logic
-  const toTsQuery = (query: string): string => {
-    const words = query
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, ' ')
-      .split(/\s+/)
-      .filter((word) => word.length > 0);
+// Import the actual toTsQuery function from production code
+import { toTsQuery } from './searchService';
 
-    if (words.length === 0) return '';
-    return words.map((word) => `${word}:*`).join(' & ');
-  };
-
+// Test the toTsQuery function - now testing the actual production code
+describe('searchService - toTsQuery', () => {
   describe('toTsQuery', () => {
     it('converts single word to prefix search', () => {
       expect(toTsQuery('hello')).toBe('hello:*');

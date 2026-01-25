@@ -1,5 +1,60 @@
 import { supabase } from "@/integrations/supabase/client";
-import { triggerOperationStartedWebhook, triggerOperationCompletedWebhook } from "./webhooks";
+import { dispatchOperationStarted, dispatchOperationCompleted, dispatchEvent, EventContext } from "./event-dispatch";
+
+// TypeScript interfaces for database query results
+interface OperationQueryResult {
+  status: string;
+  part_id: string;
+  cell_id: string;
+  operation_name: string;
+  part: {
+    id: string;
+    part_number: string;
+    job: {
+      id: string;
+      job_number: string;
+    };
+  };
+}
+
+interface ActiveTimeEntryResult {
+  id: string;
+  operation_id: string;
+  operations?: {
+    operation_name: string;
+  };
+}
+
+interface JobOperationResult {
+  cell_id: string;
+  cells: {
+    sequence: number;
+  };
+}
+
+interface PartOperationResult {
+  status: string;
+  cell_id: string;
+  cells: {
+    sequence: number;
+  };
+}
+
+interface CompleteOperationQueryResult {
+  part_id: string;
+  operation_name: string;
+  estimated_time: number | null;
+  actual_time: number | null;
+  assigned_operator_id: string | null;
+  part: {
+    id: string;
+    part_number: string;
+    job: {
+      id: string;
+      job_number: string;
+    };
+  };
+}
 
 export interface OperationWithDetails {
   id: string;
@@ -146,7 +201,7 @@ export async function startTimeTracking(
     .is("end_time", null);
 
   if (activeEntries && activeEntries.length > 0) {
-    const activeOperation: any = activeEntries[0];
+    const activeOperation = activeEntries[0] as ActiveTimeEntryResult;
     throw new Error(
       `Please stop timing on "${activeOperation.operations?.operation_name || 'current operation'}" before starting a new operation`
     );
@@ -213,9 +268,9 @@ export async function startTimeTracking(
       .update({ status: "in_progress" })
       .eq("id", operationId);
 
-    // Trigger webhook for operation started
-    const operationData: any = operation;
-    triggerOperationStartedWebhook(tenantId, {
+    // Dispatch event (webhooks + MQTT) for operation started
+    const operationData = operation as OperationQueryResult;
+    dispatchOperationStarted(tenantId, {
       operation_id: operationId,
       operation_name: operationData.operation_name,
       part_id: operationData.part_id,
@@ -225,9 +280,10 @@ export async function startTimeTracking(
       operator_id: operatorId,
       operator_name: operator?.full_name || 'Unknown',
       started_at: startedAt,
-    }).catch(error => {
-      console.error('Failed to trigger operation.started webhook:', error);
-      // Don't fail the operation if webhook fails
+    }).then(result => {
+      if (!result.success) {
+        console.error('Failed to dispatch operation.started event:', result.errors);
+      }
     });
   }
 
@@ -266,11 +322,12 @@ export async function startTimeTracking(
 
   if (jobOperations && jobOperations.length > 0) {
     // Get the earliest cell (lowest sequence) that has in_progress operations
-    const earliestCell = jobOperations.reduce((earliest, o: any) => {
-      return o.cells.sequence < earliest.sequence 
+    const typedOperations = jobOperations as JobOperationResult[];
+    const earliestCell = typedOperations.reduce((earliest, o) => {
+      return o.cells.sequence < earliest.sequence
         ? { cell_id: o.cell_id, sequence: o.cells.sequence }
         : earliest;
-    }, { cell_id: jobOperations[0].cell_id, sequence: jobOperations[0].cells.sequence });
+    }, { cell_id: typedOperations[0].cell_id, sequence: typedOperations[0].cells.sequence });
 
     // Update job status and current_cell_id
     const { data: job } = await supabase
@@ -280,12 +337,12 @@ export async function startTimeTracking(
       .single();
 
     if (job) {
-      const updates: any = {};
-      
+      const updates: { status?: string; current_cell_id?: string } = {};
+
       if (job.status === "not_started") {
         updates.status = "in_progress";
       }
-      
+
       if (job.current_cell_id !== earliestCell.cell_id) {
         updates.current_cell_id = earliestCell.cell_id;
       }
@@ -637,9 +694,9 @@ export async function completeOperation(operationId: string, tenantId: string, o
     })
     .eq("id", operationId);
 
-  // Trigger webhook for operation completed
-  const operationData: any = operation;
-  triggerOperationCompletedWebhook(tenantId, {
+  // Dispatch event (webhooks + MQTT) for operation completed
+  const operationData = operation as CompleteOperationQueryResult;
+  dispatchOperationCompleted(tenantId, {
     operation_id: operationId,
     operation_name: operationData.operation_name,
     part_id: operationData.part_id,
@@ -651,9 +708,10 @@ export async function completeOperation(operationId: string, tenantId: string, o
     completed_at: completedAt,
     actual_time: operationData.actual_time || 0,
     estimated_time: operationData.estimated_time || 0,
-  }).catch(error => {
-    console.error('Failed to trigger operation.completed webhook:', error);
-    // Don't fail the operation if webhook fails
+  }).then(result => {
+    if (!result.success) {
+      console.error('Failed to dispatch operation.completed event:', result.errors);
+    }
   });
 
   // Check if all operations in part are completed
@@ -705,11 +763,12 @@ export async function completeOperation(operationId: string, tenantId: string, o
     }
   } else if (inProgressOperations && inProgressOperations.length > 0) {
     // Recalculate part's current_cell_id from remaining in_progress operations
-    const earliestCell = inProgressOperations.reduce((earliest: any, o: any) => {
-      return o.cells.sequence < earliest.sequence 
+    const typedInProgress = inProgressOperations as PartOperationResult[];
+    const earliestCell = typedInProgress.reduce((earliest, o) => {
+      return o.cells.sequence < earliest.sequence
         ? { cell_id: o.cell_id, sequence: o.cells.sequence }
         : earliest;
-    }, { cell_id: inProgressOperations[0].cell_id, sequence: (inProgressOperations[0] as any).cells.sequence });
+    }, { cell_id: typedInProgress[0].cell_id, sequence: typedInProgress[0].cells.sequence });
 
     await supabase
       .from("parts")
@@ -748,11 +807,12 @@ async function recalculateJobCurrentCell(jobId: string) {
 
   if (inProgressOperations && inProgressOperations.length > 0) {
     // Get the earliest cell (lowest sequence) with in_progress operations
-    const earliestCell = inProgressOperations.reduce((earliest: any, o: any) => {
+    const typedOperations = inProgressOperations as JobOperationResult[];
+    const earliestCell = typedOperations.reduce((earliest, o) => {
       return o.cells.sequence < earliest.sequence
         ? { cell_id: o.cell_id, sequence: o.cells.sequence }
         : earliest;
-    }, { cell_id: inProgressOperations[0].cell_id, sequence: (inProgressOperations[0] as any).cells.sequence });
+    }, { cell_id: typedOperations[0].cell_id, sequence: typedOperations[0].cells.sequence });
 
     await supabase
       .from("jobs")
