@@ -36,7 +36,7 @@ export const QuickCreateMenu: React.FC<QuickCreateMenuProps> = ({ className }) =
     {
       label: "Part",
       icon: Package,
-      action: () => navigate("/admin/parts"),
+      action: () => navigate("/admin/parts/new"),
       shortcut: "⌘N P",
     },
     {

@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +16,7 @@ import {
   Layers,
   PlayCircle,
   CheckCircle2,
+  Plus,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
@@ -50,6 +52,7 @@ interface PartData {
 
 export default function Parts() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
 
@@ -433,6 +436,12 @@ export default function Parts() {
       <AdminPageHeader
         title={t("parts.title")}
         description={t("parts.subtitle")}
+        action={
+          <Button onClick={() => navigate("/admin/parts/new")}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t("parts.createPart")}
+          </Button>
+        }
       />
 
       {/* Stats Row */}
