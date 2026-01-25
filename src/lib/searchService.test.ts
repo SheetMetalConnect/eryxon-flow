@@ -1,5 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mockSupabase, createMockQueryBuilder } from '../test/mocks/supabase';
+
+// Mock supabase client before importing anything else
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      textSearch: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+    })),
+    rpc: vi.fn().mockResolvedValue({ data: [], error: null }),
+  },
+}));
 
 // We need to test the toTsQuery function - let's extract it for testing
 // Since it's not exported, we'll test it through searchAll
