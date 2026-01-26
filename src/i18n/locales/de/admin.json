@@ -348,10 +348,6 @@
       "label": "Überwachung",
       "description": "Aktivitätsverfolgung und Echtzeit-Tracking"
     },
-    "shipping": {
-      "label": "Versand",
-      "description": "Sendungsverfolgung und Liefermanagement"
-    },
     "operatorViews": {
       "label": "Bediener-Ansichten",
       "description": "Zellenübersicht, Terminal-Ansicht, Meine Aktivität und Meine Probleme"

@@ -121,10 +121,6 @@ export type DatabaseFunctions = {
       key_prefix: string
     }[]
   }
-  generate_shipment_number: {
-    Args: { p_tenant_id: string }
-    Returns: string
-  }
   generate_sync_hash: { Args: { payload: Json }; Returns: string }
   generate_tenant_abbreviation: {
     Args: { p_name: string }

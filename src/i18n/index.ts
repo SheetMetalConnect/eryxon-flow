@@ -45,7 +45,6 @@ import deIntegrations from './locales/de/integrations.json';
  * - jobs: Jobs, parts, operations, issues
  * - config: Configuration (stages, materials, resources, assignments)
  * - integrations: API keys, webhooks, MQTT, data import/export
- * - shipping: Shipping module
  *
  * AI agents should edit individual namespace files rather than the monolithic translation.json
  */

@@ -11,7 +11,6 @@ export type DatabaseEnums = {
     | "accounting"
     | "crm"
     | "inventory"
-    | "shipping"
     | "analytics"
     | "other"
   integration_status: "draft" | "published" | "deprecated" | "archived"
@@ -59,7 +58,6 @@ export const EnumConstants = {
     "accounting",
     "crm",
     "inventory",
-    "shipping",
     "analytics",
     "other",
   ],

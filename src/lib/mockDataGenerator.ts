@@ -240,7 +240,7 @@ export async function generateMockData(
           .select("id, full_name")
           .eq("tenant_id", tenantId)
           .eq("role", "operator")
-          .like("email", "%@sheetmetalconnect.nl");
+          .like("email", "%@example.com");
 
         if (existingOps && existingOps.length > 0) {
           console.log(`✓ ${existingOps.length} demo operators already exist`);
@@ -272,7 +272,7 @@ export async function generateMockData(
               .select("id, full_name")
               .eq("tenant_id", tenantId)
               .eq("role", "operator")
-              .like("email", "%@sheetmetalconnect.nl");
+              .like("email", "%@example.com");
 
             if (createdOps && createdOps.length > 0) {
               operatorIds = createdOps.map((o) => o.id);

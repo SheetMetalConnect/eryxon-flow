@@ -30,6 +30,7 @@ export default function Auth() {
   const turnstileRef = useRef<TurnstileInstance>(null);
   const { signIn, signUp, profile } = useAuth();
   const navigate = useNavigate();
+  const turnstileEnabled = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY);
 
   // Redirect if already logged in
   if (profile) {
@@ -48,8 +49,8 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      // Validate captcha token
-      if (!captchaToken) {
+      // Validate captcha token (only when Turnstile is enabled)
+      if (turnstileEnabled && !captchaToken) {
         setError(t("auth.captchaRequired"));
         setLoading(false);
         turnstileRef.current?.reset();
@@ -293,32 +294,34 @@ export default function Auth() {
               </Alert>
             )}
 
-            {/* Cloudflare Turnstile Captcha */}
-            <div className="flex justify-center">
-              <Turnstile
-                ref={turnstileRef}
-                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || ""}
-                onSuccess={(token) => setCaptchaToken(token)}
-                onError={() => {
-                  setError(t("auth.captchaError"));
-                  setCaptchaToken(null);
-                }}
-                onExpire={() => {
-                  setCaptchaToken(null);
-                  turnstileRef.current?.reset();
-                }}
-                options={{
-                  theme: "dark",
-                  size: "normal",
-                }}
-              />
-            </div>
+            {/* Cloudflare Turnstile Captcha - only rendered when site key is configured */}
+            {turnstileEnabled && (
+              <div className="flex justify-center">
+                <Turnstile
+                  ref={turnstileRef}
+                  siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || ""}
+                  onSuccess={(token) => setCaptchaToken(token)}
+                  onError={() => {
+                    setError(t("auth.captchaError"));
+                    setCaptchaToken(null);
+                  }}
+                  onExpire={() => {
+                    setCaptchaToken(null);
+                    turnstileRef.current?.reset();
+                  }}
+                  options={{
+                    theme: "dark",
+                    size: "normal",
+                  }}
+                />
+              </div>
+            )}
 
             <div className="pt-2">
               <Button
                 type="submit"
                 className="w-full cta-button"
-                disabled={loading || (!isLogin && !termsAgreed) || !captchaToken}
+                disabled={loading || (!isLogin && !termsAgreed) || (turnstileEnabled && !captchaToken)}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isLogin ? t("auth.signIn") : t("auth.signUp")}
