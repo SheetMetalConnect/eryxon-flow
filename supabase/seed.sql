@@ -47,52 +47,26 @@ CREATE POLICY IF NOT EXISTS "Authenticated users can delete CAD files"
   USING (bucket_id = 'parts-cad');
 
 -- Schedule cron jobs (requires pg_cron extension)
--- Idempotent: unschedule first, then reschedule
+-- Entire block is wrapped in exception handling so the seed file
+-- succeeds even when pg_cron is not available (e.g. local dev).
 DO $$
 BEGIN
-  -- Remove existing jobs if they exist (safe to call even if not present)
+  -- Remove existing jobs if present (idempotent)
   PERFORM cron.unschedule('monthly-parts-reset') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'monthly-parts-reset');
   PERFORM cron.unschedule('check-jobs-due-soon') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'check-jobs-due-soon');
   PERFORM cron.unschedule('auto-close-attendance') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'auto-close-attendance');
   PERFORM cron.unschedule('cleanup-expired-invitations') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'cleanup-expired-invitations');
   PERFORM cron.unschedule('cleanup-mqtt-logs') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'cleanup-mqtt-logs');
+
+  -- Schedule jobs
+  PERFORM cron.schedule('monthly-parts-reset',        '0 0 1 * *',  'SELECT reset_monthly_parts_counters()');
+  PERFORM cron.schedule('check-jobs-due-soon',        '0 8 * * *',  'SELECT check_jobs_due_soon()');
+  PERFORM cron.schedule('auto-close-attendance',      '0 0 * * *',  'SELECT auto_close_stale_attendance()');
+  PERFORM cron.schedule('cleanup-expired-invitations','0 2 * * *',  'SELECT cleanup_expired_invitations()');
+  PERFORM cron.schedule('cleanup-mqtt-logs',          '0 3 * * 0',  'SELECT cleanup_old_mqtt_logs()');
+
+  RAISE NOTICE 'pg_cron jobs scheduled successfully';
 EXCEPTION WHEN OTHERS THEN
-  -- pg_cron may not be available; skip gracefully
-  RAISE NOTICE 'Could not unschedule existing cron jobs: %', SQLERRM;
+  RAISE NOTICE 'pg_cron not available — skipping cron job scheduling: %', SQLERRM;
 END;
 $$;
-
--- Monthly reset of parts counter (1st of each month at midnight UTC)
-SELECT cron.schedule(
-  'monthly-parts-reset',
-  '0 0 1 * *',
-  $$SELECT reset_monthly_parts_counters()$$
-);
-
--- Check for jobs due soon (daily at 8am UTC)
-SELECT cron.schedule(
-  'check-jobs-due-soon',
-  '0 8 * * *',
-  $$SELECT check_jobs_due_soon()$$
-);
-
--- Auto-close stale attendance entries (daily at midnight UTC)
-SELECT cron.schedule(
-  'auto-close-attendance',
-  '0 0 * * *',
-  $$SELECT auto_close_stale_attendance()$$
-);
-
--- Cleanup expired invitations (daily at 2am UTC)
-SELECT cron.schedule(
-  'cleanup-expired-invitations',
-  '0 2 * * *',
-  $$SELECT cleanup_expired_invitations()$$
-);
-
--- Cleanup old MQTT logs (weekly on Sunday at 3am UTC)
-SELECT cron.schedule(
-  'cleanup-mqtt-logs',
-  '0 3 * * 0',
-  $$SELECT cleanup_old_mqtt_logs()$$
-);
