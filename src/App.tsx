@@ -44,6 +44,7 @@ const Parts = lazy(() => import("./pages/admin/Parts"));
 const PartCreate = lazy(() => import("./pages/admin/PartCreate"));
 const Batches = lazy(() => import("./pages/admin/Batches"));
 const BatchCreate = lazy(() => import("./pages/admin/BatchCreate"));
+const BatchDetail = lazy(() => import("./pages/admin/BatchDetail"));
 const ActivityMonitor = lazy(() => import("./pages/admin/ActivityMonitor").then(m => ({ default: m.ActivityMonitor })));
 const CapacityMatrix = lazy(() => import("./pages/admin/CapacityMatrix"));
 const Operations = lazy(() => import("./pages/admin/Operations").then(m => ({ default: m.Operations })));
@@ -537,6 +538,19 @@ function AppRoutes() {
             <Layout>
               <LazyRoute>
                 <BatchCreate />
+              </LazyRoute>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/batches/:id"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <LazyRoute>
+                <BatchDetail />
               </LazyRoute>
             </Layout>
           </ProtectedRoute>

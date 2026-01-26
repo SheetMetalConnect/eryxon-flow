@@ -1004,3 +1004,163 @@ export async function checkAssemblyDependencies(partId: string, tenantId: string
     }))
   };
 }
+
+/**
+ * Start batch time tracking (stapelscannen)
+ * Creates a time entry for each operation in the batch simultaneously.
+ * When stopped, the total time is divided equally across all operations.
+ */
+export async function startBatchTimeTracking(
+  batchId: string,
+  operatorId: string,
+  tenantId: string
+) {
+  // Check operator isn't already timing something
+  const { data: activeEntries } = await supabase
+    .from("time_entries")
+    .select("id, operation_id")
+    .eq("operator_id", operatorId)
+    .eq("tenant_id", tenantId)
+    .is("end_time", null);
+
+  if (activeEntries && activeEntries.length > 0) {
+    throw new Error("Please stop current time tracking before starting batch timing");
+  }
+
+  // Get all operations in the batch
+  const { data: batchOps, error: batchOpsError } = await supabase
+    .from("batch_operations")
+    .select("operation_id")
+    .eq("batch_id", batchId);
+
+  if (batchOpsError) throw batchOpsError;
+  if (!batchOps || batchOps.length === 0) {
+    throw new Error("No operations in this batch");
+  }
+
+  const now = new Date().toISOString();
+
+  // Create a time entry for each operation in the batch
+  const timeEntries = batchOps.map((bo) => ({
+    operation_id: bo.operation_id,
+    operator_id: operatorId,
+    tenant_id: tenantId,
+    start_time: now,
+    time_type: "run",
+    notes: `Batch: ${batchId}`,
+  }));
+
+  const { error: insertError } = await supabase
+    .from("time_entries")
+    .insert(timeEntries);
+
+  if (insertError) throw insertError;
+
+  // Update batch status to in_progress
+  await supabase
+    .from("operation_batches")
+    .update({
+      status: "in_progress",
+      started_at: now,
+      started_by: operatorId,
+    })
+    .eq("id", batchId)
+    .eq("tenant_id", tenantId);
+
+  // Update all operations to in_progress
+  const opIds = batchOps.map((bo) => bo.operation_id);
+  await supabase
+    .from("operations")
+    .update({ status: "in_progress" })
+    .in("id", opIds)
+    .eq("status", "not_started");
+}
+
+/**
+ * Stop batch time tracking and distribute time equally (stapelscannen)
+ * Calculates total elapsed time, divides by number of operations,
+ * and updates each operation's actual_time accordingly.
+ */
+export async function stopBatchTimeTracking(
+  batchId: string,
+  operatorId: string
+) {
+  // Get all operations in the batch
+  const { data: batchOps, error: batchOpsError } = await supabase
+    .from("batch_operations")
+    .select("operation_id")
+    .eq("batch_id", batchId);
+
+  if (batchOpsError) throw batchOpsError;
+  if (!batchOps || batchOps.length === 0) {
+    throw new Error("No operations in this batch");
+  }
+
+  const opIds = batchOps.map((bo) => bo.operation_id);
+  const endTime = new Date();
+
+  // Find all active time entries for these operations by this operator
+  const { data: activeEntries, error: entriesError } = await supabase
+    .from("time_entries")
+    .select("id, operation_id, start_time")
+    .eq("operator_id", operatorId)
+    .in("operation_id", opIds)
+    .is("end_time", null);
+
+  if (entriesError) throw entriesError;
+  if (!activeEntries || activeEntries.length === 0) {
+    throw new Error("No active time entries found for this batch");
+  }
+
+  // Use the earliest start time as the batch start
+  const startTimes = activeEntries.map((e) => new Date(e.start_time).getTime());
+  const batchStartTime = Math.min(...startTimes);
+  const totalSeconds = Math.round((endTime.getTime() - batchStartTime) / 1000);
+  const totalMinutes = Math.round(totalSeconds / 60);
+  const minutesPerOperation = Math.round(totalMinutes / opIds.length);
+
+  // Close all time entries with distributed duration
+  for (const entry of activeEntries) {
+    await supabase
+      .from("time_entries")
+      .update({
+        end_time: endTime.toISOString(),
+        duration: minutesPerOperation,
+        is_paused: false,
+      })
+      .eq("id", entry.id);
+  }
+
+  // Update each operation's actual_time with the distributed time
+  for (const opId of opIds) {
+    const { data: operation } = await supabase
+      .from("operations")
+      .select("actual_time")
+      .eq("id", opId)
+      .single();
+
+    if (operation) {
+      await supabase
+        .from("operations")
+        .update({ actual_time: (operation.actual_time || 0) + minutesPerOperation })
+        .eq("id", opId);
+    }
+  }
+
+  // Update batch actual_time and status
+  await supabase
+    .from("operation_batches")
+    .update({
+      actual_time: totalMinutes,
+      status: "completed",
+      completed_at: endTime.toISOString(),
+      completed_by: operatorId,
+    })
+    .eq("id", batchId);
+
+  return {
+    totalMinutes,
+    minutesPerOperation,
+    operationsCount: opIds.length,
+  };
+}

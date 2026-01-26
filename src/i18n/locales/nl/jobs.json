@@ -550,11 +550,20 @@
       "title": "Batch Verwijderen",
       "description": "Weet u zeker dat u deze batch wilt verwijderen? Dit verwijdert alle bewerkingskoppelingen."
     },
+    "notFound": "Batch niet gevonden",
     "timeTracking": {
       "title": "Batch Tijdregistratie",
       "totalTime": "Totale Tijd",
       "perOperation": "Per Bewerking",
-      "distributed": "Tijd wordt verdeeld over {{count}} bewerkingen"
+      "distributed": "Tijd wordt verdeeld over {{count}} bewerkingen",
+      "distributionInfo": "Tijd wordt gelijk verdeeld over {{count}} bewerkingen (stapelscannen)",
+      "noTimeYet": "Nog geen tijd geregistreerd",
+      "startBatch": "Batch Timer Starten",
+      "stopBatch": "Stoppen & Verdelen",
+      "started": "Batch timer gestart",
+      "startedDesc": "Tijdregistratie gestart voor alle bewerkingen in deze batch",
+      "stopped": "Batch timer gestopt",
+      "stoppedDesc": "{{total}} min totaal, {{perOp}} min verdeeld over elk van {{count}} bewerkingen"
     }
   }
 }

@@ -549,11 +549,20 @@
       "title": "Charge löschen",
       "description": "Sind Sie sicher, dass Sie diese Charge löschen möchten? Alle Arbeitsgangsverknüpfungen werden entfernt."
     },
+    "notFound": "Charge nicht gefunden",
     "timeTracking": {
       "title": "Chargen-Zeiterfassung",
       "totalTime": "Gesamtzeit",
       "perOperation": "Pro Arbeitsgang",
-      "distributed": "Zeit wird auf {{count}} Arbeitsgänge verteilt"
+      "distributed": "Zeit wird auf {{count}} Arbeitsgänge verteilt",
+      "distributionInfo": "Zeit wird gleichmäßig auf {{count}} Arbeitsgänge verteilt (Stapelscannen)",
+      "noTimeYet": "Noch keine Zeit erfasst",
+      "startBatch": "Chargen-Timer Starten",
+      "stopBatch": "Stoppen & Verteilen",
+      "started": "Chargen-Timer gestartet",
+      "startedDesc": "Zeiterfassung für alle Arbeitsgänge in dieser Charge gestartet",
+      "stopped": "Chargen-Timer gestoppt",
+      "stoppedDesc": "{{total}} Min. gesamt, {{perOp}} Min. verteilt auf jeden von {{count}} Arbeitsgängen"
     }
   }
 }
