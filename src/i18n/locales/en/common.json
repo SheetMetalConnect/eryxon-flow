@@ -46,6 +46,7 @@
     "success": "Success",
     "validationError": "Validation Error",
     "stopping": "Stopping...",
+    "view": "View",
     "viewDetails": "View Details",
     "optional": "optional",
     "yes": "Yes",
@@ -53,7 +54,8 @@
     "done": "Done",
     "creating": "Creating...",
     "helpAndDocs": "Help & Docs",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "noTenantId": "No tenant ID"
   },
   "forms": {
     "required": "This field is required",

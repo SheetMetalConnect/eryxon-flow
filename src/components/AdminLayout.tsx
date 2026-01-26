@@ -45,6 +45,7 @@ import {
   Truck,
   Search,
   Building2,
+  Boxes,
 } from "lucide-react";
 import { TenantSwitcher } from "@/components/admin/TenantSwitcher";
 import { Link, useLocation } from "react-router-dom";
@@ -107,6 +108,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       label: t("navigation.operations"),
       icon: Layers,
       exact: true,
+    },
+    {
+      path: "/admin/batches",
+      label: t("navigation.batches"),
+      icon: Boxes,
+      activePaths: ["/admin/batches"],
     },
     ...(featureFlags.assignments ? [{
       path: "/admin/assignments",

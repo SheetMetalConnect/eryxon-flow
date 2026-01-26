@@ -4,6 +4,7 @@
     "workQueue": "Arbeitswarteschlange",
     "jobs": "Aufträge",
     "parts": "Teile",
+    "batches": "Chargen",
     "issues": "Probleme",
     "monitoring": "Überwachung",
     "assignments": "Zuweisungen",

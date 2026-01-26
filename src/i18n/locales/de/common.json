@@ -45,13 +45,15 @@
     "saving": "Speichern...",
     "success": "Erfolg",
     "validationError": "Validierungsfehler",
+    "view": "Anzeigen",
     "yes": "Ja",
     "no": "Nein",
     "optional": "optional",
     "done": "Fertig",
     "creating": "Erstellen...",
     "helpAndDocs": "Hilfe & Dokumentation",
-    "refresh": "Aktualisieren"
+    "refresh": "Aktualisieren",
+    "noTenantId": "Keine Mandanten-ID"
   },
   "forms": {
     "required": "Dieses Feld ist erforderlich",

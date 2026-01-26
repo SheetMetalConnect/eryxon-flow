@@ -46,13 +46,15 @@
     "success": "Succes",
     "validationError": "Validatiefout",
     "stopping": "Stoppen...",
+    "view": "Bekijken",
     "yes": "Ja",
     "no": "Nee",
     "optional": "optioneel",
     "done": "Gereed",
     "creating": "Aanmaken...",
     "helpAndDocs": "Help & Documentatie",
-    "refresh": "Vernieuwen"
+    "refresh": "Vernieuwen",
+    "noTenantId": "Geen tenant-ID"
   },
   "forms": {
     "required": "Dit veld is verplicht",

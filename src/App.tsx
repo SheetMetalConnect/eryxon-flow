@@ -41,6 +41,10 @@ const DataImport = lazy(() => import("./pages/admin/DataImport"));
 const Jobs = lazy(() => import("./pages/admin/Jobs"));
 const JobCreate = lazy(() => import("./pages/admin/JobCreate"));
 const Parts = lazy(() => import("./pages/admin/Parts"));
+const PartCreate = lazy(() => import("./pages/admin/PartCreate"));
+const Batches = lazy(() => import("./pages/admin/Batches"));
+const BatchCreate = lazy(() => import("./pages/admin/BatchCreate"));
+const BatchDetail = lazy(() => import("./pages/admin/BatchDetail"));
 const ActivityMonitor = lazy(() => import("./pages/admin/ActivityMonitor").then(m => ({ default: m.ActivityMonitor })));
 const CapacityMatrix = lazy(() => import("./pages/admin/CapacityMatrix"));
 const Operations = lazy(() => import("./pages/admin/Operations").then(m => ({ default: m.Operations })));
@@ -495,6 +499,58 @@ function AppRoutes() {
             <Layout>
               <LazyRoute>
                 <Parts />
+              </LazyRoute>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/parts/new"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <LazyRoute>
+                <PartCreate />
+              </LazyRoute>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/batches"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <LazyRoute>
+                <Batches />
+              </LazyRoute>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/batches/new"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <LazyRoute>
+                <BatchCreate />
+              </LazyRoute>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/batches/:id"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <LazyRoute>
+                <BatchDetail />
               </LazyRoute>
             </Layout>
           </ProtectedRoute>
