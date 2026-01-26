@@ -4034,7 +4034,6 @@ export type Database = {
         | "accounting"
         | "crm"
         | "inventory"
-        | "shipping"
         | "analytics"
         | "other"
       integration_status: "draft" | "published" | "deprecated" | "archived"
@@ -4214,7 +4213,6 @@ export const Constants = {
         "accounting",
         "crm",
         "inventory",
-        "shipping",
         "analytics",
         "other",
       ],

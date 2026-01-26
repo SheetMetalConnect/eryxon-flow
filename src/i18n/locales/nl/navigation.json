@@ -46,7 +46,6 @@
     "mcpKeys": "MCP-sleutels",
     "mcpServer": "MCP-server",
     "mqttPublishers": "MQTT Publishers",
-    "shipping": "Verzending",
     "dataImport": "Gegevensimport",
     "backToAdmin": "Terug naar beheer",
     "operatorViews": "Operatorweergaven",

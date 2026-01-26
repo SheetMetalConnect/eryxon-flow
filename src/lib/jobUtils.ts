@@ -55,14 +55,6 @@ export interface JobDetailStats {
 }
 
 /**
- * Shipping/delivery metrics
- */
-export interface JobShippingMetrics {
-  totalWeight: number;
-  totalVolume: number;
-}
-
-/**
  * Calculate aggregate statistics for a list of jobs
  *
  * @param jobs - Array of job data
@@ -141,35 +133,6 @@ export function calculateJobDetailStats(job: JobWithParts): JobDetailStats {
     completedOperations,
     progressPercentage,
   };
-}
-
-/**
- * Calculate shipping metrics for a job (weight and volume)
- *
- * @param job - Job with parts
- * @returns Weight and volume totals
- */
-export function calculateJobShippingMetrics(
-  job: JobWithParts
-): JobShippingMetrics {
-  const parts = job.parts || [];
-
-  const totalWeight = parts.reduce(
-    (sum, part) => sum + (part.weight_kg ?? 0) * (part.quantity ?? 1),
-    0
-  );
-
-  const totalVolume = parts.reduce((sum, part) => {
-    if (part.length_mm && part.width_mm && part.height_mm) {
-      // Convert mm³ to m³
-      const volumeM3 =
-        (part.length_mm * part.width_mm * part.height_mm) / 1_000_000_000;
-      return sum + volumeM3 * (part.quantity ?? 1);
-    }
-    return sum;
-  }, 0);
-
-  return { totalWeight, totalVolume };
 }
 
 /**

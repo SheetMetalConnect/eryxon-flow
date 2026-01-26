@@ -201,7 +201,6 @@
       "accounting": "Boekhouding",
       "crm": "CRM",
       "inventory": "Voorraad",
-      "shipping": "Verzending",
       "analytics": "Analyse",
       "other": "Overig",
       "sortBy": "Sorteren op",
@@ -593,10 +592,6 @@
     "monitoring": {
       "label": "Monitoring",
       "description": "Activiteiten bijhouden en real-time tracking"
-    },
-    "shipping": {
-      "label": "Verzending",
-      "description": "Zendingen volgen en bezorgingsbeheer"
     },
     "operatorViews": {
       "label": "Operator Weergaven",

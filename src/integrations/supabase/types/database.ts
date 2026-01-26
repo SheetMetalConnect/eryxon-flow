@@ -120,7 +120,6 @@ export type Database = {
       mqtt_publishers: MqttPublishersTable
       mqtt_logs: MqttLogsTable
 
-      // Shipping domain
       // Resources domain
       resources: ResourcesTable
       operation_resources: OperationResourcesTable
