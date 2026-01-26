@@ -6,8 +6,8 @@
  *
  * Required environment variables:
  * - RESEND_API_KEY: Your Resend API key
- * - APP_URL: Your application URL (e.g., https://app.eryxon.com)
- * - EMAIL_FROM: Sender email address (e.g., noreply@eryxon.com)
+ * - APP_URL: Your application URL (e.g., https://app.eryxon.eu)
+ * - EMAIL_FROM: Sender email address (e.g., noreply@eryxon.eu)
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'

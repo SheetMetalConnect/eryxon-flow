@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
+import { DOCS_ERP_INTEGRATION_URL } from "@/lib/config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -411,7 +412,7 @@ export default function DataImport() {
         <AlertTitle>Need Help?</AlertTitle>
         <AlertDescription className="flex flex-wrap items-center gap-3 mt-2">
           <span className="text-sm">Learn more about data sync options:</span>
-          <a href="https://flow.eryxon.io/features/erp-integration/" target="_blank" rel="noopener noreferrer">
+          <a href={DOCS_ERP_INTEGRATION_URL} target="_blank" rel="noopener noreferrer">
             <Button variant="outline" size="sm" className="h-7 gap-1.5">
               <HelpCircle className="h-3.5 w-3.5" />
               ERP Integration Guide
