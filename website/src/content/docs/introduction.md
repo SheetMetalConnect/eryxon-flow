@@ -5,6 +5,8 @@ description: The simple, elegant and powerful manufacturing execution system tha
 
 **The simple, elegant and powerful manufacturing execution system that your people will love to use. Made for metals fabrication.**
 
+> **Try it now:** Explore the [live demo at app.eryxon.eu](https://app.eryxon.eu) — no installation required.
+
 ## What It Does
 
 Eryxon tracks jobs, parts, and tasks through production with a mobile and tablet-first interface. Data comes from your ERP via API.

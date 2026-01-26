@@ -38,6 +38,16 @@ export default function Pricing() {
             <p className="text-xs text-muted-foreground italic">
               {t("pricing.hostedDemo.note")}
             </p>
+            <Button variant="outline" asChild className="w-full">
+              <a
+                href="https://app.eryxon.eu"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t("pricing.hostedDemo.tryDemo")}
+                <ExternalLink className="h-4 w-4 ml-2" />
+              </a>
+            </Button>
           </CardContent>
         </Card>
 

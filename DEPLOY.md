@@ -1,5 +1,7 @@
 # Deployment Guide
 
+> **Want to try it first?** Check out the [live demo at app.eryxon.eu](https://app.eryxon.eu) before deploying your own instance.
+
 ## Quick Start (Automated)
 
 The fastest way to deploy Eryxon MES:

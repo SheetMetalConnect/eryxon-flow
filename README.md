@@ -2,6 +2,8 @@
 
 Manufacturing Execution System (MES) for job shops and make-to-order manufacturers. Track jobs through production, give operators tablet-friendly work queues, and integrate with your ERP.
 
+**[Live Demo](https://app.eryxon.eu)** · [Documentation](https://eryxon.eu) · [GitHub](https://github.com/SheetMetalConnect/eryxon-flow)
+
 ## Who It's For
 
 **Job shops** running high-mix, low-volume production — sheet metal, machine shops, custom fabrication. If you're tracking thousands of unique parts through multiple operations, this is built for you.

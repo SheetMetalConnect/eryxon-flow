@@ -259,6 +259,7 @@
     "hostedDemo": {
       "name": "Gehostete Demo",
       "description": "Online ausprobieren mit begrenzter Nutzung",
+      "tryDemo": "Live-Demo testen",
       "note": "Nur für Evaluation und Bildungszwecke",
       "features": [
         "Begrenzte Aufträge und Teile",

@@ -7,6 +7,10 @@
     {
       "name": "Documentation",
       "url": "/introduction/"
+    },
+    {
+      "name": "Live Demo",
+      "url": "https://app.eryxon.eu"
     }
   ],
   "footer": {
@@ -30,6 +34,10 @@
     "help_links": {
       "title": "Resources",
       "links": [
+        {
+          "name": "Live Demo",
+          "url": "https://app.eryxon.eu"
+        },
         {
           "name": "Documentation",
           "url": "/introduction/"

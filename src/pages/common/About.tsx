@@ -33,6 +33,15 @@ export default function About() {
       <div className="space-y-2">
         <p className="text-sm text-muted-foreground">
           <a
+            href="https://app.eryxon.eu"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:underline"
+          >
+            Live Demo
+          </a>{" "}
+          ·{" "}
+          <a
             href={DOCS_GUIDES_URL}
             target="_blank"
             rel="noopener noreferrer"

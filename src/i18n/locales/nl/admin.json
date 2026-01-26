@@ -495,6 +495,7 @@
     "hostedDemo": {
       "name": "Gehoste Demo",
       "description": "Probeer het online met beperkt gebruik",
+      "tryDemo": "Probeer Live Demo",
       "note": "Alleen voor evaluatie en educatieve doeleinden",
       "features": [
         "Beperkte opdrachten en onderdelen",

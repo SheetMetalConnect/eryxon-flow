@@ -346,6 +346,7 @@
     "hostedDemo": {
       "name": "Hosted Demo",
       "description": "Try it online with limited usage",
+      "tryDemo": "Try Live Demo",
       "note": "For evaluation and educational purposes only",
       "features": [
         "Limited jobs and parts",

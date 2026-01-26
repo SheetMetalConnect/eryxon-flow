@@ -5,10 +5,10 @@ description: Digitize your shop floor and take control of production with Eryxon
 enable: true
 fill_button:
   enable: true
-  label: Get Started
-  link: /getting-started/introduction/quickstart
+  label: Try Live Demo
+  link: https://app.eryxon.eu
 outline_button:
   enable: true
-  label: GitHub
-  link: https://github.com/SheetMetalConnect/eryxon-flow
+  label: Get Started
+  link: /guides/quick-start/
 ---

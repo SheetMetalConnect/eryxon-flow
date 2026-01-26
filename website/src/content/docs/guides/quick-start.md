@@ -7,6 +7,8 @@ description: "Get up and running with Eryxon Flow in minutes."
 
 Get Eryxon Flow running in under 10 minutes.
 
+> **Just want to explore?** Try the [live demo at app.eryxon.eu](https://app.eryxon.eu) — no setup needed. Sign up and start exploring immediately.
+
 ---
 
 ## Prerequisites
