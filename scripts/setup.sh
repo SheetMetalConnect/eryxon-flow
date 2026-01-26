@@ -249,6 +249,19 @@ else
   ERRORS=$((ERRORS + 1))
 fi
 
+# -- Apply seed.sql (storage buckets, RLS policies, cron jobs) -------------
+info "Applying seed file (storage policies & cron jobs)..."
+SEED_FILE="$PROJECT_ROOT/supabase/seed.sql"
+if [ -f "$SEED_FILE" ]; then
+  if supabase db execute --file "$SEED_FILE" 2>&1; then
+    ok "Seed file applied (storage policies & cron jobs)"
+  else
+    warn "Seed file had errors (some items may already exist - this is usually fine)"
+  fi
+else
+  warn "supabase/seed.sql not found - skipping"
+fi
+
 # =========================================================================
 # Step 6 - Create storage buckets
 # =========================================================================
@@ -287,7 +300,8 @@ fi
 header "Step 8: Setting edge function secrets"
 
 prompt "Supabase service role key (from Dashboard > Settings > API): "
-read -r SERVICE_ROLE_KEY
+read -rs SERVICE_ROLE_KEY
+printf "\n"
 
 if [ -n "${SERVICE_ROLE_KEY:-}" ]; then
   SUPA_URL="${VITE_SUPABASE_URL:-}"

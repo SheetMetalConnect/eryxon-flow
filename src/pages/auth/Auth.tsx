@@ -299,7 +299,7 @@ export default function Auth() {
               <div className="flex justify-center">
                 <Turnstile
                   ref={turnstileRef}
-                  siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || ""}
+                  siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY!}
                   onSuccess={(token) => setCaptchaToken(token)}
                   onError={() => {
                     setError(t("auth.captchaError"));

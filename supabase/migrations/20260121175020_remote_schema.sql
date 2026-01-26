@@ -4415,6 +4415,11 @@ CREATE OR REPLACE FUNCTION "public"."log_storage_operation"("p_tenant_id" "uuid"
     SET "search_path" TO 'public'
     AS $$
 BEGIN
+  -- Verify tenant exists to prevent cross-tenant log pollution
+  IF NOT EXISTS (SELECT 1 FROM public.tenants WHERE id = p_tenant_id) THEN
+    RAISE EXCEPTION 'Invalid tenant_id: %', p_tenant_id;
+  END IF;
+
   INSERT INTO public.activity_log (
     tenant_id,
     action,
@@ -9498,8 +9503,6 @@ GRANT ALL ON FUNCTION "public"."update_tenant_storage_usage"("p_tenant_id" "uuid
 GRANT ALL ON FUNCTION "public"."update_tenant_storage_usage"("p_tenant_id" "uuid", "p_size_bytes" bigint, "p_operation" "text") TO "service_role";
 
 
-GRANT ALL ON FUNCTION "public"."log_storage_operation"("p_tenant_id" "uuid", "p_operation" "text", "p_file_path" "text", "p_file_size_bytes" bigint, "p_metadata" "jsonb") TO "anon";
-GRANT ALL ON FUNCTION "public"."log_storage_operation"("p_tenant_id" "uuid", "p_operation" "text", "p_file_path" "text", "p_file_size_bytes" bigint, "p_metadata" "jsonb") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."log_storage_operation"("p_tenant_id" "uuid", "p_operation" "text", "p_file_path" "text", "p_file_size_bytes" bigint, "p_metadata" "jsonb") TO "service_role";
 
 

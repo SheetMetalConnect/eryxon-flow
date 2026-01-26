@@ -47,6 +47,21 @@ CREATE POLICY IF NOT EXISTS "Authenticated users can delete CAD files"
   USING (bucket_id = 'parts-cad');
 
 -- Schedule cron jobs (requires pg_cron extension)
+-- Idempotent: unschedule first, then reschedule
+DO $$
+BEGIN
+  -- Remove existing jobs if they exist (safe to call even if not present)
+  PERFORM cron.unschedule('monthly-parts-reset') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'monthly-parts-reset');
+  PERFORM cron.unschedule('check-jobs-due-soon') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'check-jobs-due-soon');
+  PERFORM cron.unschedule('auto-close-attendance') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'auto-close-attendance');
+  PERFORM cron.unschedule('cleanup-expired-invitations') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'cleanup-expired-invitations');
+  PERFORM cron.unschedule('cleanup-mqtt-logs') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'cleanup-mqtt-logs');
+EXCEPTION WHEN OTHERS THEN
+  -- pg_cron may not be available; skip gracefully
+  RAISE NOTICE 'Could not unschedule existing cron jobs: %', SQLERRM;
+END;
+$$;
+
 -- Monthly reset of parts counter (1st of each month at midnight UTC)
 SELECT cron.schedule(
   'monthly-parts-reset',

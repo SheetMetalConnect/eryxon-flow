@@ -145,7 +145,7 @@ done
 # =========================================================================
 header "Storage Buckets"
 
-REQUIRED_BUCKETS=("parts-images" "issues")
+REQUIRED_BUCKETS=("parts-images" "issues" "parts-cad")
 
 for bucket in "${REQUIRED_BUCKETS[@]}"; do
   if [ -n "$SUPA_URL" ] && [ -n "$SUPA_KEY" ]; then

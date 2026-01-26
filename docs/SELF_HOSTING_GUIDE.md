@@ -55,7 +55,7 @@ The script will prompt you for your Supabase project URL, anon key, and service 
 npm run dev
 ```
 
-Open [http://localhost:8080](http://localhost:8080) and sign up. The first user automatically becomes the admin and receives a new tenant.
+Open [http://localhost:5173](http://localhost:5173) and sign up. The first user automatically becomes the admin and receives a new tenant.
 
 ---
 
@@ -149,7 +149,7 @@ npm run dev
 
 ### 4.10 First User
 
-1. Navigate to [http://localhost:8080](http://localhost:8080).
+1. Navigate to [http://localhost:5173](http://localhost:5173).
 2. Sign up with your email.
 3. The first user automatically becomes the admin and gets a tenant provisioned.
 
@@ -366,7 +366,7 @@ The script checks:
 - `.env` file and required variables
 - Supabase REST API connectivity
 - Required database tables (`jobs`, `parts`, `operations`, `tenants`, `profiles`)
-- Storage buckets (`parts-images`, `issues`)
+- Storage buckets (`parts-images`, `issues`, `parts-cad`)
 - Node.js dependencies
 - Production build
 
