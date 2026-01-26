@@ -1117,15 +1117,25 @@ export async function stopBatchTimeTracking(
   const batchStartTime = Math.min(...startTimes);
   const totalSeconds = Math.round((endTime.getTime() - batchStartTime) / 1000);
   const totalMinutes = Math.round(totalSeconds / 60);
-  const minutesPerOperation = Math.round(totalMinutes / opIds.length);
+
+  // Distribute time preserving the total: base minutes per operation + remainder
+  const baseMinutes = Math.floor(totalMinutes / opIds.length);
+  const remainder = totalMinutes - baseMinutes * opIds.length;
+
+  // Build a map from operation_id to its allocated minutes
+  const opMinutesMap = new Map<string, number>();
+  opIds.forEach((opId, index) => {
+    opMinutesMap.set(opId, baseMinutes + (index < remainder ? 1 : 0));
+  });
 
   // Close all time entries with distributed duration
   for (const entry of activeEntries) {
+    const allocated = opMinutesMap.get(entry.operation_id) ?? baseMinutes;
     await supabase
       .from("time_entries")
       .update({
         end_time: endTime.toISOString(),
-        duration: minutesPerOperation,
+        duration: allocated,
         is_paused: false,
       })
       .eq("id", entry.id);
@@ -1133,6 +1143,7 @@ export async function stopBatchTimeTracking(
 
   // Update each operation's actual_time with the distributed time
   for (const opId of opIds) {
+    const allocated = opMinutesMap.get(opId) ?? baseMinutes;
     const { data: operation } = await supabase
       .from("operations")
       .select("actual_time")
@@ -1142,7 +1153,7 @@ export async function stopBatchTimeTracking(
     if (operation) {
       await supabase
         .from("operations")
-        .update({ actual_time: (operation.actual_time || 0) + minutesPerOperation })
+        .update({ actual_time: (operation.actual_time || 0) + allocated })
         .eq("id", opId);
     }
   }
@@ -1160,7 +1171,7 @@ export async function stopBatchTimeTracking(
 
   return {
     totalMinutes,
-    minutesPerOperation,
+    minutesPerOperation: baseMinutes,
     operationsCount: opIds.length,
   };
 }

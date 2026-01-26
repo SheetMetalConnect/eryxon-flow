@@ -32,7 +32,7 @@ export function useBatchActiveTimer(batchId: string | undefined) {
         .select("id, operation_id, start_time, operator_id")
         .in("operation_id", opIds)
         .is("end_time", null)
-        .limit(1);
+        .order("start_time", { ascending: true });
 
       if (!activeEntries || activeEntries.length === 0) return null;
 
@@ -94,7 +94,7 @@ export function useStopBatchTimer() {
 
   return useMutation({
     mutationFn: async (batchId: string) => {
-      if (!profile?.id) {
+      if (!profile?.tenant_id || !profile?.id) {
         throw new Error(t("common.noTenantId"));
       }
       return await stopBatchTimeTracking(batchId, profile.id);
