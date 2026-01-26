@@ -22,11 +22,13 @@ const is404 = Astro.locals.starlightRoute?.id === "404";
     class="hero relative z-10 flex flex-col items-center mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-35"
   >
     <a
-      href="#" 
+      href="https://app.eryxon.eu"
+      target="_blank"
+      rel="noopener noreferrer"
       class="mb-6 inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary ring-1 ring-inset ring-primary/20 hover:bg-primary/20 transition-colors"
     >
       <span class="mr-2 inline-block h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-      Beta 0.1 Releasing January 15th 2025
+      Try the Live Demo →
     </a>
     {title && <h1 set:html={title} class="mb-8 text-center rounded-2xl" />}
     {tagline && <p set:html={tagline} class="text-xl text-center" />}

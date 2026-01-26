@@ -7,6 +7,10 @@
         {
             "name": "Documentatie",
             "url": "/nl/introduction/"
+        },
+        {
+            "name": "Live Demo",
+            "url": "https://app.eryxon.eu"
         }
     ],
     "footer": {
@@ -30,6 +34,10 @@
         "help_links": {
             "title": "Bronnen",
             "links": [
+                {
+                    "name": "Live Demo",
+                    "url": "https://app.eryxon.eu"
+                },
                 {
                     "name": "Documentatie",
                     "url": "/nl/introduction/"
