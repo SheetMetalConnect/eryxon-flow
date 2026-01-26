@@ -55,7 +55,7 @@ This design ensures the app remains **portable** - it works perfectly without Re
 
 Redis is **optional**. Set these environment variables to enable:
 
-```env
+```bash
 
 UPSTASH_REDIS_REST_URL=https://us1-example-12345.upstash.io
 UPSTASH_REDIS_REST_TOKEN=AXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
