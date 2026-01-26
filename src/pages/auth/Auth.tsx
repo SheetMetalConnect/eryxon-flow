@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,7 +12,15 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/routes";
-import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
+
+// Lazy-load Turnstile — only fetched when VITE_TURNSTILE_SITE_KEY is set.
+// Self-hosted deployments without Turnstile pay zero bundle cost.
+const TURNSTILE_ENABLED = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY);
+const LazyTurnstile = TURNSTILE_ENABLED
+  ? lazy(() =>
+      import("@marsidev/react-turnstile").then((m) => ({ default: m.Turnstile }))
+    )
+  : null;
 
 export default function Auth() {
   const { t } = useTranslation();
@@ -27,10 +35,10 @@ export default function Auth() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const turnstileRef = useRef<TurnstileInstance>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const turnstileRef = useRef<any>(null);
   const { signIn, signUp, profile } = useAuth();
   const navigate = useNavigate();
-  const turnstileEnabled = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY);
 
   // Redirect if already logged in
   if (profile) {
@@ -50,7 +58,7 @@ export default function Auth() {
 
     try {
       // Validate captcha token (only when Turnstile is enabled)
-      if (turnstileEnabled && !captchaToken) {
+      if (TURNSTILE_ENABLED && !captchaToken) {
         setError(t("auth.captchaRequired"));
         setLoading(false);
         turnstileRef.current?.reset();
@@ -294,34 +302,36 @@ export default function Auth() {
               </Alert>
             )}
 
-            {/* Cloudflare Turnstile Captcha - only rendered when site key is configured */}
-            {turnstileEnabled && (
-              <div className="flex justify-center">
-                <Turnstile
-                  ref={turnstileRef}
-                  siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY!}
-                  onSuccess={(token) => setCaptchaToken(token)}
-                  onError={() => {
-                    setError(t("auth.captchaError"));
-                    setCaptchaToken(null);
-                  }}
-                  onExpire={() => {
-                    setCaptchaToken(null);
-                    turnstileRef.current?.reset();
-                  }}
-                  options={{
-                    theme: "dark",
-                    size: "normal",
-                  }}
-                />
-              </div>
+            {/* Cloudflare Turnstile Captcha — only loaded when VITE_TURNSTILE_SITE_KEY is set */}
+            {TURNSTILE_ENABLED && LazyTurnstile && (
+              <Suspense fallback={<div className="flex justify-center py-2"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}>
+                <div className="flex justify-center">
+                  <LazyTurnstile
+                    ref={turnstileRef}
+                    siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY!}
+                    onSuccess={(token: string) => setCaptchaToken(token)}
+                    onError={() => {
+                      setError(t("auth.captchaError"));
+                      setCaptchaToken(null);
+                    }}
+                    onExpire={() => {
+                      setCaptchaToken(null);
+                      turnstileRef.current?.reset();
+                    }}
+                    options={{
+                      theme: "dark",
+                      size: "normal",
+                    }}
+                  />
+                </div>
+              </Suspense>
             )}
 
             <div className="pt-2">
               <Button
                 type="submit"
                 className="w-full cta-button"
-                disabled={loading || (!isLogin && !termsAgreed) || (turnstileEnabled && !captchaToken)}
+                disabled={loading || (!isLogin && !termsAgreed) || (TURNSTILE_ENABLED && !captchaToken)}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isLogin ? t("auth.signIn") : t("auth.signUp")}
