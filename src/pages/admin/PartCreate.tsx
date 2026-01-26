@@ -111,10 +111,10 @@ export default function PartCreate() {
 
   const createPartMutation = useMutation({
     mutationFn: async () => {
-      if (!profile?.tenant_id) throw new Error("No tenant ID");
-      if (!jobId) throw new Error("Job is required");
-      if (!partNumber) throw new Error("Part number is required");
-      if (!material) throw new Error("Material is required");
+      if (!profile?.tenant_id) throw new Error(t("common.noTenantId"));
+      if (!jobId) throw new Error(t("parts.jobRequired"));
+      if (!partNumber) throw new Error(t("parts.partNumberRequired"));
+      if (!material) throw new Error(t("parts.materialRequired"));
 
       // Create the part
       const { data: part, error: partError } = await supabase
@@ -197,7 +197,11 @@ export default function PartCreate() {
   };
 
   const handleRemoveOperation = (id: string) => {
-    setOperations(operations.filter((op) => op.id !== id));
+    setOperations(
+      operations
+        .filter((op) => op.id !== id)
+        .map((op, index) => ({ ...op, sequence: index + 1 }))
+    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -180,7 +180,7 @@ export function useCreateBatch() {
 
   return useMutation({
     mutationFn: async (input: CreateBatchInput) => {
-      if (!profile?.tenant_id) throw new Error("No tenant ID");
+      if (!profile?.tenant_id) throw new Error(t("common.noTenantId"));
 
       // Create the batch
       const { data: batch, error: batchError } = await supabase
@@ -197,7 +197,6 @@ export function useCreateBatch() {
           nesting_metadata: input.nesting_metadata,
           created_by: profile.id,
           status: "draft",
-          operations_count: input.operation_ids?.length || 0,
         })
         .select()
         .single();
@@ -261,6 +260,7 @@ export function useUpdateBatchStatus() {
         .from("operation_batches")
         .update(updates)
         .eq("id", batchId)
+        .eq("tenant_id", profile?.tenant_id)
         .select()
         .single();
 
@@ -289,7 +289,7 @@ export function useAddOperationsToBatch() {
 
   return useMutation({
     mutationFn: async ({ batchId, operationIds }: { batchId: string; operationIds: string[] }) => {
-      if (!profile?.tenant_id) throw new Error("No tenant ID");
+      if (!profile?.tenant_id) throw new Error(t("common.noTenantId"));
 
       // Get current max sequence
       const { data: existing } = await supabase
@@ -313,12 +313,6 @@ export function useAddOperationsToBatch() {
         .insert(batchOperations);
 
       if (error) throw error;
-
-      // Update operations count
-      await supabase
-        .from("operation_batches")
-        .update({ operations_count: startSequence + operationIds.length - 1 })
-        .eq("id", batchId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["batch-operations"] });
@@ -339,28 +333,19 @@ export function useAddOperationsToBatch() {
 
 export function useRemoveOperationFromBatch() {
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
 
   return useMutation({
-    mutationFn: async ({ batchOperationId, batchId }: { batchOperationId: string; batchId: string }) => {
+    mutationFn: async ({ batchOperationId }: { batchOperationId: string }) => {
       const { error } = await supabase
         .from("batch_operations")
         .delete()
-        .eq("id", batchOperationId);
+        .eq("id", batchOperationId)
+        .eq("tenant_id", profile?.tenant_id);
 
       if (error) throw error;
-
-      // Update operations count
-      const { count } = await supabase
-        .from("batch_operations")
-        .select("*", { count: "exact", head: true })
-        .eq("batch_id", batchId);
-
-      await supabase
-        .from("operation_batches")
-        .update({ operations_count: count || 0 })
-        .eq("id", batchId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["batch-operations"] });
@@ -378,22 +363,27 @@ export function useRemoveOperationFromBatch() {
 
 export function useDeleteBatch() {
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
 
   return useMutation({
     mutationFn: async (batchId: string) => {
+      if (!profile?.tenant_id) throw new Error(t("common.noTenantId"));
+
       // First delete batch operations
       await supabase
         .from("batch_operations")
         .delete()
-        .eq("batch_id", batchId);
+        .eq("batch_id", batchId)
+        .eq("tenant_id", profile.tenant_id);
 
       // Then delete the batch
       const { error } = await supabase
         .from("operation_batches")
         .delete()
-        .eq("id", batchId);
+        .eq("id", batchId)
+        .eq("tenant_id", profile.tenant_id);
 
       if (error) throw error;
     },

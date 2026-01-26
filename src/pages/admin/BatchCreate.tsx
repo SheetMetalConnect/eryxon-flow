@@ -266,12 +266,15 @@ export default function BatchCreate() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>{t("batches.material")}</Label>
-                  <Select value={material} onValueChange={setMaterial}>
+                  <Select
+                    value={material || "__none__"}
+                    onValueChange={(v) => setMaterial(v === "__none__" ? "" : v)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder={t("batches.selectMaterial")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__none__">{t("common.none")}</SelectItem>
+                      <SelectItem value="__none__">{t("parts.none")}</SelectItem>
                       {materials?.map((mat) => (
                         <SelectItem key={mat.id} value={mat.name}>
                           {mat.name}
@@ -349,6 +352,7 @@ export default function BatchCreate() {
                         <Checkbox
                           checked={selectedOperations.includes(op.id)}
                           onCheckedChange={() => toggleOperation(op.id)}
+                          onClick={(e) => e.stopPropagation()}
                         />
                         <div className="flex-1 min-w-0">
                           <div className="font-medium">{op.operation_name}</div>

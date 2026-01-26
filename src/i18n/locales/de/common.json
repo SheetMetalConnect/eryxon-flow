@@ -51,7 +51,8 @@
     "done": "Fertig",
     "creating": "Erstellen...",
     "helpAndDocs": "Hilfe & Dokumentation",
-    "refresh": "Aktualisieren"
+    "refresh": "Aktualisieren",
+    "noTenantId": "Keine Mandanten-ID"
   },
   "forms": {
     "required": "Dieses Feld ist erforderlich",

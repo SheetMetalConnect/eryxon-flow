@@ -53,7 +53,8 @@
     "done": "Done",
     "creating": "Creating...",
     "helpAndDocs": "Help & Docs",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "noTenantId": "No tenant ID"
   },
   "forms": {
     "required": "This field is required",
