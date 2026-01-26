@@ -149,7 +149,6 @@ CREATE TYPE "public"."integration_category" AS ENUM (
     'accounting',
     'crm',
     'inventory',
-    'shipping',
     'analytics',
     'other'
 );
@@ -2099,7 +2098,7 @@ $$;
 ALTER FUNCTION "public"."get_part_issue_summary"("part_id_param" "uuid") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_part_routing"("p_part_id" "uuid") RETURNS TABLE("operation_id" "uuid", "operation_number" "text", "cell_id" "uuid", "cell_name" "text", "sequence" integer, "description" "text", "status" "text", "estimated_hours" numeric, "actual_hours" numeric)
+CREATE OR REPLACE FUNCTION "public"."get_part_routing"("p_part_id" "uuid") RETURNS TABLE("operation_id" "uuid", "operation_name" "text", "cell_id" "uuid", "cell_name" "text", "sequence" integer, "notes" "text", "status" "text", "estimated_hours" numeric, "actual_hours" numeric)
     LANGUAGE "plpgsql" STABLE SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
@@ -2107,18 +2106,18 @@ BEGIN
   RETURN QUERY
   SELECT
     o.id AS operation_id,
-    o.operation_number,
+    o.operation_name,
     o.cell_id,
     c.name AS cell_name,
     o.sequence,
-    o.description,
+    o.notes,
     o.status,
-    o.estimated_hours,
+    (o.estimated_time::numeric / 60) AS estimated_hours,
     COALESCE(
-      (SELECT SUM(EXTRACT(EPOCH FROM (ended_at - started_at)) / 3600)
+      (SELECT SUM(EXTRACT(EPOCH FROM (te.end_time - te.start_time)) / 3600)
        FROM time_entries te
        WHERE te.operation_id = o.id
-         AND te.ended_at IS NOT NULL),
+         AND te.end_time IS NOT NULL),
       0
     ) AS actual_hours
   FROM operations o
@@ -2183,7 +2182,6 @@ DECLARE
   v_default_flags JSONB := '{
     "analytics": true,
     "monitoring": true,
-    "shipping": true,
     "operatorViews": true,
     "integrations": true,
     "issues": true,
@@ -3858,12 +3856,12 @@ BEGIN
     RETURN QUERY SELECT 0::INTEGER, 'Demo operators already exist for this tenant'::TEXT;
     RETURN;
   END IF;
-  INSERT INTO public.profiles (id, tenant_id, role, full_name, email, active)
+  INSERT INTO public.profiles (id, tenant_id, role, full_name, email, username, active)
   VALUES
-    (v_operator_ids[1], p_tenant_id, 'operator', 'Demo Operator - John Smith', 'demo.operator1@example.com', true),
-    (v_operator_ids[2], p_tenant_id, 'operator', 'Demo Operator - Maria Garcia', 'demo.operator2@example.com', true),
-    (v_operator_ids[3], p_tenant_id, 'operator', 'Demo Operator - Wei Chen', 'demo.operator3@example.com', true),
-    (v_operator_ids[4], p_tenant_id, 'operator', 'Demo Operator - Sarah Johnson', 'demo.operator4@example.com', true);
+    (v_operator_ids[1], p_tenant_id, 'operator', 'Demo Operator - John Smith', 'demo.operator1@example.com', 'demo.johnsmith', true),
+    (v_operator_ids[2], p_tenant_id, 'operator', 'Demo Operator - Maria Garcia', 'demo.operator2@example.com', 'demo.mariagarcia', true),
+    (v_operator_ids[3], p_tenant_id, 'operator', 'Demo Operator - Wei Chen', 'demo.operator3@example.com', 'demo.weichen', true),
+    (v_operator_ids[4], p_tenant_id, 'operator', 'Demo Operator - Sarah Johnson', 'demo.operator4@example.com', 'demo.sarahjohnson', true);
   GET DIAGNOSTICS v_count = ROW_COUNT;
   RETURN QUERY SELECT v_count, format('Successfully created %s demo operators. Note: These are demonstration profiles only and cannot be used for actual login.', v_count)::TEXT;
 END;
@@ -4348,28 +4346,6 @@ $$;
 ALTER FUNCTION "public"."update_mqtt_publisher_updated_at"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."update_shipment_totals"() RETURNS "trigger"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO 'public'
-    AS $$
-DECLARE
-  v_shipment_id UUID;
-BEGIN
-  -- Get the shipment ID
-  IF TG_OP = 'DELETE' THEN
-    v_shipment_id := OLD.shipment_id;
-  ELSE
-    v_shipment_id := NEW.shipment_id;
-  END IF;
-
-  -- Update the shipment totals
-  UPDATE shipments
-  SET
-    current_weight_kg = COALESCE((
-      SELECT SUM(weight_kg)
-
-
-
 CREATE OR REPLACE FUNCTION "public"."update_tenant_feature_flags"("p_tenant_id" "uuid", "p_flags" "jsonb") RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
@@ -4432,6 +4408,40 @@ $$;
 
 
 ALTER FUNCTION "public"."update_tenant_storage_usage"("p_tenant_id" "uuid", "p_size_bytes" bigint, "p_operation" "text") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."log_storage_operation"("p_tenant_id" "uuid", "p_operation" "text", "p_file_path" "text", "p_file_size_bytes" bigint, "p_metadata" "jsonb" DEFAULT '{}'::"jsonb") RETURNS "void"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+BEGIN
+  -- Verify tenant exists to prevent cross-tenant log pollution
+  IF NOT EXISTS (SELECT 1 FROM public.tenants WHERE id = p_tenant_id) THEN
+    RAISE EXCEPTION 'Invalid tenant_id: %', p_tenant_id;
+  END IF;
+
+  INSERT INTO public.activity_log (
+    tenant_id,
+    action,
+    entity_type,
+    description,
+    metadata
+  ) VALUES (
+    p_tenant_id,
+    'storage_' || p_operation,
+    'storage',
+    'Storage operation: ' || p_operation || ' on ' || p_file_path,
+    jsonb_build_object(
+      'file_path', p_file_path,
+      'file_size_bytes', p_file_size_bytes,
+      'operation', p_operation
+    ) || p_metadata
+  );
+END;
+$$;
+
+
+ALTER FUNCTION "public"."log_storage_operation"("p_tenant_id" "uuid", "p_operation" "text", "p_file_path" "text", "p_file_size_bytes" bigint, "p_metadata" "jsonb") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."update_tenant_updated_at"() RETURNS "trigger"
@@ -5811,7 +5821,7 @@ CREATE TABLE IF NOT EXISTS "public"."tenants" (
     "next_operator_number" integer DEFAULT 1,
     "api_requests_today" integer DEFAULT 0,
     "api_requests_reset_at" timestamp with time zone DEFAULT (CURRENT_DATE + '1 day'::interval),
-    "feature_flags" "jsonb" DEFAULT '{"issues": true, "capacity": true, "shipping": true, "analytics": true, "monitoring": true, "assignments": true, "integrations": true, "operatorViews": true}'::"jsonb",
+    "feature_flags" "jsonb" DEFAULT '{"issues": true, "capacity": true, "analytics": true, "monitoring": true, "assignments": true, "integrations": true, "operatorViews": true}'::"jsonb",
     "use_external_feature_flags" boolean DEFAULT false,
     "external_feature_flags_config" "jsonb"
 );
@@ -5848,7 +5858,7 @@ COMMENT ON COLUMN "public"."tenants"."auto_stop_tracking" IS 'If true, automatic
 
 
 
-COMMENT ON COLUMN "public"."tenants"."feature_flags" IS 'JSONB object storing feature flag settings. Keys: analytics, monitoring, shipping, operatorViews, integrations, issues, capacity, assignments. All default to true if not specified.';
+COMMENT ON COLUMN "public"."tenants"."feature_flags" IS 'JSONB object storing feature flag settings. Keys: analytics, monitoring, operatorViews, integrations, issues, capacity, assignments. All default to true if not specified.';
 
 
 
@@ -5929,6 +5939,31 @@ CREATE TABLE IF NOT EXISTS "public"."webhooks" (
 
 
 ALTER TABLE "public"."webhooks" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."sync_imports" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "tenant_id" "uuid" NOT NULL,
+    "entity_type" "text" NOT NULL,
+    "operation" "text" NOT NULL DEFAULT 'upsert'::"text",
+    "source" "text" DEFAULT 'api'::"text",
+    "status" "text" DEFAULT 'pending'::"text",
+    "record_count" integer DEFAULT 0,
+    "total_records" integer DEFAULT 0,
+    "created_count" integer DEFAULT 0,
+    "updated_count" integer DEFAULT 0,
+    "skipped_count" integer DEFAULT 0,
+    "error_count" integer DEFAULT 0,
+    "sync_hash" "text",
+    "errors" "jsonb",
+    "metadata" "jsonb" DEFAULT '{}'::"jsonb",
+    "started_at" timestamp with time zone,
+    "completed_at" timestamp with time zone,
+    "created_at" timestamp with time zone DEFAULT "now"()
+);
+
+
+ALTER TABLE "public"."sync_imports" OWNER TO "postgres";
 
 
 ALTER TABLE ONLY "public"."activity_log"
@@ -6251,21 +6286,6 @@ ALTER TABLE ONLY "public"."scrap_reasons"
 
 
 
-ALTER TABLE ONLY "public"."shipment_jobs"
-    ADD CONSTRAINT "shipment_jobs_job_id_shipment_id_key" UNIQUE ("job_id", "shipment_id");
-
-
-
-ALTER TABLE ONLY "public"."shipment_jobs"
-    ADD CONSTRAINT "shipment_jobs_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "public"."shipments"
-    ADD CONSTRAINT "shipments_pkey" PRIMARY KEY ("id");
-
-
-
 ALTER TABLE ONLY "public"."cells"
     ADD CONSTRAINT "stages_pkey" PRIMARY KEY ("id");
 
@@ -6293,6 +6313,11 @@ ALTER TABLE ONLY "public"."substep_templates"
 
 ALTER TABLE ONLY "public"."substeps"
     ADD CONSTRAINT "substeps_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."sync_imports"
+    ADD CONSTRAINT "sync_imports_pkey" PRIMARY KEY ("id");
 
 
 
@@ -7020,42 +7045,6 @@ CREATE INDEX "idx_scrap_reasons_tenant_id" ON "public"."scrap_reasons" USING "bt
 
 
 
-CREATE INDEX "idx_shipment_jobs_job_id" ON "public"."shipment_jobs" USING "btree" ("job_id");
-
-
-
-CREATE INDEX "idx_shipment_jobs_shipment_id" ON "public"."shipment_jobs" USING "btree" ("shipment_id");
-
-
-
-CREATE INDEX "idx_shipment_jobs_tenant_id" ON "public"."shipment_jobs" USING "btree" ("tenant_id");
-
-
-
-CREATE INDEX "idx_shipments_destination_city" ON "public"."shipments" USING "btree" ("destination_city");
-
-
-
-CREATE INDEX "idx_shipments_destination_postal" ON "public"."shipments" USING "btree" ("destination_postal_code");
-
-
-
-CREATE INDEX "idx_shipments_scheduled_date" ON "public"."shipments" USING "btree" ("scheduled_date");
-
-
-
-CREATE INDEX "idx_shipments_shipment_number" ON "public"."shipments" USING "btree" ("shipment_number");
-
-
-
-CREATE INDEX "idx_shipments_status" ON "public"."shipments" USING "btree" ("status");
-
-
-
-CREATE INDEX "idx_shipments_tenant_id" ON "public"."shipments" USING "btree" ("tenant_id");
-
-
-
 CREATE INDEX "idx_substep_template_items_sequence" ON "public"."substep_template_items" USING "btree" ("template_id", "sequence");
 
 
@@ -7176,9 +7165,6 @@ CREATE OR REPLACE TRIGGER "activity_log_search_vector_trigger" BEFORE INSERT OR 
 
 
 
-CREATE OR REPLACE TRIGGER "auto_create_operation_expectation_trigger" AFTER INSERT OR UPDATE OF "planned_start", "planned_end", "status" ON "public"."operations" FOR EACH ROW EXECUTE FUNCTION "public"."auto_create_operation_expectation"();
-
-
 
 CREATE OR REPLACE TRIGGER "batch_operations_count_trigger" AFTER INSERT OR DELETE ON "public"."batch_operations" FOR EACH ROW EXECUTE FUNCTION "public"."update_batch_operations_count"();
 
@@ -7263,14 +7249,6 @@ CREATE OR REPLACE TRIGGER "quantity_events_trigger" AFTER INSERT OR DELETE OR UP
 
 
 
-CREATE OR REPLACE TRIGGER "set_shipment_jobs_updated_at" BEFORE UPDATE ON "public"."shipment_jobs" FOR EACH ROW EXECUTE FUNCTION "public"."update_tenant_updated_at"();
-
-
-
-CREATE OR REPLACE TRIGGER "set_shipments_updated_at" BEFORE UPDATE ON "public"."shipments" FOR EACH ROW EXECUTE FUNCTION "public"."update_tenant_updated_at"();
-
-
-
 CREATE OR REPLACE TRIGGER "set_tenant_updated_at" BEFORE UPDATE ON "public"."tenants" FOR EACH ROW EXECUTE FUNCTION "public"."update_tenant_updated_at"();
 
 
@@ -7328,10 +7306,6 @@ CREATE OR REPLACE TRIGGER "update_issues_search_vector" BEFORE INSERT OR UPDATE 
 
 
 CREATE OR REPLACE TRIGGER "update_operation_batches_updated_at" BEFORE UPDATE ON "public"."operation_batches" FOR EACH ROW EXECUTE FUNCTION "public"."update_updated_at_column"();
-
-
-
-CREATE OR REPLACE TRIGGER "update_shipment_totals_trigger" AFTER INSERT OR DELETE OR UPDATE ON "public"."shipment_jobs" FOR EACH ROW EXECUTE FUNCTION "public"."update_shipment_totals"();
 
 
 
@@ -7755,36 +7729,6 @@ ALTER TABLE ONLY "public"."scrap_reasons"
 
 
 
-ALTER TABLE ONLY "public"."shipment_jobs"
-    ADD CONSTRAINT "shipment_jobs_job_id_fkey" FOREIGN KEY ("job_id") REFERENCES "public"."jobs"("id") ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "public"."shipment_jobs"
-    ADD CONSTRAINT "shipment_jobs_loaded_by_fkey" FOREIGN KEY ("loaded_by") REFERENCES "public"."profiles"("id");
-
-
-
-ALTER TABLE ONLY "public"."shipment_jobs"
-    ADD CONSTRAINT "shipment_jobs_shipment_id_fkey" FOREIGN KEY ("shipment_id") REFERENCES "public"."shipments"("id") ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "public"."shipment_jobs"
-    ADD CONSTRAINT "shipment_jobs_tenant_id_fkey" FOREIGN KEY ("tenant_id") REFERENCES "public"."tenants"("id") ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "public"."shipments"
-    ADD CONSTRAINT "shipments_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "public"."profiles"("id");
-
-
-
-ALTER TABLE ONLY "public"."shipments"
-    ADD CONSTRAINT "shipments_tenant_id_fkey" FOREIGN KEY ("tenant_id") REFERENCES "public"."tenants"("id") ON DELETE CASCADE;
-
-
-
 ALTER TABLE ONLY "public"."subscription_events"
     ADD CONSTRAINT "subscription_events_tenant_id_fkey" FOREIGN KEY ("tenant_id") REFERENCES "public"."tenants"("id") ON DELETE CASCADE;
 
@@ -7802,6 +7746,11 @@ ALTER TABLE ONLY "public"."substep_templates"
 
 ALTER TABLE ONLY "public"."substep_templates"
     ADD CONSTRAINT "substep_templates_tenant_id_fkey" FOREIGN KEY ("tenant_id") REFERENCES "public"."tenants"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."sync_imports"
+    ADD CONSTRAINT "sync_imports_tenant_id_fkey" FOREIGN KEY ("tenant_id") REFERENCES "public"."tenants"("id") ON DELETE CASCADE;
 
 
 
@@ -7870,14 +7819,6 @@ CREATE POLICY "Admins can create invitations in their tenant" ON "public"."invit
 
 
 
-CREATE POLICY "Admins can create shipment_jobs" ON "public"."shipment_jobs" FOR INSERT TO "authenticated" WITH CHECK ((("tenant_id" = "public"."get_user_tenant_id"()) AND "public"."has_role"("auth"."uid"(), 'admin'::"public"."app_role")));
-
-
-
-CREATE POLICY "Admins can create shipments" ON "public"."shipments" FOR INSERT TO "authenticated" WITH CHECK ((("tenant_id" = "public"."get_user_tenant_id"()) AND "public"."has_role"("auth"."uid"(), 'admin'::"public"."app_role")));
-
-
-
 CREATE POLICY "Admins can delete MCP keys" ON "public"."mcp_authentication_keys" FOR DELETE USING ((("tenant_id" = ( SELECT "profiles"."tenant_id"
    FROM "public"."profiles"
   WHERE ("profiles"."id" = "auth"."uid"()))) AND (EXISTS ( SELECT 1
@@ -7917,14 +7858,6 @@ CREATE POLICY "Admins can delete notifications" ON "public"."notifications" FOR 
 
 
 CREATE POLICY "Admins can delete operation quantities" ON "public"."operation_quantities" FOR DELETE USING ((("tenant_id" = "public"."get_user_tenant_id"()) AND ("public"."get_user_role"() = 'admin'::"public"."app_role")));
-
-
-
-CREATE POLICY "Admins can delete shipment_jobs" ON "public"."shipment_jobs" FOR DELETE TO "authenticated" USING ((("tenant_id" = "public"."get_user_tenant_id"()) AND "public"."has_role"("auth"."uid"(), 'admin'::"public"."app_role")));
-
-
-
-CREATE POLICY "Admins can delete shipments" ON "public"."shipments" FOR DELETE TO "authenticated" USING ((("tenant_id" = "public"."get_user_tenant_id"()) AND "public"."has_role"("auth"."uid"(), 'admin'::"public"."app_role")));
 
 
 
@@ -8109,14 +8042,6 @@ CREATE POLICY "Admins can update issue categories" ON "public"."issue_categories
 CREATE POLICY "Admins can update mqtt publishers" ON "public"."mqtt_publishers" FOR UPDATE USING (("tenant_id" = ( SELECT "profiles"."tenant_id"
    FROM "public"."profiles"
   WHERE (("profiles"."id" = "auth"."uid"()) AND ("profiles"."role" = 'admin'::"public"."app_role")))));
-
-
-
-CREATE POLICY "Admins can update shipment_jobs" ON "public"."shipment_jobs" FOR UPDATE TO "authenticated" USING ((("tenant_id" = "public"."get_user_tenant_id"()) AND "public"."has_role"("auth"."uid"(), 'admin'::"public"."app_role")));
-
-
-
-CREATE POLICY "Admins can update shipments" ON "public"."shipments" FOR UPDATE TO "authenticated" USING ((("tenant_id" = "public"."get_user_tenant_id"()) AND "public"."has_role"("auth"."uid"(), 'admin'::"public"."app_role")));
 
 
 
@@ -8390,14 +8315,6 @@ CREATE POLICY "Users can view resources in their tenant" ON "public"."resources"
 
 
 
-CREATE POLICY "Users can view shipment_jobs in their tenant" ON "public"."shipment_jobs" FOR SELECT TO "authenticated" USING (("tenant_id" = "public"."get_user_tenant_id"()));
-
-
-
-CREATE POLICY "Users can view shipments in their tenant" ON "public"."shipments" FOR SELECT TO "authenticated" USING (("tenant_id" = "public"."get_user_tenant_id"()));
-
-
-
 CREATE POLICY "Users can view stages in their tenant" ON "public"."cells" FOR SELECT USING (("tenant_id" = "public"."get_user_tenant_id"()));
 
 
@@ -8656,12 +8573,6 @@ ALTER TABLE "public"."resources" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."scrap_reasons" ENABLE ROW LEVEL SECURITY;
 
 
-ALTER TABLE "public"."shipment_jobs" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "public"."shipments" ENABLE ROW LEVEL SECURITY;
-
-
 ALTER TABLE "public"."subscription_events" ENABLE ROW LEVEL SECURITY;
 
 
@@ -8694,6 +8605,15 @@ ALTER TABLE "public"."webhook_logs" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."webhooks" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."sync_imports" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "sync_imports_tenant_isolation" ON "public"."sync_imports" FOR SELECT USING (("tenant_id" = "public"."get_user_tenant_id"()));
+
+
+CREATE POLICY "sync_imports_service_role" ON "public"."sync_imports" TO "service_role" USING (true) WITH CHECK (true);
 
 
 
@@ -8941,11 +8861,6 @@ GRANT ALL ON FUNCTION "public"."auto_close_stale_attendance"() TO "service_role"
 
 
 
-GRANT ALL ON FUNCTION "public"."auto_create_operation_expectation"() TO "anon";
-GRANT ALL ON FUNCTION "public"."auto_create_operation_expectation"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."auto_create_operation_expectation"() TO "service_role";
-
-
 
 GRANT ALL ON FUNCTION "public"."can_create_job"("p_tenant_id" "uuid") TO "anon";
 GRANT ALL ON FUNCTION "public"."can_create_job"("p_tenant_id" "uuid") TO "authenticated";
@@ -9100,12 +9015,6 @@ GRANT ALL ON FUNCTION "public"."enable_demo_mode"("p_tenant_id" "uuid", "p_user_
 GRANT ALL ON FUNCTION "public"."generate_mcp_key"("p_tenant_id" "uuid", "p_name" "text", "p_description" "text", "p_environment" "text", "p_allowed_tools" "jsonb", "p_created_by" "uuid") TO "anon";
 GRANT ALL ON FUNCTION "public"."generate_mcp_key"("p_tenant_id" "uuid", "p_name" "text", "p_description" "text", "p_environment" "text", "p_allowed_tools" "jsonb", "p_created_by" "uuid") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."generate_mcp_key"("p_tenant_id" "uuid", "p_name" "text", "p_description" "text", "p_environment" "text", "p_allowed_tools" "jsonb", "p_created_by" "uuid") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."generate_shipment_number"("p_tenant_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."generate_shipment_number"("p_tenant_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."generate_shipment_number"("p_tenant_id" "uuid") TO "service_role";
 
 
 
@@ -9583,12 +9492,6 @@ GRANT ALL ON FUNCTION "public"."update_mqtt_publisher_updated_at"() TO "service_
 
 
 
-GRANT ALL ON FUNCTION "public"."update_shipment_totals"() TO "anon";
-GRANT ALL ON FUNCTION "public"."update_shipment_totals"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."update_shipment_totals"() TO "service_role";
-
-
-
 GRANT ALL ON FUNCTION "public"."update_tenant_feature_flags"("p_tenant_id" "uuid", "p_flags" "jsonb") TO "anon";
 GRANT ALL ON FUNCTION "public"."update_tenant_feature_flags"("p_tenant_id" "uuid", "p_flags" "jsonb") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."update_tenant_feature_flags"("p_tenant_id" "uuid", "p_flags" "jsonb") TO "service_role";
@@ -9599,6 +9502,8 @@ GRANT ALL ON FUNCTION "public"."update_tenant_storage_usage"("p_tenant_id" "uuid
 GRANT ALL ON FUNCTION "public"."update_tenant_storage_usage"("p_tenant_id" "uuid", "p_size_bytes" bigint, "p_operation" "text") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."update_tenant_storage_usage"("p_tenant_id" "uuid", "p_size_bytes" bigint, "p_operation" "text") TO "service_role";
 
+
+GRANT ALL ON FUNCTION "public"."log_storage_operation"("p_tenant_id" "uuid", "p_operation" "text", "p_file_path" "text", "p_file_size_bytes" bigint, "p_metadata" "jsonb") TO "service_role";
 
 
 GRANT ALL ON FUNCTION "public"."update_tenant_updated_at"() TO "anon";
@@ -9910,18 +9815,6 @@ GRANT ALL ON TABLE "public"."scrap_reasons" TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."shipment_jobs" TO "anon";
-GRANT ALL ON TABLE "public"."shipment_jobs" TO "authenticated";
-GRANT ALL ON TABLE "public"."shipment_jobs" TO "service_role";
-
-
-
-GRANT ALL ON TABLE "public"."shipments" TO "anon";
-GRANT ALL ON TABLE "public"."shipments" TO "authenticated";
-GRANT ALL ON TABLE "public"."shipments" TO "service_role";
-
-
-
 GRANT ALL ON TABLE "public"."subscription_events" TO "anon";
 GRANT ALL ON TABLE "public"."subscription_events" TO "authenticated";
 GRANT ALL ON TABLE "public"."subscription_events" TO "service_role";
@@ -9980,6 +9873,10 @@ GRANT ALL ON TABLE "public"."webhooks" TO "anon";
 GRANT ALL ON TABLE "public"."webhooks" TO "authenticated";
 GRANT ALL ON TABLE "public"."webhooks" TO "service_role";
 
+
+
+GRANT ALL ON TABLE "public"."sync_imports" TO "authenticated";
+GRANT ALL ON TABLE "public"."sync_imports" TO "service_role";
 
 
 

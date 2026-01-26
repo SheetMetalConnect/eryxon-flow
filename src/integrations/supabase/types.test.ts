@@ -81,7 +81,6 @@ describe('Supabase Types Module', () => {
         'accounting',
         'crm',
         'inventory',
-        'shipping',
         'analytics',
         'other',
       ])

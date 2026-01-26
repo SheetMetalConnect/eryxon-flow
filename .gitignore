@@ -42,8 +42,7 @@ __pycache__/
 
 # === Security: Sensitive Files ===
 
-# Supabase configuration (contains project ID)
-supabase/config.toml
+# Supabase temp files
 supabase/.temp/
 
 # Environment files (contains credentials)

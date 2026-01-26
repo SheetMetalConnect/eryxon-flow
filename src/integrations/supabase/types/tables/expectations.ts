@@ -10,7 +10,7 @@ export type ExpectationType = 'completion_time' | 'duration' | 'quantity' | 'del
 export type ExceptionType = 'late' | 'early' | 'non_occurrence' | 'exceeded' | 'under'
 export type ExceptionStatus = 'open' | 'acknowledged' | 'resolved' | 'dismissed'
 export type ExpectationSource = 'erp_sync' | 'manual' | 'scheduler' | 'auto_replan' | 'system'
-export type ExpectationEntityType = 'job' | 'operation' | 'part' | 'shipment'
+export type ExpectationEntityType = 'job' | 'operation' | 'part'
 
 export type ExpectationsTable = {
   Row: {

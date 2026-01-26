@@ -184,7 +184,6 @@ export interface JobMetadata extends BaseMetadata {
   priority?: 'low' | 'normal' | 'high' | 'urgent';
   customerPO?: string;
   projectName?: string;
-  shippingMethod?: string;
   packingInstructions?: string;
   qualityLevel?: 'standard' | 'aerospace' | 'medical' | 'military';
   certificationRequired?: boolean;
