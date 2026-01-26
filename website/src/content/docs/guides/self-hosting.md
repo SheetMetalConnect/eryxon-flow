@@ -182,7 +182,7 @@ cp .env.example .env
 ### Step 2: Configure Environment
 
 Edit `.env`:
-```env
+```bash
 
 POSTGRES_PASSWORD=your-secure-password
 JWT_SECRET=your-jwt-secret-min-32-chars
@@ -284,7 +284,7 @@ npm run build
 ### Configuration
 
 Create `mcp-server/.env`:
-```env
+```bash
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_KEY=your-service-role-key
 ```
