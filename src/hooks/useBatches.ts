@@ -86,7 +86,7 @@ export function useBatches(filters?: {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["batches", filters],
+    queryKey: ["batches", filters, profile?.tenant_id],
     queryFn: async () => {
       let query = supabase
         .from("operation_batches")
@@ -95,6 +95,7 @@ export function useBatches(filters?: {
           cell:cells(id, name),
           created_by_profile:profiles!operation_batches_created_by_fkey(full_name)
         `)
+        .eq("tenant_id", profile!.tenant_id)
         .order("created_at", { ascending: false });
 
       if (filters?.status) {
@@ -116,6 +117,8 @@ export function useBatches(filters?: {
 }
 
 export function useBatch(batchId: string | undefined) {
+  const { profile } = useAuth();
+
   return useQuery({
     queryKey: ["batch", batchId],
     queryFn: async () => {
@@ -131,16 +134,19 @@ export function useBatch(batchId: string | undefined) {
           completed_by_profile:profiles!operation_batches_completed_by_fkey(full_name)
         `)
         .eq("id", batchId)
+        .eq("tenant_id", profile!.tenant_id)
         .single();
 
       if (error) throw error;
       return data as Batch;
     },
-    enabled: !!batchId,
+    enabled: !!batchId && !!profile?.tenant_id,
   });
 }
 
 export function useBatchOperations(batchId: string | undefined) {
+  const { profile } = useAuth();
+
   return useQuery({
     queryKey: ["batch-operations", batchId],
     queryFn: async () => {
@@ -163,12 +169,13 @@ export function useBatchOperations(batchId: string | undefined) {
           )
         `)
         .eq("batch_id", batchId)
+        .eq("tenant_id", profile!.tenant_id)
         .order("sequence_in_batch", { ascending: true });
 
       if (error) throw error;
       return data as BatchOperation[];
     },
-    enabled: !!batchId,
+    enabled: !!batchId && !!profile?.tenant_id,
   });
 }
 
@@ -296,6 +303,7 @@ export function useAddOperationsToBatch() {
         .from("batch_operations")
         .select("sequence_in_batch")
         .eq("batch_id", batchId)
+        .eq("tenant_id", profile!.tenant_id)
         .order("sequence_in_batch", { ascending: false })
         .limit(1);
 

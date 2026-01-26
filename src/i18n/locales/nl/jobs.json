@@ -551,6 +551,14 @@
       "description": "Weet u zeker dat u deze batch wilt verwijderen? Dit verwijdert alle bewerkingskoppelingen."
     },
     "notFound": "Batch niet gevonden",
+    "errors": {
+      "notFound": "Batch niet gevonden",
+      "alreadyActive": "Deze batch is al in uitvoering",
+      "alreadyClosed": "Deze batch is al voltooid of geannuleerd",
+      "operatorBusy": "Stop de huidige tijdregistratie voordat u batch-timing start",
+      "noOperations": "Geen bewerkingen in deze batch",
+      "noActiveEntries": "Geen actieve tijdregistraties gevonden voor deze batch"
+    },
     "timeTracking": {
       "title": "Batch Tijdregistratie",
       "totalTime": "Totale Tijd",

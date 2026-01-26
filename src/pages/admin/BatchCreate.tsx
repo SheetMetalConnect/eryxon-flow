@@ -72,35 +72,39 @@ export default function BatchCreate() {
 
   // Fetch cells
   const { data: cells } = useQuery({
-    queryKey: ["cells-active"],
+    queryKey: ["cells-active", profile?.tenant_id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cells")
         .select("id, name")
+        .eq("tenant_id", profile!.tenant_id)
         .eq("active", true)
         .order("sequence");
       if (error) throw error;
       return data;
     },
+    enabled: !!profile?.tenant_id,
   });
 
   // Fetch materials from config
   const { data: materials } = useQuery({
-    queryKey: ["materials-active"],
+    queryKey: ["materials-active", profile?.tenant_id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("materials")
         .select("id, name")
+        .eq("tenant_id", profile!.tenant_id)
         .eq("active", true)
         .order("name");
       if (error) throw error;
       return data;
     },
+    enabled: !!profile?.tenant_id,
   });
 
   // Fetch available operations (not_started or in_progress, not already in a batch)
   const { data: availableOperations } = useQuery({
-    queryKey: ["operations-for-batch", cellId],
+    queryKey: ["operations-for-batch", cellId, profile?.tenant_id],
     queryFn: async () => {
       let query = supabase
         .from("operations")
@@ -116,6 +120,7 @@ export default function BatchCreate() {
             job:jobs(id, job_number, customer)
           )
         `)
+        .eq("tenant_id", profile!.tenant_id)
         .in("status", ["not_started", "in_progress"]);
 
       if (cellId) {
@@ -128,7 +133,8 @@ export default function BatchCreate() {
       // Filter out operations already in a batch
       const { data: batchedOps } = await supabase
         .from("batch_operations")
-        .select("operation_id");
+        .select("operation_id")
+        .eq("tenant_id", profile!.tenant_id);
 
       const batchedIds = new Set(batchedOps?.map(bo => bo.operation_id) || []);
 
@@ -136,7 +142,7 @@ export default function BatchCreate() {
         op => !batchedIds.has(op.id)
       );
     },
-    enabled: true,
+    enabled: !!profile?.tenant_id,
   });
 
   // Filter operations by search

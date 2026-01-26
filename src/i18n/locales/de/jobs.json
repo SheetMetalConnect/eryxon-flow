@@ -550,6 +550,14 @@
       "description": "Sind Sie sicher, dass Sie diese Charge löschen möchten? Alle Arbeitsgangsverknüpfungen werden entfernt."
     },
     "notFound": "Charge nicht gefunden",
+    "errors": {
+      "notFound": "Charge nicht gefunden",
+      "alreadyActive": "Diese Charge ist bereits in Bearbeitung",
+      "alreadyClosed": "Diese Charge ist bereits abgeschlossen oder storniert",
+      "operatorBusy": "Bitte stoppen Sie die aktuelle Zeiterfassung, bevor Sie die Chargen-Zeiterfassung starten",
+      "noOperations": "Keine Arbeitsgänge in dieser Charge",
+      "noActiveEntries": "Keine aktiven Zeiteinträge für diese Charge gefunden"
+    },
     "timeTracking": {
       "title": "Chargen-Zeiterfassung",
       "totalTime": "Gesamtzeit",

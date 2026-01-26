@@ -53,60 +53,67 @@ export default function PartCreate() {
 
   // Fetch jobs for selection
   const { data: jobs } = useQuery({
-    queryKey: ["jobs-active"],
+    queryKey: ["jobs-active", profile?.tenant_id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("jobs")
         .select("id, job_number, customer")
+        .eq("tenant_id", profile!.tenant_id)
         .in("status", ["not_started", "in_progress"])
         .order("job_number");
       if (error) throw error;
       return data;
     },
+    enabled: !!profile?.tenant_id,
   });
 
   // Fetch existing parts from selected job for parent selection
   const { data: existingParts } = useQuery({
-    queryKey: ["job-parts", jobId],
+    queryKey: ["job-parts", jobId, profile?.tenant_id],
     queryFn: async () => {
       if (!jobId) return [];
       const { data, error } = await supabase
         .from("parts")
         .select("id, part_number")
         .eq("job_id", jobId)
+        .eq("tenant_id", profile!.tenant_id)
         .order("part_number");
       if (error) throw error;
       return data;
     },
-    enabled: !!jobId,
+    enabled: !!jobId && !!profile?.tenant_id,
   });
 
   // Fetch materials from config
   const { data: materials } = useQuery({
-    queryKey: ["materials-active"],
+    queryKey: ["materials-active", profile?.tenant_id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("materials")
         .select("id, name")
+        .eq("tenant_id", profile!.tenant_id)
         .eq("active", true)
         .order("name");
       if (error) throw error;
       return data;
     },
+    enabled: !!profile?.tenant_id,
   });
 
   // Fetch cells for operations
   const { data: cells } = useQuery({
-    queryKey: ["cells-active"],
+    queryKey: ["cells-active", profile?.tenant_id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cells")
         .select("id, name")
+        .eq("tenant_id", profile!.tenant_id)
         .eq("active", true)
         .order("sequence");
       if (error) throw error;
       return data;
     },
+    enabled: !!profile?.tenant_id,
   });
 
   const createPartMutation = useMutation({

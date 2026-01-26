@@ -1015,6 +1015,21 @@ export async function startBatchTimeTracking(
   operatorId: string,
   tenantId: string
 ) {
+  // Guard: check batch status - only allow starting draft or ready batches
+  const { data: batch, error: batchError } = await supabase
+    .from("operation_batches")
+    .select("status")
+    .eq("id", batchId)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (batchError) throw batchError;
+  if (!batch) throw new Error("batches.errors.notFound");
+  if (batch.status === "in_progress") throw new Error("batches.errors.alreadyActive");
+  if (batch.status === "completed" || batch.status === "cancelled") {
+    throw new Error("batches.errors.alreadyClosed");
+  }
+
   // Check operator isn't already timing something
   const { data: activeEntries } = await supabase
     .from("time_entries")
@@ -1024,18 +1039,19 @@ export async function startBatchTimeTracking(
     .is("end_time", null);
 
   if (activeEntries && activeEntries.length > 0) {
-    throw new Error("Please stop current time tracking before starting batch timing");
+    throw new Error("batches.errors.operatorBusy");
   }
 
   // Get all operations in the batch
   const { data: batchOps, error: batchOpsError } = await supabase
     .from("batch_operations")
     .select("operation_id")
-    .eq("batch_id", batchId);
+    .eq("batch_id", batchId)
+    .eq("tenant_id", tenantId);
 
   if (batchOpsError) throw batchOpsError;
   if (!batchOps || batchOps.length === 0) {
-    throw new Error("No operations in this batch");
+    throw new Error("batches.errors.noOperations");
   }
 
   const now = new Date().toISOString();
@@ -1047,7 +1063,7 @@ export async function startBatchTimeTracking(
     tenant_id: tenantId,
     start_time: now,
     time_type: "run",
-    notes: `Batch: ${batchId}`,
+    notes: `batch:${batchId}`,
   }));
 
   const { error: insertError } = await supabase
@@ -1056,7 +1072,7 @@ export async function startBatchTimeTracking(
 
   if (insertError) throw insertError;
 
-  // Update batch status to in_progress
+  // Update batch status to in_progress (conditional: only if draft/ready)
   await supabase
     .from("operation_batches")
     .update({
@@ -1065,7 +1081,8 @@ export async function startBatchTimeTracking(
       started_by: operatorId,
     })
     .eq("id", batchId)
-    .eq("tenant_id", tenantId);
+    .eq("tenant_id", tenantId)
+    .in("status", ["draft", "ready"]);
 
   // Update all operations to in_progress
   const opIds = batchOps.map((bo) => bo.operation_id);
@@ -1073,6 +1090,7 @@ export async function startBatchTimeTracking(
     .from("operations")
     .update({ status: "in_progress" })
     .in("id", opIds)
+    .eq("tenant_id", tenantId)
     .eq("status", "not_started");
 }
 
@@ -1083,17 +1101,19 @@ export async function startBatchTimeTracking(
  */
 export async function stopBatchTimeTracking(
   batchId: string,
-  operatorId: string
+  operatorId: string,
+  tenantId: string
 ) {
   // Get all operations in the batch
   const { data: batchOps, error: batchOpsError } = await supabase
     .from("batch_operations")
     .select("operation_id")
-    .eq("batch_id", batchId);
+    .eq("batch_id", batchId)
+    .eq("tenant_id", tenantId);
 
   if (batchOpsError) throw batchOpsError;
   if (!batchOps || batchOps.length === 0) {
-    throw new Error("No operations in this batch");
+    throw new Error("batches.errors.noOperations");
   }
 
   const opIds = batchOps.map((bo) => bo.operation_id);
@@ -1104,12 +1124,13 @@ export async function stopBatchTimeTracking(
     .from("time_entries")
     .select("id, operation_id, start_time")
     .eq("operator_id", operatorId)
+    .eq("tenant_id", tenantId)
     .in("operation_id", opIds)
     .is("end_time", null);
 
   if (entriesError) throw entriesError;
   if (!activeEntries || activeEntries.length === 0) {
-    throw new Error("No active time entries found for this batch");
+    throw new Error("batches.errors.noActiveEntries");
   }
 
   // Use the earliest start time as the batch start
@@ -1138,7 +1159,8 @@ export async function stopBatchTimeTracking(
         duration: allocated,
         is_paused: false,
       })
-      .eq("id", entry.id);
+      .eq("id", entry.id)
+      .eq("tenant_id", tenantId);
   }
 
   // Update each operation's actual_time with the distributed time
@@ -1148,13 +1170,15 @@ export async function stopBatchTimeTracking(
       .from("operations")
       .select("actual_time")
       .eq("id", opId)
+      .eq("tenant_id", tenantId)
       .single();
 
     if (operation) {
       await supabase
         .from("operations")
         .update({ actual_time: (operation.actual_time || 0) + allocated })
-        .eq("id", opId);
+        .eq("id", opId)
+        .eq("tenant_id", tenantId);
     }
   }
 
@@ -1167,7 +1191,8 @@ export async function stopBatchTimeTracking(
       completed_at: endTime.toISOString(),
       completed_by: operatorId,
     })
-    .eq("id", batchId);
+    .eq("id", batchId)
+    .eq("tenant_id", tenantId);
 
   return {
     totalMinutes,

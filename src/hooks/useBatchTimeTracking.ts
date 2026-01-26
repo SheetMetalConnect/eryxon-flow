@@ -6,6 +6,20 @@ import { useTranslation } from "react-i18next";
 import { startBatchTimeTracking, stopBatchTimeTracking } from "@/lib/database";
 
 /**
+ * Resolve an error message that may be an i18n key.
+ * If the message looks like a translation key (contains dots), try to translate it.
+ * Falls back to the raw message if no translation is found.
+ */
+function resolveErrorMessage(t: (key: string) => string, message: string): string {
+  if (message.includes(".")) {
+    const translated = t(message);
+    // t() returns the key itself if not found
+    if (translated !== message) return translated;
+  }
+  return message;
+}
+
+/**
  * Check if a batch currently has active time entries (is being timed)
  */
 export function useBatchActiveTimer(batchId: string | undefined) {
@@ -14,13 +28,14 @@ export function useBatchActiveTimer(batchId: string | undefined) {
   return useQuery({
     queryKey: ["batch-active-timer", batchId],
     queryFn: async () => {
-      if (!batchId) return null;
+      if (!batchId || !profile?.tenant_id) return null;
 
       // Get operation IDs in this batch
       const { data: batchOps } = await supabase
         .from("batch_operations")
         .select("operation_id")
-        .eq("batch_id", batchId);
+        .eq("batch_id", batchId)
+        .eq("tenant_id", profile.tenant_id);
 
       if (!batchOps || batchOps.length === 0) return null;
 
@@ -76,7 +91,7 @@ export function useStartBatchTimer() {
     onError: (error: any) => {
       toast({
         title: t("common.error"),
-        description: error.message,
+        description: resolveErrorMessage(t, error.message),
         variant: "destructive",
       });
     },
@@ -97,7 +112,7 @@ export function useStopBatchTimer() {
       if (!profile?.tenant_id || !profile?.id) {
         throw new Error(t("common.noTenantId"));
       }
-      return await stopBatchTimeTracking(batchId, profile.id);
+      return await stopBatchTimeTracking(batchId, profile.id, profile.tenant_id);
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["batch-active-timer"] });
@@ -116,7 +131,7 @@ export function useStopBatchTimer() {
     onError: (error: any) => {
       toast({
         title: t("common.error"),
-        description: error.message,
+        description: resolveErrorMessage(t, error.message),
         variant: "destructive",
       });
     },
