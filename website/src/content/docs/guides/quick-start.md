@@ -55,7 +55,7 @@ cp .env.example .env
 ```
 
 Edit `.env`:
-```env
+```bash
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
 ```
