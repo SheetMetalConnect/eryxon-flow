@@ -1,5 +1,7 @@
 export const ROUTES = {
   AUTH: "/auth",
+  FORGOT_PASSWORD: "/forgot-password",
+  RESET_PASSWORD: "/reset-password",
   ONBOARDING: "/onboarding",
   ROOT: "/",
 
