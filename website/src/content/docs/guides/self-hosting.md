@@ -32,13 +32,13 @@ chmod +x scripts/automate_self_hosting.sh
 ```
 
 The script will automatically:
-1. Install required dependencies
-2. Configure Supabase CLI
-3. Link your project
-4. Apply database migrations
-5. Create storage buckets
-6. Deploy Edge Functions
-7. Install npm packages
+1. Install required dependencies (Node.js packages)
+2. Install Supabase CLI globally (if not present)
+3. Fix configuration issues
+4. Link your Supabase project
+5. Apply database migrations (schema + seed)
+6. Deploy all Edge Functions
+7. Run verification checks
 
 ### Start Development Server
 
@@ -351,9 +351,15 @@ Checks:
 - ✅ Environment variables
 - ✅ Supabase connectivity
 - ✅ Database tables
-- ✅ Storage buckets
+- ✅ Storage buckets (see note below)
 - ✅ Dependencies
 - ✅ Production build
+
+> **Note:** Storage bucket check may report FAIL (HTTP 400) even when buckets exist. This is expected because the buckets are private (`public: false`) and the verification script uses the Anon Key, which cannot list private buckets. Verify manually via SQL:
+> ```sql
+> SELECT * FROM storage.buckets;
+> ```
+> Required buckets: `parts-images`, `issues`, `parts-cad`, `batch-images`
 
 ---
 
@@ -411,6 +417,10 @@ docker compose up -d
    - Must be redeployed after code changes
    - Check logs if APIs return 502: `supabase functions logs`
    - Verify secrets are set: `supabase secrets list`
+   - If experiencing 15s+ timeouts or cold start issues:
+     - Functions use consolidated handlers to avoid deep module resolution
+     - Import map (`import_map.json`) enables `@shared/*` path aliases
+     - Circular dependencies in `_shared/` folder can cause startup delays
 
 5. **SQL Syntax**
    - ✅ Use `IF EXISTS ... THEN ... END IF` blocks

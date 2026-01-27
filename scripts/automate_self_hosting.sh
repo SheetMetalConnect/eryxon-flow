@@ -34,7 +34,16 @@ ok ".env file exists."
 # 2. Install Dependencies
 header "Installing Dependencies"
 npm install --save-dev dotenv pg pg-connection-string
-ok "Dependencies installed."
+ok "Node dependencies installed."
+
+# Check if Supabase CLI is installed
+if ! command -v supabase &> /dev/null; then
+    echo "Installing Supabase CLI globally..."
+    npm install -g supabase
+    ok "Supabase CLI installed."
+else
+    ok "Supabase CLI already installed."
+fi
 
 # 3. Fix Configuration
 header "Fixing Supabase Config"
@@ -53,14 +62,14 @@ PROJECT_ID=$(grep VITE_SUPABASE_PROJECT_ID .env | cut -d '"' -f 2)
 if [ -z "$PROJECT_ID" ]; then
     fail "Could not find VITE_SUPABASE_PROJECT_ID in .env"
 fi
-./node_modules/.bin/supabase link --project-ref "$PROJECT_ID"
+supabase link --project-ref "$PROJECT_ID"
 ok "Project linked."
 
 # 5. Push Migrations
 header "Pushing Database Migrations"
 # Repair history if needed (optional check, but safe to ignore error)
-./node_modules/.bin/supabase migration repair --status reverted 20260127213556 2>/dev/null || true
-./node_modules/.bin/supabase db push --yes
+supabase migration repair --status reverted 20260127213556 2>/dev/null || true
+supabase db push --yes
 ok "Migrations applied."
 
 # 6. Apply Seed Data (as Migration)
@@ -82,7 +91,7 @@ for dir in "$FUNCTIONS_DIR"/*/; do
         continue
     fi
     echo "Deploying $FUNC_NAME..."
-    if ./node_modules/.bin/supabase functions deploy "$FUNC_NAME" --no-verify-jwt 2>/dev/null; then
+    if supabase functions deploy "$FUNC_NAME" --no-verify-jwt 2>/dev/null; then
         ((DEPLOYED++))
     else
         echo "  Warning: Failed to deploy $FUNC_NAME (may require manual review)"
