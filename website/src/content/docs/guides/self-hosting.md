@@ -1,367 +1,590 @@
 ---
 title: "Self-Hosting Guide"
-description: "Step-by-step guide to hosting Eryxon Flow in your own environment."
+description: "Production-ready self-hosting guide for Eryxon Flow MES"
 ---
 
-
-
-This guide covers how to self-host Eryxon Flow on your own infrastructure. Self-hosting is free, unlimited, and you manage everything yourself.
+This guide covers deploying Eryxon Flow on your own infrastructure. Self-hosting is free, unlimited, and you maintain full control.
 
 > [!IMPORTANT]
-> **License & Usage:** Eryxon Flow is licensed under **BSL 1.1**. This means you are free to self-host, modify, and use it for your own business operations. However, you are **not** permitted to commercially resell the software or provide it as a competing SaaS offering. The license converts to Apache 2.0 after 4 years.
+> **License:** Eryxon Flow is licensed under **BSL 1.1**. You are free to self-host, modify, and use it for your business. You **cannot** resell it as a competing SaaS offering. License converts to Apache 2.0 after 4 years.
 
 ---
 
-## Deployment Options
+## Quick Start (Recommended)
 
-| Option | Complexity | Best For |
-|--------|------------|----------|
-| **Supabase Cloud + Docker** | Easy | Most users, quick setup |
-| **Self-Hosted Supabase** | Advanced | Full control, air-gapped environments |
-
----
-
-## Option 1: Supabase Cloud (Recommended)
-
-The fastest way to get started. Supabase offers a free tier that works for evaluation and small deployments.
+The fastest way to get production-ready deployment using our automated script.
 
 ### Prerequisites
 
-- Node.js 18+ and npm (or Docker)
-- A Supabase account ([supabase.com](https://supabase.com))
+- Node.js 20+
 - Git
+- A Supabase project ([supabase.com](https://supabase.com) - free tier available)
+- Your Supabase credentials
 
-### Step 1: Create Supabase Project
+### One-Command Setup
 
-1. Go to [supabase.com](https://supabase.com) and sign in
-2. Click **New Project**
-3. Choose your organization
-4. Enter project details:
-   - **Name:** `eryxon-flow` (or your preference)
-   - **Database Password:** Generate a strong password (save it!)
-   - **Region:** Choose closest to your users
-5. Click **Create new project**
-6. Wait for project to be ready (~2 minutes)
-
-### Step 2: Get Your Credentials
-
-From your Supabase project dashboard:
-
-1. Go to **Settings** -> **API**
-2. Copy these values:
-   - **Project URL** (e.g., `https://abcdefgh.supabase.co`)
-   - **anon/public key** (starts with `eyJ...`)
-   - **service_role key** (for edge functions - keep this secret!)
-
-### Step 3: Apply Database Schema
-
-Using Supabase CLI:
 ```bash
-
-npm install -g supabase
-
-
+# Clone the repository
 git clone https://github.com/SheetMetalConnect/eryxon-flow.git
 cd eryxon-flow
 
+# Set your database password
+export SUPABASE_DB_PASSWORD='your-database-password'
 
-supabase link --project-ref your-project-id
-
-
-supabase db push
+# Run automated setup
+chmod +x scripts/automate_self_hosting.sh
+./scripts/automate_self_hosting.sh
 ```
 
-Or manually:
-1. Go to **SQL Editor** in your Supabase dashboard
-2. Run the migrations from `supabase/migrations/` in order
+The script will automatically:
+1. Install required dependencies
+2. Configure Supabase CLI
+3. Link your project
+4. Apply database migrations
+5. Create storage buckets
+6. Deploy Edge Functions
+7. Install npm packages
 
-### Step 4: Deploy Edge Functions
+### Start Development Server
 
 ```bash
-cd eryxon-flow
-
-
-supabase login
-
-
-supabase functions deploy
-```
-
-### Step 5: Configure Storage Buckets
-
-Verify in **Storage** that these buckets exist:
-- `parts-images` - For CAD files and part photos
-- `issues` - For issue attachments
-
-If missing, create them with:
-- **Public:** No
-- **File size limit:** 50MB
-- **Allowed MIME types:** `image/*`, `application/pdf`, `model/step`
-
-### Step 6: Run the Application
-
-**Option A: Docker (Recommended)**
-```bash
-
-cat > .env << EOF
-VITE_SUPABASE_URL=https://your-project-id.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
-EOF
-
-
-docker-compose up -d
-```
-
-**Option B: Development mode**
-```bash
-cp .env.example .env
-
-
-npm install
 npm run dev
-
+# Open http://localhost:5173
 ```
 
-**Option C: Production build**
-```bash
-npm run build
+### First User Setup
 
-```
-
-### Step 7: Create Your First User
-
-1. Open the application in your browser
+1. Navigate to the application
 2. Click **Sign Up**
-3. Enter your email and password
-4. Check your email for verification link
-5. First user automatically becomes admin
+3. Enter email and password
+4. **First user automatically becomes admin** with a new tenant
 
 ---
 
-## Option 2: Fully Self-Hosted (Air-Gapped)
+## Manual Setup (Step by Step)
 
-For organizations requiring complete control over all infrastructure.
+Use this for custom configurations or troubleshooting.
 
-### Prerequisites
+### 1. Create Supabase Project
 
-- Docker and Docker Compose
-- 4GB+ RAM
-- 20GB+ disk space
-- Domain name (for production)
-- SSL certificates
+1. Go to [supabase.com](https://supabase.com) → **New Project**
+2. Save these credentials from **Settings** → **API**:
+   - **Project URL**: `https://yourproject.supabase.co`
+   - **Project ID**: The subdomain (e.g., `yourproject`)
+   - **Anon key**: Public key for frontend
+   - **Service role key**: Secret key for backend
+   - **Database password**: From project creation
 
-### Architecture
-
-```
-+----------------------------------------------------------+
-|                      Your Server                          |
-+----------------------------------------------------------+
-|  +---------+  +---------+  +----------+  +----------+    |
-|  | Postgres|  | GoTrue  |  |PostgREST |  | Realtime |    |
-|  |   DB    |  |  Auth   |  |   API    |  |   WS     |    |
-|  +---------+  +---------+  +----------+  +----------+    |
-|  +---------+  +---------+  +----------+                  |
-|  | Storage |  |  Kong   |  |  Studio  |                  |
-|  |   API   |  | Gateway |  | (Admin)  |                  |
-|  +---------+  +---------+  +----------+                  |
-+----------------------------------------------------------+
-|  +------------------------------------------------------+|
-|  |              Eryxon Flow (Frontend)                  ||
-|  +------------------------------------------------------+|
-+----------------------------------------------------------+
-```
-
-### Step 1: Clone Supabase Docker Setup
+### 2. Configure Environment
 
 ```bash
-git clone --depth 1 https://github.com/supabase/supabase
-cd supabase/docker
+# Copy example file
 cp .env.example .env
 ```
-
-### Step 2: Configure Environment
 
 Edit `.env`:
 ```bash
+VITE_SUPABASE_URL="https://yourproject.supabase.co"
+VITE_SUPABASE_PUBLISHABLE_KEY="your-anon-key"
+VITE_SUPABASE_PROJECT_ID="yourproject"
 
-POSTGRES_PASSWORD=your-secure-password
-JWT_SECRET=your-jwt-secret-min-32-chars
-
-
-ANON_KEY=your-anon-key
-SERVICE_ROLE_KEY=your-service-role-key
-
-
-SITE_URL=https://your-domain.com
-API_EXTERNAL_URL=https://your-domain.com
-
-
-SMTP_HOST=smtp.your-provider.com
-SMTP_PORT=587
-SMTP_USER=your-smtp-user
-SMTP_PASS=your-smtp-password
-SMTP_SENDER_NAME=Eryxon Flow
+# Optional: For database scripts
+SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+SUPABASE_DB_PASSWORD="your-database-password"
 ```
 
-### Step 3: Start Supabase Services
+### 3. Link Supabase Project
 
 ```bash
-docker compose up -d
-docker compose ps  # Verify all services running
+# Install Supabase CLI
+npm install -g supabase
+
+# Login and link
+supabase login
+supabase link --project-ref yourproject
 ```
 
-### Step 4: Apply Schema and Deploy App
+### 4. Apply Database Schema
 
 ```bash
+# Push all migrations
+supabase db push
 
-
-
-cd /path/to/eryxon-flow
-cat > .env << EOF
-VITE_SUPABASE_URL=https://your-domain.com
-VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
-EOF
-
-docker build -t eryxon-flow .
-docker run -p 3000:80 --env-file .env eryxon-flow
+# Verify migrations applied
+supabase migration list
 ```
 
-### Production Checklist
+### 5. Run Seed SQL
 
-- [ ] SSL/TLS configured (Let's Encrypt)
-- [ ] PostgreSQL backups scheduled
-- [ ] Monitoring set up
-- [ ] Email delivery configured
-- [ ] Security review completed
+Creates storage buckets, RLS policies, and cron jobs:
+
+```bash
+# Option A: Using Supabase CLI
+supabase db execute --file supabase/seed.sql
+
+# Option B: Via Dashboard
+# Go to SQL Editor, paste seed.sql content, and execute
+```
+
+### 6. Deploy Edge Functions
+
+```bash
+# Deploy all functions
+supabase functions deploy
+
+# Set required secrets
+supabase secrets set \
+  SUPABASE_URL="https://yourproject.supabase.co" \
+  SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+```
+
+### 7. Install and Run
+
+```bash
+# Install dependencies
+npm ci
+
+# Development mode
+npm run dev
+
+# Production build
+npm run build
+npm run preview
+```
 
 ---
 
-## Docker Quick Reference
+## Docker Deployment (Production)
 
-### docker-compose.yml
+### Using Pre-built Image
+
+```bash
+# Pull latest image
+docker pull ghcr.io/sheetmetalconnect/eryxon-flow:latest
+
+# Run container
+docker run -d \
+  -p 80:80 \
+  --name eryxon-flow \
+  --restart unless-stopped \
+  ghcr.io/sheetmetalconnect/eryxon-flow:latest
+```
+
+> **Note:** Pre-built images have demo Supabase credentials. For production, build your own image.
+
+### Build Custom Image
+
+```bash
+docker build \
+  --build-arg VITE_SUPABASE_URL="https://yourproject.supabase.co" \
+  --build-arg VITE_SUPABASE_PUBLISHABLE_KEY="your-anon-key" \
+  --build-arg VITE_SUPABASE_PROJECT_ID="yourproject" \
+  -t eryxon-flow .
+
+docker run -d -p 80:80 --name eryxon-flow eryxon-flow
+```
+
+### Docker Compose (Recommended)
+
+Create `docker-compose.yml`:
 
 ```yaml
 version: '3.8'
 
 services:
   eryxon-flow:
-    build: .
-    ports:
-      - "8080:80"
-    environment:
-      - VITE_SUPABASE_URL=${SUPABASE_URL}
-      - VITE_SUPABASE_PUBLISHABLE_KEY=${SUPABASE_ANON_KEY}
+    image: ghcr.io/sheetmetalconnect/eryxon-flow:latest
+    # Or use your custom build:
+    # build:
+    #   context: .
+    #   args:
+    #     VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+    #     VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
+    #     VITE_SUPABASE_PROJECT_ID: ${VITE_SUPABASE_PROJECT_ID}
+    container_name: eryxon-flow
     restart: unless-stopped
+    ports:
+      - "80:80"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 ```
 
-### Quick Start
-
+Start:
 ```bash
-
-export SUPABASE_URL=https://your-project.supabase.co
-export SUPABASE_ANON_KEY=your-anon-key
-
-
-docker-compose up -d
-
-
+docker compose up -d
 ```
 
----
+### Docker Compose with SSL (Production)
 
-## MCP Server Setup
+Includes Caddy reverse proxy for automatic HTTPS:
 
-Enable AI assistants to interact with your manufacturing data.
+```yaml
+version: '3.8'
 
-### Installation
+services:
+  app:
+    image: ghcr.io/sheetmetalconnect/eryxon-flow:latest
+    container_name: eryxon-flow
+    restart: unless-stopped
+    expose:
+      - "80"
 
-```bash
-cd mcp-server
-npm install
-npm run build
+  caddy:
+    image: caddy:alpine
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  caddy_data:
+  caddy_config:
 ```
 
-### Configuration
+Create `Caddyfile`:
 
-Create `mcp-server/.env`:
-```bash
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_KEY=your-service-role-key
 ```
+your-domain.com {
+    reverse_proxy app:80
 
-### Claude Desktop Integration
-
-Add to `~/.claude/config.json`:
-```json
-{
-  "mcpServers": {
-    "eryxon-flow": {
-      "command": "node",
-      "args": ["/path/to/eryxon-flow/mcp-server/dist/index.js"],
-      "env": {
-        "SUPABASE_URL": "https://your-project.supabase.co",
-        "SUPABASE_SERVICE_KEY": "your-service-role-key"
-      }
+    header {
+        X-Frame-Options "DENY"
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
     }
-  }
 }
 ```
 
----
-
-## Troubleshooting
-
-### Common Issues
-
-**"Invalid API key" error**
-- Verify `VITE_SUPABASE_PUBLISHABLE_KEY` is correct
-- Use the `anon` key, not the `service_role` key
-
-**"Permission denied" on queries**
-- Check RLS policies are applied
-- Verify user is authenticated
-- Check tenant_id matches
-
-**Edge functions not working**
-- Verify deployment: `supabase functions list`
-- Check logs: `supabase functions logs function-name`
-
-**Storage uploads failing**
-- Verify buckets exist with correct names
-- Check bucket policies allow authenticated uploads
-
----
-
-## Updates
-
+Deploy:
 ```bash
-
-git pull origin main
-
-
-npm install
-npm run build
-
-
-docker-compose build
-docker-compose up -d
+docker compose -f docker-compose.prod.yml up -d
 ```
 
-For database schema updates:
+---
+
+## Cloudflare Pages Deployment
+
+Best for edge deployment with global CDN.
+
+1. **Connect Repository**
+   - Go to [Cloudflare Pages](https://dash.cloudflare.com/)
+   - **Create a project** → Connect your Git repository
+
+2. **Configure Build**
+   - **Build command**: `npm run build`
+   - **Output directory**: `dist`
+
+3. **Set Environment Variables**
+   ```
+   VITE_SUPABASE_URL=https://yourproject.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
+   VITE_SUPABASE_PROJECT_ID=yourproject
+   ```
+
+4. **Deploy**
+   - Cloudflare handles SSL, CDN, and global distribution automatically
+
+---
+
+## Optional Enhancements
+
+### Email Invitations (Resend)
+
+Enable automated email invitations:
+
+```bash
+supabase secrets set \
+  RESEND_API_KEY="re_your_api_key" \
+  APP_URL="https://your-domain.com" \
+  EMAIL_FROM="Eryxon <noreply@your-domain.com>"
+```
+
+### Cloudflare Turnstile (CAPTCHA)
+
+Add bot protection to auth forms:
+
+1. Create widget at [Cloudflare Turnstile](https://dash.cloudflare.com/?to=/:account/turnstile)
+2. Add to `.env`:
+   ```bash
+   VITE_TURNSTILE_SITE_KEY="your-site-key"
+   ```
+3. Configure secret key in Supabase **Authentication** → **Captcha Protection**
+
+### Redis Caching (Upstash)
+
+Improve Edge Function performance:
+
+```bash
+supabase secrets set \
+  UPSTASH_REDIS_REST_URL="https://your-redis.upstash.io" \
+  UPSTASH_REDIS_REST_TOKEN="your-token"
+```
+
+### CAD Processing Service
+
+For server-side CAD file processing (optional):
+
+```bash
+VITE_CAD_SERVICE_URL="https://your-cad-service.example.com"
+VITE_CAD_SERVICE_API_KEY="your-api-key"
+```
+
+If not configured, browser-based processing is used.
+
+---
+
+## Verification
+
+Run the verification script to check your setup:
+
+```bash
+bash scripts/verify-setup.sh
+```
+
+Checks:
+- ✅ Environment variables
+- ✅ Supabase connectivity
+- ✅ Database tables
+- ✅ Storage buckets
+- ✅ Dependencies
+- ✅ Production build
+
+---
+
+## Updating Your Deployment
+
+### Pull Latest Changes
+
+```bash
+git pull origin main
+npm ci
+```
+
+### Update Database
+
 ```bash
 supabase db push
+supabase functions deploy
+```
+
+### Rebuild Application
+
+```bash
+npm run build
+
+# For Docker:
+docker compose build --no-cache
+docker compose up -d
 ```
 
 ---
 
-## Support
+## ⚠️ Special Attention Points
 
-Self-hosting is community-supported only:
-- **GitHub Issues:** Bug reports
-- **Documentation:** `/docs` folder
+### Critical Configuration Items
 
-Need help with complex deployments? Check out [vanenkhuizen.com](https://www.vanenkhuizen.com/) for consulting services.
+1. **Environment Variables**
+   - Always use `VITE_SUPABASE_PROJECT_ID` (not hardcoded)
+   - Template literals need **backticks** not quotes: `` `https://${var}` ``
+   - Validate all environment variables before using them
+
+2. **Database Migrations**
+   - Always run migrations in order
+   - The `20260127235000_enhance_batch_management.sql` migration adds:
+     - `blocked` status to batch_status enum
+     - `parent_batch_id` column for batch nesting
+     - `nesting_image_url` and `layout_image_url` columns
+   - Never skip migrations
+
+3. **Storage Buckets**
+   - Private buckets require **signed URLs** (not public URLs)
+   - We use `createSignedUrl()` with 1-year expiry for batch images
+   - Buckets needed: `parts-images`, `issues`, `parts-cad`, `batch-images`
+
+4. **Edge Functions**
+   - Must be redeployed after code changes
+   - Check logs if APIs return 502: `supabase functions logs`
+   - Verify secrets are set: `supabase secrets list`
+
+5. **SQL Syntax**
+   - ✅ Use `IF EXISTS ... THEN ... END IF` blocks
+   - ❌ Don't use `PERFORM ... WHERE EXISTS` (invalid syntax)
+
+6. **Authentication Trigger**
+   - The `on_auth_user_created` trigger must exist on `auth.users`
+   - Without it, new signups won't get profiles/tenants
+   - Migration `20260127232000_add_missing_auth_trigger.sql` ensures this
+
+### Security Checklist
+
+- [ ] `.env` file is in `.gitignore` (never commit)
+- [ ] Service role key is kept secret
+- [ ] Database password is strong (16+ characters)
+- [ ] RLS policies are applied (via migrations)
+- [ ] Storage bucket policies restrict access properly
+- [ ] HTTPS is enabled in production (use Caddy or Cloudflare)
+
+### Performance Tips
+
+- Enable Redis caching for high-traffic deployments
+- Use Cloudflare Pages for global edge distribution
+- Configure proper database indexes (included in migrations)
+- Monitor Edge Function execution times in Supabase dashboard
 
 ---
 
-*Licensed under BSL 1.1 - See [LICENSE](../LICENSE) for terms*
+## Known Issues & Q&A
+
+### Q: Why do I get "template literal not interpolating" errors?
+
+**A:** You're using single quotes instead of backticks for template literals.
+
+❌ **Wrong:**
+```javascript
+const url = 'https://${projectId}.supabase.co';
+```
+
+✅ **Correct:**
+```javascript
+const url = `https://${projectId}.supabase.co`;
+```
+
+**Fixed in:** DataExport.tsx, DataImport.tsx, ApiDocs.tsx (as of Jan 2026)
+
+---
+
+### Q: Batch images return 403 Forbidden
+
+**A:** Private buckets can't use `getPublicUrl()`. We now use signed URLs.
+
+**Fixed in:** BatchDetail.tsx, BatchCreate.tsx with `createSignedUrl(filePath, 31536000)`
+
+---
+
+### Q: Operation batch pre-selection doesn't work
+
+**A:** Was using row indices instead of operation UUIDs.
+
+**Fixed in:** Operations.tsx - now maps `rowSelection` keys to actual `operation.id` values
+
+---
+
+### Q: New users sign up but can't log in
+
+**A:** The `on_auth_user_created` trigger is missing.
+
+**Solution:**
+```sql
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
+```
+
+**Fixed in:** Migration `20260127232000_add_missing_auth_trigger.sql`
+
+---
+
+### Q: Edge Functions return 502 errors
+
+**A:** Import map might not be deployed.
+
+**Solution:**
+```bash
+supabase functions deploy
+# Redeploy all functions to pick up import_map.json
+```
+
+---
+
+### Q: Migrations fail with "type already exists"
+
+**A:** Database has partial state from previous attempts.
+
+**Solution (DESTRUCTIVE - only for fresh setups):**
+```sql
+DROP SCHEMA IF EXISTS public CASCADE;
+CREATE SCHEMA public;
+GRANT USAGE ON SCHEMA public TO postgres, anon, authenticated, service_role;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO service_role;
+```
+
+Then re-run: `supabase db push`
+
+---
+
+### Q: How do I check if Edge Functions are working?
+
+**A:** Test the health endpoint:
+```bash
+curl https://yourproject.supabase.co/functions/v1/api-jobs \
+  -H "Authorization: Bearer YOUR_ANON_KEY"
+```
+
+Should return JSON (not 404/502).
+
+---
+
+### Q: Cron jobs aren't running
+
+**A:** Verify `pg_cron` extension is enabled:
+```sql
+SELECT * FROM pg_extension WHERE extname = 'pg_cron';
+```
+
+If empty, run seed.sql to schedule jobs.
+
+---
+
+### Q: What languages are supported?
+
+**A:** English, Dutch (nl), and German (de).
+
+All batch management features have 100% translation coverage as of Jan 2026.
+
+---
+
+### Q: Can I use this for commercial purposes?
+
+**A:** Yes - you can self-host and use it for your business operations. However, you **cannot** resell it as a competing SaaS product (BSL 1.1 restriction).
+
+---
+
+### Q: How do I report bugs?
+
+**A:** Open an issue on [GitHub](https://github.com/SheetMetalConnect/eryxon-flow/issues) with:
+- Your deployment method (Docker, Cloudflare Pages, etc.)
+- Supabase version (cloud or self-hosted)
+- Error messages and logs
+- Steps to reproduce
+
+---
+
+### Q: Where can I get professional help with deployment?
+
+**A:** For complex enterprise deployments, consulting services are available at [vanenkhuizen.com](https://www.vanenkhuizen.com/).
+
+---
+
+## Support & Community
+
+- **GitHub Issues**: [Bug reports & feature requests](https://github.com/SheetMetalConnect/eryxon-flow/issues)
+- **Documentation**: See `/docs` folder in repository
+- **Security Issues**: Report privately to security@sheetmetalconnect.com
+
+---
+
+*Last Updated: January 2026*
+*Licensed under BSL 1.1 - See [LICENSE](../LICENSE) for full terms*
