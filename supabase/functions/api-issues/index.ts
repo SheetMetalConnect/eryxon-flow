@@ -1,6 +1,6 @@
-import { serveApi } from "../_shared/handler.ts";
-import { createCrudHandler } from "../_shared/crud-builder.ts";
-import { IssueValidator } from "../_shared/validation/validators/IssueValidator.ts";
+import { serveApi } from "@shared/handler.ts";
+import { createCrudHandler } from "@shared/crud-builder.ts";
+import { IssueValidator } from "@shared/validation/validators/IssueValidator.ts";
 
 // Configure CRUD handler for issues
 export default serveApi(

@@ -3,12 +3,7 @@ title: "Self-Hosting Guide"
 description: "Production-ready self-hosting guide for Eryxon Flow MES"
 ---
 
-This guide covers deploying Eryxon Flow on your own infrastructure. Self-hosting is free, unlimited, and you maintain full control.
-
-> [!IMPORTANT]
-> **License:** Eryxon Flow is licensed under **BSL 1.1**. You are free to self-host, modify, and use it for your business. You **cannot** resell it as a competing SaaS offering. License converts to Apache 2.0 after 4 years.
-
----
+Deploy Eryxon Flow on your own infrastructure with full control.
 
 ## Quick Start (Recommended)
 
@@ -444,75 +439,40 @@ docker compose up -d
 
 ---
 
-## Known Issues & Q&A
+## Common Issues
 
-### Q: Why do I get "template literal not interpolating" errors?
+### Template Literal Errors
 
-**A:** You're using single quotes instead of backticks for template literals.
+If URLs aren't interpolating correctly, you're using single quotes instead of backticks:
 
-❌ **Wrong:**
 ```javascript
+// Wrong
 const url = 'https://${projectId}.supabase.co';
-```
 
-✅ **Correct:**
-```javascript
+// Correct
 const url = `https://${projectId}.supabase.co`;
 ```
 
-**Fixed in:** DataExport.tsx, DataImport.tsx, ApiDocs.tsx (as of Jan 2026)
+### Storage 403 Forbidden Errors
 
----
+Private buckets require signed URLs, not public URLs. Use `createSignedUrl()` with appropriate expiry.
 
-### Q: Batch images return 403 Forbidden
+### New Users Can't Log In
 
-**A:** Private buckets can't use `getPublicUrl()`. We now use signed URLs.
+The `on_auth_user_created` trigger must exist on `auth.users`. Without it, new signups won't get profiles/tenants. Migration `20260127232000_add_missing_auth_trigger.sql` ensures this.
 
-**Fixed in:** BatchDetail.tsx, BatchCreate.tsx with `createSignedUrl(filePath, 31536000)`
+### Edge Functions Return 502
 
----
+Import map might not be deployed. Redeploy all functions:
 
-### Q: Operation batch pre-selection doesn't work
-
-**A:** Was using row indices instead of operation UUIDs.
-
-**Fixed in:** Operations.tsx - now maps `rowSelection` keys to actual `operation.id` values
-
----
-
-### Q: New users sign up but can't log in
-
-**A:** The `on_auth_user_created` trigger is missing.
-
-**Solution:**
-```sql
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW
-  EXECUTE FUNCTION public.handle_new_user();
-```
-
-**Fixed in:** Migration `20260127232000_add_missing_auth_trigger.sql`
-
----
-
-### Q: Edge Functions return 502 errors
-
-**A:** Import map might not be deployed.
-
-**Solution:**
 ```bash
 supabase functions deploy
-# Redeploy all functions to pick up import_map.json
 ```
 
----
+### Migrations Fail with "Type Already Exists"
 
-### Q: Migrations fail with "type already exists"
+Database has partial state from previous attempts. For fresh setups only (DESTRUCTIVE):
 
-**A:** Database has partial state from previous attempts.
-
-**Solution (DESTRUCTIVE - only for fresh setups):**
 ```sql
 DROP SCHEMA IF EXISTS public CASCADE;
 CREATE SCHEMA public;
@@ -523,11 +483,10 @@ GRANT ALL ON SCHEMA public TO service_role;
 
 Then re-run: `supabase db push`
 
----
+### Verify Edge Functions Work
 
-### Q: How do I check if Edge Functions are working?
+Test the health endpoint:
 
-**A:** Test the health endpoint:
 ```bash
 curl https://yourproject.supabase.co/functions/v1/api-jobs \
   -H "Authorization: Bearer YOUR_ANON_KEY"
@@ -535,56 +494,13 @@ curl https://yourproject.supabase.co/functions/v1/api-jobs \
 
 Should return JSON (not 404/502).
 
----
+### Cron Jobs Not Running
 
-### Q: Cron jobs aren't running
+Verify `pg_cron` extension is enabled:
 
-**A:** Verify `pg_cron` extension is enabled:
 ```sql
 SELECT * FROM pg_extension WHERE extname = 'pg_cron';
 ```
 
-If empty, run seed.sql to schedule jobs.
+If empty, run `seed.sql` to schedule jobs.
 
----
-
-### Q: What languages are supported?
-
-**A:** English, Dutch (nl), and German (de).
-
-All batch management features have 100% translation coverage as of Jan 2026.
-
----
-
-### Q: Can I use this for commercial purposes?
-
-**A:** Yes - you can self-host and use it for your business operations. However, you **cannot** resell it as a competing SaaS product (BSL 1.1 restriction).
-
----
-
-### Q: How do I report bugs?
-
-**A:** Open an issue on [GitHub](https://github.com/SheetMetalConnect/eryxon-flow/issues) with:
-- Your deployment method (Docker, Cloudflare Pages, etc.)
-- Supabase version (cloud or self-hosted)
-- Error messages and logs
-- Steps to reproduce
-
----
-
-### Q: Where can I get professional help with deployment?
-
-**A:** For complex enterprise deployments, consulting services are available at [vanenkhuizen.com](https://www.vanenkhuizen.com/).
-
----
-
-## Support & Community
-
-- **GitHub Issues**: [Bug reports & feature requests](https://github.com/SheetMetalConnect/eryxon-flow/issues)
-- **Documentation**: See `/docs` folder in repository
-- **Security Issues**: Report privately to security@sheetmetalconnect.com
-
----
-
-*Last Updated: January 2026*
-*Licensed under BSL 1.1 - See [LICENSE](../LICENSE) for full terms*

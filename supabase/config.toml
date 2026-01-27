@@ -38,3 +38,88 @@ file_size_limit = "50MiB"
 # Edge functions use API-key auth (not JWT), so gateway JWT check is disabled.
 # Each function validates requests internally via the shared CRUD builder.
 # verify_jwt = false
+
+[functions.api-assignments]
+import_map = "./functions/import_map.json"
+
+[functions.api-cells]
+import_map = "./functions/import_map.json"
+
+[functions.api-erp-sync]
+import_map = "./functions/import_map.json"
+
+[functions.api-export]
+import_map = "./functions/import_map.json"
+
+[functions.api-issues]
+import_map = "./functions/import_map.json"
+
+[functions.api-job-lifecycle]
+import_map = "./functions/import_map.json"
+
+[functions.api-jobs]
+import_map = "./functions/import_map.json"
+
+[functions.api-key-generate]
+import_map = "./functions/import_map.json"
+
+[functions.api-materials]
+import_map = "./functions/import_map.json"
+
+[functions.api-operation-lifecycle]
+import_map = "./functions/import_map.json"
+
+[functions.api-operation-quantities]
+import_map = "./functions/import_map.json"
+
+[functions.api-operations]
+import_map = "./functions/import_map.json"
+
+[functions.api-parts]
+import_map = "./functions/import_map.json"
+
+[functions.api-parts-images]
+import_map = "./functions/import_map.json"
+
+[functions.api-resources]
+import_map = "./functions/import_map.json"
+
+[functions.api-scrap-reasons]
+import_map = "./functions/import_map.json"
+
+[functions.api-substeps]
+import_map = "./functions/import_map.json"
+
+[functions.api-templates]
+import_map = "./functions/import_map.json"
+
+[functions.api-time-entries]
+import_map = "./functions/import_map.json"
+
+[functions.api-upload-url]
+import_map = "./functions/import_map.json"
+
+[functions.api-webhook-logs]
+import_map = "./functions/import_map.json"
+
+[functions.api-webhooks]
+import_map = "./functions/import_map.json"
+
+[functions.monthly-reset-cron]
+import_map = "./functions/import_map.json"
+
+[functions.mqtt-publish]
+import_map = "./functions/import_map.json"
+
+[functions.plan-mode]
+import_map = "./functions/import_map.json"
+
+[functions.send-invitation]
+import_map = "./functions/import_map.json"
+
+[functions.storage-manager]
+import_map = "./functions/import_map.json"
+
+[functions.webhook-dispatch]
+import_map = "./functions/import_map.json"
+

@@ -3,7 +3,7 @@
  * Batch-fetch valid IDs from database for FK validation
  */
 
-import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 /**
  * Fetch valid IDs for a specific table

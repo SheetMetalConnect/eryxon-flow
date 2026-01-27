@@ -1,6 +1,6 @@
-import { serveApi } from "../_shared/handler.ts";
-import type { HandlerContext } from "../_shared/handler.ts";
-import { createSuccessResponse, BadRequestError } from "../_shared/validation/errorHandler.ts";
+import { serveApi } from "@shared/handler.ts";
+import type { HandlerContext } from "@shared/handler.ts";
+import { createSuccessResponse, BadRequestError } from "@shared/validation/errorHandler.ts";
 
 export default serveApi(async (req: Request, ctx: HandlerContext) => {
   const { supabase, tenantId } = ctx;

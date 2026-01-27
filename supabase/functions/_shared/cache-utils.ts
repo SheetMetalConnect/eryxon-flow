@@ -6,7 +6,7 @@
  */
 
 import { getCache, getCachedJson, setCachedJson, CacheKeys, CacheTTL } from './cache.ts';
-import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Cache wrapper that handles the get-or-fetch pattern

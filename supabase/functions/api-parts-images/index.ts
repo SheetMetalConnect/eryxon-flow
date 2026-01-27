@@ -1,5 +1,5 @@
-import { serveApi } from "../_shared/handler.ts";
-import type { HandlerContext } from "../_shared/handler.ts";
+import { serveApi } from "@shared/handler.ts";
+import type { HandlerContext } from "@shared/handler.ts";
 import {
   createSuccessResponse,
   handleMethodNotAllowed,
@@ -7,7 +7,7 @@ import {
   ValidationException,
   UnauthorizedError,
   BadRequestError,
-} from "../_shared/validation/errorHandler.ts";
+} from "@shared/validation/errorHandler.ts";
 
 // Allowed image MIME types
 const ALLOWED_IMAGE_TYPES = [

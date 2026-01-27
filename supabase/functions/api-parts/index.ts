@@ -1,8 +1,8 @@
-import { serveApi } from "../_shared/handler.ts";
-import { createCrudHandler } from "../_shared/crud-builder.ts";
-import { canCreateParts } from "../_shared/plan-limits.ts";
-import { PartValidator } from "../_shared/validation/validators/PartValidator.ts";
-import type { HandlerContext } from "../_shared/handler.ts";
+import { serveApi } from "@shared/handler.ts";
+import { createCrudHandler } from "@shared/crud-builder.ts";
+import { canCreateParts } from "@shared/plan-limits.ts";
+import { PartValidator } from "@shared/validation/validators/PartValidator.ts";
+import type { HandlerContext } from "@shared/handler.ts";
 import {
   PaymentRequiredError,
   ConflictError,
@@ -10,12 +10,12 @@ import {
   ValidationException,
   BadRequestError,
   createSuccessResponse,
-} from "../_shared/validation/errorHandler.ts";
+} from "@shared/validation/errorHandler.ts";
 import {
   collectPartForeignKeys,
   fetchValidIds,
-} from "../_shared/validation/fkValidator.ts";
-import type { ValidationContext } from "../_shared/validation/types.ts";
+} from "@shared/validation/fkValidator.ts";
+import type { ValidationContext } from "@shared/validation/types.ts";
 
 // Custom POST handler with plan limits and validation
 async function handleCreateWithLimits(req: Request, ctx: HandlerContext): Promise<Response> {

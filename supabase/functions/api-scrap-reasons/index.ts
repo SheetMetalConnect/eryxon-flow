@@ -1,11 +1,11 @@
-import { serveApi } from "../_shared/handler.ts";
-import { createCrudHandler } from "../_shared/crud-builder.ts";
-import type { HandlerContext } from "../_shared/handler.ts";
+import { serveApi } from "@shared/handler.ts";
+import { createCrudHandler } from "@shared/crud-builder.ts";
+import type { HandlerContext } from "@shared/handler.ts";
 import {
   createSuccessResponse,
   BadRequestError,
   ConflictError,
-} from "../_shared/validation/errorHandler.ts";
+} from "@shared/validation/errorHandler.ts";
 
 // Custom delete handler that checks for foreign key references
 async function handleCustomDelete(
