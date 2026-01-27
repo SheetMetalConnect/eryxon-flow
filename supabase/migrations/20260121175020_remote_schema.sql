@@ -8837,10 +8837,6 @@ GRANT USAGE ON SCHEMA "public" TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."accept_invitation"("p_token" "text", "p_user_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."accept_invitation"("p_token" "text", "p_user_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."accept_invitation"("p_token" "text", "p_user_id" "uuid") TO "service_role";
-
 
 
 GRANT ALL ON FUNCTION "public"."acknowledge_demo_mode"("p_tenant_id" "uuid") TO "anon";
