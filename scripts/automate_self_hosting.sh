@@ -70,7 +70,28 @@ header "Applying Seed Data & Policies"
 # so 'db push' above has already applied them.
 ok "Seed data and default tenant applied via migration."
 
-# 7. Verification
+# 7. Deploy Edge Functions
+header "Deploying Edge Functions"
+FUNCTIONS_DIR="supabase/functions"
+DEPLOYED=0
+SKIPPED=0
+for dir in "$FUNCTIONS_DIR"/*/; do
+    FUNC_NAME=$(basename "$dir")
+    # Skip hidden dirs and _shared
+    if [[ "$FUNC_NAME" == .* ]] || [[ "$FUNC_NAME" == "_shared" ]]; then
+        continue
+    fi
+    echo "Deploying $FUNC_NAME..."
+    if ./node_modules/.bin/supabase functions deploy "$FUNC_NAME" --no-verify-jwt 2>/dev/null; then
+        ((DEPLOYED++))
+    else
+        echo "  Warning: Failed to deploy $FUNC_NAME (may require manual review)"
+        ((SKIPPED++))
+    fi
+done
+ok "Deployed $DEPLOYED Edge Functions ($SKIPPED skipped)."
+
+# 8. Verification
 header "Verifying Setup"
 bash scripts/verify-setup.sh
 if [ $? -eq 0 ]; then
@@ -80,3 +101,4 @@ else
     echo -e "\n${RED}Verification failed. Check the logs above.${NC}"
     exit 1
 fi
+
