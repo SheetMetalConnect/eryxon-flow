@@ -102,8 +102,7 @@ ok "Deployed $DEPLOYED Edge Functions ($SKIPPED skipped)."
 
 # 8. Verification
 header "Verifying Setup"
-bash scripts/verify-setup.sh
-if [ $? -eq 0 ]; then
+if bash scripts/verify-setup.sh; then
     echo -e "\n${GREEN}SUCCESS! Your self-hosted environment is ready.${NC}"
     echo "Start the server with: npm run dev"
 else
