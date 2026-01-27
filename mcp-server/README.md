@@ -4,11 +4,10 @@
 
 ## Features
 
-- 🔄 **Dual Mode**: Auto-detects direct Supabase or REST API connection
-- 🛠️ **39 Tools**: Jobs, parts, operations, quality, shipping, and more
-- 🔒 **Tenant-Safe**: Works with multi-tenant SaaS via API keys
-- ⚡ **Production-Ready**: Deploy to Railway, Fly.io, or run locally
-- 🎯 **Clean**: No AI wrapper bloat - Claude analyzes data natively
+- Auto-detects direct Supabase or REST API connection
+- 39 tools for jobs, parts, operations, quality, shipping
+- Multi-tenant safe via API keys
+- Deploy to Railway, Fly.io, or run locally
 
 ## Quick Start
 
