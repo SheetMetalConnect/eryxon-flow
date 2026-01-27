@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import {
@@ -12,16 +12,56 @@ import {
   Timer,
   Package,
   Divide,
+  AlertTriangle,
+  ExternalLink,
+  Image as ImageIcon,
+  Edit,
+  Plus,
+  Upload,
+  MoreVertical,
+  Trash2,
+  FileText,
+  ShoppingCart,
+  FileCode
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useBatch, useBatchOperations, useUpdateBatchStatus, type BatchStatus } from "@/hooks/useBatches";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  useBatch,
+  useBatchOperations,
+  useUpdateBatchStatus,
+  useRaiseMaterialRequirement,
+  useSubBatches,
+  useBatchRequirements,
+  useCreateBatchRequirement,
+  useUpdateBatch,
+  type BatchStatus
+} from "@/hooks/useBatches";
 import {
   useBatchActiveTimer,
   useStartBatchTimer,
   useStopBatchTimer,
 } from "@/hooks/useBatchTimeTracking";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 function ElapsedTimer({ startTime }: { startTime: string }) {
   const [elapsed, setElapsed] = useState("");
@@ -56,19 +96,32 @@ const STATUS_COLORS: Record<BatchStatus, string> = {
   in_progress: "bg-orange-500/10 text-orange-500 border-orange-500/20",
   completed: "bg-green-500/10 text-green-500 border-green-500/20",
   cancelled: "bg-red-500/10 text-red-500 border-red-500/20",
+  blocked: "bg-destructive/10 text-destructive border-destructive/20",
 };
 
 export default function BatchDetail() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const { data: batch, isLoading: batchLoading } = useBatch(id);
   const { data: batchOperations, isLoading: opsLoading } = useBatchOperations(id);
+  const { data: subBatches, isLoading: subBatchesLoading } = useSubBatches(id);
+  const { data: requirements, isLoading: reqLoading } = useBatchRequirements(id);
   const { data: activeTimer } = useBatchActiveTimer(id);
+
   const startTimer = useStartBatchTimer();
   const stopTimer = useStopBatchTimer();
   const updateStatus = useUpdateBatchStatus();
+  const updateBatch = useUpdateBatch();
+  const createRequirement = useCreateBatchRequirement();
+
+  // Local state for modals/inputs
+  const [isRequirementDialogOpen, setIsRequirementDialogOpen] = useState(false);
+  const [newReqMaterial, setNewReqMaterial] = useState("");
+  const [newReqQuantity, setNewReqQuantity] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   if (batchLoading || opsLoading) {
     return (
@@ -103,24 +156,93 @@ export default function BatchDetail() {
     batch.status === "draft"
       ? "batches.status.draft"
       : batch.status === "ready"
-      ? "batches.status.ready"
-      : batch.status === "in_progress"
-      ? "batches.status.inProgress"
-      : batch.status === "completed"
-      ? "batches.status.completed"
-      : "batches.status.cancelled";
+        ? "batches.status.ready"
+        : batch.status === "in_progress"
+          ? "batches.status.inProgress"
+          : batch.status === "completed"
+            ? "batches.status.completed"
+            : batch.status === "cancelled"
+              ? "batches.status.cancelled"
+              : "batches.status.blocked";
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'nesting' | 'layout') => {
+    try {
+      setUploadingImage(true);
+      if (!event.target.files || event.target.files.length === 0) {
+        return;
+      }
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${batch.id}/${type}-${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('batch-images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('batch-images')
+        .getPublicUrl(filePath);
+
+      await updateBatch.mutateAsync({
+        id: batch.id,
+        updates: {
+          [type === 'nesting' ? 'nesting_image_url' : 'layout_image_url']: publicUrl
+        }
+      });
+
+      toast({
+        title: t("Image uploaded successfully"),
+      });
+    } catch (error: any) {
+      toast({
+        title: t("Error uploading image"),
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleAddRequirement = async () => {
+    if (!newReqMaterial || !newReqQuantity) return;
+
+    await createRequirement.mutateAsync({
+      batchId: batch.id,
+      materialName: newReqMaterial,
+      quantity: parseFloat(newReqQuantity)
+    });
+
+    setNewReqMaterial("");
+    setNewReqQuantity("");
+    setIsRequirementDialogOpen(false);
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       {/* Header */}
       <div>
-        <Button
-          variant="outline"
-          onClick={() => navigate("/admin/batches")}
-          className="mb-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" /> {t("batches.backToBatches")}
-        </Button>
+        <div className="flex items-center justify-between mb-4">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/admin/batches")}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" /> {t("batches.backToBatches")}
+          </Button>
+          <div className="flex gap-2">
+            {/* "Missing Button" Fix: Add Edit Button */}
+            <Button variant="outline" onClick={() => navigate(`/admin/batches/${batch.id}/edit`)}> {/* Assuming edit route exists or will exist, or just placeholder */}
+              <Edit className="mr-2 h-4 w-4" />
+              {t("Edit Batch")}
+            </Button>
+          </div>
+        </div>
+
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3">
@@ -138,6 +260,204 @@ export default function BatchDetail() {
           </Badge>
         </div>
       </div>
+
+      {/* Batch Information & Images Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        {/* Helper visualizer / Images */}
+        <Card className="glass-card">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <ImageIcon className="h-5 w-5" />
+              {t("Visuals")}
+            </CardTitle>
+            <div className="flex gap-1">
+              <Label htmlFor="image-upload" className="cursor-pointer">
+                <Button variant="ghost" size="sm" asChild disabled={uploadingImage}>
+                  <span>
+                    <Upload className="h-4 w-4 mr-1" />
+                    {uploadingImage ? "..." : t("Add")}
+                  </span>
+                </Button>
+              </Label>
+              <Input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleImageUpload(e, 'nesting')}
+              />
+            </div>
+          </CardHeader>
+          <CardContent>
+            {batch.nesting_image_url ? (
+              <div className="relative group">
+                <img
+                  src={batch.nesting_image_url}
+                  alt="Nesting Layout"
+                  className="rounded-md w-full h-auto max-h-[300px] object-contain border"
+                />
+                <a href={batch.nesting_image_url} target="_blank" rel="noopener noreferrer" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button size="icon" variant="secondary">
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </a>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center p-8 border rounded-md border-dashed text-muted-foreground gap-2">
+                <ImageIcon className="h-8 w-8 opacity-50" />
+                <p className="text-sm">{t("No nesting image available")}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Requirements & Info */}
+        <div className="space-y-6">
+          <Card className="glass-card">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <ShoppingCart className="h-4 w-4" />
+                {t("Material Requirements")}
+              </CardTitle>
+              <Dialog open={isRequirementDialogOpen} onOpenChange={setIsRequirementDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>{t("Add Material Requirement")}</DialogTitle>
+                    <DialogDescription>{t("Specify material needed for this batch.")}</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-2">
+                    <div className="space-y-2">
+                      <Label>{t("Material Name")}</Label>
+                      <Input value={newReqMaterial} onChange={(e) => setNewReqMaterial(e.target.value)} placeholder="e.g. Steel Sheet 5mm" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t("Quantity")}</Label>
+                      <Input type="number" value={newReqQuantity} onChange={(e) => setNewReqQuantity(e.target.value)} placeholder="0" />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsRequirementDialogOpen(false)}>{t("Cancel")}</Button>
+                    <Button onClick={handleAddRequirement}>{t("Add")}</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </CardHeader>
+            <CardContent>
+              {requirements && requirements.length > 0 ? (
+                <div className="space-y-2">
+                  {requirements.map((req) => (
+                    <div key={req.id} className="flex justify-between items-center text-sm p-2 bg-muted/30 rounded border">
+                      <span>{req.material_name}</span>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">x{req.quantity}</Badge>
+                        <Badge variant={req.status === 'received' ? 'default' : req.status === 'ordered' ? 'secondary' : 'outline'}>
+                          {req.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">{t("No requirements raised")}</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="glass-card">
+            <CardContent className="pt-4 grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  {t("batches.type")}
+                </p>
+                <p className="font-medium mt-1">
+                  {t(`batches.types.${batch.batch_type === "laser_nesting"
+                    ? "laserNesting"
+                    : batch.batch_type === "tube_batch"
+                      ? "tubeBatch"
+                      : batch.batch_type === "saw_batch"
+                        ? "sawBatch"
+                        : batch.batch_type === "finishing_batch"
+                          ? "finishingBatch"
+                          : "general"
+                    }`)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  {t("batches.timeTracking.totalTime")}
+                </p>
+                <p className="font-medium mt-1">
+                  {batch.actual_time
+                    ? `${batch.actual_time} ${t("operations.min")}`
+                    : "-"}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Metadata Display */}
+      {batch.nesting_metadata && Object.keys(batch.nesting_metadata).length > 0 && (
+        <Card className="glass-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <FileCode className="h-4 w-4" />
+              {t("Additional Metadata")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-muted/30 p-3 rounded-md border font-mono text-sm overflow-x-auto">
+              <pre>{JSON.stringify(batch.nesting_metadata, null, 2)}</pre>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+
+      {/* Sub-Batches / Nesting (Master -> Sheets) */}
+      {((subBatches && subBatches.length > 0) || batch.batch_type === 'laser_nesting') && (
+        <Card className="glass-card">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Layers className="h-5 w-5" />
+              {t("Nested Batches (Sheets)")}
+            </CardTitle>
+            <Button variant="outline" size="sm" onClick={() => navigate(`/admin/batches/new?parentId=${batch.id}`)}>
+              <Plus className="mr-2 h-4 w-4" />
+              {t("Add Sheet")}
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {subBatches && subBatches.length > 0 ? (
+              <div className="space-y-2">
+                {subBatches.map(sub => (
+                  <div key={sub.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => navigate(`/admin/batches/${sub.id}`)}>
+                    <div className="flex items-center gap-3">
+                      <Layers className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{sub.batch_number}</span>
+                      {sub.material && <span className="text-sm text-muted-foreground">({sub.material})</span>}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">{sub.operations_count} ops</Badge>
+                      <Badge className={STATUS_COLORS[sub.status]}>{sub.status}</Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-muted-foreground py-4 text-sm">{t("No nested batches yet.")}</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
 
       {/* Batch Time Tracking Card */}
       <Card className="glass-card border-primary/20">
@@ -168,10 +488,10 @@ export default function BatchDetail() {
                   {t("batches.timeTracking.totalTime")} ·{" "}
                   {operationsCount > 0
                     ? `${Math.round(
-                        batch.actual_time / operationsCount
-                      )} ${t("operations.min")} ${t(
-                        "batches.timeTracking.perOperation"
-                      ).toLowerCase()}`
+                      batch.actual_time / operationsCount
+                    )} ${t("operations.min")} ${t(
+                      "batches.timeTracking.perOperation"
+                    ).toLowerCase()}`
                     : ""}
                 </p>
               </div>
@@ -228,67 +548,18 @@ export default function BatchDetail() {
         </CardContent>
       </Card>
 
-      {/* Batch Info */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="glass-card">
-          <CardContent className="pt-4">
-            <p className="text-sm text-muted-foreground">
-              {t("batches.type")}
-            </p>
-            <p className="font-medium mt-1">
-              {t(`batches.types.${
-                batch.batch_type === "laser_nesting"
-                  ? "laserNesting"
-                  : batch.batch_type === "tube_batch"
-                  ? "tubeBatch"
-                  : batch.batch_type === "saw_batch"
-                  ? "sawBatch"
-                  : batch.batch_type === "finishing_batch"
-                  ? "finishingBatch"
-                  : "general"
-              }`)}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="glass-card">
-          <CardContent className="pt-4">
-            <p className="text-sm text-muted-foreground">
-              {t("batches.operationsCount")}
-            </p>
-            <p className="font-medium mt-1">{operationsCount}</p>
-          </CardContent>
-        </Card>
-        <Card className="glass-card">
-          <CardContent className="pt-4">
-            <p className="text-sm text-muted-foreground">
-              {t("batches.createdAt")}
-            </p>
-            <p className="font-medium mt-1">
-              {format(new Date(batch.created_at), "dd/MM/yyyy HH:mm")}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="glass-card">
-          <CardContent className="pt-4">
-            <p className="text-sm text-muted-foreground">
-              {t("batches.timeTracking.totalTime")}
-            </p>
-            <p className="font-medium mt-1">
-              {batch.actual_time
-                ? `${batch.actual_time} ${t("operations.min")}`
-                : "-"}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Operations in Batch */}
       <Card className="glass-card">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
             {t("batches.selectOperations")} ({operationsCount})
           </CardTitle>
+          <Button variant="ghost" size="sm">
+            <Plus className="mr-2 h-4 w-4" />
+            {t("Add Operation")}
+          </Button>
         </CardHeader>
         <CardContent>
           {batchOperations && batchOperations.length > 0 ? (
@@ -351,6 +622,35 @@ export default function BatchDetail() {
       {/* Status Actions */}
       {batch.status !== "completed" && batch.status !== "cancelled" && (
         <div className="flex justify-end gap-3">
+          {batch.status === "blocked" ? (
+            <Button
+              variant="outline"
+              onClick={() =>
+                updateStatus.mutate({
+                  batchId: batch.id,
+                  status: "ready",
+                })
+              }
+              disabled={updateStatus.isPending}
+            >
+              {t("Unblock")}
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              className="text-destructive hover:bg-destructive/10"
+              onClick={() =>
+                updateStatus.mutate({
+                  batchId: batch.id,
+                  status: "blocked",
+                })
+              }
+              disabled={updateStatus.isPending || batch.status === "in_progress"}
+            >
+              {t("Block")}
+            </Button>
+          )}
+
           {(batch.status === "draft" || batch.status === "ready") && (
             <Button
               variant="outline"

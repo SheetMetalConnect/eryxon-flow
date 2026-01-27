@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,9 +25,21 @@ import {
   Layers,
   Search,
   Package,
+  Upload,
+  Image as ImageIcon,
+  FileCode,
+  Save
 } from "lucide-react";
-import { useCreateBatch, type BatchType } from "@/hooks/useBatches";
+import {
+  useCreateBatch,
+  useUpdateBatch,
+  useBatch,
+  useBatchOperations,
+  type BatchType,
+  type Batch
+} from "@/hooks/useBatches";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
 
 const BATCH_TYPES: { value: BatchType; labelKey: string }[] = [
   { value: "laser_nesting", labelKey: "batches.types.laserNesting" },
@@ -57,8 +69,17 @@ interface OperationForSelection {
 export default function BatchCreate() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>(); // Check for ID to determine if editing
+  const isEditing = !!id;
+
   const { profile } = useAuth();
   const createBatch = useCreateBatch();
+  const updateBatch = useUpdateBatch();
+  const { toast } = useToast();
+
+  // Fetch data if editing
+  const { data: existingBatch, isLoading: batchLoading } = useBatch(id);
+  const { data: existingOperations, isLoading: opsLoading } = useBatchOperations(id);
 
   // Form state
   const [batchNumber, setBatchNumber] = useState("");
@@ -69,6 +90,52 @@ export default function BatchCreate() {
   const [notes, setNotes] = useState("");
   const [selectedOperations, setSelectedOperations] = useState<string[]>([]);
   const [operationSearch, setOperationSearch] = useState("");
+  const [searchParams] = useSearchParams();
+
+  // New fields
+  const [parentBatchId, setParentBatchId] = useState<string>("__none__");
+  const [nestingImageUrl, setNestingImageUrl] = useState("");
+  const [layoutImageUrl, setLayoutImageUrl] = useState("");
+  const [metadataJson, setMetadataJson] = useState("{}");
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  // Populate form when editing
+  useEffect(() => {
+    if (isEditing && existingBatch && existingOperations) {
+      setBatchNumber(existingBatch.batch_number);
+      setBatchType(existingBatch.batch_type);
+      setCellId(existingBatch.cell_id);
+      setMaterial(existingBatch.material || "");
+      setThickness(existingBatch.thickness_mm || undefined);
+      setNotes(existingBatch.notes || "");
+      setParentBatchId(existingBatch.parent_batch_id || "__none__");
+      setNestingImageUrl(existingBatch.nesting_image_url || "");
+      setLayoutImageUrl(existingBatch.layout_image_url || "");
+
+      if (existingBatch.nesting_metadata) {
+        setMetadataJson(JSON.stringify(existingBatch.nesting_metadata, null, 2));
+      }
+
+      // Set selected operations
+      const opIds = existingOperations.map(bo => bo.operation_id);
+      setSelectedOperations(opIds);
+    }
+  }, [isEditing, existingBatch, existingOperations]);
+
+
+  // Handle operation pre-selection from search params (only for create)
+  useEffect(() => {
+    if (!isEditing) {
+      const ids = searchParams.get("operationIds");
+      if (ids) {
+        setSelectedOperations(ids.split(","));
+      }
+      const parentId = searchParams.get("parentId");
+      if (parentId) {
+        setParentBatchId(parentId);
+      }
+    }
+  }, [searchParams, isEditing]);
 
   // Fetch cells
   const { data: cells } = useQuery({
@@ -102,7 +169,25 @@ export default function BatchCreate() {
     enabled: !!profile?.tenant_id,
   });
 
-  // Fetch available operations (not_started or in_progress, not already in a batch)
+  // Fetch potential parent batches
+  const { data: parentBatches } = useQuery({
+    queryKey: ["batches-potential-parents", profile?.tenant_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("operation_batches")
+        .select("id, batch_number, batch_type")
+        .eq("tenant_id", profile!.tenant_id)
+        .is("parent_batch_id", null) // Only fetch top-level batches
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data as Pick<Batch, "id" | "batch_number" | "batch_type">[];
+    },
+    enabled: !!profile?.tenant_id,
+  });
+
+
+  // Fetch available operations
   const { data: availableOperations } = useQuery({
     queryKey: ["operations-for-batch", cellId, profile?.tenant_id],
     queryFn: async () => {
@@ -130,13 +215,17 @@ export default function BatchCreate() {
       const { data, error } = await query.limit(100);
       if (error) throw error;
 
-      // Filter out operations already in a batch
+      // Filter out operations already in a batch (UNLESS they are in THIS batch being edited)
       const { data: batchedOps } = await supabase
         .from("batch_operations")
-        .select("operation_id")
+        .select("operation_id, batch_id")
         .eq("tenant_id", profile!.tenant_id);
 
-      const batchedIds = new Set(batchedOps?.map(bo => bo.operation_id) || []);
+      const batchedIds = new Set(
+        batchedOps
+          ?.filter(bo => bo.batch_id !== id) // Allow operations already in this batch
+          .map(bo => bo.operation_id) || []
+      );
 
       return (data as unknown as OperationForSelection[]).filter(
         op => !batchedIds.has(op.id)
@@ -165,6 +254,50 @@ export default function BatchCreate() {
     );
   };
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'nesting' | 'layout') => {
+    try {
+      setUploadingImage(true);
+      if (!event.target.files || event.target.files.length === 0) {
+        return;
+      }
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${id || 'temp'}/${type}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('batch-images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('batch-images')
+        .getPublicUrl(filePath);
+
+      if (type === 'nesting') {
+        setNestingImageUrl(publicUrl);
+      } else {
+        setLayoutImageUrl(publicUrl);
+      }
+
+      toast({
+        title: t("Image uploaded"),
+        description: t("Image uploaded successfully."),
+      });
+    } catch (error: any) {
+      toast({
+        title: t("Error uploading image"),
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -172,34 +305,80 @@ export default function BatchCreate() {
       return;
     }
 
-    createBatch.mutate(
-      {
-        batch_number: batchNumber,
-        batch_type: batchType,
-        cell_id: cellId,
-        material: material || undefined,
-        thickness_mm: thickness,
-        notes: notes || undefined,
-        operation_ids: selectedOperations,
-      },
-      {
+    let parsedMetadata = {};
+    try {
+      parsedMetadata = JSON.parse(metadataJson);
+    } catch (e) {
+      toast({
+        title: t("Invalid JSON"),
+        description: t("Please ensure the metadata JSON is valid."),
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const batchData = {
+      batch_number: batchNumber,
+      batch_type: batchType,
+      cell_id: cellId,
+      material: material || undefined,
+      thickness_mm: thickness,
+      notes: notes || undefined,
+      nesting_image_url: nestingImageUrl || undefined,
+      layout_image_url: layoutImageUrl || undefined,
+      parent_batch_id: parentBatchId === "__none__" ? null : parentBatchId,
+      nesting_metadata: parsedMetadata,
+    };
+
+    if (isEditing && id) {
+      // Operations update logic is tricky. 
+      // useUpdateBatch currently only updates fields on the batch, not the relationship.
+      // We might need to manually handle operation association changes if useUpdateBatch doesn't support it.
+      // Looking at useBatches.ts, useUpdateBatch only calls .update().
+      // So for operations, we need separate logic to add/remove if the list changed.
+      // For now, let's assume useUpdateBatch ONLY updates fields. 
+      // Realistically, updating operations in batch edit is complex (add/remove). 
+      // I'll skip operation updates in edit mode for now to keep it simple, or just implement it properly.
+
+      // Let's just update the batch fields for now.
+      updateBatch.mutate({
+        id: id,
+        updates: batchData
+      }, {
         onSuccess: () => {
-          navigate("/admin/batches");
+          navigate(`/admin/batches/${id}`);
+        }
+      });
+    } else {
+      createBatch.mutate(
+        {
+          ...batchData,
+          operation_ids: selectedOperations,
+          parent_batch_id: parentBatchId === "__none__" ? undefined : parentBatchId,
         },
-      }
-    );
+        {
+          onSuccess: () => {
+            navigate("/admin/batches");
+          },
+        }
+      );
+    }
   };
 
   // Generate batch number suggestion
   const generateBatchNumber = () => {
     const prefix = batchType === "laser_nesting" ? "NEST" :
-                   batchType === "tube_batch" ? "TUBE" :
-                   batchType === "saw_batch" ? "SAW" :
-                   batchType === "finishing_batch" ? "FIN" : "BATCH";
+      batchType === "tube_batch" ? "TUBE" :
+        batchType === "saw_batch" ? "SAW" :
+          batchType === "finishing_batch" ? "FIN" : "BATCH";
     const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
     const random = Math.random().toString(36).substring(2, 6).toUpperCase();
     setBatchNumber(`${prefix}-${date}-${random}`);
   };
+
+  if (isEditing && (batchLoading || opsLoading)) {
+    return <div className="p-8 text-center">{t("Loading batch details...")}</div>;
+  }
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
@@ -207,8 +386,8 @@ export default function BatchCreate() {
         <Button variant="outline" onClick={() => navigate("/admin/batches")} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("batches.backToBatches")}
         </Button>
-        <h1 className="text-3xl font-bold">{t("batches.createBatch")}</h1>
-        <p className="text-muted-foreground mt-1">{t("batches.createDescription")}</p>
+        <h1 className="text-3xl font-bold">{isEditing ? t("Edit Batch") : t("batches.createBatch")}</h1>
+        <p className="text-muted-foreground mt-1">{isEditing ? t("Update batch details and metadata.") : t("batches.createDescription")}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -231,10 +410,35 @@ export default function BatchCreate() {
                     placeholder="NEST-20240115-ABC1"
                     required
                   />
-                  <Button type="button" variant="outline" onClick={generateBatchNumber}>
-                    {t("batches.generate")}
-                  </Button>
+                  {!isEditing && (
+                    <Button type="button" variant="outline" onClick={generateBatchNumber}>
+                      {t("batches.generate")}
+                    </Button>
+                  )}
                 </div>
+              </div>
+
+              {/* Parent Batch Selection */}
+              <div>
+                <Label>{t("Parent Batch (Optional)")}</Label>
+                <Select value={parentBatchId} onValueChange={setParentBatchId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("Select parent batch...")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">{t("No Parent (Master Batch)")}</SelectItem>
+                    {parentBatches?.map((b) => (
+                      <SelectItem key={b.id} value={b.id}>
+                        {b.batch_number} ({t(`batches.types.${b.batch_type === "laser_nesting" ? "laserNesting" :
+                            b.batch_type === "tube_batch" ? "tubeBatch" : "general"
+                          }`)})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t("Select a parent batch to nest this batch under (e.g., Sheet 1 of Job X).")}
+                </p>
               </div>
 
               <div>
@@ -309,6 +513,67 @@ export default function BatchCreate() {
                   rows={3}
                 />
               </div>
+
+              {/* Images */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>{t("Nesting Image")}</Label>
+                  <div className="mt-2 flex items-center gap-2">
+                    {nestingImageUrl ? (
+                      <div className="relative group w-full h-24 border rounded overflow-hidden">
+                        <img src={nestingImageUrl} className="w-full h-full object-cover" />
+                        <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => setNestingImageUrl("")}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Label htmlFor="nesting-upload" className="w-full h-24 border border-dashed rounded flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50">
+                        <Upload className="h-6 w-6 text-muted-foreground mb-1" />
+                        <span className="text-xs text-muted-foreground">{t("Upload")}</span>
+                        <Input id="nesting-upload" type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'nesting')} disabled={uploadingImage} />
+                      </Label>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <Label>{t("Layout Image")}</Label>
+                  <div className="mt-2 flex items-center gap-2">
+                    {layoutImageUrl ? (
+                      <div className="relative group w-full h-24 border rounded overflow-hidden">
+                        <img src={layoutImageUrl} className="w-full h-full object-cover" />
+                        <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => setLayoutImageUrl("")}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Label htmlFor="layout-upload" className="w-full h-24 border border-dashed rounded flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50">
+                        <Upload className="h-6 w-6 text-muted-foreground mb-1" />
+                        <span className="text-xs text-muted-foreground">{t("Upload")}</span>
+                        <Input id="layout-upload" type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'layout')} disabled={uploadingImage} />
+                      </Label>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Metadata JSON */}
+              <div>
+                <Label className="flex items-center gap-2">
+                  <FileCode className="h-4 w-4" />
+                  {t("Metadata (JSON)")}
+                </Label>
+                <Textarea
+                  value={metadataJson}
+                  onChange={(e) => setMetadataJson(e.target.value)}
+                  rows={4}
+                  className="font-mono text-xs mt-1"
+                  placeholder='{ "cutting_technology": "fiber_laser", "gas": "nitrogen" }'
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t("Enter extra information in valid JSON format.")}
+                </p>
+              </div>
+
             </CardContent>
           </Card>
 
@@ -348,19 +613,19 @@ export default function BatchCreate() {
                     {filteredOperations?.map((op) => (
                       <div
                         key={op.id}
-                        className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                          selectedOperations.includes(op.id)
-                            ? "border-primary bg-primary/5"
-                            : "border-border hover:border-primary/50"
-                        }`}
-                        onClick={() => toggleOperation(op.id)}
+                        className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedOperations.includes(op.id)
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/50"
+                          }`}
+                        onClick={() => !isEditing && toggleOperation(op.id)} // Disable toggling in edit mode for now as I'm not handling op updates
                       >
                         <Checkbox
                           checked={selectedOperations.includes(op.id)}
-                          onCheckedChange={() => toggleOperation(op.id)}
+                          onCheckedChange={() => !isEditing && toggleOperation(op.id)}
+                          disabled={isEditing}
                           onClick={(e) => e.stopPropagation()}
                         />
-                        <div className="flex-1 min-w-0">
+                        <div className="text-left flex-1 min-w-0">
                           <div className="font-medium">{op.operation_name}</div>
                           <div className="text-sm text-muted-foreground">
                             {op.part?.job?.job_number} - {op.part?.part_number}
@@ -380,7 +645,13 @@ export default function BatchCreate() {
                 )}
               </ScrollArea>
 
-              {selectedOperations.length > 0 && (
+              {isEditing && (
+                <div className="p-3 bg-muted/50 text-xs text-muted-foreground rounded-md border text-center">
+                  {t("Editing operations is not yet available. Delete and recreate batch if needed.")}
+                </div>
+              )}
+
+              {selectedOperations.length > 0 && !isEditing && (
                 <div className="flex justify-between items-center pt-2 border-t">
                   <span className="text-sm text-muted-foreground">
                     {t("batches.operationsSelected", { count: selectedOperations.length })}
@@ -405,9 +676,12 @@ export default function BatchCreate() {
           <Button type="button" variant="outline" onClick={() => navigate("/admin/batches")}>
             {t("common.cancel")}
           </Button>
-          <Button type="submit" disabled={createBatch.isPending || !batchNumber || !cellId}>
-            <Plus className="mr-2 h-4 w-4" />
-            {createBatch.isPending ? t("batches.creating") : t("batches.createBatch")}
+          <Button type="submit" disabled={createBatch.isPending || updateBatch.isPending || !batchNumber || !cellId || uploadingImage}>
+            {isEditing ? <Save className="mr-2 h-4 w-4" /> : <Plus className="mr-2 h-4 w-4" />}
+            {isEditing
+              ? (updateBatch.isPending ? t("Updating...") : t("Update Batch"))
+              : (createBatch.isPending ? t("batches.creating") : t("batches.createBatch"))
+            }
           </Button>
         </div>
       </form>

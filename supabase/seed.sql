@@ -8,7 +8,8 @@ INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 VALUES
   ('parts-images', 'parts-images', false, 10485760, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif']),
   ('issues', 'issues', false, 52428800, ARRAY['image/jpeg', 'image/png', 'image/webp', 'application/pdf']),
-  ('parts-cad', 'parts-cad', false, 104857600, ARRAY['model/step', 'model/stl', 'application/sla', 'application/octet-stream', 'model/3mf'])
+  ('parts-cad', 'parts-cad', false, 104857600, ARRAY['model/step', 'model/stl', 'application/sla', 'application/octet-stream', 'model/3mf']),
+  ('batch-images', 'batch-images', false, 10485760, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 ON CONFLICT (id) DO NOTHING;
 
 -- Storage policies for parts-images bucket
@@ -45,6 +46,19 @@ CREATE POLICY IF NOT EXISTS "Authenticated users can view CAD files"
 CREATE POLICY IF NOT EXISTS "Authenticated users can delete CAD files"
   ON storage.objects FOR DELETE TO authenticated
   USING (bucket_id = 'parts-cad');
+
+-- Storage policies for batch-images bucket
+CREATE POLICY IF NOT EXISTS "Authenticated users can upload batch images"
+  ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'batch-images');
+
+CREATE POLICY IF NOT EXISTS "Authenticated users can view batch images"
+  ON storage.objects FOR SELECT TO authenticated
+  USING (bucket_id = 'batch-images');
+
+CREATE POLICY IF NOT EXISTS "Authenticated users can delete batch images"
+  ON storage.objects FOR DELETE TO authenticated
+  USING (bucket_id = 'batch-images');
 
 -- Schedule cron jobs (requires pg_cron extension)
 -- Entire block is wrapped in exception handling so the seed file

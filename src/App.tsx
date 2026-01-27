@@ -558,6 +558,19 @@ function AppRoutes() {
       />
 
       <Route
+        path="/admin/batches/:id/edit"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <LazyRoute>
+                <BatchCreate />
+              </LazyRoute>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/admin/activity"
         element={
           <ProtectedRoute adminOnly>
