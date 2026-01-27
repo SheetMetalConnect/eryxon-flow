@@ -5,6 +5,9 @@ description: Step-by-step instructions for demonstrating the Eryxon Flow MCP Ser
 
 This guide provides step-by-step instructions for demonstrating the Eryxon Flow MCP Server capabilities.
 
+
+This guide provides step-by-step instructions for demonstrating the Eryxon Flow MCP Server capabilities.
+
 ## Prerequisites
 
 Before the demo, ensure you have:
@@ -31,7 +34,7 @@ Before the demo, ensure you have:
 
 ```bash
 npm start
-
+# or for development with hot reload:
 npm run dev
 ```
 
@@ -297,19 +300,53 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 
 ---
 
+## Demo Tips
+
+### Before the Demo
+
+- [ ] Verify all environment variables are set correctly
+- [ ] Test the server starts without errors
+- [ ] Ensure sample data exists in the database
+- [ ] Have Claude Desktop configured and connected
+- [ ] Test a few basic queries to warm up the connection
+
+### During the Demo
+
+1. **Start Simple** - Begin with basic fetch operations to show the connection works
+2. **Build Complexity** - Progress to more complex scenarios
+3. **Show Real Data** - Always use real database data, never mock data
+4. **Highlight AI Capabilities** - The AI chat tools are often the most impressive
+5. **Demonstrate Batch Operations** - Show efficiency gains from batch tools
+
+### Common Questions & Answers
+
+**Q: How does authentication work?**
+A: The MCP server uses a Supabase service key for database access. In production, you would also implement MCP authentication keys for per-tenant access control.
+
+**Q: Can this integrate with our existing ERP?**
+A: Yes! The ERP sync tools support bidirectional synchronization with any external system. Just map your external IDs and sources.
+
+**Q: What happens if OpenAI is not configured?**
+A: The server still works - only the AI chat tools (`chat_*`) will return errors. All other 50 tools function normally.
+
+**Q: How is data security handled?**
+A: All data access goes through Supabase with Row-Level Security (RLS). The MCP server respects tenant boundaries.
+
+---
+
 ## Troubleshooting
 
 ### Server Won't Start
 
 ```bash
-
+# Check environment variables
 echo $SUPABASE_URL
 echo $SUPABASE_SERVICE_KEY
 
-
+# Rebuild
 npm run build
 
-
+# Check for errors
 npm start 2>&1 | head -20
 ```
 
@@ -323,10 +360,44 @@ npm start 2>&1 | head -20
 ### Database Connection Errors
 
 ```bash
-
+# Test Supabase connection
 node -e "
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 supabase.from('jobs').select('count').single().then(console.log);
 "
 ```
+
+### AI Chat Not Working
+
+1. Verify `OPENAI_API_KEY` is set
+2. Check the API key has sufficient quota
+3. Test with a simple query first
+
+---
+
+## Tool Reference Quick Card
+
+| Category | Tools | Key Use Case |
+|----------|-------|--------------|
+| **Jobs** | fetch_jobs, create_job, update_job, start_job, stop_job, complete_job, resume_job | Full job lifecycle |
+| **Parts** | fetch_parts, update_part | Part tracking |
+| **Operations** | fetch_operations, start_operation, pause_operation, complete_operation, update_operation | Operation control |
+| **Tasks** | fetch_tasks, update_task | Task assignment |
+| **Issues** | fetch_issues, create_ncr, fetch_ncrs, update_issue | Quality tracking |
+| **Substeps** | fetch_substeps, add_substep, complete_substep, update_substep, delete_substep | Granular tracking |
+| **Dashboard** | get_dashboard_stats, get_qrm_data, get_production_metrics | Real-time metrics |
+| **AI Chat** | chat_query, chat_summarize_jobs, chat_analyze_quality, chat_explain_data, chat_suggest_actions | AI analysis |
+| **ERP Sync** | erp_sync_diff, erp_sync_execute, erp_lookup_external_id, erp_sync_status, erp_batch_lookup, erp_resolve_ids | Integration |
+| **Batch Ops** | 16 tools for bulk operations | Efficiency |
+
+---
+
+## Next Steps After Demo
+
+1. **Production Setup** - Configure proper authentication keys
+2. **ERP Integration** - Map your external system IDs
+3. **Custom Tools** - Extend with business-specific tools
+4. **Monitoring** - Set up MCP activity monitoring in the admin UI
+
+For more details, see the main [README.md](../README.md) and [MCP_INTEGRATION.md](../../docs/MCP_INTEGRATION.md).

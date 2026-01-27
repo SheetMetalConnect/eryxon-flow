@@ -1,4 +1,8 @@
-# Batch Management
+---
+title: "Batch Management"
+description: "Production batch nesting and material requirement management"
+---
+
 
 Eryxon MES includes a comprehensive batch management system for grouping operations, handling nesting, and managing material requirements.
 
