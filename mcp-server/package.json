@@ -1,6 +1,6 @@
 {
   "name": "eryxon-flow-mcp-server",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "MCP Server for Eryxon Flow MES",
   "license": "BSL-1.1",
   "type": "module",
@@ -15,8 +15,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.3",
-    "@supabase/supabase-js": "^2.91.1",
-    "openai": "^6.10.0"
+    "@supabase/supabase-js": "^2.91.1"
   },
   "devDependencies": {
     "@types/node": "^25.0.10",

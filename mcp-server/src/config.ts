@@ -20,7 +20,6 @@ export interface MCPConfig {
   apiKey?: string;
 
   // Optional
-  openaiApiKey?: string;
   redisUrl?: string;
 }
 
@@ -51,7 +50,6 @@ export function loadConfig(): MCPConfig {
 
   const config: MCPConfig = {
     mode,
-    openaiApiKey: process.env.OPENAI_API_KEY,
     redisUrl: process.env.REDIS_URL,
   };
 

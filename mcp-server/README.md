@@ -5,10 +5,10 @@
 ## Features
 
 - 🔄 **Dual Mode**: Auto-detects direct Supabase or REST API connection
-- 🛠️ **55 Tools**: Jobs, parts, operations, quality, shipping, and more
-- 🤖 **AI-Powered**: Optional OpenAI integration for natural language queries
+- 🛠️ **39 Tools**: Jobs, parts, operations, quality, shipping, and more
 - 🔒 **Tenant-Safe**: Works with multi-tenant SaaS via API keys
 - ⚡ **Production-Ready**: Deploy to Railway, Fly.io, or run locally
+- 🎯 **Clean**: No AI wrapper bloat - Claude analyzes data natively
 
 ## Quick Start
 
@@ -68,7 +68,7 @@ The server automatically detects which mode to use:
 - Has `ERYXON_API_KEY`? → **API Mode** (cloud, multi-tenant)
 - Has `SUPABASE_SERVICE_KEY`? → **Direct Mode** (self-hosted, single-tenant)
 
-## Available Tools (55 total)
+## Available Tools (39 total)
 
 ### Jobs (7 tools)
 - fetch_jobs, create_job, update_job, start_job, stop_job, complete_job, resume_job
@@ -85,14 +85,11 @@ The server automatically detects which mode to use:
 ### Agent Batch Operations (16 tools)
 - batch_update_parts, batch_reschedule_operations, prioritize_job, get_job_overview, check_resource_availability, manage_shipment, plan_shipping, and more
 
-### AI Chat (5 tools - optional, requires OpenAI)
-- chat_query, chat_summarize_jobs, chat_analyze_quality, chat_explain_data, chat_suggest_actions
-
 ### And more...
 - Substeps (5 tools)
 - Tasks (2 tools)
 - Dashboard/Analytics (3 tools)
-- ERP Sync (6 tools)
+- Scrap Tracking (1 tool)
 
 ## Deployment
 
@@ -102,16 +99,6 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for:
 - Docker deployment
 - Frontend integration (MCP status indicator)
 - User setup instructions
-
-## Optional: OpenAI Integration
-
-Add natural language capabilities (optional):
-
-```bash
-export OPENAI_API_KEY="sk-..."
-```
-
-This enables the 5 AI chat tools. The other 50 tools work without OpenAI.
 
 ## Architecture
 
