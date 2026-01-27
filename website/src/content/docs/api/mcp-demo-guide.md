@@ -400,4 +400,4 @@ supabase.from('jobs').select('count').single().then(console.log);
 3. **Custom Tools** - Extend with business-specific tools
 4. **Monitoring** - Set up MCP activity monitoring in the admin UI
 
-For more details, see the main [README.md](../README.md) and [MCP_INTEGRATION.md](../../docs/MCP_INTEGRATION.md).
+For more details, see the main [README.md](../README.md).

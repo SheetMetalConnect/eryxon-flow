@@ -33,15 +33,36 @@ export class RestApiClient implements UnifiedClient {
         },
       });
 
+      // Handle empty responses (204 No Content, etc.)
+      const text = await response.text();
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: response.statusText }));
+        let errorData: any = { error: response.statusText };
+        if (text && text.trim()) {
+          try {
+            errorData = JSON.parse(text);
+          } catch {
+            // Keep default errorData
+          }
+        }
         return {
           data: null,
           error: new Error(errorData.error?.message || errorData.error || 'API request failed'),
         };
       }
 
-      const result = await response.json();
+      // Handle empty success responses (204, empty body)
+      if (!text || !text.trim()) {
+        return { data: null, error: null };
+      }
+
+      let result: any;
+      try {
+        result = JSON.parse(text);
+      } catch {
+        // Non-JSON response treated as direct data
+        return { data: text, error: null };
+      }
 
       // Handle standard API response format { success, data }
       if ('success' in result) {
@@ -113,6 +134,11 @@ export class RestApiClient implements UnifiedClient {
     if (options.in) {
       for (const [key, values] of Object.entries(options.in)) {
         params.append(`${key}.in`, values.join(','));
+      }
+    }
+    if (options.is) {
+      for (const [key, value] of Object.entries(options.is)) {
+        params.append(`${key}.is`, String(value));
       }
     }
 

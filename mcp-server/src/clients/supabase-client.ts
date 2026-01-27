@@ -166,13 +166,57 @@ export class DirectSupabaseClient implements UnifiedClient {
     try {
       let query = this.client.from(table).select('*', { count: 'exact', head: true });
 
-      // Apply filters (same as select)
+      // Apply all filters (same as select)
       if (options.eq) {
         for (const [key, value] of Object.entries(options.eq)) {
           query = query.eq(key, value);
         }
       }
-      // ... (other filters if needed for count)
+      if (options.neq) {
+        for (const [key, value] of Object.entries(options.neq)) {
+          query = query.neq(key, value);
+        }
+      }
+      if (options.gt) {
+        for (const [key, value] of Object.entries(options.gt)) {
+          query = query.gt(key, value);
+        }
+      }
+      if (options.gte) {
+        for (const [key, value] of Object.entries(options.gte)) {
+          query = query.gte(key, value);
+        }
+      }
+      if (options.lt) {
+        for (const [key, value] of Object.entries(options.lt)) {
+          query = query.lt(key, value);
+        }
+      }
+      if (options.lte) {
+        for (const [key, value] of Object.entries(options.lte)) {
+          query = query.lte(key, value);
+        }
+      }
+      if (options.like) {
+        for (const [key, value] of Object.entries(options.like)) {
+          query = query.like(key, value);
+        }
+      }
+      if (options.ilike) {
+        for (const [key, value] of Object.entries(options.ilike)) {
+          query = query.ilike(key, value);
+        }
+      }
+      if (options.is) {
+        for (const [key, value] of Object.entries(options.is)) {
+          query = query.is(key, value);
+        }
+      }
+      if (options.in) {
+        for (const [key, values] of Object.entries(options.in)) {
+          query = query.in(key, values);
+        }
+      }
 
       const { count, error } = await query;
       return { count, error };

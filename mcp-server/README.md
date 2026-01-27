@@ -5,7 +5,7 @@
 ## Features
 
 - Auto-detects direct Supabase or REST API connection
-- 39 tools for jobs, parts, operations, quality, shipping
+- 60 tools for jobs, parts, operations, quality, shipping, analytics
 - Multi-tenant safe via API keys
 - Deploy to Railway, Fly.io, or run locally
 
@@ -37,7 +37,7 @@ npm start
       "command": "node",
       "args": ["/path/to/eryxon-flow/mcp-server/dist/index.js"],
       "env": {
-        "ERYXON_API_URL": "https://gqptivvyklmxvdgivsmz.supabase.co",
+        "ERYXON_API_URL": "https://your-project.supabase.co",
         "ERYXON_API_KEY": "ery_live_xxxxx"
       }
     }
@@ -66,29 +66,6 @@ The server automatically detects which mode to use:
 
 - Has `ERYXON_API_KEY`? → **API Mode** (cloud, multi-tenant)
 - Has `SUPABASE_SERVICE_KEY`? → **Direct Mode** (self-hosted, single-tenant)
-
-## Available Tools (39 total)
-
-### Jobs (7 tools)
-- fetch_jobs, create_job, update_job, start_job, stop_job, complete_job, resume_job
-
-### Parts (2 tools)
-- fetch_parts, update_part
-
-### Operations (5 tools)
-- fetch_operations, start_operation, pause_operation, complete_operation, update_operation
-
-### Quality & Issues (4 tools)
-- fetch_issues, create_ncr, fetch_ncrs, update_issue
-
-### Agent Batch Operations (16 tools)
-- batch_update_parts, batch_reschedule_operations, prioritize_job, get_job_overview, check_resource_availability, manage_shipment, plan_shipping, and more
-
-### And more...
-- Substeps (5 tools)
-- Tasks (2 tools)
-- Dashboard/Analytics (3 tools)
-- Scrap Tracking (1 tool)
 
 ## Deployment
 

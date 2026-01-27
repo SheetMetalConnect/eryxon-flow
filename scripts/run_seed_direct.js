@@ -44,6 +44,7 @@ async function run() {
             console.log('Seed SQL applied successfully.');
         } else {
             console.error(`Seed file not found at ${seedPath}`);
+            process.exit(1);
         }
 
     } catch (err) {
