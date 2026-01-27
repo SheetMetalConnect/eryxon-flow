@@ -354,15 +354,6 @@ export default function Auth() {
             </div>
           </form>
 
-          {/* Coming Soon Notice */}
-          {!isLogin && (
-            <div className="mt-4 pt-4 border-t border-white/10">
-              <p className="text-xs text-muted-foreground text-center">
-                {t("auth.comingSoonNotice")}
-              </p>
-            </div>
-          )}
-
           {/* Shop Floor Terminal Info */}
           {isLogin && (
             <div className="mt-4 pt-4 border-t border-white/10">
