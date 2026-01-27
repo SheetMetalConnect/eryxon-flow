@@ -458,4 +458,6 @@ docker compose up -d
 
 ---
 
+For detailed solutions to common database migration issues, see [docs/MIGRATION_TROUBLESHOOTING.md](docs/MIGRATION_TROUBLESHOOTING.md).
+
 For additional support, open an issue on [GitHub](https://github.com/SheetMetalConnect/eryxon-flow/issues).
