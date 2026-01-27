@@ -5,9 +5,20 @@ import path from 'path';
 
 dotenv.config();
 
+// Validate required environment variables
+if (!process.env.SUPABASE_DB_PASSWORD) {
+    console.error("Please set SUPABASE_DB_PASSWORD environment variable.");
+    process.exit(1);
+}
+if (!process.env.VITE_SUPABASE_PROJECT_ID) {
+    console.error("Please set VITE_SUPABASE_PROJECT_ID environment variable.");
+    process.exit(1);
+}
+
 const password = encodeURIComponent(process.env.SUPABASE_DB_PASSWORD);
+const projectId = process.env.VITE_SUPABASE_PROJECT_ID;
 // Use direct connection (port 5432) instead of pooler (port 6543)
-const connectionString = `postgres://postgres:${password}@db.gqptivvyklmxvdgivsmz.supabase.co:5432/postgres`;
+const connectionString = `postgres://postgres:${password}@db.${projectId}.supabase.co:5432/postgres`;
 
 const client = new pg.Client({
     connectionString: connectionString,
@@ -36,11 +47,6 @@ async function run() {
     } finally {
         await client.end();
     }
-}
-
-if (!process.env.SUPABASE_DB_PASSWORD) {
-    console.error("Please set SUPABASE_DB_PASSWORD environment variable.");
-    process.exit(1);
 }
 
 run();

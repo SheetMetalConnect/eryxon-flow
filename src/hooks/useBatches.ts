@@ -548,7 +548,7 @@ export function useCreateBatchRequirement() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["batch-requirements", variables.batchId] });
       toast({
-        title: t("Requirement Added"),
+        title: t("batches.requirementAdded"),
       });
     },
     onError: (error: any) => {

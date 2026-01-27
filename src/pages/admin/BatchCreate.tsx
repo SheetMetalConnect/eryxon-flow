@@ -273,14 +273,19 @@ export default function BatchCreate() {
         throw uploadError;
       }
 
-      const { data: { publicUrl } } = supabase.storage
+      // Use signed URL for private bucket (expires in 1 year)
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('batch-images')
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 31536000); // 1 year in seconds
+
+      if (signedUrlError || !signedUrlData) {
+        throw signedUrlError || new Error('Failed to generate signed URL');
+      }
 
       if (type === 'nesting') {
-        setNestingImageUrl(publicUrl);
+        setNestingImageUrl(signedUrlData.signedUrl);
       } else {
-        setLayoutImageUrl(publicUrl);
+        setLayoutImageUrl(signedUrlData.signedUrl);
       }
 
       toast({

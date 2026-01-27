@@ -1,6 +1,12 @@
 {
   "Actions": "Acties",
   "Blocked": "Geblokkeerd",
+  "Block": "Blokkeren",
+  "Unblock": "Deblokkeren",
+  "NestingLayout": "Nesting Indeling",
+  "MaterialRequirement": "Materiaalvereiste",
+  "RaiseMaterialRequirement": "Materiaalvereiste Aanvragen",
+  "RequirementRaised": "Vereiste Aangevraagd",
   "Cancel": "Annuleren",
   "Cell": "Productiecel",
   "Complete": "Voltooien",

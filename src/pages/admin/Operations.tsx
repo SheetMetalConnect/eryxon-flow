@@ -179,14 +179,14 @@ export const Operations: React.FC = () => {
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
+          aria-label={t("common.table.selectAll")}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
+          aria-label={t("common.table.selectRow")}
           onClick={(e) => e.stopPropagation()}
         />
       ),
@@ -382,8 +382,12 @@ export const Operations: React.FC = () => {
             <Button
               variant="default"
               onClick={() => {
-                const ids = Object.keys(rowSelection).join(",");
-                navigate(`/admin/batches/new?operationIds=${ids}`);
+                // Map selected row indices to actual operation IDs
+                const selectedOperationIds = Object.keys(rowSelection)
+                  .map(index => operations[parseInt(index)]?.id)
+                  .filter(Boolean)
+                  .join(",");
+                navigate(`/admin/batches/new?operationIds=${selectedOperationIds}`);
               }}
             >
               <PlusCircle className="mr-2 h-4 w-4" />

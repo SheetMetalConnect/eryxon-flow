@@ -10,9 +10,20 @@ const __dirname = path.dirname(__filename);
 // Load env vars
 dotenv.config();
 
+// Validate required environment variables
+if (!process.env.SUPABASE_DB_PASSWORD && !process.env.DATABASE_URL) {
+    console.error("Please set either DATABASE_URL or SUPABASE_DB_PASSWORD environment variable.");
+    process.exit(1);
+}
+if (!process.env.DATABASE_URL && !process.env.VITE_SUPABASE_PROJECT_ID) {
+    console.error("Please set VITE_SUPABASE_PROJECT_ID environment variable when not using DATABASE_URL.");
+    process.exit(1);
+}
+
 // Encode password to handle special characters
-const password = encodeURIComponent(process.env.SUPABASE_DB_PASSWORD);
-const connectionString = process.env.DATABASE_URL || `postgres://postgres.gqptivvyklmxvdgivsmz:${password}@aws-0-eu-west-1.pooler.supabase.com:5432/postgres`;
+const password = process.env.SUPABASE_DB_PASSWORD ? encodeURIComponent(process.env.SUPABASE_DB_PASSWORD) : '';
+const projectId = process.env.VITE_SUPABASE_PROJECT_ID;
+const connectionString = process.env.DATABASE_URL || `postgres://postgres.${projectId}:${password}@aws-0-eu-west-1.pooler.supabase.com:5432/postgres`;
 
 const client = new pg.Client({
     connectionString: connectionString,
@@ -41,11 +52,6 @@ async function run() {
     } finally {
         await client.end();
     }
-}
-
-if (!process.env.SUPABASE_DB_PASSWORD) {
-    console.error("Please set SUPABASE_DB_PASSWORD environment variable.");
-    process.exit(1);
 }
 
 run();

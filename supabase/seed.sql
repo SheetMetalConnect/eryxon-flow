@@ -48,11 +48,21 @@ DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'schedule') THEN
       -- Remove existing jobs
-      PERFORM cron.unschedule('monthly-parts-reset') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'monthly-parts-reset');
-      PERFORM cron.unschedule('check-jobs-due-soon') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'check-jobs-due-soon');
-      PERFORM cron.unschedule('auto-close-attendance') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'auto-close-attendance');
-      PERFORM cron.unschedule('cleanup-expired-invitations') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'cleanup-expired-invitations');
-      PERFORM cron.unschedule('cleanup-mqtt-logs') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'cleanup-mqtt-logs');
+      IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'monthly-parts-reset') THEN
+        PERFORM cron.unschedule('monthly-parts-reset');
+      END IF;
+      IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'check-jobs-due-soon') THEN
+        PERFORM cron.unschedule('check-jobs-due-soon');
+      END IF;
+      IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'auto-close-attendance') THEN
+        PERFORM cron.unschedule('auto-close-attendance');
+      END IF;
+      IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'cleanup-expired-invitations') THEN
+        PERFORM cron.unschedule('cleanup-expired-invitations');
+      END IF;
+      IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'cleanup-mqtt-logs') THEN
+        PERFORM cron.unschedule('cleanup-mqtt-logs');
+      END IF;
 
       -- Schedule jobs
       PERFORM cron.schedule('monthly-parts-reset',        '0 0 1 * *',  'SELECT reset_monthly_parts_counters()');

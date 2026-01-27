@@ -45,6 +45,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   useBatch,
   useBatchOperations,
   useUpdateBatchStatus,
@@ -184,23 +190,28 @@ export default function BatchDetail() {
         throw uploadError;
       }
 
-      const { data: { publicUrl } } = supabase.storage
+      // Use signed URL for private bucket (expires in 1 year)
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('batch-images')
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 31536000); // 1 year in seconds
+
+      if (signedUrlError || !signedUrlData) {
+        throw signedUrlError || new Error('Failed to generate signed URL');
+      }
 
       await updateBatch.mutateAsync({
         id: batch.id,
         updates: {
-          [type === 'nesting' ? 'nesting_image_url' : 'layout_image_url']: publicUrl
+          [type === 'nesting' ? 'nesting_image_url' : 'layout_image_url']: signedUrlData.signedUrl
         }
       });
 
       toast({
-        title: t("Image uploaded successfully"),
+        title: t("batches.imageUploadSuccess"),
       });
     } catch (error: any) {
       toast({
-        title: t("Error uploading image"),
+        title: t("batches.imageUploadError"),
         description: error.message,
         variant: "destructive",
       });
@@ -238,7 +249,7 @@ export default function BatchDetail() {
             {/* "Missing Button" Fix: Add Edit Button */}
             <Button variant="outline" onClick={() => navigate(`/admin/batches/${batch.id}/edit`)}> {/* Assuming edit route exists or will exist, or just placeholder */}
               <Edit className="mr-2 h-4 w-4" />
-              {t("Edit Batch")}
+              {t("batches.editBatch")}
             </Button>
           </div>
         </div>
@@ -269,7 +280,7 @@ export default function BatchDetail() {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <ImageIcon className="h-5 w-5" />
-              {t("Visuals")}
+              {t("batches.visuals")}
             </CardTitle>
             <div className="flex gap-1">
               <Label htmlFor="image-upload" className="cursor-pointer">
@@ -328,16 +339,16 @@ export default function BatchDetail() {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>{t("Add Material Requirement")}</DialogTitle>
-                    <DialogDescription>{t("Specify material needed for this batch.")}</DialogDescription>
+                    <DialogTitle>{t("batches.addMaterialRequirement")}</DialogTitle>
+                    <DialogDescription>{t("batches.specifyMaterial")}</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-2">
                     <div className="space-y-2">
-                      <Label>{t("Material Name")}</Label>
+                      <Label>{t("batches.materialName")}</Label>
                       <Input value={newReqMaterial} onChange={(e) => setNewReqMaterial(e.target.value)} placeholder="e.g. Steel Sheet 5mm" />
                     </div>
                     <div className="space-y-2">
-                      <Label>{t("Quantity")}</Label>
+                      <Label>{t("batches.quantity")}</Label>
                       <Input type="number" value={newReqQuantity} onChange={(e) => setNewReqQuantity(e.target.value)} placeholder="0" />
                     </div>
                   </div>
@@ -427,11 +438,11 @@ export default function BatchDetail() {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Layers className="h-5 w-5" />
-              {t("Nested Batches (Sheets)")}
+              {t("batches.nestedBatchesSheets")}
             </CardTitle>
             <Button variant="outline" size="sm" onClick={() => navigate(`/admin/batches/new?parentId=${batch.id}`)}>
               <Plus className="mr-2 h-4 w-4" />
-              {t("Add Sheet")}
+              {t("batches.addSheet")}
             </Button>
           </CardHeader>
           <CardContent>
@@ -556,10 +567,19 @@ export default function BatchDetail() {
             <Package className="h-5 w-5" />
             {t("batches.selectOperations")} ({operationsCount})
           </CardTitle>
-          <Button variant="ghost" size="sm">
-            <Plus className="mr-2 h-4 w-4" />
-            {t("Add Operation")}
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" disabled>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t("operations.addOperation")}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t("batches.addOperationNotAvailable")}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </CardHeader>
         <CardContent>
           {batchOperations && batchOperations.length > 0 ? (
@@ -633,7 +653,7 @@ export default function BatchDetail() {
               }
               disabled={updateStatus.isPending}
             >
-              {t("Unblock")}
+              {t("batches.unblock")}
             </Button>
           ) : (
             <Button
@@ -647,7 +667,7 @@ export default function BatchDetail() {
               }
               disabled={updateStatus.isPending || batch.status === "in_progress"}
             >
-              {t("Block")}
+              {t("batches.block")}
             </Button>
           )}
 

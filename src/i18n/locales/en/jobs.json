@@ -550,7 +550,8 @@
       "ready": "Ready",
       "inProgress": "In Progress",
       "completed": "Completed",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "blocked": "Blocked"
     },
     "actions": {
       "start": "Start Batch",
@@ -593,6 +594,20 @@
       "startedDesc": "Time tracking started for all operations in this batch",
       "stopped": "Batch timer stopped",
       "stoppedDesc": "{{total}} min total, {{perOp}} min distributed to each of {{count}} operations"
-    }
+    },
+    "editBatch": "Edit Batch",
+    "visuals": "Visuals",
+    "addMaterialRequirement": "Add Material Requirement",
+    "specifyMaterial": "Specify material needed for this batch.",
+    "materialName": "Material Name",
+    "quantity": "Quantity",
+    "nestedBatchesSheets": "Nested Batches (Sheets)",
+    "addSheet": "Add Sheet",
+    "block": "Block",
+    "unblock": "Unblock",
+    "imageUploadSuccess": "Image uploaded successfully",
+    "imageUploadError": "Error uploading image",
+    "requirementAdded": "Requirement Added",
+    "addOperationNotAvailable": "Adding operations to an existing batch is not yet available. Create batches from the Operations page."
   }
 }

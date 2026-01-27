@@ -8,6 +8,16 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
+// Validate required environment variables
+if (!process.env.VITE_SUPABASE_URL) {
+    console.error("Please set VITE_SUPABASE_URL environment variable.");
+    process.exit(1);
+}
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error("Please set SUPABASE_SERVICE_ROLE_KEY environment variable.");
+    process.exit(1);
+}
+
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
