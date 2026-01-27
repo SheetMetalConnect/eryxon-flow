@@ -1,64 +1,132 @@
-# Eryxon Flow MCP Server
+# Eryxon Flow MCP Server v2.4.0
 
-**OPTIONAL:** Local MCP server for Claude Desktop integration. Not required for the main application.
+**Universal MCP server for Eryxon Flow MES** - Works in both self-hosted and cloud SaaS deployments.
 
-## What is this?
+## Features
 
-The MCP (Model Context Protocol) server allows Claude Desktop to interact with your Eryxon Flow database using natural language. It provides 55 tools for managing jobs, parts, operations, and more.
-
-**This runs locally on your machine** - it is NOT part of the web application deployment.
+- 🔄 **Dual Mode**: Auto-detects direct Supabase or REST API connection
+- 🛠️ **55 Tools**: Jobs, parts, operations, quality, shipping, and more
+- 🤖 **AI-Powered**: Optional OpenAI integration for natural language queries
+- 🔒 **Tenant-Safe**: Works with multi-tenant SaaS via API keys
+- ⚡ **Production-Ready**: Deploy to Railway, Fly.io, or run locally
 
 ## Quick Start
+
+### Cloud SaaS (Recommended for Hosted Deployment)
+
+Users connect to YOUR hosted MCP server using their API key:
 
 ```bash
 cd mcp-server
 npm install
 npm run build
 
-# Set environment variables
-export SUPABASE_URL="https://your-project.supabase.co"
-export SUPABASE_SERVICE_KEY="your-service-key"
-export OPENAI_API_KEY="your-openai-key"  # Optional for AI features
+# Set your API endpoint (your project)
+export ERYXON_API_URL="https://your-project.supabase.co"
 
-# Run
+# Users provide their own API key
+export ERYXON_API_KEY="ery_live_xxxxx"  # From Settings → API Keys
+
 npm start
 ```
 
-## Claude Desktop Configuration
-
-Add to your Claude Desktop config:
-
+**User's Claude Desktop config:**
 ```json
 {
   "mcpServers": {
     "eryxon-flow": {
       "command": "node",
-      "args": ["/absolute/path/to/eryxon-flow/mcp-server/dist/index.js"],
+      "args": ["/path/to/eryxon-flow/mcp-server/dist/index.js"],
       "env": {
-        "SUPABASE_URL": "https://your-project.supabase.co",
-        "SUPABASE_SERVICE_KEY": "your-service-key",
-        "OPENAI_API_KEY": "your-openai-key"
+        "ERYXON_API_URL": "https://gqptivvyklmxvdgivsmz.supabase.co",
+        "ERYXON_API_KEY": "ery_live_xxxxx"
       }
     }
   }
 }
 ```
 
+### Self-Hosted (Direct Supabase)
+
+For single-tenant self-hosted deployments:
+
+```bash
+cd mcp-server
+npm install
+npm run build
+
+export SUPABASE_URL="https://your-project.supabase.co"
+export SUPABASE_SERVICE_KEY="eyJhbGc..."  # Service role key
+
+npm start
+```
+
+## Mode Detection
+
+The server automatically detects which mode to use:
+
+- Has `ERYXON_API_KEY`? → **API Mode** (cloud, multi-tenant)
+- Has `SUPABASE_SERVICE_KEY`? → **Direct Mode** (self-hosted, single-tenant)
+
+## Available Tools (55 total)
+
+### Jobs (7 tools)
+- fetch_jobs, create_job, update_job, start_job, stop_job, complete_job, resume_job
+
+### Parts (2 tools)
+- fetch_parts, update_part
+
+### Operations (5 tools)
+- fetch_operations, start_operation, pause_operation, complete_operation, update_operation
+
+### Quality & Issues (4 tools)
+- fetch_issues, create_ncr, fetch_ncrs, update_issue
+
+### Agent Batch Operations (16 tools)
+- batch_update_parts, batch_reschedule_operations, prioritize_job, get_job_overview, check_resource_availability, manage_shipment, plan_shipping, and more
+
+### AI Chat (5 tools - optional, requires OpenAI)
+- chat_query, chat_summarize_jobs, chat_analyze_quality, chat_explain_data, chat_suggest_actions
+
+### And more...
+- Substeps (5 tools)
+- Tasks (2 tools)
+- Dashboard/Analytics (3 tools)
+- ERP Sync (6 tools)
+
+## Deployment
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for:
+- Railway deployment (recommended)
+- Fly.io deployment
+- Docker deployment
+- Frontend integration (MCP status indicator)
+- User setup instructions
+
+## Optional: OpenAI Integration
+
+Add natural language capabilities (optional):
+
+```bash
+export OPENAI_API_KEY="sk-..."
+```
+
+This enables the 5 AI chat tools. The other 50 tools work without OpenAI.
+
+## Architecture
+
+```
+Claude Desktop (User)
+  ↓ MCP Protocol
+MCP Server (Your deployment or local)
+  ↓ REST API (if cloud) OR Direct Supabase (if self-hosted)
+Supabase Edge Functions / Database
+  ↓ RLS (tenant isolation)
+Your Data
+```
+
 ## Documentation
 
-See the [MCP Demo Guide](../website/src/content/docs/api/mcp-demo-guide.md) for:
-- Complete tool reference (55 tools)
-- Usage examples
-- Demo scenarios
-- Architecture details
-
-## Do I need this?
-
-**NO** - The MCP server is optional. The main Eryxon Flow application works perfectly without it.
-
-Use the MCP server if you want:
-- Claude Desktop to manage your manufacturing data
-- AI-powered natural language queries
-- Batch operations for efficiency
-
-Otherwise, use the REST API or web interface.
+- [Deployment Guide](./DEPLOYMENT.md) - Deploy to Railway/Fly.io/Docker
+- [MCP Demo Guide](../website/src/content/docs/api/mcp-demo-guide.md) - Complete tool reference
+- [Website Docs](../website/src/content/docs/) - User-facing documentation
