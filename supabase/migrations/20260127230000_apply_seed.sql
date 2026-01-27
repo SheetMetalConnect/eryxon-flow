@@ -8,7 +8,8 @@ INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 VALUES
   ('parts-images', 'parts-images', false, 10485760, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif']),
   ('issues', 'issues', false, 52428800, ARRAY['image/jpeg', 'image/png', 'image/webp', 'application/pdf']),
-  ('parts-cad', 'parts-cad', false, 104857600, ARRAY['model/step', 'model/stl', 'application/sla', 'application/octet-stream', 'model/3mf'])
+  ('parts-cad', 'parts-cad', false, 104857600, ARRAY['model/step', 'model/stl', 'application/sla', 'application/octet-stream', 'model/3mf']),
+  ('batch-images', 'batch-images', false, 10485760, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 ON CONFLICT (id) DO NOTHING;
 
 -- Storage policies (Idempotent using DO blocks for PG15 compatibility)
@@ -27,6 +28,11 @@ BEGIN
     BEGIN CREATE POLICY "Authenticated users can upload CAD files" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'parts-cad'); EXCEPTION WHEN duplicate_object THEN NULL; END;
     BEGIN CREATE POLICY "Authenticated users can view CAD files" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'parts-cad'); EXCEPTION WHEN duplicate_object THEN NULL; END;
     BEGIN CREATE POLICY "Authenticated users can delete CAD files" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'parts-cad'); EXCEPTION WHEN duplicate_object THEN NULL; END;
+
+    -- batch-images
+    BEGIN CREATE POLICY "Authenticated users can upload batch images" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'batch-images'); EXCEPTION WHEN duplicate_object THEN NULL; END;
+    BEGIN CREATE POLICY "Authenticated users can view batch images" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'batch-images'); EXCEPTION WHEN duplicate_object THEN NULL; END;
+    BEGIN CREATE POLICY "Authenticated users can delete batch images" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'batch-images'); EXCEPTION WHEN duplicate_object THEN NULL; END;
 END $$;
 
 -- Schedule cron jobs (requires pg_cron extension)
@@ -54,7 +60,7 @@ BEGIN
       PERFORM cron.schedule('auto-close-attendance',      '0 0 * * *',  'SELECT auto_close_stale_attendance()');
       PERFORM cron.schedule('cleanup-expired-invitations','0 2 * * *',  'SELECT cleanup_expired_invitations()');
       PERFORM cron.schedule('cleanup-mqtt-logs',          '0 3 * * 0',  'SELECT cleanup_old_mqtt_logs()');
-
+      
       RAISE NOTICE 'pg_cron jobs scheduled successfully';
   ELSE
       RAISE NOTICE 'pg_cron extension not installed — skipping cron job scheduling.';

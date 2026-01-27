@@ -1,5 +1,5 @@
-[project]
-id = ""  # Set via `supabase link --project-ref <ref>`
+# [project]
+# id = ""  # Set via `supabase link --project-ref <ref>`
 
 [api]
 enabled = true
@@ -37,4 +37,4 @@ file_size_limit = "50MiB"
 [functions]
 # Edge functions use API-key auth (not JWT), so gateway JWT check is disabled.
 # Each function validates requests internally via the shared CRUD builder.
-verify_jwt = false
+# verify_jwt = false
