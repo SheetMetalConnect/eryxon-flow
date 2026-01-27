@@ -307,7 +307,7 @@ export default function DataImport() {
       if (!session) throw new Error('Not authenticated');
 
       const transformedData = transformData();
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://vatgianzotsurljznsry.supabase.co';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co';
 
       // Chunk data into batches of 100
       const BATCH_SIZE = 100;

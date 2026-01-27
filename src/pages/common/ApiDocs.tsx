@@ -33,7 +33,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function ApiDocs() {
   const { toast } = useToast();
   const [apiKey, setApiKey] = useState("");
-  const baseUrl = import.meta.env.VITE_SUPABASE_URL?.replace('/supabase', '') || "https://vatgianzotsurljznsry.supabase.co";
+  const baseUrl = import.meta.env.VITE_SUPABASE_URL?.replace('/supabase', '') || "https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co";
   const apiBaseUrl = `${baseUrl}/functions/v1`;
 
   const copyToClipboard = (text: string, label: string) => {
