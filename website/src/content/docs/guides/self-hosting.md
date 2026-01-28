@@ -345,7 +345,7 @@ The MCP server is **NOT part of the deployment stack**. It's an optional local t
 - Allows Claude Desktop to interact with your database using natural language
 - Provides 55 tools for managing jobs, parts, operations via AI
 
-**Running locally:**
+**Quick start:**
 ```bash
 cd mcp-server
 npm install && npm run build
@@ -354,7 +354,11 @@ export SUPABASE_SERVICE_KEY="your-service-key"
 npm start
 ```
 
-See [MCP Demo Guide](../api/mcp-demo-guide.md) for Claude Desktop configuration.
+**Complete setup instructions:** See [MCP Setup Guide](../guides/mcp-setup.md) for:
+- Local development setup
+- Cloud deployment (Railway, Fly.io, Docker)
+- Claude Desktop configuration
+- All 55 available tools
 
 > **Note:** Your self-hosted application works perfectly without the MCP server. It's only for developers who want AI assistant integration via Claude Desktop.
 
