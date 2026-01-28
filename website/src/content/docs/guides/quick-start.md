@@ -5,7 +5,7 @@ description: "Get up and running with Eryxon Flow in minutes."
 
 
 
-Get Eryxon Flow running in under 10 minutes.
+Get Eryxon Flow up and running.
 
 > **Just want to explore?** Try the [live demo at app.eryxon.eu](https://app.eryxon.eu) — no setup needed. Sign up and start exploring immediately.
 
@@ -18,7 +18,7 @@ Get Eryxon Flow running in under 10 minutes.
 
 ---
 
-## Step 1: Set Up Supabase (5 minutes)
+## Step 1: Set Up Supabase
 
 ### 1.1 Create Project
 
@@ -26,7 +26,6 @@ Get Eryxon Flow running in under 10 minutes.
 2. Name it `eryxon-flow`
 3. Save your database password
 4. Click **Create**
-5. Wait ~2 minutes for setup
 
 ### 1.2 Get Your Keys
 
@@ -42,7 +41,7 @@ Go to **Settings** → **API** and copy:
 
 ---
 
-## Step 2: Run the Application (3 minutes)
+## Step 2: Run the Application
 
 ```bash
 
@@ -71,7 +70,7 @@ Open **http://localhost:8080**
 
 ---
 
-## Step 3: Create Your Account (1 minute)
+## Step 3: Create Your Account
 
 1. Click **Sign Up**
 2. Enter email and password

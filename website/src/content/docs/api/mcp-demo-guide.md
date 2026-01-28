@@ -83,8 +83,7 @@ For complete setup instructions including cloud deployment options, see the [MCP
 
 ## Demo Scenarios
 
-### Scenario 1: Basic Job Management (5 min)
-
+### Scenario 1: Basic Job Management 
 **Objective**: Show basic CRUD operations for manufacturing jobs.
 
 1. **Fetch Current Jobs**
@@ -113,8 +112,7 @@ For complete setup instructions including cloud deployment options, see the [MCP
 
 ---
 
-### Scenario 2: Production Dashboard (3 min)
-
+### Scenario 2: Production Dashboard 
 **Objective**: Demonstrate real-time production metrics.
 
 1. **Get Dashboard Stats**
@@ -137,8 +135,7 @@ For complete setup instructions including cloud deployment options, see the [MCP
 
 ---
 
-### Scenario 3: Quality Analytics (5 min)
-
+### Scenario 3: Quality Analytics 
 **Objective**: Demonstrate quality issue analytics and insights.
 
 1. **Get Issue Analytics by Severity**
@@ -167,8 +164,7 @@ For complete setup instructions including cloud deployment options, see the [MCP
 
 ---
 
-### Scenario 4: Rush Order Handling (5 min)
-
+### Scenario 4: Rush Order Handling 
 **Objective**: Demonstrate agent batch operations for handling urgent orders.
 
 1. **Prioritize a Rush Job**
@@ -199,8 +195,7 @@ For complete setup instructions including cloud deployment options, see the [MCP
 
 ---
 
-### Scenario 5: ERP Integration (5 min)
-
+### Scenario 5: ERP Integration 
 **Objective**: Show bidirectional sync with external ERP systems.
 
 1. **Check Sync Differences**
@@ -227,8 +222,7 @@ For complete setup instructions including cloud deployment options, see the [MCP
 
 ---
 
-### Scenario 6: Operations Management (5 min)
-
+### Scenario 6: Operations Management 
 **Objective**: Show granular operation control.
 
 1. **Fetch Operations**
@@ -257,8 +251,7 @@ For complete setup instructions including cloud deployment options, see the [MCP
 
 ---
 
-### Scenario 7: Quality & NCR Management (5 min)
-
+### Scenario 7: Quality & NCR Management 
 **Objective**: Demonstrate issue tracking and NCR workflow.
 
 1. **Fetch Open Issues**
@@ -300,7 +293,7 @@ For complete setup instructions including cloud deployment options, see the [MCP
 1. **Start Simple** - Begin with basic fetch operations to show the connection works
 2. **Build Complexity** - Progress to more complex scenarios
 3. **Show Real Data** - Always use real database data, never mock data
-4. **Highlight Analytics** - Quality analytics and scrap analysis tools provide powerful insights
+4. **Highlight Analytics** - Quality analytics and scrap analysis tools provide production insights
 5. **Demonstrate Batch Operations** - Show efficiency gains from batch tools
 
 ### Common Questions & Answers

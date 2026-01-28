@@ -1,9 +1,9 @@
 ---
 title: Welcome to Eryxon MES
-description: The simple, elegant and powerful manufacturing execution system that your people will love to use. Made for metals fabrication.
+description: Manufacturing execution system for metals fabrication shops.
 ---
 
-**The simple, elegant and powerful manufacturing execution system that your people will love to use. Made for metals fabrication.**
+**Manufacturing execution system for metals fabrication shops.**
 
 > **Try it now:** Explore the [live demo at app.eryxon.eu](https://app.eryxon.eu) — no installation required.
 
