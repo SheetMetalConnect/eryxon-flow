@@ -8,14 +8,16 @@ import type { UnifiedClient, QueryResult, CountResult, SelectOptions } from "../
 export class RestApiClient implements UnifiedClient {
   private baseUrl: string;
   private apiKey: string;
+  private timeout: number;
 
-  constructor(apiBaseUrl: string, apiKey: string) {
+  constructor(apiBaseUrl: string, apiKey: string, timeout: number = 30000) {
     // Normalize base URL
     this.baseUrl = apiBaseUrl.replace(/\/+$/, '');
     if (!this.baseUrl.includes('/functions/v1')) {
       this.baseUrl = `${this.baseUrl}/functions/v1`;
     }
     this.apiKey = apiKey;
+    this.timeout = timeout;
   }
 
   getMode(): 'direct' | 'api' {
@@ -24,14 +26,21 @@ export class RestApiClient implements UnifiedClient {
 
   private async request(endpoint: string, options: RequestInit = {}): Promise<QueryResult> {
     try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        ...options,
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-          ...options.headers,
-        },
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+      try {
+        const response = await fetch(`${this.baseUrl}${endpoint}`, {
+          ...options,
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+            ...options.headers,
+          },
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
 
       // Handle empty responses (204 No Content, etc.)
       const text = await response.text();
@@ -78,7 +87,13 @@ export class RestApiClient implements UnifiedClient {
 
       // Direct data response
       return { data: result, error: null };
+      } finally {
+        clearTimeout(timeoutId);
+      }
     } catch (error) {
+      if ((error as Error).name === 'AbortError') {
+        return { data: null, error: new Error(`Request timeout after ${this.timeout}ms`) };
+      }
       return { data: null, error: error as Error };
     }
   }

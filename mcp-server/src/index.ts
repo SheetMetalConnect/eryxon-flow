@@ -40,7 +40,7 @@ const toolRegistry = createConfiguredRegistry();
 
 // Log startup info
 const stats = toolRegistry.getStats();
-console.error(`🔧 Loaded ${stats.totalTools} tools from ${stats.totalModules} modules`);
+console.error(`🔧 Loaded ${stats.totalTools} tools`);
 
 // Create MCP server instance
 const server = new Server(

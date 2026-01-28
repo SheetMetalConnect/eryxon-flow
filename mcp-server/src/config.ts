@@ -21,6 +21,7 @@ export interface MCPConfig {
 
   // Optional
   redisUrl?: string;
+  queryTimeout?: number; // Query timeout in milliseconds (default: 30000)
 }
 
 /**
@@ -51,6 +52,7 @@ export function loadConfig(): MCPConfig {
   const config: MCPConfig = {
     mode,
     redisUrl: process.env.REDIS_URL,
+    queryTimeout: process.env.QUERY_TIMEOUT_MS ? parseInt(process.env.QUERY_TIMEOUT_MS) : 30000,
   };
 
   if (mode === 'direct') {
