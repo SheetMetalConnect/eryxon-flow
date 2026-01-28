@@ -13,6 +13,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This release modernizes the MCP (Model Context Protocol) server with production-grade patterns, comprehensive testing, and critical bug fixes discovered during code review.
 
+### ⚠️ Migration Required for Production Databases
+
+**If you're upgrading an existing production database, you MUST apply these migrations:**
+
+```bash
+# Link to your production Supabase project
+supabase link --project-ref YOUR_PRODUCTION_PROJECT_ID
+
+# Apply all new migrations (idempotent - safe to run multiple times)
+supabase db push
+
+# Deploy Edge Functions (fixes 502 errors and improves performance)
+supabase functions deploy
+
+# Verify migrations applied successfully
+supabase migration list
+```
+
+**New migrations in this release:**
+
+1. **20260127232000_add_missing_auth_trigger.sql** ⚠️ **CRITICAL**
+   - Creates auth trigger for automatic user profile and tenant creation on signup
+   - **Without this, new user signups will fail** (users won't get profiles/tenants)
+
+2. **20260127230000_apply_seed.sql** ⚠️ **IMPORTANT**
+   - Creates storage buckets (parts-images, issues, parts-cad, batch-images)
+   - Sets up RLS policies for file uploads
+   - Schedules pg_cron jobs (monthly resets, attendance cleanup, invitation expiry, MQTT logs)
+
+3. **20260127235000_enhance_batch_management.sql**
+   - Adds 'blocked' status to batch_status enum
+   - Adds parent_batch_id for nested batches
+   - Adds nesting_image_url and layout_image_url columns
+
+4. **20260128000000_create_batch_requirements.sql**
+   - Creates batch_requirements table for material tracking within batches
+   - Sets up RLS policies for multi-tenant isolation
+
+**All migrations are idempotent.** If your production database already has storage buckets or other resources, they will be safely skipped (ON CONFLICT DO NOTHING).
+
+**Edge Functions:** Deploy is required to get 502 error fixes and performance improvements from the import_map.json refactoring.
+
 ### Added
 
 - **Comprehensive test suite** for MCP server utilities (90 tests, 100% passing)
