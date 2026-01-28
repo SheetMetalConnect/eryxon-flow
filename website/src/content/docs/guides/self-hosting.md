@@ -354,7 +354,7 @@ export SUPABASE_SERVICE_KEY="your-service-key"
 npm start
 ```
 
-**Complete setup instructions:** See [MCP Setup Guide](../guides/mcp-setup.md) for:
+**Complete setup instructions:** See [MCP Setup Guide](/guides/mcp-setup) for:
 - Local development setup
 - Cloud deployment (Railway, Fly.io, Docker)
 - Claude Desktop configuration

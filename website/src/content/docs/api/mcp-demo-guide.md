@@ -5,6 +5,10 @@ description: Step-by-step instructions for demonstrating the Eryxon Flow MCP Ser
 
 This guide provides step-by-step instructions for demonstrating the Eryxon Flow MCP Server capabilities.
 
+:::tip[Setup Required]
+Before running demos, ensure your MCP server is properly configured. See the [MCP Server Setup Guide](/guides/mcp-setup) for deployment instructions.
+:::
+
 ## Prerequisites
 
 Before the demo, ensure you have:
@@ -70,6 +74,10 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
   }
 }
 ```
+
+:::note[Need Help?]
+For complete setup instructions including cloud deployment options, see the [MCP Server Setup Guide](/guides/mcp-setup).
+:::
 
 ---
 
@@ -393,9 +401,24 @@ supabase.from('jobs').select('count').single().then(console.log);
 
 ## Next Steps After Demo
 
-1. **Production Setup** - Configure proper authentication keys
-2. **ERP Integration** - Map your external system IDs
-3. **Custom Tools** - Extend with business-specific tools
+1. **Production Deployment** - Deploy to Railway, Fly.io, or Docker
+2. **Authentication** - Configure API keys for multi-tenant access
+3. **ERP Integration** - Map your external system IDs
 4. **Monitoring** - Set up MCP activity monitoring in the admin UI
 
-For more details, see the main [README.md](../README.md).
+---
+
+## See Also
+
+**Setup & Deployment:**
+- [MCP Server Setup Guide](/guides/mcp-setup) - Complete deployment and configuration
+- [Self-Hosting Guide](/guides/self-hosting) - Self-hosted Eryxon Flow setup
+
+**API & Integration:**
+- [REST API Documentation](/architecture/connectivity-rest-api) - Complete API reference
+- [Connectivity Overview](/architecture/connectivity-overview) - Integration architecture
+- [Webhooks & MQTT](/architecture/connectivity-mqtt) - Event-driven integration
+
+**Architecture:**
+- [App Architecture](/architecture/app-architecture) - System design overview
+- [Database Schema](/architecture/database) - Data model reference

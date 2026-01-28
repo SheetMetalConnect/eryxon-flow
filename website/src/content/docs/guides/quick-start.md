@@ -105,12 +105,21 @@ Want to see the app with sample data?
 
 ## What's Next?
 
-- **[Self-Hosting Guide](/guides/self-hosting/)** - Production deployment options
-- **[REST API Overview](/architecture/connectivity-rest-api/)** - Endpoints and auth
+**Setup & Deployment:**
+- [Self-Hosting Guide](/guides/self-hosting) - Production deployment options
+- [MCP Server Setup](/guides/mcp-setup) - AI assistant integration setup
+
+**API & Integration:**
+- [REST API Documentation](/architecture/connectivity-rest-api) - Complete API reference
+- [MCP Demo Guide](/api/mcp-demo-guide) - AI assistant usage examples
+- [Connectivity Overview](/architecture/connectivity-overview) - Integration architecture
+- [Webhooks & MQTT](/architecture/connectivity-mqtt) - Event-driven integration
 - **Swagger/OpenAPI** - Available in the app at `/api-docs`
-- **[MCP Demo](/api/mcp-demo-guide/)** - AI assistant integration
-- **[App Architecture](/architecture/app-architecture/)** - Deep dive into features
-- **[FAQ](/guides/faq/)** - Frequently asked questions
+
+**Architecture & Help:**
+- [App Architecture](/architecture/app-architecture) - System design overview
+- [Database Schema](/architecture/database) - Data model reference
+- [FAQ](/guides/faq) - Frequently asked questions
 
 ---
 
