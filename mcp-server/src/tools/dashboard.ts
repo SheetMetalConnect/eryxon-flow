@@ -79,6 +79,12 @@ const getDashboardStats: ToolHandler = async (_args: Record<string, unknown>, su
       supabase.from("issues").select("status", { count: "exact", head: false }),
     ]);
 
+    // Check for errors in parallel queries
+    if (jobsResult.error) throw new Error(`Failed to fetch jobs: ${jobsResult.error.message}`);
+    if (partsResult.error) throw new Error(`Failed to fetch parts: ${partsResult.error.message}`);
+    if (tasksResult.error) throw new Error(`Failed to fetch tasks: ${tasksResult.error.message}`);
+    if (issuesResult.error) throw new Error(`Failed to fetch issues: ${issuesResult.error.message}`);
+
     const stats = {
       jobs: {
         total: jobsResult.data?.length || 0,

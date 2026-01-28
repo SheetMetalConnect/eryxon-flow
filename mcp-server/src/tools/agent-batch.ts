@@ -953,6 +953,9 @@ const batchUpdateParts: ToolHandler = async (args, supabase) => {
       if (filter?.status) {
         query = query.eq("status", filter.status);
       }
+      if (filter?.due_before) {
+        query = query.lte("due_date", filter.due_before);
+      }
 
       query = query.is("deleted_at", null);
 
@@ -971,6 +974,7 @@ const batchUpdateParts: ToolHandler = async (args, supabase) => {
     if (updates.is_bullet_card !== undefined) updatePayload.is_bullet_card = updates.is_bullet_card;
     if (updates.status) updatePayload.status = updates.status;
     if (updates.current_cell_id) updatePayload.current_cell_id = updates.current_cell_id;
+    if (updates.notes) updatePayload.notes = updates.notes;
 
     const { data: updated, error: updateError } = await supabase
       .from("parts")
@@ -1089,7 +1093,8 @@ const batchRescheduleOperations: ToolHandler = async (args, supabase) => {
           opUpdate.planned_end = new Date(new Date(op.planned_end).getTime() + shiftMs).toISOString();
         }
 
-        await supabase.from("operations").update(opUpdate).eq("id", op.id);
+        const { error: updateError } = await supabase.from("operations").update(opUpdate).eq("id", op.id);
+        if (updateError) throw updateError;
         updatedCount++;
       }
 
@@ -1156,17 +1161,19 @@ const prioritizeJob: ToolHandler = async (args, supabase) => {
       if (priority) jobUpdate.priority = priority;
       if (notes) {
         // Append notes
-        const { data: currentJob } = await supabase
+        const { data: currentJob, error: notesFetchError } = await supabase
           .from("jobs")
           .select("notes")
           .eq("id", job.id)
           .single();
+        if (notesFetchError) throw notesFetchError;
         jobUpdate.notes = currentJob?.notes
           ? `${currentJob.notes}\n[PRIORITY] ${notes}`
           : `[PRIORITY] ${notes}`;
       }
 
-      await supabase.from("jobs").update(jobUpdate).eq("id", job.id);
+      const { error: jobUpdateError } = await supabase.from("jobs").update(jobUpdate).eq("id", job.id);
+      if (jobUpdateError) throw jobUpdateError;
       results.job_updated = true;
       if (priority) results.new_priority = priority;
     }
@@ -1432,7 +1439,7 @@ const getJobOverview: ToolHandler = async (args, supabase) => {
               medium: issues.filter((i: any) => i.severity === "medium").length,
               low: issues.filter((i: any) => i.severity === "low").length,
             },
-            pending: issues.filter((i: any) => i.status === "pending").length,
+            open: issues.filter((i: any) => i.status === "open").length,
           };
         }
       }
@@ -1736,6 +1743,9 @@ const getShippingStatus: ToolHandler = async (args, supabase) => {
       if (customerJobs && customerJobs.length > 0) {
         const shipmentIds = [...new Set(customerJobs.map((sj: any) => sj.shipment_id))];
         query = query.in("id", shipmentIds);
+      } else {
+        // No matching shipments for this customer - return empty result
+        return structuredResponse({ total: 0, shipments: [] }, "No shipments found for this customer");
       }
     }
 
@@ -2417,7 +2427,7 @@ const getPartsDueSoon: ToolHandler = async (args, supabase) => {
       const totalOps = ops.length;
       const completedOps = ops.filter((o: any) => o.status === "completed").length;
       const inProgressOps = ops.filter((o: any) => o.status === "in_progress");
-      const pendingOps = ops.filter((o: any) => o.status === "not_started" || o.status === "pending");
+      const pendingOps = ops.filter((o: any) => o.status === "not_started");
 
       // Find next blocking operation (first non-completed in sequence)
       const sortedOps = [...ops].sort((a: any, b: any) => (a.sequence || 0) - (b.sequence || 0));

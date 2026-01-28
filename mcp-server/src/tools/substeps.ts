@@ -86,30 +86,60 @@ const addSubstep: ToolHandler = async (args: Record<string, unknown>, supabase: 
   try {
     const { operation_id, description, sequence } = validateArgs(args, addSubstepSchema);
 
-    // Get next sequence if not provided
+    // Get next sequence if not provided (with retry on conflict to handle race conditions)
     let finalSequence = sequence;
-    if (typeof finalSequence !== "number") {
-      const { data: maxSeq } = await supabase
+    let retries = 3;
+    let data: any = null;
+    let error: any = null;
+
+    while (retries > 0) {
+      if (typeof finalSequence !== "number") {
+        // Use RPC to atomically get next sequence (avoids race condition)
+        const { data: nextSeq, error: seqError } = await supabase.rpc("get_next_substep_sequence", {
+          p_operation_id: operation_id,
+        });
+
+        if (!seqError && typeof nextSeq === "number") {
+          finalSequence = nextSeq;
+        } else {
+          // Fallback to client-side calculation if RPC not available
+          const { data: maxSeq } = await supabase
+            .from("substeps")
+            .select("sequence")
+            .eq("operation_id", operation_id)
+            .order("sequence", { ascending: false })
+            .limit(1)
+            .single();
+
+          finalSequence = (maxSeq?.sequence ?? 0) + 1;
+        }
+      }
+
+      const result = await supabase
         .from("substeps")
-        .select("sequence")
-        .eq("operation_id", operation_id)
-        .order("sequence", { ascending: false })
-        .limit(1)
+        .insert({
+          operation_id,
+          description,
+          sequence: finalSequence,
+          completed: false,
+        })
+        .select()
         .single();
 
-      finalSequence = (maxSeq?.sequence ?? 0) + 1;
-    }
+      data = result.data;
+      error = result.error;
 
-    const { data, error } = await supabase
-      .from("substeps")
-      .insert({
-        operation_id,
-        description,
-        sequence: finalSequence,
-        completed: false,
-      })
-      .select()
-      .single();
+      // Check for unique constraint violation (sequence conflict)
+      if (error?.code === "23505" && retries > 1) {
+        // Retry with fresh sequence calculation
+        finalSequence = undefined as any;
+        retries--;
+        continue;
+      }
+
+      // Success or non-retryable error
+      break;
+    }
 
     if (error) {
       throw databaseError("Failed to add substep", error as Error);
