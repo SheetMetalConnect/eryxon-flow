@@ -175,6 +175,11 @@ export class RestApiClient implements UnifiedClient {
       params.append('offset', String(options.offset));
     }
 
+    // Single record flag
+    if (options.single) {
+      params.append('single', 'true');
+    }
+
     const queryString = params.toString();
     return queryString ? `?${queryString}` : '';
   }
@@ -207,9 +212,21 @@ export class RestApiClient implements UnifiedClient {
   async select(table: string, options: SelectOptions = {}): Promise<QueryResult> {
     const endpoint = this.getApiEndpoint(table);
     const queryString = this.buildQueryString(options);
-    return this.request(`${endpoint}${queryString}`, {
+    const result = await this.request(`${endpoint}${queryString}`, {
       method: 'GET',
     });
+
+    // Transform response when single=true (match Supabase .single() behavior)
+    if (options.single && result.data) {
+      if (Array.isArray(result.data)) {
+        // Return first item or null if array is empty
+        return { data: result.data[0] || null, error: result.error };
+      }
+      // Already a single object (API might support single natively)
+      return result;
+    }
+
+    return result;
   }
 
   async insert(table: string, data: any | any[]): Promise<QueryResult> {

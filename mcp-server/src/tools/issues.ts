@@ -76,12 +76,16 @@ const createNcrTool: Tool = {
 
 const getIssueAnalyticsTool: Tool = {
   name: "get_issue_analytics",
-  description: "Get aggregated issue statistics and metrics for quality analysis",
+  description: "Get aggregated issue statistics and metrics for quality analysis, grouped by the specified field",
   inputSchema: {
     type: "object",
     properties: {
       days: { type: "number", description: "Number of days to analyze (default: 30)" },
-      group_by: { type: "string", enum: ["severity", "status", "category", "cell", "operation"] },
+      group_by: {
+        type: "string",
+        enum: ["severity", "status", "category", "cell", "operation"],
+        description: "Group results by this field (default: severity)",
+      },
     },
   },
 };
@@ -184,7 +188,10 @@ const createNcr: ToolHandler = async (args: Record<string, unknown>, supabase: S
 
 const getIssueAnalytics: ToolHandler = async (args: Record<string, unknown>, supabase: SupabaseClient) => {
   try {
-    const { days } = validateArgs(args, z.object({ days: z.number().int().min(1).max(365).optional().default(30) }));
+    const { days, group_by } = validateArgs(args, z.object({
+      days: z.number().int().min(1).max(365).optional().default(30),
+      group_by: z.enum(["severity", "status", "category", "cell", "operation"]).optional().default("severity"),
+    }));
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -195,27 +202,29 @@ const getIssueAnalytics: ToolHandler = async (args: Record<string, unknown>, sup
 
     if (error) throw databaseError("Failed to fetch issue analytics", error as Error);
 
-    const analytics = {
-      total_issues: issues?.length || 0,
-      by_severity: {} as Record<string, number>,
-      by_status: {} as Record<string, number>,
-      by_category: {} as Record<string, number>,
-      by_cell: {} as Record<string, number>,
-      avg_resolution_days: 0,
-      period_days: days,
+    // Build all groupings (efficient single pass)
+    const groupings = {
+      severity: {} as Record<string, number>,
+      status: {} as Record<string, number>,
+      category: {} as Record<string, number>,
+      cell: {} as Record<string, number>,
+      operation: {} as Record<string, number>,
     };
 
     let resolvedCount = 0;
     let totalResolutionDays = 0;
 
     issues?.forEach((issue: any) => {
-      analytics.by_severity[issue.severity || "unknown"] = (analytics.by_severity[issue.severity || "unknown"] || 0) + 1;
-      analytics.by_status[issue.status || "unknown"] = (analytics.by_status[issue.status || "unknown"] || 0) + 1;
+      groupings.severity[issue.severity || "unknown"] = (groupings.severity[issue.severity || "unknown"] || 0) + 1;
+      groupings.status[issue.status || "unknown"] = (groupings.status[issue.status || "unknown"] || 0) + 1;
       if (issue.ncr_category) {
-        analytics.by_category[issue.ncr_category] = (analytics.by_category[issue.ncr_category] || 0) + 1;
+        groupings.category[issue.ncr_category] = (groupings.category[issue.ncr_category] || 0) + 1;
       }
       const cellName = issue.operations?.cells?.name || "Unknown";
-      analytics.by_cell[cellName] = (analytics.by_cell[cellName] || 0) + 1;
+      groupings.cell[cellName] = (groupings.cell[cellName] || 0) + 1;
+
+      const operationName = issue.operations?.operation_name || "Unknown";
+      groupings.operation[operationName] = (groupings.operation[operationName] || 0) + 1;
 
       if (issue.status === "resolved" || issue.status === "closed") {
         const daysDiff = (new Date(issue.updated_at).getTime() - new Date(issue.created_at).getTime()) / (1000 * 60 * 60 * 24);
@@ -224,7 +233,17 @@ const getIssueAnalytics: ToolHandler = async (args: Record<string, unknown>, sup
       }
     });
 
-    analytics.avg_resolution_days = resolvedCount > 0 ? Math.round((totalResolutionDays / resolvedCount) * 10) / 10 : 0;
+    const avgResolutionDays = resolvedCount > 0 ? Math.round((totalResolutionDays / resolvedCount) * 10) / 10 : 0;
+
+    // Return focused analytics based on group_by parameter
+    const analytics = {
+      total_issues: issues?.length || 0,
+      group_by: group_by,
+      grouped_data: groupings[group_by],
+      avg_resolution_days: avgResolutionDays,
+      period_days: days,
+    };
+
     return structuredResponse(analytics);
   } catch (error) {
     return errorResponse(error);
