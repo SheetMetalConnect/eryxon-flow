@@ -248,7 +248,7 @@ export class RestApiClient implements UnifiedClient {
         functionName === 'complete_operation' || functionName === 'resume_operation') {
       return this.request('/api-operation-lifecycle', {
         method: 'POST',
-        body: JSON.stringify(params),
+        body: JSON.stringify({ function: functionName, ...params }),
       });
     }
 
@@ -256,7 +256,7 @@ export class RestApiClient implements UnifiedClient {
         functionName === 'complete_job' || functionName === 'resume_job') {
       return this.request('/api-job-lifecycle', {
         method: 'POST',
-        body: JSON.stringify(params),
+        body: JSON.stringify({ function: functionName, ...params }),
       });
     }
 

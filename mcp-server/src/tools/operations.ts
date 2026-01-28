@@ -15,7 +15,7 @@ const { tool: fetchOperationsTool, handler: fetchOperationsHandler } = createFet
   selectFields: '*, parts(part_number, jobs(job_number))',
   filterFields: {
     part_id: schemas.id.optional(),
-    status: z.enum(['pending', 'in_progress', 'completed', 'on_hold']).optional(),
+    status: schemas.operationStatus.optional(),
     cell_id: schemas.id.optional(),
   },
   orderBy: { column: 'created_at', ascending: false },
@@ -24,6 +24,7 @@ const { tool: fetchOperationsTool, handler: fetchOperationsHandler } = createFet
 // Start operation (status transition)
 const { tool: startOperationTool, handler: startOperationHandler } = createStatusTransitionTool({
   tableName: 'operations',
+  toolName: 'start_operation',
   description: 'Start an operation (changes status to in_progress, creates time entry)',
   newStatus: 'in_progress',
   timestampField: 'started_at',
@@ -33,6 +34,7 @@ const { tool: startOperationTool, handler: startOperationHandler } = createStatu
 // Pause operation (status transition)
 const { tool: pauseOperationTool, handler: pauseOperationHandler } = createStatusTransitionTool({
   tableName: 'operations',
+  toolName: 'pause_operation',
   description: 'Pause an operation (changes status to on_hold, ends time entry)',
   newStatus: 'on_hold',
   timestampField: 'paused_at',
@@ -41,6 +43,7 @@ const { tool: pauseOperationTool, handler: pauseOperationHandler } = createStatu
 // Complete operation (status transition)
 const { tool: completeOperationTool, handler: completeOperationHandler } = createStatusTransitionTool({
   tableName: 'operations',
+  toolName: 'complete_operation',
   description: 'Complete an operation (changes status to completed, ends time entry)',
   newStatus: 'completed',
   timestampField: 'completed_at',
@@ -54,7 +57,7 @@ const { tool: updateOperationTool, handler: updateOperationHandler } = createUpd
   resourceName: 'operation',
   updateSchema: z.object({
     id: schemas.id,
-    status: z.enum(['pending', 'in_progress', 'completed', 'on_hold']).optional(),
+    status: schemas.operationStatus.optional(),
     completion_percentage: z.number().min(0).max(100).optional(),
     notes: z.string().optional(),
   }),

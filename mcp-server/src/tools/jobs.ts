@@ -32,7 +32,7 @@ const createJobSchema = z.object({
 
 const updateJobSchema = z.object({
   id: schemas.id,
-  status: z.enum(['pending', 'in_progress', 'completed', 'on_hold']).optional(),
+  status: schemas.jobStatus.optional(),
   priority: z.enum(['low', 'normal', 'high', 'urgent']).optional(),
   due_date: z.string().datetime().optional(),
 });
@@ -46,7 +46,7 @@ const { tool: fetchJobsTool, handler: fetchJobsHandler } = createFetchTool({
   tableName: 'jobs',
   description: 'Fetch jobs from the database with optional filters and pagination',
   filterFields: {
-    status: z.enum(['not_started', 'in_progress', 'completed', 'on_hold']).optional(),
+    status: schemas.jobStatus.optional(),
     customer: z.string().optional(),
   },
   orderBy: { column: 'created_at', ascending: false },
@@ -55,6 +55,7 @@ const { tool: fetchJobsTool, handler: fetchJobsHandler } = createFetchTool({
 // Status transition tools
 const { tool: startJobTool, handler: startJobHandler } = createStatusTransitionTool({
   tableName: 'jobs',
+  toolName: 'start_job',
   description: 'Start a job (changes status to in_progress and tracks start time)',
   newStatus: 'in_progress',
   timestampField: 'started_at',
@@ -69,6 +70,7 @@ const { tool: startJobTool, handler: startJobHandler } = createStatusTransitionT
 
 const { tool: stopJobTool, handler: stopJobHandler } = createStatusTransitionTool({
   tableName: 'jobs',
+  toolName: 'stop_job',
   description: 'Stop/pause a job (changes status to on_hold)',
   newStatus: 'on_hold',
   timestampField: 'paused_at',
@@ -79,6 +81,7 @@ const { tool: stopJobTool, handler: stopJobHandler } = createStatusTransitionToo
 
 const { tool: completeJobTool, handler: completeJobHandler } = createStatusTransitionTool({
   tableName: 'jobs',
+  toolName: 'complete_job',
   description: 'Complete a job (changes status to completed, calculates duration)',
   newStatus: 'completed',
   timestampField: 'completed_at',
@@ -90,6 +93,7 @@ const { tool: completeJobTool, handler: completeJobHandler } = createStatusTrans
 
 const { tool: resumeJobTool, handler: resumeJobHandler } = createStatusTransitionTool({
   tableName: 'jobs',
+  toolName: 'resume_job',
   description: 'Resume a paused job (changes status back to in_progress)',
   newStatus: 'in_progress',
   timestampField: 'resumed_at',

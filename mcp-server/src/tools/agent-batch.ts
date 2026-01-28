@@ -25,6 +25,7 @@ import { databaseError } from "../utils/errors.js";
 // ============================================================================
 
 const batchScopeSchema = z.object({
+  customer: z.string().optional(),
   job_id: schemas.id.optional(),
   job_number: z.string().optional(),
   part_ids: z.array(schemas.id).optional(),
@@ -63,6 +64,163 @@ const operationFilterSchema = z.object({
   status: schemas.operationStatus.optional(),
   exclude_completed: z.boolean().optional().default(true),
   exclude_in_progress: z.boolean().optional(),
+});
+
+// Tool-specific schemas
+const batchUpdatePartsSchema = z.object({
+  scope: batchScopeSchema,
+  updates: partUpdatesSchema,
+  filter: partFilterSchema.optional(),
+});
+
+const batchRescheduleSchema = z.object({
+  scope: rescheduleScopeSchema,
+  schedule: scheduleSchema,
+  filter: operationFilterSchema.optional(),
+});
+
+const prioritizeJobSchema = z.object({
+  job_id: schemas.id.optional(),
+  job_number: z.string().optional(),
+  set_bullet_card: z.boolean().optional(),
+  priority: z.enum(['low', 'normal', 'high', 'urgent']).optional(),
+  notes: z.string().optional(),
+});
+
+const fetchPartsByCustomerSchema = z.object({
+  customer: z.string().min(1),
+  status: z.enum(['not_started', 'in_progress', 'completed', 'on_hold']).optional(),
+  include_completed: z.boolean().optional(),
+  limit: schemas.limit,
+});
+
+const batchCompleteSchema = z.object({
+  scope: z.object({
+    job_id: schemas.id.optional(),
+    part_id: schemas.id.optional(),
+    cell_id: schemas.id.optional(),
+    operation_ids: z.array(schemas.id).optional(),
+  }),
+  completion_percentage: z.number().optional(),
+  notes: z.string().optional(),
+});
+
+const jobOverviewSchema = z.object({
+  job_id: schemas.id.optional(),
+  job_number: z.string().optional(),
+  include_operations: z.boolean().optional().default(true),
+  include_parts: z.boolean().optional().default(true),
+  include_issues: z.boolean().optional().default(false),
+});
+
+const resourceAvailabilitySchema = z.object({
+  resource_type: z.string().optional(),
+  location: z.string().optional(),
+  status: z.enum(['available', 'in_use', 'maintenance', 'unavailable']).optional(),
+  only_available: z.boolean().optional(),
+  include_usage: z.boolean().optional(),
+});
+
+const assignResourceSchema = z.object({
+  resource_id: schemas.id.optional(),
+  resource_name: z.string().optional(),
+  operation_ids: z.array(schemas.id).optional(),
+  scope: z.object({
+    job_id: schemas.id.optional(),
+    job_number: z.string().optional(),
+    part_id: schemas.id.optional(),
+    cell_id: schemas.id.optional(),
+  }).optional(),
+  quantity: z.number().optional(),
+  notes: z.string().optional(),
+});
+
+const shippingStatusSchema = z.object({
+  customer: z.string().optional(),
+  status: z.enum(['draft', 'planned', 'loading', 'in_transit', 'delivered', 'cancelled']).optional(),
+  job_id: schemas.id.optional(),
+  job_number: z.string().optional(),
+  scheduled_date: z.string().optional(),
+  include_jobs: z.boolean().optional().default(true),
+  limit: schemas.limit,
+});
+
+const manageShipmentSchema = z.object({
+  action: z.enum(['create', 'update', 'add_jobs', 'remove_jobs', 'update_status']),
+  shipment_id: schemas.id.optional(),
+  shipment: z.object({
+    name: z.string().optional(),
+    scheduled_date: z.string().optional(),
+    scheduled_time: z.string().optional(),
+    destination_name: z.string().optional(),
+    destination_address: z.string().optional(),
+    destination_city: z.string().optional(),
+    destination_country: z.string().optional(),
+    driver_name: z.string().optional(),
+    driver_phone: z.string().optional(),
+    vehicle_type: z.enum(['truck', 'van', 'car', 'bike', 'freight', 'air', 'sea', 'rail', 'other']).optional(),
+    notes: z.string().optional(),
+  }).optional(),
+  job_ids: z.array(schemas.id).optional(),
+  job_numbers: z.array(z.string()).optional(),
+  new_status: z.enum(['draft', 'planned', 'loading', 'in_transit', 'delivered', 'cancelled']).optional(),
+});
+
+const jobsReadyForShippingSchema = z.object({
+  customer: z.string().optional(),
+  exclude_scheduled: z.boolean().optional(),
+  due_before: z.string().optional(),
+  include_partial: z.boolean().optional(),
+  min_completion_percentage: z.number().optional(),
+  limit: schemas.limit,
+});
+
+const cellCapacitySchema = z.object({
+  cell_id: schemas.id.optional(),
+  cell_name: z.string().optional(),
+  include_all: z.boolean().optional(),
+  date_range: z.object({
+    start: z.string().optional(),
+    end: z.string().optional(),
+  }).optional(),
+});
+
+const planShippingSchema = z.object({
+  due_within_days: z.number().optional(),
+  customer: z.string().optional(),
+  group_by_customer: z.boolean().optional(),
+  include_near_complete: z.boolean().optional(),
+  min_completion_for_expedite: z.number().optional(),
+  show_consolidation_opportunities: z.boolean().optional(),
+});
+
+const shippingConsolidationSchema = z.object({
+  customer: z.string().optional(),
+  destination_city: z.string().optional(),
+  date_range: z.object({
+    start: z.string().optional(),
+    end: z.string().optional(),
+  }).optional(),
+  include_in_progress: z.boolean().optional(),
+  max_days_spread: z.number().optional(),
+});
+
+const partsDueSoonSchema = z.object({
+  due_within_days: z.number().optional(),
+  customer: z.string().optional(),
+  include_blocking_ops: z.boolean().optional(),
+  status_filter: z.array(z.string()).optional(),
+  sort_by: z.enum(['due_date', 'completion_percentage', 'customer']).optional(),
+  limit: schemas.limit,
+});
+
+const suggestRescheduleSchema = z.object({
+  job_id: schemas.id.optional(),
+  job_number: z.string().optional(),
+  part_id: schemas.id.optional(),
+  target_date: z.string().optional(),
+  consider_capacity: z.boolean().optional(),
+  consolidate_with_customer: z.boolean().optional(),
 });
 
 // ============================================================================
@@ -762,24 +920,7 @@ const tools: Tool[] = [
  */
 const batchUpdateParts: ToolHandler = async (args, supabase) => {
   try {
-    const { scope, updates, filter } = args as {
-      scope: {
-        customer?: string;
-        job_id?: string;
-        job_number?: string;
-        part_ids?: string[];
-      };
-      updates: {
-        is_bullet_card?: boolean;
-        status?: string;
-        notes?: string;
-        current_cell_id?: string;
-      };
-      filter?: {
-        status?: string;
-        exclude_completed?: boolean;
-      };
-    };
+    const { scope, updates, filter } = validateArgs(args, batchUpdatePartsSchema);
 
     // Validate scope
     if (!scope.customer && !scope.job_id && !scope.job_number && !scope.part_ids) {
@@ -857,27 +998,7 @@ const batchUpdateParts: ToolHandler = async (args, supabase) => {
  */
 const batchRescheduleOperations: ToolHandler = async (args, supabase) => {
   try {
-    const { scope, schedule, filter } = args as {
-      scope: {
-        job_id?: string;
-        job_number?: string;
-        part_id?: string;
-        cell_id?: string;
-        customer?: string;
-        operation_ids?: string[];
-      };
-      schedule: {
-        planned_start?: string;
-        planned_end?: string;
-        shift_days?: number;
-        shift_hours?: number;
-      };
-      filter?: {
-        status?: string;
-        exclude_completed?: boolean;
-        exclude_in_progress?: boolean;
-      };
-    };
+    const { scope, schedule, filter } = validateArgs(args, batchRescheduleSchema);
 
     // Validate scope
     const hasScope = scope.job_id || scope.job_number || scope.part_id || scope.cell_id || scope.customer || scope.operation_ids;
@@ -1010,13 +1131,7 @@ const batchRescheduleOperations: ToolHandler = async (args, supabase) => {
  */
 const prioritizeJob: ToolHandler = async (args, supabase) => {
   try {
-    const { job_id, job_number, set_bullet_card, priority, notes } = args as {
-      job_id?: string;
-      job_number?: string;
-      set_bullet_card?: boolean;
-      priority?: string;
-      notes?: string;
-    };
+    const { job_id, job_number, set_bullet_card, priority, notes } = validateArgs(args, prioritizeJobSchema);
 
     if (!job_id && !job_number) {
       return errorResponse(new Error("Must specify job_id or job_number"));
@@ -1084,12 +1199,7 @@ const prioritizeJob: ToolHandler = async (args, supabase) => {
  */
 const fetchPartsByCustomer: ToolHandler = async (args, supabase) => {
   try {
-    const { customer, status, include_completed, limit } = args as {
-      customer: string;
-      status?: string;
-      include_completed?: boolean;
-      limit?: number;
-    };
+    const { customer, status, include_completed, limit } = validateArgs(args, fetchPartsByCustomerSchema);
 
     let query = supabase
       .from("parts")
@@ -1173,16 +1283,7 @@ const fetchPartsByCustomer: ToolHandler = async (args, supabase) => {
  */
 const batchCompleteOperations: ToolHandler = async (args, supabase) => {
   try {
-    const { scope, completion_percentage, notes } = args as {
-      scope: {
-        job_id?: string;
-        part_id?: string;
-        cell_id?: string;
-        operation_ids?: string[];
-      };
-      completion_percentage?: number;
-      notes?: string;
-    };
+    const { scope, completion_percentage, notes } = validateArgs(args, batchCompleteSchema);
 
     const hasScope = scope.job_id || scope.part_id || scope.cell_id || scope.operation_ids;
     if (!hasScope) {
@@ -1255,12 +1356,7 @@ const batchCompleteOperations: ToolHandler = async (args, supabase) => {
  */
 const getJobOverview: ToolHandler = async (args, supabase) => {
   try {
-    const { job_id, job_number, include_operations, include_issues } = args as {
-      job_id?: string;
-      job_number?: string;
-      include_operations?: boolean;
-      include_issues?: boolean;
-    };
+    const { job_id, job_number, include_operations, include_issues } = validateArgs(args, jobOverviewSchema);
 
     if (!job_id && !job_number) {
       return errorResponse(new Error("Must specify job_id or job_number"));
@@ -1397,13 +1493,7 @@ const getJobOverview: ToolHandler = async (args, supabase) => {
  */
 const checkResourceAvailability: ToolHandler = async (args, supabase) => {
   try {
-    const { resource_type, location, status, only_available, include_usage } = args as {
-      resource_type?: string;
-      location?: string;
-      status?: string;
-      only_available?: boolean;
-      include_usage?: boolean;
-    };
+    const { resource_type, location, status, only_available, include_usage } = validateArgs(args, resourceAvailabilitySchema);
 
     let query = supabase
       .from("resources")
@@ -1503,19 +1593,7 @@ const checkResourceAvailability: ToolHandler = async (args, supabase) => {
  */
 const assignResourceToOperations: ToolHandler = async (args, supabase) => {
   try {
-    const { resource_id, resource_name, operation_ids, scope, quantity, notes } = args as {
-      resource_id?: string;
-      resource_name?: string;
-      operation_ids?: string[];
-      scope?: {
-        job_id?: string;
-        job_number?: string;
-        part_id?: string;
-        cell_id?: string;
-      };
-      quantity?: number;
-      notes?: string;
-    };
+    const { resource_id, resource_name, operation_ids, scope, quantity, notes } = validateArgs(args, assignResourceSchema);
 
     // Find resource
     let resourceQuery = supabase.from("resources").select("id, name").eq("active", true).is("deleted_at", null);
@@ -1601,15 +1679,7 @@ const assignResourceToOperations: ToolHandler = async (args, supabase) => {
  */
 const getShippingStatus: ToolHandler = async (args, supabase) => {
   try {
-    const { customer, status, job_id, job_number, scheduled_date, include_jobs, limit } = args as {
-      customer?: string;
-      status?: string;
-      job_id?: string;
-      job_number?: string;
-      scheduled_date?: string;
-      include_jobs?: boolean;
-      limit?: number;
-    };
+    const { customer, status, job_id, job_number, scheduled_date, include_jobs, limit } = validateArgs(args, shippingStatusSchema);
 
     const shouldIncludeJobs = include_jobs ?? true;
 
@@ -1697,14 +1767,7 @@ const getShippingStatus: ToolHandler = async (args, supabase) => {
  */
 const manageShipment: ToolHandler = async (args, supabase) => {
   try {
-    const { action, shipment_id, shipment, job_ids, job_numbers, new_status } = args as {
-      action: string;
-      shipment_id?: string;
-      shipment?: any;
-      job_ids?: string[];
-      job_numbers?: string[];
-      new_status?: string;
-    };
+    const { action, shipment_id, shipment, job_ids, job_numbers, new_status } = validateArgs(args, manageShipmentSchema);
 
     const now = new Date().toISOString();
 
@@ -1832,14 +1895,7 @@ const manageShipment: ToolHandler = async (args, supabase) => {
  */
 const getJobsReadyForShipping: ToolHandler = async (args, supabase) => {
   try {
-    const { customer, exclude_scheduled, due_before, include_partial, min_completion_percentage, limit } = args as {
-      customer?: string;
-      exclude_scheduled?: boolean;
-      due_before?: string;
-      include_partial?: boolean;
-      min_completion_percentage?: number;
-      limit?: number;
-    };
+    const { customer, exclude_scheduled, due_before, include_partial, min_completion_percentage, limit } = validateArgs(args, jobsReadyForShippingSchema);
 
     // Get completed jobs
     let query = supabase
@@ -1935,12 +1991,7 @@ const getJobsReadyForShipping: ToolHandler = async (args, supabase) => {
  */
 const getCellCapacity: ToolHandler = async (args, supabase) => {
   try {
-    const { cell_id, cell_name, include_all, date_range } = args as {
-      cell_id?: string;
-      cell_name?: string;
-      include_all?: boolean;
-      date_range?: { start?: string; end?: string };
-    };
+    const { cell_id, cell_name, include_all, date_range } = validateArgs(args, cellCapacitySchema);
 
     // Fetch cells
     let cellQuery = supabase
@@ -2055,14 +2106,7 @@ const planShipping: ToolHandler = async (args, supabase) => {
       include_near_complete,
       min_completion_for_expedite,
       show_consolidation_opportunities,
-    } = args as {
-      due_within_days?: number;
-      customer?: string;
-      group_by_customer?: boolean;
-      include_near_complete?: boolean;
-      min_completion_for_expedite?: number;
-      show_consolidation_opportunities?: boolean;
-    };
+    } = validateArgs(args, planShippingSchema);
 
     const days = due_within_days ?? 7;
     const minCompletion = min_completion_for_expedite ?? 80;
@@ -2184,13 +2228,7 @@ const planShipping: ToolHandler = async (args, supabase) => {
  */
 const findShippingConsolidation: ToolHandler = async (args, supabase) => {
   try {
-    const { customer, destination_city, date_range, include_in_progress, max_days_spread } = args as {
-      customer?: string;
-      destination_city?: string;
-      date_range?: { start?: string; end?: string };
-      include_in_progress?: boolean;
-      max_days_spread?: number;
-    };
+    const { customer, destination_city, date_range, include_in_progress, max_days_spread } = validateArgs(args, shippingConsolidationSchema);
 
     const shouldIncludeInProgress = include_in_progress ?? true;
     const maxSpread = max_days_spread ?? 5;
@@ -2325,14 +2363,7 @@ const findShippingConsolidation: ToolHandler = async (args, supabase) => {
  */
 const getPartsDueSoon: ToolHandler = async (args, supabase) => {
   try {
-    const { due_within_days, customer, include_blocking_ops, status_filter, sort_by, limit } = args as {
-      due_within_days?: number;
-      customer?: string;
-      include_blocking_ops?: boolean;
-      status_filter?: string[];
-      sort_by?: string;
-      limit?: number;
-    };
+    const { due_within_days, customer, include_blocking_ops, status_filter, sort_by, limit } = validateArgs(args, partsDueSoonSchema);
 
     const days = due_within_days ?? 7;
     const shouldIncludeBlocking = include_blocking_ops ?? true;
@@ -2476,14 +2507,7 @@ const getPartsDueSoon: ToolHandler = async (args, supabase) => {
  */
 const suggestReschedule: ToolHandler = async (args, supabase) => {
   try {
-    const { job_id, job_number, part_id, target_date, consider_capacity, consolidate_with_customer } = args as {
-      job_id?: string;
-      job_number?: string;
-      part_id?: string;
-      target_date?: string;
-      consider_capacity?: boolean;
-      consolidate_with_customer?: boolean;
-    };
+    const { job_id, job_number, part_id, target_date, consider_capacity, consolidate_with_customer } = validateArgs(args, suggestRescheduleSchema);
 
     const shouldConsiderCapacity = consider_capacity ?? true;
     const shouldConsolidate = consolidate_with_customer ?? true;

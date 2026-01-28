@@ -87,7 +87,7 @@ export const toolSchemas = {
     status: schemas.jobStatus.optional(),
     description: z.string().optional(),
     due_date: z.string().datetime().optional(),
-    priority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
+    priority: z.enum(['low', 'normal', 'high', 'urgent']).optional(),
   }),
 
   fetchOperations: z.object({

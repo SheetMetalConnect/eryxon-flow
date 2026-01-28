@@ -30,6 +30,7 @@ interface UpdateToolConfig {
 
 interface StatusTransitionConfig {
   tableName: string;
+  toolName: string; // Explicit tool name to avoid collisions
   description: string;
   newStatus: string;
   timestampField?: string;
@@ -168,7 +169,7 @@ export function createStatusTransitionTool(config: StatusTransitionConfig): { to
   const actionName = config.newStatus.replace(/_/g, ' ');
 
   const tool: Tool = {
-    name: `${config.newStatus}_${config.tableName.replace(/s$/, '')}`,
+    name: config.toolName,
     description: config.description,
     inputSchema: {
       type: "object",
@@ -184,17 +185,27 @@ export function createStatusTransitionTool(config: StatusTransitionConfig): { to
       const { id } = validateArgs(args, z.object({ id: schemas.id }));
 
       // Validate state transition if configured
+      let currentStatus: string | undefined;
       if (config.validTransitions) {
-        const { data: current } = await supabase
+        const { data: current, error: lookupError } = await supabase
           .from(config.tableName)
           .select('status')
           .eq('id', id)
           .single();
 
-        if (current) {
-          const allowedStates = config.validTransitions[current.status] || [];
+        if (lookupError) {
+          if (lookupError.code === 'PGRST116') {
+            throw notFoundError(config.tableName, id);
+          }
+          throw databaseError(`Failed to check status for ${config.tableName}`, lookupError as Error);
+        }
+
+        if (current && current.status) {
+          const statusValue = current.status as string;
+          currentStatus = statusValue;
+          const allowedStates = config.validTransitions[statusValue] || [];
           if (!allowedStates.includes(config.newStatus)) {
-            throw invalidStateTransition(config.tableName, current.status, config.newStatus);
+            throw invalidStateTransition(config.tableName, statusValue, config.newStatus);
           }
         }
       }
@@ -209,12 +220,18 @@ export function createStatusTransitionTool(config: StatusTransitionConfig): { to
         updates[config.timestampField] = new Date().toISOString();
       }
 
-      const { data, error } = await supabase
+      // Conditional update to prevent TOCTOU race condition
+      let query = supabase
         .from(config.tableName)
         .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+        .eq('id', id);
+
+      // If we validated state, make update conditional on that status
+      if (currentStatus !== undefined) {
+        query = query.eq('status', currentStatus);
+      }
+
+      const { data, error } = await query.select().single();
 
       if (error) {
         if (error.code === 'PGRST116') {
