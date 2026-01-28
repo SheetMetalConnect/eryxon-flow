@@ -13,7 +13,6 @@ Before the demo, ensure you have:
    ```bash
    export SUPABASE_URL="https://your-project.supabase.co"
    export SUPABASE_SERVICE_KEY="your-service-key"
-   export OPENAI_API_KEY="sk-..."  # Optional, for AI chat features
    ```
 
 2. **Server Built and Ready**
@@ -323,9 +322,6 @@ A: The MCP server uses a Supabase service key for database access. In production
 **Q: Can this integrate with our existing ERP?**
 A: Yes! The ERP sync tools support bidirectional synchronization with any external system. Just map your external IDs and sources.
 
-**Q: What happens if OpenAI is not configured?**
-A: The server works perfectly — none of the tools depend on OpenAI. All 56 tools across 9 modules continue to function normally.
-
 **Q: How is data security handled?**
 A: All data access goes through Supabase with Row-Level Security (RLS). The MCP server respects tenant boundaries.
 
@@ -364,12 +360,6 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 supabase.from('jobs').select('count').single().then(console.log);
 "
 ```
-
-### AI Chat Not Working
-
-1. Verify `OPENAI_API_KEY` is set
-2. Check the API key has sufficient quota
-3. Test with a simple query first
 
 ---
 

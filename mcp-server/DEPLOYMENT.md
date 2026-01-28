@@ -52,7 +52,6 @@ railway up
 3. Set environment variables in Railway dashboard:
 ```
 ERYXON_API_URL=https://your-project.supabase.co
-OPENAI_API_KEY=sk-...
 UPSTASH_REDIS_REST_URL=...
 UPSTASH_REDIS_REST_TOKEN=...
 ```
@@ -115,7 +114,6 @@ primary_region = "iad"
 ```bash
 flyctl launch
 flyctl secrets set ERYXON_API_URL=https://your-project.supabase.co
-flyctl secrets set OPENAI_API_KEY=sk-...
 flyctl deploy
 ```
 
@@ -134,8 +132,6 @@ services:
     envVars:
       - key: ERYXON_API_URL
         value: https://your-project.supabase.co
-      - key: OPENAI_API_KEY
-        sync: false
       - key: PORT
         value: 10000
 ```
@@ -160,7 +156,6 @@ CMD ["npm", "start"]
 docker build -t eryxon-mcp ./mcp-server
 docker run -d -p 3000:3000 \
   -e ERYXON_API_URL=https://your-project.supabase.co \
-  -e OPENAI_API_KEY=sk-... \
   eryxon-mcp
 ```
 
@@ -296,7 +291,6 @@ npm install @upstash/ratelimit @upstash/redis
 
 **Additional costs:**
 - Upstash Redis: $0-10/month (optional caching)
-- OpenAI API: Pay-per-use for AI features
 
 ---
 
