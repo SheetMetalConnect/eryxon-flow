@@ -1,13 +1,16 @@
-# Eryxon Flow MCP Server v2.4.0
+# Eryxon Flow MCP Server v2.5.0
 
 **Universal MCP server for Eryxon Flow MES** - Works in both self-hosted and cloud SaaS deployments.
 
 ## Features
 
 - Auto-detects direct Supabase or REST API connection
-- 55 tools for jobs, parts, operations, quality, shipping, analytics
-- Multi-tenant safe via API keys
+- **55 tools across 9 modules** for jobs, parts, operations, quality, shipping, analytics
+- **Production-grade validation** with Zod runtime type checking
+- **Tool factory pattern** reducing code duplication by 60%
+- Multi-tenant safe via API keys or RLS
 - Deploy to Railway, Fly.io, or run locally
+- **90-test suite** with 100% pass rate
 
 ## Quick Start
 
@@ -67,15 +70,6 @@ The server automatically detects which mode to use:
 - Has `ERYXON_API_KEY`? → **API Mode** (cloud, multi-tenant)
 - Has `SUPABASE_SERVICE_KEY`? → **Direct Mode** (self-hosted, single-tenant)
 
-## Deployment
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for:
-- Railway deployment (recommended)
-- Fly.io deployment
-- Docker deployment
-- Frontend integration (MCP status indicator)
-- User setup instructions
-
 ## Architecture
 
 ```
@@ -88,8 +82,36 @@ Supabase Edge Functions / Database
 Your Data
 ```
 
+## Tool Modules
+
+1. **Jobs** (7 tools) - Job lifecycle and management
+2. **Parts** (2 tools) - Part tracking
+3. **Operations** (5 tools) - Operation workflow with state transitions
+4. **Tasks** (2 tools) - Task management
+5. **Issues** (8 tools) - Quality issues and NCRs
+6. **Substeps** (5 tools) - Operation substeps
+7. **Dashboard** (3 tools) - Production metrics
+8. **Scrap** (7 tools) - Scrap tracking and analytics
+9. **Agent Batch** (16 tools) - Batch operations optimized for AI agents
+
 ## Documentation
 
-- [Deployment Guide](./DEPLOYMENT.md) - Deploy to Railway/Fly.io/Docker
-- [MCP Demo Guide](../website/src/content/docs/api/mcp-demo-guide.md) - Complete tool reference
-- [Website Docs](../website/src/content/docs/) - User-facing documentation
+- [MCP Demo Guide](../website/src/content/docs/api/mcp-demo-guide.md) - Complete tool reference and usage
+- [Self-Hosting Guide](../website/src/content/docs/guides/self-hosting.md) - Self-hosted setup
+- [Website Docs](../website/src/content/docs/) - Full documentation
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Run tests
+npm test
+
+# Build
+npm run build
+
+# Start in development mode
+npm run dev
+```

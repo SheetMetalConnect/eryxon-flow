@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.2.1] - 2026-01-28
+## [0.3.1] - 2026-01-28
 
 ### Focus: MCP Server Modernization & Code Quality
 
@@ -76,8 +76,36 @@ This release modernizes the MCP (Model Context Protocol) server with production-
 
 - Cleaned up MCP README (removed marketing bloat)
 - Consolidated documentation to single source of truth
-- Updated DEPLOYMENT.md for cloud hosting
-- Improved self-hosting guides
+- Updated MCP demo guide with current tool counts (55 tools, 9 modules)
+- Removed temporary refactoring documentation
+
+---
+
+## [0.3.0] - 2026-01-28
+
+### Focus: Enhanced Batch Management
+
+Major improvements to batch operations, time tracking, and production workflow efficiency.
+
+### Added
+
+- **Batch nesting and grouping** - Organize batches hierarchically
+- **Image support** for batch documentation
+- **Enhanced editing capabilities** for batch operations
+- **Batch time tracking** with stapelscannen time distribution
+- **Improved batch management UI** with better workflows
+
+### Changed
+
+- Enhanced batch operation workflows in MCP server
+- Improved batch data models and relationships
+- Better tenant scoping for batch operations
+
+### Fixed
+
+- Batch time tracking review feedback addressed
+- Critical code review issues in batch management
+- Tenant scoping consistency
 
 ---
 

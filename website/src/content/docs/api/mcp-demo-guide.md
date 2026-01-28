@@ -36,10 +36,21 @@ npm run dev
 
 You should see:
 ```
-Eryxon Flow MCP Server v2.3.0
-Loaded 56 tools from 9 modules
+Eryxon Flow MCP Server v2.5.0
+Loaded 55 tools from 9 modules
 Eryxon Flow MCP Server running on stdio
 ```
+
+**Tool Modules:**
+- Jobs (7 tools) - Job lifecycle and management
+- Parts (2 tools) - Part tracking
+- Operations (5 tools) - Operation workflow
+- Tasks (2 tools) - Task management
+- Issues (8 tools) - Quality issues and NCRs
+- Substeps (5 tools) - Operation substeps
+- Dashboard (3 tools) - Production metrics
+- Scrap (7 tools) - Scrap tracking and analytics
+- Agent Batch (16 tools) - Batch operations for AI agents
 
 ### Configure Claude Desktop
 
