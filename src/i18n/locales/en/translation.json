@@ -1930,7 +1930,14 @@
     "schedulingCapacity": "Scheduling Capacity",
     "hoursPerDay": "Hours per Day",
     "hoursUnit": "hours",
-    "hoursPerDayHelp": "Maximum work hours this cell can process per day. Used by the scheduler to allocate operations."
+    "hoursPerDayHelp": "Maximum work hours this cell can process per day. Used by the scheduler to allocate operations.",
+    "confirmOverwrite": "Confirm Schedule Overwrite",
+    "confirmOverwriteDescription": "{{count}} operations already have planned dates. Running the auto-scheduler will overwrite these existing schedules.",
+    "existingSchedules": "Existing Schedules",
+    "operationsWithDates": "{{count}} operations with planned dates",
+    "overwriteWarning": "This action cannot be undone. The scheduler will recalculate all operation dates based on current capacity settings.",
+    "proceedWithScheduling": "Proceed with Scheduling",
+    "cancelScheduling": "Cancel"
   },
   "calendar": {
     "title": "Factory Calendar",

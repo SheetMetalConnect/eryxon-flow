@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CalendarClock, Loader2 } from "lucide-react";
+import { CalendarClock, Loader2, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { SchedulerService, CalendarDay } from "@/lib/scheduler";
@@ -8,16 +8,62 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { addMonths, format } from "date-fns";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export function AutoScheduleButton() {
     const [loading, setLoading] = useState(false);
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+    const [operationsWithDates, setOperationsWithDates] = useState(0);
     const { toast } = useToast();
     const { t } = useTranslation();
     const { tenant } = useAuth();
     const queryClient = useQueryClient();
 
-    const handleSchedule = async () => {
+    const checkExistingSchedules = async (): Promise<number> => {
+        const { count, error } = await supabase
+            .from("operations")
+            .select("*", { count: "exact", head: true })
+            .neq("status", "completed")
+            .not("planned_start", "is", null);
+
+        if (error) throw error;
+        return count ?? 0;
+    };
+
+    const handleScheduleClick = async () => {
         setLoading(true);
+        try {
+            const existingCount = await checkExistingSchedules();
+            if (existingCount > 0) {
+                setOperationsWithDates(existingCount);
+                setShowConfirmDialog(true);
+                setLoading(false);
+                return;
+            }
+            await runScheduler();
+        } catch (error: any) {
+            console.error("Error checking schedules:", error);
+            toast({
+                title: t("capacity.schedulingFailed", "Scheduling Failed"),
+                description: error.message,
+                variant: "destructive",
+            });
+            setLoading(false);
+        }
+    };
+
+    const runScheduler = async () => {
+        setLoading(true);
+        setShowConfirmDialog(false);
         try {
             // 1. Fetch all necessary data in parallel
             const [jobsResult, operationsResult, cellsResult, calendarResult] = await Promise.all([
@@ -149,13 +195,56 @@ export function AutoScheduleButton() {
     };
 
     return (
-        <Button onClick={handleSchedule} disabled={loading}>
-            {loading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-                <CalendarClock className="mr-2 h-4 w-4" />
-            )}
-            {t("capacity.autoSchedule", "Auto Schedule")}
-        </Button>
+        <>
+            <Button onClick={handleScheduleClick} disabled={loading}>
+                {loading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                    <CalendarClock className="mr-2 h-4 w-4" />
+                )}
+                {t("capacity.autoSchedule", "Auto Schedule")}
+            </Button>
+
+            <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2">
+                            <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                            {t("capacity.confirmOverwrite", "Confirm Schedule Overwrite")}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="space-y-3">
+                            <p>
+                                {t("capacity.confirmOverwriteDescription", {
+                                    count: operationsWithDates,
+                                    defaultValue: "{{count}} operations already have planned dates. Running the auto-scheduler will overwrite these existing schedules."
+                                })}
+                            </p>
+                            <div className="bg-muted p-3 rounded-md">
+                                <p className="text-sm font-medium text-foreground">
+                                    {t("capacity.existingSchedules", "Existing Schedules")}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                    {t("capacity.operationsWithDates", {
+                                        count: operationsWithDates,
+                                        defaultValue: "{{count}} operations with planned dates"
+                                    })}
+                                </p>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                                {t("capacity.overwriteWarning", "This action cannot be undone. The scheduler will recalculate all operation dates based on current capacity settings.")}
+                            </p>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>
+                            {t("capacity.cancelScheduling", "Cancel")}
+                        </AlertDialogCancel>
+                        <AlertDialogAction onClick={runScheduler}>
+                            {t("capacity.proceedWithScheduling", "Proceed with Scheduling")}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </>
     );
 }

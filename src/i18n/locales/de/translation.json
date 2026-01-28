@@ -1778,5 +1778,33 @@
     "issueCreatedDesc": "Wenn ein Qualitätsproblem gemeldet wird",
     "quantityReportedDesc": "Wenn die Produktionsmenge erfasst wird",
     "scrapRecordedDesc": "Wenn Ausschuss/Defekte erfasst werden"
+  },
+  "capacity": {
+    "title": "Kapazitätsmatrix",
+    "autoSchedule": "Automatisch Planen",
+    "workloadOverview": "Auslastungsübersicht",
+    "cell": "Zelle",
+    "capacity": "Kapazität",
+    "scheduled": "Geplant",
+    "utilization": "Auslastung",
+    "schedulingComplete": "Planung Abgeschlossen",
+    "schedulingFailed": "Planung Fehlgeschlagen",
+    "operationsScheduled": "{{count}} Arbeitsgänge erfolgreich geplant.",
+    "description": "Zellenkapazität nach Datum anzeigen und verwalten",
+    "schedulingCapacity": "Planungskapazität",
+    "hoursPerDay": "Stunden pro Tag",
+    "hoursUnit": "Stunden",
+    "hoursPerDayHelp": "Maximale Arbeitsstunden, die diese Zelle pro Tag verarbeiten kann. Wird vom Planer zur Zuweisung von Arbeitsgängen verwendet.",
+    "confirmOverwrite": "Planungsüberschreibung Bestätigen",
+    "confirmOverwriteDescription": "{{count}} Arbeitsgänge haben bereits geplante Termine. Die Ausführung des automatischen Planers überschreibt diese bestehenden Planungen.",
+    "existingSchedules": "Bestehende Planungen",
+    "operationsWithDates": "{{count}} Arbeitsgänge mit geplanten Terminen",
+    "overwriteWarning": "Diese Aktion kann nicht rückgängig gemacht werden. Der Planer berechnet alle Arbeitsgangtermine basierend auf den aktuellen Kapazitätseinstellungen neu.",
+    "proceedWithScheduling": "Mit Planung Fortfahren",
+    "cancelScheduling": "Abbrechen"
+  },
+  "calendar": {
+    "title": "Werkskalender",
+    "description": "Feiertage, Schließungen und besondere Arbeitstage verwalten"
   }
 }
