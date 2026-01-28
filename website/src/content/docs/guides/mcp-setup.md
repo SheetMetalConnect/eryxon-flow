@@ -293,7 +293,7 @@ The MCP server provides **55 tools across 9 modules**:
 - `get_scrap_pareto` - Pareto analysis of scrap causes
 - `get_quality_score` - Overall quality metrics
 
-### 9. Agent Batch (16 tools)
+### 9. Agent Batch (11 tools)
 Optimized batch operations for AI agents:
 - `batch_update_parts` - Bulk part updates
 - `batch_reschedule_operations` - Bulk rescheduling
@@ -303,12 +303,7 @@ Optimized batch operations for AI agents:
 - `get_job_overview` - Comprehensive job summary
 - `check_resource_availability` - Resource planning
 - `assign_resource_to_operations` - Resource allocation
-- `get_shipping_status` - Shipping overview
-- `manage_shipment` - Shipment CRUD
-- `get_jobs_ready_for_shipping` - Shipping queue
 - `get_cell_capacity` - Cell utilization
-- `plan_shipping` - Shipping optimization
-- `find_shipping_consolidation` - Consolidation opportunities
 - `get_parts_due_soon` - Due date alerts
 - `suggest_reschedule` - AI-powered rescheduling
 

@@ -137,33 +137,33 @@ For complete setup instructions including cloud deployment options, see the [MCP
 
 ---
 
-### Scenario 3: AI-Powered Analysis (5 min)
+### Scenario 3: Quality Analytics (5 min)
 
-**Objective**: Showcase natural language AI capabilities.
+**Objective**: Demonstrate quality issue analytics and insights.
 
-1. **Ask a Natural Language Question**
+1. **Get Issue Analytics by Severity**
    ```
-   "What are the most common quality issues we've seen this month?"
+   "Show me issue analytics for the last 30 days grouped by severity"
    ```
-   Uses `chat_query` with context: "quality".
+   Uses `get_issue_analytics` with `days: 30`, `group_by: "severity"`.
 
-2. **Get Job Summary**
+2. **Analyze Issue Trends**
    ```
-   "Give me an AI summary of our job status focusing on any delays"
+   "What are the quality issue trends over the past week?"
    ```
-   Uses `chat_summarize_jobs` with focus: "delays".
+   Uses `get_issue_trends` with `days: 7`, `interval: "daily"`.
 
-3. **Quality Analysis**
+3. **Root Cause Analysis**
    ```
-   "Analyze our quality issues and give me recommendations"
+   "Analyze the most common root causes for issues in the last 90 days"
    ```
-   Uses `chat_analyze_quality` with `include_recommendations: true`.
+   Uses `get_root_cause_analysis` with `days: 90`, `min_occurrences: 2`.
 
-4. **Get Action Suggestions**
+4. **Get Quality Improvement Suggestions**
    ```
-   "What actions should we take to address bottlenecks?"
+   "Give me suggestions to improve quality based on recent patterns"
    ```
-   Uses `chat_suggest_actions` with focus_area: "bottlenecks".
+   Uses `suggest_quality_improvements` with analysis of issue patterns.
 
 ---
 
@@ -227,37 +227,7 @@ For complete setup instructions including cloud deployment options, see the [MCP
 
 ---
 
-### Scenario 6: Shipping & Logistics (5 min)
-
-**Objective**: Demonstrate shipping management capabilities.
-
-1. **Check Jobs Ready for Shipping**
-   ```
-   "What jobs are ready to be shipped?"
-   ```
-   Uses `get_jobs_ready_for_shipping`.
-
-2. **Get Shipping Status**
-   ```
-   "Show me all pending shipments for customer 'Acme Corp'"
-   ```
-   Uses `get_shipping_status`.
-
-3. **Find Consolidation Opportunities**
-   ```
-   "Find opportunities to consolidate shipments going to the same destination"
-   ```
-   Uses `find_shipping_consolidation`.
-
-4. **Plan Shipping**
-   ```
-   "Plan shipping for jobs JOB-001 and JOB-002, consolidating where possible"
-   ```
-   Uses `plan_shipping`.
-
----
-
-### Scenario 7: Operations Management (5 min)
+### Scenario 6: Operations Management (5 min)
 
 **Objective**: Show granular operation control.
 
@@ -287,7 +257,7 @@ For complete setup instructions including cloud deployment options, see the [MCP
 
 ---
 
-### Scenario 8: Quality & NCR Management (5 min)
+### Scenario 7: Quality & NCR Management (5 min)
 
 **Objective**: Demonstrate issue tracking and NCR workflow.
 
@@ -330,7 +300,7 @@ For complete setup instructions including cloud deployment options, see the [MCP
 1. **Start Simple** - Begin with basic fetch operations to show the connection works
 2. **Build Complexity** - Progress to more complex scenarios
 3. **Show Real Data** - Always use real database data, never mock data
-4. **Highlight AI Capabilities** - The AI chat tools are often the most impressive
+4. **Highlight Analytics** - Quality analytics and scrap analysis tools provide powerful insights
 5. **Demonstrate Batch Operations** - Show efficiency gains from batch tools
 
 ### Common Questions & Answers
@@ -390,11 +360,10 @@ supabase.from('jobs').select('count').single().then(console.log);
 | **Parts** | fetch_parts, update_part | Part tracking |
 | **Operations** | fetch_operations, start_operation, pause_operation, complete_operation, update_operation | Operation control |
 | **Tasks** | fetch_tasks, update_task | Task assignment |
-| **Issues** | fetch_issues, create_ncr, fetch_ncrs, update_issue | Quality tracking |
+| **Issues** | fetch_issues, create_ncr, fetch_ncrs, update_issue, get_issue_analytics, get_issue_trends, get_root_cause_analysis, suggest_quality_improvements | Quality tracking & analytics |
 | **Substeps** | fetch_substeps, add_substep, complete_substep, update_substep, delete_substep | Granular tracking |
 | **Dashboard** | get_dashboard_stats, get_qrm_data, get_production_metrics | Real-time metrics |
-| **AI Chat** | chat_query, chat_summarize_jobs, chat_analyze_quality, chat_explain_data, chat_suggest_actions | AI analysis |
-| **ERP Sync** | erp_sync_diff, erp_sync_execute, erp_lookup_external_id, erp_sync_status, erp_batch_lookup, erp_resolve_ids | Integration |
+| **Scrap** | fetch_scrap_reasons, report_scrap, get_scrap_analytics, get_scrap_trends, get_yield_metrics, get_scrap_pareto, get_quality_score | Scrap tracking & yield analysis |
 | **Batch Ops** | 16 tools for bulk operations | Efficiency |
 
 ---
