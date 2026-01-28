@@ -14,7 +14,56 @@
 
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 import type { ToolModule, ToolHandler } from "../types/index.js";
-import { jsonResponse, errorResponse } from "../utils/response.js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { z } from "zod";
+import { schemas, validateArgs } from "../utils/validation.js";
+import { structuredResponse, errorResponse } from "../utils/response.js";
+import { databaseError } from "../utils/errors.js";
+
+// ============================================================================
+// Validation Schemas
+// ============================================================================
+
+const batchScopeSchema = z.object({
+  job_id: schemas.id.optional(),
+  job_number: z.string().optional(),
+  part_ids: z.array(schemas.id).optional(),
+});
+
+const rescheduleScopeSchema = z.object({
+  job_id: schemas.id.optional(),
+  job_number: z.string().optional(),
+  part_id: schemas.id.optional(),
+  cell_id: schemas.id.optional(),
+  customer: z.string().optional(),
+  operation_ids: z.array(schemas.id).optional(),
+});
+
+const partUpdatesSchema = z.object({
+  is_bullet_card: z.boolean().optional(),
+  status: z.enum(['not_started', 'in_progress', 'completed', 'on_hold']).optional(),
+  notes: z.string().optional(),
+  current_cell_id: schemas.id.optional(),
+});
+
+const scheduleSchema = z.object({
+  planned_start: z.string().datetime().optional(),
+  planned_end: z.string().datetime().optional(),
+  shift_days: z.number().optional(),
+  shift_hours: z.number().optional(),
+});
+
+const partFilterSchema = z.object({
+  status: z.enum(['not_started', 'in_progress', 'completed', 'on_hold']).optional(),
+  exclude_completed: z.boolean().optional().default(true),
+  due_before: z.string().optional(),
+});
+
+const operationFilterSchema = z.object({
+  status: schemas.operationStatus.optional(),
+  exclude_completed: z.boolean().optional().default(true),
+  exclude_in_progress: z.boolean().optional(),
+});
 
 // ============================================================================
 // Tool Definitions
@@ -773,7 +822,7 @@ const batchUpdateParts: ToolHandler = async (args, supabase) => {
     }
 
     if (partIds.length === 0) {
-      return jsonResponse({ updated: 0, message: "No matching parts found" });
+      return structuredResponse({ updated: 0, message: "No matching parts found" });
     }
 
     // Perform update
@@ -790,7 +839,7 @@ const batchUpdateParts: ToolHandler = async (args, supabase) => {
 
     if (updateError) throw updateError;
 
-    return jsonResponse(
+    return structuredResponse(
       {
         updated: updated?.length || 0,
         parts: updated,
@@ -883,7 +932,7 @@ const batchRescheduleOperations: ToolHandler = async (args, supabase) => {
     }
 
     if (operationIds.length === 0) {
-      return jsonResponse({ updated: 0, message: "No matching operations found" });
+      return structuredResponse({ updated: 0, message: "No matching operations found" });
     }
 
     // Calculate updates
@@ -923,7 +972,7 @@ const batchRescheduleOperations: ToolHandler = async (args, supabase) => {
         updatedCount++;
       }
 
-      return jsonResponse(
+      return structuredResponse(
         {
           updated: updatedCount,
           shift_applied: {
@@ -944,7 +993,7 @@ const batchRescheduleOperations: ToolHandler = async (args, supabase) => {
 
     if (updateError) throw updateError;
 
-    return jsonResponse(
+    return structuredResponse(
       {
         updated: updated?.length || 0,
         operations: updated,
@@ -1024,7 +1073,7 @@ const prioritizeJob: ToolHandler = async (args, supabase) => {
       results.bullet_card_set = true;
     }
 
-    return jsonResponse(results, `Job ${job.job_number} prioritized`);
+    return structuredResponse(results, `Job ${job.job_number} prioritized`);
   } catch (error) {
     return errorResponse(error);
   }
@@ -1105,7 +1154,7 @@ const fetchPartsByCustomer: ToolHandler = async (args, supabase) => {
       });
     }
 
-    return jsonResponse(
+    return structuredResponse(
       {
         customer_search: customer,
         total_parts: data?.length || 0,
@@ -1169,7 +1218,7 @@ const batchCompleteOperations: ToolHandler = async (args, supabase) => {
     }
 
     if (operationIds.length === 0) {
-      return jsonResponse({ completed: 0, message: "No pending operations found" });
+      return structuredResponse({ completed: 0, message: "No pending operations found" });
     }
 
     const now = new Date().toISOString();
@@ -1189,7 +1238,7 @@ const batchCompleteOperations: ToolHandler = async (args, supabase) => {
 
     if (updateError) throw updateError;
 
-    return jsonResponse(
+    return structuredResponse(
       {
         completed: completed?.length || 0,
         operations: completed,
@@ -1314,7 +1363,7 @@ const getJobOverview: ToolHandler = async (args, supabase) => {
     const totalOps = operationsData.length;
     const completedOps = operationsData.filter((o: any) => o.status === "completed").length;
 
-    return jsonResponse(
+    return structuredResponse(
       {
         job: {
           id: job.id,
@@ -1435,7 +1484,7 @@ const checkResourceAvailability: ToolHandler = async (args, supabase) => {
       byType.set(r.type, current);
     }
 
-    return jsonResponse(
+    return structuredResponse(
       {
         total: enrichedResources.length,
         available: enrichedResources.filter((r: any) => r.is_available).length,
@@ -1515,7 +1564,7 @@ const assignResourceToOperations: ToolHandler = async (args, supabase) => {
     }
 
     if (opIds.length === 0) {
-      return jsonResponse({ assigned: 0, message: "No operations found" });
+      return structuredResponse({ assigned: 0, message: "No operations found" });
     }
 
     // Create assignments
@@ -1534,7 +1583,7 @@ const assignResourceToOperations: ToolHandler = async (args, supabase) => {
 
     if (assignError) throw assignError;
 
-    return jsonResponse(
+    return structuredResponse(
       {
         resource: { id: resource.id, name: resource.name },
         assigned: created?.length || 0,
@@ -1603,7 +1652,7 @@ const getShippingStatus: ToolHandler = async (args, supabase) => {
         const shipmentIds = [...new Set(shipmentJobs.map((sj: any) => sj.shipment_id))];
         query = query.in("id", shipmentIds);
       } else {
-        return jsonResponse({ total: 0, shipments: [] }, "No shipments found for this job");
+        return structuredResponse({ total: 0, shipments: [] }, "No shipments found for this job");
       }
     }
 
@@ -1630,7 +1679,7 @@ const getShippingStatus: ToolHandler = async (args, supabase) => {
       byStatus.set(s.status, (byStatus.get(s.status) || 0) + 1);
     }
 
-    return jsonResponse(
+    return structuredResponse(
       {
         total: (shipments as any[])?.length || 0,
         by_status: Object.fromEntries(byStatus),
@@ -1709,7 +1758,7 @@ const manageShipment: ToolHandler = async (args, supabase) => {
           );
         }
 
-        return jsonResponse(
+        return structuredResponse(
           { action: "created", shipment: created, jobs_added: resolvedJobIds.length },
           `Created shipment ${created.shipment_number}`,
         );
@@ -1729,7 +1778,7 @@ const manageShipment: ToolHandler = async (args, supabase) => {
           .single();
 
         if (error) throw error;
-        return jsonResponse({ action: "updated", shipment: updated }, "Shipment updated");
+        return structuredResponse({ action: "updated", shipment: updated }, "Shipment updated");
       }
 
       case "add_jobs": {
@@ -1744,7 +1793,7 @@ const manageShipment: ToolHandler = async (args, supabase) => {
           { onConflict: "shipment_id,job_id" },
         );
 
-        return jsonResponse({ action: "add_jobs", shipment_id, jobs_added: resolvedJobIds.length }, `Added ${resolvedJobIds.length} jobs to shipment`);
+        return structuredResponse({ action: "add_jobs", shipment_id, jobs_added: resolvedJobIds.length }, `Added ${resolvedJobIds.length} jobs to shipment`);
       }
 
       case "remove_jobs": {
@@ -1753,7 +1802,7 @@ const manageShipment: ToolHandler = async (args, supabase) => {
 
         await supabase.from("shipment_jobs").delete().eq("shipment_id", shipment_id).in("job_id", resolvedJobIds);
 
-        return jsonResponse({ action: "remove_jobs", shipment_id, jobs_removed: resolvedJobIds.length }, `Removed ${resolvedJobIds.length} jobs from shipment`);
+        return structuredResponse({ action: "remove_jobs", shipment_id, jobs_removed: resolvedJobIds.length }, `Removed ${resolvedJobIds.length} jobs from shipment`);
       }
 
       case "update_status": {
@@ -1767,7 +1816,7 @@ const manageShipment: ToolHandler = async (args, supabase) => {
         const { data: updated, error } = await supabase.from("shipments").update(statusUpdate).eq("id", shipment_id).select().single();
 
         if (error) throw error;
-        return jsonResponse({ action: "update_status", shipment: updated }, `Shipment status updated to ${new_status}`);
+        return structuredResponse({ action: "update_status", shipment: updated }, `Shipment status updated to ${new_status}`);
       }
 
       default:
@@ -1869,7 +1918,7 @@ const getJobsReadyForShipping: ToolHandler = async (args, supabase) => {
       }
     }
 
-    return jsonResponse(
+    return structuredResponse(
       {
         total: enrichedJobs.length,
         jobs: enrichedJobs,
@@ -1914,7 +1963,7 @@ const getCellCapacity: ToolHandler = async (args, supabase) => {
     if (error) throw error;
 
     if (!cells || cells.length === 0) {
-      return jsonResponse({ cells: [] }, "No cells found");
+      return structuredResponse({ cells: [] }, "No cells found");
     }
 
     // Get WIP counts and operations for each cell
@@ -1981,7 +2030,7 @@ const getCellCapacity: ToolHandler = async (args, supabase) => {
       total_wip: enrichedCells.reduce((sum: number, c: any) => sum + c.operations.total, 0),
     };
 
-    return jsonResponse(
+    return structuredResponse(
       {
         summary,
         cells: enrichedCells,
@@ -2107,7 +2156,7 @@ const planShipping: ToolHandler = async (args, supabase) => {
         }));
     }
 
-    return jsonResponse(
+    return structuredResponse(
       {
         summary: {
           due_within_days: days,
@@ -2256,7 +2305,7 @@ const findShippingConsolidation: ToolHandler = async (args, supabase) => {
       })
       .sort((a, b) => b.jobs_count - a.jobs_count);
 
-    return jsonResponse(
+    return structuredResponse(
       {
         total_eligible_jobs: eligibleJobs.length,
         consolidation_groups: consolidations.length,
@@ -2395,7 +2444,7 @@ const getPartsDueSoon: ToolHandler = async (args, supabase) => {
     const dueSoon = sortedParts.filter((p) => p.days_until_due >= 0 && p.days_until_due <= 3);
     const bulletCards = sortedParts.filter((p) => p.is_bullet_card);
 
-    return jsonResponse(
+    return structuredResponse(
       {
         summary: {
           total_parts: sortedParts.length,
@@ -2570,7 +2619,7 @@ const suggestReschedule: ToolHandler = async (args, supabase) => {
       });
     }
 
-    return jsonResponse(
+    return structuredResponse(
       {
         job: {
           id: job.id,
