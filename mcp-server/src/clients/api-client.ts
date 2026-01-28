@@ -78,9 +78,13 @@ export class RestApiClient implements UnifiedClient {
         if (result.success) {
           return { data: result.data, error: null };
         } else {
+          // Preserve server error messages (handle both string and object formats)
+          const errorMessage = typeof result.error === 'string'
+            ? result.error
+            : result.error?.message || 'Unknown error';
           return {
             data: null,
-            error: new Error(result.error?.message || 'Unknown error'),
+            error: new Error(errorMessage),
           };
         }
       }
@@ -218,7 +222,8 @@ export class RestApiClient implements UnifiedClient {
 
   async update(table: string, id: string, data: any): Promise<QueryResult> {
     const endpoint = this.getApiEndpoint(table);
-    return this.request(`${endpoint}?id=${id}`, {
+    const encodedId = encodeURIComponent(id);
+    return this.request(`${endpoint}?id=${encodedId}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
@@ -226,7 +231,8 @@ export class RestApiClient implements UnifiedClient {
 
   async delete(table: string, id: string): Promise<QueryResult> {
     const endpoint = this.getApiEndpoint(table);
-    return this.request(`${endpoint}?id=${id}`, {
+    const encodedId = encodeURIComponent(id);
+    return this.request(`${endpoint}?id=${encodedId}`, {
       method: 'DELETE',
     });
   }

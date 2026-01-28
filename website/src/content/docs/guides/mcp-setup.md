@@ -126,15 +126,16 @@ https://your-mcp-server.railway.app
 
 5. **User Configuration:**
 
-Each user configures Claude Desktop with their API key:
+Each user runs the MCP server locally in API mode:
 
 ```json
 {
   "mcpServers": {
     "eryxon-flow": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-fetch", "https://your-mcp-server.railway.app"],
+      "command": "node",
+      "args": ["/path/to/eryxon-flow/mcp-server/dist/index.js"],
       "env": {
+        "ERYXON_API_URL": "https://your-project.supabase.co",
         "ERYXON_API_KEY": "ery_live_xxxxx"
       }
     }
@@ -142,7 +143,7 @@ Each user configures Claude Desktop with their API key:
 }
 ```
 
-Users get their API key from: Settings → API Keys in Eryxon Flow web interface.
+**Note:** In cloud/multi-tenant mode, each user runs the MCP server locally but it connects to your hosted Eryxon API using their personal API key. Users get their API key from: Settings → API Keys in Eryxon Flow web interface.
 
 #### Option B: Fly.io
 
@@ -383,8 +384,8 @@ chmod +x mcp-server/dist/index.js
 3. Test connection manually:
 ```bash
 curl https://your-project.supabase.co/rest/v1/jobs \
-  -H "apikey: your-anon-key" \
-  -H "Authorization: Bearer your-service-key"
+  -H "apikey: YOUR_ANON_KEY_HERE" \
+  -H "Authorization: Bearer YOUR_SERVICE_KEY_HERE"
 ```
 
 ### "No tools available"

@@ -70,7 +70,7 @@ const createNcrTool: Tool = {
       preventive_action: { type: "string", description: "Preventive action to avoid recurrence" },
       reported_by_id: { type: "string", description: "User ID who reported the NCR" },
     },
-    required: ["operation_id", "title", "severity"],
+    required: ["operation_id", "title", "severity", "ncr_category"],
   },
 };
 

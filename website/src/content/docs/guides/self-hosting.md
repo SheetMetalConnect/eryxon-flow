@@ -248,7 +248,7 @@ volumes:
 
 Create `Caddyfile`:
 
-```
+```caddyfile
 your-domain.com {
     reverse_proxy app:80
 
@@ -261,7 +261,7 @@ your-domain.com {
 }
 ```
 
-Deploy:
+Save the above Docker Compose configuration as `docker-compose.prod.yml`, then deploy:
 ```bash
 docker compose -f docker-compose.prod.yml up -d
 ```
@@ -281,7 +281,7 @@ Best for edge deployment with global CDN.
    - **Output directory**: `dist`
 
 3. **Set Environment Variables**
-   ```
+   ```bash
    VITE_SUPABASE_URL=https://yourproject.supabase.co
    VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
    VITE_SUPABASE_PROJECT_ID=yourproject
