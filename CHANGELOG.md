@@ -72,12 +72,49 @@ This release modernizes the MCP (Model Context Protocol) server with production-
 - **Maintainability**: Centralized validation schemas
 - **Production-ready**: Clean TypeScript compilation, all tests passing
 
+### Infrastructure & Deployment
+
+**Edge Functions Modernization:**
+- Added `import_map.json` for `@shared/*` path aliases across all Edge Functions
+- Refactored all 27 Edge Functions to use consolidated imports
+- Fixed 502 errors caused by deep module resolution and circular dependencies
+- Improved cold start performance through better module organization
+- Functions now use standardized handler patterns from `@shared/handler.ts`
+
+**Self-Hosting Improvements:**
+- Added automated setup script (`automate_self_hosting.sh`) for one-command deployment
+- Created migration `20260127230000_apply_seed.sql` for storage buckets and cron jobs
+- Created migration `20260127232000_add_missing_auth_trigger.sql` for new user signup
+- Fixed hardcoded Supabase URLs in event-dispatch.ts, mqtt-publishers.ts, webhooks.ts, ApiKeys.tsx
+- Fixed template literal syntax (backticks vs quotes) for dynamic URL construction
+- Added global Supabase CLI installation to automation script
+- Comprehensive troubleshooting documentation for Edge Functions timeouts and 502 errors
+
+**Database & Storage:**
+- Idempotent storage bucket creation with ON CONFLICT handling
+- Storage RLS policies for parts-images, issues, parts-cad, batch-images
+- pg_cron job scheduling for monthly resets, attendance, invitations, MQTT logs
+- Auth trigger ensures all new users get profiles and tenants
+
 ### Documentation
 
-- Cleaned up MCP README (removed marketing bloat)
-- Consolidated documentation to single source of truth
-- Updated MCP demo guide with current tool counts (55 tools, 9 modules)
-- Removed temporary refactoring documentation
+- **Self-Hosting Guide** - Completely rewritten with Quick Start, Docker, Cloudflare Pages
+  - Added Edge Functions troubleshooting (502 errors, timeouts, import map)
+  - Documented critical configuration points (environment variables, migrations, storage)
+  - Added security checklist and performance tips
+  - Consolidated three scattered docs into single comprehensive guide
+- **MCP Setup Guide** - New 515-line guide covering local and cloud deployment
+  - Railway, Fly.io, and Docker deployment instructions
+  - Claude Desktop configuration examples
+  - All 55 tools documented across 9 modules
+- **Navigation & Cross-linking** - Enhanced documentation discoverability
+  - Created "API & Integration" navigation section
+  - Added wikilinks throughout introduction, connectivity, quick-start guides
+  - Reorganized sidebar for better integration guide discovery
+- **MCP README** - Cleaned up (removed marketing bloat)
+- **MCP Demo Guide** - Updated with current tool counts and setup callouts
+- **API Documentation** - Added both Bearer token and X-API-Key authentication methods
+- Removed temporary refactoring documentation per CLAUDE.md rules
 
 ---
 
