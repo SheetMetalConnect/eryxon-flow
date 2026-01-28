@@ -10,177 +10,215 @@
  * - EMAIL_FROM: Sender email address (e.g., noreply@eryxon.eu)
  */
 
-import { createClient } from '@supabase/supabase-js'
-import { corsHeaders, handleCors } from '@shared/cors.ts'
+import { createClient } from "@supabase/supabase-js";
+import { corsHeaders, handleCors } from "@shared/cors.ts";
 
 interface InvitationRequest {
-  email: string
-  role: 'operator' | 'admin'
-  tenant_id?: string
+  email: string;
+  role: "operator" | "admin";
+  tenant_id?: string;
 }
 
 interface ResendEmailPayload {
-  from: string
-  to: string
-  subject: string
-  html: string
+  from: string;
+  to: string;
+  subject: string;
+  html: string;
 }
 
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight
-  const corsResponse = handleCors(req)
-  if (corsResponse) return corsResponse
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
 
   // Only allow POST
-  if (req.method !== 'POST') {
-    return new Response(
-      JSON.stringify({ error: 'Method not allowed' }),
-      { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {
     // Get authorization header
-    const authHeader = req.headers.get('Authorization')
+    const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+        JSON.stringify({ error: "Missing authorization header" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     // Parse request body
-    const body: InvitationRequest = await req.json()
-    const { email, role = 'operator', tenant_id } = body
+    const body: InvitationRequest = await req.json();
+    const { email, role = "operator", tenant_id } = body;
 
     if (!email) {
-      return new Response(
-        JSON.stringify({ error: 'Email is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return new Response(JSON.stringify({ error: "Email is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid email format' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return new Response(JSON.stringify({ error: "Invalid email format" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Initialize Supabase client with service role for user verification
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY")
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey =
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
+      Deno.env.get("SUPABASE_SERVICE_KEY");
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing SUPABASE_URL or service role key in environment')
+      console.error("Missing SUPABASE_URL or service role key in environment");
       return new Response(
-        JSON.stringify({ error: 'Server misconfigured. Missing Supabase credentials.' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+        JSON.stringify({
+          error: "Server misconfigured. Missing Supabase credentials.",
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     // Extract the JWT token from the auth header
-    const token = authHeader.replace('Bearer ', '')
+    const token = authHeader.replace("Bearer ", "");
 
     // Create admin client for user verification
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     // Verify the user's token
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token)
+    const {
+      data: { user },
+      error: userError,
+    } = await supabaseAdmin.auth.getUser(token);
     if (userError || !user) {
-      console.error('User verification failed:', userError?.message || 'No user found')
+      console.error(
+        "User verification failed:",
+        userError?.message || "No user found",
+      );
       return new Response(
         JSON.stringify({
-          error: 'Session expired. Please refresh the page and try again.',
-          details: userError?.message
+          error: "Session expired. Please refresh the page and try again.",
+          details: userError?.message,
         }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     // Get inviter's profile and tenant info using admin client (bypasses RLS)
     const { data: profile, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .select('full_name, tenant_id')
-      .eq('id', user.id)
-      .single()
+      .from("profiles")
+      .select("full_name, tenant_id")
+      .eq("id", user.id)
+      .single();
 
     if (profileError || !profile) {
-      console.error('Profile fetch error:', profileError)
+      console.error("Profile fetch error:", profileError);
       return new Response(
-        JSON.stringify({ error: 'Unable to get user profile' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+        JSON.stringify({ error: "Unable to get user profile" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     // SECURITY: Verify that the user is not trying to invite to a different tenant
     // This prevents cross-tenant invitation abuse even though we use service-role key
     // The tenant_id from the body must match the authenticated user's tenant_id from their profile
     if (tenant_id && tenant_id !== profile.tenant_id) {
-      console.warn(`User ${user.id} attempted to invite to different tenant: ${tenant_id}`)
+      console.warn(
+        `User ${user.id} attempted to invite to different tenant: ${tenant_id}`,
+      );
       return new Response(
-        JSON.stringify({ error: 'Unauthorized: You can only invite users to your own organization' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+        JSON.stringify({
+          error:
+            "Unauthorized: You can only invite users to your own organization",
+        }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     // Get tenant info separately
     const { data: tenantInfo } = await supabaseAdmin
-      .from('tenants')
-      .select('name, company_name')
-      .eq('id', profile.tenant_id)
-      .single()
+      .from("tenants")
+      .select("name, company_name")
+      .eq("id", profile.tenant_id)
+      .single();
 
     // Create client with user context for RLS operations (for invitation RPC)
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       global: {
-        headers: { Authorization: authHeader }
-      }
-    })
+        headers: { Authorization: authHeader },
+      },
+    });
 
     // Create invitation using RPC
-    const { data: invitationId, error: invitationError } = await supabase.rpc('create_invitation', {
-      p_email: email.toLowerCase(),
-      p_role: role,
-      p_tenant_id: tenant_id || profile.tenant_id
-    })
+    const { data: invitationId, error: invitationError } = await supabase.rpc(
+      "create_invitation",
+      {
+        p_email: email.toLowerCase(),
+        p_role: role,
+        p_tenant_id: tenant_id || profile.tenant_id,
+      },
+    );
 
     if (invitationError) {
-      console.error('Error creating invitation:', invitationError)
-      return new Response(
-        JSON.stringify({ error: invitationError.message }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      console.error("Error creating invitation:", invitationError);
+      return new Response(JSON.stringify({ error: invitationError.message }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Get the invitation token
     const { data: invitation, error: fetchError } = await supabase
-      .from('invitations')
-      .select('token')
-      .eq('id', invitationId)
-      .single()
+      .from("invitations")
+      .select("token")
+      .eq("id", invitationId)
+      .single();
 
     if (fetchError || !invitation) {
-      console.error('Error fetching invitation:', fetchError)
+      console.error("Error fetching invitation:", fetchError);
       return new Response(
-        JSON.stringify({ error: 'Failed to fetch invitation details' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+        JSON.stringify({ error: "Failed to fetch invitation details" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     // Get environment variables for email
-    const resendApiKey = Deno.env.get('RESEND_API_KEY')
-    const appUrl = Deno.env.get('APP_URL') || 'https://eryxon-flow.lovable.app'
-    const emailFrom = Deno.env.get('EMAIL_FROM') || 'Eryxon Flow <noreply@resend.dev>'
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    const appUrl = Deno.env.get("APP_URL") || "https://app.eryxon.eu";
+    const emailFrom =
+      Deno.env.get("EMAIL_FROM") || "Eryxon Flow <noreply@resend.dev>";
 
     // Build invitation URL
-    const invitationUrl = `${appUrl}/accept-invitation/${invitation.token}`
+    const invitationUrl = `${appUrl}/accept-invitation/${invitation.token}`;
 
-    const organizationName = tenantInfo?.company_name || tenantInfo?.name || 'your organization'
-    const inviterName = profile.full_name || user.email || 'A team member'
-    const roleDisplay = role === 'admin' ? 'Administrator' : 'Operator'
+    const organizationName =
+      tenantInfo?.company_name || tenantInfo?.name || "your organization";
+    const inviterName = profile.full_name || user.email || "A team member";
+    const roleDisplay = role === "admin" ? "Administrator" : "Operator";
 
     // If Resend API key is configured, send email
     if (resendApiKey) {
@@ -277,86 +315,104 @@ Deno.serve(async (req: Request) => {
   </table>
 </body>
 </html>
-`
+`;
 
       const emailPayload: ResendEmailPayload = {
         from: emailFrom,
         to: email,
         subject: `You're invited to join ${organizationName} on Eryxon Flow`,
-        html: emailHtml
-      }
+        html: emailHtml,
+      };
 
       try {
-        const resendResponse = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
+        const resendResponse = await fetch("https://api.resend.com/emails", {
+          method: "POST",
           headers: {
-            'Authorization': `Bearer ${resendApiKey}`,
-            'Content-Type': 'application/json'
+            Authorization: `Bearer ${resendApiKey}`,
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify(emailPayload)
-        })
+          body: JSON.stringify(emailPayload),
+        });
 
         if (!resendResponse.ok) {
-          const errorData = await resendResponse.text()
-          console.error('Resend API error:', errorData)
+          const errorData = await resendResponse.text();
+          console.error("Resend API error:", errorData);
           // Don't fail the request, invitation was created
           return new Response(
             JSON.stringify({
               success: true,
               invitation_id: invitationId,
               email_sent: false,
-              email_error: 'Failed to send email, but invitation was created',
-              invitation_url: invitationUrl
+              email_error: "Failed to send email, but invitation was created",
+              invitation_url: invitationUrl,
             }),
-            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          )
+            {
+              status: 200,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            },
+          );
         }
 
-        const resendData = await resendResponse.json()
-        console.log('Email sent successfully:', resendData)
+        const resendData = await resendResponse.json();
+        console.log("Email sent successfully:", resendData);
 
         return new Response(
           JSON.stringify({
             success: true,
             invitation_id: invitationId,
             email_sent: true,
-            email_id: resendData.id
+            email_id: resendData.id,
           }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
       } catch (emailError) {
-        console.error('Error sending email:', emailError)
+        console.error("Error sending email:", emailError);
         // Don't fail the request, invitation was created
         return new Response(
           JSON.stringify({
             success: true,
             invitation_id: invitationId,
             email_sent: false,
-            email_error: 'Failed to send email, but invitation was created',
-            invitation_url: invitationUrl
+            email_error: "Failed to send email, but invitation was created",
+            invitation_url: invitationUrl,
           }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
       }
     } else {
       // No email service configured - return the invitation URL for manual sharing
-      console.log('No RESEND_API_KEY configured, returning invitation URL')
+      console.log("No RESEND_API_KEY configured, returning invitation URL");
       return new Response(
         JSON.stringify({
           success: true,
           invitation_id: invitationId,
           email_sent: false,
-          message: 'Email service not configured. Share the invitation link manually.',
-          invitation_url: invitationUrl
+          message:
+            "Email service not configured. Share the invitation link manually.",
+          invitation_url: invitationUrl,
         }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
   } catch (error) {
-    console.error('Unexpected error:', error)
+    console.error("Unexpected error:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+      JSON.stringify({
+        error: error instanceof Error ? error.message : "Internal server error",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
-})
+});
