@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,31 +11,54 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { ROUTES } from "@/routes";
 
+const TURNSTILE_ENABLED = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY);
+const LazyTurnstile = TURNSTILE_ENABLED
+  ? lazy(() =>
+      import("@marsidev/react-turnstile").then((m) => ({
+        default: m.Turnstile,
+      })),
+    )
+  : null;
+
 export default function ForgotPassword() {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const turnstileRef = useRef<any>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
+    if (TURNSTILE_ENABLED && !captchaToken) {
+      setError(t("auth.captchaRequired"));
+      setLoading(false);
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}${ROUTES.RESET_PASSWORD}`,
+        captchaToken: captchaToken || undefined,
       });
 
       if (error) {
         console.error("Password reset error:", error.message);
+        turnstileRef.current?.reset();
+        setCaptchaToken(null);
         setError(t("auth.unexpectedError"));
       } else {
         setSuccess(true);
       }
     } catch (err) {
       console.error("Password reset error:", err);
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
       setError(t("auth.unexpectedError"));
     } finally {
       setLoading(false);
@@ -53,7 +76,10 @@ export default function ForgotPassword() {
 
         <div className="onboarding-card">
           <div className="icon-container">
-            <Factory className="w-20 h-20 text-primary browser-icon" strokeWidth={1.5} />
+            <Factory
+              className="w-20 h-20 text-primary browser-icon"
+              strokeWidth={1.5}
+            />
           </div>
 
           <div className="title-container">
@@ -114,11 +140,41 @@ export default function ForgotPassword() {
                 </Alert>
               )}
 
+              {TURNSTILE_ENABLED && LazyTurnstile && (
+                <Suspense
+                  fallback={
+                    <div className="flex justify-center py-2">
+                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    </div>
+                  }
+                >
+                  <div className="flex justify-center">
+                    <LazyTurnstile
+                      ref={turnstileRef}
+                      siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY!}
+                      onSuccess={(token: string) => setCaptchaToken(token)}
+                      onError={() => {
+                        setError(t("auth.captchaError"));
+                        setCaptchaToken(null);
+                      }}
+                      onExpire={() => {
+                        setCaptchaToken(null);
+                        turnstileRef.current?.reset();
+                      }}
+                      options={{
+                        theme: "dark",
+                        size: "normal",
+                      }}
+                    />
+                  </div>
+                </Suspense>
+              )}
+
               <div className="pt-2">
                 <Button
                   type="submit"
                   className="w-full cta-button"
-                  disabled={loading}
+                  disabled={loading || (TURNSTILE_ENABLED && !captchaToken)}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {t("auth.sendResetLink")}

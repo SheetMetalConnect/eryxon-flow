@@ -9,7 +9,7 @@ interface AdminPageHeaderProps {
     label: string;
     onClick: () => void;
     icon?: LucideIcon;
-  };
+  } | ReactNode;
   children?: ReactNode;
 }
 
@@ -27,7 +27,9 @@ export function AdminPageHeader({
   action,
   children,
 }: AdminPageHeaderProps) {
-  const ActionIcon = action?.icon;
+  // Check if action is a React node or an object
+  const isActionObject = action && typeof action === 'object' && 'onClick' in action;
+  const ActionIcon = isActionObject ? action.icon : undefined;
 
   return (
     <div className="space-y-3 sm:space-y-4">
@@ -39,7 +41,7 @@ export function AdminPageHeader({
           </h1>
           <div className="flex items-center gap-2 flex-wrap">
             {children}
-            {action && (
+            {action && isActionObject && (
               <Button
                 onClick={action.onClick}
                 className="cta-button w-full sm:w-auto justify-center"
@@ -48,6 +50,7 @@ export function AdminPageHeader({
                 {action.label}
               </Button>
             )}
+            {action && !isActionObject && action}
           </div>
         </div>
         {description && (
