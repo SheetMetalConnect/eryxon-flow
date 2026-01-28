@@ -263,8 +263,9 @@ export class RestApiClient implements UnifiedClient {
       return { count: null, error: result.error };
     }
 
-    // Extract count from response
-    const count = Array.isArray(result.data) ? result.data.length : (result.data?.count || 0);
+    // Extract count from API response structure { [table]: [...], pagination: { total, offset, limit } }
+    const count = result.data?.pagination?.total
+      ?? (Array.isArray(result.data?.[table]) ? result.data[table].length : 0);
     return { count, error: null };
   }
 }

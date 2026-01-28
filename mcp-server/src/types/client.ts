@@ -35,7 +35,6 @@ export interface UnifiedClient {
 
 export interface SelectOptions {
   select?: string;
-  filters?: Record<string, any>;
   eq?: Record<string, any>;
   neq?: Record<string, any>;
   gt?: Record<string, any>;

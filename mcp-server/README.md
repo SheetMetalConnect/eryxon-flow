@@ -5,7 +5,7 @@
 ## Features
 
 - Auto-detects direct Supabase or REST API connection
-- 60 tools for jobs, parts, operations, quality, shipping, analytics
+- 55 tools for jobs, parts, operations, quality, shipping, analytics
 - Multi-tenant safe via API keys
 - Deploy to Railway, Fly.io, or run locally
 

@@ -5,9 +5,6 @@ description: Step-by-step instructions for demonstrating the Eryxon Flow MCP Ser
 
 This guide provides step-by-step instructions for demonstrating the Eryxon Flow MCP Server capabilities.
 
-
-This guide provides step-by-step instructions for demonstrating the Eryxon Flow MCP Server capabilities.
-
 ## Prerequisites
 
 Before the demo, ensure you have:
@@ -41,7 +38,7 @@ npm run dev
 You should see:
 ```
 Eryxon Flow MCP Server v2.3.0
-Loaded 55 tools from 10 modules
+Loaded 56 tools from 9 modules
 Eryxon Flow MCP Server running on stdio
 ```
 
@@ -327,7 +324,7 @@ A: The MCP server uses a Supabase service key for database access. In production
 A: Yes! The ERP sync tools support bidirectional synchronization with any external system. Just map your external IDs and sources.
 
 **Q: What happens if OpenAI is not configured?**
-A: The server still works - only the AI chat tools (`chat_*`) will return errors. All other 50 tools function normally.
+A: The server works perfectly — none of the tools depend on OpenAI. All 56 tools across 9 modules continue to function normally.
 
 **Q: How is data security handled?**
 A: All data access goes through Supabase with Row-Level Security (RLS). The MCP server respects tenant boundaries.

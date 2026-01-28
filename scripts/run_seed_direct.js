@@ -23,7 +23,9 @@ if (!process.env.DATABASE_URL && !process.env.VITE_SUPABASE_PROJECT_ID) {
 // Encode password to handle special characters
 const password = process.env.SUPABASE_DB_PASSWORD ? encodeURIComponent(process.env.SUPABASE_DB_PASSWORD) : '';
 const projectId = process.env.VITE_SUPABASE_PROJECT_ID;
-const connectionString = process.env.DATABASE_URL || `postgres://postgres.${projectId}:${password}@aws-0-eu-west-1.pooler.supabase.com:5432/postgres`;
+const poolerHost = process.env.SUPABASE_POOLER_HOST || 'aws-0-eu-west-1.pooler.supabase.com';
+const dbUser = process.env.SUPABASE_DB_USER || `postgres.${projectId}`;
+const connectionString = process.env.DATABASE_URL || `postgres://${dbUser}:${password}@${poolerHost}:5432/postgres`;
 
 const client = new pg.Client({
     connectionString: connectionString,
