@@ -10,8 +10,8 @@
  * - EMAIL_FROM: Sender email address (e.g., noreply@eryxon.eu)
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders, handleCors } from '../_shared/cors.ts'
+import { createClient } from '@supabase/supabase-js'
+import { corsHeaders, handleCors } from '@shared/cors.ts'
 
 interface InvitationRequest {
   email: string
@@ -70,8 +70,16 @@ Deno.serve(async (req: Request) => {
     }
 
     // Initialize Supabase client with service role for user verification
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY")
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing SUPABASE_URL or service role key in environment')
+      return new Response(
+        JSON.stringify({ error: 'Server misconfigured. Missing Supabase credentials.' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     // Extract the JWT token from the auth header
     const token = authHeader.replace('Bearer ', '')

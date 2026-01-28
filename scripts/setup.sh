@@ -267,7 +267,7 @@ fi
 # =========================================================================
 header "Step 6: Creating storage buckets"
 
-BUCKETS=("parts-images" "issues" "parts-cad")
+BUCKETS=("parts-images" "issues" "parts-cad" "batch-images")
 
 for bucket in "${BUCKETS[@]}"; do
   OUTPUT="$(supabase storage create "$bucket" 2>&1)" || true

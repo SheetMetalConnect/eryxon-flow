@@ -23,10 +23,10 @@
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { authenticateAndSetContext } from "../_shared/auth.ts";
-import { corsHeaders } from "../_shared/cors.ts";
-import { handleOptions, handleError } from "../_shared/validation/errorHandler.ts";
+import { createClient } from "@supabase/supabase-js";
+import { authenticateAndSetContext } from "@shared/auth.ts";
+import { corsHeaders } from "@shared/cors.ts";
+import { handleOptions, handleError } from "@shared/validation/errorHandler.ts";
 
 async function triggerWebhook(supabase: any, tenantId: string, eventType: string, data: any) {
   try {
@@ -34,7 +34,7 @@ async function triggerWebhook(supabase: any, tenantId: string, eventType: string
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+        'Authorization': `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY")}`,
       },
       body: JSON.stringify({
         tenant_id: tenantId,
@@ -54,7 +54,7 @@ serve(async (req) => {
 
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY") ?? ''
   );
 
   try {

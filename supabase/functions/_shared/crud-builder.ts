@@ -7,8 +7,8 @@
  *
  * Usage:
  * ```ts
- * import { serveApi } from "../_shared/handler.ts";
- * import { createCrudHandler } from "../_shared/crud-builder.ts";
+ * import { serveApi } from "@shared/handler.ts";
+ * import { createCrudHandler } from "@shared/crud-builder.ts";
  *
  * export default serveApi(createCrudHandler({
  *   table: 'jobs',

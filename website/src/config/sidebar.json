@@ -75,14 +75,6 @@
           "slug": "architecture/connectivity-overview"
         },
         {
-          "label": "REST API",
-          "slug": "architecture/connectivity-rest-api"
-        },
-        {
-          "label": "MQTT & Webhooks",
-          "slug": "architecture/connectivity-mqtt"
-        },
-        {
           "label": "Caching",
           "slug": "architecture/caching"
         },
@@ -139,11 +131,23 @@
       ]
     },
     {
-      "label": "API Reference",
+      "label": "API & Integration",
       "items": [
         {
-          "label": "MCP Demo",
+          "label": "REST API",
+          "slug": "architecture/connectivity-rest-api"
+        },
+        {
+          "label": "MCP Server Setup",
+          "slug": "guides/mcp-setup"
+        },
+        {
+          "label": "MCP Demo Guide",
           "slug": "api/mcp-demo-guide"
+        },
+        {
+          "label": "MQTT & Webhooks",
+          "slug": "architecture/connectivity-mqtt"
         }
       ]
     }

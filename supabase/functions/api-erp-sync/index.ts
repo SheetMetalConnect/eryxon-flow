@@ -13,13 +13,13 @@
  * - Support for nested entities (jobs with parts, parts with operations)
  */
 
-import { serveApi } from "../_shared/handler.ts";
-import type { HandlerContext } from "../_shared/handler.ts";
+import { serveApi } from "@shared/handler.ts";
+import type { HandlerContext } from "@shared/handler.ts";
 import {
   handleMethodNotAllowed,
   createSuccessResponse,
   BadRequestError,
-} from "../_shared/validation/errorHandler.ts";
+} from "@shared/validation/errorHandler.ts";
 import {
   generateSyncHash,
   hasChanged,
@@ -31,11 +31,11 @@ import {
   logSyncImport,
   type SyncOptions,
   type BulkSyncResult,
-} from "../_shared/erp-sync.ts";
+} from "@shared/erp-sync.ts";
 import {
   dispatchSyncCompleted,
   dispatchBatchSyncCompleted,
-} from "../_shared/events.ts";
+} from "@shared/events.ts";
 
 // ============================================================================
 // Types

@@ -5,6 +5,10 @@ description: Step-by-step instructions for demonstrating the Eryxon Flow MCP Ser
 
 This guide provides step-by-step instructions for demonstrating the Eryxon Flow MCP Server capabilities.
 
+:::tip[Setup Required]
+Before running demos, ensure your MCP server is properly configured. See the [MCP Server Setup Guide](/guides/mcp-setup) for deployment instructions.
+:::
+
 ## Prerequisites
 
 Before the demo, ensure you have:
@@ -13,7 +17,6 @@ Before the demo, ensure you have:
    ```bash
    export SUPABASE_URL="https://your-project.supabase.co"
    export SUPABASE_SERVICE_KEY="your-service-key"
-   export OPENAI_API_KEY="sk-..."  # Optional, for AI chat features
    ```
 
 2. **Server Built and Ready**
@@ -31,16 +34,27 @@ Before the demo, ensure you have:
 
 ```bash
 npm start
-
+# or for development with hot reload:
 npm run dev
 ```
 
 You should see:
 ```
-Eryxon Flow MCP Server v2.3.0
-Loaded 55 tools from 10 modules
+Eryxon Flow MCP Server v2.5.0
+Loaded 55 tools from 9 modules
 Eryxon Flow MCP Server running on stdio
 ```
+
+**Tool Modules:**
+- Jobs (7 tools) - Job lifecycle and management
+- Parts (2 tools) - Part tracking
+- Operations (5 tools) - Operation workflow
+- Tasks (2 tools) - Task management
+- Issues (8 tools) - Quality issues and NCRs
+- Substeps (5 tools) - Operation substeps
+- Dashboard (3 tools) - Production metrics
+- Scrap (7 tools) - Scrap tracking and analytics
+- Agent Batch (16 tools) - Batch operations for AI agents
 
 ### Configure Claude Desktop
 
@@ -61,12 +75,15 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 }
 ```
 
+:::note[Need Help?]
+For complete setup instructions including cloud deployment options, see the [MCP Server Setup Guide](/guides/mcp-setup).
+:::
+
 ---
 
 ## Demo Scenarios
 
-### Scenario 1: Basic Job Management (5 min)
-
+### Scenario 1: Basic Job Management 
 **Objective**: Show basic CRUD operations for manufacturing jobs.
 
 1. **Fetch Current Jobs**
@@ -95,8 +112,7 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 
 ---
 
-### Scenario 2: Production Dashboard (3 min)
-
+### Scenario 2: Production Dashboard 
 **Objective**: Demonstrate real-time production metrics.
 
 1. **Get Dashboard Stats**
@@ -119,38 +135,36 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 
 ---
 
-### Scenario 3: AI-Powered Analysis (5 min)
+### Scenario 3: Quality Analytics 
+**Objective**: Demonstrate quality issue analytics and insights.
 
-**Objective**: Showcase natural language AI capabilities.
+1. **Get Issue Analytics by Severity**
+   ```
+   "Show me issue analytics for the last 30 days grouped by severity"
+   ```
+   Uses `get_issue_analytics` with `days: 30`, `group_by: "severity"`.
 
-1. **Ask a Natural Language Question**
+2. **Analyze Issue Trends**
    ```
-   "What are the most common quality issues we've seen this month?"
+   "What are the quality issue trends over the past week?"
    ```
-   Uses `chat_query` with context: "quality".
+   Uses `get_issue_trends` with `days: 7`, `interval: "daily"`.
 
-2. **Get Job Summary**
+3. **Root Cause Analysis**
    ```
-   "Give me an AI summary of our job status focusing on any delays"
+   "Analyze the most common root causes for issues in the last 90 days"
    ```
-   Uses `chat_summarize_jobs` with focus: "delays".
+   Uses `get_root_cause_analysis` with `days: 90`, `min_occurrences: 2`.
 
-3. **Quality Analysis**
+4. **Get Quality Improvement Suggestions**
    ```
-   "Analyze our quality issues and give me recommendations"
+   "Give me suggestions to improve quality based on recent patterns"
    ```
-   Uses `chat_analyze_quality` with `include_recommendations: true`.
-
-4. **Get Action Suggestions**
-   ```
-   "What actions should we take to address bottlenecks?"
-   ```
-   Uses `chat_suggest_actions` with focus_area: "bottlenecks".
+   Uses `suggest_quality_improvements` with analysis of issue patterns.
 
 ---
 
-### Scenario 4: Rush Order Handling (5 min)
-
+### Scenario 4: Rush Order Handling 
 **Objective**: Demonstrate agent batch operations for handling urgent orders.
 
 1. **Prioritize a Rush Job**
@@ -181,8 +195,7 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 
 ---
 
-### Scenario 5: ERP Integration (5 min)
-
+### Scenario 5: ERP Integration 
 **Objective**: Show bidirectional sync with external ERP systems.
 
 1. **Check Sync Differences**
@@ -209,38 +222,7 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 
 ---
 
-### Scenario 6: Shipping & Logistics (5 min)
-
-**Objective**: Demonstrate shipping management capabilities.
-
-1. **Check Jobs Ready for Shipping**
-   ```
-   "What jobs are ready to be shipped?"
-   ```
-   Uses `get_jobs_ready_for_shipping`.
-
-2. **Get Shipping Status**
-   ```
-   "Show me all pending shipments for customer 'Acme Corp'"
-   ```
-   Uses `get_shipping_status`.
-
-3. **Find Consolidation Opportunities**
-   ```
-   "Find opportunities to consolidate shipments going to the same destination"
-   ```
-   Uses `find_shipping_consolidation`.
-
-4. **Plan Shipping**
-   ```
-   "Plan shipping for jobs JOB-001 and JOB-002, consolidating where possible"
-   ```
-   Uses `plan_shipping`.
-
----
-
-### Scenario 7: Operations Management (5 min)
-
+### Scenario 6: Operations Management 
 **Objective**: Show granular operation control.
 
 1. **Fetch Operations**
@@ -269,8 +251,7 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 
 ---
 
-### Scenario 8: Quality & NCR Management (5 min)
-
+### Scenario 7: Quality & NCR Management 
 **Objective**: Demonstrate issue tracking and NCR workflow.
 
 1. **Fetch Open Issues**
@@ -297,19 +278,50 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 
 ---
 
+## Demo Tips
+
+### Before the Demo
+
+- [ ] Verify all environment variables are set correctly
+- [ ] Test the server starts without errors
+- [ ] Ensure sample data exists in the database
+- [ ] Have Claude Desktop configured and connected
+- [ ] Test a few basic queries to warm up the connection
+
+### During the Demo
+
+1. **Start Simple** - Begin with basic fetch operations to show the connection works
+2. **Build Complexity** - Progress to more complex scenarios
+3. **Show Real Data** - Always use real database data, never mock data
+4. **Highlight Analytics** - Quality analytics and scrap analysis tools provide production insights
+5. **Demonstrate Batch Operations** - Show efficiency gains from batch tools
+
+### Common Questions & Answers
+
+**Q: How does authentication work?**
+A: The MCP server uses a Supabase service key for database access. In production, you would also implement MCP authentication keys for per-tenant access control.
+
+**Q: Can this integrate with our existing ERP?**
+A: Yes! The ERP sync tools support bidirectional synchronization with any external system. Just map your external IDs and sources.
+
+**Q: How is data security handled?**
+A: All data access goes through Supabase with Row-Level Security (RLS). The MCP server respects tenant boundaries.
+
+---
+
 ## Troubleshooting
 
 ### Server Won't Start
 
 ```bash
-
+# Check environment variables
 echo $SUPABASE_URL
 echo $SUPABASE_SERVICE_KEY
 
-
+# Rebuild
 npm run build
 
-
+# Check for errors
 npm start 2>&1 | head -20
 ```
 
@@ -323,10 +335,52 @@ npm start 2>&1 | head -20
 ### Database Connection Errors
 
 ```bash
-
+# Test Supabase connection
 node -e "
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 supabase.from('jobs').select('count').single().then(console.log);
 "
 ```
+
+---
+
+## Tool Reference Quick Card
+
+| Category | Tools | Key Use Case |
+|----------|-------|--------------|
+| **Jobs** | fetch_jobs, create_job, update_job, start_job, stop_job, complete_job, resume_job | Full job lifecycle |
+| **Parts** | fetch_parts, update_part | Part tracking |
+| **Operations** | fetch_operations, start_operation, pause_operation, complete_operation, update_operation | Operation control |
+| **Tasks** | fetch_tasks, update_task | Task assignment |
+| **Issues** | fetch_issues, create_ncr, fetch_ncrs, update_issue, get_issue_analytics, get_issue_trends, get_root_cause_analysis, suggest_quality_improvements | Quality tracking & analytics |
+| **Substeps** | fetch_substeps, add_substep, complete_substep, update_substep, delete_substep | Granular tracking |
+| **Dashboard** | get_dashboard_stats, get_qrm_data, get_production_metrics | Real-time metrics |
+| **Scrap** | fetch_scrap_reasons, report_scrap, get_scrap_analytics, get_scrap_trends, get_yield_metrics, get_scrap_pareto, get_quality_score | Scrap tracking & yield analysis |
+| **Batch Ops** | 16 tools for bulk operations | Efficiency |
+
+---
+
+## Next Steps After Demo
+
+1. **Production Deployment** - Deploy to Railway, Fly.io, or Docker
+2. **Authentication** - Configure API keys for multi-tenant access
+3. **ERP Integration** - Map your external system IDs
+4. **Monitoring** - Set up MCP activity monitoring in the admin UI
+
+---
+
+## See Also
+
+**Setup & Deployment:**
+- [MCP Server Setup Guide](/guides/mcp-setup) - Complete deployment and configuration
+- [Self-Hosting Guide](/guides/self-hosting) - Self-hosted Eryxon Flow setup
+
+**API & Integration:**
+- [REST API Documentation](/architecture/connectivity-rest-api) - Complete API reference
+- [Connectivity Overview](/architecture/connectivity-overview) - Integration architecture
+- [Webhooks & MQTT](/architecture/connectivity-mqtt) - Event-driven integration
+
+**Architecture:**
+- [App Architecture](/architecture/app-architecture) - System design overview
+- [Database Schema](/architecture/database) - Data model reference

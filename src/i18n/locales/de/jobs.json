@@ -528,7 +528,8 @@
       "ready": "Bereit",
       "inProgress": "In Bearbeitung",
       "completed": "Abgeschlossen",
-      "cancelled": "Storniert"
+      "cancelled": "Storniert",
+      "blocked": "Blockiert"
     },
     "actions": {
       "start": "Charge starten",
@@ -571,6 +572,20 @@
       "startedDesc": "Zeiterfassung für alle Arbeitsgänge in dieser Charge gestartet",
       "stopped": "Chargen-Timer gestoppt",
       "stoppedDesc": "{{total}} Min. gesamt, {{perOp}} Min. verteilt auf jeden von {{count}} Arbeitsgängen"
-    }
+    },
+    "editBatch": "Charge bearbeiten",
+    "visuals": "Visualisierung",
+    "addMaterialRequirement": "Materialanforderung hinzufügen",
+    "specifyMaterial": "Geben Sie das für diese Charge benötigte Material an.",
+    "materialName": "Materialname",
+    "quantity": "Menge",
+    "nestedBatchesSheets": "Verschachtelte Chargen (Bleche)",
+    "addSheet": "Blech hinzufügen",
+    "block": "Blockieren",
+    "unblock": "Freigeben",
+    "imageUploadSuccess": "Bild erfolgreich hochgeladen",
+    "imageUploadError": "Fehler beim Hochladen des Bildes",
+    "requirementAdded": "Anforderung Hinzugefügt",
+    "addOperationNotAvailable": "Das Hinzufügen von Arbeitsgängen zu einer bestehenden Charge ist noch nicht verfügbar. Erstellen Sie Chargen von der Arbeitsgänge-Seite."
   }
 }

@@ -78,7 +78,7 @@ export default function ConfigApiKeys() {
       if (!session) throw new Error('Not authenticated');
 
       const response = await fetch(
-        `https://vatgianzotsurljznsry.supabase.co/functions/v1/api-key-generate`,
+        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/api-key-generate`,
         {
           method: 'POST',
           headers: {
@@ -217,191 +217,191 @@ export default function ConfigApiKeys() {
 
   return (
     <div className="p-6 space-y-8">
-        <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
-            {t('apiKeys.title')}
-          </h1>
-          <p className="text-muted-foreground text-lg">{t('apiKeys.description')}</p>
-        </div>
-
-        <hr className="title-divider" />
-
-        <div className="flex justify-end">
-          <Dialog open={newKeyDialog} onOpenChange={setNewKeyDialog}>
-            <DialogTrigger asChild>
-              <Button className="cta-button">
-                <Plus className="mr-2 h-4 w-4" />
-                {t('apiKeys.generateNewKey')}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="glass-card sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>{t('apiKeys.generateApiKey')}</DialogTitle>
-                <DialogDescription>
-                  {generatedKey
-                    ? t('apiKeys.saveKeyNow')
-                    : t('apiKeys.createNewKey')}
-                </DialogDescription>
-              </DialogHeader>
-
-              {generatedKey ? (
-                <div className="space-y-4">
-                  <div className="p-4 bg-muted rounded-md">
-                    <code className="text-sm break-all">{generatedKey}</code>
-                  </div>
-                  <Button onClick={() => copyToClipboard(generatedKey)} className="w-full">
-                    <Copy className="mr-2 h-4 w-4" />
-                    {t('apiKeys.copyKey')}
-                  </Button>
-                  <Button onClick={closeKeyDialog} variant="outline" className="w-full">
-                    {t('apiKeys.done')}
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="key-name">{t('apiKeys.keyName')}</Label>
-                    <Input
-                      id="key-name"
-                      placeholder={t('apiKeys.keyNamePlaceholder')}
-                      value={keyName}
-                      onChange={(e) => setKeyName(e.target.value)}
-                    />
-                  </div>
-                  <Button
-                    onClick={generateApiKey}
-                    disabled={isGenerating}
-                    className="w-full"
-                  >
-                    {isGenerating ? t('apiKeys.generating') : t('apiKeys.generateKey')}
-                  </Button>
-                </div>
-              )}
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        <Card className="glass-card border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5" />
-              {t('apiKeys.gettingStarted')}
-            </CardTitle>
-            <CardDescription>
-              {t('apiKeys.gettingStartedDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <p className="text-sm">
-                {t('apiKeys.exploreDocumentation')}
-              </p>
-              <Button asChild className="w-full sm:w-auto">
-                <a href="/api-docs" className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4" />
-                  {t('apiKeys.openDocumentation')}
-                  <ExternalLink className="h-4 w-4" />
-                </a>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle>{t('apiKeys.activeKeys')}</CardTitle>
-            <CardDescription>
-              {t('apiKeys.activeKeysDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DataTable
-              columns={columns}
-              data={apiKeys}
-              loading={loading}
-              searchPlaceholder={t('apiKeys.searchKeys') || "Search keys..."}
-              pageSize={10}
-              emptyMessage={t('apiKeys.noKeys')}
-              showToolbar={false}
-            />
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle>Quick Reference</CardTitle>
-            <CardDescription>
-              Quick overview of available endpoints.
-              <a href="/api-docs" className="text-primary hover:underline ml-2 inline-flex items-center gap-1">
-                View full interactive documentation
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-3 border rounded-lg space-y-2">
-                  <h3 className="font-semibold text-sm flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-blue-500"></span>
-                    Jobs Management
-                  </h3>
-                  <p className="text-xs text-muted-foreground">Create, list, and update jobs with parts and tasks</p>
-                </div>
-                <div className="p-3 border rounded-lg space-y-2">
-                  <h3 className="font-semibold text-sm flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                    Parts & Tasks
-                  </h3>
-                  <p className="text-xs text-muted-foreground">Track individual parts and task progress</p>
-                </div>
-                <div className="p-3 border rounded-lg space-y-2">
-                  <h3 className="font-semibold text-sm flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-purple-500"></span>
-                    File Uploads
-                  </h3>
-                  <p className="text-xs text-muted-foreground">Upload CAD files, drawings, and images securely</p>
-                </div>
-                <div className="p-3 border rounded-lg space-y-2">
-                  <h3 className="font-semibold text-sm flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-orange-500"></span>
-                    Reference Data
-                  </h3>
-                  <p className="text-xs text-muted-foreground">Query stages, materials, and system data</p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t space-y-2">
-                <div className="flex items-start gap-2">
-                  <Key className="h-4 w-4 text-muted-foreground mt-0.5" />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium">Authentication</p>
-                    <code className="text-xs bg-muted px-2 py-1 rounded block">
-                      Authorization: Bearer ery_live_your_api_key
-                    </code>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <ExternalLink className="h-4 w-4 text-muted-foreground mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Base URL</p>
-                    <code className="text-xs bg-muted px-2 py-1 rounded block break-all">
-                      https://vatgianzotsurljznsry.supabase.co/functions/v1
-                    </code>
-                  </div>
-                </div>
-              </div>
-
-              <Button asChild variant="outline" className="w-full">
-                <a href="/api-docs" className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4" />
-                  Explore Full API Documentation & Try It Out
-                  <ExternalLink className="h-4 w-4" />
-                </a>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      <div>
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+          {t('apiKeys.title')}
+        </h1>
+        <p className="text-muted-foreground text-lg">{t('apiKeys.description')}</p>
       </div>
+
+      <hr className="title-divider" />
+
+      <div className="flex justify-end">
+        <Dialog open={newKeyDialog} onOpenChange={setNewKeyDialog}>
+          <DialogTrigger asChild>
+            <Button className="cta-button">
+              <Plus className="mr-2 h-4 w-4" />
+              {t('apiKeys.generateNewKey')}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="glass-card sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>{t('apiKeys.generateApiKey')}</DialogTitle>
+              <DialogDescription>
+                {generatedKey
+                  ? t('apiKeys.saveKeyNow')
+                  : t('apiKeys.createNewKey')}
+              </DialogDescription>
+            </DialogHeader>
+
+            {generatedKey ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-muted rounded-md">
+                  <code className="text-sm break-all">{generatedKey}</code>
+                </div>
+                <Button onClick={() => copyToClipboard(generatedKey)} className="w-full">
+                  <Copy className="mr-2 h-4 w-4" />
+                  {t('apiKeys.copyKey')}
+                </Button>
+                <Button onClick={closeKeyDialog} variant="outline" className="w-full">
+                  {t('apiKeys.done')}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="key-name">{t('apiKeys.keyName')}</Label>
+                  <Input
+                    id="key-name"
+                    placeholder={t('apiKeys.keyNamePlaceholder')}
+                    value={keyName}
+                    onChange={(e) => setKeyName(e.target.value)}
+                  />
+                </div>
+                <Button
+                  onClick={generateApiKey}
+                  disabled={isGenerating}
+                  className="w-full"
+                >
+                  {isGenerating ? t('apiKeys.generating') : t('apiKeys.generateKey')}
+                </Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <Card className="glass-card border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5" />
+            {t('apiKeys.gettingStarted')}
+          </CardTitle>
+          <CardDescription>
+            {t('apiKeys.gettingStartedDescription')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <p className="text-sm">
+              {t('apiKeys.exploreDocumentation')}
+            </p>
+            <Button asChild className="w-full sm:w-auto">
+              <a href="/api-docs" className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                {t('apiKeys.openDocumentation')}
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle>{t('apiKeys.activeKeys')}</CardTitle>
+          <CardDescription>
+            {t('apiKeys.activeKeysDescription')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DataTable
+            columns={columns}
+            data={apiKeys}
+            loading={loading}
+            searchPlaceholder={t('apiKeys.searchKeys') || "Search keys..."}
+            pageSize={10}
+            emptyMessage={t('apiKeys.noKeys')}
+            showToolbar={false}
+          />
+        </CardContent>
+      </Card>
+
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle>Quick Reference</CardTitle>
+          <CardDescription>
+            Quick overview of available endpoints.
+            <a href="/api-docs" className="text-primary hover:underline ml-2 inline-flex items-center gap-1">
+              View full interactive documentation
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-3 border rounded-lg space-y-2">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-blue-500"></span>
+                  Jobs Management
+                </h3>
+                <p className="text-xs text-muted-foreground">Create, list, and update jobs with parts and tasks</p>
+              </div>
+              <div className="p-3 border rounded-lg space-y-2">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                  Parts & Tasks
+                </h3>
+                <p className="text-xs text-muted-foreground">Track individual parts and task progress</p>
+              </div>
+              <div className="p-3 border rounded-lg space-y-2">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-purple-500"></span>
+                  File Uploads
+                </h3>
+                <p className="text-xs text-muted-foreground">Upload CAD files, drawings, and images securely</p>
+              </div>
+              <div className="p-3 border rounded-lg space-y-2">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-orange-500"></span>
+                  Reference Data
+                </h3>
+                <p className="text-xs text-muted-foreground">Query stages, materials, and system data</p>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t space-y-2">
+              <div className="flex items-start gap-2">
+                <Key className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <div className="flex-1 space-y-1">
+                  <p className="text-sm font-medium">Authentication</p>
+                  <code className="text-xs bg-muted px-2 py-1 rounded block">
+                    Authorization: Bearer ery_live_your_api_key
+                  </code>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <ExternalLink className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Base URL</p>
+                  <code className="text-xs bg-muted px-2 py-1 rounded block break-all">
+                    {`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID || 'your-project-id'}.supabase.co/functions/v1`}
+                  </code>
+                </div>
+              </div>
+            </div>
+
+            <Button asChild variant="outline" className="w-full">
+              <a href="/api-docs" className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                Explore Full API Documentation & Try It Out
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

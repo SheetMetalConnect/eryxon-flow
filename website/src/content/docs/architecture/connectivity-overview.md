@@ -11,9 +11,9 @@ Eryxon MES provides a comprehensive set of connectivity options for integrating 
 
 Eryxon MES uses a **Unified Event Dispatcher** to coordinate communication across different protocols.
 
-- **Inbound**: REST API, Real-time WebSockets, MCP (AI).
-- **Outbound**: Webhooks (HTTP POST), MQTT (industrial messaging).
-- **Bidirectional**: ERP Sync, Model Context Protocol (MCP).
+- **Inbound**: [REST API](/architecture/connectivity-rest-api), Real-time WebSockets, [MCP (AI)](/guides/mcp-setup).
+- **Outbound**: [Webhooks](/architecture/connectivity-mqtt) (HTTP POST), [MQTT](/architecture/connectivity-mqtt) (industrial messaging).
+- **Bidirectional**: ERP Sync, [Model Context Protocol (MCP)](/guides/mcp-setup).
 
 ---
 
@@ -28,7 +28,7 @@ Authorization: Bearer ery_live_xxxxxxxxxxxxxxxxxxxx
 - `ery_test_`: Sandbox/testing keys.
 
 ### MCP Authentication
-Model Context Protocol keys are configured separately in the Admin panel to allow AI agents like Claude to securely interact with your shop floor data.
+Model Context Protocol keys are configured separately in the Admin panel to allow AI agents like Claude to securely interact with your shop floor data. See the [MCP Server Setup Guide](/guides/mcp-setup) for complete deployment instructions.
 
 ---
 
@@ -46,11 +46,20 @@ We provide several React hooks to simplify real-time data binding:
 
 ## AI Integration (MCP)
 
-The **Model Context Protocol (MCP)** enables AI agents to interact with Eryxon MES programmatically. AI agents can:
-- Fetch and update jobs/parts.
-- Start and complete operations.
-- Report or resolve quality issues.
-- Monitor dashboard statistics.
+The **[Model Context Protocol (MCP)](/guides/mcp-setup)** enables AI agents to interact with Eryxon MES programmatically through 55 specialized tools across 9 modules.
+
+**AI agents can:**
+- Fetch and update jobs/parts
+- Start and complete operations
+- Report or resolve quality issues
+- Monitor dashboard statistics
+- Perform batch operations
+- Analyze scrap trends and quality metrics
+
+**Learn more:**
+- [MCP Server Setup Guide](/guides/mcp-setup) - Deployment and configuration
+- [MCP Demo Guide](/api/mcp-demo-guide) - Usage examples and demo scenarios
+- [REST API Documentation](/architecture/connectivity-rest-api) - Underlying API reference
 
 ---
 

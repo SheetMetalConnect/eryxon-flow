@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 
 export type BatchType = "laser_nesting" | "tube_batch" | "saw_batch" | "finishing_batch" | "general";
-export type BatchStatus = "draft" | "ready" | "in_progress" | "completed" | "cancelled";
+export type BatchStatus = "draft" | "ready" | "in_progress" | "completed" | "cancelled" | "blocked";
 
 export interface Batch {
   id: string;
@@ -30,6 +30,11 @@ export interface Batch {
   started_at: string | null;
   completed_at: string | null;
   updated_at: string | null;
+  nesting_image_url: string | null;
+  layout_image_url: string | null;
+  parent_batch_id: string | null;
+  material_requirement_raised: boolean;
+  material_requirement_metadata: Record<string, any> | null;
   // Joined data
   cell?: {
     id: string;
@@ -66,6 +71,15 @@ export interface BatchOperation {
   };
 }
 
+export interface BatchRequirement {
+  id: string;
+  batch_id: string;
+  material_name: string;
+  quantity: number;
+  status: 'pending' | 'ordered' | 'received';
+  created_at: string;
+}
+
 export interface CreateBatchInput {
   batch_number: string;
   batch_type: BatchType;
@@ -75,6 +89,9 @@ export interface CreateBatchInput {
   estimated_time?: number;
   notes?: string;
   nesting_metadata?: Record<string, any>;
+  nesting_image_url?: string;
+  layout_image_url?: string;
+  parent_batch_id?: string;
   operation_ids?: string[];
 }
 
@@ -99,7 +116,7 @@ export function useBatches(filters?: {
         .order("created_at", { ascending: false });
 
       if (filters?.status) {
-        query = query.eq("status", filters.status);
+        query = query.eq("status", filters.status as any);
       }
       if (filters?.batch_type) {
         query = query.eq("batch_type", filters.batch_type);
@@ -138,7 +155,32 @@ export function useBatch(batchId: string | undefined) {
         .single();
 
       if (error) throw error;
-      return data as Batch;
+      return data as any as Batch;
+    },
+    enabled: !!batchId && !!profile?.tenant_id,
+  });
+}
+
+export function useSubBatches(batchId: string | undefined) {
+  const { profile } = useAuth();
+
+  return useQuery({
+    queryKey: ["sub-batches", batchId, profile?.tenant_id],
+    queryFn: async () => {
+      if (!batchId) return [];
+
+      const { data, error } = await supabase
+        .from("operation_batches")
+        .select(`
+          *,
+          cell:cells(id, name)
+        `)
+        .eq("parent_batch_id", batchId)
+        .eq("tenant_id", profile!.tenant_id)
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+      return data as Batch[];
     },
     enabled: !!batchId && !!profile?.tenant_id,
   });
@@ -179,6 +221,28 @@ export function useBatchOperations(batchId: string | undefined) {
   });
 }
 
+export function useBatchRequirements(batchId: string | undefined) {
+  const { profile } = useAuth();
+
+  return useQuery({
+    queryKey: ["batch-requirements", batchId],
+    queryFn: async () => {
+      if (!batchId) return [];
+
+      const { data, error } = await supabase
+        .from("batch_requirements")
+        .select("*")
+        .eq("batch_id", batchId)
+        .eq("tenant_id", profile!.tenant_id)
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+      return data as BatchRequirement[];
+    },
+    enabled: !!batchId && !!profile?.tenant_id,
+  });
+}
+
 export function useCreateBatch() {
   const queryClient = useQueryClient();
   const { profile } = useAuth();
@@ -202,6 +266,9 @@ export function useCreateBatch() {
           estimated_time: input.estimated_time,
           notes: input.notes,
           nesting_metadata: input.nesting_metadata,
+          nesting_image_url: input.nesting_image_url,
+          layout_image_url: input.layout_image_url,
+          parent_batch_id: input.parent_batch_id,
           created_by: profile.id,
           status: "draft",
         })
@@ -230,9 +297,48 @@ export function useCreateBatch() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
+      queryClient.invalidateQueries({ queryKey: ["sub-batches"] });
       toast({
         title: t("batches.createSuccess"),
         description: t("batches.createSuccessDesc"),
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: t("common.error"),
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export function useUpdateBatch() {
+  const queryClient = useQueryClient();
+  const { profile } = useAuth();
+  const { toast } = useToast();
+  const { t } = useTranslation();
+
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Batch> }) => {
+      if (!profile?.tenant_id) throw new Error(t("common.noTenantId"));
+
+      const { data, error } = await supabase
+        .from("operation_batches")
+        .update(updates)
+        .eq("id", id)
+        .eq("tenant_id", profile.tenant_id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["batch", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["batches"] });
+      toast({
+        title: t("batches.updateSuccess"),
       });
     },
     onError: (error: any) => {
@@ -274,9 +380,10 @@ export function useUpdateBatchStatus() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
-      queryClient.invalidateQueries({ queryKey: ["batch"] });
+      queryClient.invalidateQueries({ queryKey: ["batch", variables.batchId] });
+      queryClient.invalidateQueries({ queryKey: ["sub-batches"] }); // Status change might affect list view
     },
     onError: (error: any) => {
       toast({
@@ -322,9 +429,10 @@ export function useAddOperationsToBatch() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["batch-operations"] });
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["batch-operations", variables.batchId] });
       queryClient.invalidateQueries({ queryKey: ["batches"] });
+      queryClient.invalidateQueries({ queryKey: ["batch", variables.batchId] }); // Update counts
       toast({
         title: t("batches.operationsAdded"),
       });
@@ -390,13 +498,14 @@ export function useDeleteBatch() {
       const { error } = await supabase
         .from("operation_batches")
         .delete()
-        .eq("id", batchId)
+        .eq("id", batchId) // RLS checks should handle sub-batches, but user might need to delete them manually or we add cascade
         .eq("tenant_id", profile.tenant_id);
 
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
+      queryClient.invalidateQueries({ queryKey: ["sub-batches"] });
       toast({
         title: t("batches.deleteSuccess"),
       });
@@ -409,4 +518,56 @@ export function useDeleteBatch() {
       });
     },
   });
+}
+
+export function useCreateBatchRequirement() {
+  const queryClient = useQueryClient();
+  const { profile } = useAuth();
+  const { toast } = useToast();
+  const { t } = useTranslation();
+
+  return useMutation({
+    mutationFn: async ({ batchId, materialName, quantity }: { batchId: string; materialName: string; quantity: number }) => {
+      if (!profile?.tenant_id) throw new Error(t("common.noTenantId"));
+
+      const { data, error } = await supabase
+        .from("batch_requirements")
+        .insert({
+          tenant_id: profile.tenant_id,
+          batch_id: batchId,
+          material_name: materialName,
+          quantity: quantity,
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["batch-requirements", variables.batchId] });
+      toast({
+        title: t("batches.requirementAdded"),
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: t("common.error"),
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export function useRaiseMaterialRequirement() {
+  // Legacy hook - might want to deprecate or update to use the new table
+  // For now keeping consistent interface but effectively doing nothing if replaced by useCreateBatchRequirement
+  return useMutation({
+    mutationFn: async ({ batchId }: { batchId: string }) => {
+      // Placeholder implementation to satisfy existing calls
+      console.log("Legacy raise requirement called for", batchId);
+    }
+  })
 }

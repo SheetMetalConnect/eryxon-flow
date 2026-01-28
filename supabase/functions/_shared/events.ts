@@ -69,7 +69,7 @@ export async function dispatchWebhookEvent(
   data: any,
 ): Promise<void> {
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY");
 
   if (!supabaseUrl || !serviceRoleKey) {
     console.warn("[Events] Missing Supabase config for webhook dispatch");
@@ -104,7 +104,7 @@ export async function dispatchMqttEvent(
   data: any,
 ): Promise<void> {
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY");
 
   if (!supabaseUrl || !serviceRoleKey) {
     console.warn("[Events] Missing Supabase config for MQTT dispatch");

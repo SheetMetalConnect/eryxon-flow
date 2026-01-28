@@ -1,6 +1,6 @@
-import { serveApi } from "../_shared/handler.ts";
-import { createSuccessResponse } from "../_shared/validation/errorHandler.ts";
-import type { HandlerContext } from "../_shared/handler.ts";
+import { serveApi } from "@shared/handler.ts";
+import { createSuccessResponse } from "@shared/validation/errorHandler.ts";
+import type { HandlerContext } from "@shared/handler.ts";
 
 // Custom handler for materials - extracts unique materials from parts table
 async function handleGetMaterials(req: Request, ctx: HandlerContext): Promise<Response> {

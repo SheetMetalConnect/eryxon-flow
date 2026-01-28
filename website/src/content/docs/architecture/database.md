@@ -54,9 +54,9 @@ Tables supporting ERP integration include:
        │
        │ 1:N
        ▼
-┌──────────────┐     ┌──────────────┐
-│    jobs      │────►│   shipments  │
-└──────┬───────┘     └──────────────┘
+┌──────────────┐
+│    jobs      │
+└──────┬───────┘
        │
        │ 1:N
        ▼
@@ -361,12 +361,6 @@ SELECT generate_sync_hash('{"job_number": "J001", "customer": "ACME"}'::jsonb);
 
 ```sql
 'active' | 'cancelled' | 'suspended' | 'trial'
-```
-
-### shipment_status
-
-```sql
-'draft' | 'planned' | 'loading' | 'in_transit' | 'delivered' | 'cancelled'
 ```
 
 ---

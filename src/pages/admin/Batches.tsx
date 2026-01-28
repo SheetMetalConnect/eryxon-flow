@@ -57,6 +57,7 @@ const STATUS_CONFIG: Record<BatchStatus, { label: string; variant: "default" | "
   in_progress: { label: "batches.status.inProgress", variant: "default" },
   completed: { label: "batches.status.completed", variant: "secondary" },
   cancelled: { label: "batches.status.cancelled", variant: "destructive" },
+  blocked: { label: "batches.status.blocked", variant: "destructive" },
 };
 
 export default function Batches() {

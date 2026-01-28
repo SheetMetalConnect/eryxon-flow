@@ -529,7 +529,8 @@
       "ready": "Gereed",
       "inProgress": "In Uitvoering",
       "completed": "Voltooid",
-      "cancelled": "Geannuleerd"
+      "cancelled": "Geannuleerd",
+      "blocked": "Geblokkeerd"
     },
     "actions": {
       "start": "Start Batch",
@@ -572,6 +573,20 @@
       "startedDesc": "Tijdregistratie gestart voor alle bewerkingen in deze batch",
       "stopped": "Batch timer gestopt",
       "stoppedDesc": "{{total}} min totaal, {{perOp}} min verdeeld over elk van {{count}} bewerkingen"
-    }
+    },
+    "editBatch": "Batch bewerken",
+    "visuals": "Visueel",
+    "addMaterialRequirement": "Materiaalvereiste toevoegen",
+    "specifyMaterial": "Specificeer het benodigde materiaal voor deze batch.",
+    "materialName": "Materiaalnaam",
+    "quantity": "Hoeveelheid",
+    "nestedBatchesSheets": "Geneste batches (platen)",
+    "addSheet": "Plaat toevoegen",
+    "block": "Blokkeren",
+    "unblock": "Deblokkeren",
+    "imageUploadSuccess": "Afbeelding succesvol geüpload",
+    "imageUploadError": "Fout bij uploaden afbeelding",
+    "requirementAdded": "Vereiste Toegevoegd",
+    "addOperationNotAvailable": "Bewerkingen toevoegen aan een bestaande batch is nog niet beschikbaar. Maak batches aan vanaf de Bewerkingen pagina."
   }
 }

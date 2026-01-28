@@ -272,7 +272,7 @@ Interactive elements maintain adequate touch targets (44px minimum) on all devic
 | Modal | File | Tabs |
 |-------|------|------|
 | JobDetailModal | `src/components/admin/JobDetailModal.tsx` | Overview, Parts, Delivery |
-| PartDetailModal | `src/components/admin/PartDetailModal.tsx` | Details, Operations, Files, Shipping |
+| PartDetailModal | `src/components/admin/PartDetailModal.tsx` | Details, Operations, Files |
 | OperationDetailModal | `src/components/admin/OperationDetailModal.tsx` | Details, Resources, Files |
 
 ### Hooks
