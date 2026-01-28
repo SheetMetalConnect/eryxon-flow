@@ -75,11 +75,11 @@ export const toolSchemas = {
   }),
 
   createJob: z.object({
+    customer_name: z.string().min(1, 'Customer name required'),
     job_number: z.string().min(1, 'Job number required'),
-    customer: z.string().min(1, 'Customer required'),
     description: z.string().optional(),
     due_date: z.string().datetime().optional(),
-    priority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
+    priority: z.enum(['low', 'normal', 'high', 'urgent']).optional(),
   }),
 
   updateJob: z.object({
