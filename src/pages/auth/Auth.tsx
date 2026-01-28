@@ -146,13 +146,8 @@ export default function Auth() {
         <div className="onboarding-card">
           {/* Icon/Logo */}
           <div className="icon-container">
-            <Factory className="w-32 h-32 text-primary browser-icon" strokeWidth={1.5} />
+            <Factory className="w-20 h-20 text-primary browser-icon" strokeWidth={1.5} />
           </div>
-
-          {/* Welcome Text */}
-          <p className="welcome-text">
-            {t("auth.welcomeTo")}
-          </p>
 
           {/* Title Container with Preview Pill */}
           <div className="title-container">
@@ -167,11 +162,6 @@ export default function Auth() {
           <h2 className="hero-title">
             {isLogin ? t("auth.signIn") : t("auth.signUp")}
           </h2>
-
-          {/* Informational Text */}
-          <p className="informational-text">
-            {isLogin ? t("auth.signInDescription") : t("auth.signUpDescription")}
-          </p>
 
           {/* Success Message */}
           {success && (
@@ -248,6 +238,16 @@ export default function Auth() {
                 placeholder={t("auth.passwordPlaceholder")}
                 className="bg-input-background border-input"
               />
+              {isLogin && (
+                <div className="text-right">
+                  <Link
+                    to={ROUTES.FORGOT_PASSWORD}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    {t("auth.forgotPassword")}
+                  </Link>
+                </div>
+              )}
             </div>
 
             {/* GDPR Checkboxes - Only show on Sign Up */}
@@ -353,15 +353,6 @@ export default function Auth() {
               </button>
             </div>
           </form>
-
-          {/* Coming Soon Notice */}
-          {!isLogin && (
-            <div className="mt-4 pt-4 border-t border-white/10">
-              <p className="text-xs text-muted-foreground text-center">
-                {t("auth.comingSoonNotice")}
-              </p>
-            </div>
-          )}
 
           {/* Shop Floor Terminal Info */}
           {isLogin && (
