@@ -2051,5 +2051,33 @@
     "issueCreatedDesc": "Wanneer een kwaliteitsprobleem wordt gemeld",
     "quantityReportedDesc": "Wanneer productiehoeveelheid wordt gelogd",
     "scrapRecordedDesc": "Wanneer afkeur/defecten worden geregistreerd"
+  },
+  "capacity": {
+    "title": "Capaciteitsmatrix",
+    "autoSchedule": "Automatisch Plannen",
+    "workloadOverview": "Werklastoverzicht",
+    "cell": "Cel",
+    "capacity": "Capaciteit",
+    "scheduled": "Gepland",
+    "utilization": "Bezettingsgraad",
+    "schedulingComplete": "Planning Voltooid",
+    "schedulingFailed": "Planning Mislukt",
+    "operationsScheduled": "{{count}} bewerkingen succesvol gepland.",
+    "description": "Bekijk en beheer celcapaciteit per datum",
+    "schedulingCapacity": "Planningscapaciteit",
+    "hoursPerDay": "Uren per Dag",
+    "hoursUnit": "uren",
+    "hoursPerDayHelp": "Maximale werkuren die deze cel per dag kan verwerken. Wordt door de planner gebruikt om bewerkingen toe te wijzen.",
+    "confirmOverwrite": "Planning Overschrijven Bevestigen",
+    "confirmOverwriteDescription": "{{count}} bewerkingen hebben al geplande datums. Het uitvoeren van de automatische planner zal deze bestaande planningen overschrijven.",
+    "existingSchedules": "Bestaande Planningen",
+    "operationsWithDates": "{{count}} bewerkingen met geplande datums",
+    "overwriteWarning": "Deze actie kan niet ongedaan worden gemaakt. De planner herberekent alle bewerkingsdatums op basis van huidige capaciteitsinstellingen.",
+    "proceedWithScheduling": "Doorgaan met Plannen",
+    "cancelScheduling": "Annuleren"
+  },
+  "calendar": {
+    "title": "Fabriekskalender",
+    "description": "Beheer feestdagen, sluitingen en speciale werkdagen"
   }
 }

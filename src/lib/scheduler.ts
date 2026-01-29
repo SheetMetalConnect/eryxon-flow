@@ -5,6 +5,12 @@ type Job = Database['public']['Tables']['jobs']['Row'];
 type Operation = Database['public']['Tables']['operations']['Row'];
 type Cell = Database['public']['Tables']['cells']['Row'];
 
+/** Maximum number of days to look ahead when scheduling operations */
+const MAX_SCHEDULING_DAYS = 365;
+
+/** Default operation duration in minutes when not specified */
+const DEFAULT_OPERATION_DURATION_MINUTES = 60;
+
 export interface CalendarDay {
     date: string;
     day_type: 'working' | 'holiday' | 'closure' | 'half_day';
@@ -136,9 +142,25 @@ export class SchedulerService {
     }
 
     /**
+     * Get the effective due date for a job, respecting overrides
+     */
+    private getEffectiveDueDate(job: Job): Date | null {
+        const dateStr = job.due_date_override || job.due_date;
+        return dateStr ? new Date(dateStr) : null;
+    }
+
+    /**
+     * Get operation duration in hours
+     */
+    private getOperationDurationHours(operation: Operation): number {
+        const durationMinutes = operation.estimated_time || DEFAULT_OPERATION_DURATION_MINUTES;
+        return durationMinutes / 60;
+    }
+
+    /**
      * Find the next working day from a given date
      */
-    private findNextWorkingDay(startDate: Date, maxDays: number = 365): Date {
+    private findNextWorkingDay(startDate: Date, maxDays: number = MAX_SCHEDULING_DAYS): Date {
         let currentDate = startOfDay(startDate);
         let attempts = 0;
 
@@ -170,7 +192,7 @@ export class SchedulerService {
         let lastAllocationDate = currentDate;
         let attempts = 0;
 
-        while (remainingHours > 0 && attempts < 365) {
+        while (remainingHours > 0 && attempts < MAX_SCHEDULING_DAYS) {
             // Skip non-working days
             if (!this.isWorkingDay(currentDate)) {
                 currentDate = addDays(currentDate, 1);
@@ -218,9 +240,7 @@ export class SchedulerService {
         let currentStartDate = this.findNextWorkingDay(startDate);
 
         for (const op of operations) {
-            // Calculate total duration in hours from estimated_time (in minutes)
-            const durationMinutes = op.estimated_time || 60; // Default 1 hour
-            const durationHours = durationMinutes / 60;
+            const durationHours = this.getOperationDurationHours(op);
 
             const cellId = op.cell_id;
             if (!cellId) {
@@ -274,17 +294,20 @@ export class SchedulerService {
     /**
      * Schedule operations grouped by job
      * Operations within the same job are scheduled sequentially
+     * Jobs are sorted by effective due date (respecting overrides)
      */
     public scheduleJobs(
         jobs: Job[],
         operationsByJob: Map<string, Operation[]>,
         startDate: Date = new Date()
     ): ScheduledOperation[] {
-        // Sort jobs by due date
+        // Sort jobs by effective due date (respecting overrides)
         const sortedJobs = [...jobs].sort((a, b) => {
-            if (!a.due_date) return 1;
-            if (!b.due_date) return -1;
-            return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+            const dateA = this.getEffectiveDueDate(a);
+            const dateB = this.getEffectiveDueDate(b);
+            if (!dateA) return 1;
+            if (!dateB) return -1;
+            return dateA.getTime() - dateB.getTime();
         });
 
         const allScheduled: ScheduledOperation[] = [];
@@ -299,8 +322,7 @@ export class SchedulerService {
             let jobCurrentDate = globalStartDate;
 
             for (const op of jobOps) {
-                const durationMinutes = op.estimated_time || 60;
-                const durationHours = durationMinutes / 60;
+                const durationHours = this.getOperationDurationHours(op);
 
                 const cellId = op.cell_id;
                 if (!cellId) {

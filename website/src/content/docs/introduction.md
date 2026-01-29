@@ -89,7 +89,7 @@ Operators create issues (NCRs) from active tasks with description, severity, and
 *   **No financial tracking.** We track time spent on work, not costs, prices, or margins.
 *   **No purchasing.** Tasks can be marked as external (subcontract work) and status tracked via API, but no PO management or vendor transactions.
 *   **No BOM management.** We track what to produce, not item details or inventory. Parts can have parent-child links for assembly visualization, but not multi-level BOMs that do not live in production.
-*   **No scheduling.** Dates typically come from your ERP, but admins can manually override. We don't calculate or optimize schedules—you control them.
+*   **Simple scheduling.** A built-in capacity-based scheduler can auto-allocate operations across cells, respecting factory calendar and working days. It's not an APS optimizer—dates can also come from your ERP, and admins can manually override due dates at any time.
 *   **No reports.** Real-time stat panels only. No built-in historical analytics—but all data accessible via [REST API](/architecture/connectivity-rest-api) or [MCP server](/guides/mcp-setup) for your own reporting and AI-powered insights.
 
 ---

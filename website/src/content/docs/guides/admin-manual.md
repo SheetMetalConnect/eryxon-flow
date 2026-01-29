@@ -58,4 +58,5 @@ Go to **Settings** menu:
 ✅ **Review dashboard daily** to catch issues early.
 ✅ **Respond to issues quickly** to keep production moving.
 ✅ **Use due date overrides** when customer dates change.
+✅ **Run Auto Schedule** after adding new jobs to update the [Capacity Matrix](/docs/features/scheduling).
 ✅ **Export data regularly** for backups (monthly recommended).
