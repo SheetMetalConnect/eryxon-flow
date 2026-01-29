@@ -60,7 +60,7 @@ const defaultConfig: CADBackendConfig = {
   mode: 'custom',
 
   custom: {
-    enabled: true,
+    enabled: !!import.meta.env.VITE_CAD_SERVICE_URL,  // Only enabled if URL is set
     url: import.meta.env.VITE_CAD_SERVICE_URL || 'http://localhost:8888',
     apiKey: import.meta.env.VITE_CAD_SERVICE_API_KEY || '',
     timeout: 120000, // 2 minutes

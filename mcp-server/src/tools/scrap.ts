@@ -5,188 +5,148 @@
 
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 import type { ToolModule, ToolHandler } from "../types/index.js";
-import { jsonResponse, errorResponse } from "../utils/response.js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { z } from "zod";
+import { schemas, validateArgs } from "../utils/validation.js";
+import { structuredResponse, errorResponse } from "../utils/response.js";
+import { databaseError } from "../utils/errors.js";
+import { createFetchTool } from "../utils/tool-factories.js";
 
-// Tool definitions
-const tools: Tool[] = [
-  {
-    name: "fetch_scrap_reasons",
-    description: "Get all configured scrap reason codes",
-    inputSchema: {
-      type: "object",
-      properties: {
-        active_only: {
-          type: "boolean",
-          description: "Only return active scrap reasons (default: true)",
-        },
-      },
-    },
+// Fetch scrap reasons (uses factory)
+const { tool: fetchScrapReasonsTool, handler: fetchScrapReasonsHandler } = createFetchTool({
+  tableName: 'scrap_reasons',
+  description: 'Get all configured scrap reason codes with optional active filter',
+  filterFields: {
+    active: z.boolean().optional().default(true),
   },
-  {
-    name: "report_scrap",
-    description: "Report scrap quantity for an operation",
-    inputSchema: {
-      type: "object",
-      properties: {
-        operation_id: {
-          type: "string",
-          description: "Operation ID where scrap occurred",
-        },
-        quantity_scrap: {
-          type: "number",
-          description: "Number of parts scrapped",
-        },
-        scrap_reason_id: {
-          type: "string",
-          description: "Scrap reason code ID",
-        },
-        notes: {
-          type: "string",
-          description: "Additional notes about the scrap",
-        },
-        recorded_by: {
-          type: "string",
-          description: "User ID who recorded the scrap",
-        },
-      },
-      required: ["operation_id", "quantity_scrap"],
-    },
-  },
-  {
-    name: "get_scrap_analytics",
-    description: "Get aggregated scrap statistics by reason, cell, or operation",
-    inputSchema: {
-      type: "object",
-      properties: {
-        days: {
-          type: "number",
-          description: "Number of days to analyze (default: 30)",
-        },
-        group_by: {
-          type: "string",
-          enum: ["reason", "cell", "operation", "material"],
-          description: "Group results by this field (default: reason)",
-        },
-      },
-    },
-  },
-  {
-    name: "get_scrap_trends",
-    description: "Get scrap trends over time for pattern analysis",
-    inputSchema: {
-      type: "object",
-      properties: {
-        days: {
-          type: "number",
-          description: "Number of days to analyze (default: 30)",
-        },
-        interval: {
-          type: "string",
-          enum: ["daily", "weekly"],
-          description: "Aggregation interval (default: daily)",
-        },
-      },
-    },
-  },
-  {
-    name: "get_yield_metrics",
-    description: "Calculate yield and quality metrics across operations",
-    inputSchema: {
-      type: "object",
-      properties: {
-        days: {
-          type: "number",
-          description: "Number of days to analyze (default: 30)",
-        },
-        cell_id: {
-          type: "string",
-          description: "Filter by specific cell",
-        },
-      },
-    },
-  },
-  {
-    name: "get_scrap_pareto",
-    description: "Get Pareto analysis of scrap reasons (80/20 rule)",
-    inputSchema: {
-      type: "object",
-      properties: {
-        days: {
-          type: "number",
-          description: "Number of days to analyze (default: 30)",
-        },
-        top_n: {
-          type: "number",
-          description: "Number of top reasons to return (default: 10)",
-        },
-      },
-    },
-  },
-  {
-    name: "get_quality_score",
-    description: "Calculate overall quality health score based on yield, issues, and resolution time",
-    inputSchema: {
-      type: "object",
-      properties: {
-        days: {
-          type: "number",
-          description: "Number of days to analyze (default: 30)",
-        },
-      },
-    },
-  },
-];
+  orderBy: { column: 'code', ascending: true },
+});
 
-// Handler implementations
-const fetchScrapReasons: ToolHandler = async (args, supabase) => {
-  try {
-    let query = supabase.from("scrap_reasons").select("*").order("code", { ascending: true });
-
-    const activeOnly = args.active_only !== false;
-    if (activeOnly) {
-      query = query.eq("active", true);
-    }
-
-    const { data, error } = await query;
-
-    if (error) throw error;
-
-    return jsonResponse(data);
-  } catch (error) {
-    return errorResponse(error);
-  }
+// Custom tool definitions (complex analytics logic)
+const reportScrapTool: Tool = {
+  name: "report_scrap",
+  description: "Report scrap quantity for an operation",
+  inputSchema: {
+    type: "object",
+    properties: {
+      operation_id: { type: "string", description: "Operation ID where scrap occurred" },
+      quantity_scrap: { type: "number", description: "Number of parts scrapped" },
+      scrap_reason_id: { type: "string", description: "Scrap reason code ID" },
+      notes: { type: "string", description: "Additional notes about the scrap" },
+      recorded_by: { type: "string", description: "User ID who recorded the scrap" },
+    },
+    required: ["operation_id", "quantity_scrap"],
+  },
 };
 
-const reportScrap: ToolHandler = async (args, supabase) => {
+const getScrapAnalyticsTool: Tool = {
+  name: "get_scrap_analytics",
+  description: "Get aggregated scrap statistics by reason, cell, or operation",
+  inputSchema: {
+    type: "object",
+    properties: {
+      days: { type: "number", description: "Number of days to analyze (default: 30)" },
+      group_by: { type: "string", enum: ["reason", "cell", "operation", "material"], description: "Group results by this field (default: reason)" },
+    },
+  },
+};
+
+const getScrapTrendsTool: Tool = {
+  name: "get_scrap_trends",
+  description: "Get scrap trends over time for pattern analysis",
+  inputSchema: {
+    type: "object",
+    properties: {
+      days: { type: "number", description: "Number of days to analyze (default: 30)" },
+      interval: { type: "string", enum: ["daily", "weekly"], description: "Aggregation interval (default: daily)" },
+    },
+  },
+};
+
+const getYieldMetricsTool: Tool = {
+  name: "get_yield_metrics",
+  description: "Calculate yield and quality metrics across operations",
+  inputSchema: {
+    type: "object",
+    properties: {
+      days: { type: "number", description: "Number of days to analyze (default: 30)" },
+      cell_id: { type: "string", description: "Filter by specific cell" },
+    },
+  },
+};
+
+const getScrapParetoTool: Tool = {
+  name: "get_scrap_pareto",
+  description: "Get Pareto analysis of scrap reasons (80/20 rule)",
+  inputSchema: {
+    type: "object",
+    properties: {
+      days: { type: "number", description: "Number of days to analyze (default: 30)" },
+      top_n: { type: "number", description: "Number of top reasons to return (default: 10)" },
+    },
+  },
+};
+
+const getQualityScoreTool: Tool = {
+  name: "get_quality_score",
+  description: "Calculate overall quality health score based on yield, issues, and resolution time",
+  inputSchema: {
+    type: "object",
+    properties: {
+      days: { type: "number", description: "Number of days to analyze (default: 30)" },
+    },
+  },
+};
+
+// Custom handlers
+const reportScrapSchema = z.object({
+  operation_id: schemas.id,
+  quantity_scrap: z.number().int().min(1),
+  scrap_reason_id: schemas.id.optional(),
+  notes: z.string().optional(),
+  recorded_by: schemas.id.optional(),
+});
+
+const reportScrap: ToolHandler = async (args: Record<string, unknown>, supabase: SupabaseClient) => {
   try {
-    const scrapArgs = args as Record<string, unknown>;
+    const validated = validateArgs(args, reportScrapSchema);
 
     const quantityData = {
-      operation_id: scrapArgs.operation_id,
-      quantity_produced: scrapArgs.quantity_scrap as number,
+      operation_id: validated.operation_id,
+      quantity_produced: validated.quantity_scrap,
       quantity_good: 0,
-      quantity_scrap: scrapArgs.quantity_scrap as number,
+      quantity_scrap: validated.quantity_scrap,
       quantity_rework: 0,
-      scrap_reason_id: scrapArgs.scrap_reason_id || null,
-      notes: scrapArgs.notes || null,
-      recorded_by: scrapArgs.recorded_by || null,
+      scrap_reason_id: validated.scrap_reason_id || null,
+      notes: validated.notes || null,
+      recorded_by: validated.recorded_by || null,
       recorded_at: new Date().toISOString(),
     };
 
-    const { data, error } = await supabase.from("operation_quantities").insert(quantityData).select().single();
+    const { data, error } = await supabase
+      .from("operation_quantities")
+      .insert(quantityData)
+      .select()
+      .single();
 
-    if (error) throw error;
+    if (error) {
+      throw databaseError("Failed to report scrap", error as Error);
+    }
 
-    return jsonResponse(data, "Scrap reported successfully");
+    return structuredResponse(data, "Scrap reported successfully");
   } catch (error) {
     return errorResponse(error);
   }
 };
 
-const getScrapAnalytics: ToolHandler = async (args, supabase) => {
+const analyticsSchema = z.object({
+  days: z.number().int().min(1).max(365).optional().default(30),
+  group_by: z.enum(['reason', 'cell', 'operation', 'material']).optional().default('reason'),
+});
+
+const getScrapAnalytics: ToolHandler = async (args: Record<string, unknown>, supabase: SupabaseClient) => {
   try {
-    const days = typeof args.days === "number" ? args.days : 30;
-    const groupBy = args.group_by || "reason";
+    const { days, group_by: groupBy } = validateArgs(args, analyticsSchema);
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -247,7 +207,7 @@ const getScrapAnalytics: ToolHandler = async (args, supabase) => {
       }))
       .sort((a, b) => b.total_scrap - a.total_scrap);
 
-    return jsonResponse({
+    return structuredResponse({
       group_by: groupBy,
       period_days: days,
       total_records: quantities?.length || 0,
@@ -258,10 +218,14 @@ const getScrapAnalytics: ToolHandler = async (args, supabase) => {
   }
 };
 
-const getScrapTrends: ToolHandler = async (args, supabase) => {
+const trendsSchema = z.object({
+  days: z.number().int().min(1).max(365).optional().default(30),
+  interval: z.enum(['daily', 'weekly']).optional().default('daily'),
+});
+
+const getScrapTrends: ToolHandler = async (args: Record<string, unknown>, supabase: SupabaseClient) => {
   try {
-    const days = typeof args.days === "number" ? args.days : 30;
-    const interval = args.interval === "weekly" ? "weekly" : "daily";
+    const { days, interval } = validateArgs(args, trendsSchema);
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -306,7 +270,7 @@ const getScrapTrends: ToolHandler = async (args, supabase) => {
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
-    return jsonResponse({
+    return structuredResponse({
       interval,
       period_days: days,
       data: trendArray,
@@ -316,9 +280,14 @@ const getScrapTrends: ToolHandler = async (args, supabase) => {
   }
 };
 
-const getYieldMetrics: ToolHandler = async (args, supabase) => {
+const yieldMetricsSchema = z.object({
+  days: z.number().int().min(1).max(365).optional().default(30),
+  cell_id: schemas.id.optional(),
+});
+
+const getYieldMetrics: ToolHandler = async (args: Record<string, unknown>, supabase: SupabaseClient) => {
   try {
-    const days = typeof args.days === "number" ? args.days : 30;
+    const { days, cell_id } = validateArgs(args, yieldMetricsSchema);
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -330,8 +299,8 @@ const getYieldMetrics: ToolHandler = async (args, supabase) => {
       `)
       .gte("recorded_at", startDate.toISOString());
 
-    if (args.cell_id) {
-      query = query.eq("operations.cell_id", args.cell_id);
+    if (cell_id) {
+      query = query.eq("operations.cell_id", cell_id);
     }
 
     const { data: quantities, error } = await query;
@@ -377,7 +346,7 @@ const getYieldMetrics: ToolHandler = async (args, supabase) => {
       scrap_rate: data.produced > 0 ? Math.round((data.scrap / data.produced) * 1000) / 10 : 0,
     }));
 
-    return jsonResponse({
+    return structuredResponse({
       period_days: days,
       overall: {
         total_produced: totalProduced,
@@ -395,10 +364,14 @@ const getYieldMetrics: ToolHandler = async (args, supabase) => {
   }
 };
 
-const getScrapPareto: ToolHandler = async (args, supabase) => {
+const paretoSchema = z.object({
+  days: z.number().int().min(1).max(365).optional().default(30),
+  top_n: z.number().int().min(1).max(50).optional().default(10),
+});
+
+const getScrapPareto: ToolHandler = async (args: Record<string, unknown>, supabase: SupabaseClient) => {
   try {
-    const days = typeof args.days === "number" ? args.days : 30;
-    const topN = typeof args.top_n === "number" ? args.top_n : 10;
+    const { days, top_n: topN } = validateArgs(args, paretoSchema);
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -448,7 +421,7 @@ const getScrapPareto: ToolHandler = async (args, supabase) => {
       };
     });
 
-    return jsonResponse({
+    return structuredResponse({
       period_days: days,
       total_scrap: grandTotal,
       data: paretoData,
@@ -458,9 +431,13 @@ const getScrapPareto: ToolHandler = async (args, supabase) => {
   }
 };
 
-const getQualityScore: ToolHandler = async (args, supabase) => {
+const qualityScoreSchema = z.object({
+  days: z.number().int().min(1).max(365).optional().default(30),
+});
+
+const getQualityScore: ToolHandler = async (args: Record<string, unknown>, supabase: SupabaseClient) => {
   try {
-    const days = typeof args.days === "number" ? args.days : 30;
+    const { days } = validateArgs(args, qualityScoreSchema);
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -520,7 +497,7 @@ const getQualityScore: ToolHandler = async (args, supabase) => {
     // Determine trend (compare to previous period)
     const trend = overallScore >= 80 ? "good" : overallScore >= 60 ? "moderate" : "needs_attention";
 
-    return jsonResponse({
+    return structuredResponse({
       period_days: days,
       overall_score: overallScore,
       trend,
@@ -541,19 +518,24 @@ const getQualityScore: ToolHandler = async (args, supabase) => {
   }
 };
 
-// Create handlers map
-const handlers = new Map<string, ToolHandler>([
-  ["fetch_scrap_reasons", fetchScrapReasons],
-  ["report_scrap", reportScrap],
-  ["get_scrap_analytics", getScrapAnalytics],
-  ["get_scrap_trends", getScrapTrends],
-  ["get_yield_metrics", getYieldMetrics],
-  ["get_scrap_pareto", getScrapPareto],
-  ["get_quality_score", getQualityScore],
-]);
-
 // Export module
 export const scrapModule: ToolModule = {
-  tools,
-  handlers,
+  tools: [
+    fetchScrapReasonsTool,
+    reportScrapTool,
+    getScrapAnalyticsTool,
+    getScrapTrendsTool,
+    getYieldMetricsTool,
+    getScrapParetoTool,
+    getQualityScoreTool,
+  ],
+  handlers: new Map<string, ToolHandler>([
+    ['fetch_scrap_reasons', fetchScrapReasonsHandler],
+    ['report_scrap', reportScrap],
+    ['get_scrap_analytics', getScrapAnalytics],
+    ['get_scrap_trends', getScrapTrends],
+    ['get_yield_metrics', getYieldMetrics],
+    ['get_scrap_pareto', getScrapPareto],
+    ['get_quality_score', getQualityScore],
+  ]),
 };

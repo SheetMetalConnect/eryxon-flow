@@ -161,5 +161,9 @@
     "shortcuts": {
       "open": "Open search"
     }
+  },
+  "table": {
+    "selectAll": "Select all",
+    "selectRow": "Select row"
   }
 }

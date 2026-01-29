@@ -9,7 +9,7 @@
  *
  * Usage:
  * ```ts
- * import { createApiHandler } from "../_shared/handler.ts";
+ * import { createApiHandler } from "@shared/handler.ts";
  *
  * export default createApiHandler(async (req, ctx) => {
  *   const { supabase, tenantId } = ctx;
@@ -20,7 +20,7 @@
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { authenticateAndSetContext, AuthResult } from "./auth.ts";
 import { handleOptions, handleError } from "./validation/errorHandler.ts";
 import { corsHeaders } from "./cors.ts";
@@ -88,7 +88,7 @@ export function createApiHandler(
     // Initialize Supabase client
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY") ?? ""
     );
 
     try {

@@ -5,49 +5,53 @@
 
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 import type { ToolModule, ToolHandler } from "../types/index.js";
-import { jsonResponse, errorResponse } from "../utils/response.js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { z } from "zod";
+import { schemas, validateArgs } from "../utils/validation.js";
+import { structuredResponse, errorResponse } from "../utils/response.js";
 
 // Tool definitions
-const tools: Tool[] = [
-  {
-    name: "get_dashboard_stats",
-    description: "Get dashboard statistics and metrics",
-    inputSchema: {
-      type: "object",
-      properties: {},
+const getDashboardStatsTool: Tool = {
+  name: "get_dashboard_stats",
+  description: "Get dashboard statistics and metrics",
+  inputSchema: {
+    type: "object",
+    properties: {},
+  },
+};
+
+const getQrmDataTool: Tool = {
+  name: "get_qrm_data",
+  description: "Get Quick Response Manufacturing (QRM) capacity data",
+  inputSchema: {
+    type: "object",
+    properties: {
+      cell_id: { type: "string", description: "Optional cell ID to filter by" },
     },
   },
-  {
-    name: "get_qrm_data",
-    description: "Get Quick Response Manufacturing (QRM) capacity data",
-    inputSchema: {
-      type: "object",
-      properties: {
-        cell_id: {
-          type: "string",
-          description: "Optional cell ID to filter by",
-        },
-      },
+};
+
+const getProductionMetricsTool: Tool = {
+  name: "get_production_metrics",
+  description: "Get production metrics for a time period",
+  inputSchema: {
+    type: "object",
+    properties: {
+      start_date: { type: "string", description: "Start date (ISO 8601 format)" },
+      end_date: { type: "string", description: "End date (ISO 8601 format)" },
     },
   },
-  {
-    name: "get_production_metrics",
-    description: "Get production metrics for a time period",
-    inputSchema: {
-      type: "object",
-      properties: {
-        start_date: {
-          type: "string",
-          description: "Start date (ISO 8601 format)",
-        },
-        end_date: {
-          type: "string",
-          description: "End date (ISO 8601 format)",
-        },
-      },
-    },
-  },
-];
+};
+
+// Validation schemas
+const qrmDataSchema = z.object({
+  cell_id: schemas.id.optional(),
+});
+
+const productionMetricsSchema = z.object({
+  start_date: z.string().datetime().optional(),
+  end_date: z.string().datetime().optional(),
+});
 
 // Helper function to count by status
 function countByStatus<T extends { status?: string }>(
@@ -65,7 +69,7 @@ function countByStatus<T extends { status?: string }>(
 }
 
 // Handler implementations
-const getDashboardStats: ToolHandler = async (_args, supabase) => {
+const getDashboardStats: ToolHandler = async (_args: Record<string, unknown>, supabase: SupabaseClient) => {
   try {
     // Fetch multiple stats in parallel
     const [jobsResult, partsResult, tasksResult, issuesResult] = await Promise.all([
@@ -74,6 +78,12 @@ const getDashboardStats: ToolHandler = async (_args, supabase) => {
       supabase.from("tasks").select("status", { count: "exact", head: false }),
       supabase.from("issues").select("status", { count: "exact", head: false }),
     ]);
+
+    // Check for errors in parallel queries
+    if (jobsResult.error) throw new Error(`Failed to fetch jobs: ${jobsResult.error.message}`);
+    if (partsResult.error) throw new Error(`Failed to fetch parts: ${partsResult.error.message}`);
+    if (tasksResult.error) throw new Error(`Failed to fetch tasks: ${tasksResult.error.message}`);
+    if (issuesResult.error) throw new Error(`Failed to fetch issues: ${issuesResult.error.message}`);
 
     const stats = {
       jobs: {
@@ -94,14 +104,16 @@ const getDashboardStats: ToolHandler = async (_args, supabase) => {
       },
     };
 
-    return jsonResponse(stats);
+    return structuredResponse(stats);
   } catch (error) {
     return errorResponse(error);
   }
 };
 
-const getQrmData: ToolHandler = async (args, supabase) => {
+const getQrmData: ToolHandler = async (args: Record<string, unknown>, supabase: SupabaseClient) => {
   try {
+    const { cell_id } = validateArgs(args, qrmDataSchema);
+
     let query = supabase.from("cells").select(`
       id,
       name,
@@ -112,8 +124,8 @@ const getQrmData: ToolHandler = async (args, supabase) => {
       operations(id, status)
     `);
 
-    if (args.cell_id) {
-      query = query.eq("id", args.cell_id);
+    if (cell_id) {
+      query = query.eq("id", cell_id);
     }
 
     const { data: cells, error } = await query;
@@ -157,23 +169,20 @@ const getQrmData: ToolHandler = async (args, supabase) => {
       };
     });
 
-    return jsonResponse(qrmData);
+    return structuredResponse(qrmData);
   } catch (error) {
     return errorResponse(error);
   }
 };
 
-const getProductionMetrics: ToolHandler = async (args, supabase) => {
+const getProductionMetrics: ToolHandler = async (args: Record<string, unknown>, supabase: SupabaseClient) => {
   try {
-    const { start_date, end_date } = args as {
-      start_date?: string;
-      end_date?: string;
-    };
+    const validated = validateArgs(args, productionMetricsSchema);
 
     // Default to last 30 days if not specified
-    const endDate = end_date || new Date().toISOString();
+    const endDate = validated.end_date || new Date().toISOString();
     const startDate =
-      start_date ||
+      validated.start_date ||
       new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
     // Fetch completed jobs in the period
@@ -228,21 +237,18 @@ const getProductionMetrics: ToolHandler = async (args, supabase) => {
       },
     };
 
-    return jsonResponse(metrics);
+    return structuredResponse(metrics);
   } catch (error) {
     return errorResponse(error);
   }
 };
 
-// Create handlers map
-const handlers = new Map<string, ToolHandler>([
-  ["get_dashboard_stats", getDashboardStats],
-  ["get_qrm_data", getQrmData],
-  ["get_production_metrics", getProductionMetrics],
-]);
-
 // Export module
 export const dashboardModule: ToolModule = {
-  tools,
-  handlers,
+  tools: [getDashboardStatsTool, getQrmDataTool, getProductionMetricsTool],
+  handlers: new Map<string, ToolHandler>([
+    ['get_dashboard_stats', getDashboardStats],
+    ['get_qrm_data', getQrmData],
+    ['get_production_metrics', getProductionMetrics],
+  ]),
 };

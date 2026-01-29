@@ -12,7 +12,7 @@
  * - Self-hosted: Unlimited (configured via env, not enforced)
  */
 
-import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 export interface PlanLimits {
   plan: 'free' | 'pro' | 'premium' | 'enterprise';

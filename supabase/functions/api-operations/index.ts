@@ -1,19 +1,19 @@
-import { serveApi } from "../_shared/handler.ts";
-import { createCrudHandler } from "../_shared/crud-builder.ts";
-import { OperationValidator } from "../_shared/validation/validators/OperationValidator.ts";
-import type { HandlerContext } from "../_shared/handler.ts";
+import { serveApi } from "@shared/handler.ts";
+import { createCrudHandler } from "@shared/crud-builder.ts";
+import { OperationValidator } from "@shared/validation/validators/OperationValidator.ts";
+import type { HandlerContext } from "@shared/handler.ts";
 import {
   ConflictError,
   NotFoundError,
   ValidationException,
   BadRequestError,
   createSuccessResponse,
-} from "../_shared/validation/errorHandler.ts";
+} from "@shared/validation/errorHandler.ts";
 import {
   collectOperationForeignKeys,
   fetchValidIds,
-} from "../_shared/validation/fkValidator.ts";
-import type { ValidationContext } from "../_shared/validation/types.ts";
+} from "@shared/validation/fkValidator.ts";
+import type { ValidationContext } from "@shared/validation/types.ts";
 
 // Custom POST handler with auto-sequence and validation
 async function handleCreateWithSequence(req: Request, ctx: HandlerContext): Promise<Response> {

@@ -5,7 +5,7 @@ description: "Get up and running with Eryxon Flow in minutes."
 
 
 
-Get Eryxon Flow running in under 10 minutes.
+Get Eryxon Flow up and running.
 
 > **Just want to explore?** Try the [live demo at app.eryxon.eu](https://app.eryxon.eu) — no setup needed. Sign up and start exploring immediately.
 
@@ -18,7 +18,7 @@ Get Eryxon Flow running in under 10 minutes.
 
 ---
 
-## Step 1: Set Up Supabase (5 minutes)
+## Step 1: Set Up Supabase
 
 ### 1.1 Create Project
 
@@ -26,7 +26,6 @@ Get Eryxon Flow running in under 10 minutes.
 2. Name it `eryxon-flow`
 3. Save your database password
 4. Click **Create**
-5. Wait ~2 minutes for setup
 
 ### 1.2 Get Your Keys
 
@@ -42,7 +41,7 @@ Go to **Settings** → **API** and copy:
 
 ---
 
-## Step 2: Run the Application (3 minutes)
+## Step 2: Run the Application
 
 ```bash
 
@@ -71,7 +70,7 @@ Open **http://localhost:8080**
 
 ---
 
-## Step 3: Create Your Account (1 minute)
+## Step 3: Create Your Account
 
 1. Click **Sign Up**
 2. Enter email and password
@@ -105,12 +104,21 @@ Want to see the app with sample data?
 
 ## What's Next?
 
-- **[Self-Hosting Guide](/guides/self-hosting/)** - Production deployment options
-- **[REST API Overview](/architecture/connectivity-rest-api/)** - Endpoints and auth
+**Setup & Deployment:**
+- [Self-Hosting Guide](/guides/self-hosting) - Production deployment options
+- [MCP Server Setup](/guides/mcp-setup) - AI assistant integration setup
+
+**API & Integration:**
+- [REST API Documentation](/architecture/connectivity-rest-api) - Complete API reference
+- [MCP Demo Guide](/api/mcp-demo-guide) - AI assistant usage examples
+- [Connectivity Overview](/architecture/connectivity-overview) - Integration architecture
+- [Webhooks & MQTT](/architecture/connectivity-mqtt) - Event-driven integration
 - **Swagger/OpenAPI** - Available in the app at `/api-docs`
-- **[MCP Demo](/api/mcp-demo-guide/)** - AI assistant integration
-- **[App Architecture](/architecture/app-architecture/)** - Deep dive into features
-- **[FAQ](/guides/faq/)** - Frequently asked questions
+
+**Architecture & Help:**
+- [App Architecture](/architecture/app-architecture) - System design overview
+- [Database Schema](/architecture/database) - Data model reference
+- [FAQ](/guides/faq) - Frequently asked questions
 
 ---
 

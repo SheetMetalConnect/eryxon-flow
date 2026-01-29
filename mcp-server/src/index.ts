@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 
 /**
- * Eryxon Flow MCP Server
+ * Eryxon Flow MCP Server v2.4.0
  *
- * A modular Model Context Protocol server that provides AI assistants
- * with tools to interact with the Eryxon Flow Manufacturing Execution System.
+ * Universal MCP server supporting both:
+ * - DIRECT mode: Self-hosted with service key
+ * - API mode: Cloud SaaS with tenant-scoped API keys
  *
  * Architecture:
- * - tools/ - Domain-specific tool modules (jobs, parts, operations, etc.)
- * - types/ - Shared TypeScript types
- * - utils/ - Utility functions (supabase client, response helpers)
+ * - clients/ - Unified client abstraction (Supabase or REST API)
+ * - tools/ - Domain-specific tool modules (55 tools)
+ * - config.ts - Auto-detects deployment mode
  *
- * @version 2.3.0
  * @see https://github.com/SheetMetalConnect/eryxon-flow/tree/main/mcp-server
  */
 
@@ -23,28 +23,30 @@ import {
   CallToolResult,
 } from "@modelcontextprotocol/sdk/types.js";
 
-import { createSupabaseClient, validateEnvironment } from "./utils/index.js";
+import { loadConfig, getModeDescription } from "./config.js";
+import { createClient } from "./clients/index.js";
 import { createConfiguredRegistry } from "./tools/index.js";
 
-// Validate environment before starting
-validateEnvironment();
+// Load configuration and detect mode
+const config = loadConfig();
+console.error(`🚀 Eryxon Flow MCP Server v2.4.0`);
+console.error(`📡 Mode: ${getModeDescription(config.mode)}`);
 
-// Create Supabase client
-const supabase = createSupabaseClient();
+// Create unified client (Supabase or REST API)
+const client = createClient(config);
 
 // Create and configure the tool registry with all modules
 const toolRegistry = createConfiguredRegistry();
 
 // Log startup info
 const stats = toolRegistry.getStats();
-console.error(`Eryxon Flow MCP Server v2.3.0`);
-console.error(`Loaded ${stats.totalTools} tools from 10 modules`);
+console.error(`🔧 Loaded ${stats.totalTools} tools`);
 
 // Create MCP server instance
 const server = new Server(
   {
     name: "eryxon-flow-mcp",
-    version: "2.3.0",
+    version: "2.4.0",
   },
   {
     capabilities: {
@@ -64,18 +66,36 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 /**
  * Handle tool execution requests
  * Routes to the appropriate module handler
+ *
+ * NOTE: Tools receive the unified client, which automatically
+ * uses either Supabase (direct) or REST API (cloud) based on config
  */
 server.setRequestHandler(CallToolRequestSchema, async (request): Promise<CallToolResult> => {
   const { name, arguments: args } = request.params;
 
-  // Execute the tool through the registry
-  const result = await toolRegistry.executeTool(
-    name,
-    (args as Record<string, unknown>) || {},
-    supabase
-  );
+  try {
+    // Execute the tool through the registry
+    // The client will handle the request appropriately based on mode
+    const result = await toolRegistry.executeTool(
+      name,
+      (args as Record<string, unknown>) || {},
+      client as any // Tools still expect SupabaseClient type, but UnifiedClient is compatible
+    );
 
-  return result as CallToolResult;
+    return result as CallToolResult;
+  } catch (error) {
+    console.error(`Error executing tool ${name}:`, error);
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({
+            error: error instanceof Error ? error.message : 'Unknown error',
+          }),
+        },
+      ],
+    };
+  }
 });
 
 /**
@@ -85,11 +105,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request): Promise<CallToo
 async function main(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("Eryxon Flow MCP Server running on stdio");
+  console.error("✅ MCP Server ready on stdio");
 }
 
 // Start the server
 main().catch((error) => {
-  console.error("Server error:", error);
+  console.error("❌ Server error:", error);
   process.exit(1);
 });

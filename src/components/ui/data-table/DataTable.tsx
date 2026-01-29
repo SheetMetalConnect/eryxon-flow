@@ -137,6 +137,10 @@ interface DataTableProps<TData, TValue> {
   columnVisibility?: VisibilityState;
   /** Callback when column visibility changes */
   onColumnVisibilityChange?: (visibility: VisibilityState) => void;
+  /** Row selection state */
+  rowSelection?: Record<string, boolean>;
+  /** Callback when row selection changes */
+  onRowSelectionChange?: (selection: any) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -161,16 +165,21 @@ export function DataTable<TData, TValue>({
   searchDebounce = 200, // Debounce search for performance
   columnVisibility: controlledColumnVisibility,
   onColumnVisibilityChange,
+  rowSelection: controlledRowSelection,
+  onRowSelectionChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [internalColumnVisibility, setInternalColumnVisibility] = React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [internalRowSelection, setInternalRowSelection] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState("");
 
   // Use controlled or internal visibility state
   const columnVisibility = controlledColumnVisibility ?? internalColumnVisibility;
   const setColumnVisibility = onColumnVisibilityChange ?? setInternalColumnVisibility;
+
+  const rowSelection = controlledRowSelection ?? internalRowSelection;
+  const setRowSelection = onRowSelectionChange ?? setInternalRowSelection;
 
   // Debounce the global filter for better performance
   const debouncedGlobalFilter = useDebounce(globalFilter, searchDebounce);
@@ -240,9 +249,9 @@ export function DataTable<TData, TValue>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   );
                 })}

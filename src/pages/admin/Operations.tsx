@@ -7,7 +7,8 @@ import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Download, Wrench, PlayCircle, CheckCircle2, UserCheck } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2, Download, Wrench, PlayCircle, CheckCircle2, UserCheck, PlusCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { PageStatsRow } from "@/components/admin/PageStatsRow";
@@ -42,6 +43,7 @@ interface Operation {
 export const Operations: React.FC = () => {
   const { t } = useTranslation();
   const [selectedOperationId, setSelectedOperationId] = useState<string | null>(null);
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const { profile } = useAuth();
   const navigate = useNavigate();
 
@@ -171,6 +173,27 @@ export const Operations: React.FC = () => {
   };
 
   const columns: ColumnDef<Operation>[] = useMemo(() => [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label={t("common.table.selectAll")}
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label={t("common.table.selectRow")}
+          onClick={(e) => e.stopPropagation()}
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+      size: 40,
+    },
     {
       accessorKey: "operation_name",
       header: ({ column }) => (
@@ -353,12 +376,30 @@ export const Operations: React.FC = () => {
       <AdminPageHeader
         title={t("operations.title", "Operations")}
         description={t("operations.subtitle", "Monitor all manufacturing operations across cells and jobs")}
-        action={{
-          label: t("common.export", "Export"),
-          onClick: handleExport,
-          icon: Download,
-        }}
-      />
+      >
+        <div className="flex gap-2">
+          {Object.keys(rowSelection).length > 0 && (
+            <Button
+              variant="default"
+              onClick={() => {
+                // Map selected row indices to actual operation IDs
+                const selectedOperationIds = Object.keys(rowSelection)
+                  .map(index => operations[parseInt(index)]?.id)
+                  .filter(Boolean)
+                  .join(",");
+                navigate(`/admin/batches/new?operationIds=${selectedOperationIds}`);
+              }}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              {t("batches.createBatch")} ({Object.keys(rowSelection).length})
+            </Button>
+          )}
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="mr-2 h-4 w-4" />
+            {t("common.export", "Export")}
+          </Button>
+        </div>
+      </AdminPageHeader>
 
       {/* Stats Row */}
       <PageStatsRow
@@ -383,6 +424,8 @@ export const Operations: React.FC = () => {
           searchDebounce={250}
           onRowClick={(operation) => setSelectedOperationId(operation.id)}
           columnVisibility={columnVisibility}
+          rowSelection={rowSelection}
+          onRowSelectionChange={setRowSelection}
           maxHeight={isMobile ? "calc(100vh - 320px)" : "calc(100vh - 280px)"}
         />
       </div>

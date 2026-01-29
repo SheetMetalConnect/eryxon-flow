@@ -1,6 +1,12 @@
 {
   "Actions": "Aktionen",
   "Blocked": "Blockiert",
+  "Block": "Blockieren",
+  "Unblock": "Freigeben",
+  "NestingLayout": "Schachtelungslayout",
+  "MaterialRequirement": "Materialanforderung",
+  "RaiseMaterialRequirement": "Materialanforderung Stellen",
+  "RequirementRaised": "Anforderung Gestellt",
   "Cancel": "Abbrechen",
   "Cell": "Fertigungszelle",
   "Complete": "Abschließen",

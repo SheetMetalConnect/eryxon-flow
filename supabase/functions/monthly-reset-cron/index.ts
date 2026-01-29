@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "@supabase/supabase-js";
 
 /**
  * Monthly Parts Counter Reset Cron Job
@@ -42,7 +42,7 @@ function authenticateCron(req: Request): boolean {
 
   // Check for service role key
   const authHeader = req.headers.get('authorization');
-  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY");
 
   if (authHeader && serviceRoleKey) {
     const token = authHeader.replace('Bearer ', '');
@@ -93,7 +93,7 @@ serve(async (req) => {
   // Create Supabase client with service role
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY") ?? '',
     {
       auth: {
         autoRefreshToken: false,

@@ -1,9 +1,9 @@
 ---
 title: Welcome to Eryxon MES
-description: The simple, elegant and powerful manufacturing execution system that your people will love to use. Made for metals fabrication.
+description: Manufacturing execution system for metals fabrication shops.
 ---
 
-**The simple, elegant and powerful manufacturing execution system that your people will love to use. Made for metals fabrication.**
+**Manufacturing execution system for metals fabrication shops.**
 
 > **Try it now:** Explore the [live demo at app.eryxon.eu](https://app.eryxon.eu) — no installation required.
 
@@ -65,7 +65,7 @@ Track who's on-site and what they're working on in real-time. No guessing, no de
 
 ## Integration-First Architecture
 
-**100% API-driven.** Your ERP pushes jobs, parts, and tasks via REST API. Eryxon sends completion events back via webhooks. MCP server enables AI/automation integration.
+**100% API-driven.** Your ERP pushes jobs, parts, and tasks via [REST API](/architecture/connectivity-rest-api). Eryxon sends completion events back via [webhooks](/architecture/connectivity-mqtt). The [MCP server](/guides/mcp-setup) enables AI/automation integration with Claude Desktop and other AI tools.
 
 ### File handling
 Request a signed upload URL from the API, upload STEP and PDF files directly to Supabase Storage, then reference the file path when creating jobs or parts. Large files (5-50MB typical) upload directly to storage—no timeouts, no API bottlenecks.
@@ -90,7 +90,7 @@ Operators create issues (NCRs) from active tasks with description, severity, and
 *   **No purchasing.** Tasks can be marked as external (subcontract work) and status tracked via API, but no PO management or vendor transactions.
 *   **No BOM management.** We track what to produce, not item details or inventory. Parts can have parent-child links for assembly visualization, but not multi-level BOMs that do not live in production.
 *   **Simple scheduling.** A built-in capacity-based scheduler can auto-allocate operations across cells, respecting factory calendar and working days. It's not an APS optimizer—dates can also come from your ERP, and admins can manually override due dates at any time.
-*   **No reports.** Real-time stat panels only. No built-in historical analytics—but all data accessible via API/MCP for your own reporting.
+*   **No reports.** Real-time stat panels only. No built-in historical analytics—but all data accessible via [REST API](/architecture/connectivity-rest-api) or [MCP server](/guides/mcp-setup) for your own reporting and AI-powered insights.
 
 ---
 
@@ -101,4 +101,4 @@ Operators create issues (NCRs) from active tasks with description, severity, and
 *   **Auth:** JWT-based with role-based access control
 *   **Files:** Supabase Storage with signed URLs
 *   **STEP Viewer:** occt-import-js for client-side STEP parsing + Three.js rendering
-*   **Integration:** REST API, webhooks, MCP server
+*   **Integration:** [REST API](/architecture/connectivity-rest-api), [webhooks](/architecture/connectivity-mqtt), [MCP server](/guides/mcp-setup)
