@@ -54,6 +54,10 @@
           "slug": "features/3d-viewer"
         },
         {
+          "label": "Scheduling & Capacity",
+          "slug": "features/scheduling"
+        },
+        {
           "label": "Flexible Metadata",
           "slug": "features/flexible-metadata"
         }
