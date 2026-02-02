@@ -32,8 +32,6 @@ SECURITY DEFINER
 SET search_path TO 'public'
 AS $$
 DECLARE
-  v_url TEXT;
-  v_service_key TEXT;
   v_payload JSONB;
 BEGIN
   -- Only notify for admin users with email login (new company signups)
@@ -63,18 +61,21 @@ BEGIN
     )
   );
 
-  -- Call the edge function via pg_net
-  -- This requires the pg_net extension to be enabled
+  -- Call the edge function via pg_net (matching existing webhook-dispatch pattern)
   PERFORM net.http_post(
-    url := (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'supabase_url') || '/functions/v1/notify-new-signup',
+    url := 'https://vatgianzotsurljznsry.supabase.co/functions/v1/notify-new-signup',
     headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'service_role_key')
+      'Content-Type', 'application/json'
     ),
     body := v_payload
   );
 
   RETURN NEW;
+EXCEPTION
+  WHEN OTHERS THEN
+    -- Log error but don't fail the signup transaction
+    RAISE WARNING 'Failed to send signup notification: %', SQLERRM;
+    RETURN NEW;
 END;
 $$;
 
