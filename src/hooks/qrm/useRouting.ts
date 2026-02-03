@@ -84,7 +84,8 @@ export function usePartRouting(
 
   const fetchRouting = useCallback(async () => {
     if (!partId) {
-      setRouting([]);
+      // Only update state if routing is not already empty to prevent re-render loops
+      setRouting(prev => prev.length === 0 ? prev : []);
       return;
     }
 
@@ -132,7 +133,8 @@ export function usePartRouting(
 
   useEffect(() => {
     if (!partId) {
-      setRouting([]);
+      // Only update state if routing is not already empty to prevent re-render loops
+      setRouting(prev => prev.length === 0 ? prev : []);
       return;
     }
 
@@ -192,7 +194,8 @@ export function useJobRouting(jobId: string | null, tenantId: string | null) {
 
   const fetchRouting = useCallback(async () => {
     if (!jobId || !tenantId) {
-      setRouting([]);
+      // Only update state if routing is not already empty to prevent re-render loops
+      setRouting(prev => prev.length === 0 ? prev : []);
       return;
     }
 
@@ -268,7 +271,8 @@ export function useJobRouting(jobId: string | null, tenantId: string | null) {
 
   useEffect(() => {
     if (!jobId || !tenantId) {
-      setRouting([]);
+      // Only update state if routing is not already empty to prevent re-render loops
+      setRouting(prev => prev.length === 0 ? prev : []);
       return;
     }
 
@@ -322,7 +326,8 @@ export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null
 
   const fetchRoutings = useCallback(async () => {
     if (jobIds.length === 0 || !tenantId) {
-      setRoutings({});
+      // Only update state if routings is not already empty to prevent re-render loops
+      setRoutings(prev => Object.keys(prev).length === 0 ? prev : {});
       return;
     }
 

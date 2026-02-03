@@ -41,7 +41,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
   const { toast } = useToast();
   const { t } = useTranslation();
   const { profile } = useAuth();
-  const { routing, loading: routingLoading } = useJobRouting(jobId, profile?.tenant_id || null);
+  const { routing, loading: routingLoading } = useJobRouting(jobId, profile?.tenant_id ?? null);
 
   const { data: job, isLoading, error } = useQuery({
     queryKey: ["job-detail", jobId],

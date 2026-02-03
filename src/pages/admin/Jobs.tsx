@@ -130,7 +130,7 @@ export default function Jobs() {
   const jobIds = useMemo(() => jobs?.map((job: any) => job.id) || [], [jobs]);
 
   // Fetch routing for all jobs
-  const { routings, loading: routingsLoading } = useMultipleJobsRouting(jobIds, profile?.tenant_id || null);
+  const { routings, loading: routingsLoading } = useMultipleJobsRouting(jobIds, profile?.tenant_id ?? null);
 
   const handleSetOnHold = async (jobId: string) => {
     await supabase.from("jobs").update({ status: "on_hold" }).eq("id", jobId);
