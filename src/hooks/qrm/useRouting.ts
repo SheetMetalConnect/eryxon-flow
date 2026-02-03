@@ -76,7 +76,7 @@ function groupOperationsByCell(
  */
 export function usePartRouting(
   partId: string | null,
-  tenantId: string | null
+  tenantId?: string | null
 ) {
   const [routing, setRouting] = useState<PartRouting>([]);
   const [loading, setLoading] = useState(false);
@@ -84,7 +84,8 @@ export function usePartRouting(
 
   const fetchRouting = useCallback(async () => {
     if (!partId) {
-      setRouting([]);
+      // Only update state if routing is not already empty to prevent re-render loops
+      setRouting(prev => prev.length === 0 ? prev : []);
       return;
     }
 
@@ -132,7 +133,8 @@ export function usePartRouting(
 
   useEffect(() => {
     if (!partId) {
-      setRouting([]);
+      // Only update state if routing is not already empty to prevent re-render loops
+      setRouting(prev => prev.length === 0 ? prev : []);
       return;
     }
 
@@ -185,14 +187,15 @@ export function usePartRouting(
  * @param tenantId - Tenant ID for RLS filtering (required)
  * @returns Routing data, loading state, error, and refetch function
  */
-export function useJobRouting(jobId: string | null, tenantId: string | null) {
+export function useJobRouting(jobId: string | null, tenantId?: string | null) {
   const [routing, setRouting] = useState<JobRouting>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchRouting = useCallback(async () => {
     if (!jobId || !tenantId) {
-      setRouting([]);
+      // Only update state if routing is not already empty to prevent re-render loops
+      setRouting(prev => prev.length === 0 ? prev : []);
       return;
     }
 
@@ -268,7 +271,8 @@ export function useJobRouting(jobId: string | null, tenantId: string | null) {
 
   useEffect(() => {
     if (!jobId || !tenantId) {
-      setRouting([]);
+      // Only update state if routing is not already empty to prevent re-render loops
+      setRouting(prev => prev.length === 0 ? prev : []);
       return;
     }
 
@@ -315,14 +319,15 @@ export function useJobRouting(jobId: string | null, tenantId: string | null) {
  * @param tenantId - Tenant ID for RLS filtering (required)
  * @returns Map of routing by job ID
  */
-export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null) {
+export function useMultipleJobsRouting(jobIds: string[], tenantId?: string | null) {
   const [routings, setRoutings] = useState<Record<string, JobRouting>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchRoutings = useCallback(async () => {
     if (jobIds.length === 0 || !tenantId) {
-      setRoutings({});
+      // Only update state if routings is not already empty to prevent re-render loops
+      setRoutings(prev => Object.keys(prev).length === 0 ? prev : {});
       return;
     }
 
