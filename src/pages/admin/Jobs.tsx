@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -71,6 +72,7 @@ export default function Jobs() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { profile } = useAuth();
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [overrideJobId, setOverrideJobId] = useState<string | null>(null);
 
@@ -128,7 +130,7 @@ export default function Jobs() {
   const jobIds = useMemo(() => jobs?.map((job: any) => job.id) || [], [jobs]);
 
   // Fetch routing for all jobs
-  const { routings, loading: routingsLoading } = useMultipleJobsRouting(jobIds);
+  const { routings, loading: routingsLoading } = useMultipleJobsRouting(jobIds, profile?.tenant_id || null);
 
   const handleSetOnHold = async (jobId: string) => {
     await supabase.from("jobs").update({ status: "on_hold" }).eq("id", jobId);
