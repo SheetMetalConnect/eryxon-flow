@@ -30,6 +30,18 @@ interface WebhookPayload {
   schema: string;
 }
 
+/**
+ * Escape HTML special characters to prevent XSS in email content
+ */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 Deno.serve(async (req: Request) => {
   const corsResponse = handleCors(req);
   if (corsResponse) return corsResponse;
@@ -46,16 +58,77 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    // Validate required profile data
+    if (!profile.email || !profile.tenant_id) {
+      console.error("Missing required profile data:", {
+        hasEmail: !!profile.email,
+        hasTenantId: !!profile.tenant_id,
+        profileId: profile.id
+      });
+      return new Response(JSON.stringify({ error: "Missing required profile data (email or tenant_id)" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Fetch tenant details
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { data: tenant } = await supabase
+    const { data: tenant, error: tenantError } = await supabase
       .from("tenants")
       .select("id, name, company_name, plan, status, created_at")
       .eq("id", profile.tenant_id)
       .single();
+
+    if (tenantError || !tenant) {
+      console.error("Failed to fetch tenant:", {
+        tenantId: profile.tenant_id,
+        error: tenantError?.message || "Tenant not found",
+        code: tenantError?.code,
+      });
+      return new Response(JSON.stringify({
+        error: "Failed to fetch tenant data",
+        tenantId: profile.tenant_id,
+        details: tenantError?.message
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check if this is the first admin with email login in the tenant (true new signup)
+    // Skip if there are other admin email-login users (invited admin joining existing tenant)
+    const { count: existingAdminCount, error: countError } = await supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("tenant_id", profile.tenant_id)
+      .eq("role", "admin")
+      .eq("has_email_login", true);
+
+    if (countError) {
+      console.error("Failed to count existing admins:", countError);
+      // Continue anyway - better to send duplicate than miss a signup
+    } else if (existingAdminCount && existingAdminCount > 1) {
+      // More than 1 admin with email login means this is an invited admin, not a new signup
+      return new Response(JSON.stringify({ message: "Skipped: not the first admin in tenant" }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate required tenant data
+    if (!tenant.company_name && !tenant.name) {
+      console.error("Tenant missing company name:", { tenantId: tenant.id });
+      return new Response(JSON.stringify({
+        error: "Tenant missing company name",
+        tenantId: tenant.id
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     const notifyEmail = Deno.env.get("SIGNUP_NOTIFY_EMAIL");
@@ -70,15 +143,63 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const companyName = tenant?.company_name || tenant?.name || "Unknown";
-    const planDisplay = `${tenant?.plan || "free"} (${tenant?.status || "trial"})`;
-    const createdAt = tenant?.created_at
+    // Escape all user-controlled values for safe HTML injection
+    const companyName = escapeHtml(tenant.company_name || tenant.name);
+    const contactName = profile.full_name ? escapeHtml(profile.full_name) : null;
+    const contactEmail = escapeHtml(profile.email);
+    const tenantId = escapeHtml(profile.tenant_id);
+    const plan = escapeHtml(tenant.plan || "free");
+    const status = escapeHtml(tenant.status || "trial");
+    const createdAt = tenant.created_at
       ? new Date(tenant.created_at).toLocaleString("en-US", {
           dateStyle: "medium",
           timeStyle: "short",
         })
-      : "Unknown";
+      : null;
     const adminPanelUrl = `${appUrl}/admin/config/users`;
+
+    // Build email rows - only include fields with actual data
+    const dataRows: string[] = [];
+
+    dataRows.push(`
+      <tr>
+        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Company</td>
+        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${companyName}</td>
+      </tr>`);
+
+    if (contactName) {
+      dataRows.push(`
+      <tr>
+        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Contact Person</td>
+        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${contactName}</td>
+      </tr>`);
+    }
+
+    dataRows.push(`
+      <tr>
+        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Email</td>
+        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${contactEmail}</td>
+      </tr>`);
+
+    dataRows.push(`
+      <tr>
+        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Plan</td>
+        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${plan} (${status})</td>
+      </tr>`);
+
+    if (createdAt) {
+      dataRows.push(`
+      <tr>
+        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Created</td>
+        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${createdAt}</td>
+      </tr>`);
+    }
+
+    dataRows.push(`
+      <tr>
+        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Tenant ID</td>
+        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${tenantId}</td>
+      </tr>`);
 
     const emailHtml = `
 <!DOCTYPE html>
@@ -108,30 +229,7 @@ Deno.serve(async (req: Request) => {
                 <tr>
                   <td style="padding: 20px;">
                     <table width="100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Company</td>
-                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${companyName}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Contact Person</td>
-                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${profile.full_name || "Not provided"}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Email</td>
-                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${profile.email || "Not provided"}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Plan</td>
-                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${planDisplay}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Created</td>
-                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${createdAt}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Tenant ID</td>
-                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${profile.tenant_id}</td>
-                      </tr>
+                      ${dataRows.join("")}
                     </table>
                   </td>
                 </tr>
