@@ -10,10 +10,31 @@
  * - SIGNUP_NOTIFY_EMAIL: Email address to receive signup notifications
  * - APP_URL: Your application URL (e.g., https://app.eryxon.eu)
  * - EMAIL_FROM: Sender email address
+ *
+ * Note: Edge functions run in Deno and don't have access to the React i18n system.
+ * Labels are centralized below for easier maintenance. This is an internal admin
+ * notification, not a user-facing email.
  */
 
 import { createClient } from "@supabase/supabase-js";
 import { corsHeaders, handleCors } from "@shared/cors.ts";
+
+/**
+ * Centralized labels for email content.
+ * These could be moved to a shared translations file if i18n is needed.
+ */
+const labels = {
+  emailTitle: "New Signup",
+  emailSubtitle: "A new company has signed up for Eryxon Flow",
+  fieldCompany: "Company",
+  fieldContactPerson: "Contact Person",
+  fieldEmail: "Email",
+  fieldPlan: "Plan",
+  fieldCreated: "Created",
+  fieldTenantId: "Tenant ID",
+  ctaButton: "Review in Admin Panel",
+  footerText: "This is an automated notification from Eryxon Flow.",
+} as const;
 
 interface WebhookPayload {
   type: "INSERT";
@@ -118,11 +139,27 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Validate required tenant data
+    // Validate required tenant data - must have company_name or name
     if (!tenant.company_name && !tenant.name) {
       console.error("Tenant missing company name:", { tenantId: tenant.id });
       return new Response(JSON.stringify({
         error: "Tenant missing company name",
+        tenantId: tenant.id
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate plan and status exist (required fields from DB)
+    if (!tenant.plan || !tenant.status) {
+      console.error("Tenant missing plan or status:", {
+        tenantId: tenant.id,
+        plan: tenant.plan,
+        status: tenant.status
+      });
+      return new Response(JSON.stringify({
+        error: "Tenant missing plan or status",
         tenantId: tenant.id
       }), {
         status: 400,
@@ -147,58 +184,61 @@ Deno.serve(async (req: Request) => {
     const companyName = escapeHtml(tenant.company_name || tenant.name);
     const contactName = profile.full_name ? escapeHtml(profile.full_name) : null;
     const contactEmail = escapeHtml(profile.email);
-    const tenantId = escapeHtml(profile.tenant_id);
-    const plan = escapeHtml(tenant.plan || "free");
-    const status = escapeHtml(tenant.status || "trial");
-    const createdAt = tenant.created_at
-      ? new Date(tenant.created_at).toLocaleString("en-US", {
-          dateStyle: "medium",
-          timeStyle: "short",
-        })
-      : null;
+    const escapedTenantId = escapeHtml(profile.tenant_id);
+    const plan = escapeHtml(tenant.plan);
+    const status = escapeHtml(tenant.status);
     const adminPanelUrl = `${appUrl}/admin/config/users`;
+
+    // Format created_at only if it exists
+    let createdAtFormatted: string | null = null;
+    if (tenant.created_at) {
+      createdAtFormatted = new Date(tenant.created_at).toLocaleString("en-US", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      });
+    }
 
     // Build email rows - only include fields with actual data
     const dataRows: string[] = [];
 
     dataRows.push(`
       <tr>
-        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Company</td>
+        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">${labels.fieldCompany}</td>
         <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${companyName}</td>
       </tr>`);
 
     if (contactName) {
       dataRows.push(`
       <tr>
-        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Contact Person</td>
+        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">${labels.fieldContactPerson}</td>
         <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${contactName}</td>
       </tr>`);
     }
 
     dataRows.push(`
       <tr>
-        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Email</td>
+        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">${labels.fieldEmail}</td>
         <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${contactEmail}</td>
       </tr>`);
 
     dataRows.push(`
       <tr>
-        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Plan</td>
+        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">${labels.fieldPlan}</td>
         <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${plan} (${status})</td>
       </tr>`);
 
-    if (createdAt) {
+    if (createdAtFormatted) {
       dataRows.push(`
       <tr>
-        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Created</td>
-        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${createdAt}</td>
+        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">${labels.fieldCreated}</td>
+        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${createdAtFormatted}</td>
       </tr>`);
     }
 
     dataRows.push(`
       <tr>
-        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Tenant ID</td>
-        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${tenantId}</td>
+        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">${labels.fieldTenantId}</td>
+        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${escapedTenantId}</td>
       </tr>`);
 
     const emailHtml = `
@@ -207,7 +247,7 @@ Deno.serve(async (req: Request) => {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>New Signup: ${companyName}</title>
+  <title>${labels.emailTitle}: ${companyName}</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f5;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f5; padding: 40px 20px;">
@@ -217,8 +257,8 @@ Deno.serve(async (req: Request) => {
           <!-- Header -->
           <tr>
             <td style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 40px 40px; text-align: center;">
-              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">New Signup</h1>
-              <p style="margin: 10px 0 0 0; color: #94a3b8; font-size: 14px;">A new company has signed up for Eryxon Flow</p>
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">${labels.emailTitle}</h1>
+              <p style="margin: 10px 0 0 0; color: #94a3b8; font-size: 14px;">${labels.emailSubtitle}</p>
             </td>
           </tr>
 
@@ -240,7 +280,7 @@ Deno.serve(async (req: Request) => {
                 <tr>
                   <td align="center" style="padding: 24px 0 0 0;">
                     <a href="${adminPanelUrl}" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);">
-                      Review in Admin Panel
+                      ${labels.ctaButton}
                     </a>
                   </td>
                 </tr>
@@ -252,7 +292,7 @@ Deno.serve(async (req: Request) => {
           <tr>
             <td style="background-color: #f8fafc; padding: 24px 40px; text-align: center; border-top: 1px solid #e2e8f0;">
               <p style="margin: 0; color: #94a3b8; font-size: 12px;">
-                This is an automated notification from Eryxon Flow.
+                ${labels.footerText}
               </p>
             </td>
           </tr>
@@ -272,7 +312,7 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         from: emailFrom,
         to: notifyEmail,
-        subject: `New Signup: ${companyName}`,
+        subject: `${labels.emailTitle}: ${companyName}`,
         html: emailHtml,
       }),
     });
