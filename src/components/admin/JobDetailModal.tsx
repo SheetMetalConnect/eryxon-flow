@@ -22,6 +22,7 @@ import { Plus, Edit2, Save, X, CheckCircle2, Clock, Circle, Truck, MapPin, Packa
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/contexts/AuthContext";
 import { PartIssueBadge } from "@/components/issues/PartIssueBadge";
 import { IssuesSummarySection } from "@/components/issues/IssuesSummarySection";
 import { OperationsFlowVisualization } from "@/components/qrm/OperationsFlowVisualization";
@@ -39,7 +40,8 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
   const [editedJob, setEditedJob] = useState<any>(null);
   const { toast } = useToast();
   const { t } = useTranslation();
-  const { routing, loading: routingLoading } = useJobRouting(jobId);
+  const { profile } = useAuth();
+  const { routing, loading: routingLoading } = useJobRouting(jobId, profile?.tenant_id || null);
 
   const { data: job, isLoading, error } = useQuery({
     queryKey: ["job-detail", jobId],

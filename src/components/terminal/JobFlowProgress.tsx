@@ -2,6 +2,7 @@ import React from 'react';
 import { CheckCircle2, Circle, ArrowRight, AlertTriangle, XCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useJobRouting } from '@/hooks/useQRMMetrics';
+import { useAuth } from '@/contexts/AuthContext';
 import type { CellQRMMetrics } from '@/types/qrm';
 import { useTranslation } from 'react-i18next';
 
@@ -27,7 +28,8 @@ export function JobFlowProgress({
     className
 }: JobFlowProgressProps) {
     const { t } = useTranslation();
-    const { routing, loading, error } = useJobRouting(jobId);
+    const { profile } = useAuth();
+    const { routing, loading, error } = useJobRouting(jobId, profile?.tenant_id || null);
 
     if (loading) {
         return (

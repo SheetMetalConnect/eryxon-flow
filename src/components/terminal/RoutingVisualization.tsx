@@ -1,5 +1,6 @@
 import React from 'react';
 import { useJobRouting } from '@/hooks/useQRMMetrics';
+import { useAuth } from '@/contexts/AuthContext';
 import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -17,7 +18,8 @@ interface RoutingVisualizationProps {
  * - Uses design tokens for colors (no hex literals)
  */
 export function RoutingVisualization({ jobId, currentCellId, className }: RoutingVisualizationProps) {
-    const { routing, loading, error } = useJobRouting(jobId);
+    const { profile } = useAuth();
+    const { routing, loading, error } = useJobRouting(jobId, profile?.tenant_id || null);
 
     if (loading) {
         return (
