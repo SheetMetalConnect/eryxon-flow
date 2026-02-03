@@ -19,7 +19,7 @@ interface RoutingVisualizationProps {
  */
 export function RoutingVisualization({ jobId, currentCellId, className }: RoutingVisualizationProps) {
     const { profile } = useAuth();
-    const { routing, loading, error } = useJobRouting(jobId, profile?.tenant_id || null);
+    const { routing, loading, error } = useJobRouting(jobId, profile?.tenant_id ?? null);
 
     if (loading) {
         return (

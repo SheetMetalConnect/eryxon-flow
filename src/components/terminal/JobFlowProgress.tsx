@@ -29,7 +29,7 @@ export function JobFlowProgress({
 }: JobFlowProgressProps) {
     const { t } = useTranslation();
     const { profile } = useAuth();
-    const { routing, loading, error } = useJobRouting(jobId, profile?.tenant_id || null);
+    const { routing, loading, error } = useJobRouting(jobId, profile?.tenant_id ?? null);
 
     if (loading) {
         return (

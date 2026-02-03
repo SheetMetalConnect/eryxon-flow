@@ -76,7 +76,7 @@ function groupOperationsByCell(
  */
 export function usePartRouting(
   partId: string | null,
-  tenantId?: string | null
+  tenantId: string | null
 ) {
   const [routing, setRouting] = useState<PartRouting>([]);
   const [loading, setLoading] = useState(false);
@@ -187,7 +187,7 @@ export function usePartRouting(
  * @param tenantId - Tenant ID for RLS filtering (required)
  * @returns Routing data, loading state, error, and refetch function
  */
-export function useJobRouting(jobId: string | null, tenantId?: string | null) {
+export function useJobRouting(jobId: string | null, tenantId: string | null) {
   const [routing, setRouting] = useState<JobRouting>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -319,7 +319,7 @@ export function useJobRouting(jobId: string | null, tenantId?: string | null) {
  * @param tenantId - Tenant ID for RLS filtering (required)
  * @returns Map of routing by job ID
  */
-export function useMultipleJobsRouting(jobIds: string[], tenantId?: string | null) {
+export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null) {
   const [routings, setRoutings] = useState<Record<string, JobRouting>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
