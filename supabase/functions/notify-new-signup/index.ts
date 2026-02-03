@@ -30,9 +30,10 @@ const labels = {
   fieldContactPerson: "Contact Person",
   fieldEmail: "Email",
   fieldPlan: "Plan",
+  fieldStatus: "Status",
   fieldCreated: "Created",
   fieldTenantId: "Tenant ID",
-  ctaButton: "Review in Admin Panel",
+  ctaButton: "View in Supabase",
   footerText: "This is an automated notification from Eryxon Flow.",
 } as const;
 
@@ -187,7 +188,11 @@ Deno.serve(async (req: Request) => {
     const escapedTenantId = escapeHtml(profile.tenant_id);
     const plan = escapeHtml(tenant.plan);
     const status = escapeHtml(tenant.status);
-    const adminPanelUrl = `${appUrl}/admin/config/users`;
+
+    // Extract project ref from Supabase URL for dashboard link
+    // SUPABASE_URL format: https://{project-ref}.supabase.co
+    const projectRef = supabaseUrl.replace("https://", "").split(".")[0];
+    const supabaseDashboardUrl = `https://supabase.com/dashboard/project/${projectRef}/editor`;
 
     // Format created_at only if it exists
     let createdAtFormatted: string | null = null;
@@ -198,47 +203,71 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Build email rows - only include fields with actual data
+    // Build email rows - only include fields with actual data (skip company, shown in header)
     const dataRows: string[] = [];
-
-    dataRows.push(`
-      <tr>
-        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">${labels.fieldCompany}</td>
-        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${companyName}</td>
-      </tr>`);
 
     if (contactName) {
       dataRows.push(`
       <tr>
-        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">${labels.fieldContactPerson}</td>
-        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${contactName}</td>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #334155;">
+          <span style="color: #64748b; font-size: 13px;">${labels.fieldContactPerson}</span>
+        </td>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #334155; text-align: right;">
+          <span style="color: #f1f5f9; font-size: 14px; font-weight: 500;">${contactName}</span>
+        </td>
       </tr>`);
     }
 
     dataRows.push(`
       <tr>
-        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">${labels.fieldEmail}</td>
-        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${contactEmail}</td>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #334155;">
+          <span style="color: #64748b; font-size: 13px;">${labels.fieldEmail}</span>
+        </td>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #334155; text-align: right;">
+          <a href="mailto:${contactEmail}" style="color: #60a5fa; font-size: 14px; font-weight: 500; text-decoration: none;">${contactEmail}</a>
+        </td>
       </tr>`);
 
     dataRows.push(`
       <tr>
-        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">${labels.fieldPlan}</td>
-        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${plan} (${status})</td>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #334155;">
+          <span style="color: #64748b; font-size: 13px;">${labels.fieldPlan}</span>
+        </td>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #334155; text-align: right;">
+          <span style="color: #f1f5f9; font-size: 14px; font-weight: 500;">${plan}</span>
+        </td>
+      </tr>`);
+
+    dataRows.push(`
+      <tr>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #334155;">
+          <span style="color: #64748b; font-size: 13px;">${labels.fieldStatus}</span>
+        </td>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #334155; text-align: right;">
+          <span style="display: inline-block; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; background-color: ${status === 'trial' ? 'rgba(251, 191, 36, 0.2)' : status === 'active' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(100, 116, 139, 0.2)'}; color: ${status === 'trial' ? '#fbbf24' : status === 'active' ? '#22c55e' : '#94a3b8'};">${status}</span>
+        </td>
       </tr>`);
 
     if (createdAtFormatted) {
       dataRows.push(`
       <tr>
-        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">${labels.fieldCreated}</td>
-        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${createdAtFormatted}</td>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #334155;">
+          <span style="color: #64748b; font-size: 13px;">${labels.fieldCreated}</span>
+        </td>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #334155; text-align: right;">
+          <span style="color: #f1f5f9; font-size: 14px; font-weight: 500;">${createdAtFormatted}</span>
+        </td>
       </tr>`);
     }
 
     dataRows.push(`
       <tr>
-        <td style="padding: 8px 0; color: #64748b; font-size: 14px;">${labels.fieldTenantId}</td>
-        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${escapedTenantId}</td>
+        <td style="padding: 12px 16px;">
+          <span style="color: #64748b; font-size: 13px;">${labels.fieldTenantId}</span>
+        </td>
+        <td style="padding: 12px 16px; text-align: right;">
+          <code style="color: #94a3b8; font-size: 12px; font-family: 'SF Mono', Monaco, monospace; background: rgba(100, 116, 139, 0.2); padding: 4px 8px; border-radius: 4px;">${escapedTenantId}</code>
+        </td>
       </tr>`);
 
     const emailHtml = `
@@ -249,53 +278,87 @@ Deno.serve(async (req: Request) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${labels.emailTitle}: ${companyName}</title>
 </head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f5;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f5; padding: 40px 20px;">
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #0f172a;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0f172a; padding: 40px 20px;">
     <tr>
       <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-          <!-- Header -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px;">
+
+          <!-- Logo/Brand Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 40px 40px; text-align: center;">
-              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">${labels.emailTitle}</h1>
-              <p style="margin: 10px 0 0 0; color: #94a3b8; font-size: 14px;">${labels.emailSubtitle}</p>
+            <td style="padding: 0 0 24px 0; text-align: center;">
+              <span style="font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">Eryxon</span>
+              <span style="font-size: 24px; font-weight: 300; color: #3b82f6; letter-spacing: -0.5px;">Flow</span>
             </td>
           </tr>
 
-          <!-- Content -->
+          <!-- Main Card -->
           <tr>
-            <td style="padding: 40px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border-radius: 8px;">
+            <td>
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); border-radius: 16px; overflow: hidden; border: 1px solid #334155;">
+
+                <!-- Header with Icon -->
                 <tr>
-                  <td style="padding: 20px;">
+                  <td style="padding: 32px 32px 24px 32px; text-align: center; border-bottom: 1px solid #334155;">
+                    <div style="display: inline-block; width: 56px; height: 56px; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); border-radius: 12px; margin-bottom: 16px; line-height: 56px; font-size: 24px;">
+                      🎉
+                    </div>
+                    <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 600;">${labels.emailTitle}</h1>
+                    <p style="margin: 8px 0 0 0; color: #94a3b8; font-size: 14px;">${labels.emailSubtitle}</p>
+                  </td>
+                </tr>
+
+                <!-- Company Highlight -->
+                <tr>
+                  <td style="padding: 24px 32px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%); border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.2);">
+                      <tr>
+                        <td style="padding: 20px; text-align: center;">
+                          <p style="margin: 0 0 4px 0; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">${labels.fieldCompany}</p>
+                          <p style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 600;">${companyName}</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Details Grid -->
+                <tr>
+                  <td style="padding: 0 32px 24px 32px;">
                     <table width="100%" cellpadding="0" cellspacing="0">
                       ${dataRows.join("")}
                     </table>
                   </td>
                 </tr>
-              </table>
 
-              <!-- CTA Button -->
-              <table width="100%" cellpadding="0" cellspacing="0">
+                <!-- CTA Button -->
                 <tr>
-                  <td align="center" style="padding: 24px 0 0 0;">
-                    <a href="${adminPanelUrl}" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);">
-                      ${labels.ctaButton}
-                    </a>
+                  <td style="padding: 0 32px 32px 32px;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td align="center">
+                          <a href="${supabaseDashboardUrl}" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 14px; font-weight: 600;">
+                            ${labels.ctaButton} →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
+
               </table>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="background-color: #f8fafc; padding: 24px 40px; text-align: center; border-top: 1px solid #e2e8f0;">
-              <p style="margin: 0; color: #94a3b8; font-size: 12px;">
+            <td style="padding: 24px 0 0 0; text-align: center;">
+              <p style="margin: 0; color: #64748b; font-size: 12px;">
                 ${labels.footerText}
               </p>
             </td>
           </tr>
+
         </table>
       </td>
     </tr>
