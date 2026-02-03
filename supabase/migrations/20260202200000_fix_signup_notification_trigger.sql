@@ -36,7 +36,8 @@ DECLARE
 BEGIN
   -- Only notify for admin users with email login (new company signups)
   -- Skip operators, machine users, and invitation-based signups that join existing tenants
-  IF NEW.role != 'admin' OR NEW.has_email_login != true THEN
+  -- Use IS NOT TRUE to correctly handle NULL values (NULL != true evaluates to NULL, not true)
+  IF NEW.role != 'admin' OR NEW.has_email_login IS NOT TRUE THEN
     RETURN NEW;
   END IF;
 
