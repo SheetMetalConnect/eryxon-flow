@@ -59,6 +59,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useTranslation } from "react-i18next";
 import { GlobalSearch, SearchTriggerButton } from "@/components/GlobalSearch";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+import { TrialStatusBanner } from "@/components/admin/TrialStatusBanner";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -761,6 +762,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
         {/* Main Content - Reduced padding */}
         <main className="flex-1 overflow-y-auto">
+          <TrialStatusBanner />
           <div className="container mx-auto p-3 pt-14 md:p-4 md:pt-4 lg:p-5">
             {children}
           </div>

@@ -574,6 +574,17 @@
       "body": "Hallo,\n\nIk wil graag upgraden naar het {{planName}} abonnement.\n\nHuidig Abonnement: {{currentPlan}}\nTenant ID: {{tenantId}}\n\nBedankt!"
     }
   },
+  "trialBanner": {
+    "title": "U gebruikt de gratis proefversie",
+    "titleWithDate": "Uw gratis proefperiode eindigt op {{date}}",
+    "description": "Bestanden en gegevens worden niet bewaard na de proefperiode. Host Eryxon MES zelf voor onbeperkt gebruik en volledig eigenaarschap van uw gegevens.",
+    "daysRemaining": "{{count}} dag resterend",
+    "daysRemaining_plural": "{{count}} dagen resterend",
+    "expired": "Uw proefperiode is verlopen",
+    "expiredDescription": "Uw proefperiode is beëindigd. Host Eryxon MES zelf om uw gegevens te behouden en alle functies te blijven gebruiken.",
+    "upgradeCta": "Bekijk Self-Hosting Handleiding",
+    "viewPlan": "Bekijk Plan"
+  },
   "featureFlags": {
     "title": "Functievlaggen",
     "description": "Schakel functies in of uit voor uw organisatie",
