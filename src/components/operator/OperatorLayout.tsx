@@ -36,6 +36,7 @@ import { AppTour } from '@/components/onboarding';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import { cn } from '@/lib/utils';
 import { GlobalSearch, SearchTriggerButton } from '@/components/GlobalSearch';
+import { TrialStatusBanner } from '@/components/admin/TrialStatusBanner';
 import { ROUTES } from '@/routes';
 
 interface OperatorLayoutProps {
@@ -205,6 +206,9 @@ export const OperatorLayout = ({ children, showBackToAdmin = false }: OperatorLa
             </div>
           </div>
         </header>
+
+        {/* Trial Status Banner */}
+        <TrialStatusBanner />
 
         {/* Currently Timing Widget - Sticky - Compact */}
         <div className="sticky top-12 z-40 border-b border-border-subtle glass-card">

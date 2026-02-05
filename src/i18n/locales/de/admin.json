@@ -329,6 +329,17 @@
     "needHelp": "Hilfe benötigt?",
     "helpDescription": "Sheet Metal Connect e.U. kann Ihnen bei der Einrichtung und Anpassung von Eryxon MES helfen."
   },
+  "trialBanner": {
+    "title": "Sie nutzen die kostenlose Testversion",
+    "titleWithDate": "Ihre kostenlose Testversion endet am {{date}}",
+    "description": "Dateien und Daten werden nach dem Testzeitraum nicht aufbewahrt. Hosten Sie Eryxon MES selbst für unbegrenzte Nutzung und vollständige Datenkontrolle.",
+    "daysRemaining": "{{count}} Tag verbleibend",
+    "daysRemaining_plural": "{{count}} Tage verbleibend",
+    "expired": "Ihre Testversion ist abgelaufen",
+    "expiredDescription": "Ihr Testzeitraum ist beendet. Hosten Sie Eryxon MES selbst, um Ihre Daten zu behalten und alle Funktionen weiter zu nutzen.",
+    "upgradeCta": "Self-Hosting Anleitung ansehen",
+    "viewPlan": "Plan ansehen"
+  },
   "featureFlags": {
     "title": "Feature-Flags",
     "description": "Aktivieren oder deaktivieren Sie Funktionen für Ihre Organisation",

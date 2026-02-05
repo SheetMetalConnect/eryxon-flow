@@ -25,6 +25,7 @@ interface TenantInfo {
   company_name: string | null;
   plan: "free" | "pro" | "premium" | "enterprise";
   status: "active" | "cancelled" | "suspended" | "trial";
+  trial_ends_at: string | null;
   // Whitelabeling fields (premium feature)
   whitelabel_enabled: boolean;
   whitelabel_logo_url: string | null;
@@ -125,6 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           company_name: tenantData.company_name,
           plan: tenantData.plan,
           status: tenantData.status,
+          trial_ends_at: tenantData.trial_ends_at ?? null,
           whitelabel_enabled: tenantData.whitelabel_enabled ?? false,
           whitelabel_logo_url: tenantData.whitelabel_logo_url ?? null,
           whitelabel_app_name: tenantData.whitelabel_app_name ?? null,

@@ -416,6 +416,17 @@
     "needHelp": "Need Help?",
     "helpDescription": "Sheet Metal Connect e.U. can help you set up and customize Eryxon MES for your operations."
   },
+  "trialBanner": {
+    "title": "You are on the free trial",
+    "titleWithDate": "Your free trial ends on {{date}}",
+    "description": "Files and data will not be retained after the trial period. Self-host Eryxon MES for unlimited usage and full data ownership.",
+    "daysRemaining": "{{count}} day remaining",
+    "daysRemaining_plural": "{{count}} days remaining",
+    "expired": "Your trial has expired",
+    "expiredDescription": "Your trial period has ended. Self-host Eryxon MES to keep your data and continue using all features.",
+    "upgradeCta": "View Self-Hosting Guide",
+    "viewPlan": "View Plan"
+  },
   "featureFlags": {
     "title": "Feature Flags",
     "description": "Enable or disable features for your organization",
