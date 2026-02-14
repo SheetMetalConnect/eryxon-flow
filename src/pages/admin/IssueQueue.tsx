@@ -524,26 +524,28 @@ export default function IssueQueue() {
                   rows={4}
                 />
               </div>
+            </div>
+          )}
 
-              <div className="flex gap-3">
-                <Button
-                  onClick={() => handleReview("approved")}
-                  disabled={actionLoading || !resolutionNotes.trim()}
-                  className="flex-1 bg-success hover:bg-success/90"
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  {t("issues.approve")}
-                </Button>
-                <Button
-                  onClick={() => handleReview("rejected")}
-                  disabled={actionLoading || !resolutionNotes.trim()}
-                  variant="destructive"
-                  className="flex-1"
-                >
-                  <XCircle className="h-4 w-4 mr-2" />
-                  {t("issues.reject")}
-                </Button>
-              </div>
+          {selectedIssue && (
+            <div className="shrink-0 flex gap-3 border-t pt-4">
+              <Button
+                onClick={() => handleReview("approved")}
+                disabled={actionLoading || !resolutionNotes.trim()}
+                className="flex-1 bg-success hover:bg-success/90"
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                {t("issues.approve")}
+              </Button>
+              <Button
+                onClick={() => handleReview("rejected")}
+                disabled={actionLoading || !resolutionNotes.trim()}
+                variant="destructive"
+                className="flex-1"
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                {t("issues.reject")}
+              </Button>
             </div>
           )}
         </DialogContent>

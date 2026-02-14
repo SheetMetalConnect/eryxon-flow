@@ -437,6 +437,210 @@ const mutation = useMutation({
 
 ---
 
+## Modal & Dialog Design Philosophy
+
+### Core Principle: Modals Must Always Be Completable
+
+Every modal in the app must fit within the viewport with action buttons always reachable. Inspired by Linear, Pipedrive, and Asana -- modals use a **fixed header + scrollable body + sticky footer** pattern.
+
+### Two-Tier System
+
+The modal system has two layers of protection:
+
+**Layer 1: Base Safety Net (`dialog.tsx`)**
+
+The base `DialogContent` component enforces viewport constraints on ALL modals automatically:
+
+```tsx
+// Mobile: bottom-sheet style
+"max-h-[calc(100vh-1rem)] overflow-y-auto"
+
+// Desktop: centered with max height
+"sm:max-h-[85vh]"
+```
+
+This means even simple modals with no explicit flex layout will never overflow the viewport.
+
+**Layer 2: Premium Flex Pattern (individual modals)**
+
+Complex modals with many fields use the full flex layout for sticky footers:
+
+```tsx
+<DialogContent className="glass-card sm:max-w-lg overflow-hidden flex flex-col">
+  {/* Fixed header - never scrolls */}
+  <DialogHeader className="shrink-0">
+    <DialogTitle>{title}</DialogTitle>
+  </DialogHeader>
+
+  {/* Scrollable body - takes remaining space */}
+  <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
+    {/* Form fields, content, etc. */}
+  </div>
+
+  {/* Sticky footer - always visible */}
+  <div className="shrink-0 flex justify-end gap-2 border-t pt-4">
+    <Button variant="outline" onClick={onClose}>Cancel</Button>
+    <Button onClick={onSave}>Save</Button>
+  </div>
+</DialogContent>
+```
+
+### When to Use Which Pattern
+
+| Modal Type | Pattern | Example |
+|------------|---------|---------|
+| **Simple** (1-3 fields) | Base safety net only | ApiKeys, ProductionQuantity, Assignments |
+| **Medium** (4-8 fields) | Full flex layout | Webhooks, Materials, ScrapReasons |
+| **Complex** (many fields/sections) | Full flex layout | Stages, Resources, MqttPublishers |
+| **With forms** | Flex + form wrapper | Stages, Resources, Materials |
+| **With tabs** | Flex + tabbed content | IntegrationDetailModal |
+| **Read-only detail** | Flex (no footer needed) | MyIssues, IssueQueue detail view |
+| **Confirm dialogs** | None (always compact) | ConfirmDialog |
+
+### The Flex Layout Pattern Explained
+
+```
+┌─ DialogContent (overflow-hidden flex flex-col) ──┐
+│                                                   │
+│  ┌─ Header (shrink-0) ────────────────────────┐  │
+│  │  Title, Description                         │  │
+│  └─────────────────────────────────────────────┘  │
+│  ── border-t ──────────────────────────────────── │
+│  ┌─ Body (flex-1 overflow-y-auto min-h-0) ────┐  │
+│  │                                             │  │
+│  │  Form fields, content...                    │  │
+│  │  This area scrolls when content overflows   │  │
+│  │                                             │  │
+│  └─────────────────────────────────────────────┘  │
+│  ── border-t ──────────────────────────────────── │
+│  ┌─ Footer (shrink-0) ────────────────────────┐  │
+│  │  [Cancel]  [Save]                           │  │
+│  └─────────────────────────────────────────────┘  │
+└───────────────────────────────────────────────────┘
+```
+
+**Critical CSS classes:**
+- `overflow-hidden` on container: Prevents the container itself from scrolling (overrides base `overflow-y-auto` via tailwind-merge)
+- `flex flex-col` on container: Enables the flex layout
+- `shrink-0` on header/footer: Prevents them from collapsing
+- `flex-1` on body: Takes all remaining vertical space
+- `overflow-y-auto` on body: Enables scrolling within the body only
+- `min-h-0` on body: Critical -- allows flex child to shrink below content size
+
+### Form Dialogs: Wrapping with `<form>`
+
+When a dialog contains a form, wrap the body + footer inside the `<form>` tag:
+
+```tsx
+<DialogContent className="glass-card sm:max-w-lg overflow-hidden flex flex-col">
+  <DialogHeader className="shrink-0">
+    <DialogTitle>{title}</DialogTitle>
+  </DialogHeader>
+
+  <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+    <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
+      {/* Form fields */}
+    </div>
+
+    <div className="shrink-0 border-t pt-4 mt-4 flex justify-end gap-2">
+      <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+      <Button type="submit">Save</Button>
+    </div>
+  </form>
+</DialogContent>
+```
+
+The `<form>` gets `flex-1 flex flex-col min-h-0` so it acts as a nested flex container.
+
+### Using the `ModalDialog` / `FormDialog` Wrappers
+
+For new modals, prefer using the pre-built wrappers from `modal-dialog.tsx`:
+
+```tsx
+import { ModalDialog } from '@/components/ui/modal-dialog';
+
+// Simple modal with the pattern built-in
+<ModalDialog
+  open={isOpen}
+  onClose={onClose}
+  title="My Modal"
+  description="Optional description"
+  size="md"  // sm | md | lg | xl | full
+  actions={
+    <>
+      <Button variant="outline" onClick={onClose}>Cancel</Button>
+      <Button onClick={onSave}>Save</Button>
+    </>
+  }
+>
+  {/* Content goes here - automatically scrollable */}
+</ModalDialog>
+```
+
+```tsx
+import { FormDialog } from '@/components/ui/modal-dialog';
+
+// Form modal with submit handling built-in
+<FormDialog
+  open={isOpen}
+  onClose={onClose}
+  onSubmit={handleSubmit}
+  title="Create Resource"
+  submitText="Create"
+  size="lg"
+>
+  {/* Form fields - automatically scrollable */}
+</FormDialog>
+```
+
+### Scrollbar Styling
+
+Premium thin scrollbars are applied globally to all dialogs via `design-system.css`:
+
+```css
+[role="dialog"] ::-webkit-scrollbar { width: 6px; }
+[role="dialog"] ::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.25);
+  border-radius: 3px;
+}
+[role="dialog"] * { scrollbar-width: thin; }
+```
+
+### Checklist for New Modals
+
+Before completing any modal:
+
+- [ ] `DialogContent` has `overflow-hidden flex flex-col` (if using flex pattern)
+- [ ] Header has `shrink-0`
+- [ ] Body has `flex-1 overflow-y-auto min-h-0`
+- [ ] Footer/action buttons have `shrink-0` and are OUTSIDE the scrollable body
+- [ ] Footer has `border-t pt-4` for visual separation
+- [ ] Action buttons are always reachable regardless of content height
+- [ ] Modal works on mobile (bottom-sheet) and desktop (centered)
+- [ ] Select/dropdown menus render in portals (Radix default) and aren't clipped
+
+### Common Mistakes to Avoid
+
+```tsx
+// BAD - Action buttons inside scrollable area (scroll away on long content)
+<div className="flex-1 overflow-y-auto min-h-0">
+  {/* content */}
+  <Button>Save</Button>  {/* This scrolls away! */}
+</div>
+
+// BAD - Missing min-h-0 (body won't shrink, breaks scroll)
+<div className="flex-1 overflow-y-auto">  {/* Missing min-h-0! */}
+
+// BAD - Using max-h + overflow-y-auto on DialogContent directly
+<DialogContent className="max-h-[80vh] overflow-y-auto">
+  {/* Entire modal scrolls including footer - buttons scroll away */}
+
+// BAD - Hardcoded height instead of flex
+<DialogContent className="h-[600px]">  {/* Breaks on small screens */}
+```
+
+---
+
 ## Quick Reference Commands
 
 ```bash
