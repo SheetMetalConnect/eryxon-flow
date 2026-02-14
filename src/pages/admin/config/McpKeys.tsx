@@ -479,8 +479,6 @@ export default function ConfigMcpKeys() {
                         </div>
                       )}
                     </div>
-
-                    </div>
                   </div>
                   <div className="shrink-0 border-t pt-4 flex gap-2">
                     <Button
