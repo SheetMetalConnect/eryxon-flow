@@ -477,11 +477,11 @@ export default function ConfigScrapReasons() {
         </CardContent>
       </Card>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="glass-card">
-          <DialogHeader>
+        <DialogContent className="glass-card overflow-hidden flex flex-col">
+          <DialogHeader className="shrink-0">
             <DialogTitle>{editingReason?.id ? "Edit Scrap Reason" : "Add Scrap Reason"}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="flex-1 overflow-y-auto min-h-0 space-y-4 py-4">
             <div>
               <Label>Code *</Label>
               <Input value={editingReason?.code || ""} onChange={(e) => setEditingReason({ ...editingReason, code: e.target.value })} placeholder="e.g., PROC-001" />
@@ -504,7 +504,7 @@ export default function ConfigScrapReasons() {
               <Label htmlFor="edit-active">Active</Label>
             </div>
           </div>
-          <div className="flex justify-end gap-2">
+          <div className="shrink-0 flex justify-end gap-2 border-t pt-4">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleSave} disabled={saveMutation.isPending}>{saveMutation.isPending ? "Saving..." : "Save"}</Button>
           </div>

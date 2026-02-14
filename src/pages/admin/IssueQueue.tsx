@@ -436,13 +436,13 @@ export default function IssueQueue() {
         open={!!selectedIssue}
         onOpenChange={() => setSelectedIssue(null)}
       >
-        <DialogContent className="glass-card max-w-2xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="glass-card max-w-2xl overflow-hidden flex flex-col">
+          <DialogHeader className="shrink-0">
             <DialogTitle>{t("issues.reviewIssue")}</DialogTitle>
           </DialogHeader>
 
           {selectedIssue && (
-            <div className="space-y-4">
+            <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
               <div className="flex items-center gap-2">
                 <Badge
                   className={
@@ -524,26 +524,28 @@ export default function IssueQueue() {
                   rows={4}
                 />
               </div>
+            </div>
+          )}
 
-              <div className="flex gap-3">
-                <Button
-                  onClick={() => handleReview("approved")}
-                  disabled={actionLoading || !resolutionNotes.trim()}
-                  className="flex-1 bg-success hover:bg-success/90"
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  {t("issues.approve")}
-                </Button>
-                <Button
-                  onClick={() => handleReview("rejected")}
-                  disabled={actionLoading || !resolutionNotes.trim()}
-                  variant="destructive"
-                  className="flex-1"
-                >
-                  <XCircle className="h-4 w-4 mr-2" />
-                  {t("issues.reject")}
-                </Button>
-              </div>
+          {selectedIssue && (
+            <div className="shrink-0 flex gap-3 border-t pt-4">
+              <Button
+                onClick={() => handleReview("approved")}
+                disabled={actionLoading || !resolutionNotes.trim()}
+                className="flex-1 bg-success hover:bg-success/90"
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                {t("issues.approve")}
+              </Button>
+              <Button
+                onClick={() => handleReview("rejected")}
+                disabled={actionLoading || !resolutionNotes.trim()}
+                variant="destructive"
+                className="flex-1"
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                {t("issues.reject")}
+              </Button>
             </div>
           )}
         </DialogContent>

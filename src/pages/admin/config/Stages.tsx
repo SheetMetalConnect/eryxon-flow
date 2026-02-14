@@ -422,13 +422,14 @@ export default function ConfigStages() {
                 {t("stages.createStage")}
               </Button>
             </DialogTrigger>
-            <DialogContent className="glass-card">
-              <DialogHeader>
+            <DialogContent className="glass-card sm:max-w-lg overflow-hidden flex flex-col">
+              <DialogHeader className="shrink-0">
                 <DialogTitle>
                   {editingStage ? t("stages.editStage") : t("stages.createNewStage")}
                 </DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+                <div className="flex-1 overflow-y-auto min-h-0 space-y-6">
                 {/* Basic Information */}
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -633,10 +634,13 @@ export default function ConfigStages() {
                     </div>
                   </div>
                 </div>
+                </div>
 
-                <Button type="submit" className="w-full">
-                  {editingStage ? t("stages.updateStage") : t("stages.createStage")}
-                </Button>
+                <div className="shrink-0 border-t pt-4 mt-4">
+                  <Button type="submit" className="w-full">
+                    {editingStage ? t("stages.updateStage") : t("stages.createStage")}
+                  </Button>
+                </div>
               </form>
             </DialogContent>
           </Dialog>

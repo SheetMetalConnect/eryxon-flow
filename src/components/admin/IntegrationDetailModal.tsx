@@ -69,8 +69,8 @@ export default function IntegrationDetailModal({
 }: IntegrationDetailModalProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl overflow-hidden flex flex-col">
+        <DialogHeader className="shrink-0">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-4">
               <div className="text-5xl">
@@ -145,7 +145,7 @@ export default function IntegrationDetailModal({
           </div>
         </DialogHeader>
 
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs defaultValue="overview" className="flex-1 flex flex-col overflow-hidden min-h-0 w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="features">Features</TabsTrigger>
@@ -153,7 +153,7 @@ export default function IntegrationDetailModal({
             <TabsTrigger value="resources">Resources</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-4">
+          <TabsContent value="overview" className="flex-1 overflow-y-auto min-h-0 space-y-4">
             <div>
               <h3 className="text-lg font-semibold mb-2">About</h3>
               <p className="text-muted-foreground">{integration.description}</p>
@@ -206,7 +206,7 @@ export default function IntegrationDetailModal({
             )}
           </TabsContent>
 
-          <TabsContent value="features" className="space-y-4">
+          <TabsContent value="features" className="flex-1 overflow-y-auto min-h-0 space-y-4">
             {integration.features && integration.features.length > 0 ? (
               <div>
                 <h3 className="text-lg font-semibold mb-3">Key Features</h3>
@@ -241,7 +241,7 @@ export default function IntegrationDetailModal({
               )}
           </TabsContent>
 
-          <TabsContent value="setup" className="space-y-4">
+          <TabsContent value="setup" className="flex-1 overflow-y-auto min-h-0 space-y-4">
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
@@ -281,7 +281,7 @@ export default function IntegrationDetailModal({
             )}
           </TabsContent>
 
-          <TabsContent value="resources" className="space-y-4">
+          <TabsContent value="resources" className="flex-1 overflow-y-auto min-h-0 space-y-4">
             <div className="grid gap-4">
               {integration.documentation_url && (
                 <Button
@@ -358,9 +358,9 @@ export default function IntegrationDetailModal({
           </TabsContent>
         </Tabs>
 
-        <Separator className="my-4" />
+        <Separator className="shrink-0" />
 
-        <div className="flex justify-end gap-3">
+        <div className="shrink-0 flex justify-end gap-3 pt-4">
           <Button variant="outline" onClick={onClose}>
             Close
           </Button>

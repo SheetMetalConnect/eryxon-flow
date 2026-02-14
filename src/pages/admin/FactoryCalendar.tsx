@@ -489,8 +489,8 @@ export default function FactoryCalendar() {
 
       {/* Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="glass-card sm:max-w-md">
-          <DialogHeader>
+        <DialogContent className="glass-card sm:max-w-md overflow-hidden flex flex-col">
+          <DialogHeader className="shrink-0">
             <DialogTitle className="flex items-center gap-2">
               <CalendarIcon className="h-5 w-5" />
               {selectedDate && format(selectedDate, 'EEEE, MMMM d, yyyy')}
@@ -500,7 +500,7 @@ export default function FactoryCalendar() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-5">
+          <div className="flex-1 overflow-y-auto min-h-0 space-y-5">
             {/* Day Type Selection */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">
@@ -632,7 +632,7 @@ export default function FactoryCalendar() {
             </div>
           </div>
 
-          <DialogFooter className="flex gap-2 pt-4">
+          <DialogFooter className="shrink-0 flex gap-2 border-t pt-4">
             {selectedDate && getCalendarDay(selectedDate)?.id && (
               <Button
                 variant="destructive"

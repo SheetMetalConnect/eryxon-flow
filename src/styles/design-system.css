@@ -1774,6 +1774,38 @@
   }
 }
 
+/* ============================================================================
+   PREMIUM MODAL SCROLLBAR STYLING
+   Thin, subtle scrollbars for a polished enterprise-grade look inside modals.
+   ============================================================================ */
+
+/* Dialog/Modal scrollbar styling - webkit (Chrome, Safari, Edge) */
+[role="dialog"] ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+[role="dialog"] ::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+[role="dialog"] ::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.25);
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+}
+
+[role="dialog"] ::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground) / 0.45);
+}
+
+/* Dialog/Modal scrollbar styling - Firefox */
+[role="dialog"] * {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.25) transparent;
+}
+
 /* Responsive grid utilities */
 .grid-responsive-1-2 {
   display: grid;

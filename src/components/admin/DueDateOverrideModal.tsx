@@ -99,12 +99,12 @@ export default function DueDateOverrideModal({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+      <DialogContent className="max-w-md overflow-hidden flex flex-col">
+        <DialogHeader className="shrink-0">
           <DialogTitle>{t("jobs.overrideDueDate")}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
           {/* Original Due Date */}
           <div>
             <Label className="text-sm text-muted-foreground">{t("jobs.originalDueDate")}</Label>
@@ -153,7 +153,7 @@ export default function DueDateOverrideModal({
           )}
         </div>
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className="shrink-0 gap-2 border-t pt-4">
           {job?.due_date_override && (
             <Button variant="outline" onClick={handleClear}>
               {t("jobs.clearOverride")}

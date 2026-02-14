@@ -385,14 +385,14 @@ export function TemplatesManager() {
               {t("New Template")}
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
+          <DialogContent className="max-w-3xl overflow-hidden flex flex-col">
+            <DialogHeader className="shrink-0">
               <DialogTitle>
                 {editingTemplate ? t("Edit Template") : t("New Template")}
               </DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-4 py-4">
+            <div className="flex-1 overflow-y-auto min-h-0 space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="name">{t("Template Name")}</Label>
                 <Input
@@ -478,7 +478,7 @@ export function TemplatesManager() {
               </div>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="shrink-0 border-t pt-4">
               <Button variant="outline" onClick={handleCloseDialog}>
                 {t("Cancel")}
               </Button>

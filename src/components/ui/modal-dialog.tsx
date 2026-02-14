@@ -58,17 +58,17 @@ export function ModalDialog({
 }: ModalDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className={cn('glass-card', sizeClasses[size], className)}>
-        <DialogHeader>
+      <DialogContent className={cn('glass-card overflow-hidden flex flex-col', sizeClasses[size], className)}>
+        <DialogHeader className="shrink-0">
           <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
           {description && (
             <DialogDescription>{description}</DialogDescription>
           )}
         </DialogHeader>
 
-        <Separator className="my-2" />
+        <Separator className="shrink-0" />
 
-        <div className="py-4">
+        <div className="flex-1 overflow-y-auto min-h-0 py-4">
           {loading ? (
             <div className="flex justify-center py-8">
               <Spinner size="lg" />
@@ -80,8 +80,8 @@ export function ModalDialog({
 
         {actions && (
           <>
-            <Separator className="my-2" />
-            <DialogFooter className="gap-2 sm:gap-0">{actions}</DialogFooter>
+            <Separator className="shrink-0" />
+            <DialogFooter className="shrink-0 gap-2 sm:gap-0">{actions}</DialogFooter>
           </>
         )}
       </DialogContent>
@@ -175,22 +175,22 @@ export function FormDialog({
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className={cn('glass-card', sizeClasses[size])}>
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
-            {description && (
-              <DialogDescription>{description}</DialogDescription>
-            )}
-          </DialogHeader>
+      <DialogContent className={cn('glass-card overflow-hidden flex flex-col', sizeClasses[size])}>
+        <DialogHeader className="shrink-0">
+          <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
+          {description && (
+            <DialogDescription>{description}</DialogDescription>
+          )}
+        </DialogHeader>
 
-          <Separator className="my-2" />
+        <Separator className="shrink-0" />
 
-          <div className="py-4">{children}</div>
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 overflow-y-auto min-h-0 py-4">{children}</div>
 
-          <Separator className="my-2" />
+          <Separator className="shrink-0" />
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="shrink-0 gap-2 sm:gap-0 pt-4">
             <Button
               type="button"
               variant="outline"
