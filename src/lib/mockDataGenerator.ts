@@ -1,5 +1,14 @@
 import { supabase } from "@/integrations/supabase/client";
 
+export interface MockDataProgressStep {
+  step: number;
+  totalSteps: number;
+  label: string;
+  percentage: number;
+}
+
+export type MockDataProgressCallback = (progress: MockDataProgressStep) => void;
+
 export interface MockDataOptions {
   includeCells?: boolean;
   includeJobs?: boolean;
@@ -11,6 +20,7 @@ export interface MockDataOptions {
   includeQuantityRecords?: boolean;
   includeIssues?: boolean;
   includeCalendar?: boolean;
+  onProgress?: MockDataProgressCallback;
 }
 
 /**
@@ -42,6 +52,12 @@ export async function generateMockData(
       `Starting comprehensive mock data generation for tenant: ${tenantId}...`,
     );
 
+    const totalSteps = 11;
+    const reportProgress = (step: number, label: string) => {
+      const percentage = Math.round((step / totalSteps) * 100);
+      options.onProgress?.({ step, totalSteps, label, percentage });
+    };
+
     // Check if tenant already has demo data to prevent duplicates
     // Skip this check for testing/specific tenants
     const skipDemoCheck = tenantId === "11111111-1111-1111-1111-111111111111";
@@ -67,6 +83,7 @@ export async function generateMockData(
     }
 
     // Step 1: Create QRM-aligned manufacturing cells with WIP limits
+    reportProgress(1, 'cells');
     let cellIds: string[] = [];
     const cellIdMap: Record<string, string> = {};
 
@@ -162,6 +179,7 @@ export async function generateMockData(
     }
 
     // Step 1.5: Seed Dutch holidays and factory calendar
+    reportProgress(2, 'calendar');
     if (options.includeCalendar) {
       // Dutch holidays for 2025 and 2026
       // Including Christmas/New Year closure period
@@ -228,6 +246,7 @@ export async function generateMockData(
     }
 
     // Step 2: Create 6 Dutch operator profiles for shop floor use
+    reportProgress(3, 'operators');
     // Note: pin_hash is left NULL - operators can set PINs later via UI if needed
     let operatorIds: string[] = [];
     const operatorIdMap: Record<string, string> = {};
@@ -289,6 +308,7 @@ export async function generateMockData(
     }
 
     // Step 3: Seed resources first (needed for operations)
+    reportProgress(4, 'resources');
     if (options.includeResources) {
       const { error: resourceSeedError } = await supabase.rpc(
         "seed_demo_resources",
@@ -338,6 +358,7 @@ export async function generateMockData(
       .eq("tenant_id", tenantId);
 
     // Step 5: Create realistic Dutch customer jobs
+    reportProgress(5, 'jobs');
     let jobIds: string[] = [];
     const jobIdMap: Record<string, string> = {};
 
@@ -462,6 +483,7 @@ export async function generateMockData(
     }
 
     // Step 6: Create parts with assembly relationships
+    reportProgress(6, 'parts');
     let partIds: string[] = [];
     let partData: Array<{ id: string; part_number: string; job_id: string; parent_part_id?: string | null }> = [];
 
@@ -711,6 +733,7 @@ export async function generateMockData(
     }
 
     // Step 7: Create QRM-aligned operations with proper routing
+    reportProgress(7, 'operations');
     let operationData: Array<{
       id: string;
       cell_id: string;
@@ -1667,6 +1690,7 @@ export async function generateMockData(
     console.log(`✓ Created ${templateDefinitions.length} substep templates`);
 
     // Step 8: Link resources to operations
+    reportProgress(8, 'resourceLinks');
     if (
       options.includeResources &&
       operationData.length > 0 &&
@@ -1724,6 +1748,7 @@ export async function generateMockData(
     }
 
     // Step 9: Create time entries for completed and in-progress operations
+    reportProgress(9, 'timeEntries');
     if (
       options.includeTimeEntries &&
       operationData.length > 0 &&
@@ -1801,6 +1826,7 @@ export async function generateMockData(
     }
 
     // Step 10: Create quantity records with some scrap
+    reportProgress(10, 'quantities');
     if (
       options.includeQuantityRecords &&
       operationData.length > 0 &&
@@ -1878,6 +1904,7 @@ export async function generateMockData(
     }
 
     // Step 11: Create some issues/NCRs
+    reportProgress(11, 'issues');
     if (
       options.includeIssues &&
       operationData.length > 0 &&

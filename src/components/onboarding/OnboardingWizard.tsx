@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check } from 'lucide-react';
+import { Check, Users, CreditCard, Database, Rocket } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PlanSelection, PlanType } from './PlanSelection';
 import { MockDataImport } from './MockDataImport';
@@ -9,22 +9,26 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useTranslation } from 'react-i18next';
 import AnimatedBackground from '@/components/AnimatedBackground';
 
-const steps = [
-  { id: 1, name: 'Build Team', description: 'Invite your team' },
-  { id: 2, name: 'Choose Plan', description: 'Select your subscription' },
-  { id: 3, name: 'Sample Data', description: 'Import demo content' },
-  { id: 4, name: 'Complete', description: 'Start using Eryxon' },
-];
+const STEP_ICONS = [Users, CreditCard, Database, Rocket];
 
 export function OnboardingWizard() {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { subscription } = useSubscription();
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedPlan, setSelectedPlan] = useState<PlanType>('free');
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const steps = [
+    { id: 1, name: t('onboarding.steps.team'), description: t('onboarding.steps.teamDesc') },
+    { id: 2, name: t('onboarding.steps.plan'), description: t('onboarding.steps.planDesc') },
+    { id: 3, name: t('onboarding.steps.data'), description: t('onboarding.steps.dataDesc') },
+    { id: 4, name: t('onboarding.steps.complete'), description: t('onboarding.steps.completeDesc') },
+  ];
 
   // Load existing onboarding state
   useEffect(() => {
@@ -54,7 +58,7 @@ export function OnboardingWizard() {
       if (error) throw error;
     } catch (error) {
       console.error('Error updating onboarding progress:', error);
-      toast.error('Failed to save progress');
+      toast.error(t('onboarding.progressSaveFailed'));
     } finally {
       setIsUpdating(false);
     }
@@ -78,17 +82,17 @@ export function OnboardingWizard() {
       try {
         const { error: tenantError } = await supabase
           .from('tenants')
-          .update({ plan: plan as any }) // Cast needed until migration is applied
+          .update({ plan: plan as any })
           .eq('id', profile.tenant_id);
 
         if (tenantError) {
           console.error('Error updating tenant plan:', tenantError);
-          toast.error('Failed to update plan');
+          toast.error(t('onboarding.planUpdateFailed'));
           return;
         }
       } catch (error) {
         console.error('Error updating tenant plan:', error);
-        toast.error('Failed to update plan');
+        toast.error(t('onboarding.planUpdateFailed'));
         return;
       }
     }
@@ -114,7 +118,7 @@ export function OnboardingWizard() {
   };
 
   const completeOnboarding = () => {
-    toast.success('Onboarding complete! Welcome to Eryxon Flow 🎉');
+    toast.success(t('onboarding.onboardingComplete'));
 
     // Navigate based on user role
     if (profile?.role === 'admin') {
@@ -133,80 +137,60 @@ export function OnboardingWizard() {
           {/* Header */}
           <div className="text-center mb-8">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">
-              Getting Started
+              {t('onboarding.gettingStarted')}
             </p>
             <h1 className="hero-title text-4xl mb-3">
-              Welcome to Eryxon Flow
+              {t('onboarding.welcome')}
             </h1>
             <p className="text-lg text-foreground/80">
-              The simple MES you love to use
+              {t('onboarding.subtitle')}
             </p>
           </div>
 
-          {/* Progress Stepper */}
+          {/* Premium Stepper */}
           <nav aria-label="Progress" className="mb-12">
-            <ol className="flex items-center justify-center max-w-3xl mx-auto">
-              {steps.map((step, stepIdx) => (
-                <li
-                  key={step.id}
-                  className={`relative ${stepIdx !== steps.length - 1 ? 'pr-8 sm:pr-20 flex-1' : ''
-                    }`}
-                >
-                  {/* Connector Line */}
-                  {stepIdx !== steps.length - 1 && (
-                    <div
-                      className="absolute top-4 left-0 -ml-px mt-0.5 h-0.5 w-full"
-                      aria-hidden="true"
-                    >
-                      <div
-                        className={`h-full ${currentStep > step.id
-                          ? 'bg-primary'
-                          : 'bg-muted'
-                          }`}
-                      />
-                    </div>
-                  )}
+            <div className="onboarding-stepper">
+              {steps.map((step, stepIdx) => {
+                const StepIcon = STEP_ICONS[stepIdx];
+                const isCompleted = currentStep > step.id;
+                const isActive = currentStep === step.id;
+                const stateClass = isCompleted ? 'completed' : isActive ? 'active' : 'pending';
 
-                  {/* Step Circle */}
-                  <div className="group relative flex items-center">
-                    <span className="flex h-9 items-center">
-                      <span
-                        className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full ${currentStep > step.id
-                          ? 'bg-primary'
-                          : currentStep === step.id
-                            ? 'bg-primary border-2 border-primary'
-                            : 'bg-card border-2 border-border'
-                          }`}
-                      >
-                        {currentStep > step.id ? (
-                          <Check className="h-5 w-5 text-white" />
+                return (
+                  <div key={step.id} className="onboarding-stepper-step">
+                    {/* Connector line before (except first) */}
+                    {stepIdx > 0 && (
+                      <div
+                        className={`onboarding-stepper-line ${isCompleted || isActive ? 'completed' : 'pending'}`}
+                      />
+                    )}
+
+                    {/* Step circle */}
+                    <div className="flex flex-col items-center gap-1.5">
+                      <div className={`onboarding-stepper-circle ${stateClass}`}>
+                        {isCompleted ? (
+                          <Check className="h-4 w-4" />
                         ) : (
-                          <span
-                            className={`h-2.5 w-2.5 rounded-full ${currentStep === step.id
-                              ? 'bg-card'
-                              : 'bg-transparent group-hover:bg-muted'
-                              }`}
-                          />
+                          <StepIcon className="h-4 w-4" />
                         )}
-                      </span>
-                    </span>
-                    <span className="ml-4 flex min-w-0 flex-col">
-                      <span
-                        className={`text-sm font-medium ${currentStep >= step.id
-                          ? 'text-primary'
-                          : 'text-muted-foreground'
+                      </div>
+                      <div className="text-center">
+                        <span
+                          className={`text-xs font-medium block ${
+                            isCompleted || isActive ? 'text-primary' : 'text-muted-foreground'
                           }`}
-                      >
-                        {step.name}
-                      </span>
-                      <span className="text-xs text-muted-foreground hidden sm:block">
-                        {step.description}
-                      </span>
-                    </span>
+                        >
+                          {step.name}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground hidden sm:block">
+                          {step.description}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </li>
-              ))}
-            </ol>
+                );
+              })}
+            </div>
           </nav>
 
           {/* Content Area */}
@@ -227,11 +211,11 @@ export function OnboardingWizard() {
           {/* Footer */}
           <div className="text-center mt-8 text-sm text-muted-foreground">
             <p>
-              Need help? Check out our{' '}
+              {t('onboarding.needHelp')}{' '}
               <a href="/api-docs" className="text-primary hover:underline">
-                documentation
+                {t('onboarding.documentation')}
               </a>{' '}
-              or contact support.
+              {t('onboarding.orContactSupport')}
             </p>
           </div>
         </div>
