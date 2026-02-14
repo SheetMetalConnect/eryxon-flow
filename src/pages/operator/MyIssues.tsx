@@ -196,13 +196,13 @@ export default function MyIssues() {
 
       {/* Issue Detail Modal */}
       <Dialog open={!!selectedIssue} onOpenChange={() => setSelectedIssue(null)}>
-        <DialogContent className="glass-card max-w-2xl">
-          <DialogHeader>
+        <DialogContent className="glass-card max-w-2xl overflow-hidden flex flex-col">
+          <DialogHeader className="shrink-0">
             <DialogTitle>{t("myIssues.issueDetails")}</DialogTitle>
           </DialogHeader>
 
           {selectedIssue && (
-            <div className="space-y-4">
+            <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
               <div className="flex items-center gap-2">
                 <Badge className={severityColors[selectedIssue.severity as keyof typeof severityColors]}>
                   {selectedIssue.severity}

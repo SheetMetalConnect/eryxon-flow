@@ -337,8 +337,8 @@ export default function ConfigMcpKeys() {
                   Generate New Key
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
+              <DialogContent className="max-w-2xl overflow-hidden flex flex-col">
+                <DialogHeader className="shrink-0">
                   <DialogTitle>Generate New MCP Key</DialogTitle>
                   <DialogDescription>
                     Create a new authentication key for MCP server access
@@ -346,7 +346,7 @@ export default function ConfigMcpKeys() {
                 </DialogHeader>
 
                 {generatedKey ? (
-                  <div className="space-y-4">
+                  <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
                     <Alert>
                       <Key className="h-4 w-4" />
                       <AlertTitle>Key Generated!</AlertTitle>
@@ -393,7 +393,8 @@ export default function ConfigMcpKeys() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <>
+                  <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="keyName">Key Name *</Label>
                       <Input
@@ -479,22 +480,24 @@ export default function ConfigMcpKeys() {
                       )}
                     </div>
 
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={generateMcpKey}
-                        disabled={isGenerating}
-                        className="flex-1"
-                      >
-                        {isGenerating ? "Generating..." : "Generate Key"}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setNewKeyDialog(false)}
-                      >
-                        Cancel
-                      </Button>
                     </div>
                   </div>
+                  <div className="shrink-0 border-t pt-4 flex gap-2">
+                    <Button
+                      onClick={generateMcpKey}
+                      disabled={isGenerating}
+                      className="flex-1"
+                    >
+                      {isGenerating ? "Generating..." : "Generate Key"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setNewKeyDialog(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                  </>
                 )}
               </DialogContent>
             </Dialog>

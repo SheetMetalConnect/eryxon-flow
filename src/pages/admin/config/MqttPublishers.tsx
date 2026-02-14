@@ -489,14 +489,14 @@ export default function ConfigMqttPublishers() {
                 {t('mqtt.addPublisher')}
               </Button>
             </DialogTrigger>
-            <DialogContent className="glass-card max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
+            <DialogContent className="glass-card max-w-2xl overflow-hidden flex flex-col">
+              <DialogHeader className="shrink-0">
                 <DialogTitle>{t('mqtt.createPublisher')}</DialogTitle>
                 <DialogDescription>
                   {t('mqtt.configurePublisher')}
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-6">
+              <div className="flex-1 overflow-y-auto min-h-0 space-y-6">
                 {/* Basic Info */}
                 <div className="space-y-4">
                   <h3 className="font-semibold">{t('mqtt.basicInfo')}</h3>
@@ -678,6 +678,8 @@ export default function ConfigMqttPublishers() {
                   </div>
                 </div>
 
+              </div>
+              <div className="shrink-0 border-t pt-4">
                 <Button onClick={createPublisher} className="w-full">
                   {t('mqtt.createPublisher')}
                 </Button>

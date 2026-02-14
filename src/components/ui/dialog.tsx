@@ -39,9 +39,9 @@ const DialogContent = React.forwardRef<
         // Base styles - mobile first
         "fixed z-50 grid w-[calc(100vw-1rem)] border bg-background shadow-lg duration-200",
         // Mobile: bottom sheet style with slide up animation
-        "inset-x-2 bottom-2 top-auto max-h-[calc(100vh-1rem)] rounded-xl",
-        // Tablet and up: centered modal
-        "sm:inset-auto sm:left-[50%] sm:top-[50%] sm:w-full sm:max-w-lg sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-lg",
+        "inset-x-2 bottom-2 top-auto max-h-[calc(100vh-1rem)] overflow-y-auto rounded-xl",
+        // Tablet and up: centered modal with max height
+        "sm:inset-auto sm:left-[50%] sm:top-[50%] sm:w-full sm:max-w-lg sm:max-h-[85vh] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-lg",
         // Padding - responsive
         "p-4 sm:p-6 gap-4",
         // Animations

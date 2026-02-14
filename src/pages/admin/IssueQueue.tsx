@@ -436,13 +436,13 @@ export default function IssueQueue() {
         open={!!selectedIssue}
         onOpenChange={() => setSelectedIssue(null)}
       >
-        <DialogContent className="glass-card max-w-2xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="glass-card max-w-2xl overflow-hidden flex flex-col">
+          <DialogHeader className="shrink-0">
             <DialogTitle>{t("issues.reviewIssue")}</DialogTitle>
           </DialogHeader>
 
           {selectedIssue && (
-            <div className="space-y-4">
+            <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
               <div className="flex items-center gap-2">
                 <Badge
                   className={

@@ -194,12 +194,12 @@ export default function ProductionReportModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+      <DialogContent className="max-w-md overflow-hidden flex flex-col">
+        <DialogHeader className="shrink-0">
           <DialogTitle>{t("production.reportTitle", "Report Production")}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
+        <div className="flex-1 overflow-y-auto min-h-0 space-y-4 py-2">
           {/* Part info */}
           <div className="text-center text-sm text-muted-foreground">
             <div className="font-medium text-foreground">{partNumber}</div>
@@ -406,7 +406,7 @@ export default function ProductionReportModal({
         </div>
 
         {!showShortfallPrompt && (
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="shrink-0 flex justify-end gap-2 border-t pt-4">
             <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
               {t("common.cancel", "Cancel")}
             </Button>

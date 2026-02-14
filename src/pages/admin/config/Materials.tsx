@@ -147,13 +147,14 @@ export default function ConfigMaterials() {
                 {t("materials.createMaterial")}
               </Button>
             </DialogTrigger>
-            <DialogContent className="glass-card">
-              <DialogHeader>
+            <DialogContent className="glass-card overflow-hidden flex flex-col">
+              <DialogHeader className="shrink-0">
                 <DialogTitle>
                   {editingMaterial ? t("materials.editMaterial") : t("materials.createNewMaterial")}
                 </DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+                <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">{t("materials.materialName")} *</Label>
                   <Input
@@ -214,7 +215,8 @@ export default function ConfigMaterials() {
                   />
                 </div>
 
-                <div className="flex justify-end gap-2">
+                </div>
+                <div className="shrink-0 border-t pt-4 mt-4 flex justify-end gap-2">
                   <Button
                     type="button"
                     variant="outline"

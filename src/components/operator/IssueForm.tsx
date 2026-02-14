@@ -221,8 +221,8 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-md overflow-hidden flex flex-col">
+        <DialogHeader className="shrink-0">
           <DialogTitle>{t("issues.reportIssue", "Report Issue")}</DialogTitle>
           {isShortfall && (
             <DialogDescription className="sr-only">
@@ -233,7 +233,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
 
         {/* Shortfall Alert Banner */}
         {isShortfall && (
-          <Alert className="border-amber-500/50 bg-amber-500/10">
+          <Alert className="shrink-0 border-amber-500/50 bg-amber-500/10">
             <AlertTriangle className="h-4 w-4 text-amber-600" />
             <AlertDescription className="text-amber-700 dark:text-amber-400">
               {t("issues.shortfallAlert", "Production shortfall detected. Please provide details about why the target quantity was not met.")}
@@ -241,7 +241,8 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
           {/* Issue Type */}
           <div>
             <Label htmlFor="issueType">{t("issues.issueType", "Issue Type")}</Label>
@@ -367,7 +368,8 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
             />
           </div>
 
-          <div className="flex gap-3 pt-2">
+          </div>
+          <div className="shrink-0 flex gap-3 border-t pt-4 mt-4">
             <Button
               type="button"
               variant="outline"

@@ -382,14 +382,14 @@ export default function ConfigWebhooks() {
                 {t('webhooks.addWebhook')}
               </Button>
             </DialogTrigger>
-            <DialogContent className="glass-card">
-              <DialogHeader>
+            <DialogContent className="glass-card sm:max-w-lg overflow-hidden flex flex-col">
+              <DialogHeader className="shrink-0">
                 <DialogTitle>{t('webhooks.createWebhook')}</DialogTitle>
                 <DialogDescription>
                   {t('webhooks.configureWebhook')}
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
+              <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="webhook-url">{t('webhooks.webhookUrl')}</Label>
                   <Input
@@ -403,7 +403,7 @@ export default function ConfigWebhooks() {
                 </div>
                 <div className="space-y-2">
                   <Label>{t('webhooks.events')}</Label>
-                  <div className="border rounded-lg p-3 space-y-3 max-h-72 overflow-y-auto">
+                  <div className="border rounded-lg p-3 space-y-3">
                     {AVAILABLE_EVENTS.map((event) => (
                       <div key={event.id} className="flex items-start space-x-2">
                         <Checkbox
@@ -428,6 +428,8 @@ export default function ConfigWebhooks() {
                     ))}
                   </div>
                 </div>
+              </div>
+              <div className="shrink-0 border-t pt-4">
                 <Button onClick={createWebhook} className="w-full">
                   {t('webhooks.createWebhook')}
                 </Button>
