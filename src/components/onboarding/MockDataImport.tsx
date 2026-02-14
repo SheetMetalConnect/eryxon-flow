@@ -73,6 +73,12 @@ export function MockDataImport({ onComplete, onSkip }: MockDataImportProps) {
         includeJobs: true,
         includeParts: true,
         includeOperations: true,
+        includeResources: true,
+        includeOperators: true,
+        includeTimeEntries: true,
+        includeQuantityRecords: true,
+        includeIssues: true,
+        includeCalendar: true,
         onProgress: handleProgress,
       });
 
