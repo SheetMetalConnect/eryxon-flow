@@ -2303,3 +2303,85 @@
 .success-pulse {
   animation: successPulse 0.6s ease-out;
 }
+
+/* ============================================================================
+   SONNER TOAST NOTIFICATIONS - Premium Progress Bar
+   ============================================================================ */
+
+/* Progress bar animation - shrinks from 100% to 0% */
+@keyframes sonner-progress-shrink {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+/* Base progress bar on all toasts */
+.sonner-toast-progress {
+  position: relative;
+  overflow: hidden;
+}
+
+.sonner-toast-progress::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 0 0 0.75rem 0.75rem;
+  background: hsl(var(--muted-foreground) / 0.3);
+  transform-origin: left;
+  animation: sonner-progress-shrink 5s linear forwards;
+}
+
+/* Color-coded progress bars per toast type */
+.sonner-toast-success::after {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.sonner-toast-error::after {
+  background: linear-gradient(90deg, #ef4444, #f87171);
+}
+
+.sonner-toast-warning::after {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.sonner-toast-info::after {
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+}
+
+/* Pause progress bar on hover */
+[data-sonner-toast]:hover .sonner-toast-progress::after,
+.sonner-toast-progress:hover::after {
+  animation-play-state: paused;
+}
+
+/* Sonner toast enhancements */
+[data-sonner-toaster] {
+  --toast-svg-margin-start: 0;
+  font-family: var(--font-family-base), sans-serif;
+}
+
+[data-sonner-toast] [data-title] {
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+[data-sonner-toast] [data-description] {
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+  opacity: 0.85;
+}
+
+[data-sonner-toast] [data-close-button] {
+  top: 6px;
+  right: 6px;
+  border-radius: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+[data-sonner-toast]:hover [data-close-button] {
+  opacity: 1;
+}

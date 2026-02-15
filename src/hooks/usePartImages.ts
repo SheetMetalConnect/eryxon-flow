@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
 interface ImageInfo {
@@ -12,7 +12,6 @@ interface ImageInfo {
 
 export function usePartImages(partId: string) {
   const { t } = useTranslation();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
   // Get part's image paths
@@ -29,14 +28,10 @@ export function usePartImages(partId: string) {
       return data?.image_paths || [];
     } catch (error: any) {
       console.error("Error fetching image paths:", error);
-      toast({
-        title: t("parts.images.loadFailed"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(t("parts.images.loadFailed"), { description: error.message });
       return [];
     }
-  }, [partId, t, toast]);
+  }, [partId, t]);
 
   // Load images with signed URLs
   const loadImages = useCallback(async (imagePaths: string[]): Promise<ImageInfo[]> => {
@@ -66,16 +61,12 @@ export function usePartImages(partId: string) {
       return imageInfos;
     } catch (error: any) {
       console.error("Error loading images:", error);
-      toast({
-        title: t("parts.images.loadFailed"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(t("parts.images.loadFailed"), { description: error.message });
       return [];
     } finally {
       setLoading(false);
     }
-  }, [t, toast]);
+  }, [t]);
 
   // Add images to part
   const addImages = useCallback(async (newPaths: string[]): Promise<boolean> => {
@@ -93,14 +84,10 @@ export function usePartImages(partId: string) {
       return true;
     } catch (error: any) {
       console.error("Error adding images:", error);
-      toast({
-        title: t("parts.images.addFailed"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(t("parts.images.addFailed"), { description: error.message });
       return false;
     }
-  }, [partId, getImagePaths, t, toast]);
+  }, [partId, getImagePaths, t]);
 
   // Remove image from part
   const removeImage = useCallback(async (pathToRemove: string): Promise<boolean> => {
@@ -123,22 +110,15 @@ export function usePartImages(partId: string) {
 
       if (updateError) throw updateError;
 
-      toast({
-        title: t("parts.images.deleteSuccess"),
-        description: t("parts.images.imageDeleted"),
-      });
+      toast.success(t("parts.images.deleteSuccess"), { description: t("parts.images.imageDeleted") });
 
       return true;
     } catch (error: any) {
       console.error("Error removing image:", error);
-      toast({
-        title: t("parts.images.deleteFailed"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(t("parts.images.deleteFailed"), { description: error.message });
       return false;
     }
-  }, [partId, getImagePaths, t, toast]);
+  }, [partId, getImagePaths, t]);
 
   // Get first image URL for thumbnail
   const getFirstImageUrl = useCallback(async (): Promise<string | null> => {

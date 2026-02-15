@@ -29,7 +29,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { DataTable } from "@/components/ui/data-table/DataTable";
 import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
 import type { DataTableFilterableColumn } from "@/components/ui/data-table/DataTable";
@@ -53,7 +53,6 @@ interface PartData {
 export default function Parts() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
 
   // File viewer state
@@ -147,11 +146,7 @@ export default function Parts() {
             : null;
 
       if (!fileType) {
-        toast({
-          title: "Error",
-          description: "Unsupported file type",
-          variant: "destructive",
-        });
+        toast.error(t("notifications.error"), { description: t("notifications.unsupportedFileType") });
         return;
       }
 
@@ -178,11 +173,7 @@ export default function Parts() {
       setFileViewerOpen(true);
     } catch (error: any) {
       console.error("Error opening file:", error);
-      toast({
-        title: "Error",
-        description: "Failed to open file viewer",
-        variant: "destructive",
-      });
+      toast.error(t("notifications.error"), { description: t("notifications.failedToOpenFileViewer") });
     }
   };
 

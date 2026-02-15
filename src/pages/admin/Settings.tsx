@@ -68,11 +68,11 @@ export const Settings: React.FC = () => {
     const result = await generateMockData(profile.tenant_id);
 
     if (result.success) {
-      toast.success("Demo data created successfully");
+      toast.success(t("settings.demoDataCreated"));
       setIsDemoMode(true);
       window.location.reload();
     } else {
-      toast.error(result.error || "Failed to create demo data");
+      toast.error(result.error || t("settings.demoDataCreatedFailed"));
     }
     setIsLoading(false);
   };
@@ -84,12 +84,12 @@ export const Settings: React.FC = () => {
     const result = await clearMockData(profile.tenant_id);
 
     if (result.success) {
-      toast.success("Demo data cleared successfully");
+      toast.success(t("settings.demoDataCleared"));
       setIsDemoMode(false);
       setShowExitDialog(false);
       window.location.reload();
     } else {
-      toast.error(result.error || "Failed to clear demo data");
+      toast.error(result.error || t("settings.demoDataClearedFailed"));
     }
     setIsLoading(false);
   };
@@ -99,10 +99,10 @@ export const Settings: React.FC = () => {
     try {
       // Delete account by signing out and clearing session
       await signOut();
-      toast.success("Account deleted successfully");
+      toast.success(t("settings.accountDeleted"));
     } catch (error) {
       console.error('Error deleting account:', error);
-      toast.error(error.message || "Failed to delete account");
+      toast.error(error.message || t("settings.accountDeleteFailed"));
       setIsDeletingAccount(false);
       setShowDeleteAccountDialog(false);
     }
@@ -115,13 +115,13 @@ export const Settings: React.FC = () => {
     try {
       // Clear all tenant data by signing out
       await signOut();
-      toast.success("Tenant deleted successfully");
+      toast.success(t("settings.tenantDeleted"));
       setTimeout(async () => {
         await signOut();
       }, 1000);
     } catch (error) {
       console.error('Error deleting tenant:', error);
-      toast.error(error.message || "Failed to delete tenant");
+      toast.error(error.message || t("settings.tenantDeleteFailed"));
       setIsDeletingTenant(false);
       setShowDeleteTenantDialog(false);
     }

@@ -95,7 +95,7 @@ export default function McpServerSettings() {
       }
     } catch (error: any) {
       console.error("Error fetching MCP config:", error);
-      toast.error("Failed to load MCP server configuration");
+      toast.error(t("mcpServer.failedToLoadConfig"));
     } finally {
       setIsLoading(false);
     }
@@ -116,7 +116,7 @@ export default function McpServerSettings() {
 
       if (error && error.code !== "PGRST116") {
         console.error("Error fetching health:", error);
-        toast.error("Failed to load MCP server health status");
+        toast.error(t("mcpServer.failedToLoadHealth"));
         return;
       }
 
@@ -125,7 +125,7 @@ export default function McpServerSettings() {
       }
     } catch (error: any) {
       console.error("Error fetching health:", error);
-      toast.error("Failed to load health data: " + (error.message || "Unknown error"));
+      toast.error(t("mcpServer.failedToLoadHealthData") + ": " + (error.message || t("notifications.error")));
     } finally {
       setIsLoadingHealth(false);
     }
@@ -145,14 +145,14 @@ export default function McpServerSettings() {
 
       if (error) {
         console.error("Error fetching logs:", error);
-        toast.error("Failed to load activity logs");
+        toast.error(t("mcpServer.failedToLoadLogs"));
         return;
       }
 
       setLogs(data || []);
     } catch (error: any) {
       console.error("Error fetching logs:", error);
-      toast.error("Failed to load logs: " + (error.message || "Unknown error"));
+      toast.error(t("mcpServer.failedToLoadLogsData") + ": " + (error.message || t("notifications.error")));
     } finally {
       setIsLoadingLogs(false);
     }
@@ -180,11 +180,11 @@ export default function McpServerSettings() {
 
       if (error) throw error;
 
-      toast.success("MCP server configuration saved successfully");
+      toast.success(t("mcpServer.configSaved"));
       fetchConfig();
     } catch (error: any) {
       console.error("Error saving config:", error);
-      toast.error("Failed to save configuration: " + error.message);
+      toast.error(t("mcpServer.configSaveFailed") + ": " + error.message);
     } finally {
       setIsSaving(false);
     }
@@ -192,11 +192,11 @@ export default function McpServerSettings() {
 
   const handleTestConnection = async () => {
     if (!config || !tenant?.id) {
-      toast.error("Configuration not loaded");
+      toast.error(t("mcpServer.configNotLoaded"));
       return;
     }
 
-    toast.info("Testing MCP server connection...");
+    toast.info(t("mcpServer.testingConnection"));
     const startTime = Date.now();
 
     try {
@@ -273,13 +273,13 @@ export default function McpServerSettings() {
         console.error("Failed to update health status:", updateError);
       }
 
-      toast.error("Connection test failed: " + error.message);
+      toast.error(t("mcpServer.connectionTestFailed") + ": " + error.message);
     }
   };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success("Copied to clipboard");
+    toast.success(t("notifications.copiedToClipboard"));
   };
 
   if (isLoading) {

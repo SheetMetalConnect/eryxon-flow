@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import {
   ChevronLeft,
@@ -88,7 +88,6 @@ export function CellScheduleDialog({
   startDate,
 }: CellScheduleDialogProps) {
   const { t } = useTranslation();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<number>(0);
@@ -105,16 +104,13 @@ export function CellScheduleDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["day-allocations"] });
       setEditingId(null);
-      toast({
-        title: t("capacity.updated", "Updated"),
+      toast.success(t("capacity.updated", "Updated"), {
         description: t("capacity.allocationUpdated", "Allocation hours updated successfully"),
       });
     },
     onError: (error: any) => {
-      toast({
-        title: t("common.error", "Error"),
+      toast.error(t("common.error", "Error"), {
         description: error.message,
-        variant: "destructive",
       });
     },
   });
@@ -130,16 +126,13 @@ export function CellScheduleDialog({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["day-allocations"] });
-      toast({
-        title: t("capacity.deleted", "Deleted"),
+      toast.success(t("capacity.deleted", "Deleted"), {
         description: t("capacity.allocationDeleted", "Allocation removed from this day"),
       });
     },
     onError: (error: any) => {
-      toast({
-        title: t("common.error", "Error"),
+      toast.error(t("common.error", "Error"), {
         description: error.message,
-        variant: "destructive",
       });
     },
   });

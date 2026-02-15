@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   ArrowRight,
@@ -52,7 +52,6 @@ type Operation = {
 
 export default function JobCreate() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { profile } = useAuth();
   const { t } = useTranslation();
   const [step, setStep] = useState(1);
@@ -173,46 +172,27 @@ export default function JobCreate() {
       return job;
     },
     onSuccess: (job) => {
-      toast({
-        title: t("jobs.createSuccess"),
-        description: t("jobs.createSuccessDesc", { jobNumber: job.job_number, count: parts.length }),
-      });
+      toast.success(t("jobs.createSuccess"), { description: t("jobs.createSuccessDesc", { jobNumber: job.job_number, count: parts.length }) });
       navigate("/admin/jobs");
     },
     onError: (error: any) => {
-      toast({
-        title: t("common.error"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(t("common.error"), { description: error.message });
     },
   });
 
   const handleNext = () => {
     if (step === 1 && !jobNumber) {
-      toast({
-        title: t("common.validationError"),
-        description: t("jobs.jobNumberRequired"),
-        variant: "destructive",
-      });
+      toast.error(t("common.validationError"), { description: t("jobs.jobNumberRequired") });
       return;
     }
     if (step === 2 && parts.length === 0) {
-      toast({
-        title: t("common.validationError"),
-        description: t("jobs.atLeastOnePartRequired"),
-        variant: "destructive",
-      });
+      toast.error(t("common.validationError"), { description: t("jobs.atLeastOnePartRequired") });
       return;
     }
     if (step === 3) {
       const partsWithoutOperations = parts.filter((p) => p.operations.length === 0);
       if (partsWithoutOperations.length > 0) {
-        toast({
-          title: t("common.validationError"),
-          description: t("jobs.eachPartNeedsOperation"),
-          variant: "destructive",
-        });
+        toast.error(t("common.validationError"), { description: t("jobs.eachPartNeedsOperation") });
         return;
       }
     }
@@ -240,11 +220,7 @@ export default function JobCreate() {
 
   const handleAddPart = () => {
     if (!editingPart?.part_number || !editingPart?.material) {
-      toast({
-        title: t("common.validationError"),
-        description: t("parts.partNumberMaterialRequired"),
-        variant: "destructive",
-      });
+      toast.error(t("common.validationError"), { description: t("parts.partNumberMaterialRequired") });
       return;
     }
 
@@ -252,11 +228,7 @@ export default function JobCreate() {
     if (editingPart.parent_part_id) {
       const newPartId = editingPart.id || crypto.randomUUID();
       if (wouldCreateCircularReference(newPartId, editingPart.parent_part_id)) {
-        toast({
-          title: t("parts.circularReferenceDetected"),
-          description: t("parts.circularReferenceDesc"),
-          variant: "destructive",
-        });
+        toast.error(t("parts.circularReferenceDetected"), { description: t("parts.circularReferenceDesc") });
         return;
       }
     }
@@ -278,11 +250,7 @@ export default function JobCreate() {
 
   const handleAddOperation = (partId: string) => {
     if (!editingOperation?.operation.operation_name || !editingOperation?.operation.cell_id) {
-      toast({
-        title: t("common.validationError"),
-        description: t("operations.nameAndCellRequired"),
-        variant: "destructive",
-      });
+      toast.error(t("common.validationError"), { description: t("operations.nameAndCellRequired") });
       return;
     }
 

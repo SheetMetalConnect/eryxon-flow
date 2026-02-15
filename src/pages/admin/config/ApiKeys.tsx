@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Key, Copy, Trash2, Plus, BookOpen, ExternalLink } from "lucide-react";
@@ -27,7 +27,6 @@ interface ApiKey {
 export default function ConfigApiKeys() {
   const { t } = useTranslation();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -50,11 +49,7 @@ export default function ConfigApiKeys() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      toast({
-        title: t('apiKeys.error'),
-        description: t('apiKeys.failedToFetch'),
-        variant: "destructive",
-      });
+      toast.error(t('apiKeys.error'), { description: t('apiKeys.failedToFetch') });
     } else {
       setApiKeys(data || []);
     }
@@ -63,11 +58,7 @@ export default function ConfigApiKeys() {
 
   const generateApiKey = async () => {
     if (!keyName.trim()) {
-      toast({
-        title: t('apiKeys.error'),
-        description: t('apiKeys.enterKeyName'),
-        variant: "destructive",
-      });
+      toast.error(t('apiKeys.error'), { description: t('apiKeys.enterKeyName') });
       return;
     }
 
@@ -99,17 +90,10 @@ export default function ConfigApiKeys() {
       setKeyName("");
       fetchApiKeys();
 
-      toast({
-        title: t('apiKeys.success'),
-        description: t('apiKeys.generated'),
-      });
+      toast.success(t('apiKeys.success'), { description: t('apiKeys.generated') });
     } catch (error) {
       console.error('Error generating API key:', error);
-      toast({
-        title: t('apiKeys.error'),
-        description: error instanceof Error ? error.message : t('apiKeys.failedToGenerate'),
-        variant: "destructive",
-      });
+      toast.error(t('apiKeys.error'), { description: error instanceof Error ? error.message : t('apiKeys.failedToGenerate') });
     } finally {
       setIsGenerating(false);
     }
@@ -117,10 +101,7 @@ export default function ConfigApiKeys() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({
-      title: t('apiKeys.copied'),
-      description: t('apiKeys.copiedToClipboard'),
-    });
+    toast.success(t('apiKeys.copied'), { description: t('apiKeys.copiedToClipboard') });
   };
 
   const revokeKey = async (keyId: string) => {
@@ -130,16 +111,9 @@ export default function ConfigApiKeys() {
       .eq('id', keyId);
 
     if (error) {
-      toast({
-        title: t('apiKeys.error'),
-        description: t('apiKeys.failedToRevoke'),
-        variant: "destructive",
-      });
+      toast.error(t('apiKeys.error'), { description: t('apiKeys.failedToRevoke') });
     } else {
-      toast({
-        title: t('apiKeys.success'),
-        description: t('apiKeys.revoked'),
-      });
+      toast.success(t('apiKeys.success'), { description: t('apiKeys.revoked') });
       fetchApiKeys();
     }
   };

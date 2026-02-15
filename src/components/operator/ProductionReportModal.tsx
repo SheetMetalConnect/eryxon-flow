@@ -137,7 +137,7 @@ export default function ProductionReportModal({
       return;
     }
     if (!profile?.tenant_id) {
-      toast.error("No tenant found");
+      toast.error(t("notifications.noTenantFound"));
       return;
     }
 
@@ -181,7 +181,7 @@ export default function ProductionReportModal({
       handleClose();
     } catch (error: any) {
       console.error("Error recording production:", error);
-      toast.error(error.message || "Failed to record");
+      toast.error(error.message || t("notifications.failed"));
     } finally {
       setIsSubmitting(false);
     }

@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { useState } from "react";
 import { format } from "date-fns";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -27,7 +27,6 @@ export default function DueDateOverrideModal({
   onClose,
   onUpdate,
 }: DueDateOverrideModalProps) {
-  const { toast } = useToast();
   const { t } = useTranslation();
   const [overrideDate, setOverrideDate] = useState<Date | undefined>(undefined);
 
@@ -61,18 +60,15 @@ export default function DueDateOverrideModal({
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({
-        title: t("jobs.dueDateUpdated"),
+      toast.success(t("jobs.dueDateUpdated"), {
         description: t("jobs.dueDateUpdateSuccess"),
       });
       onUpdate();
       onClose();
     },
     onError: (error: any) => {
-      toast({
-        title: t("common.error"),
+      toast.error(t("common.error"), {
         description: error.message,
-        variant: "destructive",
       });
     },
   });

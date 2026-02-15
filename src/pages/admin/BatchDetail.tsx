@@ -67,7 +67,7 @@ import {
   useStopBatchTimer,
 } from "@/hooks/useBatchTimeTracking";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 function ElapsedTimer({ startTime }: { startTime: string }) {
   const [elapsed, setElapsed] = useState("");
@@ -109,8 +109,6 @@ export default function BatchDetail() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { toast } = useToast();
-
   const { data: batch, isLoading: batchLoading } = useBatch(id);
   const { data: batchOperations, isLoading: opsLoading } = useBatchOperations(id);
   const { data: subBatches, isLoading: subBatchesLoading } = useSubBatches(id);
@@ -206,15 +204,9 @@ export default function BatchDetail() {
         }
       });
 
-      toast({
-        title: t("batches.imageUploadSuccess"),
-      });
+      toast.success(t("batches.imageUploadSuccess"));
     } catch (error: any) {
-      toast({
-        title: t("batches.imageUploadError"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(t("batches.imageUploadError"), { description: error.message });
     } finally {
       setUploadingImage(false);
     }

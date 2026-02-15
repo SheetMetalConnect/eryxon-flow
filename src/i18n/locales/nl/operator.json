@@ -118,7 +118,15 @@
     "report": "Melden",
     "enterGoodParts": "Voer goede onderdelen in",
     "recorded": "{{count}} goede onderdelen geregistreerd",
-    "shortfallPrompt": "{{count}} onder doel. Probleem melden?"
+    "shortfallPrompt": "{{count}} onder doel. Probleem melden?",
+    "operationPaused": "Bewerking gepauzeerd",
+    "operationCompleted": "Bewerking voltooid",
+    "unsupportedCadFormat": "Niet-ondersteund CAD-bestandsformaat",
+    "cadProcessingFailed": "CAD-verwerking mislukt. Terugvalviewer wordt gebruikt.",
+    "timeTrackingStopped": "Tijdregistratie gestopt",
+    "timeTrackingPaused": "Tijdregistratie gepauzeerd",
+    "timeTrackingResumed": "Tijdregistratie hervat",
+    "openOperationForIssue": "Open de bewerking om een probleem te melden"
   },
   "terminalLogin": {
     "welcome": "OPERATOR TERMINAL",
@@ -182,5 +190,20 @@
     "issue": "Probleem",
     "recordQty": "Registreer",
     "recordQuantity": "Registreer productie aantal"
+  },
+  "substepToasts": {
+    "failedToLoad": "Kan substappen niet laden",
+    "reordered": "Substappen opnieuw geordend",
+    "reorderFailed": "Opnieuw ordenen van substappen mislukt",
+    "added": "Substap toegevoegd",
+    "addFailed": "Toevoegen van substap mislukt",
+    "statusUpdated": "Status bijgewerkt",
+    "statusUpdateFailed": "Bijwerken van status mislukt",
+    "deleted": "Substap verwijderd",
+    "deleteFailed": "Verwijderen van substap mislukt",
+    "notesUpdated": "Notities bijgewerkt",
+    "notesUpdateFailed": "Bijwerken van notities mislukt",
+    "templateNotFound": "Sjabloon niet gevonden of heeft geen items",
+    "templateApplyFailed": "Toepassen van sjabloon mislukt"
   }
 }

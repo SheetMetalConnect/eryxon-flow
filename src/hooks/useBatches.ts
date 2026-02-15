@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
 export type BatchType = "laser_nesting" | "tube_batch" | "saw_batch" | "finishing_batch" | "general";
@@ -246,7 +246,6 @@ export function useBatchRequirements(batchId: string | undefined) {
 export function useCreateBatch() {
   const queryClient = useQueryClient();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const { t } = useTranslation();
 
   return useMutation({
@@ -298,17 +297,10 @@ export function useCreateBatch() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
       queryClient.invalidateQueries({ queryKey: ["sub-batches"] });
-      toast({
-        title: t("batches.createSuccess"),
-        description: t("batches.createSuccessDesc"),
-      });
+      toast.success(t("batches.createSuccess"), { description: t("batches.createSuccessDesc") });
     },
     onError: (error: any) => {
-      toast({
-        title: t("common.error"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(t("common.error"), { description: error.message });
     },
   });
 }
@@ -316,7 +308,6 @@ export function useCreateBatch() {
 export function useUpdateBatch() {
   const queryClient = useQueryClient();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const { t } = useTranslation();
 
   return useMutation({
@@ -337,16 +328,10 @@ export function useUpdateBatch() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["batch", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["batches"] });
-      toast({
-        title: t("batches.updateSuccess"),
-      });
+      toast.success(t("batches.updateSuccess"));
     },
     onError: (error: any) => {
-      toast({
-        title: t("common.error"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(t("common.error"), { description: error.message });
     },
   });
 }
@@ -354,7 +339,6 @@ export function useUpdateBatch() {
 export function useUpdateBatchStatus() {
   const queryClient = useQueryClient();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const { t } = useTranslation();
 
   return useMutation({
@@ -386,11 +370,7 @@ export function useUpdateBatchStatus() {
       queryClient.invalidateQueries({ queryKey: ["sub-batches"] }); // Status change might affect list view
     },
     onError: (error: any) => {
-      toast({
-        title: t("common.error"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(t("common.error"), { description: error.message });
     },
   });
 }
@@ -398,7 +378,6 @@ export function useUpdateBatchStatus() {
 export function useAddOperationsToBatch() {
   const queryClient = useQueryClient();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const { t } = useTranslation();
 
   return useMutation({
@@ -433,16 +412,10 @@ export function useAddOperationsToBatch() {
       queryClient.invalidateQueries({ queryKey: ["batch-operations", variables.batchId] });
       queryClient.invalidateQueries({ queryKey: ["batches"] });
       queryClient.invalidateQueries({ queryKey: ["batch", variables.batchId] }); // Update counts
-      toast({
-        title: t("batches.operationsAdded"),
-      });
+      toast.success(t("batches.operationsAdded"));
     },
     onError: (error: any) => {
-      toast({
-        title: t("common.error"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(t("common.error"), { description: error.message });
     },
   });
 }
@@ -450,7 +423,6 @@ export function useAddOperationsToBatch() {
 export function useRemoveOperationFromBatch() {
   const queryClient = useQueryClient();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const { t } = useTranslation();
 
   return useMutation({
@@ -468,11 +440,7 @@ export function useRemoveOperationFromBatch() {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
     },
     onError: (error: any) => {
-      toast({
-        title: t("common.error"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(t("common.error"), { description: error.message });
     },
   });
 }
@@ -480,7 +448,6 @@ export function useRemoveOperationFromBatch() {
 export function useDeleteBatch() {
   const queryClient = useQueryClient();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const { t } = useTranslation();
 
   return useMutation({
@@ -506,16 +473,10 @@ export function useDeleteBatch() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
       queryClient.invalidateQueries({ queryKey: ["sub-batches"] });
-      toast({
-        title: t("batches.deleteSuccess"),
-      });
+      toast.success(t("batches.deleteSuccess"));
     },
     onError: (error: any) => {
-      toast({
-        title: t("common.error"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(t("common.error"), { description: error.message });
     },
   });
 }
@@ -523,7 +484,6 @@ export function useDeleteBatch() {
 export function useCreateBatchRequirement() {
   const queryClient = useQueryClient();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const { t } = useTranslation();
 
   return useMutation({
@@ -547,16 +507,10 @@ export function useCreateBatchRequirement() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["batch-requirements", variables.batchId] });
-      toast({
-        title: t("batches.requirementAdded"),
-      });
+      toast.success(t("batches.requirementAdded"));
     },
     onError: (error: any) => {
-      toast({
-        title: t("common.error"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(t("common.error"), { description: error.message });
     },
   });
 }

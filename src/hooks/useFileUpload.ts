@@ -12,8 +12,9 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { uploadFileWithProgress } from '@/lib/upload-with-progress';
+import { useTranslation } from 'react-i18next';
 
 export interface UploadProgress {
   fileIndex: number;
@@ -43,8 +44,8 @@ export interface UploadResult {
 }
 
 export function useFileUpload() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const [progress, setProgress] = useState<UploadProgress[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [storageQuota, setStorageQuota] = useState<StorageQuota | null>(null);
@@ -232,11 +233,7 @@ export function useFileUpload() {
             ));
 
             // Show toast for quota exceeded
-            toast({
-              title: 'Storage Quota Exceeded',
-              description: quotaCheck.reason,
-              variant: 'destructive',
-            });
+            toast.error(t('notifications.storageQuotaExceeded'), { description: quotaCheck.reason });
             continue;
           }
         }
@@ -304,7 +301,7 @@ export function useFileUpload() {
     } finally {
       setIsUploading(false);
     }
-  }, [profile, checkUploadQuota, updateStorageUsage, toast]);
+  }, [profile, checkUploadQuota, updateStorageUsage]);
 
   /**
    * Delete a file and update storage usage

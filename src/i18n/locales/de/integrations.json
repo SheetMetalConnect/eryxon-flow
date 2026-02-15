@@ -488,5 +488,32 @@
     "step3Description": "Ihre KI hat jetzt Zugriff auf Ihre Fertigungsdaten",
     "availableTools": "Verfügbare Tools",
     "availableToolsDescription": "Tools, die Ihr KI-Assistent verwenden kann"
+  },
+  "mcpKeys": {
+    "failedToFetch": "MCP-Schlüssel konnten nicht abgerufen werden",
+    "enterKeyName": "Bitte geben Sie einen Schlüsselnamen ein",
+    "generated": "MCP-Schlüssel erfolgreich generiert",
+    "statusUpdateFailed": "Schlüsselstatus konnte nicht aktualisiert werden",
+    "deleted": "MCP-Schlüssel gelöscht",
+    "deleteFailed": "MCP-Schlüssel konnte nicht gelöscht werden"
+  },
+  "mcpServer": {
+    "failedToLoadConfig": "MCP-Serverkonfiguration konnte nicht geladen werden",
+    "failedToLoadHealth": "MCP-Server-Integritätsstatus konnte nicht geladen werden",
+    "failedToLoadHealthData": "Integritätsdaten konnten nicht geladen werden",
+    "failedToLoadLogs": "Aktivitätsprotokolle konnten nicht geladen werden",
+    "failedToLoadLogsData": "Protokolle konnten nicht geladen werden",
+    "configSaved": "MCP-Serverkonfiguration erfolgreich gespeichert",
+    "configSaveFailed": "Speichern der Konfiguration fehlgeschlagen",
+    "configNotLoaded": "Konfiguration nicht geladen",
+    "testingConnection": "MCP-Serververbindung wird getestet...",
+    "connectionTestFailed": "Verbindungstest fehlgeschlagen"
+  },
+  "apiDocs": {
+    "copied": "Kopiert!",
+    "copiedToClipboard": "{{label}} in die Zwischenablage kopiert",
+    "downloaded": "Heruntergeladen!",
+    "downloadedDesc": "OpenAPI-Spezifikation heruntergeladen als {{filename}}",
+    "downloadFailed": "Herunterladen der Spezifikation fehlgeschlagen"
   }
 }

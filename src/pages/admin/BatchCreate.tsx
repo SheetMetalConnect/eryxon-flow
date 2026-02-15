@@ -39,7 +39,7 @@ import {
   type Batch
 } from "@/hooks/useBatches";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const BATCH_TYPES: { value: BatchType; labelKey: string }[] = [
   { value: "laser_nesting", labelKey: "batches.types.laserNesting" },
@@ -75,8 +75,6 @@ export default function BatchCreate() {
   const { profile } = useAuth();
   const createBatch = useCreateBatch();
   const updateBatch = useUpdateBatch();
-  const { toast } = useToast();
-
   // Fetch data if editing
   const { data: existingBatch, isLoading: batchLoading } = useBatch(id);
   const { data: existingOperations, isLoading: opsLoading } = useBatchOperations(id);
@@ -288,16 +286,9 @@ export default function BatchCreate() {
         setLayoutImageUrl(signedUrlData.signedUrl);
       }
 
-      toast({
-        title: t("Image uploaded"),
-        description: t("Image uploaded successfully."),
-      });
+      toast.success(t("Image uploaded"), { description: t("Image uploaded successfully.") });
     } catch (error: any) {
-      toast({
-        title: t("Error uploading image"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(t("Error uploading image"), { description: error.message });
     } finally {
       setUploadingImage(false);
     }
@@ -314,11 +305,7 @@ export default function BatchCreate() {
     try {
       parsedMetadata = JSON.parse(metadataJson);
     } catch (e) {
-      toast({
-        title: t("Invalid JSON"),
-        description: t("Please ensure the metadata JSON is valid."),
-        variant: "destructive"
-      });
+      toast.error(t("Invalid JSON"), { description: t("Please ensure the metadata JSON is valid.") });
       return;
     }
 

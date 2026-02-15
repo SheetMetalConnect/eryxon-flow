@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CalendarClock, Loader2, AlertTriangle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { SchedulerService, CalendarDay } from "@/lib/scheduler";
 import { useTranslation } from "react-i18next";
@@ -23,7 +23,6 @@ export function AutoScheduleButton() {
     const [loading, setLoading] = useState(false);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [operationsWithDates, setOperationsWithDates] = useState(0);
-    const { toast } = useToast();
     const { t } = useTranslation();
     const { tenant } = useAuth();
     const queryClient = useQueryClient();
@@ -52,10 +51,8 @@ export function AutoScheduleButton() {
             await runScheduler();
         } catch (error: any) {
             console.error("Error checking schedules:", error);
-            toast({
-                title: t("capacity.schedulingFailed", "Scheduling Failed"),
+            toast.error(t("capacity.schedulingFailed", "Scheduling Failed"), {
                 description: error.message,
-                variant: "destructive",
             });
             setLoading(false);
         }
@@ -168,8 +165,7 @@ export function AutoScheduleButton() {
                 }
             }
 
-            toast({
-                title: t("capacity.schedulingComplete", "Scheduling Complete"),
+            toast.success(t("capacity.schedulingComplete", "Scheduling Complete"), {
                 description: t("capacity.operationsScheduled", { count: updatedCount }),
             });
 
@@ -184,10 +180,8 @@ export function AutoScheduleButton() {
 
         } catch (error: any) {
             console.error("Scheduling error:", error);
-            toast({
-                title: t("capacity.schedulingFailed", "Scheduling Failed"),
+            toast.error(t("capacity.schedulingFailed", "Scheduling Failed"), {
                 description: error.message,
-                variant: "destructive",
             });
         } finally {
             setLoading(false);

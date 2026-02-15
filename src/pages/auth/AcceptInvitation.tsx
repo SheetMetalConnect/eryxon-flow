@@ -8,9 +8,11 @@ import { Loader2, Mail, Building2, UserCheck, Factory, ArrowRight } from 'lucide
 import { useInvitations } from '@/hooks/useInvitations';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import AnimatedBackground from '@/components/AnimatedBackground';
 
 export default function AcceptInvitation() {
+  const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { getInvitationByToken, acceptInvitation } = useInvitations();
@@ -88,7 +90,7 @@ export default function AcceptInvitation() {
         await acceptInvitation(token, signUpData.user.id);
       }
 
-      toast.success('Welcome to the team! Please check your email to verify your account.');
+      toast.success(t('invitation.welcomeToTeam'));
 
       // Redirect to auth page
       setTimeout(() => {

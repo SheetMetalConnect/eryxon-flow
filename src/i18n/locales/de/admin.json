@@ -29,7 +29,10 @@
     "totalJobs": "Aufträge gesamt",
     "totalParts": "Teile gesamt",
     "activeCells": "Aktive Fertigungszellen",
-    "completedToday": "Heute abgeschlossen"
+    "completedToday": "Heute abgeschlossen",
+    "demoDataWiped": "Demodaten gelöscht",
+    "demoDataWipedDesc": "Alle Demodaten wurden erfolgreich gelöscht.",
+    "wipeFailed": "Löschen fehlgeschlagen"
   },
   "settings": {
     "title": "Einstellungen",
@@ -60,7 +63,15 @@
       "successCleared": "Demodaten erfolgreich gelöscht",
       "errorCreate": "Erstellen der Demodaten fehlgeschlagen",
       "errorClear": "Löschen der Demodaten fehlgeschlagen"
-    }
+    },
+    "demoDataCreated": "Demodaten erfolgreich erstellt",
+    "demoDataCreatedFailed": "Erstellen der Demodaten fehlgeschlagen",
+    "demoDataCleared": "Demodaten erfolgreich gelöscht",
+    "demoDataClearedFailed": "Löschen der Demodaten fehlgeschlagen",
+    "accountDeleted": "Konto erfolgreich gelöscht",
+    "accountDeleteFailed": "Löschen des Kontos fehlgeschlagen",
+    "tenantDeleted": "Mandant erfolgreich gelöscht",
+    "tenantDeleteFailed": "Löschen des Mandanten fehlgeschlagen"
   },
   "users": {
     "title": "Benutzerverwaltung",
@@ -385,5 +396,11 @@
       "description": "Serverseitige CAD-Verarbeitung mit PMI/MBD-Extraktion. Erfordert externen eryxon3d-Service."
     },
     "externalServiceNote": "Diese Funktion erfordert einen externen Dienst. Siehe Self-Hosting-Anleitung für Bereitstellungsanweisungen."
+  },
+  "organizationSettings": {
+    "failedToLoad": "Organisationsdetails konnten nicht geladen werden"
+  },
+  "stuckTimeEntries": {
+    "stopped": "Zeiterfassung erfolgreich gestoppt"
   }
 }

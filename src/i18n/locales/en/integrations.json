@@ -597,5 +597,32 @@
     "step3Description": "Your AI can now access your manufacturing data",
     "availableTools": "Available Tools",
     "availableToolsDescription": "Tools your AI assistant can use"
+  },
+  "mcpKeys": {
+    "failedToFetch": "Failed to fetch MCP keys",
+    "enterKeyName": "Please enter a key name",
+    "generated": "MCP key generated successfully",
+    "statusUpdateFailed": "Failed to update key status",
+    "deleted": "MCP key deleted",
+    "deleteFailed": "Failed to delete MCP key"
+  },
+  "mcpServer": {
+    "failedToLoadConfig": "Failed to load MCP server configuration",
+    "failedToLoadHealth": "Failed to load MCP server health status",
+    "failedToLoadHealthData": "Failed to load health data",
+    "failedToLoadLogs": "Failed to load activity logs",
+    "failedToLoadLogsData": "Failed to load logs",
+    "configSaved": "MCP server configuration saved successfully",
+    "configSaveFailed": "Failed to save configuration",
+    "configNotLoaded": "Configuration not loaded",
+    "testingConnection": "Testing MCP server connection...",
+    "connectionTestFailed": "Connection test failed"
+  },
+  "apiDocs": {
+    "copied": "Copied!",
+    "copiedToClipboard": "{{label}} copied to clipboard",
+    "downloaded": "Downloaded!",
+    "downloadedDesc": "OpenAPI spec downloaded as {{filename}}",
+    "downloadFailed": "Failed to download spec"
   }
 }

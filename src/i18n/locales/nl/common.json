@@ -91,7 +91,15 @@
     "serverError": "Serverfout. Probeer het later opnieuw.",
     "unauthorized": "U bent niet geautoriseerd om deze actie uit te voeren",
     "notFound": "Resource niet gevonden",
-    "validationError": "Controleer het formulier op fouten"
+    "validationError": "Controleer het formulier op fouten",
+    "copied": "Gekopieerd!",
+    "copiedToClipboard": "Gekopieerd naar klembord",
+    "noTenantFound": "Geen tenant gevonden",
+    "sessionExpired": "Sessie verlopen. Log opnieuw in.",
+    "storageQuotaExceeded": "Opslagquotum overschreden",
+    "unsupportedFileType": "Niet-ondersteund bestandstype",
+    "failedToOpenFileViewer": "Kan bestandsviewer niet openen",
+    "failedToLoadData": "Kan gegevens niet laden"
   },
   "modals": {
     "confirmDelete": "Verwijdering bevestigen",

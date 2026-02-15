@@ -23,7 +23,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface Operation {
   id: string;
@@ -38,7 +38,6 @@ export default function PartCreate() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Form state
@@ -165,28 +164,17 @@ export default function PartCreate() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-parts-all"] });
-      toast({
-        title: t("parts.partCreated"),
-        description: t("parts.partCreatedDesc", { partNumber }),
-      });
+      toast.success(t("parts.partCreated"), { description: t("parts.partCreatedDesc", { partNumber }) });
       navigate("/admin/parts");
     },
     onError: (error: any) => {
-      toast({
-        title: t("common.error"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(t("common.error"), { description: error.message });
     },
   });
 
   const handleAddOperation = () => {
     if (!editingOperation?.operation_name || !editingOperation?.cell_id) {
-      toast({
-        title: t("common.validationError"),
-        description: t("operations.nameAndCellRequired"),
-        variant: "destructive",
-      });
+      toast.error(t("common.validationError"), { description: t("operations.nameAndCellRequired") });
       return;
     }
 

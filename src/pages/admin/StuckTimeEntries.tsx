@@ -6,8 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Square, AlertTriangle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 export default function StuckTimeEntries() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   // Fetch all active time entries
@@ -72,10 +74,10 @@ export default function StuckTimeEntries() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stuck-time-entries"] });
-      toast.success("Time entry stopped successfully");
+      toast.success(t("stuckTimeEntries.stopped"));
     },
     onError: (error: Error) => {
-      toast.error(`Failed to stop entry: ${error.message}`);
+      toast.error(error.message || t("notifications.failed"));
     },
   });
 
@@ -106,10 +108,10 @@ export default function StuckTimeEntries() {
     },
     onSuccess: (count) => {
       queryClient.invalidateQueries({ queryKey: ["stuck-time-entries"] });
-      toast.success(`Stopped ${count} time entries`);
+      toast.success(t("notifications.success"));
     },
     onError: (error: Error) => {
-      toast.error(`Failed to stop entries: ${error.message}`);
+      toast.error(error.message || t("notifications.failed"));
     },
   });
 

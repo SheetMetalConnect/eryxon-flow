@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export interface Invitation {
   id: string;
@@ -17,6 +18,7 @@ export interface Invitation {
 }
 
 export function useInvitations() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(false);
@@ -49,7 +51,7 @@ export function useInvitations() {
   // Create new invitation and send email via Edge Function
   const createInvitation = async (email: string, role: 'operator' | 'admin' = 'operator') => {
     if (!profile?.tenant_id) {
-      toast.error('No tenant found');
+      toast.error(t('notifications.noTenantFound'));
       return null;
     }
 
@@ -60,7 +62,7 @@ export function useInvitations() {
         // Try to refresh the session
         const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
         if (refreshError || !refreshData.session) {
-          toast.error('Session expired. Please log in again.');
+          toast.error(t('notifications.sessionExpired'));
           throw new Error('Session expired');
         }
       }
@@ -86,27 +88,17 @@ export function useInvitations() {
 
       const result = funcData;
 
-      if (result.email_sent) {
-        toast.success(`Invitation sent to ${email}`);
-      } else if (result.invitation_url) {
-        // Email not configured - show the URL for manual sharing
-        toast.success(
-          `Invitation created! Share this link with ${email}`,
-          {
-            duration: 10000,
-            description: result.invitation_url,
-          }
-        );
-      } else {
-        toast.success(`Invitation created for ${email}`);
-      }
+      toast.success(t('notifications.success'), {
+        duration: result.invitation_url ? 10000 : undefined,
+        description: result.invitation_url || undefined,
+      });
 
       // Reload invitations
       await loadInvitations();
 
       return result.invitation_id;
     } catch (err: any) {
-      toast.error(err.message || 'Failed to create invitation');
+      toast.error(err.message || t('notifications.failed'));
       console.error('Error creating invitation:', err);
       return null;
     }
@@ -121,14 +113,14 @@ export function useInvitations() {
 
       if (rpcError) throw rpcError;
 
-      toast.success('Invitation cancelled');
+      toast.success(t('invitation.cancelled'));
 
       // Reload invitations
       await loadInvitations();
 
       return data;
     } catch (err: any) {
-      toast.error(err.message || 'Failed to cancel invitation');
+      toast.error(err.message || t('notifications.failed'));
       console.error('Error cancelling invitation:', err);
       return null;
     }
@@ -149,7 +141,7 @@ export function useInvitations() {
 
       return data[0];
     } catch (err: any) {
-      toast.error(err.message || 'Failed to load invitation');
+      toast.error(err.message || t('notifications.failed'));
       console.error('Error getting invitation:', err);
       return null;
     }
@@ -167,7 +159,7 @@ export function useInvitations() {
 
       return data;
     } catch (err: any) {
-      toast.error(err.message || 'Failed to accept invitation');
+      toast.error(err.message || t('notifications.failed'));
       console.error('Error accepting invitation:', err);
       return null;
     }

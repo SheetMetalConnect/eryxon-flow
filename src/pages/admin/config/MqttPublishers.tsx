@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Trash2, RefreshCw, Radio, Wifi, WifiOff, Info } from "lucide-react";
@@ -67,7 +67,6 @@ const TOPIC_VARIABLES = [
 export default function ConfigMqttPublishers() {
   const { t } = useTranslation();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const [publishers, setPublishers] = useState<MqttPublisher[]>([]);
   const [mqttLogs, setMqttLogs] = useState<MqttLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -96,11 +95,7 @@ export default function ConfigMqttPublishers() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      toast({
-        title: t('mqtt.error'),
-        description: t('mqtt.failedToFetch'),
-        variant: "destructive",
-      });
+      toast.error(t('mqtt.error'), { description: t('mqtt.failedToFetch') });
     } else {
       setPublishers(data || []);
     }
@@ -132,11 +127,7 @@ export default function ConfigMqttPublishers() {
 
     if (error) {
       console.error('Error fetching MQTT logs:', error);
-      toast({
-        title: t('mqtt.error'),
-        description: t('mqtt.failedToFetchLogs'),
-        variant: "destructive",
-      });
+      toast.error(t('mqtt.error'), { description: t('mqtt.failedToFetchLogs') });
     } else {
       setMqttLogs(data || []);
     }
@@ -186,29 +177,17 @@ export default function ConfigMqttPublishers() {
 
   const createPublisher = async () => {
     if (!publisherName.trim()) {
-      toast({
-        title: t('mqtt.error'),
-        description: t('mqtt.enterName'),
-        variant: "destructive",
-      });
+      toast.error(t('mqtt.error'), { description: t('mqtt.enterName') });
       return;
     }
 
     if (!brokerUrl.trim()) {
-      toast({
-        title: t('mqtt.error'),
-        description: t('mqtt.enterBrokerUrl'),
-        variant: "destructive",
-      });
+      toast.error(t('mqtt.error'), { description: t('mqtt.enterBrokerUrl') });
       return;
     }
 
     if (selectedEvents.length === 0) {
-      toast({
-        title: t('mqtt.error'),
-        description: t('mqtt.selectAtLeastOne'),
-        variant: "destructive",
-      });
+      toast.error(t('mqtt.error'), { description: t('mqtt.selectAtLeastOne') });
       return;
     }
 
@@ -232,16 +211,9 @@ export default function ConfigMqttPublishers() {
       });
 
     if (error) {
-      toast({
-        title: t('mqtt.error'),
-        description: t('mqtt.failedToCreate'),
-        variant: "destructive",
-      });
+      toast.error(t('mqtt.error'), { description: t('mqtt.failedToCreate') });
     } else {
-      toast({
-        title: t('mqtt.success'),
-        description: t('mqtt.created'),
-      });
+      toast.success(t('mqtt.success'), { description: t('mqtt.created') });
       setDialogOpen(false);
       resetForm();
       fetchPublishers();
@@ -255,16 +227,9 @@ export default function ConfigMqttPublishers() {
       .eq('id', publisherId);
 
     if (error) {
-      toast({
-        title: t('mqtt.error'),
-        description: t('mqtt.failedToDelete'),
-        variant: "destructive",
-      });
+      toast.error(t('mqtt.error'), { description: t('mqtt.failedToDelete') });
     } else {
-      toast({
-        title: t('mqtt.success'),
-        description: t('mqtt.deleted'),
-      });
+      toast.success(t('mqtt.success'), { description: t('mqtt.deleted') });
       fetchPublishers();
     }
   };
@@ -276,11 +241,7 @@ export default function ConfigMqttPublishers() {
       .eq('id', publisherId);
 
     if (error) {
-      toast({
-        title: t('mqtt.error'),
-        description: t('mqtt.failedToUpdate'),
-        variant: "destructive",
-      });
+      toast.error(t('mqtt.error'), { description: t('mqtt.failedToUpdate') });
     } else {
       fetchPublishers();
     }

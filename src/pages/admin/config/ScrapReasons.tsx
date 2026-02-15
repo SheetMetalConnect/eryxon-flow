@@ -79,10 +79,10 @@ export default function ConfigScrapReasons() {
       return data;
     },
     onSuccess: () => {
-      toast.success("Default scrap reasons created successfully");
+      toast.success(t("scrapReasons.defaultCreated"));
       queryClient.invalidateQueries({ queryKey: ["scrap-reasons"] });
     },
-    onError: (error: any) => toast.error(error.message || "Failed to seed default reasons"),
+    onError: (error: any) => toast.error(error.message || t("notifications.failed")),
   });
 
   const saveMutation = useMutation({
@@ -102,12 +102,12 @@ export default function ConfigScrapReasons() {
       }
     },
     onSuccess: (_, variables) => {
-      toast.success(variables.id ? "Scrap reason updated" : "Scrap reason created");
+      toast.success(variables.id ? t("notifications.updated") : t("notifications.created"));
       queryClient.invalidateQueries({ queryKey: ["scrap-reasons"] });
       setDialogOpen(false);
       setEditingReason(null);
     },
-    onError: (error: any) => toast.error(error.message || "Failed to save scrap reason"),
+    onError: (error: any) => toast.error(error.message || t("notifications.failed")),
   });
 
   const deleteMutation = useMutation({
@@ -116,15 +116,15 @@ export default function ConfigScrapReasons() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Scrap reason deleted");
+      toast.success(t("scrapReasons.deleted"));
       queryClient.invalidateQueries({ queryKey: ["scrap-reasons"] });
     },
-    onError: (error: any) => toast.error(error.message || "Failed to delete scrap reason"),
+    onError: (error: any) => toast.error(error.message || t("notifications.failed")),
   });
 
   const handleSave = () => {
     if (!editingReason?.code || !editingReason?.description || !editingReason?.category) {
-      toast.error("Code, description, and category are required");
+      toast.error(t("scrapReasons.fieldsRequired"));
       return;
     }
     saveMutation.mutate(editingReason);

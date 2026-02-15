@@ -8,6 +8,7 @@ import { stopTimeTracking, pauseTimeTracking, resumeTimeTracking } from "@/lib/d
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface ActiveEntry {
   id: string;
@@ -30,6 +31,7 @@ interface PauseData {
 }
 
 export default function OperatorFooterBar() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const { activeOperator } = useOperator();
   const navigate = useNavigate();
@@ -132,10 +134,10 @@ export default function OperatorFooterBar() {
     setLoading(true);
     try {
       await stopTimeTracking(activeEntry.operation_id, operatorId);
-      toast.success("Time tracking stopped");
+      toast.success(t("production.timeTrackingStopped"));
       loadActiveEntry();
     } catch (error: any) {
-      toast.error(error.message || "Failed to stop time tracking");
+      toast.error(error.message || t("notifications.failed"));
     } finally {
       setLoading(false);
     }
@@ -147,10 +149,10 @@ export default function OperatorFooterBar() {
     setLoading(true);
     try {
       await pauseTimeTracking(activeEntry.id);
-      toast.success("Time tracking paused");
+      toast.success(t("production.timeTrackingPaused"));
       loadActiveEntry();
     } catch (error: any) {
-      toast.error(error.message || "Failed to pause time tracking");
+      toast.error(error.message || t("notifications.failed"));
     } finally {
       setLoading(false);
     }
@@ -162,10 +164,10 @@ export default function OperatorFooterBar() {
     setLoading(true);
     try {
       await resumeTimeTracking(activeEntry.id);
-      toast.success("Time tracking resumed");
+      toast.success(t("production.timeTrackingResumed"));
       loadActiveEntry();
     } catch (error: any) {
-      toast.error(error.message || "Failed to resume time tracking");
+      toast.error(error.message || t("notifications.failed"));
     } finally {
       setLoading(false);
     }
@@ -174,7 +176,7 @@ export default function OperatorFooterBar() {
   const handleReportIssue = () => {
     // Navigate to work queue which has the operation detail modal
     navigate("/work-queue");
-    toast.info("Open the operation to report an issue");
+    toast.info(t("production.openOperationForIssue"));
   };
 
   // Don't render footer if no active entry

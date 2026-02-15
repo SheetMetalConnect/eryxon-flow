@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Download, Archive, FileJson, FileSpreadsheet, Loader2 } from "lucide-react";
@@ -33,7 +33,6 @@ const EXPORTABLE_ENTITIES = [
 export default function DataExport() {
   const { t } = useTranslation();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const [selectedEntities, setSelectedEntities] = useState<string[]>([]);
   const [isExporting, setIsExporting] = useState(false);
   const [exportFormat, setExportFormat] = useState<'json' | 'csv'>('csv');
@@ -56,11 +55,7 @@ export default function DataExport() {
 
   const exportData = async () => {
     if (selectedEntities.length === 0) {
-      toast({
-        title: t('dataExport.noEntitiesSelected'),
-        description: t('dataExport.selectAtLeastOne'),
-        variant: "destructive",
-      });
+      toast.error(t('dataExport.noEntitiesSelected'), { description: t('dataExport.selectAtLeastOne') });
       return;
     }
 
@@ -140,18 +135,11 @@ export default function DataExport() {
         URL.revokeObjectURL(url);
       }
 
-      toast({
-        title: t('dataExport.exportSuccessful'),
-        description: t('dataExport.exportedEntities', { count: selectedEntities.length }),
-      });
+      toast.success(t('dataExport.exportSuccessful'), { description: t('dataExport.exportedEntities', { count: selectedEntities.length }) });
 
     } catch (error) {
       console.error('Export error:', error);
-      toast({
-        title: t('dataExport.exportFailed'),
-        description: error.message || t('dataExport.failedToExport'),
-        variant: "destructive",
-      });
+      toast.error(t('dataExport.exportFailed'), { description: error.message || t('dataExport.failedToExport') });
     } finally {
       setIsExporting(false);
     }

@@ -28,20 +28,18 @@ import {
   FileUp,
   HelpCircle
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export default function ApiDocs() {
-  const { toast } = useToast();
+  const { t } = useTranslation();
   const [apiKey, setApiKey] = useState("");
   const baseUrl = import.meta.env.VITE_SUPABASE_URL?.replace('/supabase', '') || `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co`;
   const apiBaseUrl = `${baseUrl}/functions/v1`;
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
-    toast({
-      title: "Copied!",
-      description: `${label} copied to clipboard`,
-    });
+    toast.success(t("apiDocs.copied"), { description: t("apiDocs.copiedToClipboard", { label }) });
   };
 
   const downloadSpec = async (format: 'json' | 'yaml') => {
@@ -74,16 +72,9 @@ export default function ApiDocs() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast({
-        title: "Downloaded!",
-        description: `OpenAPI spec downloaded as ${filename}`,
-      });
+      toast.success(t("apiDocs.downloaded"), { description: t("apiDocs.downloadedDesc", { filename }) });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to download spec",
-        variant: "destructive",
-      });
+      toast.error(t("notifications.error"), { description: t("apiDocs.downloadFailed") });
     }
   };
 

@@ -174,5 +174,20 @@
     "pinDescription": "Operators will use Employee ID + PIN to login",
     "createOperator": "Create Operator",
     "createOperatorDescription": "Quickly create an operator with PIN login."
+  },
+  "users": {
+    "enterEmail": "Please enter an email address",
+    "enterOperatorName": "Please enter operator name",
+    "pinLength": "PIN must be 4-6 digits",
+    "pinDigitsOnly": "PIN must contain only numbers",
+    "pinsNoMatch": "PINs do not match",
+    "enterMachineName": "Please enter machine name",
+    "enterMachineId": "Please enter machine ID",
+    "invitationLinkCopied": "Invitation link copied to clipboard"
+  },
+  "scrapReasons": {
+    "defaultCreated": "Default scrap reasons created successfully",
+    "deleted": "Scrap reason deleted",
+    "fieldsRequired": "Code, description, and category are required"
   }
 }

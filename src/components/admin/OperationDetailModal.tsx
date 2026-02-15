@@ -34,7 +34,7 @@ import {
   Settings2,
   Paperclip,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
 import { useAuth } from "@/contexts/AuthContext";
@@ -53,7 +53,6 @@ export default function OperationDetailModal({
   onUpdate,
 }: OperationDetailModalProps) {
   const { t } = useTranslation();
-  const { toast } = useToast();
   const { profile } = useAuth();
   const queryClient = useQueryClient();
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
@@ -156,16 +155,13 @@ export default function OperationDetailModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["operation-detail", operationId] });
       onUpdate();
-      toast({
-        title: "Status Updated",
+      toast.success(t("notifications.updated"), {
         description: "Operation status has been updated.",
       });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
+      toast.error(t("notifications.error"), {
         description: error.message,
-        variant: "destructive",
       });
     },
   });
@@ -183,16 +179,13 @@ export default function OperationDetailModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["operation-detail", operationId] });
       onUpdate();
-      toast({
-        title: "Operator Assigned",
+      toast.success(t("notifications.updated"), {
         description: "Operation has been assigned.",
       });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
+      toast.error(t("notifications.error"), {
         description: error.message,
-        variant: "destructive",
       });
     },
   });
@@ -205,10 +198,8 @@ export default function OperationDetailModal({
         fileExt === "pdf" ? "pdf" : fileExt === "step" || fileExt === "stp" ? "step" : null;
 
       if (!fileType) {
-        toast({
-          title: "Error",
+        toast.error(t("notifications.error"), {
           description: "Unsupported file type",
-          variant: "destructive",
         });
         return;
       }
@@ -234,10 +225,8 @@ export default function OperationDetailModal({
       setFileViewerOpen(true);
     } catch (error: any) {
       console.error("Error opening file:", error);
-      toast({
-        title: "Error",
+      toast.error(t("notifications.error"), {
         description: "Failed to open file viewer",
-        variant: "destructive",
       });
     }
   };

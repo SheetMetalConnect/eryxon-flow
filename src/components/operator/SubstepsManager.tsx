@@ -34,6 +34,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { IconPicker, IconDisplay } from "@/components/ui/icon-picker";
 import {
   DndContext,
@@ -222,6 +223,7 @@ function SortableSubstepItem({ substep, onStatusChange, onDelete, onNotesChange 
 }
 
 export default function SubstepsManager({ operationId, operationName, onUpdate }: SubstepsManagerProps) {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const [substeps, setSubsteps] = useState<Substep[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -260,7 +262,7 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
       setSubsteps(data || []);
     } catch (error: any) {
       console.error("Error loading substeps:", error);
-      toast.error("Failed to load substeps");
+      toast.error(t("substepToasts.failedToLoad"));
     } finally {
       setLoading(false);
     }
@@ -321,11 +323,11 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
       );
 
       await Promise.all(updates);
-      toast.success("Substeps reordered");
+      toast.success(t("substepToasts.reordered"));
       onUpdate?.();
     } catch (error: any) {
       console.error("Error reordering substeps:", error);
-      toast.error("Failed to reorder substeps");
+      toast.error(t("substepToasts.reorderFailed"));
       loadSubsteps(); // Reload to restore correct order
     }
   };
@@ -357,11 +359,11 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
       setNewSubstepName("");
       setNewSubstepNotes("");
       setNewSubstepIcon("");
-      toast.success("Substep added");
+      toast.success(t("substepToasts.added"));
       onUpdate?.();
     } catch (error: any) {
       console.error("Error adding substep:", error);
-      toast.error("Failed to add substep");
+      toast.error(t("substepToasts.addFailed"));
     } finally {
       setLoading(false);
     }
@@ -399,11 +401,11 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
         .eq("id", id);
 
       if (error) throw error;
-      toast.success("Status updated");
+      toast.success(t("substepToasts.statusUpdated"));
       onUpdate?.();
     } catch (error: any) {
       console.error("Error updating status:", error);
-      toast.error("Failed to update status");
+      toast.error(t("substepToasts.statusUpdateFailed"));
       loadSubsteps();
     }
   };
@@ -418,11 +420,11 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
       if (error) throw error;
 
       setSubsteps(substeps.filter((s) => s.id !== id));
-      toast.success("Substep deleted");
+      toast.success(t("substepToasts.deleted"));
       onUpdate?.();
     } catch (error: any) {
       console.error("Error deleting substep:", error);
-      toast.error("Failed to delete substep");
+      toast.error(t("substepToasts.deleteFailed"));
     }
   };
 
@@ -440,11 +442,11 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
         .eq("id", id);
 
       if (error) throw error;
-      toast.success("Notes updated");
+      toast.success(t("substepToasts.notesUpdated"));
       onUpdate?.();
     } catch (error: any) {
       console.error("Error updating notes:", error);
-      toast.error("Failed to update notes");
+      toast.error(t("substepToasts.notesUpdateFailed"));
       loadSubsteps();
     }
   };
@@ -456,7 +458,7 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
     try {
       const template = templates.find(t => t.id === selectedTemplate);
       if (!template || !template.items || template.items.length === 0) {
-        toast.error("Template not found or has no items");
+        toast.error(t("substepToasts.templateNotFound"));
         return;
       }
 
@@ -481,11 +483,11 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
       setSubsteps([...substeps, ...(data || [])]);
       setShowTemplateDialog(false);
       setSelectedTemplate("");
-      toast.success(`Added ${template.items.length} substeps from template`);
+      toast.success(t("notifications.success"));
       onUpdate?.();
     } catch (error: any) {
       console.error("Error applying template:", error);
-      toast.error("Failed to apply template");
+      toast.error(t("substepToasts.templateApplyFailed"));
     } finally {
       setLoading(false);
     }

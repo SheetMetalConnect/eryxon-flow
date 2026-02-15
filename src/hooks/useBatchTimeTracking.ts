@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { startBatchTimeTracking, stopBatchTimeTracking } from "@/lib/database";
 
@@ -69,7 +69,6 @@ export function useBatchActiveTimer(batchId: string | undefined) {
 export function useStartBatchTimer() {
   const queryClient = useQueryClient();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const { t } = useTranslation();
 
   return useMutation({
@@ -83,17 +82,10 @@ export function useStartBatchTimer() {
       queryClient.invalidateQueries({ queryKey: ["batch-active-timer"] });
       queryClient.invalidateQueries({ queryKey: ["batches"] });
       queryClient.invalidateQueries({ queryKey: ["batch"] });
-      toast({
-        title: t("batches.timeTracking.started"),
-        description: t("batches.timeTracking.startedDesc"),
-      });
+      toast.success(t("batches.timeTracking.started"), { description: t("batches.timeTracking.startedDesc") });
     },
     onError: (error: any) => {
-      toast({
-        title: t("common.error"),
-        description: resolveErrorMessage(t, error.message),
-        variant: "destructive",
-      });
+      toast.error(t("common.error"), { description: resolveErrorMessage(t, error.message) });
     },
   });
 }
@@ -104,7 +96,6 @@ export function useStartBatchTimer() {
 export function useStopBatchTimer() {
   const queryClient = useQueryClient();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const { t } = useTranslation();
 
   return useMutation({
@@ -119,8 +110,7 @@ export function useStopBatchTimer() {
       queryClient.invalidateQueries({ queryKey: ["batch-operations"] });
       queryClient.invalidateQueries({ queryKey: ["batches"] });
       queryClient.invalidateQueries({ queryKey: ["batch"] });
-      toast({
-        title: t("batches.timeTracking.stopped"),
+      toast.success(t("batches.timeTracking.stopped"), {
         description: t("batches.timeTracking.stoppedDesc", {
           total: result.totalMinutes,
           perOp: result.minutesPerOperation,
@@ -129,11 +119,7 @@ export function useStopBatchTimer() {
       });
     },
     onError: (error: any) => {
-      toast({
-        title: t("common.error"),
-        description: resolveErrorMessage(t, error.message),
-        variant: "destructive",
-      });
+      toast.error(t("common.error"), { description: resolveErrorMessage(t, error.message) });
     },
   });
 }

@@ -174,5 +174,20 @@
     "pinDescription": "Bediener verwenden Personalnummer + PIN zur Anmeldung",
     "createOperator": "Bediener erstellen",
     "createOperatorDescription": "Schnell einen Bediener mit PIN-Anmeldung erstellen."
+  },
+  "users": {
+    "enterEmail": "Bitte geben Sie eine E-Mail-Adresse ein",
+    "enterOperatorName": "Bitte geben Sie den Bedienernamen ein",
+    "pinLength": "PIN muss 4-6 Ziffern haben",
+    "pinDigitsOnly": "PIN darf nur Zahlen enthalten",
+    "pinsNoMatch": "PINs stimmen nicht überein",
+    "enterMachineName": "Bitte geben Sie den Maschinennamen ein",
+    "enterMachineId": "Bitte geben Sie die Maschinen-ID ein",
+    "invitationLinkCopied": "Einladungslink in die Zwischenablage kopiert"
+  },
+  "scrapReasons": {
+    "defaultCreated": "Standard-Ausschussgründe erfolgreich erstellt",
+    "deleted": "Ausschussgrund gelöscht",
+    "fieldsRequired": "Code, Beschreibung und Kategorie sind erforderlich"
   }
 }

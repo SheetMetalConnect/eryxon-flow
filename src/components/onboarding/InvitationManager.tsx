@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, X, Mail, Loader2, Trash2 } from 'lucide-react';
 import { useInvitations } from '@/hooks/useInvitations';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface InviteEntry {
   id: string;
@@ -16,6 +17,7 @@ interface InviteEntry {
 }
 
 export function InvitationManager() {
+  const { t } = useTranslation();
   const { invitations, createInvitation, cancelInvitation, loading } = useInvitations();
   const [inviteEntries, setInviteEntries] = useState<InviteEntry[]>([
     { id: '1', email: '', role: 'operator' }
@@ -44,7 +46,7 @@ export function InvitationManager() {
     const validEntries = inviteEntries.filter(entry => entry.email.trim() !== '');
 
     if (validEntries.length === 0) {
-      toast.error('Please enter at least one email address');
+      toast.error(t('invitation.enterEmails'));
       return;
     }
 
@@ -53,7 +55,7 @@ export function InvitationManager() {
     const invalidEmails = validEntries.filter(entry => !emailRegex.test(entry.email));
 
     if (invalidEmails.length > 0) {
-      toast.error('Please check email formats');
+      toast.error(t('invitation.checkEmailFormats'));
       return;
     }
 
@@ -70,7 +72,7 @@ export function InvitationManager() {
       // Clear form
       setInviteEntries([{ id: Date.now().toString(), email: '', role: 'operator' }]);
 
-      toast.success(`Sent ${validEntries.length} invitation${validEntries.length > 1 ? 's' : ''}`);
+      toast.success(t('notifications.success'));
     } catch (error) {
       console.error('Error sending invitations:', error);
     } finally {

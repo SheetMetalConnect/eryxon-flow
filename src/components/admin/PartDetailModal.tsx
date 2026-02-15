@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useEffect } from "react";
 import { Plus, Save, X, Upload, Eye, Trash2, Box, FileText, AlertTriangle, Package, ChevronRight, Wrench, Image as ImageIcon, Zap, QrCode, Truck, Ruler } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
 import { useAuth } from "@/contexts/AuthContext";
@@ -46,7 +46,6 @@ interface PartDetailModalProps {
 }
 
 export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetailModalProps) {
-  const { toast } = useToast();
   const { profile } = useAuth();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -164,8 +163,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       if (error) throw error;
     },
     onSuccess: async () => {
-      toast({
-        title: t("common.success"),
+      toast.success(t("common.success"), {
         description: t("parts.fieldsUpdated"),
       });
       setHasChanges(false);
@@ -173,10 +171,8 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       onUpdate();
     },
     onError: (error: any) => {
-      toast({
-        title: t("common.error"),
+      toast.error(t("common.error"), {
         description: error.message,
-        variant: "destructive",
       });
     },
   });
@@ -312,8 +308,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       }
     },
     onSuccess: async () => {
-      toast({
-        title: t("operations.operationAdded"),
+      toast.success(t("operations.operationAdded"), {
         description: t("operations.operationAddedDesc"),
       });
       setAddingOperation(false);
@@ -329,20 +324,16 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       onUpdate();
     },
     onError: (error: any) => {
-      toast({
-        title: t("common.error"),
+      toast.error(t("common.error"), {
         description: error.message,
-        variant: "destructive",
       });
     },
   });
 
   const handleAddOperation = () => {
     if (!newOperation.operation_name || !newOperation.cell_id) {
-      toast({
-        title: t("common.validationError"),
+      toast.error(t("common.validationError"), {
         description: t("operations.nameAndCellRequired"),
-        variant: "destructive",
       });
       return;
     }
@@ -380,8 +371,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
         if (updateError) throw updateError;
 
-        toast({
-          title: t("common.success"),
+        toast.success(t("common.success"), {
           description: t("parts.filesUploadedSuccess", { count: result.uploadedPaths.length }),
         });
 
@@ -404,8 +394,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                 const pmiResult = await extractPMI(signedUrlData.signedUrl, fileName);
 
                 if (pmiResult.success && pmiResult.pmi) {
-                  toast({
-                    title: t("parts.pmiExtracted"),
+                  toast.success(t("parts.pmiExtracted"), {
                     description: t("parts.pmiExtractedDesc", {
                       count: pmiResult.pmi.dimensions.length
                     }),
@@ -430,19 +419,15 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       // Show errors for failed files
       if (result.failedFiles.length > 0) {
         result.failedFiles.forEach(({ fileName, error }) => {
-          toast({
-            title: t("parts.uploadFailed"),
+          toast.error(t("parts.uploadFailed"), {
             description: `${fileName}: ${error}`,
-            variant: "destructive",
           });
         });
       }
     } catch (error: any) {
       console.error("CAD upload error:", error);
-      toast({
-        title: t("common.error"),
+      toast.error(t("common.error"), {
         description: error.message,
-        variant: "destructive",
       });
     }
   };
@@ -454,10 +439,8 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       const fileType = fileExt === "pdf" ? "pdf" : (fileExt === "step" || fileExt === "stp") ? "step" : null;
 
       if (!fileType) {
-        toast({
-          title: t("common.error"),
+        toast.error(t("common.error"), {
           description: t("parts.unsupportedFileType"),
-          variant: "destructive",
         });
         return;
       }
@@ -485,10 +468,8 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       setFileViewerOpen(true);
     } catch (error: any) {
       console.error("Error opening file:", error);
-      toast({
-        title: t("common.error"),
+      toast.error(t("common.error"), {
         description: t("parts.failedToOpenFileViewer"),
-        variant: "destructive",
       });
     }
   };
@@ -516,8 +497,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
       if (updateError) throw updateError;
 
-      toast({
-        title: t("common.success"),
+      toast.success(t("common.success"), {
         description: t("parts.fileDeletedSuccess"),
       });
 
@@ -526,10 +506,8 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       onUpdate();
     } catch (error: any) {
       console.error("Delete error:", error);
-      toast({
-        title: t("common.error"),
+      toast.error(t("common.error"), {
         description: error.message,
-        variant: "destructive",
       });
     }
   };

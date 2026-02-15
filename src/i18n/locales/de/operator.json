@@ -118,7 +118,15 @@
     "report": "Melden",
     "enterGoodParts": "Gutteile eingeben",
     "recorded": "{{count}} Gutteile erfasst",
-    "shortfallPrompt": "{{count}} unter Ziel. Problem melden?"
+    "shortfallPrompt": "{{count}} unter Ziel. Problem melden?",
+    "operationPaused": "Arbeitsgang pausiert",
+    "operationCompleted": "Arbeitsgang abgeschlossen",
+    "unsupportedCadFormat": "Nicht unterstütztes CAD-Dateiformat",
+    "cadProcessingFailed": "CAD-Verarbeitung fehlgeschlagen. Fallback-Viewer wird verwendet.",
+    "timeTrackingStopped": "Zeiterfassung gestoppt",
+    "timeTrackingPaused": "Zeiterfassung pausiert",
+    "timeTrackingResumed": "Zeiterfassung fortgesetzt",
+    "openOperationForIssue": "Öffnen Sie den Arbeitsgang, um ein Problem zu melden"
   },
   "terminalLogin": {
     "welcome": "BEDIENER-TERMINAL",
@@ -182,5 +190,20 @@
     "issue": "Problem",
     "recordQty": "Erfassen",
     "recordQuantity": "Produktionsmenge erfassen"
+  },
+  "substepToasts": {
+    "failedToLoad": "Unterschritte konnten nicht geladen werden",
+    "reordered": "Unterschritte neu geordnet",
+    "reorderFailed": "Neuordnung der Unterschritte fehlgeschlagen",
+    "added": "Unterschritt hinzugefügt",
+    "addFailed": "Hinzufügen des Unterschritts fehlgeschlagen",
+    "statusUpdated": "Status aktualisiert",
+    "statusUpdateFailed": "Statusaktualisierung fehlgeschlagen",
+    "deleted": "Unterschritt gelöscht",
+    "deleteFailed": "Löschen des Unterschritts fehlgeschlagen",
+    "notesUpdated": "Notizen aktualisiert",
+    "notesUpdateFailed": "Aktualisierung der Notizen fehlgeschlagen",
+    "templateNotFound": "Vorlage nicht gefunden oder hat keine Einträge",
+    "templateApplyFailed": "Anwendung der Vorlage fehlgeschlagen"
   }
 }

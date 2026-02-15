@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { UserPlus, Loader2, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface CreatedOperator {
   id: string;
@@ -16,6 +17,7 @@ interface CreatedOperator {
 }
 
 export function OperatorCreationForm() {
+  const { t } = useTranslation();
   const [fullName, setFullName] = useState('');
   const [employeeId, setEmployeeId] = useState('');
   const [pin, setPin] = useState('');
@@ -32,22 +34,22 @@ export function OperatorCreationForm() {
   const handleCreateOperator = async () => {
     // Validation
     if (!fullName.trim()) {
-      toast.error('Please enter operator name');
+      toast.error(t('users.enterOperatorName'));
       return;
     }
 
     if (!pin || pin.length < 4 || pin.length > 6) {
-      toast.error('PIN must be 4-6 digits');
+      toast.error(t('users.pinLength'));
       return;
     }
 
     if (!/^\d+$/.test(pin)) {
-      toast.error('PIN must contain only numbers');
+      toast.error(t('users.pinDigitsOnly'));
       return;
     }
 
     if (pin !== confirmPin) {
-      toast.error('PINs do not match');
+      toast.error(t('users.pinsNoMatch'));
       return;
     }
 
@@ -64,7 +66,7 @@ export function OperatorCreationForm() {
 
       if (error) throw error;
 
-      toast.success(`Operator created: ${finalEmployeeId}`);
+      toast.success(t('notifications.created'));
 
       // Add to created operators list
       setCreatedOperators([
