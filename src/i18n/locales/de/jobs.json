@@ -576,6 +576,8 @@
       "stoppedDesc": "{{total}} Min. gesamt, {{perOp}} Min. verteilt auf jeden von {{count}} Arbeitsgängen"
     },
     "editBatch": "Charge bearbeiten",
+    "editDescription": "Chargendetails und Metadaten aktualisieren.",
+    "loadingDetails": "Chargendetails werden geladen...",
     "visuals": "Visualisierung",
     "addMaterialRequirement": "Materialanforderung hinzufügen",
     "specifyMaterial": "Geben Sie das für diese Charge benötigte Material an.",

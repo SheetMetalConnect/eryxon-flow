@@ -73,8 +73,9 @@ export function InvitationManager() {
       setInviteEntries([{ id: Date.now().toString(), email: '', role: 'operator' }]);
 
       toast.success(t('notifications.success'), { description: t('invitation.invitationsSent', { count: validEntries.length }) });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error sending invitations:', error);
+      toast.error(t('notifications.error'), { description: error instanceof Error ? error.message : t('invitation.sendFailed') });
     } finally {
       setSending(false);
     }

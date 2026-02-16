@@ -2382,6 +2382,8 @@
   transition: opacity 0.2s ease;
 }
 
-[data-sonner-toast]:hover [data-close-button] {
+[data-sonner-toast]:hover [data-close-button],
+[data-sonner-toast]:focus-within [data-close-button],
+[data-sonner-toast] [data-close-button]:focus-visible {
   opacity: 1;
 }

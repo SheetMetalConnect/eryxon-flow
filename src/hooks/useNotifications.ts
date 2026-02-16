@@ -94,7 +94,7 @@ export const useNotifications = (filters?: NotificationFilters) => {
         toast.error(t('notifications.error'), { description: t('notifications.failed') });
       }
     },
-    []
+    [t]
   );
 
   // Toggle pin
@@ -122,7 +122,7 @@ export const useNotifications = (filters?: NotificationFilters) => {
         toast.error(t('notifications.error'), { description: t('notifications.failed') });
       }
     },
-    []
+    [t]
   );
 
   // Dismiss notification
@@ -144,7 +144,7 @@ export const useNotifications = (filters?: NotificationFilters) => {
         toast.error(t('notifications.error'), { description: t('notifications.failed') });
       }
     },
-    []
+    [t]
   );
 
   // Mark all as read
@@ -166,7 +166,7 @@ export const useNotifications = (filters?: NotificationFilters) => {
       console.error('Error marking all notifications as read:', err);
       toast.error(t('notifications.error'), { description: t('notifications.failed') });
     }
-  }, []);
+  }, [t]);
 
   // Get unread count
   const unreadCount = notifications.filter((n) => !n.read && !n.dismissed).length;

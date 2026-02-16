@@ -598,6 +598,8 @@
       "stoppedDesc": "{{total}} min total, {{perOp}} min distributed to each of {{count}} operations"
     },
     "editBatch": "Edit Batch",
+    "editDescription": "Update batch details and metadata.",
+    "loadingDetails": "Loading batch details...",
     "visuals": "Visuals",
     "addMaterialRequirement": "Add Material Requirement",
     "specifyMaterial": "Specify material needed for this batch.",

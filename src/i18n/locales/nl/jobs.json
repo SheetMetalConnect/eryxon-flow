@@ -577,6 +577,8 @@
       "stoppedDesc": "{{total}} min totaal, {{perOp}} min verdeeld over elk van {{count}} bewerkingen"
     },
     "editBatch": "Batch bewerken",
+    "editDescription": "Batchgegevens en metadata bijwerken.",
+    "loadingDetails": "Batchgegevens laden...",
     "visuals": "Visueel",
     "addMaterialRequirement": "Materiaalvereiste toevoegen",
     "specifyMaterial": "Specificeer het benodigde materiaal voor deze batch.",
