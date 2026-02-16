@@ -43,7 +43,12 @@
     "allClockingsStoppedDescription": "{{count}} time entries have been stopped.",
     "stopAllFailed": "Failed to Stop All Clockings",
     "pastClosingTimeWarning": "Factory closing time has passed",
-    "pastClosingTimeDescription": "There are {{count}} active time entries after closing time ({{time}}). Consider stopping them."
+    "pastClosingTimeDescription": "There are {{count}} active time entries after closing time ({{time}}). Consider stopping them.",
+    "demoDataWiped": "Demo Data Wiped",
+    "demoDataWipedDesc": "All demo data has been cleared successfully.",
+    "wipeFailed": "Wipe Failed",
+    "noActiveClockings": "No active clockings",
+    "noActiveClockingsDescription": "There are no active time entries to stop."
   },
   "organizationSettings": {
     "title": "Organization Settings",
@@ -57,6 +62,7 @@
     "billingEmail": "Billing Email",
     "saveChanges": "Save Changes",
     "settingsUpdated": "Organization settings updated",
+    "failedToLoad": "Failed to load organization details",
     "factoryHours": {
       "title": "Factory Hours",
       "description": "Configure your factory operating hours and automatic time tracking settings",
@@ -99,6 +105,10 @@
       "errorCreate": "Failed to create demo data",
       "errorClear": "Failed to clear demo data"
     },
+    "accountDeleted": "Account deleted successfully",
+    "accountDeleteFailed": "Failed to delete account",
+    "tenantDeleted": "Tenant deleted successfully",
+    "tenantDeleteFailed": "Failed to delete tenant",
     "gdpr": {
       "title": "Data Deletion (GDPR)",
       "description": "Permanently delete your account or entire organization data",
@@ -472,5 +482,8 @@
       "description": "Server-side CAD processing with PMI/MBD extraction. Requires external eryxon3d service."
     },
     "externalServiceNote": "This feature requires an external service. See the Self-Hosting Guide for deployment instructions."
+  },
+  "stuckTimeEntries": {
+    "stopped": "Time entry stopped successfully"
   }
 }

@@ -19,7 +19,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -48,7 +48,6 @@ export function ImageGallery({
   className,
 }: ImageGalleryProps) {
   const { t } = useTranslation();
-  const { toast } = useToast();
   const { profile } = useAuth();
   const [images, setImages] = useState<ImageInfo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,15 +88,13 @@ export function ImageGallery({
       setImages(imageInfos);
     } catch (error) {
       console.error("Error loading images:", error);
-      toast({
-        title: t("parts.images.loadFailed"),
+      toast.error(t("parts.images.loadFailed"), {
         description: t("parts.images.loadFailedDescription"),
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  }, [imagePaths, t, toast]);
+  }, [imagePaths, t]);
 
   useEffect(() => {
     loadImages();
@@ -122,8 +119,7 @@ export function ImageGallery({
 
       if (updateError) throw updateError;
 
-      toast({
-        title: t("parts.images.deleteSuccess"),
+      toast.success(t("parts.images.deleteSuccess"), {
         description: t("parts.images.imageDeleted"),
       });
 
@@ -132,16 +128,14 @@ export function ImageGallery({
       onImageDeleted?.(path);
     } catch (error: any) {
       console.error("Error deleting image:", error);
-      toast({
-        title: t("parts.images.deleteFailed"),
+      toast.error(t("parts.images.deleteFailed"), {
         description: error.message,
-        variant: "destructive",
       });
     } finally {
       setDeleteDialogOpen(false);
       setImageToDelete(null);
     }
-  }, [partId, imagePaths, t, toast, onImageDeleted]);
+  }, [partId, imagePaths, t, onImageDeleted]);
 
   // Handle download
   const handleDownload = useCallback(async (image: ImageInfo) => {
@@ -159,19 +153,16 @@ export function ImageGallery({
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      toast({
-        title: t("parts.images.downloadSuccess"),
+      toast.success(t("parts.images.downloadSuccess"), {
         description: t("parts.images.imageDownloaded"),
       });
     } catch (error) {
       console.error("Error downloading image:", error);
-      toast({
-        title: t("parts.images.downloadFailed"),
+      toast.error(t("parts.images.downloadFailed"), {
         description: t("parts.images.downloadFailedDescription"),
-        variant: "destructive",
       });
     }
-  }, [t, toast]);
+  }, [t]);
 
   // Keyboard navigation
   useEffect(() => {

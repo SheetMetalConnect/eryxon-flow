@@ -90,7 +90,17 @@
     "serverError": "Serverfehler. Bitte versuchen Sie es später erneut.",
     "unauthorized": "Sie sind nicht berechtigt, diese Aktion durchzuführen",
     "notFound": "Ressource nicht gefunden",
-    "validationError": "Bitte überprüfen Sie das Formular auf Fehler"
+    "validationError": "Bitte überprüfen Sie das Formular auf Fehler",
+    "copied": "Kopiert!",
+    "copiedToClipboard": "In die Zwischenablage kopiert",
+    "noTenantFound": "Kein Mandant gefunden",
+    "sessionExpired": "Sitzung abgelaufen. Bitte erneut anmelden.",
+    "storageQuotaExceeded": "Speicherkontingent überschritten",
+    "unsupportedFileType": "Nicht unterstützter Dateityp",
+    "failedToOpenFileViewer": "Datei-Viewer konnte nicht geöffnet werden",
+    "failedToLoadData": "Daten konnten nicht geladen werden",
+    "pinned": "Benachrichtigung angeheftet",
+    "unpinned": "Benachrichtigung gelöst"
   },
   "modals": {
     "confirmDelete": "Löschung bestätigen",

@@ -93,7 +93,7 @@ export default function OrganizationSettings() {
       });
     } catch (error: any) {
       console.error('Error loading tenant details:', error);
-      toast.error('Failed to load organization details');
+      toast.error(t("organizationSettings.failedToLoad"));
     } finally {
       setLoading(false);
     }
@@ -139,7 +139,7 @@ export default function OrganizationSettings() {
       await refreshTenant();
     } catch (error: any) {
       console.error('Error updating tenant:', error);
-      toast.error(error.message || 'Failed to update organization settings');
+      toast.error(error.message || t('notifications.failed'));
     } finally {
       setSaving(false);
     }

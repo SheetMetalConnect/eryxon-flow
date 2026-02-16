@@ -163,7 +163,7 @@ export default function McpSetup() {
 
   const copyToClipboard = (text: string, label: string = "Copied") => {
     navigator.clipboard.writeText(text);
-    toast.success(`${label} to clipboard`);
+    toast.success(t("notifications.copiedToClipboard"));
   };
 
   const getConfigJson = (token: string) => {

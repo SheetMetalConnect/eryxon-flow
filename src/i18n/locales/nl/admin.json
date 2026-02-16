@@ -43,7 +43,12 @@
     "allClockingsStoppedDescription": "{{count}} tijdregistraties zijn gestopt.",
     "stopAllFailed": "Alle klokkingen stoppen mislukt",
     "pastClosingTimeWarning": "Fabriek sluitingstijd is verstreken",
-    "pastClosingTimeDescription": "Er zijn {{count}} actieve tijdregistraties na sluitingstijd ({{time}}). Overweeg deze te stoppen."
+    "pastClosingTimeDescription": "Er zijn {{count}} actieve tijdregistraties na sluitingstijd ({{time}}). Overweeg deze te stoppen.",
+    "demoDataWiped": "Demogegevens gewist",
+    "demoDataWipedDesc": "Alle demogegevens zijn succesvol gewist.",
+    "wipeFailed": "Wissen mislukt",
+    "noActiveClockings": "Geen actieve klokkingen",
+    "noActiveClockingsDescription": "Er zijn geen actieve tijdregistraties om te stoppen."
   },
   "organizationSettings": {
     "title": "Organisatie-instellingen",
@@ -57,6 +62,7 @@
     "billingEmail": "Factuur e-mail",
     "saveChanges": "Wijzigingen opslaan",
     "settingsUpdated": "Organisatie-instellingen bijgewerkt",
+    "failedToLoad": "Kan organisatiedetails niet laden",
     "factoryHours": {
       "title": "Fabriekstijden",
       "description": "Configureer uw fabriekswerktijden en automatische tijdregistratie-instellingen",
@@ -248,6 +254,10 @@
       "errorCreate": "Aanmaken demonstratiedata mislukt",
       "errorClear": "Verwijderen demonstratiedata mislukt"
     },
+    "accountDeleted": "Account succesvol verwijderd",
+    "accountDeleteFailed": "Verwijderen van account mislukt",
+    "tenantDeleted": "Tenant succesvol verwijderd",
+    "tenantDeleteFailed": "Verwijderen van tenant mislukt",
     "gdpr": {
       "title": "Gegevensverwijdering (AVG)",
       "description": "Verwijder permanent uw account of alle organisatiegegevens",
@@ -630,5 +640,8 @@
       "description": "Server-side CAD-verwerking met PMI/MBD-extractie. Vereist externe eryxon3d-service."
     },
     "externalServiceNote": "Deze functie vereist een externe service. Zie de Self-Hosting Guide voor implementatie-instructies."
+  },
+  "stuckTimeEntries": {
+    "stopped": "Tijdregistratie succesvol gestopt"
   }
 }

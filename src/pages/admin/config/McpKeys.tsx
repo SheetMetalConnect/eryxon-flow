@@ -17,6 +17,7 @@ import { DataTable } from "@/components/ui/data-table/DataTable";
 import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Switch } from "@/components/ui/switch";
+import { useTranslation } from "react-i18next";
 
 interface McpKey {
   id: string;
@@ -33,6 +34,7 @@ interface McpKey {
 }
 
 export default function ConfigMcpKeys() {
+  const { t } = useTranslation();
   const { profile, tenant } = useAuth();
   const [mcpKeys, setMcpKeys] = useState<McpKey[]>([]);
   const [loading, setLoading] = useState(true);
@@ -110,7 +112,7 @@ export default function ConfigMcpKeys() {
       })));
     } catch (error: any) {
       console.error("Error fetching MCP keys:", error);
-      toast.error("Failed to fetch MCP keys");
+      toast.error(t("mcpKeys.failedToFetch"));
     } finally {
       setLoading(false);
     }
@@ -118,7 +120,7 @@ export default function ConfigMcpKeys() {
 
   const generateMcpKey = async () => {
     if (!keyName.trim()) {
-      toast.error("Please enter a key name");
+      toast.error(t("mcpKeys.enterKeyName"));
       return;
     }
 
@@ -155,10 +157,10 @@ export default function ConfigMcpKeys() {
       // Refresh keys list
       await fetchMcpKeys();
 
-      toast.success("MCP key generated successfully");
+      toast.success(t("mcpKeys.generated"));
     } catch (error: any) {
       console.error("Error generating MCP key:", error);
-      toast.error(error.message || "Failed to generate MCP key");
+      toast.error(error.message || t("notifications.failed"));
     } finally {
       setIsGenerating(false);
     }
@@ -173,11 +175,11 @@ export default function ConfigMcpKeys() {
 
       if (error) throw error;
 
-      toast.success(`Key ${!currentStatus ? "enabled" : "disabled"}`);
+      toast.success(t("notifications.updated"));
       await fetchMcpKeys();
     } catch (error: any) {
       console.error("Error toggling key status:", error);
-      toast.error("Failed to update key status");
+      toast.error(t("mcpKeys.statusUpdateFailed"));
     }
   };
 
@@ -194,17 +196,17 @@ export default function ConfigMcpKeys() {
 
       if (error) throw error;
 
-      toast.success("MCP key deleted");
+      toast.success(t("mcpKeys.deleted"));
       await fetchMcpKeys();
     } catch (error: any) {
       console.error("Error deleting MCP key:", error);
-      toast.error("Failed to delete MCP key");
+      toast.error(t("mcpKeys.deleteFailed"));
     }
   };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success("Copied to clipboard");
+    toast.success(t("notifications.copiedToClipboard"));
   };
 
   const columns: ColumnDef<McpKey>[] = useMemo(

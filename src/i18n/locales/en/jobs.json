@@ -301,6 +301,8 @@
   },
   "operations": {
     "title": "Operations",
+    "statusUpdatedDesc": "Operation status has been updated",
+    "operatorAssignedDesc": "Operator has been assigned to this operation",
     "operations": "Operations",
     "operationName": "Operation Name",
     "operationDetails": "Operation Details",
@@ -596,6 +598,8 @@
       "stoppedDesc": "{{total}} min total, {{perOp}} min distributed to each of {{count}} operations"
     },
     "editBatch": "Edit Batch",
+    "editDescription": "Update batch details and metadata.",
+    "loadingDetails": "Loading batch details...",
     "visuals": "Visuals",
     "addMaterialRequirement": "Add Material Requirement",
     "specifyMaterial": "Specify material needed for this batch.",
@@ -608,6 +612,23 @@
     "imageUploadSuccess": "Image uploaded successfully",
     "imageUploadError": "Error uploading image",
     "requirementAdded": "Requirement Added",
-    "addOperationNotAvailable": "Adding operations to an existing batch is not yet available. Create batches from the Operations page."
+    "addOperationNotAvailable": "Adding operations to an existing batch is not yet available. Create batches from the Operations page.",
+    "imageUploaded": "Image uploaded",
+    "imageUploadedDesc": "Image uploaded successfully",
+    "imageUploadFailed": "Error uploading image",
+    "invalidJson": "Invalid JSON",
+    "invalidJsonDesc": "Please ensure the metadata JSON is valid",
+    "parentBatch": "Parent Batch (Optional)",
+    "selectParentBatch": "Select parent batch...",
+    "noParent": "No Parent (Master Batch)",
+    "parentBatchHint": "Select a parent batch to nest this batch under (e.g., Sheet 1 of Job X)",
+    "nestingImage": "Nesting Image",
+    "layoutImage": "Layout Image",
+    "upload": "Upload",
+    "metadata": "Metadata (JSON)",
+    "metadataHint": "Enter extra information in valid JSON format",
+    "editOperationsHint": "Editing operations is not yet available. Delete and recreate batch if needed.",
+    "updating": "Updating...",
+    "updateBatch": "Update Batch"
   }
 }

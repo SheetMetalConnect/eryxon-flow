@@ -147,7 +147,7 @@ export default function OperatorView() {
       if (cellsData.data) setCells(cellsData.data);
     } catch (error) {
       console.error("Error loading data:", error);
-      toast.error("Failed to load data");
+      toast.error(t("notifications.failedToLoadData"));
     } finally {
       setLoading(false);
     }
@@ -382,22 +382,18 @@ export default function OperatorView() {
                 result.error.includes("invalid geometry") ||
                 result.error.includes("segfault")
               ) {
-                toast.error(
-                  "CAD file contains errors and cannot be processed. Using fallback viewer.",
-                );
+                toast.error(t("production.cadProcessingFailed"));
               } else if (result.error.includes("Unsupported")) {
-                toast.error("Unsupported CAD file format");
+                toast.error(t("production.unsupportedCadFormat"));
               } else {
-                toast.error("CAD processing failed. Using fallback viewer.");
+                toast.error(t("production.cadProcessingFailed"));
               }
               setPmiData(null);
               setGeometryData(null);
             }
           } catch (pmiError) {
             console.error("Error during CAD processing:", pmiError);
-            toast.error(
-              "CAD processing service unavailable. Using fallback viewer.",
-            );
+            toast.error(t("production.cadProcessingFailed"));
             setPmiData(null);
             setGeometryData(null);
           }
@@ -422,10 +418,10 @@ export default function OperatorView() {
         operatorId,
         profile.tenant_id,
       );
-      toast.success(`Started: ${selectedJob.currentOp}`);
+      toast.success(t("notifications.success"));
       // Data will reload via subscription
     } catch (error: any) {
-      toast.error(error.message || "Failed to start");
+      toast.error(error.message || t("notifications.failed"));
     }
   };
 
@@ -433,9 +429,9 @@ export default function OperatorView() {
     if (!selectedJob || !operatorId) return;
     try {
       await stopTimeTracking(selectedJob.operationId, operatorId);
-      toast.success("Operation paused");
+      toast.success(t("production.operationPaused"));
     } catch (error: any) {
-      toast.error(error.message || "Failed to pause");
+      toast.error(error.message || t("notifications.failed"));
     }
   };
 
@@ -447,10 +443,10 @@ export default function OperatorView() {
         profile.tenant_id,
         operatorId,
       );
-      toast.success("Operation completed");
+      toast.success(t("production.operationCompleted"));
       setSelectedJobId(null); // Deselect
     } catch (error: any) {
-      toast.error(error.message || "Failed to complete");
+      toast.error(error.message || t("notifications.failed"));
     }
   };
 

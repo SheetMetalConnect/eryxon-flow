@@ -34,7 +34,7 @@ import {
   Settings2,
   Paperclip,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
 import { useAuth } from "@/contexts/AuthContext";
@@ -53,7 +53,6 @@ export default function OperationDetailModal({
   onUpdate,
 }: OperationDetailModalProps) {
   const { t } = useTranslation();
-  const { toast } = useToast();
   const { profile } = useAuth();
   const queryClient = useQueryClient();
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
@@ -156,16 +155,13 @@ export default function OperationDetailModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["operation-detail", operationId] });
       onUpdate();
-      toast({
-        title: "Status Updated",
-        description: "Operation status has been updated.",
+      toast.success(t("notifications.updated"), {
+        description: t("operations.statusUpdatedDesc"),
       });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
+      toast.error(t("notifications.error"), {
         description: error.message,
-        variant: "destructive",
       });
     },
   });
@@ -183,16 +179,13 @@ export default function OperationDetailModal({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["operation-detail", operationId] });
       onUpdate();
-      toast({
-        title: "Operator Assigned",
-        description: "Operation has been assigned.",
+      toast.success(t("notifications.updated"), {
+        description: t("operations.operatorAssignedDesc"),
       });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
+      toast.error(t("notifications.error"), {
         description: error.message,
-        variant: "destructive",
       });
     },
   });
@@ -205,10 +198,8 @@ export default function OperationDetailModal({
         fileExt === "pdf" ? "pdf" : fileExt === "step" || fileExt === "stp" ? "step" : null;
 
       if (!fileType) {
-        toast({
-          title: "Error",
-          description: "Unsupported file type",
-          variant: "destructive",
+        toast.error(t("notifications.error"), {
+          description: t("notifications.unsupportedFileType"),
         });
         return;
       }
@@ -234,10 +225,8 @@ export default function OperationDetailModal({
       setFileViewerOpen(true);
     } catch (error: any) {
       console.error("Error opening file:", error);
-      toast({
-        title: "Error",
-        description: "Failed to open file viewer",
-        variant: "destructive",
+      toast.error(t("notifications.error"), {
+        description: t("notifications.failedToOpenFileViewer"),
       });
     }
   };
@@ -260,10 +249,10 @@ export default function OperationDetailModal({
       on_hold: "destructive",
     };
     const labels: Record<string, string> = {
-      not_started: "Not Started",
-      in_progress: "In Progress",
-      completed: "Completed",
-      on_hold: "On Hold",
+      not_started: t("operations.status.notStarted"),
+      in_progress: t("operations.status.inProgress"),
+      completed: t("operations.status.completed"),
+      on_hold: t("operations.status.onHold"),
     };
     return <Badge variant={variants[status] || "default"}>{labels[status] || status}</Badge>;
   };

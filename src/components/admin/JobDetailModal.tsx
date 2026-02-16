@@ -20,7 +20,7 @@ import {
 import { useState } from "react";
 import { Plus, Edit2, Save, X, CheckCircle2, Clock, Circle, Truck, MapPin, Package, Weight, ChevronDown, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { PartIssueBadge } from "@/components/issues/PartIssueBadge";
@@ -38,7 +38,6 @@ interface JobDetailModalProps {
 export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedJob, setEditedJob] = useState<any>(null);
-  const { toast } = useToast();
   const { t } = useTranslation();
   const { profile } = useAuth();
   const { routing, loading: routingLoading } = useJobRouting(jobId, profile?.tenant_id ?? null);
@@ -77,18 +76,15 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({
-        title: t("jobs.jobUpdated"),
+      toast.success(t("jobs.jobUpdated"), {
         description: t("jobs.jobUpdateSuccess"),
       });
       setIsEditing(false);
       onUpdate();
     },
     onError: (error: any) => {
-      toast({
-        title: t("common.error"),
+      toast.error(t("common.error"), {
         description: error.message,
-        variant: "destructive",
       });
     },
   });

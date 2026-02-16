@@ -3,6 +3,7 @@ import Joyride, { CallBackProps, STATUS, Step, ACTIONS, EVENTS } from 'react-joy
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface AppTourProps {
   userRole: 'admin' | 'operator';
@@ -231,7 +232,7 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
               .update({ tour_completed: true })
               .eq('id', profile.id);
 
-            toast.success('Tour completed! You can restart it anytime from settings.');
+            toast.success(t('onboarding.tourCompleted'));
           } catch (error) {
             console.error('Error updating tour completion:', error);
           }
@@ -291,6 +292,7 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
 // Hook to restart the tour
 export function useRestartTour() {
   const { profile } = useAuth();
+  const { t } = useTranslation();
 
   const restartTour = useCallback(async () => {
     if (!profile?.id) return;
@@ -301,15 +303,15 @@ export function useRestartTour() {
         .update({ tour_completed: false })
         .eq('id', profile.id);
 
-      toast.success('Tour reset! Refresh the page to start the tour again.');
+      toast.success(t('onboarding.tourReset'));
 
       // Reload to restart tour
       window.location.reload();
     } catch (error) {
       console.error('Error restarting tour:', error);
-      toast.error('Failed to restart tour');
+      toast.error(t('onboarding.tourRestartFailed'));
     }
-  }, [profile]);
+  }, [profile, t]);
 
   return { restartTour };
 }

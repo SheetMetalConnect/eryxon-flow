@@ -345,17 +345,17 @@ export default function Assignments() {
     e.preventDefault();
 
     if (!operatorForm.full_name.trim()) {
-      toast.error("Please enter operator name");
+      toast.error(t("users.enterOperatorName"));
       return;
     }
 
     if (!operatorForm.pin || operatorForm.pin.length < 4 || operatorForm.pin.length > 6) {
-      toast.error("PIN must be 4-6 digits");
+      toast.error(t("users.pinLength"));
       return;
     }
 
     if (!/^\d+$/.test(operatorForm.pin)) {
-      toast.error("PIN must contain only numbers");
+      toast.error(t("users.pinDigitsOnly"));
       return;
     }
 
@@ -372,7 +372,7 @@ export default function Assignments() {
 
       if (error) throw error;
 
-      toast.success(`Operator created: ${employeeId}`);
+      toast.success(t("notifications.created"));
       setCreateOperatorOpen(false);
       setOperatorForm({
         full_name: "",
@@ -381,7 +381,7 @@ export default function Assignments() {
       });
       loadData();
     } catch (error: any) {
-      toast.error(error.message || "Failed to create operator");
+      toast.error(error.message || t("notifications.failed"));
       console.error("Error creating operator:", error);
     } finally {
       setCreatingOperator(false);

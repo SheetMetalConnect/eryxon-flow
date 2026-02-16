@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Trash2, RefreshCw } from "lucide-react";
@@ -55,7 +55,6 @@ interface WebhookLog {
 export default function ConfigWebhooks() {
   const { t } = useTranslation();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const [webhooks, setWebhooks] = useState<Webhook[]>([]);
   const [webhookLogs, setWebhookLogs] = useState<WebhookLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,11 +72,7 @@ export default function ConfigWebhooks() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      toast({
-        title: t('webhooks.error'),
-        description: t('webhooks.failedToFetch'),
-        variant: "destructive",
-      });
+      toast.error(t('webhooks.error'), { description: t('webhooks.failedToFetch') });
     } else {
       setWebhooks(data || []);
     }
@@ -118,11 +113,7 @@ export default function ConfigWebhooks() {
 
     if (error) {
       console.error('Error fetching webhook logs:', error);
-      toast({
-        title: t('webhooks.error'),
-        description: t('webhooks.failedToFetchLogs'),
-        variant: "destructive",
-      });
+      toast.error(t('webhooks.error'), { description: t('webhooks.failedToFetchLogs') });
     } else {
       setWebhookLogs(data || []);
     }
@@ -148,20 +139,12 @@ export default function ConfigWebhooks() {
 
   const createWebhook = async () => {
     if (!webhookUrl.trim() || !webhookUrl.startsWith('https://')) {
-      toast({
-        title: t('webhooks.error'),
-        description: t('webhooks.enterValidUrl'),
-        variant: "destructive",
-      });
+      toast.error(t('webhooks.error'), { description: t('webhooks.enterValidUrl') });
       return;
     }
 
     if (selectedEvents.length === 0) {
-      toast({
-        title: t('webhooks.error'),
-        description: t('webhooks.selectAtLeastOne'),
-        variant: "destructive",
-      });
+      toast.error(t('webhooks.error'), { description: t('webhooks.selectAtLeastOne') });
       return;
     }
 
@@ -178,16 +161,9 @@ export default function ConfigWebhooks() {
       });
 
     if (error) {
-      toast({
-        title: t('webhooks.error'),
-        description: t('webhooks.failedToCreate'),
-        variant: "destructive",
-      });
+      toast.error(t('webhooks.error'), { description: t('webhooks.failedToCreate') });
     } else {
-      toast({
-        title: t('webhooks.success'),
-        description: t('webhooks.created'),
-      });
+      toast.success(t('webhooks.success'), { description: t('webhooks.created') });
       setDialogOpen(false);
       setWebhookUrl("");
       setSelectedEvents([]);
@@ -202,16 +178,9 @@ export default function ConfigWebhooks() {
       .eq('id', webhookId);
 
     if (error) {
-      toast({
-        title: t('webhooks.error'),
-        description: t('webhooks.failedToDelete'),
-        variant: "destructive",
-      });
+      toast.error(t('webhooks.error'), { description: t('webhooks.failedToDelete') });
     } else {
-      toast({
-        title: t('webhooks.success'),
-        description: t('webhooks.deleted'),
-      });
+      toast.success(t('webhooks.success'), { description: t('webhooks.deleted') });
       fetchWebhooks();
     }
   };
@@ -223,11 +192,7 @@ export default function ConfigWebhooks() {
       .eq('id', webhookId);
 
     if (error) {
-      toast({
-        title: t('webhooks.error'),
-        description: t('webhooks.failedToUpdate'),
-        variant: "destructive",
-      });
+      toast.error(t('webhooks.error'), { description: t('webhooks.failedToUpdate') });
     } else {
       fetchWebhooks();
     }

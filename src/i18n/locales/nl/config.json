@@ -174,5 +174,21 @@
     "pinDescription": "Operators gebruiken Personeelsnummer + PIN om in te loggen",
     "createOperator": "Operator aanmaken",
     "createOperatorDescription": "Snel een operator aanmaken met PIN-login."
+  },
+  "users": {
+    "enterEmail": "Voer een e-mailadres in",
+    "enterOperatorName": "Voer operatornaam in",
+    "pinLength": "PIN moet 4-6 cijfers zijn",
+    "pinDigitsOnly": "PIN mag alleen cijfers bevatten",
+    "pinsNoMatch": "PIN's komen niet overeen",
+    "enterMachineName": "Voer machinenaam in",
+    "enterMachineId": "Voer machine-ID in",
+    "invitationLinkCopied": "Uitnodigingslink gekopieerd naar klembord",
+    "operatorCreatedDesc": "Operator {{name}} succesvol aangemaakt"
+  },
+  "scrapReasons": {
+    "defaultCreated": "Standaard afvalredenen succesvol aangemaakt",
+    "deleted": "Afvalreden verwijderd",
+    "fieldsRequired": "Code, beschrijving en categorie zijn verplicht"
   }
 }

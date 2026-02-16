@@ -4,7 +4,7 @@ import { DOCS_ERP_INTEGRATION_URL } from "@/lib/config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -124,7 +124,6 @@ interface ImportResult {
 export default function DataImport() {
   const { t } = useTranslation();
   const { profile } = useAuth();
-  const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // State
@@ -186,10 +185,7 @@ export default function DataImport() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    toast({
-      title: t('dataImport.templateDownloaded'),
-      description: `${entity.label} template downloaded`,
-    });
+    toast.success(t('dataImport.templateDownloaded'), { description: t('dataImport.templateDownloadedDesc', { entity: entity.label }) });
   };
 
   // Handle file selection
@@ -229,11 +225,7 @@ export default function DataImport() {
         setCurrentStep('map');
       },
       error: (error) => {
-        toast({
-          title: t('dataImport.parseError'),
-          description: error.message,
-          variant: "destructive",
-        });
+        toast.error(t('dataImport.parseError'), { description: error.message });
       }
     });
   }, [entityConfig, toast, t]);
@@ -364,18 +356,11 @@ export default function DataImport() {
 
       setCurrentStep('complete');
 
-      toast({
-        title: t('dataImport.importComplete'),
-        description: `Created: ${totalCreated}, Updated: ${totalUpdated}, Errors: ${totalErrors}`,
-      });
+      toast.success(t('dataImport.importComplete'), { description: t('dataImport.importResultDesc', { created: totalCreated, updated: totalUpdated, errors: totalErrors }) });
 
     } catch (error) {
       console.error('Import error:', error);
-      toast({
-        title: t('dataImport.importFailed'),
-        description: error instanceof Error ? error.message : 'Unknown error',
-        variant: "destructive",
-      });
+      toast.error(t('dataImport.importFailed'), { description: error instanceof Error ? error.message : 'Unknown error' });
       setCurrentStep('preview');
     } finally {
       setIsImporting(false);

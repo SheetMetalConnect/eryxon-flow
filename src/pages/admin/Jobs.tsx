@@ -44,7 +44,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { JobIssueBadge } from "@/components/issues/JobIssueBadge";
 import { CompactOperationsFlow } from "@/components/qrm/OperationsFlowVisualization";
 import { useMultipleJobsRouting } from "@/hooks/useQRMMetrics";
@@ -71,7 +71,6 @@ interface JobData {
 export default function Jobs() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { profile } = useAuth();
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [overrideJobId, setOverrideJobId] = useState<string | null>(null);
@@ -133,21 +132,23 @@ export default function Jobs() {
   const { routings, loading: routingsLoading } = useMultipleJobsRouting(jobIds, profile?.tenant_id ?? null);
 
   const handleSetOnHold = async (jobId: string) => {
-    await supabase.from("jobs").update({ status: "on_hold" }).eq("id", jobId);
+    const { error } = await supabase.from("jobs").update({ status: "on_hold" }).eq("id", jobId);
+    if (error) {
+      toast.error(t("notifications.error"), { description: error.message });
+      return;
+    }
     refetch();
-    toast({
-      title: t("jobs.statusUpdated"),
-      description: t("jobs.jobOnHold"),
-    });
+    toast.success(t("jobs.statusUpdated"), { description: t("jobs.jobOnHold") });
   };
 
   const handleResume = async (jobId: string) => {
-    await supabase.from("jobs").update({ status: "in_progress" }).eq("id", jobId);
+    const { error } = await supabase.from("jobs").update({ status: "in_progress" }).eq("id", jobId);
+    if (error) {
+      toast.error(t("notifications.error"), { description: error.message });
+      return;
+    }
     refetch();
-    toast({
-      title: t("jobs.statusUpdated"),
-      description: t("jobs.jobResumed"),
-    });
+    toast.success(t("jobs.statusUpdated"), { description: t("jobs.jobResumed") });
   };
 
   // Handle viewing file (STEP or PDF)
@@ -162,11 +163,7 @@ export default function Jobs() {
             : null;
 
       if (!fileType) {
-        toast({
-          title: "Error",
-          description: "Unsupported file type",
-          variant: "destructive",
-        });
+        toast.error(t("notifications.error"), { description: t("notifications.unsupportedFileType") });
         return;
       }
 
@@ -193,11 +190,7 @@ export default function Jobs() {
       setFileViewerOpen(true);
     } catch (error: any) {
       console.error("Error opening file:", error);
-      toast({
-        title: "Error",
-        description: "Failed to open file viewer",
-        variant: "destructive",
-      });
+      toast.error(t("notifications.error"), { description: t("notifications.failedToOpenFileViewer") });
     }
   };
 

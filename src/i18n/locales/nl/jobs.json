@@ -287,6 +287,8 @@
   },
   "operations": {
     "title": "Bewerkingen",
+    "statusUpdatedDesc": "Bewerkingsstatus is bijgewerkt",
+    "operatorAssignedDesc": "Operator is toegewezen aan deze bewerking",
     "operations": "Bewerkingen",
     "operationName": "Bewerkingsnaam",
     "operationDetails": "Bewerkingsdetails",
@@ -575,6 +577,8 @@
       "stoppedDesc": "{{total}} min totaal, {{perOp}} min verdeeld over elk van {{count}} bewerkingen"
     },
     "editBatch": "Batch bewerken",
+    "editDescription": "Batchgegevens en metadata bijwerken.",
+    "loadingDetails": "Batchgegevens laden...",
     "visuals": "Visueel",
     "addMaterialRequirement": "Materiaalvereiste toevoegen",
     "specifyMaterial": "Specificeer het benodigde materiaal voor deze batch.",
@@ -587,6 +591,23 @@
     "imageUploadSuccess": "Afbeelding succesvol geüpload",
     "imageUploadError": "Fout bij uploaden afbeelding",
     "requirementAdded": "Vereiste Toegevoegd",
-    "addOperationNotAvailable": "Bewerkingen toevoegen aan een bestaande batch is nog niet beschikbaar. Maak batches aan vanaf de Bewerkingen pagina."
+    "addOperationNotAvailable": "Bewerkingen toevoegen aan een bestaande batch is nog niet beschikbaar. Maak batches aan vanaf de Bewerkingen pagina.",
+    "imageUploaded": "Afbeelding geüpload",
+    "imageUploadedDesc": "Afbeelding succesvol geüpload",
+    "imageUploadFailed": "Fout bij uploaden afbeelding",
+    "invalidJson": "Ongeldig JSON",
+    "invalidJsonDesc": "Zorg ervoor dat de metadata-JSON geldig is",
+    "parentBatch": "Bovenliggende batch (Optioneel)",
+    "selectParentBatch": "Selecteer bovenliggende batch...",
+    "noParent": "Geen bovenliggende batch (Hoofdbatch)",
+    "parentBatchHint": "Selecteer een bovenliggende batch om deze batch onder te nestelen",
+    "nestingImage": "Nestingafbeelding",
+    "layoutImage": "Layoutafbeelding",
+    "upload": "Uploaden",
+    "metadata": "Metadata (JSON)",
+    "metadataHint": "Voer extra informatie in in geldig JSON-formaat",
+    "editOperationsHint": "Bewerken van bewerkingen is nog niet beschikbaar. Verwijder de batch en maak deze opnieuw aan indien nodig.",
+    "updating": "Bijwerken...",
+    "updateBatch": "Batch bijwerken"
   }
 }

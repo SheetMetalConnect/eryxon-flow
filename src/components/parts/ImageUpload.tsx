@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useFileUpload } from "@/hooks/useFileUpload";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +17,6 @@ interface ImageUploadProps {
 
 export function ImageUpload({ partId, onUploadComplete, className }: ImageUploadProps) {
   const { t } = useTranslation();
-  const { toast } = useToast();
   const [isDragging, setIsDragging] = useState(false);
   const [previewImages, setPreviewImages] = useState<Array<{ file: File; preview: string }>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -38,10 +37,8 @@ export function ImageUpload({ partId, onUploadComplete, className }: ImageUpload
     );
 
     if (imageFiles.length === 0) {
-      toast({
-        title: t("parts.images.invalidFormat"),
+      toast.error(t("parts.images.invalidFormat"), {
         description: t("parts.images.onlyImagesAllowed"),
-        variant: "destructive",
       });
       return;
     }
@@ -53,7 +50,7 @@ export function ImageUpload({ partId, onUploadComplete, className }: ImageUpload
     }));
 
     setPreviewImages(previews);
-  }, [t, toast]);
+  }, [t]);
 
   // Handle drag and drop
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -111,8 +108,7 @@ export function ImageUpload({ partId, onUploadComplete, className }: ImageUpload
       );
 
       if (result.success) {
-        toast({
-          title: t("parts.images.uploadSuccess"),
+        toast.success(t("parts.images.uploadSuccess"), {
           description: t("parts.images.uploadedCount", { count: result.uploadedPaths.length }),
         });
 
@@ -127,21 +123,17 @@ export function ImageUpload({ partId, onUploadComplete, className }: ImageUpload
       // Show errors for failed files
       if (result.failedFiles.length > 0) {
         result.failedFiles.forEach((failed) => {
-          toast({
-            title: t("parts.images.uploadFailed"),
+          toast.error(t("parts.images.uploadFailed"), {
             description: `${failed.fileName}: ${failed.error}`,
-            variant: "destructive",
           });
         });
       }
     } catch (error: any) {
-      toast({
-        title: t("parts.images.uploadFailed"),
+      toast.error(t("parts.images.uploadFailed"), {
         description: error.message,
-        variant: "destructive",
       });
     }
-  }, [previewImages, uploadFiles, partId, t, toast, onUploadComplete]);
+  }, [previewImages, uploadFiles, partId, t, onUploadComplete]);
 
   return (
     <div className={cn("space-y-4", className)}>

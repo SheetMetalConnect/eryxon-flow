@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { seedDemoData } from "@/lib/seed";
 import { clearMockData } from "@/lib/mockDataGenerator";
 import { QRMDashboard } from "@/components/qrm/QRMDashboard";
@@ -126,8 +126,6 @@ export default function Dashboard() {
   const [stoppingAll, setStoppingAll] = useState(false);
   const [isPastClosingTime, setIsPastClosingTime] = useState(false);
   const [factoryClosingTime, setFactoryClosingTime] = useState<string | null>(null);
-  const { toast } = useToast();
-
   useEffect(() => {
     if (!profile?.tenant_id) return;
     loadData();
@@ -382,16 +380,9 @@ export default function Dashboard() {
       await seedDemoData(profile.tenant_id);
       await loadData();
       setNeedsSetup(false);
-      toast({
-        title: t("dashboard.demoDataAdded"),
-        description: t("dashboard.demoDataDescription"),
-      });
+      toast.success(t("dashboard.demoDataAdded"), { description: t("dashboard.demoDataDescription") });
     } catch (e: any) {
-      toast({
-        variant: "destructive",
-        title: t("dashboard.seedingFailed"),
-        description: e?.message || String(e),
-      });
+      toast.error(t("dashboard.seedingFailed"), { description: e?.message || String(e) });
     } finally {
       setSeeding(false);
     }
@@ -416,19 +407,12 @@ export default function Dashboard() {
       if (result.success) {
         await loadData();
         setNeedsSetup(true);
-        toast({
-          title: "Demo Data Wiped",
-          description: "All demo data has been cleared successfully.",
-        });
+        toast.success(t("dashboard.demoDataWiped"), { description: t("dashboard.demoDataWipedDesc") });
       } else {
         throw new Error(result.error || "Failed to clear demo data");
       }
     } catch (e: any) {
-      toast({
-        variant: "destructive",
-        title: "Wipe Failed",
-        description: e?.message || String(e),
-      });
+      toast.error(t("dashboard.wipeFailed"), { description: e?.message || String(e) });
     } finally {
       setWiping(false);
     }
@@ -445,22 +429,15 @@ export default function Dashboard() {
     setStopping(true);
     try {
       await adminStopTimeTracking(selectedWork.id);
-      toast({
-        title: t("dashboard.clockingStopped"),
-        description: t("dashboard.clockingStoppedDescription", {
+      toast.success(t("dashboard.clockingStopped"), { description: t("dashboard.clockingStoppedDescription", {
           operator: selectedWork.operator.full_name,
           operation: selectedWork.operation.operation_name,
-        }),
-      });
+        }) });
       setStopDialogOpen(false);
       setSelectedWork(null);
       loadData();
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: t("dashboard.stopFailed"),
-        description: error?.message || String(error),
-      });
+      toast.error(t("dashboard.stopFailed"), { description: error?.message || String(error) });
     } finally {
       setStopping(false);
     }
@@ -473,28 +450,18 @@ export default function Dashboard() {
     }
 
     if (activeWork.length === 0) {
-      toast({
-        title: t("dashboard.noActiveClockings", "No active clockings"),
-        description: t("dashboard.noActiveClockingsDescription", "There are no active time entries to stop."),
-      });
+      toast.success(t("dashboard.noActiveClockings", "No active clockings"), { description: t("dashboard.noActiveClockingsDescription", "There are no active time entries to stop.") });
       return;
     }
 
     setStoppingAll(true);
     try {
       const stoppedCount = await stopAllActiveTimeEntries(profile.tenant_id);
-      toast({
-        title: t("dashboard.allClockingsStopped"),
-        description: t("dashboard.allClockingsStoppedDescription", { count: stoppedCount }),
-      });
+      toast.success(t("dashboard.allClockingsStopped"), { description: t("dashboard.allClockingsStoppedDescription", { count: stoppedCount }) });
       await loadData();
     } catch (error: any) {
       console.error("Failed to stop all clockings:", error);
-      toast({
-        variant: "destructive",
-        title: t("dashboard.stopAllFailed"),
-        description: error?.message || String(error),
-      });
+      toast.error(t("dashboard.stopAllFailed"), { description: error?.message || String(error) });
     } finally {
       setStoppingAll(false);
     }

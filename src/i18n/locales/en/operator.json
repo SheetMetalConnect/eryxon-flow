@@ -118,7 +118,15 @@
     "report": "Report",
     "enterGoodParts": "Enter good parts made",
     "recorded": "{{count}} good parts recorded",
-    "shortfallPrompt": "{{count}} short of target. File an issue?"
+    "shortfallPrompt": "{{count}} short of target. File an issue?",
+    "operationPaused": "Operation paused",
+    "operationCompleted": "Operation completed",
+    "unsupportedCadFormat": "Unsupported CAD file format",
+    "cadProcessingFailed": "CAD processing failed. Using fallback viewer.",
+    "timeTrackingStopped": "Time tracking stopped",
+    "timeTrackingPaused": "Time tracking paused",
+    "timeTrackingResumed": "Time tracking resumed",
+    "openOperationForIssue": "Open the operation to report an issue"
   },
   "terminalLogin": {
     "welcome": "OPERATOR TERMINAL",
@@ -182,5 +190,20 @@
     "issue": "Issue",
     "recordQty": "Record Qty",
     "recordQuantity": "Record production quantity"
+  },
+  "substepToasts": {
+    "failedToLoad": "Failed to load substeps",
+    "reordered": "Substeps reordered",
+    "reorderFailed": "Failed to reorder substeps",
+    "added": "Substep added",
+    "addFailed": "Failed to add substep",
+    "statusUpdated": "Status updated",
+    "statusUpdateFailed": "Failed to update status",
+    "deleted": "Substep deleted",
+    "deleteFailed": "Failed to delete substep",
+    "notesUpdated": "Notes updated",
+    "notesUpdateFailed": "Failed to update notes",
+    "templateNotFound": "Template not found or has no items",
+    "templateApplyFailed": "Failed to apply template"
   }
 }

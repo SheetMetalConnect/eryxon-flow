@@ -39,7 +39,7 @@ import {
   type Batch
 } from "@/hooks/useBatches";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const BATCH_TYPES: { value: BatchType; labelKey: string }[] = [
   { value: "laser_nesting", labelKey: "batches.types.laserNesting" },
@@ -75,8 +75,6 @@ export default function BatchCreate() {
   const { profile } = useAuth();
   const createBatch = useCreateBatch();
   const updateBatch = useUpdateBatch();
-  const { toast } = useToast();
-
   // Fetch data if editing
   const { data: existingBatch, isLoading: batchLoading } = useBatch(id);
   const { data: existingOperations, isLoading: opsLoading } = useBatchOperations(id);
@@ -288,16 +286,9 @@ export default function BatchCreate() {
         setLayoutImageUrl(signedUrlData.signedUrl);
       }
 
-      toast({
-        title: t("Image uploaded"),
-        description: t("Image uploaded successfully."),
-      });
+      toast.success(t("batches.imageUploaded"), { description: t("batches.imageUploadedDesc") });
     } catch (error: any) {
-      toast({
-        title: t("Error uploading image"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(t("batches.imageUploadFailed"), { description: error.message });
     } finally {
       setUploadingImage(false);
     }
@@ -314,11 +305,7 @@ export default function BatchCreate() {
     try {
       parsedMetadata = JSON.parse(metadataJson);
     } catch (e) {
-      toast({
-        title: t("Invalid JSON"),
-        description: t("Please ensure the metadata JSON is valid."),
-        variant: "destructive"
-      });
+      toast.error(t("batches.invalidJson"), { description: t("batches.invalidJsonDesc") });
       return;
     }
 
@@ -382,7 +369,7 @@ export default function BatchCreate() {
   };
 
   if (isEditing && (batchLoading || opsLoading)) {
-    return <div className="p-8 text-center">{t("Loading batch details...")}</div>;
+    return <div className="p-8 text-center">{t("batches.loadingDetails")}</div>;
   }
 
   return (
@@ -391,8 +378,8 @@ export default function BatchCreate() {
         <Button variant="outline" onClick={() => navigate("/admin/batches")} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("batches.backToBatches")}
         </Button>
-        <h1 className="text-3xl font-bold">{isEditing ? t("Edit Batch") : t("batches.createBatch")}</h1>
-        <p className="text-muted-foreground mt-1">{isEditing ? t("Update batch details and metadata.") : t("batches.createDescription")}</p>
+        <h1 className="text-3xl font-bold">{isEditing ? t("batches.editBatch") : t("batches.createBatch")}</h1>
+        <p className="text-muted-foreground mt-1">{isEditing ? t("batches.editDescription") : t("batches.createDescription")}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -425,13 +412,13 @@ export default function BatchCreate() {
 
               {/* Parent Batch Selection */}
               <div>
-                <Label>{t("Parent Batch (Optional)")}</Label>
+                <Label>{t("batches.parentBatch")}</Label>
                 <Select value={parentBatchId} onValueChange={setParentBatchId}>
                   <SelectTrigger>
-                    <SelectValue placeholder={t("Select parent batch...")} />
+                    <SelectValue placeholder={t("batches.selectParentBatch")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__">{t("No Parent (Master Batch)")}</SelectItem>
+                    <SelectItem value="__none__">{t("batches.noParent")}</SelectItem>
                     {parentBatches?.map((b) => (
                       <SelectItem key={b.id} value={b.id}>
                         {b.batch_number} ({t(`batches.types.${b.batch_type === "laser_nesting" ? "laserNesting" :
@@ -442,7 +429,7 @@ export default function BatchCreate() {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {t("Select a parent batch to nest this batch under (e.g., Sheet 1 of Job X).")}
+                  {t("batches.parentBatchHint")}
                 </p>
               </div>
 
@@ -522,7 +509,7 @@ export default function BatchCreate() {
               {/* Images */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>{t("Nesting Image")}</Label>
+                  <Label>{t("batches.nestingImage")}</Label>
                   <div className="mt-2 flex items-center gap-2">
                     {nestingImageUrl ? (
                       <div className="relative group w-full h-24 border rounded overflow-hidden">
@@ -534,14 +521,14 @@ export default function BatchCreate() {
                     ) : (
                       <Label htmlFor="nesting-upload" className="w-full h-24 border border-dashed rounded flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50">
                         <Upload className="h-6 w-6 text-muted-foreground mb-1" />
-                        <span className="text-xs text-muted-foreground">{t("Upload")}</span>
+                        <span className="text-xs text-muted-foreground">{t("batches.upload")}</span>
                         <Input id="nesting-upload" type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'nesting')} disabled={uploadingImage} />
                       </Label>
                     )}
                   </div>
                 </div>
                 <div>
-                  <Label>{t("Layout Image")}</Label>
+                  <Label>{t("batches.layoutImage")}</Label>
                   <div className="mt-2 flex items-center gap-2">
                     {layoutImageUrl ? (
                       <div className="relative group w-full h-24 border rounded overflow-hidden">
@@ -553,7 +540,7 @@ export default function BatchCreate() {
                     ) : (
                       <Label htmlFor="layout-upload" className="w-full h-24 border border-dashed rounded flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50">
                         <Upload className="h-6 w-6 text-muted-foreground mb-1" />
-                        <span className="text-xs text-muted-foreground">{t("Upload")}</span>
+                        <span className="text-xs text-muted-foreground">{t("batches.upload")}</span>
                         <Input id="layout-upload" type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'layout')} disabled={uploadingImage} />
                       </Label>
                     )}
@@ -565,7 +552,7 @@ export default function BatchCreate() {
               <div>
                 <Label className="flex items-center gap-2">
                   <FileCode className="h-4 w-4" />
-                  {t("Metadata (JSON)")}
+                  {t("batches.metadata")}
                 </Label>
                 <Textarea
                   value={metadataJson}
@@ -575,7 +562,7 @@ export default function BatchCreate() {
                   placeholder='{ "cutting_technology": "fiber_laser", "gas": "nitrogen" }'
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  {t("Enter extra information in valid JSON format.")}
+                  {t("batches.metadataHint")}
                 </p>
               </div>
 
@@ -652,7 +639,7 @@ export default function BatchCreate() {
 
               {isEditing && (
                 <div className="p-3 bg-muted/50 text-xs text-muted-foreground rounded-md border text-center">
-                  {t("Editing operations is not yet available. Delete and recreate batch if needed.")}
+                  {t("batches.editOperationsHint")}
                 </div>
               )}
 
@@ -684,7 +671,7 @@ export default function BatchCreate() {
           <Button type="submit" disabled={createBatch.isPending || updateBatch.isPending || !batchNumber || !cellId || uploadingImage}>
             {isEditing ? <Save className="mr-2 h-4 w-4" /> : <Plus className="mr-2 h-4 w-4" />}
             {isEditing
-              ? (updateBatch.isPending ? t("Updating...") : t("Update Batch"))
+              ? (updateBatch.isPending ? t("batches.updating") : t("batches.updateBatch"))
               : (createBatch.isPending ? t("batches.creating") : t("batches.createBatch"))
             }
           </Button>

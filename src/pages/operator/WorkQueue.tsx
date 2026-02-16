@@ -109,7 +109,7 @@ export default function WorkQueue() {
       }
     } catch (error) {
       console.error("Error loading data:", error);
-      toast.error("Failed to load work queue");
+      toast.error(t("workQueue.failedToLoad"));
     } finally {
       setLoading(false);
     }

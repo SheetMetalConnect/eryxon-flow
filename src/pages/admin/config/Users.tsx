@@ -191,7 +191,7 @@ export default function ConfigUsers() {
 
   const handleSendInvite = async () => {
     if (!inviteEmail) {
-      toast.error('Please enter an email address');
+      toast.error(t("users.enterEmail"));
       return;
     }
 
@@ -216,17 +216,17 @@ export default function ConfigUsers() {
     e.preventDefault();
 
     if (!operatorForm.full_name.trim()) {
-      toast.error("Please enter operator name");
+      toast.error(t("users.enterOperatorName"));
       return;
     }
 
     if (!operatorForm.pin || operatorForm.pin.length < 4 || operatorForm.pin.length > 6) {
-      toast.error("PIN must be 4-6 digits");
+      toast.error(t("users.pinLength"));
       return;
     }
 
     if (!/^\d+$/.test(operatorForm.pin)) {
-      toast.error("PIN must contain only numbers");
+      toast.error(t("users.pinDigitsOnly"));
       return;
     }
 
@@ -256,8 +256,7 @@ export default function ConfigUsers() {
       const result = Array.isArray(data) ? data[0] : data;
       const createdEmployeeId = result?.employee_id || employeeIdParam || 'Unknown';
 
-      toast.success(`Operator "${operatorForm.full_name.trim()}" created with ID: ${createdEmployeeId}`, {
-        description: "They can now login via Employee ID + PIN on shop floor terminals.",
+      toast.success(t("notifications.created"), {
         duration: 5000,
       });
 
@@ -285,12 +284,12 @@ export default function ConfigUsers() {
     if (!editingOperator) return;
 
     if (!newPinForm.pin || newPinForm.pin.length < 4 || newPinForm.pin.length > 6) {
-      toast.error("PIN must be 4-6 digits");
+      toast.error(t("users.pinLength"));
       return;
     }
 
     if (!/^\d+$/.test(newPinForm.pin)) {
-      toast.error("PIN must contain only numbers");
+      toast.error(t("users.pinDigitsOnly"));
       return;
     }
 
@@ -304,14 +303,14 @@ export default function ConfigUsers() {
 
       if (error) throw error;
 
-      toast.success(`PIN reset for ${editingOperator.full_name}`);
+      toast.success(t("notifications.updated"));
       setEditOperatorDialogOpen(false);
       setEditingOperator(null);
       setNewPinForm({ pin: "" });
       await loadOperators();
     } catch (error: any) {
       console.error("Error resetting PIN:", error);
-      toast.error(error.message || "Failed to reset PIN");
+      toast.error(error.message || t("notifications.failed"));
     } finally {
       setResettingPin(false);
     }
@@ -325,7 +324,7 @@ export default function ConfigUsers() {
 
       if (error) throw error;
 
-      toast.success(`${operatorName} has been unlocked`);
+      toast.success(t("notifications.updated"));
       await loadOperators();
     } catch (error: any) {
       console.error("Error unlocking operator:", error);
@@ -342,11 +341,11 @@ export default function ConfigUsers() {
 
       if (error) throw error;
 
-      toast.success(currentActive ? `${operatorName} deactivated` : `${operatorName} activated`);
+      toast.success(t("notifications.updated"));
       await loadOperators();
     } catch (error: any) {
       console.error("Error toggling operator status:", error);
-      toast.error(error.message || "Failed to update operator status");
+      toast.error(error.message || t("notifications.failed"));
     }
   };
 
@@ -354,12 +353,12 @@ export default function ConfigUsers() {
     e.preventDefault();
 
     if (!machineForm.name.trim()) {
-      toast.error("Please enter machine name");
+      toast.error(t("users.enterMachineName"));
       return;
     }
 
     if (!machineForm.machine_id.trim()) {
-      toast.error("Please enter machine ID");
+      toast.error(t("users.enterMachineId"));
       return;
     }
 
@@ -379,12 +378,12 @@ export default function ConfigUsers() {
       if (data && data.length > 0) {
         const { api_key } = data[0];
         setCreatedMachineApiKey(api_key);
-        toast.success(`Machine worker created: ${machineForm.machine_id}`);
+        toast.success(t("notifications.created"));
       }
 
       loadUsers();
     } catch (error: any) {
-      toast.error(error.message || "Failed to create machine worker");
+      toast.error(error.message || t("notifications.failed"));
       console.error("Error creating machine worker:", error);
     } finally {
       setCreatingMachine(false);
@@ -1057,7 +1056,7 @@ export default function ConfigUsers() {
                       onClick={() => {
                         const url = `${window.location.origin}/accept-invitation/${invitation.token}`;
                         navigator.clipboard.writeText(url);
-                        toast.success('Invitation link copied to clipboard');
+                        toast.success(t("users.invitationLinkCopied"));
                       }}
                       className="gap-2"
                     >

@@ -502,5 +502,36 @@
     "step3Description": "Uw AI heeft nu toegang tot uw productiegegevens",
     "availableTools": "Beschikbare tools",
     "availableToolsDescription": "Tools die uw AI-assistent kan gebruiken"
+  },
+  "mcpKeys": {
+    "failedToFetch": "Kan MCP-sleutels niet ophalen",
+    "enterKeyName": "Voer een sleutelnaam in",
+    "generated": "MCP-sleutel succesvol gegenereerd",
+    "statusUpdateFailed": "Bijwerken van sleutelstatus mislukt",
+    "deleted": "MCP-sleutel verwijderd",
+    "deleteFailed": "Verwijderen van MCP-sleutel mislukt"
+  },
+  "mcpServer": {
+    "failedToLoadConfig": "Kan MCP-serverconfiguratie niet laden",
+    "failedToLoadHealth": "Kan MCP-servergezondheidsstatus niet laden",
+    "failedToLoadHealthData": "Kan gezondheidsgegevens niet laden",
+    "failedToLoadLogs": "Kan activiteitenlogboeken niet laden",
+    "failedToLoadLogsData": "Kan logboeken niet laden",
+    "configSaved": "MCP-serverconfiguratie succesvol opgeslagen",
+    "configSaveFailed": "Opslaan van configuratie mislukt",
+    "configNotLoaded": "Configuratie niet geladen",
+    "testingConnection": "MCP-serververbinding testen...",
+    "connectionTestFailed": "Verbindingstest mislukt"
+  },
+  "apiDocs": {
+    "copied": "Gekopieerd!",
+    "copiedToClipboard": "{{label}} gekopieerd naar klembord",
+    "downloaded": "Gedownload!",
+    "downloadedDesc": "OpenAPI-specificatie gedownload als {{filename}}",
+    "downloadFailed": "Downloaden van specificatie mislukt"
+  },
+  "dataImport": {
+    "templateDownloadedDesc": "{{entity}} sjabloon gedownload",
+    "importResultDesc": "Aangemaakt: {{created}}, Bijgewerkt: {{updated}}, Fouten: {{errors}}"
   }
 }
