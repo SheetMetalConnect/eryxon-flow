@@ -8,8 +8,10 @@ const mockFns = {
   mockRpc: vi.fn(),
   mockSubscribe: vi.fn(),
   mockRemoveChannel: vi.fn(),
-  mockToast: vi.fn(),
 };
+
+const mockToastSuccess = vi.fn();
+const mockToastError = vi.fn();
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
@@ -32,9 +34,22 @@ vi.mock('@/contexts/AuthContext', () => ({
   }),
 }));
 
-vi.mock('@/components/ui/use-toast', () => ({
-  useToast: () => ({
-    toast: (...args: any[]) => mockFns.mockToast(...args),
+vi.mock('sonner', () => ({
+  toast: Object.assign(
+    vi.fn(),
+    {
+      success: (...args: any[]) => mockToastSuccess(...args),
+      error: (...args: any[]) => mockToastError(...args),
+      warning: vi.fn(),
+      info: vi.fn(),
+    }
+  ),
+}));
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { language: 'en' },
   }),
 }));
 
@@ -161,6 +176,25 @@ describe('useNotifications', () => {
     });
   });
 
+  it('togglePin shows success toast with pinned description', async () => {
+    mockFns.mockRpc.mockResolvedValue({ data: true, error: null });
+
+    const { result } = renderHook(() => useNotifications());
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.togglePin('n1');
+    });
+
+    expect(mockToastSuccess).toHaveBeenCalledWith(
+      'notifications.success',
+      { description: 'notifications.pinned' }
+    );
+  });
+
   it('dismiss calls RPC with correct params', async () => {
     mockFns.mockRpc.mockResolvedValue({ error: null });
 
@@ -223,8 +257,9 @@ describe('useNotifications', () => {
       await result.current.markAsRead('n1');
     });
 
-    expect(mockFns.mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ variant: 'destructive' })
+    expect(mockToastError).toHaveBeenCalledWith(
+      'notifications.error',
+      expect.objectContaining({ description: 'notifications.failed' })
     );
   });
 
@@ -241,8 +276,9 @@ describe('useNotifications', () => {
       await result.current.togglePin('n1');
     });
 
-    expect(mockFns.mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ variant: 'destructive' })
+    expect(mockToastError).toHaveBeenCalledWith(
+      'notifications.error',
+      expect.objectContaining({ description: 'notifications.failed' })
     );
   });
 
@@ -259,8 +295,9 @@ describe('useNotifications', () => {
       await result.current.dismiss('n1');
     });
 
-    expect(mockFns.mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ variant: 'destructive' })
+    expect(mockToastError).toHaveBeenCalledWith(
+      'notifications.error',
+      expect.objectContaining({ description: 'notifications.failed' })
     );
   });
 
