@@ -2330,7 +2330,7 @@
   border-radius: 0 0 0.75rem 0.75rem;
   background: hsl(var(--muted-foreground) / 0.3);
   transform-origin: left;
-  animation: sonner-progress-shrink 5s linear forwards;
+  animation: sonner-progress-shrink var(--toast-duration, 5s) linear forwards;
 }
 
 /* Color-coded progress bars per toast type */

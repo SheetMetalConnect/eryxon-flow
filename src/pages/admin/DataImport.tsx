@@ -185,7 +185,7 @@ export default function DataImport() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    toast.success(t('dataImport.templateDownloaded'), { description: `${entity.label} template downloaded` });
+    toast.success(t('dataImport.templateDownloaded'), { description: t('dataImport.templateDownloadedDesc', { entity: entity.label }) });
   };
 
   // Handle file selection
@@ -356,7 +356,7 @@ export default function DataImport() {
 
       setCurrentStep('complete');
 
-      toast.success(t('dataImport.importComplete'), { description: `Created: ${totalCreated}, Updated: ${totalUpdated}, Errors: ${totalErrors}` });
+      toast.success(t('dataImport.importComplete'), { description: t('dataImport.importResultDesc', { created: totalCreated, updated: totalUpdated, errors: totalErrors }) });
 
     } catch (error) {
       console.error('Import error:', error);

@@ -515,5 +515,9 @@
     "downloaded": "Heruntergeladen!",
     "downloadedDesc": "OpenAPI-Spezifikation heruntergeladen als {{filename}}",
     "downloadFailed": "Herunterladen der Spezifikation fehlgeschlagen"
+  },
+  "dataImport": {
+    "templateDownloadedDesc": "{{entity}} Vorlage heruntergeladen",
+    "importResultDesc": "Erstellt: {{created}}, Aktualisiert: {{updated}}, Fehler: {{errors}}"
   }
 }

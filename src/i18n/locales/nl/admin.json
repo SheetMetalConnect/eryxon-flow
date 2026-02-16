@@ -46,7 +46,9 @@
     "pastClosingTimeDescription": "Er zijn {{count}} actieve tijdregistraties na sluitingstijd ({{time}}). Overweeg deze te stoppen.",
     "demoDataWiped": "Demogegevens gewist",
     "demoDataWipedDesc": "Alle demogegevens zijn succesvol gewist.",
-    "wipeFailed": "Wissen mislukt"
+    "wipeFailed": "Wissen mislukt",
+    "noActiveClockings": "Geen actieve klokkingen",
+    "noActiveClockingsDescription": "Er zijn geen actieve tijdregistraties om te stoppen."
   },
   "organizationSettings": {
     "title": "Organisatie-instellingen",
@@ -252,10 +254,6 @@
       "errorCreate": "Aanmaken demonstratiedata mislukt",
       "errorClear": "Verwijderen demonstratiedata mislukt"
     },
-    "demoDataCreated": "Demogegevens succesvol aangemaakt",
-    "demoDataCreatedFailed": "Aanmaken van demogegevens mislukt",
-    "demoDataCleared": "Demogegevens succesvol gewist",
-    "demoDataClearedFailed": "Wissen van demogegevens mislukt",
     "accountDeleted": "Account succesvol verwijderd",
     "accountDeleteFailed": "Verwijderen van account mislukt",
     "tenantDeleted": "Tenant succesvol verwijderd",
@@ -380,7 +378,8 @@
     "shopFloorOperators": "Werkvloer Operators",
     "shopFloorOperatorsDescription": "PIN-gebaseerde operators voor gedeelde werkvloerterminals. Deze operators loggen in met Personeelsnummer + PIN.",
     "operatorLocked": "Geblokkeerd",
-    "lastLogin": "Laatste login"
+    "lastLogin": "Laatste login",
+    "operatorCreatedDesc": "Operator {{name}} succesvol aangemaakt"
   },
   "activityMonitor": {
     "title": "Activiteitenmonitor",

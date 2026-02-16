@@ -98,7 +98,9 @@
     "storageQuotaExceeded": "Speicherkontingent überschritten",
     "unsupportedFileType": "Nicht unterstützter Dateityp",
     "failedToOpenFileViewer": "Datei-Viewer konnte nicht geöffnet werden",
-    "failedToLoadData": "Daten konnten nicht geladen werden"
+    "failedToLoadData": "Daten konnten nicht geladen werden",
+    "pinned": "Benachrichtigung angeheftet",
+    "unpinned": "Benachrichtigung gelöst"
   },
   "modals": {
     "confirmDelete": "Löschung bestätigen",

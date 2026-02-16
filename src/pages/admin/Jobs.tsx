@@ -132,13 +132,21 @@ export default function Jobs() {
   const { routings, loading: routingsLoading } = useMultipleJobsRouting(jobIds, profile?.tenant_id ?? null);
 
   const handleSetOnHold = async (jobId: string) => {
-    await supabase.from("jobs").update({ status: "on_hold" }).eq("id", jobId);
+    const { error } = await supabase.from("jobs").update({ status: "on_hold" }).eq("id", jobId);
+    if (error) {
+      toast.error(t("notifications.error"), { description: error.message });
+      return;
+    }
     refetch();
     toast.success(t("jobs.statusUpdated"), { description: t("jobs.jobOnHold") });
   };
 
   const handleResume = async (jobId: string) => {
-    await supabase.from("jobs").update({ status: "in_progress" }).eq("id", jobId);
+    const { error } = await supabase.from("jobs").update({ status: "in_progress" }).eq("id", jobId);
+    if (error) {
+      toast.error(t("notifications.error"), { description: error.message });
+      return;
+    }
     refetch();
     toast.success(t("jobs.statusUpdated"), { description: t("jobs.jobResumed") });
   };

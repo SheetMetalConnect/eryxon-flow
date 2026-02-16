@@ -292,6 +292,7 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
 // Hook to restart the tour
 export function useRestartTour() {
   const { profile } = useAuth();
+  const { t } = useTranslation();
 
   const restartTour = useCallback(async () => {
     if (!profile?.id) return;
@@ -310,7 +311,7 @@ export function useRestartTour() {
       console.error('Error restarting tour:', error);
       toast.error(t('onboarding.tourRestartFailed'));
     }
-  }, [profile]);
+  }, [profile, t]);
 
   return { restartTour };
 }

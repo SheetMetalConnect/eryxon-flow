@@ -32,7 +32,9 @@
     "completedToday": "Heute abgeschlossen",
     "demoDataWiped": "Demodaten gelöscht",
     "demoDataWipedDesc": "Alle Demodaten wurden erfolgreich gelöscht.",
-    "wipeFailed": "Löschen fehlgeschlagen"
+    "wipeFailed": "Löschen fehlgeschlagen",
+    "noActiveClockings": "Keine aktiven Zeiterfassungen",
+    "noActiveClockingsDescription": "Es gibt keine aktiven Zeiterfassungen zum Stoppen."
   },
   "settings": {
     "title": "Einstellungen",
@@ -64,10 +66,6 @@
       "errorCreate": "Erstellen der Demodaten fehlgeschlagen",
       "errorClear": "Löschen der Demodaten fehlgeschlagen"
     },
-    "demoDataCreated": "Demodaten erfolgreich erstellt",
-    "demoDataCreatedFailed": "Erstellen der Demodaten fehlgeschlagen",
-    "demoDataCleared": "Demodaten erfolgreich gelöscht",
-    "demoDataClearedFailed": "Löschen der Demodaten fehlgeschlagen",
     "accountDeleted": "Konto erfolgreich gelöscht",
     "accountDeleteFailed": "Löschen des Kontos fehlgeschlagen",
     "tenantDeleted": "Mandant erfolgreich gelöscht",
@@ -143,7 +141,8 @@
     "shopFloorOperators": "Werkstatt-Bediener",
     "shopFloorOperatorsDescription": "PIN-basierte Bediener für gemeinsam genutzte Werkstatt-Terminals. Diese Bediener melden sich mit Mitarbeiternummer + PIN an.",
     "operatorLocked": "Gesperrt",
-    "lastLogin": "Letzte Anmeldung"
+    "lastLogin": "Letzte Anmeldung",
+    "operatorCreatedDesc": "Bediener {{name}} erfolgreich erstellt"
   },
   "activityMonitor": {
     "title": "Aktivitätsmonitor",

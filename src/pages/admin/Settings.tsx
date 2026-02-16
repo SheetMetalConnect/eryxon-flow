@@ -68,11 +68,11 @@ export const Settings: React.FC = () => {
     const result = await generateMockData(profile.tenant_id);
 
     if (result.success) {
-      toast.success(t("settings.demoDataCreated"));
+      toast.success(t("settings.demoData.successCreated"));
       setIsDemoMode(true);
       window.location.reload();
     } else {
-      toast.error(result.error || t("settings.demoDataCreatedFailed"));
+      toast.error(result.error || t("settings.demoData.errorCreate"));
     }
     setIsLoading(false);
   };
@@ -84,12 +84,12 @@ export const Settings: React.FC = () => {
     const result = await clearMockData(profile.tenant_id);
 
     if (result.success) {
-      toast.success(t("settings.demoDataCleared"));
+      toast.success(t("settings.demoData.successCleared"));
       setIsDemoMode(false);
       setShowExitDialog(false);
       window.location.reload();
     } else {
-      toast.error(result.error || t("settings.demoDataClearedFailed"));
+      toast.error(result.error || t("settings.demoData.errorClear"));
     }
     setIsLoading(false);
   };
@@ -100,9 +100,9 @@ export const Settings: React.FC = () => {
       // Delete account by signing out and clearing session
       await signOut();
       toast.success(t("settings.accountDeleted"));
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error deleting account:', error);
-      toast.error(error.message || t("settings.accountDeleteFailed"));
+      toast.error(error instanceof Error ? error.message : t("settings.accountDeleteFailed"));
       setIsDeletingAccount(false);
       setShowDeleteAccountDialog(false);
     }
@@ -119,9 +119,9 @@ export const Settings: React.FC = () => {
       setTimeout(async () => {
         await signOut();
       }, 1000);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error deleting tenant:', error);
-      toast.error(error.message || t("settings.tenantDeleteFailed"));
+      toast.error(error instanceof Error ? error.message : t("settings.tenantDeleteFailed"));
       setIsDeletingTenant(false);
       setShowDeleteTenantDialog(false);
     }

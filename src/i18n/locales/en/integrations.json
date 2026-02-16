@@ -288,6 +288,8 @@
     "importCompleteDescription": "Your data has been imported successfully",
     "downloadTemplate": "Download Template",
     "templateDownloaded": "Template Downloaded",
+    "templateDownloadedDesc": "{{entity}} template downloaded",
+    "importResultDesc": "Created: {{created}}, Updated: {{updated}}, Errors: {{errors}}",
     "dropzoneText": "Drag and drop your CSV file here, or click to browse",
     "dragDrop": "Drag and drop your CSV file here, or click to browse",
     "csvOnly": "Only CSV files are supported",

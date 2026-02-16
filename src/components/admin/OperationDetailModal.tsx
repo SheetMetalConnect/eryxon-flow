@@ -156,7 +156,7 @@ export default function OperationDetailModal({
       queryClient.invalidateQueries({ queryKey: ["operation-detail", operationId] });
       onUpdate();
       toast.success(t("notifications.updated"), {
-        description: "Operation status has been updated.",
+        description: t("operations.statusUpdatedDesc"),
       });
     },
     onError: (error: Error) => {
@@ -180,7 +180,7 @@ export default function OperationDetailModal({
       queryClient.invalidateQueries({ queryKey: ["operation-detail", operationId] });
       onUpdate();
       toast.success(t("notifications.updated"), {
-        description: "Operation has been assigned.",
+        description: t("operations.operatorAssignedDesc"),
       });
     },
     onError: (error: Error) => {
@@ -199,7 +199,7 @@ export default function OperationDetailModal({
 
       if (!fileType) {
         toast.error(t("notifications.error"), {
-          description: "Unsupported file type",
+          description: t("notifications.unsupportedFileType"),
         });
         return;
       }
@@ -226,7 +226,7 @@ export default function OperationDetailModal({
     } catch (error: any) {
       console.error("Error opening file:", error);
       toast.error(t("notifications.error"), {
-        description: "Failed to open file viewer",
+        description: t("notifications.failedToOpenFileViewer"),
       });
     }
   };

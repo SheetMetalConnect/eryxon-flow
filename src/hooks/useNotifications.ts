@@ -116,7 +116,7 @@ export const useNotifications = (filters?: NotificationFilters) => {
           )
         );
 
-        toast.success(t('notifications.success'), { description: pinned ? t('notifications.updated') : t('notifications.updated') });
+        toast.success(t('notifications.success'), { description: pinned ? t('notifications.pinned') : t('notifications.unpinned') });
       } catch (err) {
         console.error('Error toggling notification pin:', err);
         toast.error(t('notifications.error'), { description: t('notifications.failed') });

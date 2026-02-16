@@ -529,5 +529,9 @@
     "downloaded": "Gedownload!",
     "downloadedDesc": "OpenAPI-specificatie gedownload als {{filename}}",
     "downloadFailed": "Downloaden van specificatie mislukt"
+  },
+  "dataImport": {
+    "templateDownloadedDesc": "{{entity}} sjabloon gedownload",
+    "importResultDesc": "Aangemaakt: {{created}}, Bijgewerkt: {{updated}}, Fouten: {{errors}}"
   }
 }

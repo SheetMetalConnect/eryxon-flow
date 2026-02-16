@@ -72,7 +72,7 @@ export function InvitationManager() {
       // Clear form
       setInviteEntries([{ id: Date.now().toString(), email: '', role: 'operator' }]);
 
-      toast.success(t('notifications.success'));
+      toast.success(t('notifications.success'), { description: t('invitation.invitationsSent', { count: validEntries.length }) });
     } catch (error) {
       console.error('Error sending invitations:', error);
     } finally {

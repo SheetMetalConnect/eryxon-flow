@@ -376,7 +376,9 @@
       "inProgress": "In Bearbeitung",
       "completed": "Abgeschlossen",
       "onHold": "Wartend"
-    }
+    },
+    "statusUpdatedDesc": "Arbeitsgangstatus wurde aktualisiert",
+    "operatorAssignedDesc": "Bediener wurde dem Arbeitsgang zugewiesen"
   },
   "issues": {
     "title": "Problemverwaltung",
@@ -586,6 +588,23 @@
     "imageUploadSuccess": "Bild erfolgreich hochgeladen",
     "imageUploadError": "Fehler beim Hochladen des Bildes",
     "requirementAdded": "Anforderung Hinzugefügt",
-    "addOperationNotAvailable": "Das Hinzufügen von Arbeitsgängen zu einer bestehenden Charge ist noch nicht verfügbar. Erstellen Sie Chargen von der Arbeitsgänge-Seite."
+    "addOperationNotAvailable": "Das Hinzufügen von Arbeitsgängen zu einer bestehenden Charge ist noch nicht verfügbar. Erstellen Sie Chargen von der Arbeitsgänge-Seite.",
+    "imageUploaded": "Bild hochgeladen",
+    "imageUploadedDesc": "Bild erfolgreich hochgeladen",
+    "imageUploadFailed": "Fehler beim Hochladen des Bildes",
+    "invalidJson": "Ungültiges JSON",
+    "invalidJsonDesc": "Bitte stellen Sie sicher, dass das Metadaten-JSON gültig ist",
+    "parentBatch": "Übergeordnete Charge (Optional)",
+    "selectParentBatch": "Übergeordnete Charge auswählen...",
+    "noParent": "Keine übergeordnete Charge (Hauptcharge)",
+    "parentBatchHint": "Wählen Sie eine übergeordnete Charge, um diese Charge darunter einzuordnen",
+    "nestingImage": "Schachtelbild",
+    "layoutImage": "Layoutbild",
+    "upload": "Hochladen",
+    "metadata": "Metadaten (JSON)",
+    "metadataHint": "Geben Sie zusätzliche Informationen im gültigen JSON-Format ein",
+    "editOperationsHint": "Das Bearbeiten von Arbeitsgängen ist noch nicht verfügbar. Löschen Sie die Charge und erstellen Sie sie bei Bedarf neu.",
+    "updating": "Wird aktualisiert...",
+    "updateBatch": "Charge aktualisieren"
   }
 }

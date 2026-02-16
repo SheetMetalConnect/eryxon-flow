@@ -99,7 +99,9 @@
     "storageQuotaExceeded": "Opslagquotum overschreden",
     "unsupportedFileType": "Niet-ondersteund bestandstype",
     "failedToOpenFileViewer": "Kan bestandsviewer niet openen",
-    "failedToLoadData": "Kan gegevens niet laden"
+    "failedToLoadData": "Kan gegevens niet laden",
+    "pinned": "Melding vastgepind",
+    "unpinned": "Melding losgemaakt"
   },
   "modals": {
     "confirmDelete": "Verwijdering bevestigen",

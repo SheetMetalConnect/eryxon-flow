@@ -46,7 +46,9 @@
     "pastClosingTimeDescription": "There are {{count}} active time entries after closing time ({{time}}). Consider stopping them.",
     "demoDataWiped": "Demo Data Wiped",
     "demoDataWipedDesc": "All demo data has been cleared successfully.",
-    "wipeFailed": "Wipe Failed"
+    "wipeFailed": "Wipe Failed",
+    "noActiveClockings": "No active clockings",
+    "noActiveClockingsDescription": "There are no active time entries to stop."
   },
   "organizationSettings": {
     "title": "Organization Settings",
@@ -103,10 +105,6 @@
       "errorCreate": "Failed to create demo data",
       "errorClear": "Failed to clear demo data"
     },
-    "demoDataCreated": "Demo data created successfully",
-    "demoDataCreatedFailed": "Failed to create demo data",
-    "demoDataCleared": "Demo data cleared successfully",
-    "demoDataClearedFailed": "Failed to clear demo data",
     "accountDeleted": "Account deleted successfully",
     "accountDeleteFailed": "Failed to delete account",
     "tenantDeleted": "Tenant deleted successfully",
@@ -231,7 +229,8 @@
     "shopFloorOperators": "Shop Floor Operators",
     "shopFloorOperatorsDescription": "PIN-based operators for shared shop floor terminals. These operators login with Employee ID + PIN.",
     "operatorLocked": "Locked",
-    "lastLogin": "Last login"
+    "lastLogin": "Last login",
+    "operatorCreatedDesc": "Operator {{name}} created successfully"
   },
   "activityMonitor": {
     "title": "Activity Monitor",

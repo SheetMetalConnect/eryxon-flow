@@ -100,7 +100,9 @@
     "storageQuotaExceeded": "Storage Quota Exceeded",
     "unsupportedFileType": "Unsupported file type",
     "failedToOpenFileViewer": "Failed to open file viewer",
-    "failedToLoadData": "Failed to load data"
+    "failedToLoadData": "Failed to load data",
+    "pinned": "Notification pinned",
+    "unpinned": "Notification unpinned"
   },
   "modals": {
     "confirmDelete": "Confirm Deletion",

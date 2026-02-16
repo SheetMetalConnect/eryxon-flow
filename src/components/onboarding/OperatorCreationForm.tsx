@@ -66,7 +66,7 @@ export function OperatorCreationForm() {
 
       if (error) throw error;
 
-      toast.success(t('notifications.created'));
+      toast.success(t('notifications.created'), { description: t('users.operatorCreatedDesc', { name: fullName }) });
 
       // Add to created operators list
       setCreatedOperators([
