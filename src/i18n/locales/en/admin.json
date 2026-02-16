@@ -229,8 +229,7 @@
     "shopFloorOperators": "Shop Floor Operators",
     "shopFloorOperatorsDescription": "PIN-based operators for shared shop floor terminals. These operators login with Employee ID + PIN.",
     "operatorLocked": "Locked",
-    "lastLogin": "Last login",
-    "operatorCreatedDesc": "Operator {{name}} created successfully"
+    "lastLogin": "Last login"
   },
   "activityMonitor": {
     "title": "Activity Monitor",

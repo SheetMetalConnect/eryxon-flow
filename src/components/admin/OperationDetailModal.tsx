@@ -249,10 +249,10 @@ export default function OperationDetailModal({
       on_hold: "destructive",
     };
     const labels: Record<string, string> = {
-      not_started: "Not Started",
-      in_progress: "In Progress",
-      completed: "Completed",
-      on_hold: "On Hold",
+      not_started: t("operations.status.notStarted"),
+      in_progress: t("operations.status.inProgress"),
+      completed: t("operations.status.completed"),
+      on_hold: t("operations.status.onHold"),
     };
     return <Badge variant={variants[status] || "default"}>{labels[status] || status}</Badge>;
   };

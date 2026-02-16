@@ -141,8 +141,7 @@
     "shopFloorOperators": "Werkstatt-Bediener",
     "shopFloorOperatorsDescription": "PIN-basierte Bediener für gemeinsam genutzte Werkstatt-Terminals. Diese Bediener melden sich mit Mitarbeiternummer + PIN an.",
     "operatorLocked": "Gesperrt",
-    "lastLogin": "Letzte Anmeldung",
-    "operatorCreatedDesc": "Bediener {{name}} erfolgreich erstellt"
+    "lastLogin": "Letzte Anmeldung"
   },
   "activityMonitor": {
     "title": "Aktivitätsmonitor",

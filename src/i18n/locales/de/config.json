@@ -183,7 +183,8 @@
     "pinsNoMatch": "PINs stimmen nicht überein",
     "enterMachineName": "Bitte geben Sie den Maschinennamen ein",
     "enterMachineId": "Bitte geben Sie die Maschinen-ID ein",
-    "invitationLinkCopied": "Einladungslink in die Zwischenablage kopiert"
+    "invitationLinkCopied": "Einladungslink in die Zwischenablage kopiert",
+    "operatorCreatedDesc": "Bediener {{name}} erfolgreich erstellt"
   },
   "scrapReasons": {
     "defaultCreated": "Standard-Ausschussgründe erfolgreich erstellt",

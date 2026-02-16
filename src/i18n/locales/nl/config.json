@@ -183,7 +183,8 @@
     "pinsNoMatch": "PIN's komen niet overeen",
     "enterMachineName": "Voer machinenaam in",
     "enterMachineId": "Voer machine-ID in",
-    "invitationLinkCopied": "Uitnodigingslink gekopieerd naar klembord"
+    "invitationLinkCopied": "Uitnodigingslink gekopieerd naar klembord",
+    "operatorCreatedDesc": "Operator {{name}} succesvol aangemaakt"
   },
   "scrapReasons": {
     "defaultCreated": "Standaard afvalredenen succesvol aangemaakt",

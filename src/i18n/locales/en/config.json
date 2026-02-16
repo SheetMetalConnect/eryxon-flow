@@ -183,7 +183,8 @@
     "pinsNoMatch": "PINs do not match",
     "enterMachineName": "Please enter machine name",
     "enterMachineId": "Please enter machine ID",
-    "invitationLinkCopied": "Invitation link copied to clipboard"
+    "invitationLinkCopied": "Invitation link copied to clipboard",
+    "operatorCreatedDesc": "Operator {{name}} created successfully"
   },
   "scrapReasons": {
     "defaultCreated": "Default scrap reasons created successfully",

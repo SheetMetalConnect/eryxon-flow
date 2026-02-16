@@ -378,8 +378,7 @@
     "shopFloorOperators": "Werkvloer Operators",
     "shopFloorOperatorsDescription": "PIN-gebaseerde operators voor gedeelde werkvloerterminals. Deze operators loggen in met Personeelsnummer + PIN.",
     "operatorLocked": "Geblokkeerd",
-    "lastLogin": "Laatste login",
-    "operatorCreatedDesc": "Operator {{name}} succesvol aangemaakt"
+    "lastLogin": "Laatste login"
   },
   "activityMonitor": {
     "title": "Activiteitenmonitor",
