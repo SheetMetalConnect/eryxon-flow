@@ -8,6 +8,7 @@ import { stopTimeTracking, pauseTimeTracking, resumeTimeTracking } from "@/lib/d
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/routes";
 import { useTranslation } from "react-i18next";
 
 interface ActiveEntry {
@@ -175,7 +176,7 @@ export default function OperatorFooterBar() {
 
   const handleReportIssue = () => {
     // Navigate to work queue which has the operation detail modal
-    navigate("/work-queue");
+    navigate(ROUTES.OPERATOR.WORK_QUEUE);
     toast.info(t("production.openOperationForIssue"));
   };
 
