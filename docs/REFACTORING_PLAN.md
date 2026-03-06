@@ -276,12 +276,98 @@ const skipDemoCheck = tenantId === "11111111-1111-1111-1111-111111111111";
 | LOW | Remove hardcoded test UUID (13) | Security |
 | LOW | Clean up dead code (14) | Cleanliness |
 | LOW | Bundle analysis (15) | Performance |
+| HIGH | Fix i18n translation gaps & sync languages (16) | Localization |
+| MEDIUM | Fix hardcoded UI strings (17) | Localization |
+| MEDIUM | Enable TypeScript strict mode (18) | Type safety |
+| MEDIUM | Fix event listener memory leaks (19) | Stability |
+| MEDIUM | Merge duplicate OperationDetailModal (20) | Maintainability |
 
 ---
 
 ## Recommended Execution Order
 
-1. **Phase 1 - Hygiene** (items 2, 3, 5, 13, 14): Quick wins that immediately improve code quality
+1. **Phase 1 - Hygiene** (items 2, 3, 5, 13, 14, 16): Quick wins that immediately improve code quality
 2. **Phase 2 - Architecture** (items 1, 9): Break down large components and reorganize routing
 3. **Phase 3 - Data Layer** (items 4, 7, 8, 12): Standardize all data access patterns
 4. **Phase 4 - Quality** (items 6, 10, 11, 15): Add tests, optimistic updates, and performance monitoring
+5. **Phase 5 - Localization** (items 16, 17): Fix translation gaps and sync all languages
+
+---
+
+## 16. HIGH: Fix i18n Translation Gaps & Sync Languages
+
+**Problem:** The i18n system has critical consistency issues across the 3 supported languages.
+
+**Issues found:**
+
+1. **149 fallback values in t() calls** - Developers added inline fallbacks like `t("parts.totalParts", "Total Parts")` indicating keys are missing from namespace files
+2. **German (de) missing ~30+ keys** vs English in `jobs.json` alone (e.g., `issues.category.*`, `jobs.details`, `jobs.dueThisWeek`, `jobs.overdue`, etc.)
+3. **Missing namespace files** documented in CLAUDE.md but never created:
+   - `analytics.json` (for QRM, OEE, quality, reliability, capacity)
+   - `shipping.json` (for shipping module)
+4. **Monolithic `translation.json` duplication** - Each language has both namespace files AND a large `translation.json` that overlaps, creating sync risk
+5. **Missing imports in `i18n/index.ts`** - analytics, shipping, and quality namespaces not imported
+
+**Action items:**
+- [ ] Create missing namespace files: `analytics.json` and `shipping.json` for all 3 languages
+- [ ] Run a diff across en/nl/de for every namespace to find all missing keys
+- [ ] Add missing keys to nl and de (translate properly, don't just copy English)
+- [ ] Remove the 149 inline fallback values once keys are properly in namespace files
+- [ ] Update `src/i18n/index.ts` to import new namespace files
+- [ ] Decide whether to keep or deprecate the monolithic `translation.json` files
+
+---
+
+## 17. MEDIUM: Fix Hardcoded UI Strings
+
+**Problem:** Despite good overall i18n adoption, some components still have hardcoded English strings.
+
+**Key locations found:**
+- `AcceptInvitation.tsx` - "Invalid Invitation", "Invited by", "Organization", "Email", "Role"
+- `NotFound.tsx` - "Oops! Page not found"
+- `CapacityMatrix.tsx` - "Closed", "Weekend", "Operations:"
+- `McpKeys.tsx` - "MCP Keys", "Key Name", "Description"
+
+**Action items:**
+- [ ] Grep for remaining hardcoded strings in JSX (title=, placeholder=, aria-label= attributes)
+- [ ] Add translation keys to appropriate namespace files for all 3 languages
+- [ ] Replace hardcoded strings with t() calls
+
+---
+
+## 18. MEDIUM: Enable TypeScript Strict Mode
+
+**Problem:** `tsconfig.json` has `strict: false`, `noImplicitAny: false`, `strictNullChecks: false`. This undermines TypeScript's entire value proposition and allows bugs to slip through.
+
+**Action items:**
+- [ ] First fix all `any` types (item 3)
+- [ ] Enable `noImplicitAny: true` and fix resulting errors
+- [ ] Enable `strictNullChecks: true` and fix resulting errors
+- [ ] Enable `strict: true` as the final step
+- [ ] Add strict mode to CI/CD pipeline to prevent regressions
+
+---
+
+## 19. MEDIUM: Fix Event Listener Memory Leaks
+
+**Problem:** Some components add window/document event listeners without proper cleanup.
+
+**Key locations:**
+- `OperatorView.tsx` - adds `mousemove`, `mouseup`, `touchmove`, `touchend` listeners without cleanup
+- `PinKeypad.tsx` - adds `keydown` listener without cleanup
+
+**Action items:**
+- [ ] Audit all `addEventListener` calls for missing `removeEventListener` in cleanup
+- [ ] Move event listeners into useEffect with proper return cleanup functions
+- [ ] Consider using a `useEventListener` hook for consistency
+
+---
+
+## 20. MEDIUM: Merge Duplicate OperationDetailModal
+
+**Problem:** `OperationDetailModal.tsx` exists in both `components/admin/` (614 lines) and `components/operator/` (657 lines). These are likely copy-pasted with minor differences.
+
+**Action items:**
+- [ ] Diff the two files to identify actual differences
+- [ ] Create a single shared `OperationDetailModal` with role-based conditional rendering
+- [ ] Remove the duplicate file
