@@ -59,8 +59,9 @@ export async function generateMockData(
     };
 
     // Check if tenant already has demo data to prevent duplicates
-    // Skip this check for testing/specific tenants
-    const skipDemoCheck = tenantId === "11111111-1111-1111-1111-111111111111";
+    // Skip this check for testing/specific tenants (configured via env var)
+    const testTenantId = import.meta.env.VITE_TEST_TENANT_ID;
+    const skipDemoCheck = testTenantId ? tenantId === testTenantId : false;
     
     if (!skipDemoCheck) {
       const { data: isDemoMode, error: demoCheckError } = await supabase.rpc(

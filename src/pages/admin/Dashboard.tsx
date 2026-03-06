@@ -477,7 +477,7 @@ export default function Dashboard() {
           <p className="text-muted-foreground text-lg">{t("dashboard.description")}</p>
         </div>
         {!needsSetup &&
-          profile?.tenant_id === "11111111-1111-1111-1111-111111111111" && (
+          import.meta.env.VITE_TEST_TENANT_ID && profile?.tenant_id === import.meta.env.VITE_TEST_TENANT_ID && (
             <Button
               variant="destructive"
               onClick={handleWipeDemo}
