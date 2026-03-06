@@ -226,7 +226,7 @@ export default function OperationDetailModal({
       setCurrentFileTitle(fileName);
       setFileViewerOpen(true);
     } catch (error: any) {
-      console.error("Error opening file:", error);
+      logger.error('OperationDetailModal', 'Error opening file', error);
       toast.error(t("notifications.error"), {
         description: t("notifications.failedToOpenFileViewer"),
       });

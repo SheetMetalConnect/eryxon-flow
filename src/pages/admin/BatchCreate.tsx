@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -137,7 +138,7 @@ export default function BatchCreate() {
 
   // Fetch cells
   const { data: cells } = useQuery({
-    queryKey: ["cells-active", profile?.tenant_id],
+    queryKey: QueryKeys.cells.active(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cells")
@@ -153,7 +154,7 @@ export default function BatchCreate() {
 
   // Fetch materials from config
   const { data: materials } = useQuery({
-    queryKey: ["materials-active", profile?.tenant_id],
+    queryKey: QueryKeys.config.materialsActive(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("materials")
@@ -169,7 +170,7 @@ export default function BatchCreate() {
 
   // Fetch potential parent batches
   const { data: parentBatches } = useQuery({
-    queryKey: ["batches-potential-parents", profile?.tenant_id],
+    queryKey: QueryKeys.batches.potentialParents(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("operation_batches")
@@ -187,7 +188,7 @@ export default function BatchCreate() {
 
   // Fetch available operations
   const { data: availableOperations } = useQuery({
-    queryKey: ["operations-for-batch", cellId, profile?.tenant_id],
+    queryKey: QueryKeys.operations.forBatch(cellId || ''),
     queryFn: async () => {
       let query = supabase
         .from("operations")

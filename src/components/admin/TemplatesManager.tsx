@@ -162,7 +162,7 @@ export function TemplatesManager() {
       .order('sequence', { foreignTable: 'substep_template_items', ascending: true });
 
     if (error) {
-      console.error("Error loading templates:", error);
+      logger.error('TemplatesManager', 'Error loading templates', error);
       toast.error(t("Failed to load templates"));
     } else {
       setTemplates(data || []);
@@ -326,7 +326,7 @@ export function TemplatesManager() {
       handleCloseDialog();
       loadTemplates();
     } catch (error) {
-      console.error("Error saving template:", error);
+      logger.error('TemplatesManager', 'Error saving template', error);
       toast.error(t("Failed to save template"));
     }
   };
@@ -345,7 +345,7 @@ export function TemplatesManager() {
       .eq('id', template.id);
 
     if (error) {
-      console.error("Error deleting template:", error);
+      logger.error('TemplatesManager', 'Error deleting template', error);
       toast.error(t("Failed to delete template"));
     } else {
       toast.success(t("Template deleted successfully"));

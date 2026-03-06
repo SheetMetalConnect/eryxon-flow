@@ -114,9 +114,9 @@ export function usePartImages(partId: string) {
       toast.success(t("parts.images.deleteSuccess"), { description: t("parts.images.imageDeleted") });
 
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('usePartImages', 'Error removing image', error);
-      toast.error(t("parts.images.deleteFailed"), { description: error.message });
+      toast.error(t("parts.images.deleteFailed"), { description: error instanceof Error ? error.message : undefined });
       return false;
     }
   }, [partId, getImagePaths, t]);

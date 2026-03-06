@@ -35,7 +35,7 @@ export function ImageThumbnail({
           setError(false);
         }
       } catch (err) {
-        console.error("Error loading thumbnail:", err);
+        logger.error('ImageThumbnail', 'Error loading thumbnail', err);
         if (mounted) {
           setError(true);
         }

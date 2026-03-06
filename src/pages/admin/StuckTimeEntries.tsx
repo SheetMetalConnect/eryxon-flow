@@ -76,7 +76,7 @@ export default function StuckTimeEntries() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["stuck-time-entries"] });
+      queryClient.invalidateQueries({ queryKey: ["timeEntries", "stuck"] });
       toast.success(t("stuckTimeEntries.stopped"));
     },
     onError: (error: Error) => {
@@ -110,7 +110,7 @@ export default function StuckTimeEntries() {
       return stoppedCount;
     },
     onSuccess: (count) => {
-      queryClient.invalidateQueries({ queryKey: ["stuck-time-entries"] });
+      queryClient.invalidateQueries({ queryKey: ["timeEntries", "stuck"] });
       toast.success(t("notifications.success"));
     },
     onError: (error: Error) => {

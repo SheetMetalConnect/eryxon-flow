@@ -507,7 +507,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       await queryClient.invalidateQueries({ queryKey: QueryKeys.parts.detail(partId) });
       onUpdate();
     } catch (error: any) {
-      console.error("Delete error:", error);
+      logger.error('PartDetailModal', 'Delete error', error);
       toast.error(t("common.error"), {
         description: error.message,
       });

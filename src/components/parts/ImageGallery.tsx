@@ -88,7 +88,7 @@ export function ImageGallery({
 
       setImages(imageInfos);
     } catch (error) {
-      console.error("Error loading images:", error);
+      logger.error('ImageGallery', 'Error loading images', error);
       toast.error(t("parts.images.loadFailed"), {
         description: t("parts.images.loadFailedDescription"),
       });
@@ -128,7 +128,7 @@ export function ImageGallery({
       setImages((prev) => prev.filter((img) => img.path !== path));
       onImageDeleted?.(path);
     } catch (error: any) {
-      console.error("Error deleting image:", error);
+      logger.error('ImageGallery', 'Error deleting image', error);
       toast.error(t("parts.images.deleteFailed"), {
         description: error.message,
       });
@@ -158,7 +158,7 @@ export function ImageGallery({
         description: t("parts.images.imageDownloaded"),
       });
     } catch (error) {
-      console.error("Error downloading image:", error);
+      logger.error('ImageGallery', 'Error downloading image', error);
       toast.error(t("parts.images.downloadFailed"), {
         description: t("parts.images.downloadFailedDescription"),
       });

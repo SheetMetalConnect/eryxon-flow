@@ -83,7 +83,7 @@ export function useStartBatchTimer() {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
       toast.success(t("batches.timeTracking.started"), { description: t("batches.timeTracking.startedDesc") });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: resolveErrorMessage(t, error.message) });
     },
   });
@@ -114,7 +114,7 @@ export function useStopBatchTimer() {
         }),
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: resolveErrorMessage(t, error.message) });
     },
   });

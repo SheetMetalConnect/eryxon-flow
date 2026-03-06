@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,7 +53,7 @@ export default function PartCreate() {
 
   // Fetch jobs for selection
   const { data: jobs } = useQuery({
-    queryKey: ["jobs-active", profile?.tenant_id],
+    queryKey: QueryKeys.jobs.active(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("jobs")
@@ -68,7 +69,7 @@ export default function PartCreate() {
 
   // Fetch existing parts from selected job for parent selection
   const { data: existingParts } = useQuery({
-    queryKey: ["job-parts", jobId, profile?.tenant_id],
+    queryKey: QueryKeys.parts.byJob(jobId || ''),
     queryFn: async () => {
       if (!jobId) return [];
       const { data, error } = await supabase
@@ -85,7 +86,7 @@ export default function PartCreate() {
 
   // Fetch materials from config
   const { data: materials } = useQuery({
-    queryKey: ["materials-active", profile?.tenant_id],
+    queryKey: QueryKeys.config.materialsActive(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("materials")
@@ -101,7 +102,7 @@ export default function PartCreate() {
 
   // Fetch cells for operations
   const { data: cells } = useQuery({
-    queryKey: ["cells-active", profile?.tenant_id],
+    queryKey: QueryKeys.cells.active(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cells")
@@ -163,7 +164,7 @@ export default function PartCreate() {
       return part;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-parts-all"] });
+      queryClient.invalidateQueries({ queryKey: ["parts"] });
       toast.success(t("parts.partCreated"), { description: t("parts.partCreatedDesc", { partNumber }) });
       navigate("/admin/parts");
     },

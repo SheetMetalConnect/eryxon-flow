@@ -63,7 +63,7 @@ export function ResourceUsageDisplay({
           setResources(data as any);
         }
       } catch (error) {
-        console.error('Error fetching resources:', error);
+        logger.error('ResourceUsageDisplay', 'Error fetching resources', error);
       } finally {
         setLoading(false);
       }
@@ -219,7 +219,7 @@ export function ResourceCountBadge({ operationId }: { operationId: string }) {
           setCount(resourceCount);
         }
       } catch (error) {
-        console.error('Error fetching resource count:', error);
+        logger.error('ResourceCountBadge', 'Error fetching resource count', error);
       } finally {
         setLoading(false);
       }

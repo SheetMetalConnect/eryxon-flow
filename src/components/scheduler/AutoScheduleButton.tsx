@@ -52,7 +52,7 @@ export function AutoScheduleButton() {
             }
             await runScheduler();
         } catch (error: any) {
-            console.error("Error checking schedules:", error);
+            logger.error('AutoScheduleButton', 'Error checking schedules', error);
             toast.error(t("capacity.schedulingFailed", "Scheduling Failed"), {
                 description: error.message,
             });
@@ -163,7 +163,7 @@ export function AutoScheduleButton() {
                     .insert(allAllocations);
 
                 if (allocError) {
-                    console.warn("Failed to save day allocations:", allocError);
+                    logger.warn('AutoScheduleButton', 'Failed to save day allocations', allocError);
                 }
             }
 
@@ -180,7 +180,7 @@ export function AutoScheduleButton() {
             ]);
 
         } catch (error: any) {
-            console.error("Scheduling error:", error);
+            logger.error('AutoScheduleButton', 'Scheduling error', error);
             toast.error(t("capacity.schedulingFailed", "Scheduling Failed"), {
                 description: error.message,
             });

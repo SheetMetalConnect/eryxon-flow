@@ -85,7 +85,7 @@ export function QRMDashboard() {
         .in("status", ["not_started", "in_progress"]);
       
       if (error) {
-        console.error("Error fetching operations:", error);
+        logger.error('QRMDashboard', 'Error fetching operations', error);
         throw error;
       }
       
