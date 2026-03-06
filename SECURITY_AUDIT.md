@@ -15,7 +15,7 @@ The Eryxon MES codebase demonstrates **good security awareness overall** with pr
 |----------|-------|
 | Critical | 1 |
 | High | 4 |
-| Medium | 6 |
+| Medium | 8 |
 | Low | 5 |
 | Informational | 4 |
 
@@ -207,7 +207,43 @@ if (items.length > 1000) {
 
 ---
 
-### M6: MCP Server Direct Mode Has No Tenant Scoping
+### M6: No Content Security Policy (CSP) Header
+
+**Severity:** MEDIUM
+**OWASP:** A05:2021 - Security Misconfiguration
+**Location:** `index.html`, Vite configuration
+
+**Description:** The application has no Content Security Policy header or meta tag configured. CSP is a critical defense-in-depth mechanism that limits the impact of XSS vulnerabilities by restricting what scripts can execute, where resources can be loaded from, and what inline code is allowed.
+
+**Impact:** If any XSS vulnerability is discovered (e.g., through SVG uploads or future code changes), there is no CSP to limit the attacker's capabilities.
+
+**Remediation:** Add a CSP header via the hosting platform or a `<meta>` tag in `index.html`:
+```html
+<meta http-equiv="Content-Security-Policy"
+  content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co;">
+```
+
+---
+
+### M7: MQTT Broker Password Stored in Plaintext
+
+**Severity:** MEDIUM
+**OWASP:** A02:2021 - Cryptographic Failures
+**Location:** `src/pages/admin/config/MqttPublishers.tsx:81,202`
+
+**Description:** MQTT broker passwords are stored as plaintext in React component state and written directly to the database without server-side encryption. The password field in the MQTT publishers form has no masking/visibility toggle. Additionally, `supabase/functions/mqtt-publish/index.ts:250` selects the password in plaintext from the database for use in broker authentication.
+
+**Impact:** MQTT broker credentials are exposed in the database, in transit via Supabase queries, and in browser DevTools memory inspection.
+
+**Remediation:**
+- Encrypt MQTT passwords at rest using a server-side encryption key
+- Use a Supabase vault or encrypted column for password storage
+- Add a password visibility toggle on the input field
+- Never return the password in API responses; only use it server-side in edge functions
+
+---
+
+### M8: MCP Server Direct Mode Has No Tenant Scoping
 
 **Severity:** MEDIUM
 **OWASP:** A01:2021 - Broken Access Control
@@ -358,8 +394,10 @@ The codebase uses the Supabase JavaScript client exclusively, which uses paramet
 | 8 | M4: PATCH validation | Medium |
 | 9 | M2: SVG content type | Low |
 | 10 | M5: Bulk sync limits | Low |
-| 11 | M6: MCP direct mode scoping | Low |
-| 12 | L1-L5: Low findings | Low |
+| 11 | M6: Add Content Security Policy | Low |
+| 12 | M7: Encrypt MQTT broker passwords | Medium |
+| 13 | M8: MCP direct mode scoping | Low |
+| 14 | L1-L5: Low findings | Low |
 
 ---
 
