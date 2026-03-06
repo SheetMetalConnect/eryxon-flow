@@ -16,7 +16,7 @@ The Eryxon MES codebase demonstrates **good security awareness overall** with pr
 | Critical | 1 |
 | High | 4 |
 | Medium | 8 |
-| Low | 5 |
+| Low | 6 |
 | Informational | 4 |
 
 ---
@@ -259,7 +259,31 @@ if (items.length > 1000) {
 
 ## Low Findings
 
-### L1: `constantTimeCompare` Leaks Length Information
+### L1: Frontend Queries Missing Explicit tenant_id Filtering (Defense-in-Depth)
+
+**Severity:** LOW (mitigated by RLS)
+**OWASP:** A01:2021 - Broken Access Control
+**Locations:**
+- `src/pages/admin/Jobs.tsx:91-96` - Jobs query has no `.eq("tenant_id", ...)`
+- `src/components/scheduler/AutoScheduleButton.tsx:67-84` - Jobs, operations, cells, and factory_calendar queries all lack tenant_id
+- `src/pages/admin/config/ScrapReasons.tsx:65` - Scrap reasons query lacks tenant_id
+- `src/components/admin/JobDetailModal.tsx:48-61` - Job lookup by ID only, no tenant_id
+- `src/components/admin/DueDateOverrideModal.tsx:36-40` - Same pattern
+- `src/lib/database.ts:317-337` - Helper functions query operations/jobs without tenant_id
+- `src/hooks/usePartImages.ts:20-24` - Parts lookup by ID only
+- `src/hooks/useCADProcessing.ts:428-432` - Parts query lacks tenant_id
+
+**Description:** Multiple frontend Supabase queries rely solely on Supabase Row-Level Security (RLS) for tenant isolation without adding explicit `.eq("tenant_id", tenantId)` filters. While RLS policies should prevent cross-tenant data access at the database level, defense-in-depth principles recommend frontend filtering as a secondary safeguard.
+
+**Note:** Other queries in the codebase (e.g., `Materials.tsx`, `Users.tsx`, `searchService.ts`, `FactoryCalendar.tsx`) correctly include tenant_id filtering - the pattern is inconsistent.
+
+**Impact:** If RLS policies are ever misconfigured or temporarily disabled for maintenance, these queries would expose cross-tenant data. Practically LOW risk since RLS is properly configured.
+
+**Remediation:** Add `.eq("tenant_id", profile.tenant_id)` to all queries listed above for consistent defense-in-depth. Prioritize `Jobs.tsx` and `AutoScheduleButton.tsx` as they fetch the most data.
+
+---
+
+### L2: `constantTimeCompare` Leaks Length Information
 
 **Severity:** LOW
 **OWASP:** A02:2021 - Cryptographic Failures
@@ -271,7 +295,7 @@ if (items.length > 1000) {
 
 ---
 
-### L2: SSRF Protection Incomplete for IPv6
+### L3: SSRF Protection Incomplete for IPv6
 
 **Severity:** LOW
 **OWASP:** A10:2021 - Server-Side Request Forgery
@@ -287,7 +311,7 @@ if (items.length > 1000) {
 
 ---
 
-### L3: API Key Entropy Could Be Higher
+### L4: API Key Entropy Could Be Higher
 
 **Severity:** LOW
 **OWASP:** A02:2021 - Cryptographic Failures
@@ -301,7 +325,7 @@ if (items.length > 1000) {
 
 ---
 
-### L4: No Request Body Size Limits
+### L5: No Request Body Size Limits
 
 **Severity:** LOW
 **OWASP:** A04:2021 - Insecure Design
@@ -313,7 +337,7 @@ if (items.length > 1000) {
 
 ---
 
-### L5: Operator Session in localStorage
+### L6: Operator Session in localStorage
 
 **Severity:** LOW
 **OWASP:** A07:2021 - Identification and Authentication Failures
@@ -397,7 +421,7 @@ The codebase uses the Supabase JavaScript client exclusively, which uses paramet
 | 11 | M6: Add Content Security Policy | Low |
 | 12 | M7: Encrypt MQTT broker passwords | Medium |
 | 13 | M8: MCP direct mode scoping | Low |
-| 14 | L1-L5: Low findings | Low |
+| 14 | L1-L6: Low findings | Low |
 
 ---
 
