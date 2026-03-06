@@ -93,7 +93,7 @@ export default function OrganizationSettings() {
         whitelabel_favicon_url: (data as any).whitelabel_favicon_url || '',
       });
     } catch (error: any) {
-      console.error('Error loading tenant details:', error);
+      logger.error('OrganizationSettings', 'Error loading tenant details', error);
       toast.error(t("organizationSettings.failedToLoad"));
     } finally {
       setLoading(false);
@@ -139,7 +139,7 @@ export default function OrganizationSettings() {
       toast.success(t('organizationSettings.settingsUpdated'));
       await refreshTenant();
     } catch (error: any) {
-      console.error('Error updating tenant:', error);
+      logger.error('OrganizationSettings', 'Error updating tenant', error);
       toast.error(error.message || t('notifications.failed'));
     } finally {
       setSaving(false);

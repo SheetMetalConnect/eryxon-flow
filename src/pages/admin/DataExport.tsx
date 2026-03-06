@@ -139,7 +139,7 @@ export default function DataExport() {
       toast.success(t('dataExport.exportSuccessful'), { description: t('dataExport.exportedEntities', { count: selectedEntities.length }) });
 
     } catch (error: unknown) {
-      console.error('Export error:', error);
+      logger.error('DataExport', 'Export error', error);
       toast.error(t('dataExport.exportFailed'), { description: error instanceof Error ? error.message : t('dataExport.failedToExport') });
     } finally {
       setIsExporting(false);

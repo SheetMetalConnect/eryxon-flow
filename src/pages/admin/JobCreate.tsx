@@ -166,7 +166,7 @@ export default function JobCreate() {
         created_at: job.created_at,
       }).then(result => {
         if (!result.success) {
-          console.error('Failed to dispatch job.created event:', result.errors);
+          logger.error('JobCreate', 'Failed to dispatch job.created event', result.errors);
         }
       });
 

@@ -227,7 +227,7 @@ export default function Dashboard() {
 
       setNeedsSetup((cellsHead.count || 0) === 0);
     } catch (error) {
-      console.error("Error loading dashboard data:", error);
+      logger.error('Dashboard', 'Error loading dashboard data', error);
     } finally {
       setLoading(false);
     }
@@ -256,7 +256,7 @@ export default function Dashboard() {
         setIsPastClosingTime(now > closingTime);
       }
     } catch (error) {
-      console.error("Error checking factory hours:", error);
+      logger.error('Dashboard', 'Error checking factory hours', error);
     }
   };
 
@@ -446,7 +446,7 @@ export default function Dashboard() {
 
   const handleStopAllClockings = async () => {
     if (!profile?.tenant_id) {
-      console.error("No tenant ID available");
+      logger.error('Dashboard', 'No tenant ID available');
       return;
     }
 
@@ -461,7 +461,7 @@ export default function Dashboard() {
       toast.success(t("dashboard.allClockingsStopped"), { description: t("dashboard.allClockingsStoppedDescription", { count: stoppedCount }) });
       await loadData();
     } catch (error: any) {
-      console.error("Failed to stop all clockings:", error);
+      logger.error('Dashboard', 'Failed to stop all clockings', error);
       toast.error(t("dashboard.stopAllFailed"), { description: error?.message || String(error) });
     } finally {
       setStoppingAll(false);

@@ -9,7 +9,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { logger } from '@/lib/logger';
 import { useNavigate } from "react-router-dom";
+import { logger } from "@/lib/logger";
 
 interface McpStatus {
   status: "active" | "inactive" | "not_configured";
@@ -44,7 +46,7 @@ export function McpServerStatus() {
           setStatus({ status: "not_configured", endpoint_count: 0, active_count: 0 });
           return;
         }
-        console.error("Error fetching MCP status:", error);
+        logger.error('McpServerStatus', 'Error fetching MCP status', error);
         setStatus({ status: "not_configured", endpoint_count: 0, active_count: 0 });
         return;
       }
@@ -64,7 +66,7 @@ export function McpServerStatus() {
         last_used: lastUsed,
       });
     } catch (err) {
-      console.error("Error fetching MCP status:", err);
+      logger.error('McpServerStatus', 'Error fetching MCP status', err);
       setStatus({ status: "not_configured", endpoint_count: 0, active_count: 0 });
     } finally {
       setIsLoading(false);

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
+import { logger } from '@/lib/logger';
 
 export type SubscriptionPlan = 'free' | 'pro' | 'premium' | 'enterprise' | 'self_hosted';
 export type SubscriptionStatus = 'active' | 'cancelled' | 'suspended' | 'trial';
@@ -78,13 +79,13 @@ export const useSubscription = () => {
           .rpc('get_api_usage_stats' as any);
 
         if (apiError) {
-          console.warn('API usage stats not available:', apiError);
+          logger.warn('useSubscription', 'API usage stats not available', apiError);
           // Don't throw - API usage stats are optional
         } else if (apiData && apiData.length > 0) {
           setApiUsageStats(apiData[0] as any);
         }
       } catch (err) {
-        console.error('Error fetching subscription:', err);
+        logger.error('useSubscription', 'Error fetching subscription', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch subscription data');
       } finally {
         setLoading(false);

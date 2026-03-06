@@ -11,6 +11,8 @@ import { Card } from "@/components/ui/card";
 import { Edit, Trash2, Loader2, Search, Filter } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 import {
   Select,
   SelectContent,
@@ -92,7 +94,7 @@ export function AllSubstepsView() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error("Error loading substeps:", error);
+      logger.error('AllSubstepsView', 'Error loading substeps', error);
       toast.error(t("Failed to load substeps"));
     } else {
       const transformedData = (data || []).map((item: any) => ({
@@ -184,7 +186,7 @@ export function AllSubstepsView() {
       .eq('id', editingSubstep.id);
 
     if (error) {
-      console.error("Error updating substep:", error);
+      logger.error('AllSubstepsView', 'Error updating substep', error);
       toast.error(t("Failed to update substep"));
     } else {
       toast.success(t("Substep updated successfully"));
@@ -202,7 +204,7 @@ export function AllSubstepsView() {
       .eq('id', substep.id);
 
     if (error) {
-      console.error("Error deleting substep:", error);
+      logger.error('AllSubstepsView', 'Error deleting substep', error);
       toast.error(t("Failed to delete substep"));
     } else {
       toast.success(t("Substep deleted successfully"));

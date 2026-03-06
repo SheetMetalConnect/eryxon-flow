@@ -2190,28 +2190,28 @@ export async function clearMockData(
       .from("cells")
       .delete()
       .eq("tenant_id", tenantId);
-    if (cellsErr) console.warn("Cells deletion warning:", cellsErr);
+    if (cellsErr) logger.warn('MockData', 'Cells deletion warning:', cellsErr);
 
     // 13. Delete resources (has tenant_id)
     const { error: resourcesErr } = await supabase
       .from("resources")
       .delete()
       .eq("tenant_id", tenantId);
-    if (resourcesErr) console.warn("Resources deletion warning:", resourcesErr);
+    if (resourcesErr) logger.warn('MockData', 'Resources deletion warning:', resourcesErr);
 
     // 14. Delete materials (has tenant_id, if any exist)
     const { error: materialsErr } = await supabase
       .from("materials")
       .delete()
       .eq("tenant_id", tenantId);
-    if (materialsErr) console.warn("Materials deletion warning:", materialsErr);
+    if (materialsErr) logger.warn('MockData', 'Materials deletion warning:', materialsErr);
 
     // 15. Delete scrap_reasons (has tenant_id)
     const { error: scrapErr } = await supabase
       .from("scrap_reasons")
       .delete()
       .eq("tenant_id", tenantId);
-    if (scrapErr) console.warn("Scrap reasons deletion warning:", scrapErr);
+    if (scrapErr) logger.warn('MockData', 'Scrap reasons deletion warning:', scrapErr);
 
     // 16. Delete demo operators (has tenant_id + email filter for safety)
     // CRITICAL: Use correct email addresses that match seed_demo_operators function
@@ -2228,14 +2228,14 @@ export async function clearMockData(
         "demo.operator4@example.com",
       ]);
     if (profilesErr)
-      console.warn("Demo operators deletion warning:", profilesErr);
+      logger.warn('MockData', 'Demo operators deletion warning:', profilesErr);
 
     // 17. Delete factory calendar entries (has tenant_id)
     const { error: calendarErr } = await supabase
       .from("factory_calendar")
       .delete()
       .eq("tenant_id", tenantId);
-    if (calendarErr) console.warn("Calendar deletion warning:", calendarErr);
+    if (calendarErr) logger.warn('MockData', 'Calendar deletion warning:', calendarErr);
 
     // Disable demo mode flag now that data is cleared
     const { error: demoModeError } = await supabase.rpc("disable_demo_mode", {
@@ -2243,16 +2243,16 @@ export async function clearMockData(
     });
 
     if (demoModeError) {
-      console.warn("Could not clear demo mode flag:", demoModeError);
+      logger.warn('MockData', 'Could not clear demo mode flag:', demoModeError);
       // Continue anyway - data is deleted successfully
     } else {
-      console.log("✓ Demo mode flag disabled for tenant");
+      logger.debug('MockData', 'Demo mode flag disabled for tenant');
     }
 
-    console.log(`✅ Mock data cleared successfully for tenant: ${tenantId}`);
+    logger.debug('MockData', `Mock data cleared successfully for tenant: ${tenantId}`);
     return { success: true };
   } catch (error) {
-    console.error("Error clearing mock data:", error);
+    logger.error('MockData', 'Error clearing mock data:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",

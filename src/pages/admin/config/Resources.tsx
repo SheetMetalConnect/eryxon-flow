@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { MetadataInput } from "@/components/ui/MetadataInput";
 import { BaseMetadata } from "@/types/metadata";
+import { logger } from "@/lib/logger";
 
 interface Resource {
   id: string;
@@ -130,7 +131,7 @@ export default function ConfigResources() {
       loadResources();
     } catch (error) {
       toast.error(t('resources.failedToSave'));
-      console.error(error);
+      logger.error('Resources', 'Failed to save resource', error);
     }
   };
 

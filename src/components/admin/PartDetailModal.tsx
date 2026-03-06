@@ -39,6 +39,7 @@ import { RoutingVisualization } from "@/components/qrm/RoutingVisualization";
 import { usePartRouting } from "@/hooks/useQRMMetrics";
 import { ImageUpload } from "@/components/parts/ImageUpload";
 import { ImageGallery } from "@/components/parts/ImageGallery";
+import { logger } from '@/lib/logger';
 
 interface PartDetailModalProps {
   partId: string;
@@ -404,7 +405,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                 // If no PMI found, that's okay - many files don't have PMI
               }
             } catch (pmiError) {
-              console.warn('PMI extraction failed:', pmiError);
+              logger.warn('PartDetailModal', 'PMI extraction failed', pmiError);
               // Don't show error toast - PMI is optional
             }
           }
@@ -426,7 +427,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         });
       }
     } catch (error: any) {
-      console.error("CAD upload error:", error);
+      logger.error('PartDetailModal', 'CAD upload error', error);
       toast.error(t("common.error"), {
         description: error.message,
       });
@@ -468,7 +469,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       setCurrentFileTitle(fileName);
       setFileViewerOpen(true);
     } catch (error: any) {
-      console.error("Error opening file:", error);
+      logger.error('PartDetailModal', 'Error opening file', error);
       toast.error(t("common.error"), {
         description: t("parts.failedToOpenFileViewer"),
       });

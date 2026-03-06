@@ -102,7 +102,7 @@ export const Settings: React.FC = () => {
       await signOut();
       toast.success(t("settings.accountDeleted"));
     } catch (error: unknown) {
-      console.error('Error deleting account:', error);
+      logger.error('Settings', 'Error deleting account', error);
       toast.error(error instanceof Error ? error.message : t("settings.accountDeleteFailed"));
       setIsDeletingAccount(false);
       setShowDeleteAccountDialog(false);
@@ -121,7 +121,7 @@ export const Settings: React.FC = () => {
         await signOut();
       }, 1000);
     } catch (error: unknown) {
-      console.error('Error deleting tenant:', error);
+      logger.error('Settings', 'Error deleting tenant', error);
       toast.error(error instanceof Error ? error.message : t("settings.tenantDeleteFailed"));
       setIsDeletingTenant(false);
       setShowDeleteTenantDialog(false);

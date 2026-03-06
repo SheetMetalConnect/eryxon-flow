@@ -145,7 +145,7 @@ export default function IssueQueue() {
     const { data, error } = await query;
 
     if (error) {
-      console.error("Error loading issues:", error);
+      logger.error('IssueQueue', 'Error loading issues', error);
     } else {
       setIssues(data || []);
     }

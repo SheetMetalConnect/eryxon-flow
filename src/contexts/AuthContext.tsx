@@ -3,6 +3,8 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { logger } from "@/lib/logger";
+import { queryClient } from "@/lib/queryClient";
+import { prefetchCommonData } from "@/lib/cacheInvalidation";
 
 // SECURITY NOTE: The role field here is for UI convenience only (showing/hiding UI elements).
 // All actual authorization is enforced server-side via Row Level Security (RLS) policies
@@ -101,9 +103,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       setProfile(data as Profile);
 
-      // Fetch tenant info after profile is loaded
+      // Fetch tenant info and prefetch common data after profile is loaded
       if (data) {
         await fetchTenant();
+        // Prefetch commonly needed data to improve initial page load
+        prefetchCommonData(queryClient, data.tenant_id, {
+          fetchCells: () => supabase.from('cells').select('*').eq('tenant_id', data.tenant_id).eq('active', true).then(r => r.data),
+          fetchMaterials: () => supabase.from('materials').select('*').eq('tenant_id', data.tenant_id).then(r => r.data),
+          fetchScrapReasons: () => supabase.from('scrap_reasons').select('*').eq('tenant_id', data.tenant_id).then(r => r.data),
+        });
       }
     } catch (error) {
       logger.error('AuthContext', 'Error fetching profile', error);
@@ -120,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // The RPC returns an array, get the first element
       if (data && data.length > 0) {
-        const tenantData = data[0] as any;
+        const tenantData = data[0] as Record<string, unknown>;
         setTenant({
           id: tenantData.id,
           name: tenantData.name,

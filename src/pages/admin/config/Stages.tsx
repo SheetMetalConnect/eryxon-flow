@@ -265,7 +265,7 @@ export default function ConfigStages() {
       loadStages();
     } catch (error) {
       toast.error(t("stages.failedToSaveStage"));
-      console.error(error);
+      logger.error('Stages', 'Failed to save stage', error);
     }
   };
 
@@ -337,7 +337,7 @@ export default function ConfigStages() {
       loadStages();
     } catch (error) {
       toast.error(t("stages.failedToDeleteStage"));
-      console.error(error);
+      logger.error('Stages', 'Failed to delete stage', error);
     }
   };
 
@@ -375,7 +375,7 @@ export default function ConfigStages() {
       toast.success(t("stages.stagesReordered"));
     } catch (error) {
       toast.error(t("stages.failedToReorderStages"));
-      console.error(error);
+      logger.error('Stages', 'Failed to reorder stages', error);
       // Reload stages to revert to correct order
       loadStages();
     }

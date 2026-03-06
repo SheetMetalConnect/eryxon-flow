@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
+import { useAuth } from "@/contexts/AuthContext";
 import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
 import { logger } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
@@ -54,6 +56,7 @@ interface PartData {
 export default function Parts() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
 
   // File viewer state
@@ -63,7 +66,7 @@ export default function Parts() {
   const [currentFileTitle, setCurrentFileTitle] = useState<string>("");
 
   const { data: materials } = useQuery({
-    queryKey: ["materials"],
+    queryKey: QueryKeys.config.materials(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("parts")
@@ -78,7 +81,7 @@ export default function Parts() {
   });
 
   const { data: jobs } = useQuery({
-    queryKey: ["jobs-list"],
+    queryKey: QueryKeys.jobs.list(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("jobs")
@@ -95,7 +98,7 @@ export default function Parts() {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["admin-parts-all"],
+    queryKey: QueryKeys.parts.all(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const query = supabase.from("parts").select(`
           *,
@@ -173,7 +176,7 @@ export default function Parts() {
       setCurrentFileTitle(fileName);
       setFileViewerOpen(true);
     } catch (error: any) {
-      console.error("Error opening file:", error);
+      logger.error('Parts', 'Error opening file', error);
       toast.error(t("notifications.error"), { description: t("notifications.failedToOpenFileViewer") });
     }
   };

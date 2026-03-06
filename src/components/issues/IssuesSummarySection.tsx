@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { QueryKeys } from '@/lib/queryClient';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle } from 'lucide-react';
@@ -15,7 +16,7 @@ export function IssuesSummarySection({ partId, jobId }: IssuesSummarySectionProp
   const { t } = useTranslation();
 
   const { data: issues, isLoading } = useQuery({
-    queryKey: ['issues-summary', partId, jobId],
+    queryKey: QueryKeys.issues.summary(partId, jobId),
     queryFn: async () => {
       let query = supabase
         .from('issues_with_context')

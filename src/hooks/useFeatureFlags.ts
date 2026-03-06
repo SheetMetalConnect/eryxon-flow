@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { QueryKeys } from '@/lib/queryClient';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 /**
  * Feature flag definitions for Eryxon MES
@@ -130,7 +131,7 @@ export function useFeatureFlags() {
 
   // Fetch feature flags from tenant settings
   const { data: flags, isLoading, error } = useQuery({
-    queryKey: ['feature-flags', tenant?.id],
+    queryKey: QueryKeys.config.featureFlags(tenant?.id ?? ''),
     queryFn: async (): Promise<FeatureFlags> => {
       if (!tenant?.id) {
         return DEFAULT_FEATURE_FLAGS;
@@ -175,11 +176,11 @@ export function useFeatureFlags() {
       return mergedFlags;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['feature-flags', tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.config.featureFlags(tenant?.id ?? '') });
       toast.success(t('featureFlags.updateSuccess'));
     },
     onError: (error: Error) => {
-      console.error('Failed to update feature flags:', error);
+      logger.error('useFeatureFlags', 'Failed to update feature flags', error);
       toast.error(t('featureFlags.updateError'));
     },
   });

@@ -27,9 +27,9 @@ export function usePartImages(partId: string) {
       if (error) throw error;
 
       return data?.image_paths || [];
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('usePartImages', 'Error fetching image paths', error);
-      toast.error(t("parts.images.loadFailed"), { description: error.message });
+      toast.error(t("parts.images.loadFailed"), { description: error instanceof Error ? error.message : undefined });
       return [];
     }
   }, [partId, t]);
@@ -60,9 +60,9 @@ export function usePartImages(partId: string) {
       );
 
       return imageInfos;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('usePartImages', 'Error loading images', error);
-      toast.error(t("parts.images.loadFailed"), { description: error.message });
+      toast.error(t("parts.images.loadFailed"), { description: error instanceof Error ? error.message : undefined });
       return [];
     } finally {
       setLoading(false);
@@ -83,9 +83,9 @@ export function usePartImages(partId: string) {
       if (error) throw error;
 
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('usePartImages', 'Error adding images', error);
-      toast.error(t("parts.images.addFailed"), { description: error.message });
+      toast.error(t("parts.images.addFailed"), { description: error instanceof Error ? error.message : undefined });
       return false;
     }
   }, [partId, getImagePaths, t]);

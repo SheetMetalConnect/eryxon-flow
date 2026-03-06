@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { logger } from '@/lib/logger';
 
 interface ImageInfo {
   path: string;

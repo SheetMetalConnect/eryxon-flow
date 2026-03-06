@@ -4,6 +4,7 @@ import { Wrench, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { EnhancedMetadataDisplay } from '@/components/ui/EnhancedMetadataDisplay';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 interface Resource {
   id: string;

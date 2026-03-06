@@ -226,7 +226,7 @@ export default function Assignments() {
 
       if (assignmentsData) setAssignments(assignmentsData as any);
     } catch (error) {
-      console.error("Error loading assignments:", error);
+      logger.error('Assignments', 'Error loading assignments', error);
       toast.error(t("assignments.failedToLoad"));
     } finally {
       setLoading(false);
@@ -383,7 +383,7 @@ export default function Assignments() {
       loadData();
     } catch (error: any) {
       toast.error(error.message || t("notifications.failed"));
-      console.error("Error creating operator:", error);
+      logger.error('Assignments', 'Error creating operator', error);
     } finally {
       setCreatingOperator(false);
     }

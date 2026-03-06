@@ -98,7 +98,7 @@ export function useNextCellCapacity(
       });
 
     return () => {
-      channel.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [currentCellId, tenantId, fetchCapacity, debouncedFetch]);
 

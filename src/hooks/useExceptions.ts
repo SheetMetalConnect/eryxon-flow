@@ -2,8 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
+import { QueryKeys } from '@/lib/queryClient'
 import { toast } from 'sonner'
 import type { ExceptionStatus, ExceptionWithExpectation } from '@/integrations/supabase/types/tables/expectations'
+import { logger } from '@/lib/logger'
 
 interface ExceptionStats {
   open_count: number
@@ -32,7 +34,7 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['exceptions', profile?.tenant_id, status, limit],
+    queryKey: QueryKeys.exceptions.all(profile?.tenant_id ?? '', status, limit),
     queryFn: async () => {
       if (!profile?.tenant_id) return []
 
@@ -73,7 +75,7 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
 
   // Fetch exception stats
   const { data: stats } = useQuery({
-    queryKey: ['exception-stats', profile?.tenant_id],
+    queryKey: QueryKeys.exceptions.stats(profile?.tenant_id ?? ''),
     queryFn: async () => {
       if (!profile?.tenant_id) return null
 
@@ -97,12 +99,11 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exceptions'] })
-      queryClient.invalidateQueries({ queryKey: ['exception-stats'] })
       toast.success(t('admin:exceptionInbox.exceptionAcknowledged'))
     },
     onError: (error) => {
       toast.error(t('admin:exceptionInbox.actionFailed'))
-      console.error(error)
+      logger.error('useExceptions', 'Action failed', error)
     },
   })
 
@@ -132,12 +133,11 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exceptions'] })
-      queryClient.invalidateQueries({ queryKey: ['exception-stats'] })
       toast.success(t('admin:exceptionInbox.exceptionResolved'))
     },
     onError: (error) => {
       toast.error(t('admin:exceptionInbox.actionFailed'))
-      console.error(error)
+      logger.error('useExceptions', 'Action failed', error)
     },
   })
 
@@ -158,12 +158,11 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exceptions'] })
-      queryClient.invalidateQueries({ queryKey: ['exception-stats'] })
       toast.success(t('admin:exceptionInbox.exceptionDismissed'))
     },
     onError: (error) => {
       toast.error(t('admin:exceptionInbox.actionFailed'))
-      console.error(error)
+      logger.error('useExceptions', 'Action failed', error)
     },
   })
 
@@ -186,7 +185,7 @@ export function useException(exceptionId: string | undefined) {
   const { profile } = useAuth()
 
   return useQuery({
-    queryKey: ['exception', exceptionId],
+    queryKey: QueryKeys.exceptions.detail(exceptionId ?? ''),
     queryFn: async () => {
       if (!exceptionId || !profile?.tenant_id) return null
 

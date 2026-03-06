@@ -17,6 +17,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { QueryKeys } from '@/lib/queryClient';
+import { logger } from '@/lib/logger';
 import {
   getCADConfig,
   getActiveBackendUrl,
@@ -480,7 +481,7 @@ export function useCADProcessing() {
         queryClient.invalidateQueries({ queryKey: QueryKeys.pmi.byPart(partId) });
         queryClient.invalidateQueries({ queryKey: QueryKeys.parts.detail(partId) });
       } catch (error) {
-        console.error('Failed to store processed data:', error);
+        logger.error('useCADProcessing', 'Failed to store processed data', error);
         // Don't fail the whole operation if storage fails
       }
     }

@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Trash2, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 import { DataTable } from "@/components/ui/data-table/DataTable";
 import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
 
@@ -112,7 +113,7 @@ export default function ConfigWebhooks() {
       .limit(100);
 
     if (error) {
-      console.error('Error fetching webhook logs:', error);
+      logger.error('Webhooks', 'Error fetching webhook logs', error);
       toast.error(t('webhooks.error'), { description: t('webhooks.failedToFetchLogs') });
     } else {
       setWebhookLogs(data || []);

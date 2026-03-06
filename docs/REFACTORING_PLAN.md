@@ -91,14 +91,16 @@ queryKey: ["pending-issues-count"]
 
 ---
 
-## 5. HIGH: Remove Inline Styles
+## 5. RESOLVED: Inline Styles Audit
 
-**Problem:** 70 instances of `style={{...}}` inline styles across components, bypassing the design system.
+**Investigation result:** Of the 70 inline styles found, nearly all are legitimate:
+- **Dynamic data-driven colors** (cell.color, stage.color from DB) - cannot use CSS classes
+- **Virtualization positioning** (translateY, dynamic widths/heights) - required by virtualization libs
+- **AnimatedBackground orbs** - unique size/position per decorative element
+- **Chart/analytics colors** - dynamic data visualization colors
 
-**Action items:**
-- [ ] Audit all inline styles and replace with design system classes or CSS variables
-- [ ] Add design system utility classes for any missing patterns
-- [ ] Consider adding an ESLint rule to flag `style={{` in JSX
+**Decision:** No action needed. These inline styles serve valid purposes that CSS classes cannot replace.
+Only truly static inline styles (hardcoded hex colors, fixed dimensions) should be flagged, and none were found.
 
 ---
 

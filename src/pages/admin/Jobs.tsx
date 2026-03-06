@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
 import { logger } from "@/lib/logger";
@@ -87,7 +88,7 @@ export default function Jobs() {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["admin-jobs-all"],
+    queryKey: QueryKeys.jobs.all(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const query = supabase.from("jobs").select(`
           *,
@@ -190,7 +191,7 @@ export default function Jobs() {
       setCurrentFileTitle(fileName);
       setFileViewerOpen(true);
     } catch (error: any) {
-      console.error("Error opening file:", error);
+      logger.error('Jobs', 'Error opening file', error);
       toast.error(t("notifications.error"), { description: t("notifications.failedToOpenFileViewer") });
     }
   };

@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Plus, Edit, Trash2, Loader2, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { logger } from '@/lib/logger';
 import {
   DndContext,
   closestCenter,

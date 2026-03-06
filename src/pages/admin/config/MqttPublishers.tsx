@@ -127,7 +127,7 @@ export default function ConfigMqttPublishers() {
       .limit(100);
 
     if (error) {
-      console.error('Error fetching MQTT logs:', error);
+      logger.error('MqttPublishers', 'Error fetching MQTT logs', error);
       toast.error(t('mqtt.error'), { description: t('mqtt.failedToFetchLogs') });
     } else {
       setMqttLogs(data || []);

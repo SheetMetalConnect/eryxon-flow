@@ -7,7 +7,9 @@ import { SchedulerService, CalendarDay } from "@/lib/scheduler";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
+import { QueryKeys } from "@/lib/queryClient";
 import { addMonths, format } from "date-fns";
+import { logger } from '@/lib/logger';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -171,9 +173,8 @@ export function AutoScheduleButton() {
 
             // Invalidate relevant queries to refresh data without full page reload
             await Promise.all([
-                queryClient.invalidateQueries({ queryKey: ["day-allocations"] }),
-                queryClient.invalidateQueries({ queryKey: ["operations-capacity"] }),
-                queryClient.invalidateQueries({ queryKey: ["factory-calendar"] }),
+                queryClient.invalidateQueries({ queryKey: ["capacity"] }),
+                queryClient.invalidateQueries({ queryKey: ["factoryCalendar"] }),
                 queryClient.invalidateQueries({ queryKey: ["operations"] }),
                 queryClient.invalidateQueries({ queryKey: ["jobs"] }),
             ]);

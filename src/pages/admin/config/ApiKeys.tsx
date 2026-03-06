@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table/DataTable";
 import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
+import { logger } from "@/lib/logger";
 
 interface ApiKey {
   id: string;
@@ -92,7 +93,7 @@ export default function ConfigApiKeys() {
 
       toast.success(t('apiKeys.success'), { description: t('apiKeys.generated') });
     } catch (error) {
-      console.error('Error generating API key:', error);
+      logger.error('ApiKeys', 'Error generating API key', error);
       toast.error(t('apiKeys.error'), { description: error instanceof Error ? error.message : t('apiKeys.failedToGenerate') });
     } finally {
       setIsGenerating(false);

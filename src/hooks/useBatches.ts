@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { QueryKeys } from "@/lib/queryClient";
+import { logger } from '@/lib/logger';
 
 export type BatchType = "laser_nesting" | "tube_batch" | "saw_batch" | "finishing_batch" | "general";
 export type BatchStatus = "draft" | "ready" | "in_progress" | "completed" | "cancelled" | "blocked";
@@ -21,7 +22,7 @@ export interface Batch {
   actual_time: number | null;
   operations_count: number;
   notes: string | null;
-  nesting_metadata: Record<string, any> | null;
+  nesting_metadata: Record<string, unknown> | null;
   external_id: string | null;
   external_source: string | null;
   created_by: string | null;
@@ -35,7 +36,7 @@ export interface Batch {
   layout_image_url: string | null;
   parent_batch_id: string | null;
   material_requirement_raised: boolean;
-  material_requirement_metadata: Record<string, any> | null;
+  material_requirement_metadata: Record<string, unknown> | null;
   // Joined data
   cell?: {
     id: string;
@@ -89,7 +90,7 @@ export interface CreateBatchInput {
   thickness_mm?: number;
   estimated_time?: number;
   notes?: string;
-  nesting_metadata?: Record<string, any>;
+  nesting_metadata?: Record<string, unknown>;
   nesting_image_url?: string;
   layout_image_url?: string;
   parent_batch_id?: string;
@@ -117,7 +118,7 @@ export function useBatches(filters?: {
         .order("created_at", { ascending: false });
 
       if (filters?.status) {
-        query = query.eq("status", filters.status as any);
+        query = query.eq("status", filters.status as string);
       }
       if (filters?.batch_type) {
         query = query.eq("batch_type", filters.batch_type);
@@ -156,7 +157,7 @@ export function useBatch(batchId: string | undefined) {
         .single();
 
       if (error) throw error;
-      return data as any as Batch;
+      return data as unknown as Batch;
     },
     enabled: !!batchId && !!profile?.tenant_id,
   });
@@ -299,7 +300,7 @@ export function useCreateBatch() {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
       toast.success(t("batches.createSuccess"), { description: t("batches.createSuccessDesc") });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: error.message });
     },
   });
@@ -330,7 +331,7 @@ export function useUpdateBatch() {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
       toast.success(t("batches.updateSuccess"));
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: error.message });
     },
   });
@@ -343,7 +344,7 @@ export function useUpdateBatchStatus() {
 
   return useMutation({
     mutationFn: async ({ batchId, status }: { batchId: string; status: BatchStatus }) => {
-      const updates: Record<string, any> = { status };
+      const updates: Record<string, string> = { status };
 
       if (status === "in_progress" && profile?.id) {
         updates.started_at = new Date().toISOString();
@@ -368,7 +369,7 @@ export function useUpdateBatchStatus() {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
       queryClient.invalidateQueries({ queryKey: QueryKeys.batches.detail(variables.batchId) });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: error.message });
     },
   });
@@ -413,7 +414,7 @@ export function useAddOperationsToBatch() {
       queryClient.invalidateQueries({ queryKey: QueryKeys.batches.detail(variables.batchId) });
       toast.success(t("batches.operationsAdded"));
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: error.message });
     },
   });
@@ -437,7 +438,7 @@ export function useRemoveOperationFromBatch() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: error.message });
     },
   });
@@ -472,7 +473,7 @@ export function useDeleteBatch() {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
       toast.success(t("batches.deleteSuccess"));
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: error.message });
     },
   });
@@ -506,7 +507,7 @@ export function useCreateBatchRequirement() {
       queryClient.invalidateQueries({ queryKey: QueryKeys.batches.requirements(variables.batchId) });
       toast.success(t("batches.requirementAdded"));
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: error.message });
     },
   });
@@ -518,7 +519,7 @@ export function useRaiseMaterialRequirement() {
   return useMutation({
     mutationFn: async ({ batchId }: { batchId: string }) => {
       // Placeholder implementation to satisfy existing calls
-      console.log("Legacy raise requirement called for", batchId);
+      logger.debug('useBatches', 'Legacy raise requirement called for', batchId);
     }
   })
 }

@@ -121,7 +121,7 @@ export function useCellQRMMetrics(
       });
 
     return () => {
-      channel.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [cellId, tenantId, fetchMetrics, debouncedFetch]);
 
@@ -275,7 +275,7 @@ export function useAllCellsQRMMetrics(tenantId: string | null) {
       });
 
     return () => {
-      channel.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [tenantId, fetchAllMetrics, debouncedFetch]);
 

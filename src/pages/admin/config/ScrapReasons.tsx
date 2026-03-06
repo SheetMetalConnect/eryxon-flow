@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,7 +61,7 @@ export default function ConfigScrapReasons() {
   const { data: usageStats } = useScrapReasonUsage();
 
   const { data: scrapReasons, isLoading } = useQuery({
-    queryKey: ["scrap-reasons", selectedCategory, activeOnly, searchQuery],
+    queryKey: [...QueryKeys.config.scrapReasons(profile?.tenant_id ?? ''), selectedCategory, activeOnly, searchQuery],
     queryFn: async () => {
       let query = supabase.from("scrap_reasons").select("*");
       if (selectedCategory !== "all") query = query.eq("category", selectedCategory);
@@ -80,7 +81,7 @@ export default function ConfigScrapReasons() {
     },
     onSuccess: () => {
       toast.success(t("scrapReasons.defaultCreated"));
-      queryClient.invalidateQueries({ queryKey: ["scrap-reasons"] });
+      queryClient.invalidateQueries({ queryKey: ["config", "scrapReasons"] });
     },
     onError: (error: any) => toast.error(error.message || t("notifications.failed")),
   });
@@ -103,7 +104,7 @@ export default function ConfigScrapReasons() {
     },
     onSuccess: (_, variables) => {
       toast.success(variables.id ? t("notifications.updated") : t("notifications.created"));
-      queryClient.invalidateQueries({ queryKey: ["scrap-reasons"] });
+      queryClient.invalidateQueries({ queryKey: ["config", "scrapReasons"] });
       setDialogOpen(false);
       setEditingReason(null);
     },
@@ -117,7 +118,7 @@ export default function ConfigScrapReasons() {
     },
     onSuccess: () => {
       toast.success(t("scrapReasons.deleted"));
-      queryClient.invalidateQueries({ queryKey: ["scrap-reasons"] });
+      queryClient.invalidateQueries({ queryKey: ["config", "scrapReasons"] });
     },
     onError: (error: any) => toast.error(error.message || t("notifications.failed")),
   });

@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import { format, addDays, startOfWeek, isSameDay, parseISO, getDay, isWithinInterval } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -165,7 +166,7 @@ export default function CapacityMatrix() {
 
     // Fetch cells first (usually cached, fast)
     const { data: cells, isLoading: cellsLoading } = useQuery({
-        queryKey: ["cells-capacity"],
+        queryKey: QueryKeys.cells.capacity(tenant?.id ?? ''),
         queryFn: async () => {
             const { data, error } = await supabase
                 .from("cells")
@@ -179,7 +180,7 @@ export default function CapacityMatrix() {
 
     // Fetch calendar data
     const { data: calendarDays, isLoading: calendarLoading } = useQuery({
-        queryKey: ["factory-calendar", format(startDate, 'yyyy-MM-dd')],
+        queryKey: [...QueryKeys.factoryCalendar.all(tenant?.id ?? ''), format(startDate, 'yyyy-MM-dd')],
         queryFn: async () => {
             const endDate = addDays(startDate, 14);
             const { data, error } = await supabase
@@ -195,7 +196,7 @@ export default function CapacityMatrix() {
 
     // Fetch day allocations (main data source)
     const { data: dayAllocations, isLoading: allocationsLoading, isFetching: allocationsFetching } = useQuery({
-        queryKey: ["day-allocations", format(startDate, 'yyyy-MM-dd')],
+        queryKey: [...QueryKeys.capacity.dayAllocations(tenant?.id ?? ''), format(startDate, 'yyyy-MM-dd')],
         queryFn: async () => {
             const endDate = addDays(startDate, 14);
             const { data, error } = await supabase
@@ -221,7 +222,7 @@ export default function CapacityMatrix() {
 
     // Fallback: fetch operations with planned dates if no allocations
     const { data: operations, isLoading: opsLoading } = useQuery({
-        queryKey: ["operations-capacity", format(startDate, 'yyyy-MM-dd')],
+        queryKey: [...QueryKeys.capacity.operations(tenant?.id ?? ''), format(startDate, 'yyyy-MM-dd')],
         queryFn: async () => {
             const { data, error } = await supabase
                 .from("operations")

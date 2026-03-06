@@ -41,6 +41,7 @@ import { PDFViewer } from "@/components/PDFViewer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
+import { logger } from '@/lib/logger';
 
 interface OperationDetailModalProps {
   operationId: string;
@@ -129,7 +130,7 @@ export default function OperationDetailModal({
 
   // Fetch available operators for assignment
   const { data: operators } = useQuery({
-    queryKey: ["operators"],
+    queryKey: QueryKeys.profiles.operators(profile?.tenant_id || ""),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")

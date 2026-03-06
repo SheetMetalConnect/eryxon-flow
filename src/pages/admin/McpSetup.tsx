@@ -60,7 +60,7 @@ export default function McpSetup() {
       if (error) throw error;
       setEndpoints(data || []);
     } catch (error: any) {
-      console.error("Error fetching endpoints:", error);
+      logger.error('McpSetup', 'Error fetching endpoints', error);
       // Table might not exist yet - that's okay
       if (error.code !== '42P01') {
         toast.error(t('mcp.failedToLoad'));
@@ -94,7 +94,7 @@ export default function McpSetup() {
       await fetchEndpoints();
       toast.success(t('mcp.endpointCreatedSuccess'));
     } catch (error: any) {
-      console.error("Error creating endpoint:", error);
+      logger.error('McpSetup', 'Error creating endpoint', error);
       toast.error(error.message || t('mcp.failedToCreate'));
     } finally {
       setIsCreating(false);
@@ -121,7 +121,7 @@ export default function McpSetup() {
       await fetchEndpoints();
       toast.success(t('mcp.tokenRegenerated'));
     } catch (error: any) {
-      console.error("Error regenerating token:", error);
+      logger.error('McpSetup', 'Error regenerating token', error);
       toast.error(error.message || t('mcp.failedToRegenerate'));
     }
   };
@@ -137,7 +137,7 @@ export default function McpSetup() {
       await fetchEndpoints();
       toast.success(t(currentEnabled ? 'mcp.endpointDisabled' : 'mcp.endpointEnabled'));
     } catch (error: any) {
-      console.error("Error toggling endpoint:", error);
+      logger.error('McpSetup', 'Error toggling endpoint', error);
       toast.error(t('mcp.failedToUpdate'));
     }
   };
@@ -157,7 +157,7 @@ export default function McpSetup() {
       await fetchEndpoints();
       toast.success(t('mcp.endpointDeleted'));
     } catch (error: any) {
-      console.error("Error deleting endpoint:", error);
+      logger.error('McpSetup', 'Error deleting endpoint', error);
       toast.error(t('mcp.failedToDelete'));
     }
   };

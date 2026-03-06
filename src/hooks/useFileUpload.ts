@@ -88,7 +88,7 @@ export function useFileUpload() {
   const checkUploadQuota = useCallback(async (fileSizeBytes: number): Promise<{
     allowed: boolean;
     reason: string;
-    quotaInfo?: any;
+    quotaInfo?: { allowed: boolean; reason: string; current_mb?: number; max_mb?: number };
   }> => {
     if (!profile?.tenant_id) {
       return {
@@ -124,11 +124,11 @@ export function useFileUpload() {
         reason: result.reason || '',
         quotaInfo: result,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('useFileUpload', 'Quota check error', error);
       return {
         allowed: false,
-        reason: error.message || 'Quota check failed',
+        reason: error instanceof Error ? error.message : 'Quota check failed',
       };
     }
   }, [profile?.tenant_id]);
@@ -282,9 +282,9 @@ export function useFileUpload() {
           // Update storage usage
           await updateStorageUsage(file.size, 'add');
 
-        } catch (uploadError: any) {
+        } catch (uploadError: unknown) {
           logger.error('useFileUpload', 'Upload error', uploadError);
-          const errorMessage = uploadError.message || 'Upload failed';
+          const errorMessage = uploadError instanceof Error ? uploadError.message : 'Upload failed';
           failedFiles.push({ fileName: file.name, error: errorMessage });
           setProgress(prev => prev.map((p, idx) =>
             idx === i ? { ...p, status: 'error', error: errorMessage } : p
@@ -328,11 +328,11 @@ export function useFileUpload() {
       }
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('useFileUpload', 'Delete error', error);
       return {
         success: false,
-        error: error.message || 'Delete failed',
+        error: error instanceof Error ? error.message : 'Delete failed',
       };
     }
   }, [updateStorageUsage]);

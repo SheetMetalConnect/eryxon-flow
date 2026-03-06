@@ -119,7 +119,7 @@ export default function ConfigUsers() {
       const { data, error } = await supabase.rpc('list_operators' as any);
 
       if (error) {
-        console.error('Error loading operators:', error);
+        logger.error('Users', 'Error loading operators', error);
         setOperatorsError(error.message);
         // Fallback: try direct table query
         const { data: directData, error: directError } = await supabase
@@ -135,7 +135,7 @@ export default function ConfigUsers() {
         setOperators(data as Operator[]);
       }
     } catch (err: any) {
-      console.error('Failed to load operators:', err);
+      logger.error('Users', 'Failed to load operators', err);
       setOperatorsError(err.message || 'Failed to load operators');
     } finally {
       setOperatorsLoading(false);
@@ -186,7 +186,7 @@ export default function ConfigUsers() {
       loadUsers();
     } catch (error: any) {
       toast.error(error.message || t("users.failedToSaveUser"));
-      console.error(error);
+      logger.error('Users', 'Failed to save user', error);
     }
   };
 
@@ -207,7 +207,7 @@ export default function ConfigUsers() {
       }
     } catch (error: any) {
       // Error toast already shown by createInvitation
-      console.error('Invitation error:', error);
+      logger.error('Users', 'Invitation error', error);
     } finally {
       setInviting(false);
     }
@@ -237,7 +237,7 @@ export default function ConfigUsers() {
       // Use provided employee ID or let the RPC auto-generate
       const employeeIdParam = operatorForm.employee_id.trim() || null;
 
-      console.log('Creating operator with:', {
+      logger.debug('Users', 'Creating operator with', {
         name: operatorForm.full_name.trim(),
         employeeId: employeeIdParam,
         pinLength: operatorForm.pin.length
@@ -249,7 +249,7 @@ export default function ConfigUsers() {
         p_employee_id: employeeIdParam,
       });
 
-      console.log('RPC result:', { data, error });
+      logger.debug('Users', 'RPC result', { data, error });
 
       if (error) throw error;
 
@@ -271,7 +271,7 @@ export default function ConfigUsers() {
       // Reload operators list
       await loadOperators();
     } catch (error: any) {
-      console.error("Error creating operator:", error);
+      logger.error('Users', 'Error creating operator', error);
       toast.error(error.message || "Failed to create operator", {
         description: "Check the browser console for details.",
       });
@@ -310,7 +310,7 @@ export default function ConfigUsers() {
       setNewPinForm({ pin: "" });
       await loadOperators();
     } catch (error: any) {
-      console.error("Error resetting PIN:", error);
+      logger.error('Users', 'Error resetting PIN', error);
       toast.error(error.message || t("notifications.failed"));
     } finally {
       setResettingPin(false);
@@ -328,7 +328,7 @@ export default function ConfigUsers() {
       toast.success(t("notifications.updated"));
       await loadOperators();
     } catch (error: any) {
-      console.error("Error unlocking operator:", error);
+      logger.error('Users', 'Error unlocking operator', error);
       toast.error(error.message || "Failed to unlock operator");
     }
   };
@@ -345,7 +345,7 @@ export default function ConfigUsers() {
       toast.success(t("notifications.updated"));
       await loadOperators();
     } catch (error: any) {
-      console.error("Error toggling operator status:", error);
+      logger.error('Users', 'Error toggling operator status', error);
       toast.error(error.message || t("notifications.failed"));
     }
   };
@@ -385,7 +385,7 @@ export default function ConfigUsers() {
       loadUsers();
     } catch (error: any) {
       toast.error(error.message || t("notifications.failed"));
-      console.error("Error creating machine worker:", error);
+      logger.error('Users', 'Error creating machine worker', error);
     } finally {
       setCreatingMachine(false);
     }

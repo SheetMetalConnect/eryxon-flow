@@ -13,6 +13,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { QueryKeys } from '@/lib/queryClient';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // Types
@@ -42,13 +43,12 @@ export interface PMIMetadata {
   };
 }
 
-// Debug logging - only in development
-const DEBUG = import.meta.env.DEV;
+// Structured logging via centralized logger
 const log = {
-  debug: (msg: string, data?: unknown) => DEBUG && console.debug(`[PMI] ${msg}`, data ?? ''),
-  info: (msg: string, data?: unknown) => DEBUG && console.info(`[PMI] ${msg}`, data ?? ''),
-  warn: (msg: string, data?: unknown) => console.warn(`[PMI] ${msg}`, data ?? ''),
-  error: (msg: string, data?: unknown) => console.error(`[PMI] ${msg}`, data ?? ''),
+  debug: (msg: string, data?: unknown) => logger.debug('usePMI', msg, data),
+  info: (msg: string, data?: unknown) => logger.info('usePMI', msg, data),
+  warn: (msg: string, data?: unknown) => logger.warn('usePMI', msg, data),
+  error: (msg: string, data?: unknown) => logger.error('usePMI', msg, data),
 };
 
 export interface Vector3 {

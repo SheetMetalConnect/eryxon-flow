@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { QueryKeys } from "@/lib/queryClient";
 import { logger } from '@/lib/logger';
 
 export interface ProductionMetrics {
@@ -59,7 +60,7 @@ export function useOperationProductionMetrics(operationId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["operation-production-metrics", operationId],
+    queryKey: QueryKeys.operations.production(operationId ?? ''),
     enabled: !!operationId && !!profile?.tenant_id,
     queryFn: async (): Promise<OperationProductionSummary | null> => {
       if (!operationId) return null;
@@ -167,7 +168,7 @@ export function useJobProductionMetrics(jobId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["job-production-metrics", jobId],
+    queryKey: QueryKeys.production.byJob(jobId ?? ''),
     enabled: !!jobId && !!profile?.tenant_id,
     queryFn: async (): Promise<ProductionMetrics | null> => {
       if (!jobId) return null;

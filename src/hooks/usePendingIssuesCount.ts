@@ -24,7 +24,7 @@ export function usePendingIssuesCount() {
 
   // Subscribe to real-time changes
   React.useEffect(() => {
-    const subscription = supabase
+    const channel = supabase
       .channel('pending-issues-count')
       .on(
         'postgres_changes',
@@ -35,16 +35,15 @@ export function usePendingIssuesCount() {
           filter: 'status=eq.pending',
         },
         () => {
-          // Refetch when there are changes to pending issues
           queryClient.invalidateQueries({ queryKey: QueryKeys.issues.pendingCount(profile?.tenant_id ?? '') });
         }
       )
       .subscribe();
 
     return () => {
-      subscription.unsubscribe();
+      supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, profile?.tenant_id]);
 
   return { count: count || 0, isLoading };
 }

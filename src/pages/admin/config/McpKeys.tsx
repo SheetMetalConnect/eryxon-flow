@@ -112,7 +112,7 @@ export default function ConfigMcpKeys() {
           : ["*"],
       })));
     } catch (error: any) {
-      console.error("Error fetching MCP keys:", error);
+      logger.error('McpKeys', 'Error fetching MCP keys', error);
       toast.error(t("mcpKeys.failedToFetch"));
     } finally {
       setLoading(false);
@@ -160,7 +160,7 @@ export default function ConfigMcpKeys() {
 
       toast.success(t("mcpKeys.generated"));
     } catch (error: any) {
-      console.error("Error generating MCP key:", error);
+      logger.error('McpKeys', 'Error generating MCP key', error);
       toast.error(error.message || t("notifications.failed"));
     } finally {
       setIsGenerating(false);
@@ -179,7 +179,7 @@ export default function ConfigMcpKeys() {
       toast.success(t("notifications.updated"));
       await fetchMcpKeys();
     } catch (error: any) {
-      console.error("Error toggling key status:", error);
+      logger.error('McpKeys', 'Error toggling key status', error);
       toast.error(t("mcpKeys.statusUpdateFailed"));
     }
   };
@@ -200,7 +200,7 @@ export default function ConfigMcpKeys() {
       toast.success(t("mcpKeys.deleted"));
       await fetchMcpKeys();
     } catch (error: any) {
-      console.error("Error deleting MCP key:", error);
+      logger.error('McpKeys', 'Error deleting MCP key', error);
       toast.error(t("mcpKeys.deleteFailed"));
     }
   };

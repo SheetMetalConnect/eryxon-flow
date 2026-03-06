@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Loader2, Package } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 
 interface Material {
   id: string;
@@ -91,7 +92,7 @@ export default function ConfigMaterials() {
       loadMaterials();
     } catch (error) {
       toast.error(t("materials.failedToSaveMaterial"));
-      console.error(error);
+      logger.error('Materials', 'Failed to save material', error);
     }
   };
 

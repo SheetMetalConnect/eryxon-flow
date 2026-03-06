@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 interface JobIssueSummary {
   totalCount: number;
@@ -45,7 +46,7 @@ export function useJobIssues(jobId: string | undefined) {
           });
         }
       } catch (error) {
-        console.error('Error fetching job issue summary:', error);
+        logger.error('useJobIssues', 'Error fetching job issue summary', error);
         setSummary({
           totalCount: 0,
           pendingCount: 0,

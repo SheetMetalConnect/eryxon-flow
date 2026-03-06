@@ -138,7 +138,7 @@ export default function FactoryCalendar() {
       .lte("date", format(monthEnd, 'yyyy-MM-dd'));
 
     if (error) {
-      console.error("Error loading calendar:", error);
+      logger.error('FactoryCalendar', 'Error loading calendar', error);
       toast.error(t("calendar.messages.loadFailed", "Failed to load calendar"));
     } else {
       setCalendarDays((data || []) as CalendarDay[]);
@@ -236,7 +236,7 @@ export default function FactoryCalendar() {
       setDialogOpen(false);
       loadCalendarDays();
     } catch (error: any) {
-      console.error("Error saving calendar:", error);
+      logger.error('FactoryCalendar', 'Error saving calendar', error);
       toast.error(error.message || t("calendar.messages.saveFailed", "Failed to save"));
     } finally {
       setSaving(false);
@@ -270,7 +270,7 @@ export default function FactoryCalendar() {
       setDialogOpen(false);
       loadCalendarDays();
     } catch (error: any) {
-      console.error("Error deleting:", error);
+      logger.error('FactoryCalendar', 'Error deleting', error);
       toast.error(t("calendar.messages.deleteFailed", "Failed to delete"));
     } finally {
       setSaving(false);

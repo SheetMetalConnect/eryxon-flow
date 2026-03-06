@@ -10,6 +10,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { logger } from '@/lib/logger';
 import {
   searchConfigs,
   createSearchFunctions,
@@ -91,7 +92,7 @@ export function useGlobalSearch() {
         const searchError =
           err instanceof Error ? err : new Error("Search failed");
         setError(searchError);
-        console.error("Search error:", searchError);
+        logger.error('useGlobalSearch', 'Search error', searchError);
         return [];
       } finally {
         setLoading(false);

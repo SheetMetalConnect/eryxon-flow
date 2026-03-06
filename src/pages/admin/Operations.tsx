@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
 import { useNavigate } from "react-router-dom";
@@ -49,7 +50,7 @@ export const Operations: React.FC = () => {
 
   // Fetch operations using React Query
   const { data: operations = [], isLoading, refetch } = useQuery({
-    queryKey: ["admin-operations", profile?.tenant_id],
+    queryKey: QueryKeys.operations.all(profile?.tenant_id ?? ''),
     queryFn: async () => {
       if (!profile?.tenant_id) return [];
 

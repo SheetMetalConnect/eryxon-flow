@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import {
   Dialog,
   DialogContent,
@@ -43,7 +44,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
   const { routing, loading: routingLoading } = useJobRouting(jobId, profile?.tenant_id ?? null);
 
   const { data: job, isLoading, error } = useQuery({
-    queryKey: ["job-detail", jobId],
+    queryKey: QueryKeys.jobs.detail(jobId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("jobs")

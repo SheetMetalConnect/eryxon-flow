@@ -100,7 +100,7 @@ export const ActivityMonitor: React.FC = () => {
       );
 
       if (activityError) {
-        console.error("Error loading activities:", activityError);
+        logger.error('ActivityMonitor', 'Error loading activities', activityError);
       } else {
         setActivities(activityData || []);
       }
@@ -117,7 +117,7 @@ export const ActivityMonitor: React.FC = () => {
       );
 
       if (statsError) {
-        console.error("Error loading stats:", statsError);
+        logger.error('ActivityMonitor', 'Error loading stats', statsError);
       } else if (statsData && statsData.length > 0) {
         setStats(statsData[0]);
       }
@@ -125,7 +125,7 @@ export const ActivityMonitor: React.FC = () => {
       setLastUpdate(new Date());
       setLoading(false);
     } catch (error) {
-      console.error("Error loading activity data:", error);
+      logger.error('ActivityMonitor', 'Error loading activity data', error);
       setLoading(false);
     }
   }, [profile, filterAction, filterEntityType, searchQuery, limit]);
@@ -162,7 +162,7 @@ export const ActivityMonitor: React.FC = () => {
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
         (payload) => {
-          console.log("Real-time activity update:", payload);
+          logger.debug('ActivityMonitor', 'Real-time activity update', payload);
           // Reload data when changes occur
           loadData();
         },

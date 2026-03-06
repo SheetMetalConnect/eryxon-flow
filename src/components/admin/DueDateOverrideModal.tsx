@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +32,7 @@ export default function DueDateOverrideModal({
   const [overrideDate, setOverrideDate] = useState<Date | undefined>(undefined);
 
   const { data: job, isLoading } = useQuery({
-    queryKey: ["job-dates", jobId],
+    queryKey: QueryKeys.jobs.dates(jobId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("jobs")

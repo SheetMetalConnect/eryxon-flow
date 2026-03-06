@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 interface PartIssueSummary {
   totalCount: number;
@@ -45,7 +46,7 @@ export function usePartIssues(partId: string | undefined) {
           });
         }
       } catch (error) {
-        console.error('Error fetching part issue summary:', error);
+        logger.error('usePartIssues', 'Error fetching part issue summary', error);
         setSummary({
           totalCount: 0,
           pendingCount: 0,

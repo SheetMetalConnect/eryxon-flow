@@ -360,7 +360,7 @@ export default function DataImport() {
       toast.success(t('dataImport.importComplete'), { description: t('dataImport.importResultDesc', { created: totalCreated, updated: totalUpdated, errors: totalErrors }) });
 
     } catch (error) {
-      console.error('Import error:', error);
+      logger.error('DataImport', 'Import error', error);
       toast.error(t('dataImport.importFailed'), { description: error instanceof Error ? error.message : 'Unknown error' });
       setCurrentStep('preview');
     } finally {

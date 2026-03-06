@@ -172,7 +172,7 @@ export function usePartRouting(
         });
 
       return () => {
-        channel.unsubscribe();
+        supabase.removeChannel(channel);
       };
     }
   }, [partId, tenantId, fetchRouting, debouncedFetch]);
