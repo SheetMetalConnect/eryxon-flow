@@ -64,8 +64,13 @@ export default function AcceptInvitation() {
       return;
     }
 
-    if (password.length < 6) {
-      setError(t('invitation.passwordMinLength'));
+    if (password.length < 12) {
+      setError(t('auth.passwordMinLength'));
+      return;
+    }
+
+    if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+      setError(t('auth.passwordComplexity'));
       return;
     }
 
@@ -230,7 +235,7 @@ export default function AcceptInvitation() {
                     placeholder="••••••••"
                     className="bg-input-background border-input"
                   />
-                  <p className="text-xs text-muted-foreground">{t('invitation.minChars')}</p>
+                  <p className="text-xs text-muted-foreground">{t('auth.passwordRequirements')}</p>
                 </div>
 
                 <div className="space-y-2">

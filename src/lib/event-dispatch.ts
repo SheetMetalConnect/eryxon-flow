@@ -161,7 +161,10 @@ async function dispatchToWebhooks(
       return { success: false, error: 'Not authenticated' };
     }
 
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co';
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!supabaseUrl) {
+      return { success: false, error: 'Missing VITE_SUPABASE_URL configuration' };
+    }
 
     const response = await fetch(
       `${supabaseUrl}/functions/v1/webhook-dispatch`,
@@ -206,7 +209,10 @@ async function dispatchToMqtt(
       return { success: false, error: 'Not authenticated' };
     }
 
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co';
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!supabaseUrl) {
+      return { success: false, error: 'Missing VITE_SUPABASE_URL configuration' };
+    }
 
     const response = await fetch(
       `${supabaseUrl}/functions/v1/mqtt-publish`,
