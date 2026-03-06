@@ -92,7 +92,7 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        console.error("PIN verification error:", error);
+        if (import.meta.env.DEV) console.error("PIN verification error:", error);
         return {
           success: false,
           error_code: "RPC_ERROR",
@@ -133,7 +133,7 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
         };
       }
     } catch (err: any) {
-      console.error("Operator verification error:", err);
+      if (import.meta.env.DEV) console.error("Operator verification error:", err);
       return {
         success: false,
         error_code: "EXCEPTION",

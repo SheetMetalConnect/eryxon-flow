@@ -105,6 +105,7 @@ export function useBatches(filters?: {
   return useQuery({
     queryKey: ["batches", filters, profile?.tenant_id],
     queryFn: async () => {
+      if (!profile?.tenant_id) throw new Error("No tenant_id available");
       let query = supabase
         .from("operation_batches")
         .select(`
@@ -112,11 +113,11 @@ export function useBatches(filters?: {
           cell:cells(id, name),
           created_by_profile:profiles!operation_batches_created_by_fkey(full_name)
         `)
-        .eq("tenant_id", profile!.tenant_id)
+        .eq("tenant_id", profile.tenant_id)
         .order("created_at", { ascending: false });
 
       if (filters?.status) {
-        query = query.eq("status", filters.status as any);
+        query = query.eq("status", filters.status);
       }
       if (filters?.batch_type) {
         query = query.eq("batch_type", filters.batch_type);
@@ -139,7 +140,7 @@ export function useBatch(batchId: string | undefined) {
   return useQuery({
     queryKey: ["batch", batchId],
     queryFn: async () => {
-      if (!batchId) return null;
+      if (!batchId || !profile?.tenant_id) return null;
 
       const { data, error } = await supabase
         .from("operation_batches")
@@ -151,7 +152,7 @@ export function useBatch(batchId: string | undefined) {
           completed_by_profile:profiles!operation_batches_completed_by_fkey(full_name)
         `)
         .eq("id", batchId)
-        .eq("tenant_id", profile!.tenant_id)
+        .eq("tenant_id", profile.tenant_id)
         .single();
 
       if (error) throw error;
@@ -167,7 +168,7 @@ export function useSubBatches(batchId: string | undefined) {
   return useQuery({
     queryKey: ["sub-batches", batchId, profile?.tenant_id],
     queryFn: async () => {
-      if (!batchId) return [];
+      if (!batchId || !profile?.tenant_id) return [];
 
       const { data, error } = await supabase
         .from("operation_batches")
@@ -176,7 +177,7 @@ export function useSubBatches(batchId: string | undefined) {
           cell:cells(id, name)
         `)
         .eq("parent_batch_id", batchId)
-        .eq("tenant_id", profile!.tenant_id)
+        .eq("tenant_id", profile.tenant_id)
         .order("created_at", { ascending: true });
 
       if (error) throw error;
@@ -192,7 +193,7 @@ export function useBatchOperations(batchId: string | undefined) {
   return useQuery({
     queryKey: ["batch-operations", batchId],
     queryFn: async () => {
-      if (!batchId) return [];
+      if (!batchId || !profile?.tenant_id) return [];
 
       const { data, error } = await supabase
         .from("batch_operations")
@@ -211,7 +212,7 @@ export function useBatchOperations(batchId: string | undefined) {
           )
         `)
         .eq("batch_id", batchId)
-        .eq("tenant_id", profile!.tenant_id)
+        .eq("tenant_id", profile.tenant_id)
         .order("sequence_in_batch", { ascending: true });
 
       if (error) throw error;
@@ -227,13 +228,13 @@ export function useBatchRequirements(batchId: string | undefined) {
   return useQuery({
     queryKey: ["batch-requirements", batchId],
     queryFn: async () => {
-      if (!batchId) return [];
+      if (!batchId || !profile?.tenant_id) return [];
 
       const { data, error } = await supabase
         .from("batch_requirements")
         .select("*")
         .eq("batch_id", batchId)
-        .eq("tenant_id", profile!.tenant_id)
+        .eq("tenant_id", profile.tenant_id)
         .order("created_at", { ascending: true });
 
       if (error) throw error;
@@ -389,7 +390,7 @@ export function useAddOperationsToBatch() {
         .from("batch_operations")
         .select("sequence_in_batch")
         .eq("batch_id", batchId)
-        .eq("tenant_id", profile!.tenant_id)
+        .eq("tenant_id", profile.tenant_id)
         .order("sequence_in_batch", { ascending: false })
         .limit(1);
 

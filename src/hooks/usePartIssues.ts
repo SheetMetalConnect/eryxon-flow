@@ -45,7 +45,7 @@ export function usePartIssues(partId: string | undefined) {
           });
         }
       } catch (error) {
-        console.error('Error fetching part issue summary:', error);
+        if (import.meta.env.DEV) console.error('Error fetching part issue summary:', error);
         setSummary({
           totalCount: 0,
           pendingCount: 0,

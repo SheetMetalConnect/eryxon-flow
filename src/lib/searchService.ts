@@ -354,9 +354,12 @@ export async function searchAll(
 
   try {
     const results = await Promise.all(searchPromises);
-    return results.flat();
+    const allResults = results.flat();
+    // Cap total results to prevent excessive rendering
+    const maxTotalResults = options.limit ? options.limit * 5 : 50;
+    return allResults.slice(0, maxTotalResults);
   } catch (error) {
-    console.error('Error in searchAll:', error);
+    if (import.meta.env.DEV) console.error('Error in searchAll:', error);
     return [];
   }
 }

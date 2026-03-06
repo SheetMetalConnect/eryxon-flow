@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { dispatchOperationStarted, dispatchOperationCompleted, dispatchEvent, EventContext } from "./event-dispatch";
+import { JobStatus, OperationStatus, PartStatus, BatchStatus } from "@/integrations/supabase/types/enums";
 
 // TypeScript interfaces for database query results
 interface OperationQueryResult {
@@ -134,11 +135,11 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
       )
     `)
     .eq("tenant_id", tenantId)
-    .neq("status", "completed")  // Exclude completed operations from terminal view
+    .neq("status", OperationStatus.COMPLETED)  // Exclude completed operations from terminal view
     .order("sequence");
 
   if (operationsError) {
-    console.error("Error fetching operations with details:", operationsError);
+    if (import.meta.env.DEV) console.error("Error fetching operations with details:", operationsError);
     throw operationsError;
   }
 
@@ -161,7 +162,7 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
     .is("end_time", null);
 
   if (entriesError) {
-    console.error("Error fetching active time entries:", entriesError);
+    if (import.meta.env.DEV) console.error("Error fetching active time entries:", entriesError);
     throw entriesError;
   }
 
@@ -237,7 +238,7 @@ export async function startTimeTracking(
     .single();
 
   const startedAt = new Date().toISOString();
-  const isNewStart = operation.status === "not_started";
+  const isNewStart = operation.status === OperationStatus.NOT_STARTED;
 
   // Create time entry - use a lock by checking again right before insert
   const { data: doubleCheck } = await supabase
@@ -265,7 +266,7 @@ export async function startTimeTracking(
   if (isNewStart) {
     await supabase
       .from("operations")
-      .update({ status: "in_progress" })
+      .update({ status: OperationStatus.IN_PROGRESS })
       .eq("id", operationId);
 
     // Dispatch event (webhooks + MQTT) for operation started
@@ -282,7 +283,7 @@ export async function startTimeTracking(
       started_at: startedAt,
     }).then(result => {
       if (!result.success) {
-        console.error('Failed to dispatch operation.started event:', result.errors);
+        if (import.meta.env.DEV) console.error('Failed to dispatch operation.started event:', result.errors);
       }
     });
   }
@@ -297,11 +298,11 @@ export async function startTimeTracking(
   if (!part) return;
 
   // Update part status and current_cell_id if not started
-  if (part.status === "not_started") {
+  if (part.status === PartStatus.NOT_STARTED) {
     await supabase
       .from("parts")
       .update({ 
-        status: "in_progress",
+        status: PartStatus.IN_PROGRESS,
         current_cell_id: operation.cell_id 
       })
       .eq("id", operation.part_id);
@@ -318,7 +319,7 @@ export async function startTimeTracking(
     .from("operations")
     .select("cell_id, cells!inner(sequence)")
     .eq("part_id", operation.part_id)
-    .eq("status", "in_progress");
+    .eq("status", OperationStatus.IN_PROGRESS);
 
   if (jobOperations && jobOperations.length > 0) {
     // Get the earliest cell (lowest sequence) that has in_progress operations
@@ -339,8 +340,8 @@ export async function startTimeTracking(
     if (job) {
       const updates: { status?: string; current_cell_id?: string } = {};
 
-      if (job.status === "not_started") {
-        updates.status = "in_progress";
+      if (job.status === JobStatus.NOT_STARTED) {
+        updates.status = JobStatus.IN_PROGRESS;
       }
 
       if (job.current_cell_id !== earliestCell.cell_id) {
@@ -354,6 +355,83 @@ export async function startTimeTracking(
           .eq("id", part.job_id);
       }
     }
+  }
+}
+
+/**
+ * Closes a time entry: resolves active pauses, calculates effective duration,
+ * and updates the operation's actual_time.
+ * Shared by stopTimeTracking and adminStopTimeTracking.
+ */
+async function closeTimeEntry(
+  entryId: string,
+  entryStartTime: string,
+  isPaused: boolean,
+  operationId: string,
+) {
+  // If paused, close the current pause
+  if (isPaused) {
+    const { data: activePause } = await supabase
+      .from("time_entry_pauses")
+      .select("id, paused_at")
+      .eq("time_entry_id", entryId)
+      .is("resumed_at", null)
+      .maybeSingle();
+
+    if (activePause) {
+      const now = new Date();
+      const pausedAt = new Date(activePause.paused_at);
+      const pauseDuration = Math.round((now.getTime() - pausedAt.getTime()) / 1000);
+
+      await supabase
+        .from("time_entry_pauses")
+        .update({
+          resumed_at: now.toISOString(),
+          duration: pauseDuration,
+        })
+        .eq("id", activePause.id);
+    }
+  }
+
+  const endTime = new Date();
+  const startTime = new Date(entryStartTime);
+
+  // Calculate total pause time
+  const { data: pauses } = await supabase
+    .from("time_entry_pauses")
+    .select("duration")
+    .eq("time_entry_id", entryId)
+    .not("duration", "is", null);
+
+  const totalPauseSeconds = pauses?.reduce((sum, p) => sum + (p.duration || 0), 0) || 0;
+
+  // Calculate effective duration (total time - pause time)
+  const totalSeconds = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
+  const effectiveSeconds = totalSeconds - totalPauseSeconds;
+  const duration = Math.round(effectiveSeconds / 60); // minutes
+
+  // Update time entry
+  await supabase
+    .from("time_entries")
+    .update({
+      end_time: endTime.toISOString(),
+      duration,
+      is_paused: false,
+    })
+    .eq("id", entryId);
+
+  // Update operation actual time
+  const { data: operation } = await supabase
+    .from("operations")
+    .select("actual_time")
+    .eq("id", operationId)
+    .single();
+
+  if (operation) {
+    await supabase
+      .from("operations")
+      .update({ actual_time: (operation.actual_time || 0) + duration })
+      .eq("id", operationId);
   }
 }
 
@@ -374,7 +452,7 @@ export async function stopTimeTracking(operationId: string, operatorId: string) 
 
   // If there are duplicates, close them all
   if (entries.length > 1) {
-    console.log(`Found ${entries.length} duplicate time entries, closing all`);
+    if (import.meta.env.DEV) console.log(`Found ${entries.length} duplicate time entries, closing all`);
     const now = new Date();
     for (let i = 1; i < entries.length; i++) {
       const dupEntry = entries[i];
@@ -387,70 +465,7 @@ export async function stopTimeTracking(operationId: string, operatorId: string) 
     }
   }
 
-  // If paused, close the current pause
-  if (entry.is_paused) {
-    const { data: activePause } = await supabase
-      .from("time_entry_pauses")
-      .select("id, paused_at")
-      .eq("time_entry_id", entry.id)
-      .is("resumed_at", null)
-      .maybeSingle();
-
-    if (activePause) {
-      const now = new Date();
-      const pausedAt = new Date(activePause.paused_at);
-      const pauseDuration = Math.round((now.getTime() - pausedAt.getTime()) / 1000); // seconds
-
-      await supabase
-        .from("time_entry_pauses")
-        .update({
-          resumed_at: now.toISOString(),
-          duration: pauseDuration,
-        })
-        .eq("id", activePause.id);
-    }
-  }
-
-  const endTime = new Date();
-  const startTime = new Date(entry.start_time);
-
-  // Calculate total pause time
-  const { data: pauses } = await supabase
-    .from("time_entry_pauses")
-    .select("duration")
-    .eq("time_entry_id", entry.id)
-    .not("duration", "is", null);
-
-  const totalPauseSeconds = pauses?.reduce((sum, p) => sum + (p.duration || 0), 0) || 0;
-
-  // Calculate effective duration (total time - pause time)
-  const totalSeconds = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
-  const effectiveSeconds = totalSeconds - totalPauseSeconds;
-  const duration = Math.round(effectiveSeconds / 60); // minutes
-
-  // Update time entry
-  await supabase
-    .from("time_entries")
-    .update({
-      end_time: endTime.toISOString(),
-      duration,
-      is_paused: false,
-    })
-    .eq("id", entry.id);
-
-  // Update operation actual time
-  const { data: operation } = await supabase
-    .from("operations")
-    .select("actual_time")
-    .eq("id", operationId)
-    .single();
-
-  if (operation) {
-    await supabase
-      .from("operations")
-      .update({ actual_time: (operation.actual_time || 0) + duration })
-      .eq("id", operationId);
-  }
+  await closeTimeEntry(entry.id, entry.start_time, entry.is_paused, operationId);
 }
 
 /**
@@ -468,70 +483,7 @@ export async function adminStopTimeTracking(timeEntryId: string) {
 
   if (!entry) throw new Error("No active time entry found");
 
-  // If paused, close the current pause
-  if (entry.is_paused) {
-    const { data: activePause } = await supabase
-      .from("time_entry_pauses")
-      .select("id, paused_at")
-      .eq("time_entry_id", entry.id)
-      .is("resumed_at", null)
-      .maybeSingle();
-
-    if (activePause) {
-      const now = new Date();
-      const pausedAt = new Date(activePause.paused_at);
-      const pauseDuration = Math.round((now.getTime() - pausedAt.getTime()) / 1000);
-
-      await supabase
-        .from("time_entry_pauses")
-        .update({
-          resumed_at: now.toISOString(),
-          duration: pauseDuration,
-        })
-        .eq("id", activePause.id);
-    }
-  }
-
-  const endTime = new Date();
-  const startTime = new Date(entry.start_time);
-
-  // Calculate total pause time
-  const { data: pauses } = await supabase
-    .from("time_entry_pauses")
-    .select("duration")
-    .eq("time_entry_id", entry.id)
-    .not("duration", "is", null);
-
-  const totalPauseSeconds = pauses?.reduce((sum, p) => sum + (p.duration || 0), 0) || 0;
-
-  // Calculate effective duration
-  const totalSeconds = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
-  const effectiveSeconds = totalSeconds - totalPauseSeconds;
-  const duration = Math.round(effectiveSeconds / 60);
-
-  // Update time entry
-  await supabase
-    .from("time_entries")
-    .update({
-      end_time: endTime.toISOString(),
-      duration,
-      is_paused: false,
-    })
-    .eq("id", entry.id);
-
-  // Update operation actual time
-  const { data: operation } = await supabase
-    .from("operations")
-    .select("actual_time")
-    .eq("id", entry.operation_id)
-    .single();
-
-  if (operation) {
-    await supabase
-      .from("operations")
-      .update({ actual_time: (operation.actual_time || 0) + duration })
-      .eq("id", entry.operation_id);
-  }
+  await closeTimeEntry(entry.id, entry.start_time, entry.is_paused, entry.operation_id);
 }
 
 /**
@@ -556,7 +508,7 @@ export async function stopAllActiveTimeEntries(tenantId: string): Promise<number
       await adminStopTimeTracking(entry.id);
       stoppedCount++;
     } catch (error) {
-      console.error(`Failed to stop time entry ${entry.id}:`, error);
+      if (import.meta.env.DEV) console.error(`Failed to stop time entry ${entry.id}:`, error);
     }
   }
 
@@ -688,7 +640,7 @@ export async function completeOperation(operationId: string, tenantId: string, o
   await supabase
     .from("operations")
     .update({
-      status: "completed",
+      status: OperationStatus.COMPLETED,
       completed_at: completedAt,
       completion_percentage: 100,
     })
@@ -710,7 +662,7 @@ export async function completeOperation(operationId: string, tenantId: string, o
     estimated_time: operationData.estimated_time || 0,
   }).then(result => {
     if (!result.success) {
-      console.error('Failed to dispatch operation.completed event:', result.errors);
+      if (import.meta.env.DEV) console.error('Failed to dispatch operation.completed event:', result.errors);
     }
   });
 
@@ -720,8 +672,8 @@ export async function completeOperation(operationId: string, tenantId: string, o
     .select("status, cell_id, cells!inner(sequence)")
     .eq("part_id", operation.part_id);
 
-  const allCompleted = partOperations?.every((o) => o.status === "completed");
-  const inProgressOperations = partOperations?.filter((o) => o.status === "in_progress");
+  const allCompleted = partOperations?.every((o) => o.status === OperationStatus.COMPLETED);
+  const inProgressOperations = partOperations?.filter((o) => o.status === OperationStatus.IN_PROGRESS);
 
   if (allCompleted) {
     // All operations complete - mark part as completed
@@ -734,7 +686,7 @@ export async function completeOperation(operationId: string, tenantId: string, o
     await supabase
       .from("parts")
       .update({ 
-        status: "completed",
+        status: PartStatus.COMPLETED,
         current_cell_id: null  // Clear current cell when complete
       })
       .eq("id", operation.part_id);
@@ -746,13 +698,13 @@ export async function completeOperation(operationId: string, tenantId: string, o
         .select("status")
         .eq("job_id", part.job_id);
 
-      const allPartsCompleted = jobParts?.every((p) => p.status === "completed");
+      const allPartsCompleted = jobParts?.every((p) => p.status === PartStatus.COMPLETED);
 
       if (allPartsCompleted) {
         await supabase
           .from("jobs")
           .update({ 
-            status: "completed",
+            status: JobStatus.COMPLETED,
             current_cell_id: null  // Clear current cell when complete
           })
           .eq("id", part.job_id);
@@ -803,7 +755,7 @@ async function recalculateJobCurrentCell(jobId: string) {
     .from("operations")
     .select("cell_id, cells!inner(sequence)")
     .in("part_id", partIds)
-    .eq("status", "in_progress");
+    .eq("status", OperationStatus.IN_PROGRESS);
 
   if (inProgressOperations && inProgressOperations.length > 0) {
     // Get the earliest cell (lowest sequence) with in_progress operations
@@ -892,7 +844,7 @@ export async function checkChildPartsCompletion(parentPartId: string, tenantId: 
     return { hasChildren: false, allCompleted: true, incompleteChildren: [] };
   }
 
-  const incompleteChildren = childParts.filter(p => p.status !== "completed");
+  const incompleteChildren = childParts.filter(p => p.status !== PartStatus.COMPLETED);
   const allCompleted = incompleteChildren.length === 0;
 
   return {
@@ -972,7 +924,7 @@ export async function fetchAssemblyTree(partId: string, tenantId: string): Promi
       .eq("tenant_id", tenantId);
 
     if (error) {
-      console.error("Error fetching assembly tree:", error);
+      if (import.meta.env.DEV) console.error("Error fetching assembly tree:", error);
       continue;
     }
 
@@ -1025,8 +977,8 @@ export async function startBatchTimeTracking(
 
   if (batchError) throw batchError;
   if (!batch) throw new Error("batches.errors.notFound");
-  if (batch.status === "in_progress") throw new Error("batches.errors.alreadyActive");
-  if (batch.status === "completed" || batch.status === "cancelled") {
+  if (batch.status === BatchStatus.IN_PROGRESS) throw new Error("batches.errors.alreadyActive");
+  if (batch.status === BatchStatus.COMPLETED || batch.status === BatchStatus.CANCELLED) {
     throw new Error("batches.errors.alreadyClosed");
   }
 
@@ -1042,12 +994,13 @@ export async function startBatchTimeTracking(
     throw new Error("batches.errors.operatorBusy");
   }
 
-  // Get all operations in the batch
+  // Get all operations in the batch (capped at 500 to prevent unbounded queries)
   const { data: batchOps, error: batchOpsError } = await supabase
     .from("batch_operations")
     .select("operation_id")
     .eq("batch_id", batchId)
-    .eq("tenant_id", tenantId);
+    .eq("tenant_id", tenantId)
+    .limit(500);
 
   if (batchOpsError) throw batchOpsError;
   if (!batchOps || batchOps.length === 0) {
@@ -1076,22 +1029,22 @@ export async function startBatchTimeTracking(
   await supabase
     .from("operation_batches")
     .update({
-      status: "in_progress",
+      status: BatchStatus.IN_PROGRESS,
       started_at: now,
       started_by: operatorId,
     })
     .eq("id", batchId)
     .eq("tenant_id", tenantId)
-    .in("status", ["draft", "ready"]);
+    .in("status", [BatchStatus.DRAFT, BatchStatus.READY]);
 
   // Update all operations to in_progress
   const opIds = batchOps.map((bo) => bo.operation_id);
   await supabase
     .from("operations")
-    .update({ status: "in_progress" })
+    .update({ status: OperationStatus.IN_PROGRESS })
     .in("id", opIds)
     .eq("tenant_id", tenantId)
-    .eq("status", "not_started");
+    .eq("status", OperationStatus.NOT_STARTED);
 }
 
 /**
@@ -1187,7 +1140,7 @@ export async function stopBatchTimeTracking(
     .from("operation_batches")
     .update({
       actual_time: totalMinutes,
-      status: "completed",
+      status: BatchStatus.COMPLETED,
       completed_at: endTime.toISOString(),
       completed_by: operatorId,
     })

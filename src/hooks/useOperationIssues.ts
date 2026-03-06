@@ -16,11 +16,16 @@ export function useOperationIssues(operationId: string, tenantId: string | undef
   const loadIssues = async () => {
     if (!tenantId || !operationId) return;
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("issues")
       .select("id, severity, status, description, created_at")
       .eq("operation_id", operationId)
       .eq("tenant_id", tenantId);
+
+    if (error) {
+      if (import.meta.env.DEV) console.error('Error fetching operation issues:', error);
+      return;
+    }
 
     setIssues(data || []);
     setLoading(false);

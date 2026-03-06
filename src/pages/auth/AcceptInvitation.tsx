@@ -57,8 +57,13 @@ export default function AcceptInvitation() {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (password.length < 12) {
+      setError(t('auth.passwordMinLength'));
+      return;
+    }
+
+    if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+      setError(t('auth.passwordComplexity'));
       return;
     }
 
@@ -98,7 +103,7 @@ export default function AcceptInvitation() {
       }, 2000);
     } catch (err: any) {
       setError(err.message || 'Failed to accept invitation');
-      console.error('Error accepting invitation:', err);
+      if (import.meta.env.DEV) console.error('Error accepting invitation:', err);
     } finally {
       setSubmitting(false);
     }
@@ -221,11 +226,11 @@ export default function AcceptInvitation() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    minLength={6}
+                    minLength={12}
                     placeholder="••••••••"
                     className="bg-input-background border-input"
                   />
-                  <p className="text-xs text-muted-foreground">Minimum 6 characters</p>
+                  <p className="text-xs text-muted-foreground">{t('auth.passwordRequirements')}</p>
                 </div>
 
                 <div className="space-y-2">
@@ -238,7 +243,7 @@ export default function AcceptInvitation() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
-                    minLength={6}
+                    minLength={12}
                     placeholder="••••••••"
                     className="bg-input-background border-input"
                   />
