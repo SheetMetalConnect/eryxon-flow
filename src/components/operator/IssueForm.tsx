@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { Camera, AlertTriangle, Package } from "lucide-react";
 import { dispatchIssueCreated } from "@/lib/event-dispatch";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 
 interface PrefilledData {
   affectedQuantity?: number;
@@ -85,7 +86,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
       }
     } catch (error) {
       // Table might not exist yet - that's ok, we'll show severity selector instead
-      console.log("Issue categories table not available");
+      logger.debug("IssueForm", "Issue categories table not available");
     }
   };
 
@@ -118,7 +119,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
             .upload(path, file);
 
           if (uploadError) {
-            console.error('Image upload error:', uploadError);
+            logger.error("IssueForm", "Image upload error", uploadError);
             throw new Error(`Failed to upload image: ${uploadError.message}`);
           }
           imagePaths.push(path);
@@ -186,7 +187,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
           created_at: createdAt,
         }).then(result => {
           if (!result.success) {
-            console.error('Failed to dispatch issue.created event:', result.errors);
+            logger.error("IssueForm", "Failed to dispatch issue.created event", result.errors);
           }
         });
       }

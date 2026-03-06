@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
 import AnimatedBackground from '@/components/AnimatedBackground';
+import { logger } from '@/lib/logger';
 
 const STEP_ICONS = [Users, CreditCard, Database, Rocket];
 
@@ -57,7 +58,7 @@ export function OnboardingWizard() {
 
       if (error) throw error;
     } catch (error) {
-      console.error('Error updating onboarding progress:', error);
+      logger.error('OnboardingWizard', 'Error updating onboarding progress', error);
       toast.error(t('onboarding.progressSaveFailed'));
     } finally {
       setIsUpdating(false);
@@ -86,12 +87,12 @@ export function OnboardingWizard() {
           .eq('id', profile.tenant_id);
 
         if (tenantError) {
-          console.error('Error updating tenant plan:', tenantError);
+          logger.error('OnboardingWizard', 'Error updating tenant plan', tenantError);
           toast.error(t('onboarding.planUpdateFailed'));
           return;
         }
       } catch (error) {
-        console.error('Error updating tenant plan:', error);
+        logger.error('OnboardingWizard', 'Error updating tenant plan', error);
         toast.error(t('onboarding.planUpdateFailed'));
         return;
       }

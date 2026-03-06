@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Copy, Plus, RefreshCw, Trash2, Key, CheckCircle2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 
 interface McpEndpoint {
   id: string;

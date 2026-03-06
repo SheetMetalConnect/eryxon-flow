@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Check, Minus, Plus, AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 
 interface ProductionQuantityModalProps {
   isOpen: boolean;
@@ -61,7 +62,7 @@ export default function ProductionQuantityModal({
       const totalGood = data?.reduce((sum, rec) => sum + (rec.quantity_good || 0), 0) || 0;
       setPreviouslyRecordedGood(totalGood);
     } catch (error) {
-      console.error("Error fetching previous quantities:", error);
+      logger.error("ProductionQuantityModal", "Error fetching previous quantities", error);
     }
   };
 
@@ -110,7 +111,7 @@ export default function ProductionQuantityModal({
       onSuccess(quantityGood, targetAchieved);
       handleClose();
     } catch (error: any) {
-      console.error("Error recording production:", error);
+      logger.error("ProductionQuantityModal", "Error recording production", error);
       toast.error(error.message || t("notifications.failed"));
     } finally {
       setIsSubmitting(false);

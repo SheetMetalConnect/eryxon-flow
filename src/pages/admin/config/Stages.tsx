@@ -18,6 +18,7 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, v
 import { CSS } from "@dnd-kit/utilities";
 import { useCellQRMMetrics } from "@/hooks/useQRMMetrics";
 import { WIPIndicator, WIPBar } from "@/components/qrm/WIPIndicator";
+import { logger } from "@/lib/logger";
 import { IconPicker, IconDisplay } from "@/components/ui/icon-picker";
 
 // Default colors using design system tokens

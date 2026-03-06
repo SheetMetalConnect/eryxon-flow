@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { QueryKeys } from "@/lib/queryClient";
 
 export interface QualityMetrics {
   // Production totals
@@ -62,7 +63,7 @@ export function useQualityMetrics() {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["quality-metrics", profile?.tenant_id],
+    queryKey: QueryKeys.quality.metrics(profile?.tenant_id ?? ''),
     queryFn: async (): Promise<QualityMetrics> => {
       if (!profile?.tenant_id) {
         throw new Error("No tenant ID");
@@ -203,7 +204,7 @@ export function useScrapReasonUsage() {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["scrap-reason-usage", profile?.tenant_id],
+    queryKey: QueryKeys.quality.scrapUsage(profile?.tenant_id ?? ''),
     queryFn: async (): Promise<ScrapReasonUsage[]> => {
       if (!profile?.tenant_id) {
         throw new Error("No tenant ID");
@@ -262,7 +263,7 @@ export function useJobQualityMetrics(jobId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["job-quality-metrics", jobId],
+    queryKey: QueryKeys.quality.byJob(jobId ?? ''),
     queryFn: async () => {
       if (!jobId || !profile?.tenant_id) {
         return null;
@@ -339,7 +340,7 @@ export function usePartQualityMetrics(partId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["part-quality-metrics", partId],
+    queryKey: QueryKeys.quality.byPart(partId ?? ''),
     queryFn: async () => {
       if (!partId || !profile?.tenant_id) {
         return null;

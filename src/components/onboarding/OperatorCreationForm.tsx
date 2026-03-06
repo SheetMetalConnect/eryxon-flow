@@ -8,6 +8,7 @@ import { UserPlus, Loader2, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 interface CreatedOperator {
   id: string;
@@ -86,7 +87,7 @@ export function OperatorCreationForm() {
       setConfirmPin('');
     } catch (error: any) {
       toast.error(error.message || 'Failed to create operator');
-      console.error('Error creating operator:', error);
+      logger.error('OperatorCreationForm', 'Error creating operator', error);
     } finally {
       setCreating(false);
     }

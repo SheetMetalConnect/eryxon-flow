@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 interface AppTourProps {
   userRole: 'admin' | 'operator';
@@ -234,7 +235,7 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
 
             toast.success(t('onboarding.tourCompleted'));
           } catch (error) {
-            console.error('Error updating tour completion:', error);
+            logger.error('AppTour', 'Error updating tour completion', error);
           }
         }
 
@@ -308,7 +309,7 @@ export function useRestartTour() {
       // Reload to restart tour
       window.location.reload();
     } catch (error) {
-      console.error('Error restarting tour:', error);
+      logger.error('AppTour', 'Error restarting tour', error);
       toast.error(t('onboarding.tourRestartFailed'));
     }
   }, [profile, t]);

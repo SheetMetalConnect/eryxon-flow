@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
+import { logger } from "@/lib/logger";
 
 /**
  * Active Operator - the employee currently working at the terminal
@@ -92,7 +93,7 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        console.error("PIN verification error:", error);
+        logger.error('OperatorContext', 'PIN verification error', error);
         return {
           success: false,
           error_code: "RPC_ERROR",
@@ -133,7 +134,7 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
         };
       }
     } catch (err: any) {
-      console.error("Operator verification error:", err);
+      logger.error('OperatorContext', 'Operator verification error', err);
       return {
         success: false,
         error_code: "EXCEPTION",

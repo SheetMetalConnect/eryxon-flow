@@ -1,6 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { QueryKeys } from '@/lib/queryClient';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 

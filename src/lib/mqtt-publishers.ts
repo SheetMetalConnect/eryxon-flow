@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 // Reuse the same event types as webhooks for consistency
 export type MqttEvent =
@@ -48,7 +49,7 @@ export async function triggerMqttPublish(
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      console.error('No active session for MQTT publish');
+      logger.error('MqttPublishers', 'No active session for MQTT publish');
       return { success: false, error: 'Not authenticated' };
     }
 
@@ -74,13 +75,13 @@ export async function triggerMqttPublish(
     const result = await response.json();
 
     if (!response.ok) {
-      console.error('MQTT publish failed:', result);
+      logger.error('MqttPublishers', 'MQTT publish failed', result);
       return { success: false, error: result.error || 'MQTT publish failed' };
     }
 
     return { success: true };
   } catch (error) {
-    console.error('Error triggering MQTT publish:', error);
+    logger.error('MqttPublishers', 'Error triggering MQTT publish', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'

@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import AnimatedBackground from '@/components/AnimatedBackground';
+import { logger } from '@/lib/logger';
 
 export default function AcceptInvitation() {
   const { t } = useTranslation();
@@ -98,7 +99,7 @@ export default function AcceptInvitation() {
       }, 2000);
     } catch (err: any) {
       setError(err.message || 'Failed to accept invitation');
-      console.error('Error accepting invitation:', err);
+      logger.error('AcceptInvitation', 'Error accepting invitation', err);
     } finally {
       setSubmitting(false);
     }

@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 export type WebhookEvent =
   // Job lifecycle events
@@ -46,7 +47,7 @@ export async function triggerWebhook(
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      console.error('No active session for webhook dispatch');
+      logger.error('Webhooks', 'No active session for webhook dispatch');
       return { success: false, error: 'Not authenticated' };
     }
 
@@ -72,13 +73,13 @@ export async function triggerWebhook(
     const result = await response.json();
 
     if (!response.ok) {
-      console.error('Webhook dispatch failed:', result);
+      logger.error('Webhooks', 'Webhook dispatch failed', result);
       return { success: false, error: result.error || 'Webhook dispatch failed' };
     }
 
     return { success: true };
   } catch (error) {
-    console.error('Error triggering webhook:', error);
+    logger.error('Webhooks', 'Error triggering webhook', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'

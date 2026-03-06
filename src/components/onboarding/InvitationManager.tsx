@@ -9,6 +9,7 @@ import { Plus, X, Mail, Loader2, Trash2 } from 'lucide-react';
 import { useInvitations } from '@/hooks/useInvitations';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 interface InviteEntry {
   id: string;
@@ -74,7 +75,7 @@ export function InvitationManager() {
 
       toast.success(t('notifications.success'), { description: t('invitation.invitationsSent', { count: validEntries.length }) });
     } catch (error: unknown) {
-      console.error('Error sending invitations:', error);
+      logger.error('InvitationManager', 'Error sending invitations', error);
       toast.error(t('notifications.error'), { description: error instanceof Error ? error.message : t('invitation.sendFailed') });
     } finally {
       setSending(false);

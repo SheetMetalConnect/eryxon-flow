@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table/DataTable";
 import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
 import { AVAILABLE_EVENTS } from "@/lib/event-dispatch";
+import { logger } from "@/lib/logger";
 
 interface MqttPublisher {
   id: string;

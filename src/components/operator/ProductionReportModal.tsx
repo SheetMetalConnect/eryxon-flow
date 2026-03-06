@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Check, Minus, Plus, AlertTriangle, Trash2, PlusCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useRecordProduction } from "@/hooks/useProductionMetrics";
+import { logger } from "@/lib/logger";
 
 interface ScrapReasonEntry {
   reasonId: string;
@@ -95,7 +96,7 @@ export default function ProductionReportModal({
       const totalGood = data?.reduce((sum, rec) => sum + (rec.quantity_good || 0), 0) || 0;
       setPreviouslyRecordedGood(totalGood);
     } catch (error) {
-      console.error("Error fetching previous quantities:", error);
+      logger.error("ProductionReportModal", "Error fetching previous quantities", error);
     }
   };
 
@@ -109,7 +110,7 @@ export default function ProductionReportModal({
       if (error) throw error;
       setScrapReasons(data || []);
     } catch (error) {
-      console.error("Error fetching scrap reasons:", error);
+      logger.error("ProductionReportModal", "Error fetching scrap reasons", error);
     }
   };
 
@@ -180,7 +181,7 @@ export default function ProductionReportModal({
       onSuccess(quantityGood, targetAchieved);
       handleClose();
     } catch (error: any) {
-      console.error("Error recording production:", error);
+      logger.error("ProductionReportModal", "Error recording production", error);
       toast.error(error.message || t("notifications.failed"));
     } finally {
       setIsSubmitting(false);

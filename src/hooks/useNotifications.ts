@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Database } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 type Notification = Database['public']['Tables']['notifications']['Row'];
 type NotificationType = Notification['type'];
@@ -66,7 +67,7 @@ export const useNotifications = (filters?: NotificationFilters) => {
 
       setNotifications(data || []);
     } catch (err) {
-      console.error('Error fetching notifications:', err);
+      logger.error('useNotifications', 'Error fetching notifications', err);
       setError(err as Error);
     } finally {
       setLoading(false);
@@ -90,7 +91,7 @@ export const useNotifications = (filters?: NotificationFilters) => {
           )
         );
       } catch (err) {
-        console.error('Error marking notification as read:', err);
+        logger.error('useNotifications', 'Error marking notification as read', err);
         toast.error(t('notifications.error'), { description: t('notifications.failed') });
       }
     },
@@ -118,7 +119,7 @@ export const useNotifications = (filters?: NotificationFilters) => {
 
         toast.success(t('notifications.success'), { description: pinned ? t('notifications.pinned') : t('notifications.unpinned') });
       } catch (err) {
-        console.error('Error toggling notification pin:', err);
+        logger.error('useNotifications', 'Error toggling notification pin', err);
         toast.error(t('notifications.error'), { description: t('notifications.failed') });
       }
     },
@@ -140,7 +141,7 @@ export const useNotifications = (filters?: NotificationFilters) => {
 
         toast.success(t('notifications.success'), { description: t('notifications.deleted') });
       } catch (err) {
-        console.error('Error dismissing notification:', err);
+        logger.error('useNotifications', 'Error dismissing notification', err);
         toast.error(t('notifications.error'), { description: t('notifications.failed') });
       }
     },
@@ -163,7 +164,7 @@ export const useNotifications = (filters?: NotificationFilters) => {
         toast.success(t('notifications.success'), { description: t('notifications.updated') });
       }
     } catch (err) {
-      console.error('Error marking all notifications as read:', err);
+      logger.error('useNotifications', 'Error marking all notifications as read', err);
       toast.error(t('notifications.error'), { description: t('notifications.failed') });
     }
   }, [t]);
@@ -196,7 +197,7 @@ export const useNotifications = (filters?: NotificationFilters) => {
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
         (payload) => {
-          console.log('Notification change:', payload);
+          logger.debug('useNotifications', 'Notification change', payload);
           // Refetch notifications when changes occur
           fetchNotifications();
         }

@@ -12,6 +12,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { QueryKeys } from '@/lib/queryClient';
 
 // ============================================================================
 // Types
@@ -178,7 +179,7 @@ export function usePMI(partId: string | undefined) {
     error: fetchError,
     refetch: refetchPMI,
   } = useQuery({
-    queryKey: ['pmi', partId],
+    queryKey: QueryKeys.pmi.byPart(partId ?? ''),
     queryFn: async (): Promise<PMIMetadata | null> => {
       if (!partId) return null;
 
@@ -244,11 +245,11 @@ export function usePMI(partId: string | undefined) {
                   time: newMetadata.pmi_processing_time_ms,
                   summary: newMetadata.pmi_summary,
                 });
-                queryClient.invalidateQueries({ queryKey: ['pmi', partId] });
+                queryClient.invalidateQueries({ queryKey: QueryKeys.pmi.byPart(partId ?? '') });
                 setIsExtracting(false);
               } else if (newMetadata.pmi_status === 'error') {
                 log.error('Processing failed', newMetadata.pmi_error);
-                queryClient.invalidateQueries({ queryKey: ['pmi', partId] });
+                queryClient.invalidateQueries({ queryKey: QueryKeys.pmi.byPart(partId ?? '') });
                 setIsExtracting(false);
               }
             }
@@ -409,7 +410,7 @@ export function usePMI(partId: string | undefined) {
         if (partId) {
           await storePMI(partId, result.pmi);
           // Invalidate cache to refresh data
-          queryClient.invalidateQueries({ queryKey: ['pmi', partId] });
+          queryClient.invalidateQueries({ queryKey: QueryKeys.pmi.byPart(partId ?? '') });
         }
       }
 
@@ -481,7 +482,7 @@ export function usePMI(partId: string | undefined) {
       .update({ metadata: JSON.parse(JSON.stringify(restMetadata)) })
       .eq('id', partId);
 
-    queryClient.invalidateQueries({ queryKey: ['pmi', partId] });
+    queryClient.invalidateQueries({ queryKey: QueryKeys.pmi.byPart(partId ?? '') });
   }, [partId, queryClient]);
 
   /**

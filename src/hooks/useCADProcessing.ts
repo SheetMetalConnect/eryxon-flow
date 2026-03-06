@@ -16,6 +16,7 @@ import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { QueryKeys } from '@/lib/queryClient';
 import {
   getCADConfig,
   getActiveBackendUrl,
@@ -476,8 +477,8 @@ export function useCADProcessing() {
     if (result.success) {
       try {
         await storeProcessedData(partId, result.geometry, result.pmi);
-        queryClient.invalidateQueries({ queryKey: ['pmi', partId] });
-        queryClient.invalidateQueries({ queryKey: ['part', partId] });
+        queryClient.invalidateQueries({ queryKey: QueryKeys.pmi.byPart(partId) });
+        queryClient.invalidateQueries({ queryKey: QueryKeys.parts.detail(partId) });
       } catch (error) {
         console.error('Failed to store processed data:', error);
         // Don't fail the whole operation if storage fails
@@ -520,7 +521,7 @@ export function useCADProcessing() {
  */
 export function useCachedGeometry(partId: string | undefined) {
   return useQuery({
-    queryKey: ['geometry', partId],
+    queryKey: QueryKeys.pmi.geometry(partId ?? ''),
     queryFn: async () => {
       if (!partId) return null;
 

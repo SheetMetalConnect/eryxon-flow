@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { format, subDays } from "date-fns";
 import { Clock, CheckCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 
 interface TimeEntry {
   id: string;
@@ -78,7 +79,7 @@ export default function MyActivity() {
       .order("start_time", { ascending: false });
 
     if (error) {
-      console.error("Error loading activity:", error);
+      logger.error("MyActivity", "Error loading activity", error);
     } else {
       setEntries(data || []);
     }

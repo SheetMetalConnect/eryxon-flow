@@ -16,6 +16,7 @@ import {
   Crosshair
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 import { useTranslation } from 'react-i18next';
 import type {
   PMIData,
@@ -471,7 +472,7 @@ export function STEPViewer({
 
         setStepLoading(false);
       } catch (err) {
-        console.error('Server geometry rendering error:', err);
+        logger.error('STEPViewer', 'Server geometry rendering error', err);
         setLoadingError(
           err instanceof Error ? err.message : 'Failed to render geometry'
         );
@@ -592,7 +593,7 @@ export function STEPViewer({
 
         setStepLoading(false);
       } catch (err) {
-        console.error('STEP loading error:', err);
+        logger.error('STEPViewer', 'STEP loading error', err);
         setLoadingError(
           err instanceof Error ? err.message : 'Failed to load STEP file'
         );
@@ -1076,7 +1077,7 @@ export function STEPViewer({
         !isFinite(stepPosition.x) ||
         !isFinite(stepPosition.y) ||
         !isFinite(stepPosition.z)) {
-      console.warn('Invalid PMI position:', stepPosition);
+      logger.warn('STEPViewer', 'Invalid PMI position', stepPosition);
       return new THREE.Vector3(0, 0, 0);
     }
 
@@ -1104,7 +1105,7 @@ export function STEPViewer({
       const heightOffset = (layer - 1) * size.y * 0.35; // Vertical separation
       const height = center.y + heightOffset;
       
-      console.log(`Using fallback position for dimension ${fallbackIndex + 1}: [${center.x + Math.cos(angle) * radius}, ${height}, ${center.z + Math.sin(angle) * radius}]`);
+      logger.debug('STEPViewer', `Using fallback position for dimension ${fallbackIndex + 1}: [${center.x + Math.cos(angle) * radius}, ${height}, ${center.z + Math.sin(angle) * radius}]`);
       
       return new THREE.Vector3(
         center.x + Math.cos(angle) * radius,
@@ -1119,7 +1120,7 @@ export function STEPViewer({
     const y = stepPosition.y;
     const z = stepPosition.z;
     
-    console.log(`Using backend PMI position: (${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)})`);
+    logger.debug('STEPViewer', `Using backend PMI position: (${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)})`);
     
     // If coordinates seem too far from geometry, scale them appropriately
     if (meshesRef.current.length > 0) {
@@ -1134,7 +1135,7 @@ export function STEPViewer({
       const reasonableDistance = maxDimension * 2; // Allow PMI to be up to 2x the geometry size away
       
       if (distanceFromCenter > reasonableDistance) {
-        console.log(`PMI position too far (${distanceFromCenter.toFixed(2)} > ${reasonableDistance.toFixed(2)}), scaling down`);
+        logger.debug('STEPViewer', `PMI position too far (${distanceFromCenter.toFixed(2)} > ${reasonableDistance.toFixed(2)}), scaling down`);
         // Scale down the offset from center
         const scaleFactor = reasonableDistance / distanceFromCenter;
         return new THREE.Vector3(
@@ -1173,7 +1174,7 @@ export function STEPViewer({
     const center = box.getCenter(new THREE.Vector3());
     const size = box.getSize(new THREE.Vector3());
 
-    console.log('Creating PMI visualization with data:', {
+    logger.debug('STEPViewer', 'Creating PMI visualization with data', {
       dimensions: pmiData.dimensions.length,
       tolerances: pmiData.geometric_tolerances.length,
       datums: pmiData.datums.length,
@@ -1217,7 +1218,7 @@ export function STEPViewer({
     ).length;
     
     if (invalidCoordinateCount > 0) {
-      console.warn(`⚠️  Backend PMI coordinate issue: ${invalidCoordinateCount}/${pmiData.dimensions.length} dimensions have invalid coordinates [0,0,0]. Using fallback positioning.`);
+      logger.warn('STEPViewer', `Backend PMI coordinate issue: ${invalidCoordinateCount}/${pmiData.dimensions.length} dimensions have invalid coordinates [0,0,0]. Using fallback positioning.`);
     }
 
     // PMI dimension line color
@@ -1235,11 +1236,11 @@ export function STEPViewer({
         try {
           // Validate dimension data
           if (!dim || !dim.position || !dim.text) {
-            console.warn('Invalid dimension data:', dim);
+            logger.warn('STEPViewer', 'Invalid dimension data', dim);
             return;
           }
 
-          console.log(`Creating dimension ${index + 1}/${pmiData.dimensions.length}:`, {
+          logger.debug('STEPViewer', `Creating dimension ${index + 1}/${pmiData.dimensions.length}`, {
             text: dim.text,
             position: dim.position,
             type: dim.type
@@ -1283,7 +1284,7 @@ export function STEPViewer({
             transformedPos.add(direction.multiplyScalar(offset));
           }
           
-          console.log(`Dimension ${index + 1} position - Original: [${dim.position.x.toFixed(2)}, ${dim.position.y.toFixed(2)}, ${dim.position.z.toFixed(2)}] -> Final: [${transformedPos.x.toFixed(2)}, ${transformedPos.y.toFixed(2)}, ${transformedPos.z.toFixed(2)}]`);
+          logger.debug('STEPViewer', `Dimension ${index + 1} position - Original: [${dim.position.x.toFixed(2)}, ${dim.position.y.toFixed(2)}, ${dim.position.z.toFixed(2)}] -> Final: [${transformedPos.x.toFixed(2)}, ${transformedPos.y.toFixed(2)}, ${transformedPos.z.toFixed(2)}]`);
           
           label.position.copy(transformedPos);
           group.add(label);
@@ -1306,7 +1307,7 @@ export function STEPViewer({
                 }
               });
             } catch (leaderError) {
-              console.error('Error creating leader lines:', leaderError, dim);
+              logger.error('STEPViewer', 'Error creating leader lines', leaderError);
             }
           }
           // Fallback: Create leader line from label to target geometry if target geometry has attachment points
@@ -1323,11 +1324,11 @@ export function STEPViewer({
               const arrowMesh = createArrowhead(labelPos, targetPos);
               group.add(arrowMesh);
             } catch (fallbackError) {
-              console.error('Error creating fallback leader line:', fallbackError, dim);
+              logger.error('STEPViewer', 'Error creating fallback leader line', fallbackError);
             }
           }
         } catch (error) {
-          console.error('Error creating dimension annotation:', error, dim);
+          logger.error('STEPViewer', 'Error creating dimension annotation', error);
         }
       });
     }
@@ -1514,7 +1515,7 @@ export function STEPViewer({
     sceneRef.current.add(group);
     pmiLayerRef.current = group;
     
-    console.log(`PMI group added to scene with ${group.children.length} total children. Scene now has ${sceneRef.current.children.length} children.`);
+    logger.debug('STEPViewer', `PMI group added to scene with ${group.children.length} total children. Scene now has ${sceneRef.current.children.length} children.`);
   }, [pmiData, pmiFilter, transformPMIPosition]);
 
   // Remove PMI visualization
@@ -1543,7 +1544,7 @@ export function STEPViewer({
 
   // Toggle PMI display
   const togglePMI = useCallback(() => {
-    console.log('Toggling PMI display. Current state:', showPMI, 'PMI data available:', !!pmiData);
+    logger.debug('STEPViewer', 'Toggling PMI display', { currentState: showPMI, pmiDataAvailable: !!pmiData });
     
     if (!pmiData) return;
 

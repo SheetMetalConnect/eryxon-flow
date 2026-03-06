@@ -11,6 +11,7 @@ import { Loader2, Building2, Save, Clock, Paintbrush, Crown, X } from 'lucide-re
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { FeatureFlagsSettings } from '@/components/admin/FeatureFlagsSettings';
+import { logger } from '@/lib/logger';
 
 const TIMEZONES = [
   'UTC',

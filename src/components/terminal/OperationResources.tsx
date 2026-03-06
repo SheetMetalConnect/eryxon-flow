@@ -3,6 +3,7 @@ import { Wrench, MapPin, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 interface Resource {
   id: string;
@@ -51,7 +52,7 @@ export function OperationResources({ operationId, className }: OperationResource
           setResources(data as unknown as OperationResource[]);
         }
       } catch (error) {
-        console.error('Error fetching resources:', error);
+        logger.error("OperationResources", "Error fetching resources", error);
       } finally {
         setLoading(false);
       }

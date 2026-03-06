@@ -363,11 +363,12 @@ const skipDemoCheck = tenantId === "11111111-1111-1111-1111-111111111111";
 
 ---
 
-## 20. MEDIUM: Merge Duplicate OperationDetailModal
+## 20. CANCELLED: Merge Duplicate OperationDetailModal
 
-**Problem:** `OperationDetailModal.tsx` exists in both `components/admin/` (614 lines) and `components/operator/` (657 lines). These are likely copy-pasted with minor differences.
+**Investigation result:** After diffing the two files, they are fundamentally different:
+- **Admin version:** Uses React Query to fetch operation data by ID, has admin editing UI (status changes, resource assignment, tabs)
+- **Operator version:** Receives operation as a prop, has start/stop/complete workflow actions, issue reporting, substeps manager
 
-**Action items:**
-- [ ] Diff the two files to identify actual differences
-- [ ] Create a single shared `OperationDetailModal` with role-based conditional rendering
-- [ ] Remove the duplicate file
+These share component naming but serve entirely different use cases. Merging would increase complexity.
+
+**Decision:** Keep as separate components - they are not duplicates, just similarly named.

@@ -8,6 +8,7 @@
  * - 'byob': Bring Your Own Backend (placeholder for CAD Exchanger SDK, etc.)
  * - 'frontend': Browser-only processing via occt-import-js (fallback)
  */
+import { logger } from "@/lib/logger";
 
 export type CADBackendMode = 'custom' | 'byob' | 'frontend';
 
@@ -206,7 +207,7 @@ export function initCADConfig(): void {
     activeConfig.mode = determineBestBackend();
   }
 
-  console.log(`[CAD Config] Active backend mode: ${activeConfig.mode}`);
+  logger.debug('CADConfig', `Active backend mode: ${activeConfig.mode}`);
 }
 
 // Initialize on module load

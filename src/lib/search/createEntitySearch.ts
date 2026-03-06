@@ -10,6 +10,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import type { EntitySearchConfig, SearchResult } from "./types";
+import { logger } from '@/lib/logger';
 
 /**
  * Escapes LIKE metacharacters to prevent wildcard injection
@@ -61,13 +62,13 @@ export function createEntitySearch<T>(
         .limit(limit);
 
       if (error) {
-        console.error(`Error searching ${config.tableName}:`, error);
+        logger.error('EntitySearch', `Error searching ${config.tableName}`, error);
         return [];
       }
 
       return (data || []).map((item) => config.mapResult(item as T));
     } catch (err) {
-      console.error(`Search error for ${config.tableName}:`, err);
+      logger.error('EntitySearch', `Search error for ${config.tableName}`, err);
       return [];
     }
   };

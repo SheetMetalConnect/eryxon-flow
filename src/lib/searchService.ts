@@ -14,6 +14,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { SearchResult } from '@/hooks/useGlobalSearch';
+import { logger } from '@/lib/logger';
 
 export interface AdvancedSearchOptions {
   /** Use full-text search (tsvector) when available */
@@ -72,7 +73,7 @@ export async function searchJobsFullText(
       .limit(limit);
 
     if (error) {
-      console.error('Full-text search error for jobs:', error);
+      logger.error('SearchService', 'Full-text search error for jobs', error);
       return [];
     }
 
@@ -91,7 +92,7 @@ export async function searchJobsFullText(
       },
     }));
   } catch (err) {
-    console.error('Error in searchJobsFullText:', err);
+    logger.error('SearchService', 'Error in searchJobsFullText', err);
     return [];
   }
 }
@@ -132,7 +133,7 @@ export async function searchPartsFullText(
       .limit(limit);
 
     if (error) {
-      console.error('Full-text search error for parts:', error);
+      logger.error('SearchService', 'Full-text search error for parts', error);
       return [];
     }
 
@@ -152,7 +153,7 @@ export async function searchPartsFullText(
       },
     }));
   } catch (err) {
-    console.error('Error in searchPartsFullText:', err);
+    logger.error('SearchService', 'Error in searchPartsFullText', err);
     return [];
   }
 }
@@ -196,7 +197,7 @@ export async function searchOperationsFullText(
       .limit(limit);
 
     if (error) {
-      console.error('Full-text search error for operations:', error);
+      logger.error('SearchService', 'Full-text search error for operations', error);
       return [];
     }
 
@@ -217,7 +218,7 @@ export async function searchOperationsFullText(
       },
     }));
   } catch (err) {
-    console.error('Error in searchOperationsFullText:', err);
+    logger.error('SearchService', 'Error in searchOperationsFullText', err);
     return [];
   }
 }
@@ -248,7 +249,7 @@ export async function searchUsersFullText(
       .limit(limit);
 
     if (error) {
-      console.error('Full-text search error for users:', error);
+      logger.error('SearchService', 'Full-text search error for users', error);
       return [];
     }
 
@@ -265,7 +266,7 @@ export async function searchUsersFullText(
       },
     }));
   } catch (err) {
-    console.error('Error in searchUsersFullText:', err);
+    logger.error('SearchService', 'Error in searchUsersFullText', err);
     return [];
   }
 }
@@ -308,7 +309,7 @@ export async function searchIssuesFullText(
       .limit(limit);
 
     if (error) {
-      console.error('Full-text search error for issues:', error);
+      logger.error('SearchService', 'Full-text search error for issues', error);
       return [];
     }
 
@@ -327,7 +328,7 @@ export async function searchIssuesFullText(
       },
     }));
   } catch (err) {
-    console.error('Error in searchIssuesFullText:', err);
+    logger.error('SearchService', 'Error in searchIssuesFullText', err);
     return [];
   }
 }
@@ -356,7 +357,7 @@ export async function searchAll(
     const results = await Promise.all(searchPromises);
     return results.flat();
   } catch (error) {
-    console.error('Error in searchAll:', error);
+    logger.error('SearchService', 'Error in searchAll', error);
     return [];
   }
 }

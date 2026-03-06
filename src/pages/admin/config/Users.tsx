@@ -17,6 +17,7 @@ import { DataTable } from "@/components/ui/data-table/DataTable";
 import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
 import type { DataTableFilterableColumn } from "@/components/ui/data-table/DataTable";
 import { useInvitations, Invitation } from "@/hooks/useInvitations";
+import { logger } from "@/lib/logger";
 
 interface UserProfile {
   id: string;

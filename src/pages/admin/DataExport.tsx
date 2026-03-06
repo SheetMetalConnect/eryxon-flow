@@ -10,6 +10,7 @@ import { Download, Archive, FileJson, FileSpreadsheet, Loader2 } from "lucide-re
 import Papa from "papaparse";
 import JSZip from "jszip";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 
 const EXPORTABLE_ENTITIES = [
   { id: 'jobs', label: 'Jobs', description: 'All manufacturing jobs' },

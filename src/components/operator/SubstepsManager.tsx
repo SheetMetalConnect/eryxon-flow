@@ -53,6 +53,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { logger } from "@/lib/logger";
 
 interface Substep {
   id: string;
@@ -261,7 +262,7 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
       if (error) throw error;
       setSubsteps(data || []);
     } catch (error: any) {
-      console.error("Error loading substeps:", error);
+      logger.error("SubstepsManager", "Error loading substeps", error);
       toast.error(t("substepToasts.failedToLoad"));
     } finally {
       setLoading(false);
@@ -290,7 +291,7 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
       if (error) throw error;
       setTemplates(data || []);
     } catch (error: any) {
-      console.error("Error loading templates:", error);
+      logger.error("SubstepsManager", "Error loading templates", error);
       // Don't show error toast, templates are optional
     }
   };
@@ -326,7 +327,7 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
       toast.success(t("substepToasts.reordered"));
       onUpdate?.();
     } catch (error: any) {
-      console.error("Error reordering substeps:", error);
+      logger.error("SubstepsManager", "Error reordering substeps", error);
       toast.error(t("substepToasts.reorderFailed"));
       loadSubsteps(); // Reload to restore correct order
     }
@@ -362,7 +363,7 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
       toast.success(t("substepToasts.added"));
       onUpdate?.();
     } catch (error: any) {
-      console.error("Error adding substep:", error);
+      logger.error("SubstepsManager", "Error adding substep", error);
       toast.error(t("substepToasts.addFailed"));
     } finally {
       setLoading(false);
@@ -404,7 +405,7 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
       toast.success(t("substepToasts.statusUpdated"));
       onUpdate?.();
     } catch (error: any) {
-      console.error("Error updating status:", error);
+      logger.error("SubstepsManager", "Error updating status", error);
       toast.error(t("substepToasts.statusUpdateFailed"));
       loadSubsteps();
     }
@@ -423,7 +424,7 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
       toast.success(t("substepToasts.deleted"));
       onUpdate?.();
     } catch (error: any) {
-      console.error("Error deleting substep:", error);
+      logger.error("SubstepsManager", "Error deleting substep", error);
       toast.error(t("substepToasts.deleteFailed"));
     }
   };
@@ -445,7 +446,7 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
       toast.success(t("substepToasts.notesUpdated"));
       onUpdate?.();
     } catch (error: any) {
-      console.error("Error updating notes:", error);
+      logger.error("SubstepsManager", "Error updating notes", error);
       toast.error(t("substepToasts.notesUpdateFailed"));
       loadSubsteps();
     }
@@ -486,7 +487,7 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
       toast.success(t("notifications.success"));
       onUpdate?.();
     } catch (error: any) {
-      console.error("Error applying template:", error);
+      logger.error("SubstepsManager", "Error applying template", error);
       toast.error(t("substepToasts.templateApplyFailed"));
     } finally {
       setLoading(false);

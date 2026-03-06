@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
+import { logger } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import PartDetailModal from "@/components/admin/PartDetailModal";

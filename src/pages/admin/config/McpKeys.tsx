@@ -18,6 +18,7 @@ import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColum
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Switch } from "@/components/ui/switch";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 
 interface McpKey {
   id: string;

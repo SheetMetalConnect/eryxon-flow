@@ -19,6 +19,7 @@ import {
   Edit2,
   Save,
 } from "lucide-react";
+import { logger } from "@/lib/logger";
 import {
   Select,
   SelectContent,

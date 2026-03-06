@@ -1,12 +1,15 @@
 import React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { QueryKeys } from '@/lib/queryClient';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function usePendingIssuesCount() {
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
 
   const { data: count, isLoading } = useQuery({
-    queryKey: ['pending-issues-count'],
+    queryKey: QueryKeys.issues.pendingCount(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const { count, error } = await supabase
         .from('issues')
@@ -33,7 +36,7 @@ export function usePendingIssuesCount() {
         },
         () => {
           // Refetch when there are changes to pending issues
-          queryClient.invalidateQueries({ queryKey: ['pending-issues-count'] });
+          queryClient.invalidateQueries({ queryKey: QueryKeys.issues.pendingCount(profile?.tenant_id ?? '') });
         }
       )
       .subscribe();

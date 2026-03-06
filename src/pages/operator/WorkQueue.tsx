@@ -22,6 +22,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { isAfter, isBefore, addDays, startOfToday, endOfToday } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 
 // Operator assignment info for parts
 interface PartAssignment {
@@ -108,7 +109,7 @@ export default function WorkQueue() {
         setMyAssignments([]);
       }
     } catch (error) {
-      console.error("Error loading data:", error);
+      logger.error("WorkQueue", "Error loading data", error);
       toast.error(t("workQueue.failedToLoad"));
     } finally {
       setLoading(false);

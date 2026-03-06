@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { logger } from "@/lib/logger";
 
 // SECURITY NOTE: The role field here is for UI convenience only (showing/hiding UI elements).
 // All actual authorization is enforced server-side via Row Level Security (RLS) policies
@@ -105,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await fetchTenant();
       }
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      logger.error('AuthContext', 'Error fetching profile', error);
     } finally {
       setLoading(false);
     }
@@ -135,7 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
       }
     } catch (error) {
-      console.error("Error fetching tenant:", error);
+      logger.error('AuthContext', 'Error fetching tenant', error);
     }
   };
 
@@ -159,7 +160,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Optionally reload the page to refresh all data
       window.location.reload();
     } catch (error) {
-      console.error("Error switching tenant:", error);
+      logger.error('AuthContext', 'Error switching tenant', error);
       throw error;
     }
   };

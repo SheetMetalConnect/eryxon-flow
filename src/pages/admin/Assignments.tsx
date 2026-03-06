@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { logger } from "@/lib/logger";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

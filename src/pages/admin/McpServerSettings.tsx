@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { Loader2, Server, CheckCircle2, XCircle, AlertCircle, Copy } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { logger } from "@/lib/logger";
 
 interface McpConfig {
   id?: string;

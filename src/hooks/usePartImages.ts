@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { logger } from '@/lib/logger';
 
 interface ImageInfo {
   path: string;
@@ -27,7 +28,7 @@ export function usePartImages(partId: string) {
 
       return data?.image_paths || [];
     } catch (error: any) {
-      console.error("Error fetching image paths:", error);
+      logger.error('usePartImages', 'Error fetching image paths', error);
       toast.error(t("parts.images.loadFailed"), { description: error.message });
       return [];
     }
@@ -60,7 +61,7 @@ export function usePartImages(partId: string) {
 
       return imageInfos;
     } catch (error: any) {
-      console.error("Error loading images:", error);
+      logger.error('usePartImages', 'Error loading images', error);
       toast.error(t("parts.images.loadFailed"), { description: error.message });
       return [];
     } finally {
@@ -83,7 +84,7 @@ export function usePartImages(partId: string) {
 
       return true;
     } catch (error: any) {
-      console.error("Error adding images:", error);
+      logger.error('usePartImages', 'Error adding images', error);
       toast.error(t("parts.images.addFailed"), { description: error.message });
       return false;
     }
@@ -114,7 +115,7 @@ export function usePartImages(partId: string) {
 
       return true;
     } catch (error: any) {
-      console.error("Error removing image:", error);
+      logger.error('usePartImages', 'Error removing image', error);
       toast.error(t("parts.images.deleteFailed"), { description: error.message });
       return false;
     }
@@ -132,7 +133,7 @@ export function usePartImages(partId: string) {
 
       return data?.signedUrl || null;
     } catch (error) {
-      console.error("Error getting first image:", error);
+      logger.error('usePartImages', 'Error getting first image', error);
       return null;
     }
   }, [getImagePaths]);

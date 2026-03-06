@@ -25,6 +25,7 @@ import { seedDemoData } from "@/lib/seed";
 import { clearMockData } from "@/lib/mockDataGenerator";
 import { QRMDashboard } from "@/components/qrm/QRMDashboard";
 import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
+import { logger } from "@/lib/logger";
 import {
   Table,
   TableBody,

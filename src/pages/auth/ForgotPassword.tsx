@@ -10,6 +10,7 @@ import { Loader2, ArrowLeft, Factory, CheckCircle2, Mail } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { ROUTES } from "@/routes";
+import { logger } from "@/lib/logger";
 
 const TURNSTILE_ENABLED = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY);
 const LazyTurnstile = TURNSTILE_ENABLED
@@ -48,7 +49,7 @@ export default function ForgotPassword() {
       });
 
       if (error) {
-        console.error("Password reset error:", error.message);
+        logger.error('ForgotPassword', 'Password reset error', error.message);
         turnstileRef.current?.reset();
         setCaptchaToken(null);
         setError(t("auth.unexpectedError"));
@@ -56,7 +57,7 @@ export default function ForgotPassword() {
         setSuccess(true);
       }
     } catch (err) {
-      console.error("Password reset error:", err);
+      logger.error('ForgotPassword', 'Password reset error', err);
       turnstileRef.current?.reset();
       setCaptchaToken(null);
       setError(t("auth.unexpectedError"));

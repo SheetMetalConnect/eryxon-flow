@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { generateMockData, clearMockData } from "@/lib/mockDataGenerator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 import {
   Moon,
   Globe,

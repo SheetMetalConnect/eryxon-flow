@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { uploadFileWithProgress } from '@/lib/upload-with-progress';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 export interface UploadProgress {
   fileIndex: number;
@@ -58,7 +59,7 @@ export function useFileUpload() {
       const { data, error } = await supabase.rpc('get_storage_quota');
 
       if (error) {
-        console.error('Error fetching storage quota:', error);
+        logger.error('useFileUpload', 'Error fetching storage quota', error);
         return null;
       }
 
@@ -76,7 +77,7 @@ export function useFileUpload() {
       setStorageQuota(quotaInfo);
       return quotaInfo;
     } catch (error) {
-      console.error('Storage quota fetch error:', error);
+      logger.error('useFileUpload', 'Storage quota fetch error', error);
       return null;
     }
   }, []);
@@ -103,7 +104,7 @@ export function useFileUpload() {
       });
 
       if (error) {
-        console.error('Error checking upload quota:', error);
+        logger.error('useFileUpload', 'Error checking upload quota', error);
         return {
           allowed: false,
           reason: 'Unable to verify storage quota',
@@ -124,7 +125,7 @@ export function useFileUpload() {
         quotaInfo: result,
       };
     } catch (error: any) {
-      console.error('Quota check error:', error);
+      logger.error('useFileUpload', 'Quota check error', error);
       return {
         allowed: false,
         reason: error.message || 'Quota check failed',
@@ -148,7 +149,7 @@ export function useFileUpload() {
       // Refresh quota after update
       await fetchStorageQuota();
     } catch (error) {
-      console.error('Error updating storage usage:', error);
+      logger.error('useFileUpload', 'Error updating storage usage', error);
     }
   }, [profile?.tenant_id, fetchStorageQuota]);
 
@@ -282,7 +283,7 @@ export function useFileUpload() {
           await updateStorageUsage(file.size, 'add');
 
         } catch (uploadError: any) {
-          console.error('Upload error:', uploadError);
+          logger.error('useFileUpload', 'Upload error', uploadError);
           const errorMessage = uploadError.message || 'Upload failed';
           failedFiles.push({ fileName: file.name, error: errorMessage });
           setProgress(prev => prev.map((p, idx) =>
@@ -328,7 +329,7 @@ export function useFileUpload() {
 
       return { success: true };
     } catch (error: any) {
-      console.error('Delete error:', error);
+      logger.error('useFileUpload', 'Delete error', error);
       return {
         success: false,
         error: error.message || 'Delete failed',

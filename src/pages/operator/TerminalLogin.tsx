@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/routes";
+import { logger } from "@/lib/logger";
 
 /**
  * Terminal Login / Operator Switch Page
@@ -116,7 +117,7 @@ export default function TerminalLogin() {
         setPin("");
       }
     } catch (err: any) {
-      console.error("Login error:", err);
+      logger.error("TerminalLogin", "Login error", err);
       setError(t("terminalLogin.unexpectedError"));
       setPin("");
     } finally {

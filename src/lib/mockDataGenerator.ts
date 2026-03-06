@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 export interface MockDataProgressStep {
   step: number;
@@ -48,7 +49,8 @@ export async function generateMockData(
       throw new Error("tenant_id is required and cannot be empty");
     }
 
-    console.log(
+    logger.debug(
+      'MockData',
       `Starting comprehensive mock data generation for tenant: ${tenantId}...`,
     );
 
@@ -70,10 +72,11 @@ export async function generateMockData(
       );
 
       if (demoCheckError) {
-        console.warn("Could not check demo mode status:", demoCheckError);
+        logger.warn('MockData', 'Could not check demo mode status:', demoCheckError);
       } else if (isDemoMode === true) {
-        console.log(
-          "⚠️ Tenant already has demo data. Skipping to prevent duplicates.",
+        logger.debug(
+          'MockData',
+          'Tenant already has demo data. Skipping to prevent duplicates.',
         );
         return {
           success: false,
@@ -176,7 +179,7 @@ export async function generateMockData(
         cellIdMap[cells[idx].name] = c.id;
       });
 
-      console.log("✓ Created 6 QRM cells with WIP limits");
+      logger.debug('MockData', 'Created 6 QRM cells with WIP limits');
     }
 
     // Step 1.5: Seed Dutch holidays and factory calendar
@@ -240,9 +243,9 @@ export async function generateMockData(
         .upsert(calendarEntries, { onConflict: 'tenant_id,date' });
 
       if (calendarError) {
-        console.warn("Calendar seeding warning:", calendarError);
+        logger.warn('MockData', 'Calendar seeding warning:', calendarError);
       } else {
-        console.log(`✓ Seeded ${calendarEntries.length} Dutch holidays and factory closures`);
+        logger.debug('MockData', `Seeded ${calendarEntries.length} Dutch holidays and factory closures`);
       }
     }
 
@@ -263,7 +266,7 @@ export async function generateMockData(
           .like("email", "%@example.com");
 
         if (existingOps && existingOps.length > 0) {
-          console.log(`✓ ${existingOps.length} demo operators already exist`);
+          logger.debug('MockData', `${existingOps.length} demo operators already exist`);
           operatorIds = existingOps.map((o) => o.id);
           existingOps.forEach((o) => {
             operatorIdMap[o.full_name] = o.id;
@@ -278,12 +281,14 @@ export async function generateMockData(
           );
 
           if (rpcError) {
-            console.warn(
-              "⚠️ Operator seeding skipped (requires auth setup):",
+            logger.warn(
+              'MockData',
+              'Operator seeding skipped (requires auth setup):',
               rpcError.message,
             );
-            console.log(
-              "  → Demo will continue without operators (operations will be unassigned)",
+            logger.debug(
+              'MockData',
+              'Demo will continue without operators (operations will be unassigned)',
             );
           } else {
             // Fetch the created operators
@@ -299,12 +304,12 @@ export async function generateMockData(
               createdOps.forEach((o) => {
                 operatorIdMap[o.full_name] = o.id;
               });
-              console.log(`✓ Created ${createdOps.length} shop floor operators`);
+              logger.debug('MockData', `Created ${createdOps.length} shop floor operators`);
             }
           }
         }
       } catch (err) {
-        console.warn("⚠️ Operator setup failed, continuing without:", err);
+        logger.warn('MockData', 'Operator setup failed, continuing without:', err);
       }
     }
 
@@ -322,10 +327,11 @@ export async function generateMockData(
         resourceSeedError &&
         !resourceSeedError.message?.includes("already exist")
       ) {
-        console.warn("Resource seeding warning:", resourceSeedError);
+        logger.warn('MockData', 'Resource seeding warning:', resourceSeedError);
       } else {
-        console.log(
-          "✓ Seeded demo resources (molds, tooling, fixtures, materials)",
+        logger.debug(
+          'MockData',
+          'Seeded demo resources (molds, tooling, fixtures, materials)',
         );
       }
     }
@@ -342,9 +348,9 @@ export async function generateMockData(
       scrapReasonsError &&
       !scrapReasonsError.message?.includes("already exist")
     ) {
-      console.warn("Scrap reasons warning:", scrapReasonsError);
+      logger.warn('MockData', 'Scrap reasons warning:', scrapReasonsError);
     } else {
-      console.log("✓ Seeded 31 default scrap reasons");
+      logger.debug('MockData', 'Seeded 31 default scrap reasons');
     }
 
     // Fetch resources and scrap reasons for later use
@@ -480,7 +486,7 @@ export async function generateMockData(
         jobIdMap[jobs[idx].job_number] = j.id;
       });
 
-      console.log("✓ Created 6 realistic Dutch customer jobs");
+      logger.debug('MockData', 'Created 6 realistic Dutch customer jobs');
     }
 
     // Step 6: Create parts with assembly relationships
@@ -596,18 +602,18 @@ export async function generateMockData(
         },
       ];
 
-      console.log("📦 Inserting parent parts...");
+      logger.debug('MockData', 'Inserting parent parts...');
       const { data: parentPartsData, error: parentError } = await supabase
         .from("parts")
         .insert(parentParts)
         .select("id, part_number, job_id, parent_part_id");
 
       if (parentError) {
-        console.error("❌ Parent parts error:", parentError);
+        logger.error('MockData', 'Parent parts error:', parentError);
         throw parentError;
       }
 
-      console.log(`✓ Created ${parentPartsData?.length || 0} parent parts`);
+      logger.debug('MockData', `Created ${parentPartsData?.length || 0} parent parts`);
 
       // Build lookup for parent IDs
       const partIdLookup: Record<string, string> = {};
@@ -713,24 +719,24 @@ export async function generateMockData(
         },
       ];
 
-      console.log("📦 Inserting child parts with parent links...");
+      logger.debug('MockData', 'Inserting child parts with parent links...');
       const { data: childPartsData, error: childError } = await supabase
         .from("parts")
         .insert(childParts)
         .select("id, part_number, job_id, parent_part_id");
 
       if (childError) {
-        console.error("❌ Child parts error:", childError);
+        logger.error('MockData', 'Child parts error:', childError);
         throw childError;
       }
 
-      console.log(`✓ Created ${childPartsData?.length || 0} child parts`);
+      logger.debug('MockData', `Created ${childPartsData?.length || 0} child parts`);
 
       // Combine all parts for operations creation
       partData = [...(parentPartsData || []), ...(childPartsData || [])];
       partIds = partData.map((p) => p.id);
 
-      console.log(`✓ Total parts created: ${partData.length} (${parentPartsData?.length} parents + ${childPartsData?.length} children)`);
+      logger.debug('MockData', `Total parts created: ${partData.length} (${parentPartsData?.length} parents + ${childPartsData?.length} children)`);
     }
 
     // Step 7: Create QRM-aligned operations with proper routing
@@ -1510,12 +1516,12 @@ export async function generateMockData(
         );
       }
 
-      console.log(`🔧 Prepared ${operations.length} operations to insert...`);
+      logger.debug('MockData', `Prepared ${operations.length} operations to insert...`);
       
       if (operations.length === 0) {
-        console.warn("⚠️ No operations created - check if parts were found");
-        console.log("Available parts:", partData.map(p => p.part_number));
-        console.log("Available cells:", Object.keys(cellIdMap));
+        logger.warn('MockData', 'No operations created - check if parts were found');
+        logger.debug('MockData', 'Available parts:', partData.map(p => p.part_number));
+        logger.debug('MockData', 'Available cells:', Object.keys(cellIdMap));
       } else {
         const { data: operationsInserted, error: operationsError } =
           await supabase
@@ -1524,13 +1530,14 @@ export async function generateMockData(
             .select("id, cell_id, part_id, status");
 
         if (operationsError) {
-          console.error("❌ Operations insert error:", operationsError);
+          logger.error('MockData', 'Operations insert error:', operationsError);
           throw operationsError;
         }
 
         operationData = operationsInserted || [];
-        console.log(
-          `✓ Created ${operationsInserted?.length || 0} QRM-aligned operations with detailed routing`,
+        logger.debug(
+          'MockData',
+          `Created ${operationsInserted?.length || 0} QRM-aligned operations with detailed routing`,
         );
       }
     }
@@ -1577,9 +1584,9 @@ export async function generateMockData(
             .insert(substeps);
 
           if (substepsError) {
-            console.warn("Substeps creation warning:", substepsError);
+            logger.warn('MockData', 'Substeps creation warning:', substepsError);
           } else {
-            console.log(`✓ Created ${substeps.length} example substeps for ${inProgressOps.length} operations`);
+            logger.debug('MockData', `Created ${substeps.length} example substeps for ${inProgressOps.length} operations`);
           }
         }
       }
@@ -1665,7 +1672,7 @@ export async function generateMockData(
           .single();
 
         if (templateError) {
-          console.warn(`Template "${templateDef.name}" warning:`, templateError);
+          logger.warn('MockData', `Template "${templateDef.name}" warning:`, templateError);
           continue;
         }
 
@@ -1682,13 +1689,13 @@ export async function generateMockData(
           .insert(items);
 
         if (itemsError) {
-          console.warn(`Template items for "${templateDef.name}" warning:`, itemsError);
+          logger.warn('MockData', `Template items for "${templateDef.name}" warning:`, itemsError);
         }
       } catch (err) {
-        console.warn(`Template "${templateDef.name}" error:`, err);
+        logger.warn('MockData', `Template "${templateDef.name}" error:`, err);
       }
     }
-    console.log(`✓ Created ${templateDefinitions.length} substep templates`);
+    logger.debug('MockData', `Created ${templateDefinitions.length} substep templates`);
 
     // Step 8: Link resources to operations
     reportProgress(8, 'resourceLinks');
@@ -1739,10 +1746,11 @@ export async function generateMockData(
           .insert(operationResources);
 
         if (linkError) {
-          console.warn("Resource linking warning:", linkError);
+          logger.warn('MockData', 'Resource linking warning:', linkError);
         } else {
-          console.log(
-            `✓ Linked ${operationResources.length} resources to operations`,
+          logger.debug(
+            'MockData',
+            `Linked ${operationResources.length} resources to operations`,
           );
         }
       }
@@ -1817,10 +1825,11 @@ export async function generateMockData(
           .insert(timeEntries);
 
         if (timeError) {
-          console.warn("Time entries warning:", timeError);
+          logger.warn('MockData', 'Time entries warning:', timeError);
         } else {
-          console.log(
-            `✓ Created ${timeEntries.length} time entries for operators`,
+          logger.debug(
+            'MockData',
+            `Created ${timeEntries.length} time entries for operators`,
           );
         }
       }
@@ -1895,10 +1904,11 @@ export async function generateMockData(
           .insert(quantityRecords);
 
         if (qtyError) {
-          console.warn("Quantity records warning:", qtyError);
+          logger.warn('MockData', 'Quantity records warning:', qtyError);
         } else {
-          console.log(
-            `✓ Created ${quantityRecords.length} quantity records with scrap tracking`,
+          logger.debug(
+            'MockData',
+            `Created ${quantityRecords.length} quantity records with scrap tracking`,
           );
         }
       }
@@ -1998,9 +2008,9 @@ export async function generateMockData(
           .insert(issues);
 
         if (issuesError) {
-          console.warn("Issues creation warning:", issuesError);
+          logger.warn('MockData', 'Issues creation warning:', issuesError);
         } else {
-          console.log(`✓ Created ${issues.length} quality issues (NCRs)`);
+          logger.debug('MockData', `Created ${issues.length} quality issues (NCRs)`);
         }
       }
     }
@@ -2012,16 +2022,16 @@ export async function generateMockData(
     });
 
     if (demoModeError) {
-      console.warn("Could not set demo mode flag:", demoModeError);
+      logger.warn('MockData', 'Could not set demo mode flag:', demoModeError);
       // Continue anyway - data is created successfully
     } else {
-      console.log("✓ Demo mode flag enabled for tenant");
+      logger.debug('MockData', 'Demo mode flag enabled for tenant');
     }
 
-    console.log("✅ Mock data generation completed successfully!");
+    logger.debug('MockData', 'Mock data generation completed successfully!');
     return { success: true };
   } catch (error) {
-    console.error("Error generating mock data:", error);
+    logger.error('MockData', 'Error generating mock data:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -2046,7 +2056,7 @@ export async function clearMockData(
       throw new Error("tenant_id is required for clearMockData");
     }
 
-    console.log(`Clearing all mock data for tenant: ${tenantId}...`);
+    logger.debug('MockData', `Clearing all mock data for tenant: ${tenantId}...`);
 
     // CRITICAL: Delete in reverse order of dependencies
     // All deletions MUST include tenant_id filter to prevent cross-tenant contamination
@@ -2056,21 +2066,21 @@ export async function clearMockData(
       .from("notifications")
       .delete()
       .eq("tenant_id", tenantId);
-    if (notifErr) console.warn("Notifications deletion warning:", notifErr);
+    if (notifErr) logger.warn('MockData', 'Notifications deletion warning:', notifErr);
 
     // 2. Delete issues (has tenant_id)
     const { error: issuesErr } = await supabase
       .from("issues")
       .delete()
       .eq("tenant_id", tenantId);
-    if (issuesErr) console.warn("Issues deletion warning:", issuesErr);
+    if (issuesErr) logger.warn('MockData', 'Issues deletion warning:', issuesErr);
 
     // 3. Delete operation_quantities (has tenant_id)
     const { error: qtyErr } = await supabase
       .from("operation_quantities")
       .delete()
       .eq("tenant_id", tenantId);
-    if (qtyErr) console.warn("Quantity records deletion warning:", qtyErr);
+    if (qtyErr) logger.warn('MockData', 'Quantity records deletion warning:', qtyErr);
 
     // 4. Delete time_entry_pauses (NO tenant_id - must filter through time_entries)
     const { data: tenantTimeEntries, error: teFetchErr } = await supabase
@@ -2079,14 +2089,14 @@ export async function clearMockData(
       .eq("tenant_id", tenantId);
 
     if (teFetchErr) {
-      console.warn("Time entries fetch warning:", teFetchErr);
+      logger.warn('MockData', 'Time entries fetch warning:', teFetchErr);
     } else if (tenantTimeEntries && tenantTimeEntries.length > 0) {
       const timeEntryIds = tenantTimeEntries.map((te) => te.id);
       const { error: tepErr } = await supabase
         .from("time_entry_pauses")
         .delete()
         .in("time_entry_id", timeEntryIds);
-      if (tepErr) console.warn("Time entry pauses deletion warning:", tepErr);
+      if (tepErr) logger.warn('MockData', 'Time entry pauses deletion warning:', tepErr);
     }
 
     // 5. Delete time_entries (has tenant_id)
@@ -2094,21 +2104,21 @@ export async function clearMockData(
       .from("time_entries")
       .delete()
       .eq("tenant_id", tenantId);
-    if (timeErr) console.warn("Time entries deletion warning:", timeErr);
+    if (timeErr) logger.warn('MockData', 'Time entries deletion warning:', timeErr);
 
     // 6. Delete assignments (has tenant_id)
     const { error: assignErr } = await supabase
       .from("assignments")
       .delete()
       .eq("tenant_id", tenantId);
-    if (assignErr) console.warn("Assignments deletion warning:", assignErr);
+    if (assignErr) logger.warn('MockData', 'Assignments deletion warning:', assignErr);
 
     // 7. Delete substeps (has tenant_id)
     const { error: substepsErr } = await supabase
       .from("substeps")
       .delete()
       .eq("tenant_id", tenantId);
-    if (substepsErr) console.warn("Substeps deletion warning:", substepsErr);
+    if (substepsErr) logger.warn('MockData', 'Substeps deletion warning:', substepsErr);
 
     // 7.5. Delete substep template items (must delete before templates - FK constraint)
     const { data: tenantTemplates, error: templateFetchErr } = await supabase
@@ -2117,7 +2127,7 @@ export async function clearMockData(
       .eq("tenant_id", tenantId);
 
     if (templateFetchErr) {
-      console.warn("Template fetch warning:", templateFetchErr);
+      logger.warn('MockData', 'Template fetch warning:', templateFetchErr);
     } else if (tenantTemplates && tenantTemplates.length > 0) {
       const templateIds = tenantTemplates.map((t) => t.id);
       const { error: templateItemsErr } = await supabase
@@ -2125,7 +2135,7 @@ export async function clearMockData(
         .delete()
         .in("template_id", templateIds);
       if (templateItemsErr)
-        console.warn("Template items deletion warning:", templateItemsErr);
+        logger.warn('MockData', 'Template items deletion warning:', templateItemsErr);
     }
 
     // 7.6. Delete substep templates (has tenant_id)
@@ -2133,7 +2143,7 @@ export async function clearMockData(
       .from("substep_templates")
       .delete()
       .eq("tenant_id", tenantId);
-    if (templatesErr) console.warn("Templates deletion warning:", templatesErr);
+    if (templatesErr) logger.warn('MockData', 'Templates deletion warning:', templatesErr);
 
     // 8. Delete operation_resources (NO tenant_id - must filter through operations)
     // CRITICAL: We must get operation IDs first to ensure tenant isolation
@@ -2143,7 +2153,7 @@ export async function clearMockData(
       .eq("tenant_id", tenantId);
 
     if (opFetchErr) {
-      console.warn("Operation fetch warning:", opFetchErr);
+      logger.warn('MockData', 'Operation fetch warning:', opFetchErr);
     } else if (tenantOperations && tenantOperations.length > 0) {
       const operationIds = tenantOperations.map((op) => op.id);
       const { error: opResErr } = await supabase
@@ -2151,7 +2161,7 @@ export async function clearMockData(
         .delete()
         .in("operation_id", operationIds);
       if (opResErr)
-        console.warn("Operation resources deletion warning:", opResErr);
+        logger.warn('MockData', 'Operation resources deletion warning:', opResErr);
     }
 
     // 9. Delete operations (has tenant_id)
@@ -2159,21 +2169,21 @@ export async function clearMockData(
       .from("operations")
       .delete()
       .eq("tenant_id", tenantId);
-    if (opsErr) console.warn("Operations deletion warning:", opsErr);
+    if (opsErr) logger.warn('MockData', 'Operations deletion warning:', opsErr);
 
     // 10. Delete parts (has tenant_id)
     const { error: partsErr } = await supabase
       .from("parts")
       .delete()
       .eq("tenant_id", tenantId);
-    if (partsErr) console.warn("Parts deletion warning:", partsErr);
+    if (partsErr) logger.warn('MockData', 'Parts deletion warning:', partsErr);
 
     // 11. Delete jobs (has tenant_id)
     const { error: jobsErr } = await supabase
       .from("jobs")
       .delete()
       .eq("tenant_id", tenantId);
-    if (jobsErr) console.warn("Jobs deletion warning:", jobsErr);
+    if (jobsErr) logger.warn('MockData', 'Jobs deletion warning:', jobsErr);
 
     // 12. Delete cells (has tenant_id)
     const { error: cellsErr } = await supabase

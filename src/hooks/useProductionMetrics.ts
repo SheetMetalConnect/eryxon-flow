@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { logger } from '@/lib/logger';
 
 export interface ProductionMetrics {
   // Quantities
@@ -79,7 +80,7 @@ export function useOperationProductionMetrics(operationId: string | undefined) {
         .single();
 
       if (opError || !operation) {
-        console.error("Error fetching operation:", opError);
+        logger.error('useProductionMetrics', 'Error fetching operation', opError);
         return null;
       }
 
@@ -102,7 +103,7 @@ export function useOperationProductionMetrics(operationId: string | undefined) {
         .eq("operation_id", operationId);
 
       if (qtyError) {
-        console.error("Error fetching quantities:", qtyError);
+        logger.error('useProductionMetrics', 'Error fetching quantities', qtyError);
       }
 
       const records = quantities || [];
@@ -214,7 +215,7 @@ export function useJobProductionMetrics(jobId: string | undefined) {
         .in("operation_id", operationIds);
 
       if (qtyError) {
-        console.error("Error fetching quantities:", qtyError);
+        logger.error('useProductionMetrics', 'Error fetching quantities', qtyError);
       }
 
       const records = quantities || [];
@@ -348,7 +349,7 @@ export function useRecordProduction() {
         .insert(scrapReasonRecords as any);
 
       if (scrapError) {
-        console.error("Failed to record scrap reasons:", scrapError);
+        logger.error('useProductionMetrics', 'Failed to record scrap reasons', scrapError);
         // Don't throw - the main record was saved
       }
     }

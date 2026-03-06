@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import {
   Dialog,
   DialogContent,
@@ -97,7 +98,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
   } = usePMI(partId);
 
   const { data: part, isLoading } = useQuery({
-    queryKey: ["part-detail", partId],
+    queryKey: QueryKeys.parts.detail(partId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("parts")
@@ -114,7 +115,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
   });
 
   const { data: cells } = useQuery({
-    queryKey: ["cells"],
+    queryKey: QueryKeys.cells.active(profile?.tenant_id || ""),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cells")
@@ -167,7 +168,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         description: t("parts.fieldsUpdated"),
       });
       setHasChanges(false);
-      await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
+      await queryClient.invalidateQueries({ queryKey: QueryKeys.parts.detail(partId) });
       onUpdate();
     },
     onError: (error: any) => {
@@ -185,7 +186,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
   // Fetch available resources for linking
   const { data: availableResources } = useQuery({
-    queryKey: ["available-resources", profile?.tenant_id],
+    queryKey: QueryKeys.config.availableResources(profile?.tenant_id || ""),
     queryFn: async () => {
       if (!profile?.tenant_id) return [];
 
@@ -203,7 +204,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
   });
 
   const { data: operations, refetch: refetchOperations } = useQuery({
-    queryKey: ["operations", partId],
+    queryKey: QueryKeys.operations.byPart(partId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("operations")
@@ -243,7 +244,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
   // Fetch parent part
   const { data: parentPart } = useQuery({
-    queryKey: ["parent-part", partId],
+    queryKey: QueryKeys.parts.parent(partId),
     queryFn: async () => {
       if (!profile?.tenant_id) return null;
       return await fetchParentPart(partId, profile.tenant_id);
@@ -253,7 +254,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
   // Fetch child parts
   const { data: childParts, refetch: refetchChildParts } = useQuery({
-    queryKey: ["child-parts", partId],
+    queryKey: QueryKeys.parts.children(partId),
     queryFn: async () => {
       if (!profile?.tenant_id) return [];
       return await fetchChildParts(partId, profile.tenant_id);
@@ -263,7 +264,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
   // Check assembly dependencies
   const { data: dependencies } = useQuery({
-    queryKey: ["assembly-dependencies", partId],
+    queryKey: QueryKeys.parts.assemblyDeps(partId),
     queryFn: async () => {
       if (!profile?.tenant_id) return null;
       return await checkAssemblyDependencies(partId, profile.tenant_id);
@@ -412,7 +413,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         setCadFiles(null);
 
         // Refresh modal data and parent list
-        await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
+        await queryClient.invalidateQueries({ queryKey: QueryKeys.parts.detail(partId) });
         onUpdate();
       }
 
@@ -502,7 +503,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       });
 
       // Refresh modal data and parent list
-      await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
+      await queryClient.invalidateQueries({ queryKey: QueryKeys.parts.detail(partId) });
       onUpdate();
     } catch (error: any) {
       console.error("Delete error:", error);
@@ -944,7 +945,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                       imagePaths={part.image_paths}
                       onImageDeleted={async () => {
                         // Refresh modal data and parent list
-                        await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
+                        await queryClient.invalidateQueries({ queryKey: QueryKeys.parts.detail(partId) });
                         onUpdate();
                       }}
                       editable={true}
@@ -957,7 +958,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   partId={partId}
                   onUploadComplete={async () => {
                     // Refresh modal data and parent list
-                    await queryClient.invalidateQueries({ queryKey: ["part-detail", partId] });
+                    await queryClient.invalidateQueries({ queryKey: QueryKeys.parts.detail(partId) });
                     onUpdate();
                   }}
                 />

@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 export interface Invitation {
   id: string;
@@ -42,7 +43,7 @@ export function useInvitations() {
       setInvitations((data || []) as any);
     } catch (err: any) {
       setError(err.message);
-      console.error('Error loading invitations:', err);
+      logger.error('useInvitations', 'Error loading invitations', err);
     } finally {
       setLoading(false);
     }
@@ -99,7 +100,7 @@ export function useInvitations() {
       return result.invitation_id;
     } catch (err: any) {
       toast.error(err.message || t('notifications.failed'));
-      console.error('Error creating invitation:', err);
+      logger.error('useInvitations', 'Error creating invitation', err);
       return null;
     }
   };
@@ -121,7 +122,7 @@ export function useInvitations() {
       return data;
     } catch (err: any) {
       toast.error(err.message || t('notifications.failed'));
-      console.error('Error cancelling invitation:', err);
+      logger.error('useInvitations', 'Error cancelling invitation', err);
       return null;
     }
   };
@@ -142,7 +143,7 @@ export function useInvitations() {
       return data[0];
     } catch (err: any) {
       toast.error(err.message || t('notifications.failed'));
-      console.error('Error getting invitation:', err);
+      logger.error('useInvitations', 'Error getting invitation', err);
       return null;
     }
   };
@@ -160,7 +161,7 @@ export function useInvitations() {
       return data;
     } catch (err: any) {
       toast.error(err.message || t('notifications.failed'));
-      console.error('Error accepting invitation:', err);
+      logger.error('useInvitations', 'Error accepting invitation', err);
       return null;
     }
   };

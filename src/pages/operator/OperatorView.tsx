@@ -35,6 +35,7 @@ import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 
 // Define the interface locally if not exported, matching the one in JobRow
 import { TerminalJob } from "@/types/terminal";
@@ -146,7 +147,7 @@ export default function OperatorView() {
       setOperations(opsData);
       if (cellsData.data) setCells(cellsData.data);
     } catch (error) {
-      console.error("Error loading data:", error);
+      logger.error("OperatorView", "Error loading data", error);
       toast.error(t("notifications.failedToLoadData"));
     } finally {
       setLoading(false);
@@ -198,14 +199,11 @@ export default function OperatorView() {
   const mapOperationToJob = (op: OperationWithDetails): TerminalJob => {
     // Debug log for part data
     if (op.part.file_paths && op.part.file_paths.length > 0) {
-      console.log(
-        "Mapping op with files:",
-        op.id,
-        op.part.part_number,
-        op.part.file_paths,
+      logger.debug(
+        "OperatorView",
+        "Mapping op with files",
+        { id: op.id, partNumber: op.part.part_number, filePaths: op.part.file_paths },
       );
-    } else {
-      // console.log("Mapping op WITHOUT files:", op.id, op.part.part_number, op.part);
     }
 
     const hasPdf =
@@ -305,7 +303,7 @@ export default function OperatorView() {
   useEffect(() => {
     const loadFiles = async () => {
       if (!selectedJob?.filePaths?.length) {
-        console.log("No file paths for job:", selectedJob?.jobCode);
+        logger.debug("OperatorView", "No file paths for job", selectedJob?.jobCode);
         setPdfUrl(null);
         setStepUrl(null);
         setSignedStepUrl(null);
@@ -313,10 +311,10 @@ export default function OperatorView() {
         return;
       }
 
-      console.log(
-        "Loading files for:",
-        selectedJob.jobCode,
-        selectedJob.filePaths,
+      logger.debug(
+        "OperatorView",
+        "Loading files for job",
+        { jobCode: selectedJob.jobCode, filePaths: selectedJob.filePaths },
       );
 
       try {
@@ -327,7 +325,7 @@ export default function OperatorView() {
 
         for (const path of selectedJob.filePaths) {
           const ext = path.toLowerCase();
-          console.log("Checking file:", path, "Ext:", ext);
+          logger.debug("OperatorView", "Checking file", { path, ext });
 
           if (ext.endsWith(".pdf") && !pdf) {
             const { data } = await supabase.storage
@@ -339,8 +337,9 @@ export default function OperatorView() {
               .from("parts-cad")
               .createSignedUrl(path, 3600);
             if (data?.signedUrl) {
-              console.log(
-                "Found STEP file, creating blob URL from:",
+              logger.debug(
+                "OperatorView",
+                "Found STEP file, creating blob URL",
                 data.signedUrl,
               );
               signedStep = data.signedUrl;
@@ -364,7 +363,7 @@ export default function OperatorView() {
 
         // Call backend for PMI extraction if CAD service is enabled
         if (signedStep && stepFileName && isCADServiceEnabled()) {
-          console.log("Calling backend for PMI extraction:", signedStep);
+          logger.debug("OperatorView", "Calling backend for PMI extraction", signedStep);
           try {
             const result = await processCAD(signedStep, stepFileName, {
               includeGeometry: true, // Server handles geometry
@@ -372,11 +371,11 @@ export default function OperatorView() {
               generateThumbnail: false,
             });
             if (result.success) {
-              console.log("CAD processing successful", result);
+              logger.debug("OperatorView", "CAD processing successful", result);
               if (result.pmi) setPmiData(result.pmi);
               if (result.geometry) setGeometryData(result.geometry);
             } else if (result.error) {
-              console.warn("CAD processing failed:", result.error);
+              logger.warn("OperatorView", "CAD processing failed", result.error);
               // Show user-friendly toast notification
               if (
                 result.error.includes("invalid geometry") ||
@@ -392,7 +391,7 @@ export default function OperatorView() {
               setGeometryData(null);
             }
           } catch (pmiError) {
-            console.error("Error during CAD processing:", pmiError);
+            logger.error("OperatorView", "Error during CAD processing", pmiError);
             toast.error(t("production.cadProcessingFailed"));
             setPmiData(null);
             setGeometryData(null);
@@ -402,7 +401,7 @@ export default function OperatorView() {
           setGeometryData(null);
         }
       } catch (e) {
-        console.error("Error loading file URLs", e);
+        logger.error("OperatorView", "Error loading file URLs", e);
       }
     };
 

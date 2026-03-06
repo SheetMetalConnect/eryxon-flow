@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { QueryKeys } from "@/lib/queryClient";
 
 export type BatchType = "laser_nesting" | "tube_batch" | "saw_batch" | "finishing_batch" | "general";
 export type BatchStatus = "draft" | "ready" | "in_progress" | "completed" | "cancelled" | "blocked";
@@ -103,7 +104,7 @@ export function useBatches(filters?: {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["batches", filters, profile?.tenant_id],
+    queryKey: QueryKeys.batches.all(profile?.tenant_id ?? "", filters as Record<string, unknown>),
     queryFn: async () => {
       let query = supabase
         .from("operation_batches")
@@ -137,7 +138,7 @@ export function useBatch(batchId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["batch", batchId],
+    queryKey: QueryKeys.batches.detail(batchId ?? ""),
     queryFn: async () => {
       if (!batchId) return null;
 
@@ -165,7 +166,7 @@ export function useSubBatches(batchId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["sub-batches", batchId, profile?.tenant_id],
+    queryKey: QueryKeys.batches.subBatches(batchId ?? "", profile?.tenant_id ?? ""),
     queryFn: async () => {
       if (!batchId) return [];
 
@@ -190,7 +191,7 @@ export function useBatchOperations(batchId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["batch-operations", batchId],
+    queryKey: QueryKeys.batches.operations(batchId ?? ""),
     queryFn: async () => {
       if (!batchId) return [];
 
@@ -225,7 +226,7 @@ export function useBatchRequirements(batchId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["batch-requirements", batchId],
+    queryKey: QueryKeys.batches.requirements(batchId ?? ""),
     queryFn: async () => {
       if (!batchId) return [];
 
@@ -296,7 +297,6 @@ export function useCreateBatch() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
-      queryClient.invalidateQueries({ queryKey: ["sub-batches"] });
       toast.success(t("batches.createSuccess"), { description: t("batches.createSuccessDesc") });
     },
     onError: (error: any) => {
@@ -326,7 +326,7 @@ export function useUpdateBatch() {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["batch", variables.id] });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.batches.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: ["batches"] });
       toast.success(t("batches.updateSuccess"));
     },
@@ -366,8 +366,7 @@ export function useUpdateBatchStatus() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
-      queryClient.invalidateQueries({ queryKey: ["batch", variables.batchId] });
-      queryClient.invalidateQueries({ queryKey: ["sub-batches"] }); // Status change might affect list view
+      queryClient.invalidateQueries({ queryKey: QueryKeys.batches.detail(variables.batchId) });
     },
     onError: (error: any) => {
       toast.error(t("common.error"), { description: error.message });
@@ -409,9 +408,9 @@ export function useAddOperationsToBatch() {
       if (error) throw error;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["batch-operations", variables.batchId] });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.batches.operations(variables.batchId) });
       queryClient.invalidateQueries({ queryKey: ["batches"] });
-      queryClient.invalidateQueries({ queryKey: ["batch", variables.batchId] }); // Update counts
+      queryClient.invalidateQueries({ queryKey: QueryKeys.batches.detail(variables.batchId) });
       toast.success(t("batches.operationsAdded"));
     },
     onError: (error: any) => {
@@ -436,7 +435,6 @@ export function useRemoveOperationFromBatch() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["batch-operations"] });
       queryClient.invalidateQueries({ queryKey: ["batches"] });
     },
     onError: (error: any) => {
@@ -472,7 +470,6 @@ export function useDeleteBatch() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
-      queryClient.invalidateQueries({ queryKey: ["sub-batches"] });
       toast.success(t("batches.deleteSuccess"));
     },
     onError: (error: any) => {
@@ -506,7 +503,7 @@ export function useCreateBatchRequirement() {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["batch-requirements", variables.batchId] });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.batches.requirements(variables.batchId) });
       toast.success(t("batches.requirementAdded"));
     },
     onError: (error: any) => {

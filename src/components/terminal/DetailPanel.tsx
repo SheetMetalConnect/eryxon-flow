@@ -20,6 +20,7 @@ import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { IconDisplay } from '@/components/ui/icon-picker';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 interface Substep {
     id: string;
@@ -68,7 +69,7 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                 .order("sequence", { ascending: true });
 
             if (error) {
-                console.error("Error fetching substeps:", error);
+                logger.error("DetailPanel", "Error fetching substeps", error);
                 return;
             }
 

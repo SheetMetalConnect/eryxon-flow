@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import {
   Dialog,
   DialogContent,
@@ -62,7 +63,7 @@ export default function OperationDetailModal({
 
   // Fetch operation details with part and job info
   const { data: operation, isLoading } = useQuery({
-    queryKey: ["operation-detail", operationId],
+    queryKey: QueryKeys.operations.detail(operationId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("operations")
@@ -102,7 +103,7 @@ export default function OperationDetailModal({
 
   // Fetch resources for this operation with full details
   const { data: resources } = useQuery({
-    queryKey: ["operation-resources", operationId],
+    queryKey: QueryKeys.operations.resources(operationId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("operation_resources")
@@ -153,7 +154,7 @@ export default function OperationDetailModal({
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["operation-detail", operationId] });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.operations.detail(operationId) });
       onUpdate();
       toast.success(t("notifications.updated"), {
         description: t("operations.statusUpdatedDesc"),
@@ -177,7 +178,7 @@ export default function OperationDetailModal({
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["operation-detail", operationId] });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.operations.detail(operationId) });
       onUpdate();
       toast.success(t("notifications.updated"), {
         description: t("operations.operatorAssignedDesc"),

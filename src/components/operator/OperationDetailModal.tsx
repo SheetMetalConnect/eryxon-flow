@@ -54,6 +54,7 @@ import { STEPViewer } from "@/components/STEPViewer";
 import { PDFViewer } from "@/components/PDFViewer";
 import SubstepsManager from "./SubstepsManager";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 
 interface OperationDetailModalProps {
   operation: OperationWithDetails;
@@ -246,7 +247,7 @@ export default function OperationDetailModal({
       setCurrentFileTitle(fileName);
       setFileViewerOpen(true);
     } catch (error: any) {
-      console.error("Error opening file:", error);
+      logger.error("OperationDetailModal", "Error opening file", error);
       toast.error(t("operations.failedToOpenFile"));
     }
   };

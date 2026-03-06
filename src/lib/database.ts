@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { dispatchOperationStarted, dispatchOperationCompleted, dispatchEvent, EventContext } from "./event-dispatch";
+import { logger } from '@/lib/logger';
 
 // TypeScript interfaces for database query results
 interface OperationQueryResult {
@@ -138,12 +139,12 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
     .order("sequence");
 
   if (operationsError) {
-    console.error("Error fetching operations with details:", operationsError);
+    logger.error('Database', 'Error fetching operations with details', operationsError);
     throw operationsError;
   }
 
   if (!operations) {
-    console.warn("No operations found for tenant:", tenantId);
+    logger.warn('Database', 'No operations found for tenant', tenantId);
     return [];
   }
 
@@ -161,7 +162,7 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
     .is("end_time", null);
 
   if (entriesError) {
-    console.error("Error fetching active time entries:", entriesError);
+    logger.error('Database', 'Error fetching active time entries', entriesError);
     throw entriesError;
   }
 
@@ -187,7 +188,7 @@ export async function startTimeTracking(
 
   // Prevent duplicate entries for same operation (race condition protection)
   if (existingForOperation && existingForOperation.length > 0) {
-    console.log("Time entry already exists for this operation, skipping duplicate");
+    logger.debug('Database', 'Time entry already exists for this operation, skipping duplicate');
     return; // Silently succeed - entry already exists
   }
 
@@ -248,7 +249,7 @@ export async function startTimeTracking(
     .is("end_time", null);
 
   if (doubleCheck && doubleCheck.length > 0) {
-    console.log("Time entry created by concurrent request, skipping");
+    logger.debug('Database', 'Time entry created by concurrent request, skipping');
     return;
   }
 
@@ -282,7 +283,7 @@ export async function startTimeTracking(
       started_at: startedAt,
     }).then(result => {
       if (!result.success) {
-        console.error('Failed to dispatch operation.started event:', result.errors);
+        logger.error('Database', 'Failed to dispatch operation.started event', result.errors);
       }
     });
   }
@@ -374,7 +375,7 @@ export async function stopTimeTracking(operationId: string, operatorId: string) 
 
   // If there are duplicates, close them all
   if (entries.length > 1) {
-    console.log(`Found ${entries.length} duplicate time entries, closing all`);
+    logger.debug('Database', `Found ${entries.length} duplicate time entries, closing all`);
     const now = new Date();
     for (let i = 1; i < entries.length; i++) {
       const dupEntry = entries[i];
@@ -556,7 +557,7 @@ export async function stopAllActiveTimeEntries(tenantId: string): Promise<number
       await adminStopTimeTracking(entry.id);
       stoppedCount++;
     } catch (error) {
-      console.error(`Failed to stop time entry ${entry.id}:`, error);
+      logger.error('Database', `Failed to stop time entry ${entry.id}`, error);
     }
   }
 
@@ -710,7 +711,7 @@ export async function completeOperation(operationId: string, tenantId: string, o
     estimated_time: operationData.estimated_time || 0,
   }).then(result => {
     if (!result.success) {
-      console.error('Failed to dispatch operation.completed event:', result.errors);
+      logger.error('Database', 'Failed to dispatch operation.completed event', result.errors);
     }
   });
 
@@ -972,7 +973,7 @@ export async function fetchAssemblyTree(partId: string, tenantId: string): Promi
       .eq("tenant_id", tenantId);
 
     if (error) {
-      console.error("Error fetching assembly tree:", error);
+      logger.error('Database', 'Error fetching assembly tree', error);
       continue;
     }
 

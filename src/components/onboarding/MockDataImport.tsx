@@ -26,6 +26,7 @@ import type { MockDataProgressStep } from '@/lib/mockDataGenerator';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 interface MockDataImportProps {
   onComplete: () => void;
@@ -91,7 +92,7 @@ export function MockDataImport({ onComplete, onSkip }: MockDataImportProps) {
         setProgress(null);
       }
     } catch (error) {
-      console.error('Error importing mock data:', error);
+      logger.error('MockDataImport', 'Error importing mock data', error);
       toast.error(t('onboarding.progressSteps.unexpectedError'));
       setProgress(null);
     } finally {
@@ -117,7 +118,7 @@ export function MockDataImport({ onComplete, onSkip }: MockDataImportProps) {
       setImportComplete(false);
       await handleImport();
     } catch (error) {
-      console.error('Error clearing and reimporting:', error);
+      logger.error('MockDataImport', 'Error clearing and reimporting', error);
       toast.error(t('onboarding.progressSteps.resetFailed'));
     } finally {
       setIsClearing(false);

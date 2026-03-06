@@ -20,6 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { logger } from "@/lib/logger";
 import {
   ChevronLeft,
   ChevronRight,

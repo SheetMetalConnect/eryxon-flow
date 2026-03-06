@@ -9,6 +9,7 @@ import {
   ValidationSeverity,
   ValidationError,
 } from "./DataValidator";
+import { logger } from "@/lib/logger";
 
 export interface LogEntry {
   timestamp: string;
@@ -55,14 +56,10 @@ export class ValidationLogger {
     const statusBadge = this.getStatusBadge(entry.httpStatus);
 
     if (result.valid) {
-      console.log(
-        `${prefix} ${statusBadge} ${entry.message}`,
-      );
+      logger.debug('ValidationLogger', `${prefix} ${statusBadge} ${entry.message}`);
     } else {
-      console.error(
-        `${prefix} ${statusBadge} ${entry.message}`,
-      );
-      console.error(result.technicalDetails);
+      logger.error('ValidationLogger', `${prefix} ${statusBadge} ${entry.message}`);
+      logger.error('ValidationLogger', 'Technical details', result.technicalDetails);
     }
   }
 
