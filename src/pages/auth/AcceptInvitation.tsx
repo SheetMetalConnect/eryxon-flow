@@ -21,7 +21,13 @@ export default function AcceptInvitation() {
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [invitation, setInvitation] = useState<any>(null);
+  const [invitation, setInvitation] = useState<{
+    email: string;
+    role: string;
+    tenant_id: string;
+    tenant_name: string;
+    invited_by_name: string;
+  } | null>(null);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -97,8 +103,8 @@ export default function AcceptInvitation() {
       setTimeout(() => {
         navigate('/auth');
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || t('invitation.acceptFailed'));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t('invitation.acceptFailed'));
       logger.error('AcceptInvitation', 'Error accepting invitation', err);
     } finally {
       setSubmitting(false);

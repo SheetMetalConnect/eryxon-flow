@@ -187,7 +187,7 @@ export async function generateMockData(
     if (options.includeCalendar) {
       // Dutch holidays for 2025 and 2026
       // Including Christmas/New Year closure period
-      const dutchHolidays = [
+      const dutchHolidays: Array<{ date: string; day_type: string; name: string; capacity_multiplier: number; opening_time?: string; closing_time?: string; notes?: string }> = [
         // 2025 Holidays
         { date: '2025-01-01', day_type: 'holiday', name: 'Nieuwjaarsdag', capacity_multiplier: 0 },
         { date: '2025-04-18', day_type: 'holiday', name: 'Goede Vrijdag', capacity_multiplier: 0 },
@@ -232,10 +232,10 @@ export async function generateMockData(
         date: holiday.date,
         day_type: holiday.day_type,
         name: holiday.name,
-        opening_time: (holiday as any).opening_time || null,
-        closing_time: (holiday as any).closing_time || null,
+        opening_time: holiday.opening_time || null,
+        closing_time: holiday.closing_time || null,
         capacity_multiplier: holiday.capacity_multiplier,
-        notes: (holiday as any).notes || null,
+        notes: holiday.notes || null,
       }));
 
       const { error: calendarError } = await supabase

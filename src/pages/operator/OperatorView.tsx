@@ -419,8 +419,8 @@ export default function OperatorView() {
       );
       toast.success(t("notifications.success"));
       // Data will reload via subscription
-    } catch (error: any) {
-      toast.error(error.message || t("notifications.failed"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
     }
   };
 
@@ -429,8 +429,8 @@ export default function OperatorView() {
     try {
       await stopTimeTracking(selectedJob.operationId, operatorId);
       toast.success(t("production.operationPaused"));
-    } catch (error: any) {
-      toast.error(error.message || t("notifications.failed"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
     }
   };
 
@@ -444,8 +444,8 @@ export default function OperatorView() {
       );
       toast.success(t("production.operationCompleted"));
       setSelectedJobId(null); // Deselect
-    } catch (error: any) {
-      toast.error(error.message || t("notifications.failed"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
     }
   };
 

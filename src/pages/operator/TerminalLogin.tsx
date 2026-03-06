@@ -116,7 +116,7 @@ export default function TerminalLogin() {
         setLockedUntil(result.locked_until || null);
         setPin("");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error("TerminalLogin", "Login error", err);
       setError(t("terminalLogin.unexpectedError"));
       setPin("");
