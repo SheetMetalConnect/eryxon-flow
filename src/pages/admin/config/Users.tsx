@@ -466,9 +466,6 @@ export default function ConfigUsers() {
           </CardContent>
         </Card>
 
-        {/* Create Operator (No Email) - Rendered by OperatorsManagement */}
-        {profile?.tenant_id && <OperatorsManagement tenantId={profile.tenant_id} />}
-
         {/* Create Machine Worker */}
         <Card className="glass-card border-blue-500/20 hover:border-blue-500/40 transition-colors">
           <CardHeader className="pb-3">
@@ -736,6 +733,9 @@ export default function ConfigUsers() {
 
       {/* Pending Invitations */}
       <PendingInvitations invitations={invitations} onCancel={cancelInvitation} />
+
+      {/* Operators Management */}
+      {profile?.tenant_id && <OperatorsManagement tenantId={profile.tenant_id} />}
 
       {/* Users Table */}
       <Card className="glass-card">
