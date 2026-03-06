@@ -110,9 +110,9 @@ export default function ProductionQuantityModal({
 
       onSuccess(quantityGood, targetAchieved);
       handleClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error("ProductionQuantityModal", "Error recording production", error);
-      toast.error(error.message || t("notifications.failed"));
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
     } finally {
       setIsSubmitting(false);
     }

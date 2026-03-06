@@ -44,7 +44,7 @@ interface AuthContextType {
   tenant: TenantInfo | null;
   loading: boolean;
   signIn: (email: string, password: string, captchaToken?: string | null) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, userData: Partial<Profile> & { company_name?: string }, captchaToken?: string | null) => Promise<{ error: Error | null; data?: any }>;
+  signUp: (email: string, password: string, userData: Partial<Profile> & { company_name?: string }, captchaToken?: string | null) => Promise<{ error: Error | null; data?: unknown }>;
   signOut: () => Promise<void>;
   switchTenant: (tenantId: string) => Promise<void>;
   refreshTenant: () => Promise<void>;

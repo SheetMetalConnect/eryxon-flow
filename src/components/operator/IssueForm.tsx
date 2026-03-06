@@ -196,8 +196,8 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
       resetForm();
       onOpenChange(false);
       onSuccess();
-    } catch (error: any) {
-      toast.error(error.message || t("issues.failedToReportIssue", "Failed to report issue"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("issues.failedToReportIssue", "Failed to report issue"));
     } finally {
       setLoading(false);
     }
@@ -316,7 +316,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
           {/* Severity - always shown */}
           <div>
             <Label htmlFor="severity">{t("issues.severityLabel", "Severity")}</Label>
-            <Select value={severity} onValueChange={(v: any) => setSeverity(v)}>
+            <Select value={severity} onValueChange={(v: string) => setSeverity(v as "low" | "medium" | "high" | "critical")}>
               <SelectTrigger id="severity" className="mt-1">
                 <SelectValue />
               </SelectTrigger>

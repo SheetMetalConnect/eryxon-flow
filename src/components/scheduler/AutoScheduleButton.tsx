@@ -51,10 +51,10 @@ export function AutoScheduleButton() {
                 return;
             }
             await runScheduler();
-        } catch (error: any) {
+        } catch (error: unknown) {
             logger.error('AutoScheduleButton', 'Error checking schedules', error);
             toast.error(t("capacity.schedulingFailed", "Scheduling Failed"), {
-                description: error.message,
+                description: error instanceof Error ? error.message : 'Unknown error',
             });
             setLoading(false);
         }
@@ -95,18 +95,18 @@ export function AutoScheduleButton() {
             const cells = cellsResult.data || [];
 
             // Convert calendar data to CalendarDay format
-            const calendarDays: CalendarDay[] = (calendarResult.data || []).map((d: any) => ({
+            const calendarDays: CalendarDay[] = (calendarResult.data || []).map((d: { date: string; day_type: string; capacity_multiplier: number | null }) => ({
                 date: d.date,
                 day_type: d.day_type,
                 capacity_multiplier: d.capacity_multiplier ?? 1,
             }));
 
             // Get tenant config
-            const tenantConfig = tenant as any;
+            const tenantConfig = tenant as Record<string, unknown> | null;
             const config = {
-                workingDaysMask: tenantConfig?.working_days_mask ?? 31,
-                factoryOpeningTime: tenantConfig?.factory_opening_time?.substring(0, 5) ?? '07:00',
-                factoryClosingTime: tenantConfig?.factory_closing_time?.substring(0, 5) ?? '17:00',
+                workingDaysMask: (tenantConfig?.working_days_mask as number) ?? 31,
+                factoryOpeningTime: (tenantConfig?.factory_opening_time as string)?.substring(0, 5) ?? '07:00',
+                factoryClosingTime: (tenantConfig?.factory_closing_time as string)?.substring(0, 5) ?? '17:00',
             };
 
             // 2. Run Scheduler with calendar awareness
@@ -179,10 +179,10 @@ export function AutoScheduleButton() {
                 queryClient.invalidateQueries({ queryKey: ["jobs"] }),
             ]);
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             logger.error('AutoScheduleButton', 'Scheduling error', error);
             toast.error(t("capacity.schedulingFailed", "Scheduling Failed"), {
-                description: error.message,
+                description: error instanceof Error ? error.message : 'Unknown error',
             });
         } finally {
             setLoading(false);

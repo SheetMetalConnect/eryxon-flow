@@ -11,6 +11,7 @@ import enOperator from './locales/en/operator.json';
 import enJobs from './locales/en/jobs.json';
 import enConfig from './locales/en/config.json';
 import enIntegrations from './locales/en/integrations.json';
+import enAnalytics from './locales/en/analytics.json';
 
 // Dutch namespace imports
 import nlCommon from './locales/nl/common.json';
@@ -21,6 +22,7 @@ import nlOperator from './locales/nl/operator.json';
 import nlJobs from './locales/nl/jobs.json';
 import nlConfig from './locales/nl/config.json';
 import nlIntegrations from './locales/nl/integrations.json';
+import nlAnalytics from './locales/nl/analytics.json';
 
 // German namespace imports
 import deCommon from './locales/de/common.json';
@@ -31,6 +33,7 @@ import deOperator from './locales/de/operator.json';
 import deJobs from './locales/de/jobs.json';
 import deConfig from './locales/de/config.json';
 import deIntegrations from './locales/de/integrations.json';
+import deAnalytics from './locales/de/analytics.json';
 
 /**
  * i18n Namespace Structure
@@ -45,6 +48,7 @@ import deIntegrations from './locales/de/integrations.json';
  * - jobs: Jobs, parts, operations, issues
  * - config: Configuration (stages, materials, resources, assignments)
  * - integrations: API keys, webhooks, MQTT, data import/export
+ * - analytics: QRM, OEE, quality, capacity, reliability metrics
  *
  * AI agents should edit individual namespace files rather than the monolithic translation.json
  */
@@ -63,7 +67,8 @@ const resources = {
       enOperator,
       enJobs,
       enConfig,
-      enIntegrations
+      enIntegrations,
+      enAnalytics
     ),
     // Also expose individual namespaces for future use
     common: enCommon,
@@ -74,6 +79,7 @@ const resources = {
     jobs: enJobs,
     config: enConfig,
     integrations: enIntegrations,
+    analytics: enAnalytics,
   },
   nl: {
     translation: mergeNamespaces(
@@ -84,7 +90,8 @@ const resources = {
       nlOperator,
       nlJobs,
       nlConfig,
-      nlIntegrations
+      nlIntegrations,
+      nlAnalytics
     ),
     common: nlCommon,
     auth: nlAuth,
@@ -94,6 +101,7 @@ const resources = {
     jobs: nlJobs,
     config: nlConfig,
     integrations: nlIntegrations,
+    analytics: nlAnalytics,
   },
   de: {
     translation: mergeNamespaces(
@@ -104,7 +112,8 @@ const resources = {
       deOperator,
       deJobs,
       deConfig,
-      deIntegrations
+      deIntegrations,
+      deAnalytics
     ),
     common: deCommon,
     auth: deAuth,
@@ -114,6 +123,7 @@ const resources = {
     jobs: deJobs,
     config: deConfig,
     integrations: deIntegrations,
+    analytics: deAnalytics,
   },
 };
 
@@ -135,6 +145,7 @@ i18n
       'jobs',
       'config',
       'integrations',
+      'analytics',
     ],
 
     interpolation: {

@@ -87,7 +87,8 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
     pin: string
   ): Promise<VerifyPinResult> => {
     try {
-      const { data, error } = await supabase.rpc("verify_operator_pin" as any, {
+      // @ts-expect-error - RPC not in generated types
+      const { data, error } = await supabase.rpc("verify_operator_pin", {
         p_employee_id: employeeId,
         p_pin: pin,
       });
@@ -133,12 +134,12 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
           locked_until: result.locked_until_ts ? new Date(result.locked_until_ts) : null,
         };
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error('OperatorContext', 'Operator verification error', err);
       return {
         success: false,
         error_code: "EXCEPTION",
-        error_message: err.message || "An unexpected error occurred",
+        error_message: err instanceof Error ? err.message : "An unexpected error occurred",
       };
     }
   }, []);

@@ -137,7 +137,7 @@ export async function searchPartsFullText(
       return [];
     }
 
-    return (data || []).map((part: any) => ({
+    return (data || []).map((part: { id: string; part_number: string; material: string; status: string; notes: string | null; metadata: unknown; quantity: number; job_id: string; jobs?: { job_number: string; customer: string | null } }) => ({
       id: part.id,
       type: 'part' as const,
       title: `Part #${part.part_number}`,
@@ -201,7 +201,7 @@ export async function searchOperationsFullText(
       return [];
     }
 
-    return (data || []).map((operation: any) => ({
+    return (data || []).map((operation: { id: string; operation_name: string; status: string; notes: string | null; sequence: number; estimated_time: number; actual_time: number; completion_percentage: number; part_id: string; parts?: { part_number: string; job_id: string; jobs?: { job_number: string; customer: string | null } }; cells?: { name: string }; profiles?: { full_name: string | null; email: string } }) => ({
       id: operation.id,
       type: 'operation' as const,
       title: operation.operation_name,
@@ -313,7 +313,7 @@ export async function searchIssuesFullText(
       return [];
     }
 
-    return (data || []).map((issue: any) => ({
+    return (data || []).map((issue: { id: string; description: string; severity: string; status: string; resolution_notes: string | null; operation_id: string; operations?: { operation_name: string; parts?: { part_number: string; jobs?: { job_number: string } } }; profiles?: { full_name: string | null; email: string } }) => ({
       id: issue.id,
       type: 'issue' as const,
       title: issue.description || 'Untitled Issue',

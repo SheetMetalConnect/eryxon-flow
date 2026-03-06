@@ -31,7 +31,7 @@ export type WebhookEvent =
   | 'production.scrap_recorded';
 
 export interface WebhookData {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**

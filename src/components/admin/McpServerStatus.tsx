@@ -11,7 +11,6 @@ import {
 import { cn } from "@/lib/utils";
 import { logger } from '@/lib/logger';
 import { useNavigate } from "react-router-dom";
-import { logger } from "@/lib/logger";
 
 interface McpStatus {
   status: "active" | "inactive" | "not_configured";

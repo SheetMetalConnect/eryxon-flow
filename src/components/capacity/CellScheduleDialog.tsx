@@ -109,7 +109,7 @@ export function CellScheduleDialog({
         description: t("capacity.allocationUpdated", "Allocation hours updated successfully"),
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error", "Error"), {
         description: error.message,
       });
@@ -131,7 +131,7 @@ export function CellScheduleDialog({
         description: t("capacity.allocationDeleted", "Allocation removed from this day"),
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error", "Error"), {
         description: error.message,
       });

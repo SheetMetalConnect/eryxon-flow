@@ -11,13 +11,13 @@ import {
 /**
  * Cell Validator
  */
-export class CellValidator extends BaseValidator<any> {
+export class CellValidator extends BaseValidator<Record<string, unknown>> {
   constructor() {
     super("cells");
   }
 
   validateEntity(
-    cell: any,
+    cell: Record<string, unknown>,
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
@@ -50,13 +50,13 @@ export class CellValidator extends BaseValidator<any> {
 /**
  * Job Validator
  */
-export class JobValidator extends BaseValidator<any> {
+export class JobValidator extends BaseValidator<Record<string, unknown>> {
   constructor() {
     super("jobs");
   }
 
   validateEntity(
-    job: any,
+    job: Record<string, unknown>,
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
@@ -76,13 +76,13 @@ export class JobValidator extends BaseValidator<any> {
 /**
  * Part Validator
  */
-export class PartValidator extends BaseValidator<any> {
+export class PartValidator extends BaseValidator<Record<string, unknown>> {
   constructor() {
     super("parts");
   }
 
   validateEntity(
-    part: any,
+    part: Record<string, unknown>,
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
@@ -129,13 +129,13 @@ export class PartValidator extends BaseValidator<any> {
 /**
  * Operation Validator
  */
-export class OperationValidator extends BaseValidator<any> {
+export class OperationValidator extends BaseValidator<Record<string, unknown>> {
   constructor() {
     super("operations");
   }
 
   validateEntity(
-    operation: any,
+    operation: Record<string, unknown>,
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
@@ -194,13 +194,13 @@ export class OperationValidator extends BaseValidator<any> {
 /**
  * Time Entry Validator
  */
-export class TimeEntryValidator extends BaseValidator<any> {
+export class TimeEntryValidator extends BaseValidator<Record<string, unknown>> {
   constructor() {
     super("time_entries");
   }
 
   validateEntity(
-    timeEntry: any,
+    timeEntry: Record<string, unknown>,
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
@@ -244,13 +244,13 @@ export class TimeEntryValidator extends BaseValidator<any> {
 /**
  * Quantity Record Validator
  */
-export class QuantityRecordValidator extends BaseValidator<any> {
+export class QuantityRecordValidator extends BaseValidator<Record<string, unknown>> {
   constructor() {
     super("quantity_records");
   }
 
   validateEntity(
-    record: any,
+    record: Record<string, unknown>,
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
@@ -330,13 +330,13 @@ export class QuantityRecordValidator extends BaseValidator<any> {
 /**
  * Issue/NCR Validator
  */
-export class IssueValidator extends BaseValidator<any> {
+export class IssueValidator extends BaseValidator<Record<string, unknown>> {
   constructor() {
     super("issues");
   }
 
   validateEntity(
-    issue: any,
+    issue: Record<string, unknown>,
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
@@ -390,13 +390,13 @@ export class IssueValidator extends BaseValidator<any> {
 /**
  * Operation Resource Link Validator
  */
-export class OperationResourceValidator extends BaseValidator<any> {
+export class OperationResourceValidator extends BaseValidator<Record<string, unknown>> {
   constructor() {
     super("operation_resources");
   }
 
   validateEntity(
-    link: any,
+    link: Record<string, unknown>,
     index: number,
     context: ValidationContext,
   ): ValidationError[] {

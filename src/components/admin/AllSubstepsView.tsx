@@ -12,8 +12,6 @@ import { Card } from "@/components/ui/card";
 import { Edit, Trash2, Loader2, Search, Filter } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { logger } from '@/lib/logger';
-import { logger } from "@/lib/logger";
 import {
   Select,
   SelectContent,
@@ -98,7 +96,7 @@ export function AllSubstepsView() {
       logger.error('AllSubstepsView', 'Error loading substeps', error);
       toast.error(t("Failed to load substeps"));
     } else {
-      const transformedData = (data || []).map((item: any) => ({
+      const transformedData = (data || []).map((item: { id: string; name: string; status: string; sequence: number; notes: string | null; icon_name: string | null; operation_id: string; operations: { id: string; operation_name: string; parts: { id: string; part_number: string; jobs: { id: string; job_number: string } } } }) => ({
         ...item,
         operation: {
           id: item.operations.id,

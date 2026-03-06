@@ -114,16 +114,16 @@ export function DataTableColumnHeader<TData, TValue>({
 // =====================================================
 // Original DataTable component (custom implementation)
 // =====================================================
-export interface Column<T = any> {
+export interface Column<T = unknown> {
   id: string;
   label: string;
   minWidth?: number;
   align?: "left" | "right" | "center";
-  format?: (value: any, row: T) => React.ReactNode;
+  format?: (value: unknown, row: T) => React.ReactNode;
   sortable?: boolean;
 }
 
-export interface DataTableProps<T = any> {
+export interface DataTableProps<T = unknown> {
   columns: Column<T>[];
   rows: T[];
   rowKey: string;

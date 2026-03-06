@@ -53,7 +53,9 @@
     "creating": "Erstellen...",
     "helpAndDocs": "Hilfe & Dokumentation",
     "refresh": "Aktualisieren",
-    "noTenantId": "Keine Mandanten-ID"
+    "noTenantId": "Keine Mandanten-ID",
+    "pageNotFound": "Hoppla! Seite nicht gefunden",
+    "returnToHome": "Zurück zur Startseite"
   },
   "forms": {
     "required": "Dieses Feld ist erforderlich",

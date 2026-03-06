@@ -92,8 +92,8 @@ export default function SessionTrackingBar() {
       .is("end_time", null);
 
     if (!error && data) {
-      setActiveEntries(data as any);
-      loadCurrentPauses(data as any);
+      setActiveEntries(data as unknown as ActiveEntry[]);
+      loadCurrentPauses(data as unknown as ActiveEntry[]);
       // Reset dismissed when new entries appear
       if (data.length > 0 && dismissed) {
         setDismissed(false);
@@ -166,8 +166,8 @@ export default function SessionTrackingBar() {
       await stopTimeTracking(entry.operation_id, operatorId);
       toast.success(t("sessionTracking.stopped"));
       loadActiveEntries();
-    } catch (error: any) {
-      toast.error(error.message || t("sessionTracking.stopFailed"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("sessionTracking.stopFailed"));
     } finally {
       setLoading(prev => ({ ...prev, [entry.id]: false }));
     }
@@ -181,8 +181,8 @@ export default function SessionTrackingBar() {
       await pauseTimeTracking(entry.id);
       toast.success(t("sessionTracking.paused"));
       loadActiveEntries();
-    } catch (error: any) {
-      toast.error(error.message || t("sessionTracking.pauseFailed"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("sessionTracking.pauseFailed"));
     } finally {
       setLoading(prev => ({ ...prev, [entry.id]: false }));
     }
@@ -196,8 +196,8 @@ export default function SessionTrackingBar() {
       await resumeTimeTracking(entry.id);
       toast.success(t("sessionTracking.resumed"));
       loadActiveEntries();
-    } catch (error: any) {
-      toast.error(error.message || t("sessionTracking.resumeFailed"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("sessionTracking.resumeFailed"));
     } finally {
       setLoading(prev => ({ ...prev, [entry.id]: false }));
     }

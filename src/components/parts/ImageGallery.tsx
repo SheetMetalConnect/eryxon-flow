@@ -127,10 +127,10 @@ export function ImageGallery({
       // Update local state
       setImages((prev) => prev.filter((img) => img.path !== path));
       onImageDeleted?.(path);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('ImageGallery', 'Error deleting image', error);
       toast.error(t("parts.images.deleteFailed"), {
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error',
       });
     } finally {
       setDeleteDialogOpen(false);

@@ -30,7 +30,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { Loader2 } from "lucide-react";
 
 // Global filter function for searching across all columns
-const globalFilterFn: FilterFn<any> = (row, columnId, filterValue) => {
+const globalFilterFn: FilterFn<unknown> = (row, columnId, filterValue) => {
   const search = filterValue.toLowerCase();
 
   // Search through all column values
@@ -105,9 +105,9 @@ const MemoizedTableRow = React.memo(
     virtualRow,
     measureElement,
   }: {
-    row: Row<any>;
-    onRowClick?: (row: any) => void;
-    rowClassName?: (row: any) => string;
+    row: Row<unknown>;
+    onRowClick?: (row: unknown) => void;
+    rowClassName?: (row: unknown) => string;
     compact: boolean;
     striped: boolean;
     index: number;

@@ -8,6 +8,7 @@ import {
   ValidationResult,
   ValidationSeverity,
   ValidationError,
+  ValidationWarning,
 } from "./DataValidator";
 import { logger } from "@/lib/logger";
 
@@ -16,7 +17,7 @@ export interface LogEntry {
   severity: ValidationSeverity;
   httpStatus: number;
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
   entityType?: string;
 }
 
@@ -174,9 +175,9 @@ export class APIResponseFormatter {
     status: number;
     success: boolean;
     message: string;
-    data?: any;
-    errors?: any[];
-    warnings?: any[];
+    data?: { operationType: string; validatedAt: string };
+    errors?: ValidationError[];
+    warnings?: ValidationWarning[];
   } {
     return {
       status: result.httpStatus,
@@ -209,7 +210,14 @@ export class APIResponseFormatter {
       successful: number;
       failed: number;
     };
-    results: any[];
+    results: Array<{
+      index: number;
+      valid: boolean;
+      httpStatus: number;
+      summary: string;
+      errors: ValidationError[];
+      warnings: ValidationWarning[];
+    }>;
   } {
     const successful = results.filter((r) => r.valid).length;
     const failed = results.filter((r) => !r.valid).length;

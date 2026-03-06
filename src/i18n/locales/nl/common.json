@@ -54,7 +54,9 @@
     "creating": "Aanmaken...",
     "helpAndDocs": "Help & Documentatie",
     "refresh": "Vernieuwen",
-    "noTenantId": "Geen tenant-ID"
+    "noTenantId": "Geen tenant-ID",
+    "pageNotFound": "Oeps! Pagina niet gevonden",
+    "returnToHome": "Terug naar startpagina"
   },
   "forms": {
     "required": "Dit veld is verplicht",

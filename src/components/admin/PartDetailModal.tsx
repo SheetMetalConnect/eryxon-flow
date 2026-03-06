@@ -172,7 +172,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       await queryClient.invalidateQueries({ queryKey: QueryKeys.parts.detail(partId) });
       onUpdate();
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), {
         description: error.message,
       });
@@ -180,7 +180,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
   });
 
   // Track changes
-  const handleFieldChange = (setter: (value: any) => void, value: any) => {
+  const handleFieldChange = (setter: (value: string) => void, value: string) => {
     setter(value);
     setHasChanges(true);
   };
@@ -286,7 +286,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           sequence: newOperation.sequence,
           notes: newOperation.notes || null,
           status: "not_started",
-          tenant_id: (part as any)?.tenant_id,
+          tenant_id: part?.tenant_id,
         })
         .select()
         .single();
@@ -325,7 +325,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       await refetchOperations();
       onUpdate();
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), {
         description: error.message,
       });
@@ -426,10 +426,10 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           });
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('PartDetailModal', 'CAD upload error', error);
       toast.error(t("common.error"), {
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   };
@@ -468,7 +468,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       setCurrentFileType(fileType);
       setCurrentFileTitle(fileName);
       setFileViewerOpen(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('PartDetailModal', 'Error opening file', error);
       toast.error(t("common.error"), {
         description: t("parts.failedToOpenFileViewer"),
@@ -506,10 +506,10 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
       // Refresh modal data and parent list
       await queryClient.invalidateQueries({ queryKey: QueryKeys.parts.detail(partId) });
       onUpdate();
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('PartDetailModal', 'Delete error', error);
       toast.error(t("common.error"), {
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   };
@@ -538,7 +538,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
   // Calculate operations count
   const operationsCount = operations?.length || 0;
-  const completedOps = operations?.filter((op: any) => op.status === "completed").length || 0;
+  const completedOps = operations?.filter((op: { status: string }) => op.status === "completed").length || 0;
   const filesCount = (part?.file_paths?.length || 0) + (part?.image_paths?.length || 0);
 
   return (
@@ -617,7 +617,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("parts.currentCell")}</p>
                   <div className="mt-1">
                     {(() => {
-                      const cell = (cells || []).find((c: any) => c.id === (part as any)?.current_cell_id);
+                      const cell = (cells || []).find((c: { id: string }) => c.id === part?.current_cell_id);
                       return cell ? (
                         <Badge variant="outline" style={{ borderColor: cell.color, backgroundColor: `${cell.color}20` }}>
                           {cell.name}
@@ -774,8 +774,8 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                       )}
 
                       <div className="mt-2 space-y-2">
-                        {childParts.map((child: any) => {
-                          const completedOps = child.operations?.filter((op: any) => op.status === "completed").length || 0;
+                        {childParts.map((child: { id: string; part_number: string; status: string; operations?: Array<{ id: string; status: string; operation_name: string }> }) => {
+                          const completedOps = child.operations?.filter((op: { status: string }) => op.status === "completed").length || 0;
                           const totalOps = child.operations?.length || 0;
                           const isComplete = child.status === "completed";
 
@@ -1006,7 +1006,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                             <SelectValue placeholder={t("operations.selectCell")} />
                           </SelectTrigger>
                           <SelectContent>
-                            {cells?.map((cell: any) => (
+                            {cells?.map((cell: { id: string; name: string }) => (
                               <SelectItem key={cell.id} value={cell.id}>
                                 {cell.name}
                               </SelectItem>
@@ -1079,7 +1079,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                           <SelectContent>
                             {availableResources
                               ?.filter(res => !newOperation.selected_resources.find(sr => sr.resource_id === res.id))
-                              .map((resource: any) => (
+                              .map((resource: { id: string; name: string; type: string }) => (
                                 <SelectItem key={resource.id} value={resource.id}>
                                   <div className="flex items-center gap-2">
                                     <span>{resource.name}</span>
@@ -1177,7 +1177,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
                 {/* Operations List */}
                 <div className="space-y-2">
-                  {operations?.map((op: any) => (
+                  {operations?.map((op: { id: string; operation_name: string; sequence: number; estimated_time: number | null; status: string; resources_count: number; cell?: { name: string; color: string | null }; assigned_operator?: { full_name: string } | null }) => (
                     <div
                       key={op.id}
                       className="flex items-center justify-between border rounded-md p-3"

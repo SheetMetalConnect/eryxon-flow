@@ -24,7 +24,7 @@ export interface ValidationResult {
 export interface ValidationError {
   field: string;
   message: string;
-  value?: any;
+  value?: unknown;
   constraint: string; // e.g., "FK_CONSTRAINT", "NOT_NULL", "TYPE_MISMATCH"
   entityType: string;
   entityIndex?: number;
@@ -139,7 +139,7 @@ export abstract class BaseValidator<T> {
   /**
    * Helper: Check if field is a valid UUID
    */
-  protected isValidUUID(value: any): boolean {
+  protected isValidUUID(value: unknown): boolean {
     if (typeof value !== "string") return false;
     const uuidRegex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -150,7 +150,7 @@ export abstract class BaseValidator<T> {
    * Helper: Validate required field
    */
   protected validateRequired(
-    entity: any,
+    entity: Record<string, unknown>,
     field: string,
     index: number,
   ): ValidationError | null {
@@ -171,7 +171,7 @@ export abstract class BaseValidator<T> {
    * Helper: Validate foreign key
    */
   protected validateForeignKey(
-    entity: any,
+    entity: Record<string, unknown>,
     field: string,
     validIds: string[] | undefined,
     index: number,
@@ -225,7 +225,7 @@ export abstract class BaseValidator<T> {
    * Helper: Validate number field
    */
   protected validateNumber(
-    entity: any,
+    entity: Record<string, unknown>,
     field: string,
     index: number,
     options: { min?: number; max?: number; required?: boolean } = {},

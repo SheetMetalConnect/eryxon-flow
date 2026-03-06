@@ -86,7 +86,7 @@ export function IssuesSummarySection({ partId, jobId }: IssuesSummarySectionProp
       </Label>
 
       <div className="space-y-3">
-        {issues.map((issue: any) => (
+        {issues.map((issue: { id: string; severity: string; status: string; created_at: string; description: string; operation_name: string; part_number: string; creator_name: string; resolution_notes: string | null; reviewer_name: string | null; image_paths: string[] | null }) => (
           <div
             key={issue.id}
             className="border rounded-md p-3 bg-card"

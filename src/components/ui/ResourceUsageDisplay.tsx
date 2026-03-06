@@ -13,7 +13,7 @@ interface Resource {
   identifier?: string | null;
   location?: string | null;
   status?: string | null;
-  metadata?: any;
+  metadata?: Record<string, unknown> | null;
 }
 
 interface OperationResource {
@@ -60,7 +60,7 @@ export function ResourceUsageDisplay({
           .eq('operation_id', operationId);
 
         if (!error && data) {
-          setResources(data as any);
+          setResources(data as unknown as OperationResource[]);
         }
       } catch (error) {
         logger.error('ResourceUsageDisplay', 'Error fetching resources', error);

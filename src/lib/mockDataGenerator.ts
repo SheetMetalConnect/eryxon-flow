@@ -768,7 +768,7 @@ export async function generateMockData(
           description: string;
           estimated_hours: number;
           status: string;
-          metadata?: any;
+          metadata?: Record<string, unknown>;
         }>,
       ) => {
         routing.forEach((op) => {
@@ -1977,7 +1977,18 @@ export async function generateMockData(
           createdDate.getDate() + Math.floor(Math.random() * 25),
         );
 
-        const issue: any = {
+        const issue: {
+          tenant_id: string;
+          operation_id: string;
+          created_by: string;
+          severity: string;
+          description: string;
+          status: string;
+          created_at: string;
+          resolution_notes?: string;
+          reviewed_at?: string;
+          reviewed_by?: string;
+        } = {
           tenant_id: tenantId,
           operation_id: op.id,
           created_by:

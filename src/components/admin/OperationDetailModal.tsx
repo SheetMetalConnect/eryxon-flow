@@ -225,7 +225,7 @@ export default function OperationDetailModal({
       setCurrentFileType(fileType);
       setCurrentFileTitle(fileName);
       setFileViewerOpen(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('OperationDetailModal', 'Error opening file', error);
       toast.error(t("notifications.error"), {
         description: t("notifications.failedToOpenFileViewer"),
@@ -484,7 +484,7 @@ export default function OperationDetailModal({
               {/* Resources Tab */}
               {resourcesCount > 0 && (
                 <TabsContent value="resources" className="p-4 sm:p-6 space-y-3 m-0">
-                  {resources?.map((r: any) => {
+                  {resources?.map((r: { id: string; quantity: number; notes: string | null; resource?: { name: string; type: string; identifier?: string | null; location?: string | null; status?: string | null; metadata?: Record<string, unknown> | null } }) => {
                     const statusColors: Record<string, string> = {
                       available: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800",
                       in_use: "text-amber-600 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800",

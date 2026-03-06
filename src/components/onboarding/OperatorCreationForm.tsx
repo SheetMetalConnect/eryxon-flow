@@ -59,7 +59,8 @@ export function OperatorCreationForm() {
     setCreating(true);
 
     try {
-      const { data, error } = await supabase.rpc('create_operator_with_pin' as any, {
+      // @ts-expect-error - RPC not in generated types
+      const { data, error } = await supabase.rpc('create_operator_with_pin', {
         p_full_name: fullName.trim(),
         p_pin: pin,
         p_employee_id: finalEmployeeId || undefined,
@@ -73,7 +74,7 @@ export function OperatorCreationForm() {
       setCreatedOperators([
         ...createdOperators,
         {
-          id: (data as any) || finalEmployeeId,
+          id: (data as unknown as string) || finalEmployeeId,
           full_name: fullName,
           employee_id: finalEmployeeId,
           role: 'operator',
@@ -85,8 +86,8 @@ export function OperatorCreationForm() {
       setEmployeeId('');
       setPin('');
       setConfirmPin('');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create operator');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Failed to create operator');
       logger.error('OperatorCreationForm', 'Error creating operator', error);
     } finally {
       setCreating(false);
