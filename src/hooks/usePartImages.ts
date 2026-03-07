@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ImageInfo {
   path: string;
@@ -12,16 +13,18 @@ interface ImageInfo {
 
 export function usePartImages(partId: string) {
   const { t } = useTranslation();
+  const { profile } = useAuth();
   const [loading, setLoading] = useState(false);
 
   // Get part's image paths
   const getImagePaths = useCallback(async (): Promise<string[]> => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("parts")
         .select("image_paths")
-        .eq("id", partId)
-        .single();
+        .eq("id", partId);
+      if (profile?.tenant_id) query = query.eq("tenant_id", profile.tenant_id);
+      const { data, error } = await query.single();
 
       if (error) throw error;
 
@@ -31,7 +34,7 @@ export function usePartImages(partId: string) {
       toast.error(t("parts.images.loadFailed"), { description: error.message });
       return [];
     }
-  }, [partId, t]);
+  }, [partId, t, profile?.tenant_id]);
 
   // Load images with signed URLs
   const loadImages = useCallback(async (imagePaths: string[]): Promise<ImageInfo[]> => {

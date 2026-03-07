@@ -24,7 +24,7 @@ export function AutoScheduleButton() {
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [operationsWithDates, setOperationsWithDates] = useState(0);
     const { t } = useTranslation();
-    const { tenant } = useAuth();
+    const { tenant, profile } = useAuth();
     const queryClient = useQueryClient();
 
     const checkExistingSchedules = async (): Promise<number> => {
@@ -63,22 +63,27 @@ export function AutoScheduleButton() {
         setShowConfirmDialog(false);
         try {
             // 1. Fetch all necessary data in parallel
+            const tenantId = profile?.tenant_id;
             const [jobsResult, operationsResult, cellsResult, calendarResult] = await Promise.all([
                 supabase
                     .from("jobs")
                     .select("*")
+                    .eq("tenant_id", tenantId)
                     .neq("status", "completed"),
                 supabase
                     .from("operations")
                     .select("*")
+                    .eq("tenant_id", tenantId)
                     .neq("status", "completed"),
                 supabase
                     .from("cells")
-                    .select("*"),
+                    .select("*")
+                    .eq("tenant_id", tenantId),
                 // Fetch calendar for next 12 months
                 supabase
                     .from("factory_calendar")
                     .select("*")
+                    .eq("tenant_id", tenantId)
                     .gte("date", format(new Date(), 'yyyy-MM-dd'))
                     .lte("date", format(addMonths(new Date(), 12), 'yyyy-MM-dd'))
             ]);

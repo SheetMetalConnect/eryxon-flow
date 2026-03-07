@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface DueDateOverrideModalProps {
   jobId: string;
@@ -28,6 +29,7 @@ export default function DueDateOverrideModal({
   onUpdate,
 }: DueDateOverrideModalProps) {
   const { t } = useTranslation();
+  const { profile } = useAuth();
   const [overrideDate, setOverrideDate] = useState<Date | undefined>(undefined);
 
   const { data: job, isLoading } = useQuery({
@@ -37,6 +39,7 @@ export default function DueDateOverrideModal({
         .from("jobs")
         .select("due_date, due_date_override")
         .eq("id", jobId)
+        .eq("tenant_id", profile?.tenant_id)
         .single();
 
       if (error) throw error;

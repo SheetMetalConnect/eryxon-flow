@@ -88,10 +88,14 @@ export default function Jobs() {
   } = useQuery({
     queryKey: ["admin-jobs-all"],
     queryFn: async () => {
-      const query = supabase.from("jobs").select(`
+      let query = supabase.from("jobs").select(`
           *,
           parts(id, file_paths, operations(id))
         `);
+
+      if (profile?.tenant_id) {
+        query = query.eq("tenant_id", profile.tenant_id);
+      }
 
       const { data, error } = await query;
       if (error) throw error;
