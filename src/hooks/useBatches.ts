@@ -156,7 +156,7 @@ export function useBatch(batchId: string | undefined) {
         .single();
 
       if (error) throw error;
-      return data as any as Batch;
+      return data as unknown as Batch;
     },
     enabled: !!batchId && !!profile?.tenant_id,
   });

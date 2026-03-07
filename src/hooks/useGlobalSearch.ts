@@ -91,7 +91,7 @@ export function useGlobalSearch() {
         const searchError =
           err instanceof Error ? err : new Error("Search failed");
         setError(searchError);
-        console.error("Search error:", searchError);
+        if (import.meta.env.DEV) console.error("Search error:", searchError);
         return [];
       } finally {
         setLoading(false);

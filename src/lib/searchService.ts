@@ -72,7 +72,7 @@ export async function searchJobsFullText(
       .limit(limit);
 
     if (error) {
-      console.error('Full-text search error for jobs:', error);
+      if (import.meta.env.DEV) console.error('Full-text search error for jobs:', error);
       return [];
     }
 
@@ -91,7 +91,7 @@ export async function searchJobsFullText(
       },
     }));
   } catch (err) {
-    console.error('Error in searchJobsFullText:', err);
+    if (import.meta.env.DEV) console.error('Error in searchJobsFullText:', err);
     return [];
   }
 }
@@ -132,7 +132,7 @@ export async function searchPartsFullText(
       .limit(limit);
 
     if (error) {
-      console.error('Full-text search error for parts:', error);
+      if (import.meta.env.DEV) console.error('Full-text search error for parts:', error);
       return [];
     }
 
@@ -152,7 +152,7 @@ export async function searchPartsFullText(
       },
     }));
   } catch (err) {
-    console.error('Error in searchPartsFullText:', err);
+    if (import.meta.env.DEV) console.error('Error in searchPartsFullText:', err);
     return [];
   }
 }
@@ -196,7 +196,7 @@ export async function searchOperationsFullText(
       .limit(limit);
 
     if (error) {
-      console.error('Full-text search error for operations:', error);
+      if (import.meta.env.DEV) console.error('Full-text search error for operations:', error);
       return [];
     }
 
@@ -217,7 +217,7 @@ export async function searchOperationsFullText(
       },
     }));
   } catch (err) {
-    console.error('Error in searchOperationsFullText:', err);
+    if (import.meta.env.DEV) console.error('Error in searchOperationsFullText:', err);
     return [];
   }
 }
@@ -248,7 +248,7 @@ export async function searchUsersFullText(
       .limit(limit);
 
     if (error) {
-      console.error('Full-text search error for users:', error);
+      if (import.meta.env.DEV) console.error('Full-text search error for users:', error);
       return [];
     }
 
@@ -265,7 +265,7 @@ export async function searchUsersFullText(
       },
     }));
   } catch (err) {
-    console.error('Error in searchUsersFullText:', err);
+    if (import.meta.env.DEV) console.error('Error in searchUsersFullText:', err);
     return [];
   }
 }
@@ -308,7 +308,7 @@ export async function searchIssuesFullText(
       .limit(limit);
 
     if (error) {
-      console.error('Full-text search error for issues:', error);
+      if (import.meta.env.DEV) console.error('Full-text search error for issues:', error);
       return [];
     }
 
@@ -327,7 +327,7 @@ export async function searchIssuesFullText(
       },
     }));
   } catch (err) {
-    console.error('Error in searchIssuesFullText:', err);
+    if (import.meta.env.DEV) console.error('Error in searchIssuesFullText:', err);
     return [];
   }
 }
