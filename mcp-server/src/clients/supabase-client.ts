@@ -160,9 +160,14 @@ export class DirectSupabaseClient implements UnifiedClient {
 
   async upsert(table: string, data: any | any[]): Promise<QueryResult> {
     try {
+      const upsertData = this.enforcedTenantId
+        ? (Array.isArray(data)
+            ? data.map(d => ({ ...d, tenant_id: this.enforcedTenantId }))
+            : { ...data, tenant_id: this.enforcedTenantId })
+        : data;
       const { data: result, error } = await this.client
         .from(table)
-        .upsert(data)
+        .upsert(upsertData)
         .select();
       return { data: result, error };
     } catch (error) {
