@@ -82,7 +82,7 @@ export function validateContentType(contentType: string): { valid: boolean; erro
     'image/png',
     'image/gif',
     'image/webp',
-    'image/svg+xml',
+    // 'image/svg+xml' removed: SVGs can contain embedded JavaScript (stored XSS vector)
     'application/pdf',
     'text/plain',
     'text/csv',
@@ -111,14 +111,24 @@ export function validateWebhookUrl(url: string): { valid: boolean; error?: strin
     // Block localhost and private IPs
     const hostname = parsed.hostname.toLowerCase();
 
-    // Block localhost
+    // Block localhost and loopback
     if (
       hostname === 'localhost' ||
       hostname === '127.0.0.1' ||
       hostname === '::1' ||
+      hostname === '0.0.0.0' ||
       hostname.endsWith('.localhost')
     ) {
       return { valid: false, error: 'Localhost URLs not allowed' };
+    }
+
+    // Block IPv6 private ranges
+    if (
+      hostname.startsWith('[fc') || hostname.startsWith('[fd') || // fc00::/7 unique local
+      hostname.startsWith('[fe80') || // fe80::/10 link-local
+      hostname.startsWith('[::ffff:') // IPv4-mapped IPv6
+    ) {
+      return { valid: false, error: 'Private IPv6 addresses not allowed' };
     }
 
     // Block private IP ranges
@@ -253,16 +263,24 @@ export function getClientIdentifier(req: Request, apiKeyHash?: string): string {
  * Constant-time string comparison to prevent timing attacks
  */
 export function constantTimeCompare(a: string, b: string): boolean {
-  if (a.length !== b.length) {
-    return false;
+  const maxLen = Math.max(a.length, b.length);
+  let result = a.length ^ b.length; // Include length difference in result
+  for (let i = 0; i < maxLen; i++) {
+    result |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
   }
-
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-
   return result === 0;
+}
+
+/**
+ * Escape HTML to prevent injection in email templates
+ */
+export function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 /**

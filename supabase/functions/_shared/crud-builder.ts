@@ -354,10 +354,17 @@ async function handlePatch(
 
   const body = await req.json();
 
-  // Note: Skip full validation for PATCH requests
-  // PATCH is partial update - should not enforce required fields
-  // Only validate FKs and provided fields, not require all fields
-  // Validators currently don't have an "update mode" that validates only provided fields
+  // Partial validation for PATCH: validate provided fields individually
+  // (skip required-field enforcement, but enforce type/length constraints)
+  if (validator) {
+    const validatorInstance = new validator();
+    if (typeof validatorInstance.validatePartial === 'function') {
+      const validation = await validatorInstance.validatePartial(body, { tenantId, supabase });
+      if (!validation.valid) {
+        throw new ValidationException(validation.errors);
+      }
+    }
+  }
 
   // Remove fields that shouldn't be updated
   const { tenant_id, id: bodyId, created_at, ...updateData } = body;
@@ -556,6 +563,10 @@ async function handleBulkSync(
     items = body[table];
   } else {
     throw new BadRequestError(`Request body must contain either "items" array or "${table}" array`);
+  }
+
+  if (items.length > 1000) {
+    throw new BadRequestError('Maximum 1000 items per bulk-sync request');
   }
 
   const results = {
