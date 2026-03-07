@@ -14,7 +14,9 @@
     "test:run": "vitest run",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "test:api": "npx tsx scripts/api-test-utils.ts",
+    "test:api:e2e": "bash scripts/test-api-e2e.sh"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
