@@ -15,6 +15,8 @@
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
+    "test:api": "npx tsx scripts/api-test-utils.ts",
+    "test:api:e2e": "bash scripts/test-api-e2e.sh",
     "analyze": "vite build --mode analyze"
   },
   "dependencies": {
