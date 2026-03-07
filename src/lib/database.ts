@@ -144,7 +144,7 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
   }
 
   if (!operations) {
-    console.warn("No operations found for tenant:", tenantId);
+    if (import.meta.env.DEV) console.warn("No operations found for tenant:", tenantId);
     return [];
   }
 
@@ -188,7 +188,7 @@ export async function startTimeTracking(
 
   // Prevent duplicate entries for same operation (race condition protection)
   if (existingForOperation && existingForOperation.length > 0) {
-    console.log("Time entry already exists for this operation, skipping duplicate");
+    if (import.meta.env.DEV) console.log("Time entry already exists for this operation, skipping duplicate");
     return; // Silently succeed - entry already exists
   }
 
@@ -249,7 +249,7 @@ export async function startTimeTracking(
     .is("end_time", null);
 
   if (doubleCheck && doubleCheck.length > 0) {
-    console.log("Time entry created by concurrent request, skipping");
+    if (import.meta.env.DEV) console.log("Time entry created by concurrent request, skipping");
     return;
   }
 

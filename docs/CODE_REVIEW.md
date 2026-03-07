@@ -485,16 +485,45 @@ This decouples business logic from the data layer and makes testing significantl
 
 ### Top 10 Action Items (Ordered by Impact)
 
-1. **Add DB constraint** for unique active time entries per operation/operator
-2. **Secure invitation tokens** - hash, expire, one-time-use
-3. **Increase password minimum** to 12+ characters with complexity requirements
-4. **Extract time tracking service** from database.ts god functions
-5. **Add error notifications** to hooks that silently swallow errors
-6. **Add pagination/limits** to search and batch operations
-7. **Replace `any` types** with proper generics in validators
-8. **Deduplicate** stop/adminStop time tracking code
-9. **Gate console.error** behind dev-mode checks
-10. **Move mock data generator** out of production source tree
+| # | Action Item | Status | Notes |
+|---|-------------|--------|-------|
+| 1 | **Add DB constraint** for unique active time entries per operation/operator | OPEN | Requires Supabase migration |
+| 2 | **Secure invitation tokens** - hash, expire, one-time-use | OPEN | Requires server-side RPC changes |
+| 3 | **Increase password minimum** to 12+ chars with complexity | DONE | `AcceptInvitation.tsx` updated, i18n keys added |
+| 4 | **Extract time tracking service** from database.ts god functions | PARTIAL | `closeTimeEntry()` extracted, deduplicating stop/adminStop |
+| 5 | **Add error notifications** to hooks that silently swallow errors | PARTIAL | `useOperationIssues` and `usePartIssues` improved |
+| 6 | **Add pagination/limits** to search and batch operations | DONE | `searchAll()` capped, batch ops query limited to 500 |
+| 7 | **Replace `any` types** with proper generics in validators | DONE | `DataValidator.ts` and `EntityValidators.ts` use `Record<string, unknown>` |
+| 8 | **Deduplicate** stop/adminStop time tracking code | DONE | Shared `closeTimeEntry()` function in `database.ts` |
+| 9 | **Gate console.error** behind dev-mode checks | DONE | All files gated: database, searchService, webhooks, mqtt, contexts, hooks |
+| 10 | **Move mock data generator** out of production source tree | SKIPPED | Used by production onboarding components (MockDataImport, Settings, Dashboard) |
+
+### Additional Fixes Applied
+
+- **Template literal bug** fixed in `webhooks.ts`, `event-dispatch.ts`, `mqtt-publishers.ts` — replaced broken fallback URL with strict `VITE_SUPABASE_URL` validation
+- **Status enum constants** added to `enums.ts` (`JobStatus`, `OperationStatus`, `PartStatus`, `BatchStatus`) and used throughout `database.ts`
+- **Non-null assertions** replaced with null guards in `useBatches.ts` mutation functions
+- **Unsafe type casts** fixed: `as any as Batch` → `as unknown as Batch`, `filters.status as any` → `filters.status`
+- **Realtime subscription duplication** eliminated: `useOperationIssues` uses `useEntitySubscription`, `usePartIssues` uses `useTableSubscription`
+- **Search debouncing** confirmed already present in `GlobalSearch.tsx` (300ms setTimeout)
+
+### Remaining Open Items (Require Backend/Migration Work)
+
+| Item | Why Open | Effort |
+|------|----------|--------|
+| DB unique constraint for time entries | Needs Supabase migration + RPC | Medium |
+| Invitation token hashing + expiry | Needs server-side RPC + DB schema change | High |
+| Invitation acceptance transaction | Needs server-side RPC wrapping signup + accept | High |
+| N+1 queries in time tracking | Needs consolidated server-side RPC | High |
+| Non-atomic batch sequence assignment | Needs DB-level `INSERT ... SELECT MAX()` | Medium |
+| File upload quota race condition | Needs server-side atomic quota enforcement | Medium |
+| localStorage → sessionStorage for operator data | Low risk change, needs testing | Low |
+| Scheduler capacity caching | Performance optimization in scheduler.ts | Low |
+| Quality metrics single-pass aggregation | Performance optimization in useQualityMetrics | Low |
+
+### Updated Rating: 7.0 / 10
+
+The implemented fixes address password security, type safety, information leakage (console gating), code duplication, unbounded queries, and subscription patterns. The remaining open items are primarily backend/migration concerns that cannot be resolved with frontend-only changes.
 
 ### What's Working Well
 
