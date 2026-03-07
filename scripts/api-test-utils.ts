@@ -321,7 +321,7 @@ export class ApiTestClient {
     }
 
     const response = await fetch(url, options);
-    const responseBody = await response.json().catch(() => ({}));
+    const responseBody = await response.json().catch(() => ({ success: false })) as ApiResponse<T>["body"];
 
     return {
       status: response.status,
@@ -356,7 +356,7 @@ export class ApiTestClient {
       method,
       headers: { "Content-Type": "application/json" },
     });
-    const responseBody = await response.json().catch(() => ({}));
+    const responseBody = await response.json().catch(() => ({ success: false })) as ApiResponse["body"];
     return {
       status: response.status,
       body: responseBody,
@@ -619,12 +619,9 @@ async function runStandaloneTests() {
   }
 }
 
-// Run if executed directly
-const isMainModule = typeof require !== "undefined"
-  ? require.main === module
-  : import.meta.url === `file://${process.argv[1]}`;
-
-if (isMainModule) {
+// Run if executed directly (via: npx tsx scripts/api-test-utils.ts)
+const entryUrl = new URL(process.argv[1], "file://").href;
+if (import.meta.url === entryUrl) {
   runStandaloneTests().catch(err => {
     console.error("Test runner error:", err);
     process.exit(1);
