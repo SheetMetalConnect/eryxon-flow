@@ -279,7 +279,20 @@
       "pmiNotes": "Notizen",
       "pmiGraphical": "Grafische PMI",
       "noPmiData": "Keine PMI-Daten in dieser Datei",
-      "pmiNotSupported": "PMI erfordert STEP AP242-Format"
+      "pmiNotSupported": "PMI erfordert STEP AP242-Format",
+      "measurements": {
+        "title": "Messungen",
+        "pointToPoint": "Punkt-zu-Punkt Abstand",
+        "faceDistance": "Fläche-zu-Fläche Abstand",
+        "angle": "Winkel zwischen Flächen",
+        "radius": "Radius / Durchmesser",
+        "selectFirstPoint": "Klicken Sie auf den ersten Punkt",
+        "selectSecondPoint": "Klicken Sie auf den zweiten Punkt",
+        "selectFirstFace": "Klicken Sie auf die erste Fläche",
+        "selectSecondFace": "Klicken Sie auf die zweite Fläche",
+        "clearAll": "Alle Messungen löschen",
+        "meshDisclaimer": "Gemessen vom triangulierten Netz"
+      }
     },
     "pmiExtracted": "PMI Extrahiert",
     "pmiExtractedDesc": "{{count}} Maß(e) im Modell gefunden"

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
@@ -27,6 +27,14 @@ import type {
   MeshData,
 } from '@/hooks/useCADProcessing';
 import { decodeFloat32Array, decodeUint32Array } from '@/hooks/useCADProcessing';
+import { installBVH } from './viewer/measurements/setupBVH';
+import { useMeasurements } from './viewer/measurements/useMeasurements';
+import { MeasurementToolbar } from './viewer/measurements/MeasurementToolbar';
+import { MeasurementPanel } from './viewer/measurements/MeasurementPanel';
+import type { ViewerRefs } from './viewer/measurements/types';
+
+// Install BVH acceleration for fast raycasting
+installBVH();
 
 interface ModelDimensions {
   x: number;
@@ -271,6 +279,7 @@ export function STEPViewer({
   const clearMeshes = useCallback(() => {
     meshesRef.current.forEach((mesh) => {
       sceneRef.current?.remove(mesh);
+      mesh.geometry.disposeBoundsTree();
       mesh.geometry.dispose();
       if (Array.isArray(mesh.material)) {
         mesh.material.forEach((m: THREE.Material) => m.dispose());
@@ -297,6 +306,9 @@ export function STEPViewer({
 
   const addMeshToScene = useCallback((mesh: THREE.Mesh) => {
     if (!sceneRef.current) return;
+
+    // Build BVH for accelerated raycasting (measurement tools)
+    mesh.geometry.computeBoundsTree();
 
     meshesRef.current.push(mesh);
     originalPositionsRef.current.push(mesh.position.clone());
@@ -1429,6 +1441,36 @@ export function STEPViewer({
     }
   }, [pmiFilter, showPMI, pmiData, createPMIVisualization]);
 
+  // ── Measurement Tools ──────────────────────────────────────────
+  const viewerRefs = useMemo<ViewerRefs | null>(() => {
+    if (
+      containerRef.current && sceneRef.current && cameraRef.current &&
+      rendererRef.current && controlsRef.current && meshesRef.current.length > 0
+    ) {
+      return {
+        container: containerRef.current,
+        scene: sceneRef.current,
+        camera: cameraRef.current,
+        renderer: rendererRef.current,
+        meshes: meshesRef.current,
+        controls: controlsRef.current,
+      };
+    }
+    return null;
+  // Re-compute when loading finishes and meshes are available
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stepLoading]);
+
+  const {
+    mode: measurementMode,
+    phase: measurementPhase,
+    results: measurements,
+    activateMode,
+    clearAll: clearMeasurements,
+    deleteResult: deleteMeasurement,
+  } = useMeasurements({ viewerRefs });
+
+  // Check if PMI data is available - covers all 7 backend PMI types
   const hasPMIData = pmiData && (
     pmiData.dimensions.length > 0 ||
     pmiData.geometric_tolerances.length > 0 ||
@@ -1558,6 +1600,17 @@ export function STEPViewer({
             </Button>
           </>
         )}
+
+        {/* Measurement Tools */}
+        <div className="w-px h-4 bg-border mx-0.5" />
+        <MeasurementToolbar
+          mode={measurementMode}
+          phase={measurementPhase}
+          onModeChange={activateMode}
+          onClearAll={clearMeasurements}
+          measurementCount={measurements.length}
+          disabled={stepLoading || meshesRef.current.length === 0}
+        />
           </div>
         </div>
       </div>
@@ -1660,6 +1713,53 @@ export function STEPViewer({
           </div>
         )}
 
+        {/* Measurement Panel */}
+        {measurements.length > 0 && !showDimensions && (
+          <MeasurementPanel
+            results={measurements}
+            onDelete={deleteMeasurement}
+          />
+        )}
+
+        {/* Measurement Mode Status Bar */}
+        {measurementMode !== 'none' && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
+            <div className="glass-card px-4 py-2 flex items-center gap-3">
+              {/* Mode indicator */}
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                <span className="text-[10px] font-semibold text-amber-600 uppercase tracking-wider">
+                  {measurementMode === 'point-to-point' && 'Distance'}
+                  {measurementMode === 'face-distance' && 'Thickness'}
+                  {measurementMode === 'face-angle' && 'Angle'}
+                  {measurementMode === 'radius' && 'Radius'}
+                </span>
+              </div>
+              <div className="w-px h-3 bg-border" />
+              {/* Instruction */}
+              <span className="text-[11px] text-muted-foreground">
+                {(measurementMode === 'point-to-point' || measurementMode === 'radius') && (
+                  measurementPhase === 'picking_first'
+                    ? t('parts.cadViewer.measurements.selectFirstPoint')
+                    : t('parts.cadViewer.measurements.selectSecondPoint')
+                )}
+                {(measurementMode === 'face-distance' || measurementMode === 'face-angle') && (
+                  measurementPhase === 'picking_first'
+                    ? t('parts.cadViewer.measurements.selectFirstFace')
+                    : t('parts.cadViewer.measurements.selectSecondFace')
+                )}
+              </span>
+              <div className="w-px h-3 bg-border" />
+              {/* Keyboard hint */}
+              <div className="flex items-center gap-1">
+                <kbd className="text-[9px] bg-muted/80 text-muted-foreground px-1.5 py-0.5 rounded font-mono border border-border/50">
+                  ESC
+                </kbd>
+                <span className="text-[9px] text-muted-foreground/60">cancel</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {stepLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/90 backdrop-blur-sm">

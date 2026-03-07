@@ -294,7 +294,20 @@
       "pmiNotes": "Notes",
       "pmiGraphical": "Graphical PMI",
       "noPmiData": "No PMI data in this file",
-      "pmiNotSupported": "PMI requires STEP AP242 format"
+      "pmiNotSupported": "PMI requires STEP AP242 format",
+      "measurements": {
+        "title": "Measurements",
+        "pointToPoint": "Point-to-Point Distance",
+        "faceDistance": "Face-to-Face Distance",
+        "angle": "Angle Between Faces",
+        "radius": "Radius / Diameter",
+        "selectFirstPoint": "Click to select the first point",
+        "selectSecondPoint": "Click to select the second point",
+        "selectFirstFace": "Click to select the first face",
+        "selectSecondFace": "Click to select the second face",
+        "clearAll": "Clear All Measurements",
+        "meshDisclaimer": "Measured from tessellated mesh"
+      }
     },
     "pmiExtracted": "PMI Extracted",
     "pmiExtractedDesc": "Found {{count}} dimension(s) in the model"
