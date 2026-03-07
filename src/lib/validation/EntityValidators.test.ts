@@ -239,7 +239,7 @@ describe('TimeEntryValidator', () => {
     const entry = {
       tenant_id: 'test-tenant',
       operation_id: validOperationId,
-      operator_id: null,
+      operator_id: null as string | null,
       duration: 30,
     };
     const errors = validator.validateEntity(entry, 0, context);
@@ -364,8 +364,8 @@ describe('IssueValidator', () => {
       tenant_id: 'test-tenant',
       description: 'Issue description',
       operation_id: validOperationId,
-      created_by: null,
-      reviewed_by: null,
+      created_by: null as string | null,
+      reviewed_by: null as string | null,
     };
     const errors = validator.validateEntity(issue, 0, context);
     expect(errors.some(e => e.field === 'created_by')).toBe(false);

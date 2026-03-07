@@ -67,7 +67,7 @@ export default function DueDateOverrideModal({
       onUpdate();
       onClose();
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), {
         description: error.message,
       });

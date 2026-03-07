@@ -207,7 +207,7 @@ export abstract class BaseValidator<T> {
     }
 
     // Check FK reference exists
-    if (validIds && !validIds.includes(value)) {
+    if (validIds && !validIds.includes(value as string)) {
       return {
         field,
         message: `Foreign key ${field} references non-existent record: ${value}`,

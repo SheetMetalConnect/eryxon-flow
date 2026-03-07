@@ -46,7 +46,7 @@ interface WebhookLog {
   id: string;
   webhook_id: string;
   event_type: string;
-  payload: any;
+  payload: Record<string, unknown>;
   status_code: number | null;
   error_message: string | null;
   created_at: string;
@@ -116,7 +116,7 @@ export default function ConfigWebhooks() {
       logger.error('Webhooks', 'Error fetching webhook logs', error);
       toast.error(t('webhooks.error'), { description: t('webhooks.failedToFetchLogs') });
     } else {
-      setWebhookLogs(data || []);
+      setWebhookLogs((data || []) as WebhookLog[]);
     }
     setLogsLoading(false);
   };

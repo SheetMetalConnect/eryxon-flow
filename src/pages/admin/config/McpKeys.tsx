@@ -111,7 +111,7 @@ export default function ConfigMcpKeys() {
           ? key.allowed_tools.map(tool => String(tool))
           : ["*"],
       })));
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('McpKeys', 'Error fetching MCP keys', error);
       toast.error(t("mcpKeys.failedToFetch"));
     } finally {
@@ -159,9 +159,9 @@ export default function ConfigMcpKeys() {
       await fetchMcpKeys();
 
       toast.success(t("mcpKeys.generated"));
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('McpKeys', 'Error generating MCP key', error);
-      toast.error(error.message || t("notifications.failed"));
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
     } finally {
       setIsGenerating(false);
     }
@@ -178,7 +178,7 @@ export default function ConfigMcpKeys() {
 
       toast.success(t("notifications.updated"));
       await fetchMcpKeys();
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('McpKeys', 'Error toggling key status', error);
       toast.error(t("mcpKeys.statusUpdateFailed"));
     }
@@ -199,7 +199,7 @@ export default function ConfigMcpKeys() {
 
       toast.success(t("mcpKeys.deleted"));
       await fetchMcpKeys();
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('McpKeys', 'Error deleting MCP key', error);
       toast.error(t("mcpKeys.deleteFailed"));
     }
@@ -256,7 +256,7 @@ export default function ConfigMcpKeys() {
         header: t("mcpKeys.usage"),
         cell: ({ row }) => (
           <div className="text-sm">
-            {t("mcpKeys.requests", { count: row.original.usage_count.toLocaleString() })}
+            {t("mcpKeys.requests", { count: row.original.usage_count })}
           </div>
         ),
       },

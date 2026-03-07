@@ -382,8 +382,8 @@ export default function Dashboard() {
       await loadData();
       setNeedsSetup(false);
       toast.success(t("dashboard.demoDataAdded"), { description: t("dashboard.demoDataDescription") });
-    } catch (e: any) {
-      toast.error(t("dashboard.seedingFailed"), { description: e?.message || String(e) });
+    } catch (e: unknown) {
+      toast.error(t("dashboard.seedingFailed"), { description: e instanceof Error ? e.message : String(e) });
     } finally {
       setSeeding(false);
     }
@@ -412,8 +412,8 @@ export default function Dashboard() {
       } else {
         throw new Error(result.error || "Failed to clear demo data");
       }
-    } catch (e: any) {
-      toast.error(t("dashboard.wipeFailed"), { description: e?.message || String(e) });
+    } catch (e: unknown) {
+      toast.error(t("dashboard.wipeFailed"), { description: e instanceof Error ? e.message : String(e) });
     } finally {
       setWiping(false);
     }
@@ -437,8 +437,8 @@ export default function Dashboard() {
       setStopDialogOpen(false);
       setSelectedWork(null);
       loadData();
-    } catch (error: any) {
-      toast.error(t("dashboard.stopFailed"), { description: error?.message || String(error) });
+    } catch (error: unknown) {
+      toast.error(t("dashboard.stopFailed"), { description: error instanceof Error ? error.message : String(error) });
     } finally {
       setStopping(false);
     }
@@ -460,9 +460,9 @@ export default function Dashboard() {
       const stoppedCount = await stopAllActiveTimeEntries(profile.tenant_id);
       toast.success(t("dashboard.allClockingsStopped"), { description: t("dashboard.allClockingsStoppedDescription", { count: stoppedCount }) });
       await loadData();
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Dashboard', 'Failed to stop all clockings', error);
-      toast.error(t("dashboard.stopAllFailed"), { description: error?.message || String(error) });
+      toast.error(t("dashboard.stopAllFailed"), { description: error instanceof Error ? error.message : String(error) });
     } finally {
       setStoppingAll(false);
     }

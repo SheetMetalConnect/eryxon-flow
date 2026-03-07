@@ -161,7 +161,7 @@ export default function FactoryCalendar() {
     return calendarDays.find(d => d.date === dateStr) || null;
   };
 
-  const getDayType = (date: Date | null | undefined): string => {
+  const getDayType = (date: Date | null | undefined): DayType => {
     if (!date || isNaN(date.getTime())) return 'closure';
     const calDay = getCalendarDay(date);
     if (calDay) return calDay.day_type;
@@ -235,9 +235,9 @@ export default function FactoryCalendar() {
 
       setDialogOpen(false);
       loadCalendarDays();
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('FactoryCalendar', 'Error saving calendar', error);
-      toast.error(error.message || t("calendar.messages.saveFailed", "Failed to save"));
+      toast.error(error instanceof Error ? error.message : t("calendar.messages.saveFailed", "Failed to save"));
     } finally {
       setSaving(false);
     }
@@ -269,7 +269,7 @@ export default function FactoryCalendar() {
       setDeleteDialogOpen(false);
       setDialogOpen(false);
       loadCalendarDays();
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('FactoryCalendar', 'Error deleting', error);
       toast.error(t("calendar.messages.deleteFailed", "Failed to delete"));
     } finally {

@@ -18,8 +18,8 @@ import { useState, useEffect } from "react";
 import { Plus, Save, X, Upload, Eye, Trash2, Box, FileText, AlertTriangle, Package, ChevronRight, Wrench, Image as ImageIcon, Zap, QrCode, Truck, Ruler } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
-import { STEPViewer } from "@/components/STEPViewer";
-import { PDFViewer } from "@/components/PDFViewer";
+import { STEPViewer } from "@/components/STEPViewerLazy";
+import { PDFViewer } from "@/components/PDFViewerLazy";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { UploadProgress } from "@/components/UploadProgress";
@@ -51,7 +51,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
   const { profile } = useAuth();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { routing, loading: routingLoading } = usePartRouting(partId);
+  const { routing, loading: routingLoading } = usePartRouting(partId, profile?.tenant_id || null);
   const [addingOperation, setAddingOperation] = useState(false);
   const [newOperation, setNewOperation] = useState({
     operation_name: "",
@@ -62,26 +62,26 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     selected_resources: [] as { resource_id: string; quantity: number; notes: string }[],
   });
 
-  // CAD file management state
+
   const [cadFiles, setCadFiles] = useState<FileList | null>(null);
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
   const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(null);
   const [currentFileType, setCurrentFileType] = useState<'step' | 'pdf' | null>(null);
   const [currentFileTitle, setCurrentFileTitle] = useState<string>("");
 
-  // New part fields state
+
   const [drawingNo, setDrawingNo] = useState<string>("");
   const [cncProgramName, setCncProgramName] = useState<string>("");
   const [isBulletCard, setIsBulletCard] = useState<boolean>(false);
   const [hasChanges, setHasChanges] = useState<boolean>(false);
 
-  // Shipping fields state
+
   const [weightKg, setWeightKg] = useState<string>("");
   const [lengthMm, setLengthMm] = useState<string>("");
   const [widthMm, setWidthMm] = useState<string>("");
   const [heightMm, setHeightMm] = useState<string>("");
 
-  // Upload hook with progress tracking and quota validation
+
   const {
     progress: uploadProgress,
     isUploading,
@@ -89,7 +89,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     resetProgress,
   } = useFileUpload();
 
-  // PMI extraction hook
+
   const {
     extractPMI,
     isExtracting: isExtractingPMI,
@@ -129,13 +129,13 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     },
   });
 
-  // Initialize new fields from part data
+
   useEffect(() => {
     if (part) {
       setDrawingNo(part.drawing_no || "");
       setCncProgramName(part.cnc_program_name || "");
       setIsBulletCard(part.is_bullet_card || false);
-      // Shipping fields
+
       setWeightKg(part.weight_kg?.toString() || "");
       setLengthMm(part.length_mm?.toString() || "");
       setWidthMm(part.width_mm?.toString() || "");
@@ -144,7 +144,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     }
   }, [part]);
 
-  // Mutation to update part fields
+
   const updatePartFieldsMutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
@@ -153,7 +153,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           drawing_no: drawingNo || null,
           cnc_program_name: cncProgramName || null,
           is_bullet_card: isBulletCard,
-          // Shipping fields
+    
           weight_kg: weightKg ? parseFloat(weightKg) : null,
           length_mm: lengthMm ? parseFloat(lengthMm) : null,
           width_mm: widthMm ? parseFloat(widthMm) : null,
@@ -179,13 +179,13 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     },
   });
 
-  // Track changes
+
   const handleFieldChange = (setter: (value: string) => void, value: string) => {
     setter(value);
     setHasChanges(true);
   };
 
-  // Fetch available resources for linking
+
   const { data: availableResources } = useQuery({
     queryKey: QueryKeys.config.availableResources(profile?.tenant_id || ""),
     queryFn: async () => {
@@ -218,7 +218,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         .order("sequence");
       if (error) throw error;
 
-      // Fetch resource counts for each operation
       if (data && data.length > 0) {
         const operationIds = data.map(op => op.id);
         const { data: resourceCounts } = await supabase
@@ -226,13 +225,11 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           .select("operation_id")
           .in("operation_id", operationIds);
 
-        // Count resources per operation
         const countMap = new Map<string, number>();
         resourceCounts?.forEach(item => {
           countMap.set(item.operation_id, (countMap.get(item.operation_id) || 0) + 1);
         });
 
-        // Add resource count to each operation
         return data.map(op => ({
           ...op,
           resources_count: countMap.get(op.id) || 0,
@@ -243,7 +240,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     },
   });
 
-  // Fetch parent part
   const { data: parentPart } = useQuery({
     queryKey: QueryKeys.parts.parent(partId),
     queryFn: async () => {
@@ -253,7 +249,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     enabled: !!profile?.tenant_id,
   });
 
-  // Fetch child parts
   const { data: childParts, refetch: refetchChildParts } = useQuery({
     queryKey: QueryKeys.parts.children(partId),
     queryFn: async () => {
@@ -263,7 +258,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     enabled: !!profile?.tenant_id,
   });
 
-  // Check assembly dependencies
   const { data: dependencies } = useQuery({
     queryKey: QueryKeys.parts.assemblyDeps(partId),
     queryFn: async () => {
@@ -275,7 +269,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
   const addOperationMutation = useMutation({
     mutationFn: async () => {
-      // Insert the operation first
       const { data: opData, error: opError } = await supabase
         .from("operations")
         .insert({
@@ -293,7 +286,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
       if (opError) throw opError;
 
-      // Link resources if any were selected
       if (newOperation.selected_resources.length > 0 && opData) {
         const resourceLinks = newOperation.selected_resources.map((res) => ({
           operation_id: opData.id,
@@ -342,11 +334,9 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     addOperationMutation.mutate();
   };
 
-  // Handle CAD file upload with progress tracking
   const handleCADUpload = async () => {
     if (!cadFiles || cadFiles.length === 0 || !profile?.tenant_id) return;
 
-    // Reset progress from previous uploads
     resetProgress();
 
     try {
@@ -361,7 +351,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         }
       );
 
-      // Update part's file_paths with successfully uploaded files
       if (result.uploadedPaths.length > 0) {
         const currentPaths = part?.file_paths || [];
         const newPaths = [...currentPaths, ...result.uploadedPaths];
@@ -377,7 +366,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           description: t("parts.filesUploadedSuccess", { count: result.uploadedPaths.length }),
         });
 
-        // Trigger PMI extraction for STEP files if service is enabled
         if (pmiEnabled) {
           const stepFiles = result.uploadedPaths.filter(path => {
             const ext = path.toLowerCase().split('.').pop();
@@ -386,7 +374,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
           for (const stepPath of stepFiles) {
             try {
-              // Create signed URL for the PMI service to fetch
               const { data: signedUrlData } = await supabase.storage
                 .from("parts-cad")
                 .createSignedUrl(stepPath, 3600);
@@ -413,12 +400,10 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
         setCadFiles(null);
 
-        // Refresh modal data and parent list
         await queryClient.invalidateQueries({ queryKey: QueryKeys.parts.detail(partId) });
         onUpdate();
       }
 
-      // Show errors for failed files
       if (result.failedFiles.length > 0) {
         result.failedFiles.forEach(({ fileName, error }) => {
           toast.error(t("parts.uploadFailed"), {
@@ -434,7 +419,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     }
   };
 
-  // Handle viewing file (STEP or PDF)
   const handleViewCADFile = async (filePath: string) => {
     try {
       const fileExt = filePath.split(".").pop()?.toLowerCase();
@@ -447,7 +431,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         return;
       }
 
-      // Create signed URL
       const { data, error } = await supabase.storage
         .from("parts-cad")
         .createSignedUrl(filePath, 3600);
@@ -476,12 +459,10 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     }
   };
 
-  // Handle deleting CAD file
   const handleDeleteCADFile = async (filePath: string) => {
     if (!confirm(t("parts.confirmDeleteFile"))) return;
 
     try {
-      // Delete from storage
       const { error: deleteError } = await supabase.storage
         .from("parts-cad")
         .remove([filePath]);
@@ -503,7 +484,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         description: t("parts.fileDeletedSuccess"),
       });
 
-      // Refresh modal data and parent list
       await queryClient.invalidateQueries({ queryKey: QueryKeys.parts.detail(partId) });
       onUpdate();
     } catch (error: unknown) {
@@ -670,7 +650,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                       <Zap className={`h-4 w-4 ${isBulletCard ? 'text-destructive' : 'text-muted-foreground'}`} />
                       <Label htmlFor="bullet-card" className="cursor-pointer text-sm">{t("parts.bulletCard")}</Label>
                     </div>
-                    <Switch id="bullet-card" checked={isBulletCard} onCheckedChange={(checked) => handleFieldChange(setIsBulletCard, checked)} />
+                    <Switch id="bullet-card" checked={isBulletCard} onCheckedChange={(checked) => { setIsBulletCard(checked); setHasChanges(true); }} />
                   </div>
                   {cncProgramName && (
                     <div className="sm:col-span-2 flex items-center gap-4 p-3 border rounded-md bg-white">
@@ -774,7 +754,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                       )}
 
                       <div className="mt-2 space-y-2">
-                        {childParts.map((child: { id: string; part_number: string; status: string; operations?: Array<{ id: string; status: string; operation_name: string }> }) => {
+                        {childParts.map((child: { id: string; part_number: string; status: string; material?: string; operations?: Array<{ id: string; status: string; operation_name: string }> }) => {
                           const completedOps = child.operations?.filter((op: { status: string }) => op.status === "completed").length || 0;
                           const totalOps = child.operations?.length || 0;
                           const isComplete = child.status === "completed";
@@ -945,8 +925,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                       partId={partId}
                       imagePaths={part.image_paths}
                       onImageDeleted={async () => {
-                        // Refresh modal data and parent list
-                        await queryClient.invalidateQueries({ queryKey: QueryKeys.parts.detail(partId) });
+                                        await queryClient.invalidateQueries({ queryKey: QueryKeys.parts.detail(partId) });
                         onUpdate();
                       }}
                       editable={true}
@@ -958,8 +937,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                 <ImageUpload
                   partId={partId}
                   onUploadComplete={async () => {
-                    // Refresh modal data and parent list
-                    await queryClient.invalidateQueries({ queryKey: QueryKeys.parts.detail(partId) });
+                                await queryClient.invalidateQueries({ queryKey: QueryKeys.parts.detail(partId) });
                     onUpdate();
                   }}
                 />
@@ -1177,7 +1155,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
                 {/* Operations List */}
                 <div className="space-y-2">
-                  {operations?.map((op: { id: string; operation_name: string; sequence: number; estimated_time: number | null; status: string; resources_count: number; cell?: { name: string; color: string | null }; assigned_operator?: { full_name: string } | null }) => (
+                  {(operations as unknown as { id: string; operation_name: string; sequence: number; estimated_time: number | null; status: string; resources_count: number; cell?: { name: string; color: string | null }; assigned_operator?: { full_name: string } | null }[])?.map((op) => (
                     <div
                       key={op.id}
                       className="flex items-center justify-between border rounded-md p-3"

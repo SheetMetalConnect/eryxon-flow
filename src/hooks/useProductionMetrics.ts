@@ -5,24 +5,20 @@ import { QueryKeys } from "@/lib/queryClient";
 import { logger } from '@/lib/logger';
 
 export interface ProductionMetrics {
-  // Quantities
   totalProduced: number;
   totalGood: number;
   totalScrap: number;
   totalRework: number;
 
-  // Yields
   overallYield: number;
   scrapRate: number;
   reworkRate: number;
 
-  // Time metrics (calculated from actual_time and quantity)
   avgCycleTimePerUnit: number | null; // in minutes
   totalActualTime: number; // in minutes
   totalEstimatedTime: number; // in minutes
   timeEfficiency: number | null; // actual vs estimated %
 
-  // Scrap breakdown
   scrapByReason: Array<{
     scrap_reason_id: string;
     code: string;
@@ -65,7 +61,6 @@ export function useOperationProductionMetrics(operationId: string | undefined) {
     queryFn: async (): Promise<OperationProductionSummary | null> => {
       if (!operationId) return null;
 
-      // Fetch operation details
       const { data: operation, error: opError } = await supabase
         .from("operations")
         .select(`
@@ -85,7 +80,6 @@ export function useOperationProductionMetrics(operationId: string | undefined) {
         return null;
       }
 
-      // Fetch quantity records for this operation
       const { data: quantities, error: qtyError } = await supabase
         .from("operation_quantities")
         .select(`
@@ -112,18 +106,15 @@ export function useOperationProductionMetrics(operationId: string | undefined) {
       const totalScrap = records.reduce((sum, r) => sum + (r.quantity_scrap || 0), 0);
       const totalRework = records.reduce((sum, r) => sum + (r.quantity_rework || 0), 0);
 
-      // Calculate planned quantity from part
       const plannedQuantity = (operation.part as any)?.quantity || 0;
       const remaining = Math.max(0, plannedQuantity - totalGood);
       const completionPct = plannedQuantity > 0 ? (totalGood / plannedQuantity) * 100 : 0;
 
-      // Calculate cycle time per unit from actual time and good quantity
       let cycleTimePerUnit: number | null = null;
       if (operation.actual_time && totalGood > 0) {
         cycleTimePerUnit = operation.actual_time / totalGood;
       }
 
-      // Aggregate scrap reasons
       const scrapByReason = new Map<string, { reason_id: string; code: string; description: string; quantity: number }>();
       for (const rec of records) {
         if (rec.quantity_scrap > 0 && rec.scrap_reason) {
@@ -173,7 +164,6 @@ export function useJobProductionMetrics(jobId: string | undefined) {
     queryFn: async (): Promise<ProductionMetrics | null> => {
       if (!jobId) return null;
 
-      // First get all parts for this job
       const { data: parts, error: partsError } = await supabase
         .from("parts")
         .select("id")
@@ -185,7 +175,6 @@ export function useJobProductionMetrics(jobId: string | undefined) {
 
       const partIds = parts.map((p) => p.id);
 
-      // Get all operations for these parts
       const { data: operations, error: opsError } = await supabase
         .from("operations")
         .select("id, estimated_time, actual_time")
@@ -197,7 +186,6 @@ export function useJobProductionMetrics(jobId: string | undefined) {
 
       const operationIds = operations.map((o) => o.id);
 
-      // Get all quantity records for these operations
       const { data: quantities, error: qtyError } = await supabase
         .from("operation_quantities")
         .select(`
@@ -230,15 +218,12 @@ export function useJobProductionMetrics(jobId: string | undefined) {
       const scrapRate = totalProduced > 0 ? (totalScrap / totalProduced) * 100 : 0;
       const reworkRate = totalProduced > 0 ? (totalRework / totalProduced) * 100 : 0;
 
-      // Calculate time metrics
       const totalActualTime = operations.reduce((sum, o) => sum + (o.actual_time || 0), 0);
       const totalEstimatedTime = operations.reduce((sum, o) => sum + (o.estimated_time || 0), 0);
       const timeEfficiency = totalEstimatedTime > 0 ? (totalEstimatedTime / totalActualTime) * 100 : null;
 
-      // Calculate average cycle time per unit
       const avgCycleTimePerUnit = totalGood > 0 ? totalActualTime / totalGood : null;
 
-      // Aggregate scrap by reason
       const scrapByReasonMap = new Map<string, {
         scrap_reason_id: string;
         code: string;
@@ -312,7 +297,6 @@ export function useRecordProduction() {
     const quantityRework = data.quantityRework || 0;
     const quantityProduced = data.quantityGood + quantityScrap + quantityRework;
 
-    // Insert the main quantity record
     const { data: quantityRecord, error: qtyError } = await supabase
       .from("operation_quantities")
       .insert({
@@ -336,7 +320,6 @@ export function useRecordProduction() {
       throw new Error(`Failed to record quantity: ${qtyError?.message}`);
     }
 
-    // If there are multiple scrap reasons, insert them into the junction table
     if (data.scrapReasons && data.scrapReasons.length > 0) {
       const scrapReasonRecords = data.scrapReasons.map((sr) => ({
         operation_quantity_id: quantityRecord.id,

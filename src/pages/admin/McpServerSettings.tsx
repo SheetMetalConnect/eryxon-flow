@@ -40,7 +40,7 @@ interface McpServerLog {
   id: string;
   event_type: string;
   message: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   created_at: string;
 }
 
@@ -94,7 +94,7 @@ export default function McpServerSettings() {
           },
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('McpServerSettings', 'Error fetching MCP config', error);
       toast.error(t("mcpServer.failedToLoadConfig"));
     } finally {
@@ -124,9 +124,9 @@ export default function McpServerSettings() {
       if (data) {
         setHealth(data as McpServerHealth);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('McpServerSettings', 'Error fetching health', error);
-      toast.error(t("mcpServer.failedToLoadHealthData") + ": " + (error.message || t("notifications.error")));
+      toast.error(t("mcpServer.failedToLoadHealthData") + ": " + (error instanceof Error ? error.message : t("notifications.error")));
     } finally {
       setIsLoadingHealth(false);
     }
@@ -150,10 +150,10 @@ export default function McpServerSettings() {
         return;
       }
 
-      setLogs(data || []);
-    } catch (error: any) {
+      setLogs((data || []) as McpServerLog[]);
+    } catch (error: unknown) {
       logger.error('McpServerSettings', 'Error fetching logs', error);
-      toast.error(t("mcpServer.failedToLoadLogsData") + ": " + (error.message || t("notifications.error")));
+      toast.error(t("mcpServer.failedToLoadLogsData") + ": " + (error instanceof Error ? error.message : t("notifications.error")));
     } finally {
       setIsLoadingLogs(false);
     }
@@ -183,9 +183,9 @@ export default function McpServerSettings() {
 
       toast.success(t("mcpServer.configSaved"));
       fetchConfig();
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('McpServerSettings', 'Error saving config', error);
-      toast.error(t("mcpServer.configSaveFailed") + ": " + error.message);
+      toast.error(t("mcpServer.configSaveFailed") + ": " + (error instanceof Error ? error.message : String(error)));
     } finally {
       setIsSaving(false);
     }
@@ -258,7 +258,7 @@ export default function McpServerSettings() {
         `MCP server connection test successful (${responseTime}ms response time)`
       );
       fetchHealth();
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('McpServerSettings', 'Connection test failed', error);
 
       // Update health status to offline on failure
@@ -267,14 +267,14 @@ export default function McpServerSettings() {
           p_tenant_id: tenant.id,
           p_status: "offline",
           p_response_time_ms: null,
-          p_error_message: error.message || "Connection test failed",
+          p_error_message: error instanceof Error ? error.message : "Connection test failed",
         });
         fetchHealth();
       } catch (updateError) {
         logger.error('McpServerSettings', 'Failed to update health status', updateError);
       }
 
-      toast.error(t("mcpServer.connectionTestFailed") + ": " + error.message);
+      toast.error(t("mcpServer.connectionTestFailed") + ": " + (error instanceof Error ? error.message : String(error)));
     }
   };
 

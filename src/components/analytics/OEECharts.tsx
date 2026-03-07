@@ -129,7 +129,7 @@ const OEECharts = () => {
                                         dataKey="value"
                                         nameKey="name"
                                     >
-                                        {metrics.stateBreakdown.map((entry, index) => (
+                                        {metrics.stateBreakdown.map((entry: { name: string; value: number; color: string }, index: number) => (
                                             <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
                                         ))}
                                     </Pie>

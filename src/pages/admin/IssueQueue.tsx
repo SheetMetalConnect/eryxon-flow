@@ -198,8 +198,8 @@ export default function IssueQueue() {
       setSelectedIssue(null);
       setResolutionNotes("");
       loadIssues();
-    } catch (error: any) {
-      toast.error(error.message || t("issues.failedToUpdateIssue"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("issues.failedToUpdateIssue"));
     } finally {
       setActionLoading(false);
     }

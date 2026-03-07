@@ -71,10 +71,10 @@ describe('AuthContext', () => {
     plan: 'pro',
     status: 'active',
     whitelabel_enabled: false,
-    whitelabel_logo_url: null,
-    whitelabel_app_name: null,
-    whitelabel_primary_color: null,
-    whitelabel_favicon_url: null,
+    whitelabel_logo_url: null as string | null,
+    whitelabel_app_name: null as string | null,
+    whitelabel_primary_color: null as string | null,
+    whitelabel_favicon_url: null as string | null,
   };
 
   beforeEach(() => {

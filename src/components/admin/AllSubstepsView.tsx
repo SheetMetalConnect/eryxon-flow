@@ -96,7 +96,7 @@ export function AllSubstepsView() {
       logger.error('AllSubstepsView', 'Error loading substeps', error);
       toast.error(t("Failed to load substeps"));
     } else {
-      const transformedData = (data || []).map((item: { id: string; name: string; status: string; sequence: number; notes: string | null; icon_name: string | null; operation_id: string; operations: { id: string; operation_name: string; parts: { id: string; part_number: string; jobs: { id: string; job_number: string } } } }) => ({
+      const transformedData = ((data || []) as unknown as { id: string; name: string; status: string; sequence: number; notes: string | null; icon_name: string | null; operation_id: string; operations: { id: string; operation_name: string; parts: { id: string; part_number: string; jobs: { id: string; job_number: string } } } }[]).map((item) => ({
         ...item,
         operation: {
           id: item.operations.id,
@@ -111,7 +111,7 @@ export function AllSubstepsView() {
           },
         },
       }));
-      setSubsteps(transformedData);
+      setSubsteps(transformedData as unknown as Substep[]);
     }
 
     setLoading(false);

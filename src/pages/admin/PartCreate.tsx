@@ -168,7 +168,7 @@ export default function PartCreate() {
       toast.success(t("parts.partCreated"), { description: t("parts.partCreatedDesc", { partNumber }) });
       navigate("/admin/parts");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: error.message });
     },
   });

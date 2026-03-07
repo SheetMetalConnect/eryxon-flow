@@ -87,7 +87,6 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
     pin: string
   ): Promise<VerifyPinResult> => {
     try {
-      // @ts-expect-error - RPC not in generated types
       const { data, error } = await supabase.rpc("verify_operator_pin", {
         p_employee_id: employeeId,
         p_pin: pin,

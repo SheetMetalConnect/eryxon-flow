@@ -83,7 +83,7 @@ export default function AcceptInvitation() {
         password,
         {
           full_name: invitation.email.split('@')[0], // Temporary, user can update later
-          role: invitation.role,
+          role: invitation.role as 'admin' | 'operator',
           tenant_id: invitation.tenant_id,
         }
       );
@@ -93,8 +93,9 @@ export default function AcceptInvitation() {
       }
 
       // Accept the invitation
-      if (signUpData?.user) {
-        await acceptInvitation(token, signUpData.user.id);
+      const userData = signUpData as { user?: { id: string } } | undefined;
+      if (userData?.user) {
+        await acceptInvitation(token, userData.user.id);
       }
 
       toast.success(t('invitation.welcomeToTeam'));

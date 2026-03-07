@@ -53,9 +53,10 @@ export function createEntitySearch<T>(
         .map((col) => `${col}.ilike.%${escapedQuery}%`)
         .join(",");
 
-      const { data, error } = await supabase
-        .from(config.tableName)
-        .select(config.selectFields)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase
+        .from(config.tableName as any)
+        .select(config.selectFields) as any)
         .eq("tenant_id", tenantId)
         .or(searchFilter)
         .order("created_at", { ascending: false })
@@ -66,7 +67,7 @@ export function createEntitySearch<T>(
         return [];
       }
 
-      return (data || []).map((item) => config.mapResult(item as T));
+      return ((data || []) as unknown as T[]).map((item: T) => config.mapResult(item));
     } catch (err) {
       logger.error('EntitySearch', `Search error for ${config.tableName}`, err);
       return [];

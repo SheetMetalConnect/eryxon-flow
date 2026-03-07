@@ -29,9 +29,9 @@ class IntersectionObserverMock {
   observe = vi.fn();
   unobserve = vi.fn();
   disconnect = vi.fn();
-  root = null;
+  root: Element | null = null;
   rootMargin = '';
-  thresholds = [];
+  thresholds: number[] = [];
 }
 global.IntersectionObserver = IntersectionObserverMock as unknown as typeof IntersectionObserver;
 

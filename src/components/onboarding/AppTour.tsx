@@ -13,6 +13,7 @@ interface AppTourProps {
 
 export function AppTour({ userRole, onComplete }: AppTourProps) {
   const { profile } = useAuth();
+  const { t } = useTranslation();
   const [run, setRun] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
 

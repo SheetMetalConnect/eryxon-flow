@@ -100,7 +100,7 @@ type ImportStep = 'select' | 'upload' | 'map' | 'preview' | 'import' | 'complete
 
 interface ParsedData {
   headers: string[];
-  rows: Record<string, any>[];
+  rows: Record<string, string>[];
   errors: Papa.ParseError[];
 }
 
@@ -202,7 +202,7 @@ export default function DataImport() {
       complete: (results) => {
         setParsedData({
           headers: results.meta.fields || [],
-          rows: results.data as Record<string, any>[],
+          rows: results.data as Record<string, string>[],
           errors: results.errors
         });
 
@@ -258,16 +258,15 @@ export default function DataImport() {
     if (!parsedData) return [];
 
     return parsedData.rows.map(row => {
-      const transformed: Record<string, any> = {};
+      const transformed: Record<string, string | number | boolean | undefined> = {};
       for (const mapping of fieldMappings) {
-        let value = row[mapping.csvField];
-        // Type conversions
+        let value: string | number | boolean | undefined = row[mapping.csvField];
         if (mapping.entityField === 'quantity' || mapping.entityField === 'sequence' ||
             mapping.entityField === 'estimated_time_minutes' || mapping.entityField === 'priority') {
-          value = value ? parseInt(value, 10) : undefined;
+          value = value ? parseInt(String(value), 10) : undefined;
         }
         if (mapping.entityField === 'active') {
-          value = value?.toLowerCase() === 'true' || value === '1';
+          value = String(value)?.toLowerCase() === 'true' || value === '1';
         }
         if (value !== undefined && value !== '') {
           transformed[mapping.entityField] = value;
@@ -304,7 +303,7 @@ export default function DataImport() {
 
       // Chunk data into batches of 100
       const BATCH_SIZE = 100;
-      const batches: any[][] = [];
+      const batches: Record<string, string | number | boolean | undefined>[][] = [];
       for (let i = 0; i < transformedData.length; i += BATCH_SIZE) {
         batches.push(transformedData.slice(i, i + BATCH_SIZE));
       }
@@ -312,7 +311,7 @@ export default function DataImport() {
       let totalCreated = 0;
       let totalUpdated = 0;
       let totalErrors = 0;
-      const allResults: any[] = [];
+      const allResults: ImportResult['results'] = [];
 
       for (let i = 0; i < batches.length; i++) {
         const batch = batches[i];

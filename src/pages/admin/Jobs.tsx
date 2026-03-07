@@ -31,8 +31,8 @@ import { PageStatsRow } from "@/components/admin/PageStatsRow";
 import { format, isBefore, addDays, isAfter } from "date-fns";
 import JobDetailModal from "@/components/admin/JobDetailModal";
 import DueDateOverrideModal from "@/components/admin/DueDateOverrideModal";
-import { STEPViewer } from "@/components/STEPViewer";
-import { PDFViewer } from "@/components/PDFViewer";
+import { STEPViewer } from "@/components/STEPViewerLazy";
+import { PDFViewer } from "@/components/PDFViewerLazy";
 import {
   Dialog,
   DialogContent,
@@ -54,6 +54,22 @@ import { DataTable } from "@/components/ui/data-table/DataTable";
 import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
 import type { DataTableFilterableColumn } from "@/components/ui/data-table/DataTable";
 import { cn } from "@/lib/utils";
+
+interface JobPart {
+  id: string;
+  file_paths: string[] | null;
+  operations: { id: string }[];
+}
+
+interface JobRow {
+  id: string;
+  job_number: string;
+  customer: string;
+  due_date: string;
+  due_date_override: string | null;
+  status: string;
+  parts: JobPart[] | null;
+}
 
 interface JobData {
   id: string;
@@ -99,9 +115,9 @@ export default function Jobs() {
       if (error) throw error;
 
       // Calculate counts and file information
-      return data.map((job: any) => {
+      return (data as JobRow[]).map((job) => {
         const allFiles: string[] =
-          job.parts?.flatMap((part: any) => part.file_paths || []) || [];
+          job.parts?.flatMap((part: JobPart) => part.file_paths || []) || [];
         const stepFiles = allFiles.filter((f) => {
           const ext = f.split(".").pop()?.toLowerCase();
           return ext === "step" || ext === "stp";
@@ -115,7 +131,7 @@ export default function Jobs() {
           parts_count: job.parts?.length || 0,
           operations_count:
             job.parts?.reduce(
-              (sum: number, part: any) => sum + (part.operations?.length || 0),
+              (sum: number, part: JobPart) => sum + (part.operations?.length || 0),
               0,
             ) || 0,
           stepFiles,
@@ -128,7 +144,7 @@ export default function Jobs() {
   });
 
   // Get job IDs for routing fetch
-  const jobIds = useMemo(() => jobs?.map((job: any) => job.id) || [], [jobs]);
+  const jobIds = useMemo(() => jobs?.map((job: JobData) => job.id) || [], [jobs]);
 
   // Fetch routing for all jobs
   const { routings, loading: routingsLoading } = useMultipleJobsRouting(jobIds, profile?.tenant_id ?? null);
@@ -190,7 +206,7 @@ export default function Jobs() {
       setCurrentFileType(fileType);
       setCurrentFileTitle(fileName);
       setFileViewerOpen(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Jobs', 'Error opening file', error);
       toast.error(t("notifications.error"), { description: t("notifications.failedToOpenFileViewer") });
     }
@@ -227,7 +243,7 @@ export default function Jobs() {
     );
   };
 
-  const getDueDateDisplay = (job: any) => {
+  const getDueDateDisplay = (job: JobData) => {
     const dueDate = new Date(job.due_date_override || job.due_date);
     const today = new Date();
     const weekFromNow = addDays(today, 7);

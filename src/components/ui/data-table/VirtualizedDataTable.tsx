@@ -189,9 +189,10 @@ export function VirtualizedDataTable<TData, TValue>({
   // Debounce the global filter for better performance
   const debouncedGlobalFilter = useDebounce(globalFilter, searchDebounce);
 
-  const table = useReactTable({
+  const table = useReactTable<TData>({
     data,
-    columns,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    columns: columns as ColumnDef<TData, any>[],
     state: {
       sorting,
       columnFilters,

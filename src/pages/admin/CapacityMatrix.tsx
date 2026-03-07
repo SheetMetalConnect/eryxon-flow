@@ -46,7 +46,6 @@ interface DayAllocation {
     };
 }
 
-// Memoized cell component for better performance
 const CapacityCell = memo(function CapacityCell({
     cellId,
     cellName,
@@ -161,10 +160,8 @@ export default function CapacityMatrix() {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
 
-    // Working days mask from tenant (default Mon-Fri = 31)
     const workingDaysMask = (tenant as any)?.working_days_mask ?? 31;
 
-    // Fetch cells first (usually cached, fast)
     const { data: cells, isLoading: cellsLoading } = useQuery({
         queryKey: QueryKeys.cells.capacity(tenant?.id ?? ''),
         queryFn: async () => {
@@ -178,7 +175,6 @@ export default function CapacityMatrix() {
         staleTime: 5 * 60 * 1000, // 5 minutes
     });
 
-    // Fetch calendar data
     const { data: calendarDays, isLoading: calendarLoading } = useQuery({
         queryKey: [...QueryKeys.factoryCalendar.all(tenant?.id ?? ''), format(startDate, 'yyyy-MM-dd')],
         queryFn: async () => {
@@ -194,7 +190,6 @@ export default function CapacityMatrix() {
         staleTime: 60 * 1000, // 1 minute
     });
 
-    // Fetch day allocations (main data source)
     const { data: dayAllocations, isLoading: allocationsLoading, isFetching: allocationsFetching } = useQuery({
         queryKey: [...QueryKeys.capacity.dayAllocations(tenant?.id ?? ''), format(startDate, 'yyyy-MM-dd')],
         queryFn: async () => {
@@ -250,26 +245,22 @@ export default function CapacityMatrix() {
         [startDate]
     );
 
-    // Check if a date is a default working day
     const isDefaultWorkingDay = useCallback((date: Date): boolean => {
         const jsDay = getDay(date);
         const maskBits = [64, 1, 2, 4, 8, 16, 32];
         return (workingDaysMask & maskBits[jsDay]) !== 0;
     }, [workingDaysMask]);
 
-    // Memoized calendar lookup map
     const calendarMap = useMemo(() => {
         const map = new Map<string, CalendarDay>();
         calendarDays?.forEach(day => map.set(day.date, day));
         return map;
     }, [calendarDays]);
 
-    // Get calendar entry for a date
     const getCalendarEntry = useCallback((date: Date): CalendarDay | null => {
         return calendarMap.get(format(date, 'yyyy-MM-dd')) || null;
     }, [calendarMap]);
 
-    // Get day type and label
     const getDayInfo = useCallback((date: Date): { type: string; label: string | null; multiplier: number } => {
         const entry = getCalendarEntry(date);
         if (entry) {
@@ -285,7 +276,6 @@ export default function CapacityMatrix() {
         return { type: 'working', label: null, multiplier: 1 };
     }, [getCalendarEntry, isDefaultWorkingDay]);
 
-    // Memoized allocations by cell and date
     const allocationsByCellDate = useMemo(() => {
         const map = new Map<string, DayAllocation[]>();
         dayAllocations?.forEach(a => {
@@ -296,12 +286,10 @@ export default function CapacityMatrix() {
         return map;
     }, [dayAllocations]);
 
-    // Get allocations for a cell on a date
     const getAllocationsForCellDate = useCallback((cellId: string, date: Date): DayAllocation[] => {
         return allocationsByCellDate.get(`${cellId}-${format(date, 'yyyy-MM-dd')}`) || [];
     }, [allocationsByCellDate]);
 
-    // Get operations for a cell on a date (fallback when no allocations)
     const getOperationsForCellDate = useCallback((cellId: string, date: Date): any[] => {
         if (!operations) return [];
         return operations.filter(op => {
@@ -317,7 +305,6 @@ export default function CapacityMatrix() {
         });
     }, [operations]);
 
-    // Calculate load for a cell on a date
     const getCellLoad = useCallback((cellId: string, date: Date, cell: any) => {
         if (!cell) return { hours: 0, percent: 0, capacity: 0 };
 
@@ -353,14 +340,12 @@ export default function CapacityMatrix() {
         setSelectedDate(newDate);
     }, []);
 
-    // Show skeleton during initial load
     const isInitialLoading = cellsLoading;
 
     if (isInitialLoading || !cells) {
         return <CapacityMatrixSkeleton rowCount={6} />;
     }
 
-    // Get dialog data
     const dialogAllocations = selectedCell && selectedDate
         ? getAllocationsForCellDate(selectedCell.id, selectedDate)
         : [];

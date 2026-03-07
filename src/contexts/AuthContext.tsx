@@ -108,9 +108,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await fetchTenant();
         // Prefetch commonly needed data to improve initial page load
         prefetchCommonData(queryClient, data.tenant_id, {
-          fetchCells: () => supabase.from('cells').select('*').eq('tenant_id', data.tenant_id).eq('active', true).then(r => r.data),
-          fetchMaterials: () => supabase.from('materials').select('*').eq('tenant_id', data.tenant_id).then(r => r.data),
-          fetchScrapReasons: () => supabase.from('scrap_reasons').select('*').eq('tenant_id', data.tenant_id).then(r => r.data),
+          fetchCells: () => Promise.resolve(supabase.from('cells').select('*').eq('tenant_id', data.tenant_id).eq('active', true).then(r => r.data)),
+          fetchMaterials: () => Promise.resolve(supabase.from('materials').select('*').eq('tenant_id', data.tenant_id).then(r => r.data)),
+          fetchScrapReasons: () => Promise.resolve(supabase.from('scrap_reasons').select('*').eq('tenant_id', data.tenant_id).then(r => r.data)),
         });
       }
     } catch (error) {
@@ -130,17 +130,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data && data.length > 0) {
         const tenantData = data[0] as Record<string, unknown>;
         setTenant({
-          id: tenantData.id,
-          name: tenantData.name,
-          company_name: tenantData.company_name,
-          plan: tenantData.plan,
-          status: tenantData.status,
-          trial_ends_at: tenantData.trial_ends_at ?? null,
-          whitelabel_enabled: tenantData.whitelabel_enabled ?? false,
-          whitelabel_logo_url: tenantData.whitelabel_logo_url ?? null,
-          whitelabel_app_name: tenantData.whitelabel_app_name ?? null,
-          whitelabel_primary_color: tenantData.whitelabel_primary_color ?? null,
-          whitelabel_favicon_url: tenantData.whitelabel_favicon_url ?? null,
+          id: tenantData.id as string,
+          name: tenantData.name as string,
+          company_name: (tenantData.company_name as string | null) ?? null,
+          plan: tenantData.plan as TenantInfo['plan'],
+          status: tenantData.status as TenantInfo['status'],
+          trial_ends_at: (tenantData.trial_ends_at as string | null) ?? null,
+          whitelabel_enabled: (tenantData.whitelabel_enabled as boolean) ?? false,
+          whitelabel_logo_url: (tenantData.whitelabel_logo_url as string | null) ?? null,
+          whitelabel_app_name: (tenantData.whitelabel_app_name as string | null) ?? null,
+          whitelabel_primary_color: (tenantData.whitelabel_primary_color as string | null) ?? null,
+          whitelabel_favicon_url: (tenantData.whitelabel_favicon_url as string | null) ?? null,
         });
       }
     } catch (error) {

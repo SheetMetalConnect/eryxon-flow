@@ -57,7 +57,6 @@ export default function ConfigScrapReasons() {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [editingReason, setEditingReason] = useState<Partial<ScrapReason> | null>(null);
 
-  // Fetch usage statistics
   const { data: usageStats } = useScrapReasonUsage();
 
   const { data: scrapReasons, isLoading } = useQuery({
@@ -147,7 +146,6 @@ export default function ConfigScrapReasons() {
     return categories.find((c) => c.value === category)?.color || "bg-gray-100 text-gray-800";
   };
 
-  // Compute usage analytics
   const analytics = useMemo(() => {
     if (!usageStats) return null;
 
@@ -157,7 +155,6 @@ export default function ConfigScrapReasons() {
     const usedReasons = usageStats.filter((r) => r.usageCount > 0).length;
     const unusedReasons = usageStats.filter((r) => r.usageCount === 0 && r.active).length;
 
-    // Get top 5 most used reasons
     const topReasons = [...usageStats]
       .sort((a, b) => b.totalScrapQuantity - a.totalScrapQuantity)
       .slice(0, 5)
@@ -203,11 +200,9 @@ export default function ConfigScrapReasons() {
 
       <hr className="title-divider" />
 
-      {/* Usage Statistics Dashboard */}
       {analytics && (
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {/* Total Reasons */}
             <Card className="glass-card transition-smooth hover:scale-[1.02]">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
@@ -222,7 +217,6 @@ export default function ConfigScrapReasons() {
               </CardContent>
             </Card>
 
-            {/* Active */}
             <Card className="glass-card transition-smooth hover:scale-[1.02]">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
@@ -237,7 +231,6 @@ export default function ConfigScrapReasons() {
               </CardContent>
             </Card>
 
-            {/* Used */}
             <Card className="glass-card transition-smooth hover:scale-[1.02]">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
@@ -252,7 +245,6 @@ export default function ConfigScrapReasons() {
               </CardContent>
             </Card>
 
-            {/* Unused */}
             <Card className={cn(
               "glass-card transition-smooth hover:scale-[1.02]",
               analytics.unusedReasons > 0 && "border-[hsl(var(--color-warning))]/30"
@@ -273,7 +265,6 @@ export default function ConfigScrapReasons() {
               </CardContent>
             </Card>
 
-            {/* Total Usage */}
             <Card className="glass-card transition-smooth hover:scale-[1.02]">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
@@ -288,7 +279,6 @@ export default function ConfigScrapReasons() {
               </CardContent>
             </Card>
 
-            {/* Total Scrap Qty */}
             <Card className="glass-card transition-smooth hover:scale-[1.02]">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
@@ -306,9 +296,7 @@ export default function ConfigScrapReasons() {
             </Card>
           </div>
 
-          {/* Top Reasons and Category Breakdown */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Top Scrap Reasons */}
             {analytics.topReasons.length > 0 && (
               <Card className="glass-card">
                 <CardHeader className="pb-2">
@@ -338,7 +326,6 @@ export default function ConfigScrapReasons() {
               </Card>
             )}
 
-            {/* By Category */}
             <Card className="glass-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">

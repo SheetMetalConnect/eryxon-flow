@@ -505,7 +505,7 @@ export async function generateMockData(
           notes: "Hoofdframe hydraulische hef - Gelast constructiestaal",
           quantity: 2,
           status: "completed" as const,
-          parent_part_id: null,
+          parent_part_id: null as string | null,
           metadata: {
             dimensions: "1200x800x150mm",
             weight: "45.5kg",
@@ -521,7 +521,7 @@ export async function generateMockData(
           notes: "Bedieningspaneel voorzijde - Cleanroom ISO 5",
           quantity: 12,
           status: "in_progress" as const,
-          parent_part_id: null,
+          parent_part_id: null as string | null,
           metadata: {
             dimensions: "400x300x2mm",
             weight: "2.8kg",
@@ -538,7 +538,7 @@ export async function generateMockData(
           notes: "Deksel energieopslag behuizing - Parent assembly",
           quantity: 25,
           status: "in_progress" as const,
-          parent_part_id: null,
+          parent_part_id: null as string | null,
           metadata: {
             dimensions: "600x400x3mm",
             weight: "1.9kg",
@@ -554,7 +554,7 @@ export async function generateMockData(
           notes: "Precisie framewerk - CMM inspectie verplicht",
           quantity: 4,
           status: "not_started" as const,
-          parent_part_id: null,
+          parent_part_id: null as string | null,
           metadata: {
             dimensions: "800x600x100mm",
             weight: "18.5kg",
@@ -572,7 +572,7 @@ export async function generateMockData(
           notes: "Luchtvaart beugel - AS9100 traceability",
           quantity: 16,
           status: "in_progress" as const,
-          parent_part_id: null,
+          parent_part_id: null as string | null,
           metadata: {
             dimensions: "180x120x8mm",
             weight: "0.45kg",
@@ -590,7 +590,7 @@ export async function generateMockData(
           notes: "Medische behuizing - biocompatibel",
           quantity: 6,
           status: "not_started" as const,
-          parent_part_id: null,
+          parent_part_id: null as string | null,
           metadata: {
             dimensions: "350x280x120mm",
             weight: "4.2kg",
@@ -753,7 +753,7 @@ export async function generateMockData(
       partData.length > 0 &&
       cellIds.length > 0
     ) {
-      const operations = [];
+      const operations: Record<string, unknown>[] = [];
 
       // Helper to create operation routing for each part
       const createOperationRouting = (
@@ -1526,7 +1526,7 @@ export async function generateMockData(
         const { data: operationsInserted, error: operationsError } =
           await supabase
             .from("operations")
-            .insert(operations)
+            .insert(operations as never[])
             .select("id, cell_id, part_id, status");
 
         if (operationsError) {
@@ -1921,7 +1921,7 @@ export async function generateMockData(
       operationData.length > 0 &&
       operatorIds.length > 0
     ) {
-      const issues = [];
+      const issues: Record<string, unknown>[] = [];
 
       // Create 2-4 issues across different operations
       const numIssues = 2 + Math.floor(Math.random() * 3);
@@ -1950,7 +1950,7 @@ export async function generateMockData(
           severity: "low" as const,
           description:
             "Kanthoek afwijking - gemeten 89.2° ipv 90° specificatie op 2 kanten.",
-          resolution: null,
+          resolution: null as string | null,
           status: "open" as const,
         },
         {
@@ -1965,7 +1965,7 @@ export async function generateMockData(
           severity: "high" as const,
           description:
             "Dimensie out-of-tolerance - gat positie 0.15mm afwijking (spec: ±0.05mm). CMM meting bijgevoegd.",
-          resolution: null,
+          resolution: null as string | null,
           status: "in_review" as const,
         },
       ];
@@ -2016,7 +2016,7 @@ export async function generateMockData(
       if (issues.length > 0) {
         const { error: issuesError } = await supabase
           .from("issues")
-          .insert(issues);
+          .insert(issues as never[]);
 
         if (issuesError) {
           logger.warn('MockData', 'Issues creation warning:', issuesError);

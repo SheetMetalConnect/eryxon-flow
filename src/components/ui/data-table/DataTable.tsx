@@ -140,7 +140,7 @@ interface DataTableProps<TData, TValue> {
   /** Row selection state */
   rowSelection?: Record<string, boolean>;
   /** Callback when row selection changes */
-  onRowSelectionChange?: (selection: any) => void;
+  onRowSelectionChange?: (selection: Record<string, boolean> | ((prev: Record<string, boolean>) => Record<string, boolean>)) => void;
 }
 
 export function DataTable<TData, TValue>({

@@ -51,9 +51,6 @@ export function useFileUpload() {
   const [isUploading, setIsUploading] = useState(false);
   const [storageQuota, setStorageQuota] = useState<StorageQuota | null>(null);
 
-  /**
-   * Fetch current storage quota from database
-   */
   const fetchStorageQuota = useCallback(async (): Promise<StorageQuota | null> => {
     try {
       const { data, error } = await supabase.rpc('get_storage_quota');
@@ -82,9 +79,6 @@ export function useFileUpload() {
     }
   }, []);
 
-  /**
-   * Check if a file can be uploaded based on storage quota
-   */
   const checkUploadQuota = useCallback(async (fileSizeBytes: number): Promise<{
     allowed: boolean;
     reason: string;
@@ -133,9 +127,6 @@ export function useFileUpload() {
     }
   }, [profile?.tenant_id]);
 
-  /**
-   * Update tenant storage usage after successful upload
-   */
   const updateStorageUsage = useCallback(async (fileSizeBytes: number, operation: 'add' | 'remove' = 'add') => {
     if (!profile?.tenant_id) return;
 
@@ -146,16 +137,12 @@ export function useFileUpload() {
         p_operation: operation,
       });
 
-      // Refresh quota after update
       await fetchStorageQuota();
     } catch (error) {
       logger.error('useFileUpload', 'Error updating storage usage', error);
     }
   }, [profile?.tenant_id, fetchStorageQuota]);
 
-  /**
-   * Upload files to Supabase Storage with progress tracking
-   */
   const uploadFiles = useCallback(async (
     files: FileList | File[],
     bucketName: string,
@@ -179,7 +166,6 @@ export function useFileUpload() {
     const failedFiles: { fileName: string; error: string }[] = [];
     let totalUploadedBytes = 0;
 
-    // Initialize progress for all files
     const initialProgress: UploadProgress[] = fileArray.map((file, index) => ({
       fileIndex: index,
       fileName: file.name,
@@ -198,12 +184,10 @@ export function useFileUpload() {
         const file = fileArray[i];
         const fileExt = file.name.split('.').pop()?.toLowerCase();
 
-        // Update status to uploading
         setProgress(prev => prev.map((p, idx) =>
           idx === i ? { ...p, status: 'uploading' } : p
         ));
 
-        // Validate file extension
         if (!allowedExtensions.includes(fileExt || '')) {
           const error = `Invalid file type. Allowed: ${allowedExtensions.join(', ')}`;
           failedFiles.push({ fileName: file.name, error });
@@ -213,7 +197,6 @@ export function useFileUpload() {
           continue;
         }
 
-        // Validate file size
         const fileSizeMB = file.size / 1048576;
         if (fileSizeMB > maxFileSizeMB) {
           const error = `File too large. Max size: ${maxFileSizeMB}MB`;
@@ -224,7 +207,6 @@ export function useFileUpload() {
           continue;
         }
 
-        // Check storage quota
         if (validateQuota) {
           const quotaCheck = await checkUploadQuota(file.size);
           if (!quotaCheck.allowed) {
@@ -233,7 +215,6 @@ export function useFileUpload() {
               idx === i ? { ...p, status: 'error', error: quotaCheck.reason } : p
             ));
 
-            // Show toast for quota exceeded
             toast.error(t('notifications.storageQuotaExceeded'), { description: quotaCheck.reason });
             continue;
           }
@@ -242,7 +223,6 @@ export function useFileUpload() {
         const path = getPathForFile(file, i);
 
         try {
-          // Upload with progress tracking using XMLHttpRequest
           const { error: uploadError } = await uploadFileWithProgress(
             bucketName,
             path,
@@ -265,7 +245,6 @@ export function useFileUpload() {
             throw uploadError;
           }
 
-          // Mark as completed
           setProgress(prev => prev.map((p, idx) =>
             idx === i ? {
               ...p,
@@ -279,7 +258,6 @@ export function useFileUpload() {
           uploadedPaths.push(path);
           totalUploadedBytes += file.size;
 
-          // Update storage usage
           await updateStorageUsage(file.size, 'add');
 
         } catch (uploadError: unknown) {
@@ -304,16 +282,12 @@ export function useFileUpload() {
     }
   }, [profile, checkUploadQuota, updateStorageUsage]);
 
-  /**
-   * Delete a file and update storage usage
-   */
   const deleteFile = useCallback(async (
     bucketName: string,
     filePath: string,
     fileSizeBytes?: number
   ): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Delete from storage
       const { error: deleteError } = await supabase.storage
         .from(bucketName)
         .remove([filePath]);
@@ -322,7 +296,6 @@ export function useFileUpload() {
         throw deleteError;
       }
 
-      // If file size is provided, update storage usage
       if (fileSizeBytes !== undefined) {
         await updateStorageUsage(fileSizeBytes, 'remove');
       }
@@ -337,20 +310,14 @@ export function useFileUpload() {
     }
   }, [updateStorageUsage]);
 
-  /**
-   * Reset progress
-   */
   const resetProgress = useCallback(() => {
     setProgress([]);
   }, []);
 
   return {
-    // State
     progress,
     isUploading,
     storageQuota,
-
-    // Actions
     uploadFiles,
     deleteFile,
     fetchStorageQuota,

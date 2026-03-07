@@ -184,7 +184,7 @@ export function ResourceUsageDisplay({
             {opResource.resource.metadata && (
               <div className="mt-3">
                 <EnhancedMetadataDisplay
-                  metadata={opResource.resource.metadata}
+                  metadata={opResource.resource.metadata as unknown as import('@/types/metadata').BaseMetadata}
                   compact={true}
                   showTypeIndicator={false}
                 />

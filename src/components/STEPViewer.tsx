@@ -28,7 +28,6 @@ import type {
 } from '@/hooks/useCADProcessing';
 import { decodeFloat32Array, decodeUint32Array } from '@/hooks/useCADProcessing';
 
-// Interface for calculated dimensions
 interface ModelDimensions {
   x: number;
   y: number;
@@ -36,7 +35,6 @@ interface ModelDimensions {
   center: THREE.Vector3;
 }
 
-// Extend Window interface for occt-import-js
 declare global {
   interface Window {
     occtimportjs?: () => Promise<any>;
@@ -64,7 +62,6 @@ export function STEPViewer({
 }: STEPViewerProps) {
   const { t } = useTranslation();
 
-  // State
   const [stepLoading, setStepLoading] = useState(false);
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [librariesLoaded, setLibrariesLoaded] = useState(false);
@@ -78,13 +75,10 @@ export function STEPViewer({
   const [showPMI, setShowPMI] = useState(false);
   const [dimensions, setDimensions] = useState<ModelDimensions | null>(null);
 
-  // Processing mode tracking
   const [processingMode, setProcessingMode] = useState<'server' | 'browser' | null>(null);
 
-  // PMI filter state - covers all backend PMI types
   const [pmiFilter, setPmiFilter] = useState<'all' | 'dimensions' | 'tolerances' | 'datums' | 'surface' | 'welds' | 'notes' | 'graphical'>('all');
 
-  // Three.js refs
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
@@ -95,7 +89,6 @@ export function STEPViewer({
   const gridRef = useRef<THREE.GridHelper | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
-  // Explosion state refs
   const originalPositionsRef = useRef<THREE.Vector3[]>([]);
   const explosionDataRef = useRef({
     separationVectors: [] as THREE.Vector3[],
@@ -103,11 +96,9 @@ export function STEPViewer({
     initialized: false,
   });
 
-  // Dimension lines and feature highlight refs
   const dimensionLinesRef = useRef<THREE.Group | null>(null);
   const originalMaterialsRef = useRef<THREE.Material[]>([]);
 
-  // PMI rendering refs
   const css2dRendererRef = useRef<CSS2DRenderer | null>(null);
   const pmiLayerRef = useRef<THREE.Group | null>(null);
 
@@ -117,12 +108,10 @@ export function STEPViewer({
   const createMeshFromServerData = useCallback((meshData: MeshData): THREE.Mesh => {
     const geometry = new THREE.BufferGeometry();
 
-    // Decode base64 to typed arrays
     const vertices = decodeFloat32Array(meshData.vertices_base64);
     const normals = decodeFloat32Array(meshData.normals_base64);
     const indices = decodeUint32Array(meshData.indices_base64);
 
-    // Set geometry attributes
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
 
@@ -134,7 +123,6 @@ export function STEPViewer({
       geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
     }
 
-    // Create material
     const color = new THREE.Color(
       meshData.color[0],
       meshData.color[1],
@@ -152,9 +140,7 @@ export function STEPViewer({
     return new THREE.Mesh(geometry, material);
   }, []);
 
-  // Load occt-import-js library from CDN (only if server geometry is not available)
   useEffect(() => {
-    // If server geometry is provided and preferred, skip loading browser library
     if (serverGeometry && preferServerGeometry) {
       setLibrariesLoaded(true);
       return;
@@ -166,7 +152,6 @@ export function STEPViewer({
         script.src = 'https://cdn.jsdelivr.net/npm/occt-import-js@0.0.23/dist/occt-import-js.js';
 
         script.onload = () => {
-          // Wait for library initialization
           setTimeout(() => {
             if (window.occtimportjs) {
               setLibrariesLoaded(true);
@@ -189,19 +174,15 @@ export function STEPViewer({
     loadOcct();
   }, [serverGeometry, preferServerGeometry]);
 
-  // Initialize Three.js scene
   useEffect(() => {
     if (!librariesLoaded || !containerRef.current) return;
 
-    // Capture container ref for cleanup
     const container = containerRef.current;
 
-    // Scene
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf5f5f5);
     sceneRef.current = scene;
 
-    // Camera
     const camera = new THREE.PerspectiveCamera(
       45,
       container.clientWidth / container.clientHeight,
@@ -211,7 +192,6 @@ export function STEPViewer({
     camera.position.set(200, 200, 200);
     cameraRef.current = camera;
 
-    // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(
       container.clientWidth,
@@ -221,38 +201,31 @@ export function STEPViewer({
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // Lights - Multiple directional lights for better edge visibility
     scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-    // Key light
     const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
     keyLight.position.set(5, 5, 5);
     scene.add(keyLight);
 
-    // Fill light
     const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
     fillLight.position.set(-5, 0, -5);
     scene.add(fillLight);
 
-    // Back light for better edge definition
     const backLight = new THREE.DirectionalLight(0xffffff, 0.3);
     backLight.position.set(0, 5, -5);
     scene.add(backLight);
 
-    // Grid
     const grid = new THREE.GridHelper(1000, 50, 0x444444, 0x888888);
     grid.material.transparent = true;
     grid.material.opacity = 0.35;
     scene.add(grid);
     gridRef.current = grid;
 
-    // Controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     controlsRef.current = controls;
 
-    // CSS2D Renderer for PMI labels
     const css2dRenderer = new CSS2DRenderer();
     css2dRenderer.setSize(container.clientWidth, container.clientHeight);
     css2dRenderer.domElement.style.position = 'absolute';
@@ -262,7 +235,6 @@ export function STEPViewer({
     container.appendChild(css2dRenderer.domElement);
     css2dRendererRef.current = css2dRenderer;
 
-    // Animation loop
     const animate = () => {
       animationFrameRef.current = requestAnimationFrame(animate);
       controls.update();
@@ -271,7 +243,6 @@ export function STEPViewer({
     };
     animate();
 
-    // Handle window resize
     const handleResize = () => {
       if (!containerRef.current || !camera || !renderer) return;
       const width = containerRef.current.clientWidth;
@@ -283,7 +254,6 @@ export function STEPViewer({
     };
     window.addEventListener('resize', handleResize);
 
-    // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
       if (animationFrameRef.current) {
@@ -299,28 +269,23 @@ export function STEPViewer({
     };
   }, [librariesLoaded]);
 
-  /**
-   * Clear existing meshes and edges from the scene
-   */
   const clearMeshes = useCallback(() => {
-    // Clear existing meshes
     meshesRef.current.forEach((mesh) => {
       sceneRef.current?.remove(mesh);
       mesh.geometry.dispose();
       if (Array.isArray(mesh.material)) {
-        mesh.material.forEach(m => m.dispose());
+        mesh.material.forEach((m: THREE.Material) => m.dispose());
       } else {
         mesh.material.dispose();
       }
     });
     meshesRef.current = [];
 
-    // Clear existing edges
     edgesRef.current.forEach((edges) => {
       sceneRef.current?.remove(edges);
       edges.geometry.dispose();
       if (Array.isArray(edges.material)) {
-        edges.material.forEach(m => m.dispose());
+        edges.material.forEach((m: THREE.Material) => m.dispose());
       } else {
         edges.material.dispose();
       }
@@ -331,9 +296,6 @@ export function STEPViewer({
     explosionDataRef.current.initialized = false;
   }, []);
 
-  /**
-   * Add a mesh to the scene with edges
-   */
   const addMeshToScene = useCallback((mesh: THREE.Mesh) => {
     if (!sceneRef.current) return;
 
@@ -424,7 +386,7 @@ export function STEPViewer({
     sceneRef.current.remove(gridRef.current);
     gridRef.current.geometry.dispose();
     if (Array.isArray(gridRef.current.material)) {
-      gridRef.current.material.forEach(m => m.dispose());
+      gridRef.current.material.forEach((m: THREE.Material) => m.dispose());
     } else {
       gridRef.current.material.dispose();
     }
@@ -459,7 +421,7 @@ export function STEPViewer({
         }
 
         // Store original materials for feature highlighting
-        originalMaterialsRef.current = meshesRef.current.map(mesh =>
+        originalMaterialsRef.current = meshesRef.current.map((mesh: THREE.Mesh) =>
           (mesh.material as THREE.Material).clone()
         );
 
@@ -580,7 +542,7 @@ export function STEPViewer({
         }
 
         // Store original materials for feature highlighting
-        originalMaterialsRef.current = meshesRef.current.map(mesh =>
+        originalMaterialsRef.current = meshesRef.current.map((mesh: THREE.Mesh) =>
           (mesh.material as THREE.Material).clone()
         );
 
@@ -689,11 +651,11 @@ export function STEPViewer({
     meshesRef.current.forEach((mesh) => {
       if (mesh.material) {
         if (Array.isArray(mesh.material)) {
-          mesh.material.forEach(m => {
-            m.wireframe = !wireframeMode;
+          mesh.material.forEach((m: THREE.Material) => {
+            (m as THREE.MeshStandardMaterial).wireframe = !wireframeMode;
           });
         } else {
-          mesh.material.wireframe = !wireframeMode;
+          (mesh.material as THREE.MeshStandardMaterial).wireframe = !wireframeMode;
         }
       }
     });
@@ -724,11 +686,11 @@ export function STEPViewer({
     // Remove existing dimension lines
     if (dimensionLinesRef.current) {
       sceneRef.current.remove(dimensionLinesRef.current);
-      dimensionLinesRef.current.traverse((child) => {
+      dimensionLinesRef.current.traverse((child: THREE.Object3D) => {
         if (child instanceof THREE.Line || child instanceof THREE.Mesh) {
           child.geometry?.dispose();
           if (Array.isArray(child.material)) {
-            child.material.forEach(m => m.dispose());
+            child.material.forEach((m: THREE.Material) => m.dispose());
           } else if (child.material) {
             child.material.dispose();
           }
@@ -1041,7 +1003,7 @@ export function STEPViewer({
         // Dispose current material
         if (mesh.material) {
           if (Array.isArray(mesh.material)) {
-            mesh.material.forEach(m => m.dispose());
+            mesh.material.forEach((m: THREE.Material) => m.dispose());
           } else {
             mesh.material.dispose();
           }
@@ -1191,7 +1153,7 @@ export function STEPViewer({
     // Remove existing PMI layer
     if (pmiLayerRef.current) {
       // Remove CSS2D objects properly
-      pmiLayerRef.current.traverse((child) => {
+      pmiLayerRef.current.traverse((child: THREE.Object3D) => {
         if (child instanceof CSS2DObject) {
           if (child.element.parentNode) {
             child.element.parentNode.removeChild(child.element);
@@ -1200,7 +1162,7 @@ export function STEPViewer({
         if (child instanceof THREE.Line || child instanceof THREE.Mesh) {
           child.geometry?.dispose();
           if (Array.isArray(child.material)) {
-            child.material.forEach(m => m.dispose());
+            child.material.forEach((m: THREE.Material) => m.dispose());
           } else if (child.material) {
             child.material.dispose();
           }
@@ -1522,7 +1484,7 @@ export function STEPViewer({
   const removePMIVisualization = useCallback(() => {
     if (!sceneRef.current || !pmiLayerRef.current) return;
 
-    pmiLayerRef.current.traverse((child) => {
+    pmiLayerRef.current.traverse((child: THREE.Object3D) => {
       if (child instanceof CSS2DObject) {
         if (child.element.parentNode) {
           child.element.parentNode.removeChild(child.element);
@@ -1531,7 +1493,7 @@ export function STEPViewer({
       if (child instanceof THREE.Line || child instanceof THREE.Mesh) {
         child.geometry?.dispose();
         if (Array.isArray(child.material)) {
-          child.material.forEach(m => m.dispose());
+          child.material.forEach((m: THREE.Material) => m.dispose());
         } else if (child.material) {
           child.material.dispose();
         }

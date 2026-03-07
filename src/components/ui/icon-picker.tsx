@@ -120,7 +120,7 @@ export function IconPicker({ value, onValueChange, placeholder = "Select icon...
             {Object.entries(filteredCategories).map(([category, iconList]) => (
               <CommandGroup key={category} heading={category}>
                 <div className="grid grid-cols-6 gap-1 p-2">
-                  {iconList.map((iconName) => {
+                  {iconList.map((iconName: string) => {
                     const IconComponent = icons[iconName as keyof typeof icons] as React.ComponentType<{ className?: string }>;
                     if (!IconComponent) return null;
 

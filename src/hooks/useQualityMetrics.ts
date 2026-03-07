@@ -4,25 +4,21 @@ import { useAuth } from "@/contexts/AuthContext";
 import { QueryKeys } from "@/lib/queryClient";
 
 export interface QualityMetrics {
-  // Production totals
   totalProduced: number;
   totalGood: number;
   totalScrap: number;
   totalRework: number;
 
-  // Yield metrics
   overallYield: number;
   scrapRate: number;
   reworkRate: number;
 
-  // Scrap by category
   scrapByCategory: {
     category: string;
     count: number;
     quantity: number;
   }[];
 
-  // Scrap by reason (top reasons)
   topScrapReasons: {
     code: string;
     description: string;
@@ -31,7 +27,6 @@ export interface QualityMetrics {
     quantity: number;
   }[];
 
-  // Issue metrics
   issueMetrics: {
     total: number;
     pending: number;
@@ -58,7 +53,6 @@ export interface ScrapReasonUsage {
   lastUsed: string | null;
 }
 
-// Hook to fetch overall quality metrics for the tenant
 export function useQualityMetrics() {
   const { profile } = useAuth();
 
@@ -69,7 +63,6 @@ export function useQualityMetrics() {
         throw new Error("No tenant ID");
       }
 
-      // Fetch production quantities
       const { data: quantities, error: quantitiesError } = await supabase
         .from("operation_quantities")
         .select(`
@@ -84,7 +77,6 @@ export function useQualityMetrics() {
 
       if (quantitiesError) throw quantitiesError;
 
-      // Fetch issues
       const { data: issues, error: issuesError } = await supabase
         .from("issues")
         .select("id, status, severity")
@@ -104,12 +96,10 @@ export function useQualityMetrics() {
       ) || { produced: 0, good: 0, scrap: 0, rework: 0 };
       const { produced: totalProduced, good: totalGood, scrap: totalScrap, rework: totalRework } = totals;
 
-      // Calculate yield metrics
       const overallYield = totalProduced > 0 ? (totalGood / totalProduced) * 100 : 100;
       const scrapRate = totalProduced > 0 ? (totalScrap / totalProduced) * 100 : 0;
       const reworkRate = totalProduced > 0 ? (totalRework / totalProduced) * 100 : 0;
 
-      // Group scrap by category
       const categoryMap = new Map<string, { count: number; quantity: number }>();
       quantities?.forEach((q) => {
         if (q.quantity_scrap > 0 && q.scrap_reason) {
@@ -126,7 +116,6 @@ export function useQualityMetrics() {
         ...data,
       })).sort((a, b) => b.quantity - a.quantity);
 
-      // Group scrap by reason
       const reasonMap = new Map<string, { code: string; description: string; category: string; count: number; quantity: number }>();
       quantities?.forEach((q) => {
         if (q.quantity_scrap > 0 && q.scrap_reason_id && q.scrap_reason) {
@@ -152,12 +141,10 @@ export function useQualityMetrics() {
       // Calculate issue metrics in single pass instead of 9 separate filters
       const issueCounts = issues?.reduce(
         (acc, i) => {
-          // Count by status
           if (i.status === "pending") acc.pending++;
           else if (i.status === "approved") acc.approved++;
           else if (i.status === "rejected") acc.rejected++;
           else if (i.status === "closed") acc.closed++;
-          // Count by severity
           if (i.severity === "critical") acc.critical++;
           else if (i.severity === "high") acc.high++;
           else if (i.severity === "medium") acc.medium++;
@@ -199,7 +186,6 @@ export function useQualityMetrics() {
   });
 }
 
-// Hook to fetch scrap reason usage statistics
 export function useScrapReasonUsage() {
   const { profile } = useAuth();
 
@@ -210,7 +196,6 @@ export function useScrapReasonUsage() {
         throw new Error("No tenant ID");
       }
 
-      // Fetch all scrap reasons - only fields we need
       const { data: reasons, error: reasonsError } = await supabase
         .from("scrap_reasons")
         .select("id, code, description, category, active")
@@ -219,7 +204,6 @@ export function useScrapReasonUsage() {
 
       if (reasonsError) throw reasonsError;
 
-      // Fetch usage counts
       const { data: quantities, error: quantitiesError } = await supabase
         .from("operation_quantities")
         .select("scrap_reason_id, quantity_scrap, recorded_at")
@@ -228,7 +212,6 @@ export function useScrapReasonUsage() {
 
       if (quantitiesError) throw quantitiesError;
 
-      // Build usage map
       const usageMap = new Map<string, { count: number; totalQuantity: number; lastUsed: string | null }>();
       quantities?.forEach((q) => {
         if (q.scrap_reason_id) {
@@ -241,7 +224,6 @@ export function useScrapReasonUsage() {
         }
       });
 
-      // Merge with reasons
       return (reasons || []).map((r) => ({
         id: r.id,
         code: r.code,
@@ -258,7 +240,6 @@ export function useScrapReasonUsage() {
   });
 }
 
-// Hook to fetch quality metrics for a specific job
 export function useJobQualityMetrics(jobId: string | undefined) {
   const { profile } = useAuth();
 
@@ -269,7 +250,6 @@ export function useJobQualityMetrics(jobId: string | undefined) {
         return null;
       }
 
-      // Get all operations for this job's parts
       const { data: parts, error: partsError } = await supabase
         .from("parts")
         .select("id")
@@ -280,7 +260,6 @@ export function useJobQualityMetrics(jobId: string | undefined) {
 
       const partIds = parts.map((p) => p.id);
 
-      // Get all operation IDs for these parts
       const { data: operations, error: opsError } = await supabase
         .from("operations")
         .select("id")
@@ -291,7 +270,6 @@ export function useJobQualityMetrics(jobId: string | undefined) {
 
       const operationIds = operations.map((o) => o.id);
 
-      // Get production quantities for these operations
       const { data: quantities, error: quantitiesError } = await supabase
         .from("operation_quantities")
         .select(`
@@ -304,7 +282,6 @@ export function useJobQualityMetrics(jobId: string | undefined) {
 
       if (quantitiesError) throw quantitiesError;
 
-      // Get issues for these operations
       const { data: issues, error: issuesError } = await supabase
         .from("issues")
         .select("id, status, severity")
@@ -312,7 +289,6 @@ export function useJobQualityMetrics(jobId: string | undefined) {
 
       if (issuesError) throw issuesError;
 
-      // Calculate metrics
       const totalProduced = quantities?.reduce((sum, q) => sum + (q.quantity_produced || 0), 0) || 0;
       const totalGood = quantities?.reduce((sum, q) => sum + (q.quantity_good || 0), 0) || 0;
       const totalScrap = quantities?.reduce((sum, q) => sum + (q.quantity_scrap || 0), 0) || 0;
@@ -335,7 +311,6 @@ export function useJobQualityMetrics(jobId: string | undefined) {
   });
 }
 
-// Hook to fetch quality metrics for a specific part
 export function usePartQualityMetrics(partId: string | undefined) {
   const { profile } = useAuth();
 
@@ -346,7 +321,6 @@ export function usePartQualityMetrics(partId: string | undefined) {
         return null;
       }
 
-      // Get all operation IDs for this part
       const { data: operations, error: opsError } = await supabase
         .from("operations")
         .select("id")
@@ -357,7 +331,6 @@ export function usePartQualityMetrics(partId: string | undefined) {
 
       const operationIds = operations.map((o) => o.id);
 
-      // Get production quantities for these operations
       const { data: quantities, error: quantitiesError } = await supabase
         .from("operation_quantities")
         .select(`
@@ -371,7 +344,6 @@ export function usePartQualityMetrics(partId: string | undefined) {
 
       if (quantitiesError) throw quantitiesError;
 
-      // Get issues for these operations
       const { data: issues, error: issuesError } = await supabase
         .from("issues")
         .select("id, status, severity")
@@ -379,7 +351,6 @@ export function usePartQualityMetrics(partId: string | undefined) {
 
       if (issuesError) throw issuesError;
 
-      // Calculate metrics
       const totalProduced = quantities?.reduce((sum, q) => sum + (q.quantity_produced || 0), 0) || 0;
       const totalGood = quantities?.reduce((sum, q) => sum + (q.quantity_good || 0), 0) || 0;
       const totalScrap = quantities?.reduce((sum, q) => sum + (q.quantity_scrap || 0), 0) || 0;

@@ -59,10 +59,10 @@ export default function McpSetup() {
 
       if (error) throw error;
       setEndpoints(data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('McpSetup', 'Error fetching endpoints', error);
       // Table might not exist yet - that's okay
-      if (error.code !== '42P01') {
+      if ((error as any).code !== '42P01') {
         toast.error(t('mcp.failedToLoad'));
       }
     } finally {
@@ -93,9 +93,9 @@ export default function McpSetup() {
       setNewEndpointName("");
       await fetchEndpoints();
       toast.success(t('mcp.endpointCreatedSuccess'));
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('McpSetup', 'Error creating endpoint', error);
-      toast.error(error.message || t('mcp.failedToCreate'));
+      toast.error(error instanceof Error ? error.message : t('mcp.failedToCreate'));
     } finally {
       setIsCreating(false);
     }
@@ -120,9 +120,9 @@ export default function McpSetup() {
       });
       await fetchEndpoints();
       toast.success(t('mcp.tokenRegenerated'));
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('McpSetup', 'Error regenerating token', error);
-      toast.error(error.message || t('mcp.failedToRegenerate'));
+      toast.error(error instanceof Error ? error.message : t('mcp.failedToRegenerate'));
     }
   };
 
@@ -136,7 +136,7 @@ export default function McpSetup() {
       if (error) throw error;
       await fetchEndpoints();
       toast.success(t(currentEnabled ? 'mcp.endpointDisabled' : 'mcp.endpointEnabled'));
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('McpSetup', 'Error toggling endpoint', error);
       toast.error(t('mcp.failedToUpdate'));
     }
@@ -156,7 +156,7 @@ export default function McpSetup() {
       if (error) throw error;
       await fetchEndpoints();
       toast.success(t('mcp.endpointDeleted'));
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('McpSetup', 'Error deleting endpoint', error);
       toast.error(t('mcp.failedToDelete'));
     }

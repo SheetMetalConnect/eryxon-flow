@@ -90,7 +90,26 @@ export function QRMDashboard() {
       }
       
       // Transform the data to match the Operation interface
-      const transformedData = (data || []).map((op: any) => ({
+      interface RawOperation {
+        id: string;
+        operation_name: string;
+        status: string;
+        estimated_time: number;
+        actual_time: number | null;
+        cell_id: string;
+        parts: {
+          id: string;
+          part_number: string;
+          material: string;
+          quantity: number;
+          jobs: {
+            job_number: string;
+            due_date: string | null;
+          };
+        };
+      }
+
+      const transformedData = ((data || []) as RawOperation[]).map((op) => ({
         id: op.id,
         operation_name: op.operation_name,
         status: op.status,

@@ -177,7 +177,7 @@ export default function JobCreate() {
       toast.success(t("jobs.createSuccess"), { description: t("jobs.createSuccessDesc", { jobNumber: job.job_number, count: parts.length }) });
       navigate("/admin/jobs");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: error.message });
     },
   });

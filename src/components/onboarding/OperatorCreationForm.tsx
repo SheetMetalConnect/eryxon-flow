@@ -59,8 +59,7 @@ export function OperatorCreationForm() {
     setCreating(true);
 
     try {
-      // @ts-expect-error - RPC not in generated types
-      const { data, error } = await supabase.rpc('create_operator_with_pin', {
+      const { data, error } = await (supabase.rpc as Function)('create_operator_with_pin', {
         p_full_name: fullName.trim(),
         p_pin: pin,
         p_employee_id: finalEmployeeId || undefined,

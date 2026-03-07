@@ -205,8 +205,8 @@ export default function BatchDetail() {
       });
 
       toast.success(t("batches.imageUploadSuccess"));
-    } catch (error: any) {
-      toast.error(t("batches.imageUploadError"), { description: error.message });
+    } catch (error: unknown) {
+      toast.error(t("batches.imageUploadError"), { description: error instanceof Error ? error.message : String(error) });
     } finally {
       setUploadingImage(false);
     }

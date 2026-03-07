@@ -118,7 +118,7 @@ export function useBatches(filters?: {
         .order("created_at", { ascending: false });
 
       if (filters?.status) {
-        query = query.eq("status", filters.status as string);
+        query = query.eq("status", filters.status as never);
       }
       if (filters?.batch_type) {
         query = query.eq("batch_type", filters.batch_type);
@@ -171,18 +171,16 @@ export function useSubBatches(batchId: string | undefined) {
     queryFn: async () => {
       if (!batchId) return [];
 
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
         .from("operation_batches")
-        .select(`
-          *,
-          cell:cells(id, name)
-        `)
+        .select("*, cell:cells(id, name)")
         .eq("parent_batch_id", batchId)
         .eq("tenant_id", profile!.tenant_id)
         .order("created_at", { ascending: true });
 
       if (error) throw error;
-      return data as Batch[];
+      return (data ?? []) as unknown as Batch[];
     },
     enabled: !!batchId && !!profile?.tenant_id,
   });
@@ -231,15 +229,16 @@ export function useBatchRequirements(batchId: string | undefined) {
     queryFn: async () => {
       if (!batchId) return [];
 
-      const { data, error } = await supabase
-        .from("batch_requirements")
-        .select("*")
-        .eq("batch_id", batchId)
+      const query = supabase
+        .from("batch_requirements" as "operation_batches")
+        .select("*");
+      const { data, error } = await query
+        .eq("batch_id" as "id", batchId)
         .eq("tenant_id", profile!.tenant_id)
         .order("created_at", { ascending: true });
 
       if (error) throw error;
-      return data as BatchRequirement[];
+      return (data ?? []) as unknown as BatchRequirement[];
     },
     enabled: !!batchId && !!profile?.tenant_id,
   });
@@ -255,9 +254,7 @@ export function useCreateBatch() {
       if (!profile?.tenant_id) throw new Error(t("common.noTenantId"));
 
       // Create the batch
-      const { data: batch, error: batchError } = await supabase
-        .from("operation_batches")
-        .insert({
+      const insertData = {
           tenant_id: profile.tenant_id,
           batch_number: input.batch_number,
           batch_type: input.batch_type,
@@ -266,13 +263,16 @@ export function useCreateBatch() {
           thickness_mm: input.thickness_mm,
           estimated_time: input.estimated_time,
           notes: input.notes,
-          nesting_metadata: input.nesting_metadata,
+          nesting_metadata: input.nesting_metadata as unknown,
           nesting_image_url: input.nesting_image_url,
           layout_image_url: input.layout_image_url,
           parent_batch_id: input.parent_batch_id,
           created_by: profile.id,
-          status: "draft",
-        })
+          status: "draft" as const,
+      };
+      const { data: batch, error: batchError } = await supabase
+        .from("operation_batches")
+        .insert(insertData as never)
         .select()
         .single();
 
@@ -317,7 +317,7 @@ export function useUpdateBatch() {
 
       const { data, error } = await supabase
         .from("operation_batches")
-        .update(updates)
+        .update(updates as never)
         .eq("id", id)
         .eq("tenant_id", profile.tenant_id)
         .select()
@@ -365,12 +365,23 @@ export function useUpdateBatchStatus() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, variables) => {
+    onMutate: async ({ batchId, status }) => {
+      await queryClient.cancelQueries({ queryKey: QueryKeys.batches.detail(batchId) });
+      const previous = queryClient.getQueryData(QueryKeys.batches.detail(batchId));
+      queryClient.setQueryData(QueryKeys.batches.detail(batchId), (old: Record<string, unknown> | undefined) =>
+        old ? { ...old, status } : old
+      );
+      return { previous, batchId };
+    },
+    onError: (error: Error, _variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(QueryKeys.batches.detail(context.batchId), context.previous);
+      }
+      toast.error(t("common.error"), { description: error.message });
+    },
+    onSettled: (_, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
       queryClient.invalidateQueries({ queryKey: QueryKeys.batches.detail(variables.batchId) });
-    },
-    onError: (error: Error) => {
-      toast.error(t("common.error"), { description: error.message });
     },
   });
 }
@@ -489,14 +500,14 @@ export function useCreateBatchRequirement() {
       if (!profile?.tenant_id) throw new Error(t("common.noTenantId"));
 
       const { data, error } = await supabase
-        .from("batch_requirements")
+        .from("batch_requirements" as "operation_batches")
         .insert({
           tenant_id: profile.tenant_id,
           batch_id: batchId,
           material_name: materialName,
           quantity: quantity,
           status: 'pending'
-        })
+        } as never)
         .select()
         .single();
 

@@ -270,7 +270,7 @@ apiClient.post('/api-jobs', jobData)
   const ApiKeyPlugin = () => {
     return {
       wrapComponents: {
-        authorizeBtn: (Original: any) => (props: any) => {
+        authorizeBtn: (_Original: React.ComponentType) => (_props: Record<string, unknown>): null => {
           return null; // Hide default authorize button
         }
       }

@@ -41,6 +41,22 @@ interface Operation {
   resource_names: string[];
 }
 
+interface OperationRow {
+  id: string;
+  operation_name: string | null;
+  status: string | null;
+  assigned_operator_id: string | null;
+  part_id: string;
+  parts: {
+    part_number: string;
+    job_id: string;
+    current_cell_id: string | null;
+    jobs: { job_number: string } | null;
+  } | null;
+  cells: { name: string; color: string | null } | null;
+  profiles: { full_name: string | null; email: string } | null;
+}
+
 export const Operations: React.FC = () => {
   const { t } = useTranslation();
   const [selectedOperationId, setSelectedOperationId] = useState<string | null>(null);
@@ -87,7 +103,7 @@ export const Operations: React.FC = () => {
       if (!data) return [];
 
       // Fetch resource counts and names for all operations
-      const operationIds = data.map((op: any) => op.id);
+      const operationIds = data.map((op: { id: string }) => op.id);
       const { data: resourceData } = await supabase
         .from("operation_resources")
         .select(`
@@ -98,7 +114,7 @@ export const Operations: React.FC = () => {
 
       // Build a map of operation_id -> resource info
       const resourceMap = new Map<string, { count: number; names: string[] }>();
-      resourceData?.forEach((item: any) => {
+      resourceData?.forEach((item: { operation_id: string; resource: { name: string } | null }) => {
         const opId = item.operation_id;
         const resourceName = item.resource?.name || "Unknown";
 
@@ -111,7 +127,7 @@ export const Operations: React.FC = () => {
         info.names.push(resourceName);
       });
 
-      return data.map((op: any) => {
+      return (data as unknown as OperationRow[]).map((op) => {
         const resourceInfo = resourceMap.get(op.id) || { count: 0, names: [] };
 
         return {
@@ -126,7 +142,7 @@ export const Operations: React.FC = () => {
           cell_color: op.cells?.color || null,
           assigned_operator_id: op.assigned_operator_id,
           assigned_name: op.profiles?.full_name || op.profiles?.email || null,
-          due_date: null,
+          due_date: null as string | null,
           resources_count: resourceInfo.count,
           resource_names: resourceInfo.names,
         };

@@ -197,7 +197,7 @@ export const QueueTimeChart = memo(({ data }: { data: QRMDashboardMetrics["queue
                     />
                     <Tooltip {...TOOLTIP_STYLE} />
                     <Bar dataKey="avgQueueTime" name={t("qrm.queueTime.hours")} radius={[0, 4, 4, 0]} barSize={20}>
-                        {data.byCell.map((entry, index) => (
+                        {data.byCell.map((_entry: { cellName: string; avgQueueTime: number }, index: number) => (
                             <Cell key={`cell-${index}`} fill={index === 0 ? COLORS.error : COLORS.info} />
                         ))}
                     </Bar>
@@ -271,7 +271,7 @@ export const WIPAgeChart = memo(({ data }: { data: QRMDashboardMetrics["wipAge"]
                         />
                         <Tooltip {...TOOLTIP_STYLE} />
                         <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={24} name={t("qrm.wipAge.jobs")}>
-                            {data.distribution.map((entry, index) => (
+                            {data.distribution.map((_entry: { label: string; count: number }, index: number) => (
                                 <Cell key={`cell-${index}`} fill={AGE_COLORS[index % AGE_COLORS.length]} />
                             ))}
                         </Bar>
@@ -330,16 +330,16 @@ export const ReliabilityHeatmap = memo(({ data }: { data: QRMDashboardMetrics["r
                 <thead>
                     <tr>
                         <th className="text-left font-medium text-muted-foreground pb-2" scope="col">{t("qrm.reliability.cell")}</th>
-                        {data.periodLabels.map((label, i) => (
+                        {data.periodLabels.map((label: string, i: number) => (
                             <th key={i} className="text-center font-medium text-muted-foreground pb-2 text-xs" scope="col">{label}</th>
                         ))}
                     </tr>
                 </thead>
                 <tbody>
-                    {data.heatmap.map((row, i) => (
+                    {data.heatmap.map((row: { cellName: string; values: number[] }, i: number) => (
                         <tr key={i} className="border-b border-border/50 last:border-0">
                             <th className="py-2 font-medium text-left" scope="row">{row.cellName}</th>
-                            {row.values.map((val, j) => (
+                            {row.values.map((val: number, j: number) => (
                                 <td key={j} className="py-2 text-center">
                                     <div
                                         className="inline-flex items-center justify-center w-8 h-8 rounded-md text-xs font-bold text-white transition-transform hover:scale-110"
@@ -367,14 +367,14 @@ export const ThroughputChart = memo(({ data }: { data: QRMDashboardMetrics["thro
     return (
         <div className="h-full w-full overflow-y-auto pr-2 custom-scrollbar" role="list" aria-label={t("qrm.throughput.title")}>
             <div className="space-y-4">
-                {data.byCell.map((cell, index) => (
+                {data.byCell.map((cell: { cellName: string; current: number; trend: number[] }, index: number) => (
                     <div key={index} className="flex items-center gap-4" role="listitem">
                         <div className="w-24 text-sm font-medium text-muted-foreground truncate" title={cell.cellName}>
                             {cell.cellName}
                         </div>
                         <div className="flex-1 h-8" aria-hidden="true">
                             <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={cell.trend.map((val, i) => ({ i, val }))} accessibilityLayer>
+                                <AreaChart data={cell.trend.map((val: number, i: number) => ({ i, val }))} accessibilityLayer>
                                     <defs>
                                         <linearGradient id={`grad-${index}`} x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor={COLORS.success} stopOpacity={0.3} />

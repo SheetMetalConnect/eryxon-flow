@@ -136,8 +136,8 @@ export default function OperatorFooterBar() {
       await stopTimeTracking(activeEntry.operation_id, operatorId);
       toast.success(t("production.timeTrackingStopped"));
       loadActiveEntry();
-    } catch (error: any) {
-      toast.error(error.message || t("notifications.failed"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
     } finally {
       setLoading(false);
     }
@@ -151,8 +151,8 @@ export default function OperatorFooterBar() {
       await pauseTimeTracking(activeEntry.id);
       toast.success(t("production.timeTrackingPaused"));
       loadActiveEntry();
-    } catch (error: any) {
-      toast.error(error.message || t("notifications.failed"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
     } finally {
       setLoading(false);
     }
@@ -166,8 +166,8 @@ export default function OperatorFooterBar() {
       await resumeTimeTracking(activeEntry.id);
       toast.success(t("production.timeTrackingResumed"));
       loadActiveEntry();
-    } catch (error: any) {
-      toast.error(error.message || t("notifications.failed"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
     } finally {
       setLoading(false);
     }

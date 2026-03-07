@@ -266,13 +266,12 @@ export default function Assignments() {
       const part = parts.find((p) => p.id === selectedPart);
       if (!part) return;
 
-      // Create assignment based on operator type
-      const assignmentData: any = {
+      const assignmentData: Record<string, unknown> = {
         tenant_id: profile.tenant_id,
         part_id: selectedPart,
-        job_id: (part.job as any)?.id || null,
+        job_id: (part.job as Record<string, unknown>)?.id || null,
         assigned_by: profile.id,
-        status: "assigned",
+        status: "assigned" as const,
       };
 
       if (operatorType === "shop_floor") {
@@ -283,7 +282,7 @@ export default function Assignments() {
         assignmentData.shop_floor_operator_id = null;
       }
 
-      const { error: assignError } = await supabase.from("assignments").insert(assignmentData);
+      const { error: assignError } = await supabase.from("assignments").insert(assignmentData as never);
 
       if (assignError) throw assignError;
 
@@ -307,8 +306,8 @@ export default function Assignments() {
       setSelectedPart("");
       setSelectedOperator("");
       loadData();
-    } catch (error: any) {
-      toast.error(error.message || t("assignments.failedToAssign"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("assignments.failedToAssign"));
     } finally {
       setAssigning(false);
     }
@@ -337,8 +336,8 @@ export default function Assignments() {
 
       toast.success(t("assignments.removed"));
       loadData();
-    } catch (error: any) {
-      toast.error(error.message || t("assignments.failedToRemove"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("assignments.failedToRemove"));
     }
   };
 
@@ -381,8 +380,8 @@ export default function Assignments() {
         pin: "",
       });
       loadData();
-    } catch (error: any) {
-      toast.error(error.message || t("notifications.failed"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
       logger.error('Assignments', 'Error creating operator', error);
     } finally {
       setCreatingOperator(false);

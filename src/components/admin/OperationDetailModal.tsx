@@ -36,8 +36,8 @@ import {
   Paperclip,
 } from "lucide-react";
 import { toast } from "sonner";
-import { STEPViewer } from "@/components/STEPViewer";
-import { PDFViewer } from "@/components/PDFViewer";
+import { STEPViewer } from "@/components/STEPViewerLazy";
+import { PDFViewer } from "@/components/PDFViewerLazy";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
@@ -144,7 +144,7 @@ export default function OperationDetailModal({
     enabled: !!profile?.tenant_id,
   });
 
-  // Mutation to update operation status
+  // Mutation to update operation status (with optimistic update)
   const updateStatusMutation = useMutation({
     mutationFn: async (newStatus: "not_started" | "in_progress" | "completed" | "on_hold") => {
       const { error } = await supabase
@@ -154,16 +154,29 @@ export default function OperationDetailModal({
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QueryKeys.operations.detail(operationId) });
-      onUpdate();
-      toast.success(t("notifications.updated"), {
-        description: t("operations.statusUpdatedDesc"),
-      });
+    onMutate: async (newStatus) => {
+      await queryClient.cancelQueries({ queryKey: QueryKeys.operations.detail(operationId) });
+      const previous = queryClient.getQueryData(QueryKeys.operations.detail(operationId));
+      queryClient.setQueryData(QueryKeys.operations.detail(operationId), (old: Record<string, unknown> | undefined) =>
+        old ? { ...old, status: newStatus } : old
+      );
+      return { previous };
     },
-    onError: (error: Error) => {
+    onError: (error: Error, _newStatus, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(QueryKeys.operations.detail(operationId), context.previous);
+      }
       toast.error(t("notifications.error"), {
         description: error.message,
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: QueryKeys.operations.detail(operationId) });
+      onUpdate();
+    },
+    onSuccess: () => {
+      toast.success(t("notifications.updated"), {
+        description: t("operations.statusUpdatedDesc"),
       });
     },
   });

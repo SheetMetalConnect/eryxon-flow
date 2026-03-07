@@ -24,8 +24,8 @@ import {
 import { useTranslation } from "react-i18next";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { PageStatsRow } from "@/components/admin/PageStatsRow";
-import { STEPViewer } from "@/components/STEPViewer";
-import { PDFViewer } from "@/components/PDFViewer";
+import { STEPViewer } from "@/components/STEPViewerLazy";
+import { PDFViewer } from "@/components/PDFViewerLazy";
 import {
   Dialog,
   DialogContent,
@@ -51,6 +51,18 @@ interface PartData {
   pdfFiles: string[];
   hasSTEP: boolean;
   hasPDF: boolean;
+}
+
+interface PartRow {
+  id: string;
+  part_number: string;
+  material: string | null;
+  status: string;
+  parent_part_id: string | null;
+  file_paths: string[] | null;
+  job: { job_number: string } | null;
+  cell: { name: string; color: string } | null;
+  operations: { count: number }[];
 }
 
 export default function Parts() {
@@ -112,10 +124,10 @@ export default function Parts() {
 
       // Build children set from already-fetched data (no second query needed)
       const partsWithChildren = new Set(
-        data?.filter((p: any) => p.parent_part_id).map((p: any) => p.parent_part_id) || [],
+        (data as PartRow[])?.filter((p) => p.parent_part_id).map((p) => p.parent_part_id) || [],
       );
 
-      return data.map((part: any) => {
+      return (data as PartRow[]).map((part) => {
         const files = part.file_paths || [];
         const stepFiles = files.filter((f: string) => {
           const ext = f.split(".").pop()?.toLowerCase();
@@ -175,7 +187,7 @@ export default function Parts() {
       setCurrentFileType(fileType);
       setCurrentFileTitle(fileName);
       setFileViewerOpen(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Parts', 'Error opening file', error);
       toast.error(t("notifications.error"), { description: t("notifications.failedToOpenFileViewer") });
     }

@@ -95,14 +95,14 @@ export function AutoScheduleButton() {
             const cells = cellsResult.data || [];
 
             // Convert calendar data to CalendarDay format
-            const calendarDays: CalendarDay[] = (calendarResult.data || []).map((d: { date: string; day_type: string; capacity_multiplier: number | null }) => ({
+            const calendarDays = (calendarResult.data || []).map((d: { date: string; day_type: string; capacity_multiplier: number | null }) => ({
                 date: d.date,
-                day_type: d.day_type,
+                day_type: d.day_type as CalendarDay['day_type'],
                 capacity_multiplier: d.capacity_multiplier ?? 1,
-            }));
+            })) as CalendarDay[];
 
             // Get tenant config
-            const tenantConfig = tenant as Record<string, unknown> | null;
+            const tenantConfig = tenant as unknown as Record<string, unknown> | null;
             const config = {
                 workingDaysMask: (tenantConfig?.working_days_mask as number) ?? 31,
                 factoryOpeningTime: (tenantConfig?.factory_opening_time as string)?.substring(0, 5) ?? '07:00',
@@ -160,7 +160,8 @@ export function AutoScheduleButton() {
             if (allAllocations.length > 0) {
                 const { error: allocError } = await supabase
                     .from("operation_day_allocations")
-                    .insert(allAllocations);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    .insert(allAllocations as any);
 
                 if (allocError) {
                     logger.warn('AutoScheduleButton', 'Failed to save day allocations', allocError);

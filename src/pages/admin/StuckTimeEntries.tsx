@@ -10,6 +10,22 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 
+interface StuckTimeEntry {
+  id: string;
+  start_time: string;
+  is_paused: boolean | null;
+  operator_id: string;
+  operation_id: string;
+  profiles: { full_name: string | null; username: string | null } | null;
+  operations: {
+    operation_name: string | null;
+    parts: {
+      part_number: string;
+      jobs: { job_number: string } | null;
+    } | null;
+  } | null;
+}
+
 export default function StuckTimeEntries() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -165,7 +181,7 @@ export default function StuckTimeEntries() {
         </Card>
       ) : (
         <div className="space-y-3">
-          {stuckEntries.map((entry: any) => (
+          {stuckEntries.map((entry: StuckTimeEntry) => (
             <Card key={entry.id}>
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">

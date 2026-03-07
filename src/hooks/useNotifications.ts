@@ -24,7 +24,6 @@ export const useNotifications = (filters?: NotificationFilters) => {
   const [error, setError] = useState<Error | null>(null);
   const { profile } = useAuth();
 
-  // Fetch notifications
   const fetchNotifications = useCallback(async () => {
     if (!profile) {
       setLoading(false);
@@ -44,7 +43,6 @@ export const useNotifications = (filters?: NotificationFilters) => {
       // Apply user filter - only get notifications for the current user or global notifications
       query = query.or(`user_id.is.null,user_id.eq.${profile.id}`);
 
-      // Apply filters
       if (filters?.type) {
         query = query.eq('type', filters.type);
       }
@@ -74,7 +72,6 @@ export const useNotifications = (filters?: NotificationFilters) => {
     }
   }, [profile, filters]);
 
-  // Mark notification as read
   const markAsRead = useCallback(
     async (notificationId: string) => {
       try {
@@ -84,7 +81,6 @@ export const useNotifications = (filters?: NotificationFilters) => {
 
         if (rpcError) throw rpcError;
 
-        // Update local state
         setNotifications((prev) =>
           prev.map((n) =>
             n.id === notificationId ? { ...n, read: true, read_at: new Date().toISOString() } : n
@@ -98,7 +94,6 @@ export const useNotifications = (filters?: NotificationFilters) => {
     [t]
   );
 
-  // Toggle pin
   const togglePin = useCallback(
     async (notificationId: string) => {
       try {
@@ -108,7 +103,6 @@ export const useNotifications = (filters?: NotificationFilters) => {
 
         if (rpcError) throw rpcError;
 
-        // Update local state
         setNotifications((prev) =>
           prev.map((n) =>
             n.id === notificationId
@@ -126,7 +120,6 @@ export const useNotifications = (filters?: NotificationFilters) => {
     [t]
   );
 
-  // Dismiss notification
   const dismiss = useCallback(
     async (notificationId: string) => {
       try {
@@ -136,7 +129,6 @@ export const useNotifications = (filters?: NotificationFilters) => {
 
         if (rpcError) throw rpcError;
 
-        // Update local state - remove from list
         setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
 
         toast.success(t('notifications.success'), { description: t('notifications.deleted') });
@@ -148,14 +140,12 @@ export const useNotifications = (filters?: NotificationFilters) => {
     [t]
   );
 
-  // Mark all as read
   const markAllAsRead = useCallback(async () => {
     try {
       const { data: count, error: rpcError } = await supabase.rpc('mark_all_notifications_read');
 
       if (rpcError) throw rpcError;
 
-      // Update local state
       setNotifications((prev) =>
         prev.map((n) => ({ ...n, read: true, read_at: new Date().toISOString() }))
       );
@@ -169,23 +159,15 @@ export const useNotifications = (filters?: NotificationFilters) => {
     }
   }, [t]);
 
-  // Get unread count
   const unreadCount = notifications.filter((n) => !n.read && !n.dismissed).length;
-
-  // Get pinned notifications
   const pinnedNotifications = notifications.filter((n) => n.pinned && !n.dismissed);
-
-  // Get unpinned notifications
   const unpinnedNotifications = notifications.filter((n) => !n.pinned && !n.dismissed);
 
-  // Set up real-time subscription
   useEffect(() => {
     if (!profile) return;
 
-    // Initial fetch
     fetchNotifications();
 
-    // Set up real-time subscription for new notifications
     const channel = supabase
       .channel('notifications_changes')
       .on(
@@ -198,7 +180,6 @@ export const useNotifications = (filters?: NotificationFilters) => {
         },
         (payload) => {
           logger.debug('useNotifications', 'Notification change', payload);
-          // Refetch notifications when changes occur
           fetchNotifications();
         }
       )

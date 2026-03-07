@@ -50,8 +50,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { EnhancedMetadataDisplay } from "@/components/ui/EnhancedMetadataDisplay";
 import IssueForm from "./IssueForm";
-import { STEPViewer } from "@/components/STEPViewer";
-import { PDFViewer } from "@/components/PDFViewer";
+import { STEPViewer } from "@/components/STEPViewerLazy";
+import { PDFViewer } from "@/components/PDFViewerLazy";
 import SubstepsManager from "./SubstepsManager";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
@@ -156,8 +156,8 @@ export default function OperationDetailModal({
       await startTimeTracking(operation.id, operatorId, profile.tenant_id);
       toast.success(t("operations.timeTrackingStarted"));
       onUpdate();
-    } catch (error: any) {
-      toast.error(error.message || t("operations.failedToStartTimeTracking"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("operations.failedToStartTimeTracking"));
     } finally {
       setLoading(false);
     }
@@ -172,8 +172,8 @@ export default function OperationDetailModal({
       await startTimeTracking(operation.id, operatorId, profile.tenant_id);
       toast.success(t("operations.timeTrackingStarted"));
       onUpdate();
-    } catch (error: any) {
-      toast.error(error.message || t("operations.failedToStartTimeTracking"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("operations.failedToStartTimeTracking"));
     } finally {
       setLoading(false);
     }
@@ -187,8 +187,8 @@ export default function OperationDetailModal({
       await stopTimeTracking(operation.id, operatorId);
       toast.success(t("operations.timeTrackingStopped"));
       onUpdate();
-    } catch (error: any) {
-      toast.error(error.message || t("operations.failedToStopTimeTracking"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("operations.failedToStopTimeTracking"));
     } finally {
       setLoading(false);
     }
@@ -203,8 +203,8 @@ export default function OperationDetailModal({
       toast.success(t("operations.operationComplete"));
       onUpdate();
       onOpenChange(false);
-    } catch (error: any) {
-      toast.error(error.message || t("operations.failedToComplete"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("operations.failedToComplete"));
     } finally {
       setLoading(false);
     }
@@ -246,7 +246,7 @@ export default function OperationDetailModal({
       setCurrentFileType(fileType);
       setCurrentFileTitle(fileName);
       setFileViewerOpen(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error("OperationDetailModal", "Error opening file", error);
       toast.error(t("operations.failedToOpenFile"));
     }

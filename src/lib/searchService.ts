@@ -201,7 +201,7 @@ export async function searchOperationsFullText(
       return [];
     }
 
-    return (data || []).map((operation: { id: string; operation_name: string; status: string; notes: string | null; sequence: number; estimated_time: number; actual_time: number; completion_percentage: number; part_id: string; parts?: { part_number: string; job_id: string; jobs?: { job_number: string; customer: string | null } }; cells?: { name: string }; profiles?: { full_name: string | null; email: string } }) => ({
+    return ((data || []) as unknown as { id: string; operation_name: string; status: string; notes: string | null; sequence: number; estimated_time: number; actual_time: number; completion_percentage: number; part_id: string; parts?: { part_number: string; job_id: string; jobs?: { job_number: string; customer: string | null } }; cells?: { name: string }; profiles?: { full_name: string | null; email: string } }[]).map((operation) => ({
       id: operation.id,
       type: 'operation' as const,
       title: operation.operation_name,

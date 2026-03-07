@@ -126,8 +126,8 @@ export default function ConfigUsers() {
       setDialogOpen(false);
       resetForm();
       loadUsers();
-    } catch (error: any) {
-      toast.error(error.message || t("users.failedToSaveUser"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("users.failedToSaveUser"));
       logger.error('Users', 'Failed to save user', error);
     }
   };
@@ -147,7 +147,7 @@ export default function ConfigUsers() {
         setInviteRole('operator');
         // Toast is already shown by createInvitation
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Error toast already shown by createInvitation
       logger.error('Users', 'Invitation error', error);
     } finally {
@@ -188,8 +188,8 @@ export default function ConfigUsers() {
       }
 
       loadUsers();
-    } catch (error: any) {
-      toast.error(error.message || t("notifications.failed"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
       logger.error('Users', 'Error creating machine worker', error);
     } finally {
       setCreatingMachine(false);

@@ -8,17 +8,22 @@ export function usePendingIssuesCount() {
   const queryClient = useQueryClient();
   const { profile } = useAuth();
 
+  const tenantId = profile?.tenant_id;
+
   const { data: count, isLoading } = useQuery({
-    queryKey: QueryKeys.issues.pendingCount(profile?.tenant_id ?? ''),
+    queryKey: QueryKeys.issues.pendingCount(tenantId ?? ''),
     queryFn: async () => {
+      if (!tenantId) return 0;
       const { count, error } = await supabase
         .from('issues')
         .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
         .eq('status', 'pending');
 
       if (error) throw error;
       return count || 0;
     },
+    enabled: !!tenantId,
     refetchInterval: 30000, // Refetch every 30 seconds
   });
 

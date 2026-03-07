@@ -30,6 +30,43 @@ import { OperationsFlowVisualization } from "@/components/qrm/OperationsFlowVisu
 import { useJobRouting } from "@/hooks/useQRMMetrics";
 import { ResourceCountBadge } from "@/components/ui/ResourceUsageDisplay";
 
+interface JobOperationCell {
+  name: string;
+  color: string;
+}
+
+interface JobOperation {
+  id: string;
+  operation_name: string;
+  status: string;
+  estimated_time: number | null;
+  cell: JobOperationCell | null;
+}
+
+interface JobPart {
+  id: string;
+  part_number: string;
+  material: string;
+  quantity: number;
+  status: string;
+  parent_part_id: string | null;
+  weight_kg: number | null;
+  length_mm: number | null;
+  width_mm: number | null;
+  height_mm: number | null;
+  operations?: JobOperation[];
+}
+
+interface JobUpdatePayload {
+  customer: string;
+  notes: string | null;
+  metadata: Record<string, unknown> | null;
+  delivery_address: string | null;
+  delivery_city: string | null;
+  delivery_postal_code: string | null;
+  delivery_country: string | null;
+}
+
 interface JobDetailModalProps {
   jobId: string;
   onClose: () => void;
@@ -38,7 +75,8 @@ interface JobDetailModalProps {
 
 export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailModalProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedJob, setEditedJob] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [editedJob, setEditedJob] = useState<Record<string, any> | null>(null);
   const { t } = useTranslation();
   const { profile } = useAuth();
   const { routing, loading: routingLoading } = useJobRouting(jobId, profile?.tenant_id ?? null);
@@ -68,10 +106,10 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
   });
 
   const updateJobMutation = useMutation({
-    mutationFn: async (updates: any) => {
+    mutationFn: async (updates: JobUpdatePayload) => {
       const { error } = await supabase
         .from("jobs")
-        .update(updates)
+        .update(updates as never)
         .eq("id", jobId);
 
       if (error) throw error;
@@ -83,7 +121,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
       setIsEditing(false);
       onUpdate();
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), {
         description: error.message,
       });
@@ -132,9 +170,9 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
 
   // Calculate summary stats
   const partsCount = job?.parts?.length || 0;
-  const operationsCount = job?.parts?.reduce((sum: number, p: any) => sum + (p.operations?.length || 0), 0) || 0;
-  const completedOps = job?.parts?.reduce((sum: number, p: any) =>
-    sum + (p.operations?.filter((op: any) => op.status === "completed").length || 0), 0) || 0;
+  const operationsCount = job?.parts?.reduce((sum: number, p: JobPart) => sum + (p.operations?.length || 0), 0) || 0;
+  const completedOps = job?.parts?.reduce((sum: number, p: JobPart) =>
+    sum + (p.operations?.filter((op: JobOperation) => op.status === "completed").length || 0), 0) || 0;
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -271,8 +309,8 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
 
             {/* Parts Tab */}
             <TabsContent value="parts" className="p-4 sm:p-6 space-y-3 m-0">
-              {job?.parts?.map((part: any) => {
-                const partCompletedOps = part.operations?.filter((op: any) => op.status === "completed").length || 0;
+              {job?.parts?.map((part: JobPart) => {
+                const partCompletedOps = part.operations?.filter((op: JobOperation) => op.status === "completed").length || 0;
                 const partTotalOps = part.operations?.length || 0;
 
                 return (
@@ -308,7 +346,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                     {/* Operations List - Simplified */}
                     {part.operations && part.operations.length > 0 && (
                       <div className="divide-y">
-                        {part.operations.map((operation: any, index: number) => {
+                        {part.operations.map((operation: JobOperation, index: number) => {
                           const isCompleted = operation.status === "completed";
                           const isInProgress = operation.status === "in_progress";
                           const cellColor = operation.cell?.color || '#6B7280';
@@ -416,9 +454,9 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
 
                   {/* Weight/Volume Summary */}
                   {job?.parts && job.parts.length > 0 && (() => {
-                    const totalWeight = job.parts.reduce((sum: number, part: any) =>
+                    const totalWeight = job.parts.reduce((sum: number, part: JobPart) =>
                       sum + ((part.weight_kg || 0) * (part.quantity || 1)), 0);
-                    const totalVolume = job.parts.reduce((sum: number, part: any) => {
+                    const totalVolume = job.parts.reduce((sum: number, part: JobPart) => {
                       if (part.length_mm && part.width_mm && part.height_mm) {
                         const volumeM3 = (part.length_mm * part.width_mm * part.height_mm) / 1000000000;
                         return sum + (volumeM3 * (part.quantity || 1));

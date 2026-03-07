@@ -75,9 +75,9 @@ export default function OperatorsManagement({ tenantId }: OperatorsManagementPro
       } else if (data) {
         setOperators(data as Operator[]);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error('Users', 'Failed to load operators', err);
-      setOperatorsError(err.message || 'Failed to load operators');
+      setOperatorsError(err instanceof Error ? err.message : 'Failed to load operators');
     } finally {
       setOperatorsLoading(false);
     }
@@ -140,9 +140,9 @@ export default function OperatorsManagement({ tenantId }: OperatorsManagementPro
 
       // Reload operators list
       await loadOperators();
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Users', 'Error creating operator', error);
-      toast.error(error.message || "Failed to create operator", {
+      toast.error(error instanceof Error ? error.message : "Failed to create operator", {
         description: "Check the browser console for details.",
       });
     } finally {
@@ -179,9 +179,9 @@ export default function OperatorsManagement({ tenantId }: OperatorsManagementPro
       setEditingOperator(null);
       setNewPinForm({ pin: "" });
       await loadOperators();
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Users', 'Error resetting PIN', error);
-      toast.error(error.message || t("notifications.failed"));
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
     } finally {
       setResettingPin(false);
     }
@@ -197,9 +197,9 @@ export default function OperatorsManagement({ tenantId }: OperatorsManagementPro
 
       toast.success(t("notifications.updated"));
       await loadOperators();
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Users', 'Error unlocking operator', error);
-      toast.error(error.message || "Failed to unlock operator");
+      toast.error(error instanceof Error ? error.message : "Failed to unlock operator");
     }
   };
 
@@ -214,9 +214,9 @@ export default function OperatorsManagement({ tenantId }: OperatorsManagementPro
 
       toast.success(t("notifications.updated"));
       await loadOperators();
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Users', 'Error toggling operator status', error);
-      toast.error(error.message || t("notifications.failed"));
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
     }
   };
 

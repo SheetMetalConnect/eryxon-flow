@@ -26,7 +26,7 @@ interface Resource {
   location: string | null;
   status: string;
   active: boolean;
-  metadata: any;
+  metadata: Record<string, unknown> | null;
 }
 
 const RESOURCE_TYPES = [
@@ -159,7 +159,7 @@ export default function ConfigResources() {
       location: resource.location || "",
       status: resource.status,
       active: resource.active,
-      metadata: resource.metadata || {},
+      metadata: (resource.metadata || {}) as import('@/types/metadata').BaseMetadata,
     });
     setDialogOpen(true);
   };

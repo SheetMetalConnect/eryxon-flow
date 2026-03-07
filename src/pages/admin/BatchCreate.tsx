@@ -76,11 +76,9 @@ export default function BatchCreate() {
   const { profile } = useAuth();
   const createBatch = useCreateBatch();
   const updateBatch = useUpdateBatch();
-  // Fetch data if editing
   const { data: existingBatch, isLoading: batchLoading } = useBatch(id);
   const { data: existingOperations, isLoading: opsLoading } = useBatchOperations(id);
 
-  // Form state
   const [batchNumber, setBatchNumber] = useState("");
   const [batchType, setBatchType] = useState<BatchType>("laser_nesting");
   const [cellId, setCellId] = useState("");
@@ -91,14 +89,12 @@ export default function BatchCreate() {
   const [operationSearch, setOperationSearch] = useState("");
   const [searchParams] = useSearchParams();
 
-  // New fields
   const [parentBatchId, setParentBatchId] = useState<string>("__none__");
   const [nestingImageUrl, setNestingImageUrl] = useState("");
   const [layoutImageUrl, setLayoutImageUrl] = useState("");
   const [metadataJson, setMetadataJson] = useState("{}");
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  // Populate form when editing
   useEffect(() => {
     if (isEditing && existingBatch && existingOperations) {
       setBatchNumber(existingBatch.batch_number);
@@ -115,7 +111,6 @@ export default function BatchCreate() {
         setMetadataJson(JSON.stringify(existingBatch.nesting_metadata, null, 2));
       }
 
-      // Set selected operations
       const opIds = existingOperations.map(bo => bo.operation_id);
       setSelectedOperations(opIds);
     }
@@ -136,7 +131,6 @@ export default function BatchCreate() {
     }
   }, [searchParams, isEditing]);
 
-  // Fetch cells
   const { data: cells } = useQuery({
     queryKey: QueryKeys.cells.active(profile?.tenant_id ?? ''),
     queryFn: async () => {
@@ -152,7 +146,6 @@ export default function BatchCreate() {
     enabled: !!profile?.tenant_id,
   });
 
-  // Fetch materials from config
   const { data: materials } = useQuery({
     queryKey: QueryKeys.config.materialsActive(profile?.tenant_id ?? ''),
     queryFn: async () => {
@@ -168,7 +161,6 @@ export default function BatchCreate() {
     enabled: !!profile?.tenant_id,
   });
 
-  // Fetch potential parent batches
   const { data: parentBatches } = useQuery({
     queryKey: QueryKeys.batches.potentialParents(profile?.tenant_id ?? ''),
     queryFn: async () => {
@@ -186,7 +178,6 @@ export default function BatchCreate() {
   });
 
 
-  // Fetch available operations
   const { data: availableOperations } = useQuery({
     queryKey: QueryKeys.operations.forBatch(cellId || ''),
     queryFn: async () => {
@@ -233,7 +224,6 @@ export default function BatchCreate() {
     enabled: !!profile?.tenant_id,
   });
 
-  // Filter operations by search
   const filteredOperations = availableOperations?.filter(op => {
     if (!operationSearch) return true;
     const search = operationSearch.toLowerCase();
@@ -288,8 +278,8 @@ export default function BatchCreate() {
       }
 
       toast.success(t("batches.imageUploaded"), { description: t("batches.imageUploadedDesc") });
-    } catch (error: any) {
-      toast.error(t("batches.imageUploadFailed"), { description: error.message });
+    } catch (error: unknown) {
+      toast.error(t("batches.imageUploadFailed"), { description: error instanceof Error ? error.message : String(error) });
     } finally {
       setUploadingImage(false);
     }
