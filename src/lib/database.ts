@@ -691,7 +691,6 @@ export async function completeOperation(operationId: string, tenantId: string, o
     }
   });
 
-  // Check if all operations in part are completed
   const { data: partOperations } = await supabase
     .from("operations")
     .select("status, cell_id, cells!inner(sequence)")
@@ -701,7 +700,6 @@ export async function completeOperation(operationId: string, tenantId: string, o
   const inProgressOperations = partOperations?.filter((o) => o.status === "in_progress");
 
   if (allCompleted) {
-    // All operations complete - mark part as completed
     const { data: part } = await supabase
       .from("parts")
       .select("job_id")
@@ -717,7 +715,6 @@ export async function completeOperation(operationId: string, tenantId: string, o
       .eq("id", operation.part_id);
     if (completePartError) throw completePartError;
 
-    // Check if all parts in job are completed
     if (part) {
       const { data: jobParts } = await supabase
         .from("parts")
@@ -736,12 +733,10 @@ export async function completeOperation(operationId: string, tenantId: string, o
           .eq("id", part.job_id);
         if (completeJobError) throw completeJobError;
       } else {
-        // Recalculate job's current_cell_id from remaining in_progress parts
         await recalculateJobCurrentCell(part.job_id);
       }
     }
   } else if (inProgressOperations && inProgressOperations.length > 0) {
-    // Recalculate part's current_cell_id from remaining in_progress operations
     const typedInProgress = inProgressOperations as PartOperationResult[];
     const earliestCell = typedInProgress.reduce((earliest, o) => {
       return o.cells.sequence < earliest.sequence
@@ -755,7 +750,6 @@ export async function completeOperation(operationId: string, tenantId: string, o
       .eq("id", operation.part_id);
     if (partCellUpdateError) throw partCellUpdateError;
 
-    // Also recalculate job's current_cell_id
     const { data: part } = await supabase
       .from("parts")
       .select("job_id")
@@ -769,7 +763,6 @@ export async function completeOperation(operationId: string, tenantId: string, o
 }
 
 async function recalculateJobCurrentCell(jobId: string) {
-  // Get all in_progress operations across all parts in this job
   const { data: jobParts } = await supabase
     .from("parts")
     .select("id")
@@ -786,7 +779,6 @@ async function recalculateJobCurrentCell(jobId: string) {
     .eq("status", "in_progress");
 
   if (inProgressOperations && inProgressOperations.length > 0) {
-    // Get the earliest cell (lowest sequence) with in_progress operations
     const typedOperations = inProgressOperations as JobOperationResult[];
     const earliestCell = typedOperations.reduce((earliest, o) => {
       return o.cells.sequence < earliest.sequence
@@ -800,7 +792,6 @@ async function recalculateJobCurrentCell(jobId: string) {
       .eq("id", jobId);
     if (jobCellError) throw jobCellError;
   } else {
-    // No in_progress operations, but job isn't complete yet
     const { error: jobCellNullError } = await supabase
       .from("jobs")
       .update({ current_cell_id: null })
@@ -809,11 +800,6 @@ async function recalculateJobCurrentCell(jobId: string) {
   }
 }
 
-// Assembly Tracking Functions
-
-/**
- * Fetch all child parts for a given parent part
- */
 export async function fetchChildParts(parentPartId: string, tenantId: string) {
   const { data, error } = await supabase
     .from("parts")
@@ -830,9 +816,6 @@ export async function fetchChildParts(parentPartId: string, tenantId: string) {
   return data || [];
 }
 
-/**
- * Fetch parent part for a given part
- */
 export async function fetchParentPart(partId: string, tenantId: string) {
   const { data: part, error: partError } = await supabase
     .from("parts")
@@ -859,9 +842,6 @@ export async function fetchParentPart(partId: string, tenantId: string) {
   return parentPart;
 }
 
-/**
- * Check if all child parts are completed
- */
 export async function checkChildPartsCompletion(parentPartId: string, tenantId: string) {
   const { data: childParts, error } = await supabase
     .from("parts")
@@ -886,9 +866,6 @@ export async function checkChildPartsCompletion(parentPartId: string, tenantId: 
   };
 }
 
-/**
- * Check if a part has dependency warnings (incomplete children)
- */
 export async function checkAssemblyDependencies(partId: string, tenantId: string) {
   const childrenStatus = await checkChildPartsCompletion(partId, tenantId);
 
@@ -914,7 +891,6 @@ export async function startBatchTimeTracking(
   operatorId: string,
   tenantId: string
 ) {
-  // Guard: check batch status - only allow starting draft or ready batches
   const { data: batch, error: batchError } = await supabase
     .from("operation_batches")
     .select("status")

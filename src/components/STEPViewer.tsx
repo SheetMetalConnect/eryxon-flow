@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react'; // force rebuild
+import { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
@@ -303,7 +303,6 @@ export function STEPViewer({
     originalPositionsRef.current.push(mesh.position.clone());
     sceneRef.current.add(mesh);
 
-    // Add edges for better contour visibility (threshold angle: 30 degrees)
     const edgesGeometry = new THREE.EdgesGeometry(mesh.geometry, 30);
     const edgesMaterial = new THREE.LineBasicMaterial({
       color: 0x000000,
@@ -314,12 +313,10 @@ export function STEPViewer({
     const edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
     edges.visible = edgesVisible;
 
-    // Position edges with mesh (for exploded view)
     mesh.add(edges);
     edgesRef.current.push(edges);
   }, [edgesVisible]);
 
-  // Calculate dimensions from bounding box (must be defined before useEffect that uses it)
   const calculateDimensions = useCallback(() => {
     if (meshesRef.current.length === 0) return;
 

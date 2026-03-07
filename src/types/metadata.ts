@@ -1,31 +1,16 @@
-/**
- * Flexible Metadata Type System
- *
- * Defines well-known metadata structures for jobs, parts, operations, and resources.
- * Each type can be extended with custom fields while maintaining type safety.
- */
-
-// ============================================================================
-// Base Metadata Types
-// ============================================================================
-
 export type MetadataValue = string | number | boolean | null | MetadataValue[] | { [key: string]: MetadataValue };
 
 export interface BaseMetadata {
   [key: string]: MetadataValue;
 }
 
-// ============================================================================
-// Resource-Specific Metadata
-// ============================================================================
-
 export interface MoldMetadata extends BaseMetadata {
   moldId?: string;
   moldName?: string;
   cavities?: number;
   tonnage?: number;
-  setupTime?: number; // minutes
-  cycleTime?: number; // seconds
+  setupTime?: number;
+  cycleTime?: number;
   material?: string;
   temperature?: number;
   pressure?: number;
@@ -40,10 +25,10 @@ export interface ToolingMetadata extends BaseMetadata {
   length?: number;
   material?: string;
   coatingType?: string;
-  setupTime?: number; // minutes
-  lifeExpectancy?: number; // uses
+  setupTime?: number;
+  lifeExpectancy?: number;
   currentUses?: number;
-  maintenanceDue?: string; // ISO date
+  maintenanceDue?: string;
   notes?: string;
 }
 
@@ -52,8 +37,8 @@ export interface FixtureMetadata extends BaseMetadata {
   fixtureName?: string;
   fixtureType?: 'welding' | 'assembly' | 'inspection' | 'machining' | 'other';
   capacity?: number;
-  setupTime?: number; // minutes
-  calibrationDue?: string; // ISO date
+  setupTime?: number;
+  calibrationDue?: string;
   location?: string;
   notes?: string;
 }
@@ -71,10 +56,6 @@ export interface MaterialMetadata extends BaseMetadata {
   certifications?: string[];
   notes?: string;
 }
-
-// ============================================================================
-// Process-Specific Metadata
-// ============================================================================
 
 export interface BendSequenceMetadata extends BaseMetadata {
   bendCount?: number;
@@ -104,8 +85,8 @@ export interface WeldingMetadata extends BaseMetadata {
   shieldingGas?: string;
   gasFlowRate?: number;
   travelSpeed?: number;
-  preHeat?: number; // temperature
-  postHeat?: number; // temperature
+  preHeat?: number;
+  postHeat?: number;
   weldSequence?: string[];
   inspectionRequired?: boolean;
   notes?: string;
@@ -120,23 +101,23 @@ export interface MachineSettingsMetadata extends BaseMetadata {
   cutDepth?: number;
   coolant?: boolean;
   toolChanges?: number;
-  setupTime?: number; // minutes
-  cycleTime?: number; // minutes
+  setupTime?: number;
+  cycleTime?: number;
   notes?: string;
 }
 
 export interface LaserCuttingMetadata extends BaseMetadata {
   material?: string;
   thickness?: string;
-  power?: number; // watts
-  speed?: number; // mm/min
-  frequency?: number; // Hz
+  power?: number;
+  speed?: number;
+  frequency?: number;
   gasType?: string;
   gasPressure?: number;
   focusHeight?: number;
-  pierceTime?: number; // seconds
+  pierceTime?: number;
   program?: string;
-  nestingEfficiency?: number; // percentage
+  nestingEfficiency?: number;
   notes?: string;
 }
 
@@ -156,7 +137,7 @@ export interface AssemblyMetadata extends BaseMetadata {
     torque?: number;
   }>;
   adhesives?: string[];
-  cureTime?: number; // minutes
+  cureTime?: number;
   inspectionPoints?: string[];
   notes?: string;
 }
@@ -176,10 +157,6 @@ export interface InspectionMetadata extends BaseMetadata {
   notes?: string;
 }
 
-// ============================================================================
-// Job & Part Metadata
-// ============================================================================
-
 export interface JobMetadata extends BaseMetadata {
   priority?: 'low' | 'normal' | 'high' | 'urgent';
   customerPO?: string;
@@ -188,7 +165,6 @@ export interface JobMetadata extends BaseMetadata {
   qualityLevel?: 'standard' | 'aerospace' | 'medical' | 'military';
   certificationRequired?: boolean;
   specialInstructions?: string;
-  // Can include any of the above metadata types
 }
 
 export interface PartMetadata extends BaseMetadata {
@@ -202,7 +178,6 @@ export interface PartMetadata extends BaseMetadata {
   finish?: string;
   color?: string;
   tolerance?: string;
-  // Can include any process-specific metadata
   bendSequence?: BendSequenceMetadata;
   welding?: WeldingMetadata;
   machineSettings?: MachineSettingsMetadata;
@@ -212,24 +187,18 @@ export interface PartMetadata extends BaseMetadata {
 }
 
 export interface OperationMetadata extends BaseMetadata {
-  // Process-specific settings
   bendSequence?: BendSequenceMetadata;
   welding?: WeldingMetadata;
   machineSettings?: MachineSettingsMetadata;
   laserCutting?: LaserCuttingMetadata;
   assembly?: AssemblyMetadata;
   inspection?: InspectionMetadata;
-  // General operation metadata
   setupInstructions?: string;
   safetyNotes?: string;
   qualityChecks?: string[];
   commonIssues?: string[];
   tipsTricks?: string;
 }
-
-// ============================================================================
-// Metadata Templates
-// ============================================================================
 
 export interface MetadataTemplate {
   id: string;
@@ -260,12 +229,7 @@ export interface MetadataFieldDefinition {
   };
 }
 
-// ============================================================================
-// Pre-defined Templates
-// ============================================================================
-
 export const METADATA_TEMPLATES: MetadataTemplate[] = [
-  // Resource Templates
   {
     id: 'mold-template',
     name: 'Mold',
@@ -360,7 +324,6 @@ export const METADATA_TEMPLATES: MetadataTemplate[] = [
     ],
   },
 
-  // Process Templates
   {
     id: 'bend-sequence-template',
     name: 'Bend Sequence',
@@ -486,20 +449,10 @@ export const METADATA_TEMPLATES: MetadataTemplate[] = [
   },
 ];
 
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
-/**
- * Get template by ID
- */
 export function getTemplate(templateId: string): MetadataTemplate | undefined {
   return METADATA_TEMPLATES.find(t => t.id === templateId);
 }
 
-/**
- * Get templates by category
- */
 export function getTemplatesByCategory(category: MetadataTemplate['category']): MetadataTemplate[] {
   return METADATA_TEMPLATES.filter(t => t.category === category);
 }

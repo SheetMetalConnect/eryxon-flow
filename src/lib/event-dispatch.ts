@@ -15,36 +15,26 @@ import { supabase } from "@/integrations/supabase/client";
  * - Error handling
  */
 
-// ============================================================================
-// Event Type Definitions
-// ============================================================================
-
 export type EventType =
-  // Job lifecycle events
   | 'job.created'
   | 'job.updated'
   | 'job.started'
   | 'job.stopped'
   | 'job.resumed'
   | 'job.completed'
-  // Part lifecycle events
   | 'part.created'
   | 'part.updated'
   | 'part.started'
   | 'part.completed'
-  // Operation lifecycle events
   | 'operation.started'
   | 'operation.paused'
   | 'operation.resumed'
   | 'operation.completed'
-  // Issue and NCR events
   | 'issue.created'
   | 'ncr.created'
   | 'ncr.verified'
-  // Step events
   | 'step.added'
   | 'step.completed'
-  // Production metrics events
   | 'production.quantity_reported'
   | 'production.scrap_recorded';
 
@@ -59,38 +49,28 @@ export interface EventDefinition {
  * Available events with metadata - shared across all integrations
  */
 export const AVAILABLE_EVENTS: EventDefinition[] = [
-  // Job lifecycle events
   { id: 'job.created', label: 'Job Created', description: 'When a new job is created via API', category: 'job' },
   { id: 'job.updated', label: 'Job Updated', description: 'When a job is modified', category: 'job' },
   { id: 'job.started', label: 'Job Started', description: 'When a job changes to in_progress', category: 'job' },
   { id: 'job.stopped', label: 'Job Stopped', description: 'When a job is put on hold', category: 'job' },
   { id: 'job.resumed', label: 'Job Resumed', description: 'When a paused job is resumed', category: 'job' },
   { id: 'job.completed', label: 'Job Completed', description: 'When a job is marked complete', category: 'job' },
-  // Part lifecycle events
   { id: 'part.created', label: 'Part Created', description: 'When a new part is added to a job', category: 'part' },
   { id: 'part.updated', label: 'Part Updated', description: 'When a part is modified', category: 'part' },
   { id: 'part.started', label: 'Part Started', description: 'When work begins on a part', category: 'part' },
   { id: 'part.completed', label: 'Part Completed', description: 'When a part is fully processed', category: 'part' },
-  // Operation lifecycle events
   { id: 'operation.started', label: 'Operation Started', description: 'When an operator starts an operation', category: 'operation' },
   { id: 'operation.paused', label: 'Operation Paused', description: 'When an operation is paused', category: 'operation' },
   { id: 'operation.resumed', label: 'Operation Resumed', description: 'When a paused operation is resumed', category: 'operation' },
   { id: 'operation.completed', label: 'Operation Completed', description: 'When an operation is marked complete', category: 'operation' },
-  // Issue/NCR events
   { id: 'issue.created', label: 'Issue Created', description: 'When a quality issue or NCR is reported', category: 'issue' },
   { id: 'ncr.created', label: 'NCR Created', description: 'When a non-conformance report is created', category: 'issue' },
   { id: 'ncr.verified', label: 'NCR Verified', description: 'When an NCR is verified/resolved', category: 'issue' },
-  // Step events
   { id: 'step.added', label: 'Step Added', description: 'When a step is added to an operation', category: 'step' },
   { id: 'step.completed', label: 'Step Completed', description: 'When a step is marked complete', category: 'step' },
-  // Production events
   { id: 'production.quantity_reported', label: 'Quantity Reported', description: 'When production quantity is reported', category: 'production' },
   { id: 'production.scrap_recorded', label: 'Scrap Recorded', description: 'When scrap/defects are recorded', category: 'production' },
 ];
-
-// ============================================================================
-// Event Context (UNS topic variables)
-// ============================================================================
 
 /**
  * Context for building UNS topics and enriching event payloads
@@ -111,10 +91,6 @@ export interface EventContext {
   operator_name?: string;
 }
 
-// ============================================================================
-// Payload Types
-// ============================================================================
-
 export interface EventPayload {
   [key: string]: unknown;
 }
@@ -125,10 +101,6 @@ export interface DispatchResult {
   mqttPublished?: number;
   errors?: string[];
 }
-
-// ============================================================================
-// Dispatch Functions
-// ============================================================================
 
 /**
  * Main dispatch function - sends events to all configured integrations
@@ -148,7 +120,6 @@ export async function dispatchEvent(
   let webhooksDispatched = 0;
   let mqttPublished = 0;
 
-  // Dispatch to webhooks
   try {
     const webhookResult = await dispatchToWebhooks(tenantId, eventType, data);
     if (webhookResult.success) {
@@ -160,7 +131,6 @@ export async function dispatchEvent(
     errors.push(`Webhooks: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
-  // Dispatch to MQTT
   try {
     const mqttResult = await dispatchToMqtt(tenantId, eventType, data, context);
     if (mqttResult.success) {
@@ -180,9 +150,6 @@ export async function dispatchEvent(
   };
 }
 
-/**
- * Dispatch to webhook endpoints
- */
 async function dispatchToWebhooks(
   tenantId: string,
   eventType: EventType,
@@ -227,9 +194,6 @@ async function dispatchToWebhooks(
   }
 }
 
-/**
- * Dispatch to MQTT brokers
- */
 async function dispatchToMqtt(
   tenantId: string,
   eventType: EventType,
@@ -276,13 +240,6 @@ async function dispatchToMqtt(
   }
 }
 
-// ============================================================================
-// Convenience Functions (typed wrappers for specific events)
-// ============================================================================
-
-/**
- * Dispatch operation.started event
- */
 export async function dispatchOperationStarted(
   tenantId: string,
   data: {
@@ -307,9 +264,6 @@ export async function dispatchOperationStarted(
   });
 }
 
-/**
- * Dispatch operation.completed event
- */
 export async function dispatchOperationCompleted(
   tenantId: string,
   data: {
@@ -336,9 +290,6 @@ export async function dispatchOperationCompleted(
   });
 }
 
-/**
- * Dispatch issue.created event
- */
 export async function dispatchIssueCreated(
   tenantId: string,
   data: {
@@ -366,9 +317,6 @@ export async function dispatchIssueCreated(
   });
 }
 
-/**
- * Dispatch job.created event
- */
 export async function dispatchJobCreated(
   tenantId: string,
   data: {
@@ -387,9 +335,6 @@ export async function dispatchJobCreated(
   });
 }
 
-/**
- * Dispatch production.quantity_reported event
- */
 export async function dispatchQuantityReported(
   tenantId: string,
   data: {
@@ -419,9 +364,6 @@ export async function dispatchQuantityReported(
   });
 }
 
-/**
- * Dispatch production.scrap_recorded event
- */
 export async function dispatchScrapRecorded(
   tenantId: string,
   data: {
@@ -454,9 +396,6 @@ export async function dispatchScrapRecorded(
   });
 }
 
-/**
- * Dispatch operation.paused event
- */
 export async function dispatchOperationPaused(
   tenantId: string,
   data: {

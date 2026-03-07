@@ -86,7 +86,6 @@ export async function generateMockData(
       }
     }
 
-    // Step 1: Create QRM-aligned manufacturing cells with WIP limits
     reportProgress(1, 'cells');
     let cellIds: string[] = [];
     const cellIdMap: Record<string, string> = {};
@@ -182,11 +181,8 @@ export async function generateMockData(
       logger.debug('MockData', 'Created 6 QRM cells with WIP limits');
     }
 
-    // Step 1.5: Seed Dutch holidays and factory calendar
     reportProgress(2, 'calendar');
     if (options.includeCalendar) {
-      // Dutch holidays for 2025 and 2026
-      // Including Christmas/New Year closure period
       const dutchHolidays: Array<{ date: string; day_type: string; name: string; capacity_multiplier: number; opening_time?: string; closing_time?: string; notes?: string }> = [
         // 2025 Holidays
         { date: '2025-01-01', day_type: 'holiday', name: 'Nieuwjaarsdag', capacity_multiplier: 0 },
@@ -249,7 +245,6 @@ export async function generateMockData(
       }
     }
 
-    // Step 2: Create 6 Dutch operator profiles for shop floor use
     reportProgress(3, 'operators');
     // Note: pin_hash is left NULL - operators can set PINs later via UI if needed
     let operatorIds: string[] = [];
@@ -272,7 +267,7 @@ export async function generateMockData(
             operatorIdMap[o.full_name] = o.id;
           });
         } else {
-          // Use RPC function that handles auth.users constraint
+          // RPC handles auth.users constraint
           const { error: rpcError } = await supabase.rpc(
             "seed_demo_operators",
             {
@@ -291,7 +286,6 @@ export async function generateMockData(
               'Demo will continue without operators (operations will be unassigned)',
             );
           } else {
-            // Fetch the created operators
             const { data: createdOps } = await supabase
               .from("profiles")
               .select("id, full_name")
