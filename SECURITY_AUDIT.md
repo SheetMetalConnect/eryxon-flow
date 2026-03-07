@@ -410,7 +410,7 @@ The codebase uses the Supabase JavaScript client exclusively, which uses paramet
 |----------|---------|--------|--------|
 | 1 | C1: Webhook dispatch authentication | Medium | FIXED |
 | 2 | H1: MQTT publish authentication | Medium | FIXED |
-| 3 | H2: Wildcard CORS | Low | FIXED |
+| 3 | H2: Wildcard CORS | Low | FIXED (all 8 edge functions) |
 | 4 | H4: Error message leakage | Low | FIXED (5 endpoints) |
 | 5 | H3: Timing-safe comparison | Low | FIXED |
 | 6 | M1: Upload content-type validation | Low | FIXED |
