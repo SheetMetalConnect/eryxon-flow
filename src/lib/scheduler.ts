@@ -40,6 +40,7 @@ export class SchedulerService {
     private cells: Map<string, Cell>;
     private cellCapacity: Map<string, Map<string, number>>; // cellId -> date -> usedHours
     private calendar: Map<string, CalendarDay>; // date -> calendar entry
+    private capacityCache: Map<string, number>; // "cellId:date" -> total capacity hours
     private workingDaysMask: number;
     private defaultFactoryHours: number;
 
@@ -50,6 +51,7 @@ export class SchedulerService {
     ) {
         this.cells = new Map(cells.map(c => [c.id, c]));
         this.cellCapacity = new Map();
+        this.capacityCache = new Map();
         this.calendar = new Map(calendarDays.map(d => [d.date, d]));
         this.workingDaysMask = config.workingDaysMask ?? 31; // Default Mon-Fri
 
@@ -92,22 +94,26 @@ export class SchedulerService {
      * Get the effective capacity for a cell on a specific date
      */
     public getCellCapacityForDay(cellId: string, date: Date): number {
+        const dateStr = format(date, 'yyyy-MM-dd');
+        const cacheKey = `${cellId}:${dateStr}`;
+        const cached = this.capacityCache.get(cacheKey);
+        if (cached !== undefined) return cached;
+
         const cell = this.cells.get(cellId);
         const baseCap = cell?.capacity_hours_per_day ?? 8;
-
-        const dateStr = format(date, 'yyyy-MM-dd');
         const calendarEntry = this.calendar.get(dateStr);
 
+        let capacity: number;
         if (calendarEntry) {
-            return baseCap * calendarEntry.capacity_multiplier;
+            capacity = baseCap * calendarEntry.capacity_multiplier;
+        } else if (!this.isDefaultWorkingDay(date)) {
+            capacity = 0;
+        } else {
+            capacity = baseCap;
         }
 
-        // Check default working day
-        if (!this.isDefaultWorkingDay(date)) {
-            return 0; // Weekend or non-working day
-        }
-
-        return baseCap;
+        this.capacityCache.set(cacheKey, capacity);
+        return capacity;
     }
 
     /**

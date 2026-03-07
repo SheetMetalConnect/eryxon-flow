@@ -17,6 +17,8 @@ import { uploadFileWithProgress } from '@/lib/upload-with-progress';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 
+const BYTES_PER_MB = 1048576;
+
 export interface UploadProgress {
   fileIndex: number;
   fileName: string;
@@ -197,7 +199,7 @@ export function useFileUpload() {
           continue;
         }
 
-        const fileSizeMB = file.size / 1048576;
+        const fileSizeMB = file.size / BYTES_PER_MB;
         if (fileSizeMB > maxFileSizeMB) {
           const error = `File too large. Max size: ${maxFileSizeMB}MB`;
           failedFiles.push({ fileName: file.name, error });

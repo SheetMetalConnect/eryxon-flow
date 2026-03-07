@@ -143,6 +143,12 @@ export interface PMIExtractionResult {
 
 const PMI_SERVICE_URL = import.meta.env.VITE_PMI_SERVICE_URL || import.meta.env.VITE_CAD_SERVICE_URL;
 const PMI_SERVICE_API_KEY = import.meta.env.VITE_CAD_SERVICE_API_KEY;
+const STEP_EXTENSIONS = ['step', 'stp'];
+
+function isStepFile(fileName: string): boolean {
+  const ext = fileName.toLowerCase().split('.').pop();
+  return STEP_EXTENSIONS.includes(ext || '');
+}
 
 /**
  * Check if PMI service is configured
@@ -263,8 +269,7 @@ export function usePMI(partId: string | undefined) {
       return { accepted: false, error: 'No part ID provided' };
     }
 
-    const ext = fileName.toLowerCase().split('.').pop();
-    if (!['step', 'stp'].includes(ext || '')) {
+    if (!isStepFile(fileName)) {
       log.debug(`Skipping non-STEP file: ${fileName}`);
       return { accepted: false, error: 'Not a STEP file' };
     }
@@ -332,8 +337,7 @@ export function usePMI(partId: string | undefined) {
       };
     }
 
-    const ext = fileName.toLowerCase().split('.').pop();
-    if (!['step', 'stp'].includes(ext || '')) {
+    if (!isStepFile(fileName)) {
       return {
         success: false,
         pmi: null,
@@ -516,8 +520,7 @@ export function usePMIExtraction() {
       };
     }
 
-    const ext = fileName.toLowerCase().split('.').pop();
-    if (!['step', 'stp'].includes(ext || '')) {
+    if (!isStepFile(fileName)) {
       return {
         success: false,
         pmi: null,

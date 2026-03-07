@@ -49,9 +49,20 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
     let nextOperator: ActiveOperator | null = null;
     if (stored) {
       try {
-        const parsed = JSON.parse(stored);
-        if (parsed.tenant_id === tenant.id) {
-          nextOperator = parsed;
+        const parsed: unknown = JSON.parse(stored);
+        if (
+          typeof parsed === "object" &&
+          parsed !== null &&
+          "id" in parsed &&
+          typeof (parsed as Record<string, unknown>).id === "string" &&
+          "employee_id" in parsed &&
+          typeof (parsed as Record<string, unknown>).employee_id === "string" &&
+          "full_name" in parsed &&
+          typeof (parsed as Record<string, unknown>).full_name === "string" &&
+          "tenant_id" in parsed &&
+          (parsed as Record<string, unknown>).tenant_id === tenant.id
+        ) {
+          nextOperator = parsed as ActiveOperator;
         } else {
           // Only clear if we have a valid tenant and it doesn't match
           sessionStorage.removeItem(STORAGE_KEY);

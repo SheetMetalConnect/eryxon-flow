@@ -289,21 +289,32 @@ export function useJobQualityMetrics(jobId: string | undefined) {
 
       if (issuesError) throw issuesError;
 
-      const totalProduced = quantities?.reduce((sum, q) => sum + (q.quantity_produced || 0), 0) || 0;
-      const totalGood = quantities?.reduce((sum, q) => sum + (q.quantity_good || 0), 0) || 0;
-      const totalScrap = quantities?.reduce((sum, q) => sum + (q.quantity_scrap || 0), 0) || 0;
-      const totalRework = quantities?.reduce((sum, q) => sum + (q.quantity_rework || 0), 0) || 0;
-      const yieldRate = totalProduced > 0 ? (totalGood / totalProduced) * 100 : 100;
+      const totals = quantities?.reduce(
+        (acc, q) => ({
+          produced: acc.produced + (q.quantity_produced || 0),
+          good: acc.good + (q.quantity_good || 0),
+          scrap: acc.scrap + (q.quantity_scrap || 0),
+          rework: acc.rework + (q.quantity_rework || 0),
+        }),
+        { produced: 0, good: 0, scrap: 0, rework: 0 }
+      ) || { produced: 0, good: 0, scrap: 0, rework: 0 };
+
+      let pendingIssues = 0;
+      let criticalIssues = 0;
+      issues?.forEach((issue) => {
+        if (issue.status === "pending") pendingIssues++;
+        if (issue.severity === "critical") criticalIssues++;
+      });
 
       return {
-        totalProduced,
-        totalGood,
-        totalScrap,
-        totalRework,
-        yieldRate,
+        totalProduced: totals.produced,
+        totalGood: totals.good,
+        totalScrap: totals.scrap,
+        totalRework: totals.rework,
+        yieldRate: totals.produced > 0 ? (totals.good / totals.produced) * 100 : 100,
         issueCount: issues?.length || 0,
-        pendingIssues: issues?.filter((i) => i.status === "pending").length || 0,
-        criticalIssues: issues?.filter((i) => i.severity === "critical").length || 0,
+        pendingIssues,
+        criticalIssues,
       };
     },
     enabled: !!jobId && !!profile?.tenant_id,
@@ -351,21 +362,32 @@ export function usePartQualityMetrics(partId: string | undefined) {
 
       if (issuesError) throw issuesError;
 
-      const totalProduced = quantities?.reduce((sum, q) => sum + (q.quantity_produced || 0), 0) || 0;
-      const totalGood = quantities?.reduce((sum, q) => sum + (q.quantity_good || 0), 0) || 0;
-      const totalScrap = quantities?.reduce((sum, q) => sum + (q.quantity_scrap || 0), 0) || 0;
-      const totalRework = quantities?.reduce((sum, q) => sum + (q.quantity_rework || 0), 0) || 0;
-      const yieldRate = totalProduced > 0 ? (totalGood / totalProduced) * 100 : 100;
+      const totals = quantities?.reduce(
+        (acc, q) => ({
+          produced: acc.produced + (q.quantity_produced || 0),
+          good: acc.good + (q.quantity_good || 0),
+          scrap: acc.scrap + (q.quantity_scrap || 0),
+          rework: acc.rework + (q.quantity_rework || 0),
+        }),
+        { produced: 0, good: 0, scrap: 0, rework: 0 }
+      ) || { produced: 0, good: 0, scrap: 0, rework: 0 };
+
+      let pendingIssues = 0;
+      let criticalIssues = 0;
+      issues?.forEach((issue) => {
+        if (issue.status === "pending") pendingIssues++;
+        if (issue.severity === "critical") criticalIssues++;
+      });
 
       return {
-        totalProduced,
-        totalGood,
-        totalScrap,
-        totalRework,
-        yieldRate,
+        totalProduced: totals.produced,
+        totalGood: totals.good,
+        totalScrap: totals.scrap,
+        totalRework: totals.rework,
+        yieldRate: totals.produced > 0 ? (totals.good / totals.produced) * 100 : 100,
         issueCount: issues?.length || 0,
-        pendingIssues: issues?.filter((i) => i.status === "pending").length || 0,
-        criticalIssues: issues?.filter((i) => i.severity === "critical").length || 0,
+        pendingIssues,
+        criticalIssues,
         hasQualityData: (quantities?.length || 0) > 0,
       };
     },

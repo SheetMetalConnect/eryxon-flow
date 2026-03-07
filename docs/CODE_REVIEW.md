@@ -506,6 +506,16 @@ This decouples business logic from the data layer and makes testing significantl
 - **Unsafe type casts** fixed: `as any as Batch` → `as unknown as Batch`, `filters.status as any` → `filters.status`
 - **Realtime subscription duplication** eliminated: `useOperationIssues` uses `useEntitySubscription`, `usePartIssues` uses `useTableSubscription`
 - **Search debouncing** confirmed already present in `GlobalSearch.tsx` (300ms setTimeout)
+- **localStorage → sessionStorage** for operator session data in `OperatorContext.tsx` — prevents session persistence across browser tabs and reduces XSS attack surface
+- **JSON.parse runtime validation** added for stored operator data — validates shape before casting to `ActiveOperator`
+- **`catch (err: any)` → `catch (err: unknown)`** in `OperatorContext.tsx` — type-safe error handling
+- **Console gating** extended to `useExceptions.ts` (3 mutation error handlers) and `usePMI.ts` (warn/error loggers)
+- **`as any` → type-safe cast** in `useExceptions.ts` — `(resolution as any)` replaced with proper `Record<string, unknown> | null`
+- **File extension validation deduplicated** in `usePMI.ts` — extracted `isStepFile()` helper, replacing 3 inline checks
+- **Quality metrics single-pass aggregation** in `useQualityMetrics.ts` — merged two scrap iteration loops into one, converted multi-pass reduces to single-pass in job/part metric hooks
+- **Scheduler capacity caching** in `scheduler.ts` — `getCellCapacityForDay` results cached in `Map<string, number>` to avoid redundant computation
+- **Magic numbers extracted** — `BYTES_PER_MB` in `useFileUpload.ts`, `SCROLL_BOTTOM_BUFFER_PX` in `useInfiniteScroll.ts`
+- **Validator boilerplate reduced** — `validateRequiredFields()` helper in `DataValidator.ts`, used across 6 entity validators
 
 ### Remaining Open Items (Require Backend/Migration Work)
 
@@ -517,13 +527,10 @@ This decouples business logic from the data layer and makes testing significantl
 | N+1 queries in time tracking | Needs consolidated server-side RPC | High |
 | Non-atomic batch sequence assignment | Needs DB-level `INSERT ... SELECT MAX()` | Medium |
 | File upload quota race condition | Needs server-side atomic quota enforcement | Medium |
-| localStorage → sessionStorage for operator data | Low risk change, needs testing | Low |
-| Scheduler capacity caching | Performance optimization in scheduler.ts | Low |
-| Quality metrics single-pass aggregation | Performance optimization in useQualityMetrics | Low |
 
-### Updated Rating: 7.0 / 10
+### Updated Rating: 7.5 / 10
 
-The implemented fixes address password security, type safety, information leakage (console gating), code duplication, unbounded queries, and subscription patterns. The remaining open items are primarily backend/migration concerns that cannot be resolved with frontend-only changes.
+All frontend-addressable issues from the original review have been resolved. The remaining open items are exclusively backend/migration concerns requiring Supabase schema changes, server-side RPCs, or database constraints that cannot be implemented through frontend code alone.
 
 ### What's Working Well
 
