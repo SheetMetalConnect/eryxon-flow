@@ -102,7 +102,7 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     },
     onError: (error) => {
       toast.error(t('admin:exceptionInbox.actionFailed'))
-      console.error(error)
+      if (import.meta.env.DEV) console.error(error)
     },
   })
 
@@ -126,7 +126,7 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
         p_root_cause: rootCause || null,
         p_corrective_action: correctiveAction || null,
         p_preventive_action: preventiveAction || null,
-        p_resolution: (resolution as any) || null,
+        p_resolution: (resolution ?? null) as Record<string, unknown> | null,
       })
       if (error) throw error
     },
@@ -137,7 +137,7 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     },
     onError: (error) => {
       toast.error(t('admin:exceptionInbox.actionFailed'))
-      console.error(error)
+      if (import.meta.env.DEV) console.error(error)
     },
   })
 
@@ -163,7 +163,7 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     },
     onError: (error) => {
       toast.error(t('admin:exceptionInbox.actionFailed'))
-      console.error(error)
+      if (import.meta.env.DEV) console.error(error)
     },
   })
 

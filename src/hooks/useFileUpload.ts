@@ -16,6 +16,8 @@ import { toast } from 'sonner';
 import { uploadFileWithProgress } from '@/lib/upload-with-progress';
 import { useTranslation } from 'react-i18next';
 
+const BYTES_PER_MB = 1048576;
+
 export interface UploadProgress {
   fileIndex: number;
   fileName: string;
@@ -185,7 +187,7 @@ export function useFileUpload() {
       totalBytes: file.size,
       uploadedBytes: 0,
       percentage: 0,
-      totalMB: file.size / 1048576,
+      totalMB: file.size / BYTES_PER_MB,
       uploadedMB: 0,
       status: 'pending' as const,
     }));
@@ -213,7 +215,7 @@ export function useFileUpload() {
         }
 
         // Validate file size
-        const fileSizeMB = file.size / 1048576;
+        const fileSizeMB = file.size / BYTES_PER_MB;
         if (fileSizeMB > maxFileSizeMB) {
           const error = `File too large. Max size: ${maxFileSizeMB}MB`;
           failedFiles.push({ fileName: file.name, error });
@@ -253,7 +255,7 @@ export function useFileUpload() {
                     ...p,
                     uploadedBytes: loaded,
                     percentage,
-                    uploadedMB: loaded / 1048576,
+                    uploadedMB: loaded / BYTES_PER_MB,
                   } : p
                 ));
               },
@@ -270,7 +272,7 @@ export function useFileUpload() {
               ...p,
               uploadedBytes: file.size,
               percentage: 100,
-              uploadedMB: file.size / 1048576,
+              uploadedMB: file.size / BYTES_PER_MB,
               status: 'completed',
             } : p
           ));
@@ -295,7 +297,7 @@ export function useFileUpload() {
         success: uploadedPaths.length > 0,
         uploadedPaths,
         failedFiles,
-        totalUploadedMB: totalUploadedBytes / 1048576,
+        totalUploadedMB: totalUploadedBytes / BYTES_PER_MB,
       };
 
     } finally {

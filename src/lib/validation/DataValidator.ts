@@ -147,6 +147,22 @@ export abstract class BaseValidator<T> {
   }
 
   /**
+   * Helper: Validate multiple required fields at once
+   */
+  protected validateRequiredFields(
+    entity: Record<string, unknown>,
+    fields: string[],
+    index: number,
+  ): ValidationError[] {
+    const errors: ValidationError[] = [];
+    for (const field of fields) {
+      const error = this.validateRequired(entity, field, index);
+      if (error) errors.push(error);
+    }
+    return errors;
+  }
+
+  /**
    * Helper: Validate required field
    */
   protected validateRequired(

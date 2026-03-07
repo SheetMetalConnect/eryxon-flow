@@ -108,42 +108,41 @@ export function useQualityMetrics() {
       const scrapRate = totalProduced > 0 ? (totalScrap / totalProduced) * 100 : 0;
       const reworkRate = totalProduced > 0 ? (totalRework / totalProduced) * 100 : 0;
 
-      // Group scrap by category
+      // Group scrap by category and reason in a single pass
       const categoryMap = new Map<string, { count: number; quantity: number }>();
+      const reasonMap = new Map<string, { code: string; description: string; category: string; count: number; quantity: number }>();
       quantities?.forEach((q) => {
         if (q.quantity_scrap > 0 && q.scrap_reason) {
-          const reason = q.scrap_reason as { category: string };
-          const existing = categoryMap.get(reason.category) || { count: 0, quantity: 0 };
+          const reason = q.scrap_reason as { code: string; description: string; category: string };
+
+          // Aggregate by category
+          const catExisting = categoryMap.get(reason.category) || { count: 0, quantity: 0 };
           categoryMap.set(reason.category, {
-            count: existing.count + 1,
-            quantity: existing.quantity + q.quantity_scrap,
+            count: catExisting.count + 1,
+            quantity: catExisting.quantity + q.quantity_scrap,
           });
+
+          // Aggregate by reason
+          if (q.scrap_reason_id) {
+            const reasonExisting = reasonMap.get(q.scrap_reason_id) || {
+              code: reason.code,
+              description: reason.description,
+              category: reason.category,
+              count: 0,
+              quantity: 0,
+            };
+            reasonMap.set(q.scrap_reason_id, {
+              ...reasonExisting,
+              count: reasonExisting.count + 1,
+              quantity: reasonExisting.quantity + q.quantity_scrap,
+            });
+          }
         }
       });
       const scrapByCategory = Array.from(categoryMap.entries()).map(([category, data]) => ({
         category,
         ...data,
       })).sort((a, b) => b.quantity - a.quantity);
-
-      // Group scrap by reason
-      const reasonMap = new Map<string, { code: string; description: string; category: string; count: number; quantity: number }>();
-      quantities?.forEach((q) => {
-        if (q.quantity_scrap > 0 && q.scrap_reason_id && q.scrap_reason) {
-          const reason = q.scrap_reason as { code: string; description: string; category: string };
-          const existing = reasonMap.get(q.scrap_reason_id) || {
-            code: reason.code,
-            description: reason.description,
-            category: reason.category,
-            count: 0,
-            quantity: 0,
-          };
-          reasonMap.set(q.scrap_reason_id, {
-            ...existing,
-            count: existing.count + 1,
-            quantity: existing.quantity + q.quantity_scrap,
-          });
-        }
-      });
       const topScrapReasons = Array.from(reasonMap.values())
         .sort((a, b) => b.quantity - a.quantity)
         .slice(0, 10);
@@ -311,22 +310,34 @@ export function useJobQualityMetrics(jobId: string | undefined) {
 
       if (issuesError) throw issuesError;
 
-      // Calculate metrics
-      const totalProduced = quantities?.reduce((sum, q) => sum + (q.quantity_produced || 0), 0) || 0;
-      const totalGood = quantities?.reduce((sum, q) => sum + (q.quantity_good || 0), 0) || 0;
-      const totalScrap = quantities?.reduce((sum, q) => sum + (q.quantity_scrap || 0), 0) || 0;
-      const totalRework = quantities?.reduce((sum, q) => sum + (q.quantity_rework || 0), 0) || 0;
-      const yieldRate = totalProduced > 0 ? (totalGood / totalProduced) * 100 : 100;
+      // Calculate metrics in single pass
+      const totals = quantities?.reduce(
+        (acc, q) => ({
+          produced: acc.produced + (q.quantity_produced || 0),
+          good: acc.good + (q.quantity_good || 0),
+          scrap: acc.scrap + (q.quantity_scrap || 0),
+          rework: acc.rework + (q.quantity_rework || 0),
+        }),
+        { produced: 0, good: 0, scrap: 0, rework: 0 }
+      ) || { produced: 0, good: 0, scrap: 0, rework: 0 };
+
+      // Calculate issue counts in single pass
+      let pendingIssues = 0;
+      let criticalIssues = 0;
+      issues?.forEach((i) => {
+        if (i.status === "pending") pendingIssues++;
+        if (i.severity === "critical") criticalIssues++;
+      });
 
       return {
-        totalProduced,
-        totalGood,
-        totalScrap,
-        totalRework,
-        yieldRate,
+        totalProduced: totals.produced,
+        totalGood: totals.good,
+        totalScrap: totals.scrap,
+        totalRework: totals.rework,
+        yieldRate: totals.produced > 0 ? (totals.good / totals.produced) * 100 : 100,
         issueCount: issues?.length || 0,
-        pendingIssues: issues?.filter((i) => i.status === "pending").length || 0,
-        criticalIssues: issues?.filter((i) => i.severity === "critical").length || 0,
+        pendingIssues,
+        criticalIssues,
       };
     },
     enabled: !!jobId && !!profile?.tenant_id,
@@ -378,22 +389,33 @@ export function usePartQualityMetrics(partId: string | undefined) {
 
       if (issuesError) throw issuesError;
 
-      // Calculate metrics
-      const totalProduced = quantities?.reduce((sum, q) => sum + (q.quantity_produced || 0), 0) || 0;
-      const totalGood = quantities?.reduce((sum, q) => sum + (q.quantity_good || 0), 0) || 0;
-      const totalScrap = quantities?.reduce((sum, q) => sum + (q.quantity_scrap || 0), 0) || 0;
-      const totalRework = quantities?.reduce((sum, q) => sum + (q.quantity_rework || 0), 0) || 0;
-      const yieldRate = totalProduced > 0 ? (totalGood / totalProduced) * 100 : 100;
+      // Calculate metrics in single pass
+      const totals = quantities?.reduce(
+        (acc, q) => ({
+          produced: acc.produced + (q.quantity_produced || 0),
+          good: acc.good + (q.quantity_good || 0),
+          scrap: acc.scrap + (q.quantity_scrap || 0),
+          rework: acc.rework + (q.quantity_rework || 0),
+        }),
+        { produced: 0, good: 0, scrap: 0, rework: 0 }
+      ) || { produced: 0, good: 0, scrap: 0, rework: 0 };
+
+      let pendingIssues = 0;
+      let criticalIssues = 0;
+      issues?.forEach((i) => {
+        if (i.status === "pending") pendingIssues++;
+        if (i.severity === "critical") criticalIssues++;
+      });
 
       return {
-        totalProduced,
-        totalGood,
-        totalScrap,
-        totalRework,
-        yieldRate,
+        totalProduced: totals.produced,
+        totalGood: totals.good,
+        totalScrap: totals.scrap,
+        totalRework: totals.rework,
+        yieldRate: totals.produced > 0 ? (totals.good / totals.produced) * 100 : 100,
         issueCount: issues?.length || 0,
-        pendingIssues: issues?.filter((i) => i.status === "pending").length || 0,
-        criticalIssues: issues?.filter((i) => i.severity === "critical").length || 0,
+        pendingIssues,
+        criticalIssues,
         hasQualityData: (quantities?.length || 0) > 0,
       };
     },

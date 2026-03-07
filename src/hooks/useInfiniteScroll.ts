@@ -1,5 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 
+const SCROLL_BOTTOM_BUFFER_PX = 10;
+
 export interface UseInfiniteScrollOptions {
   /** Threshold in pixels from the bottom to trigger loading more */
   threshold?: number;
@@ -154,7 +156,7 @@ export function useScrollPosition({
     isAtTop: scrollPosition.scrollTop === 0,
     isAtBottom:
       scrollPosition.scrollTop + scrollPosition.clientHeight >=
-      scrollPosition.scrollHeight - 10,
+      scrollPosition.scrollHeight - SCROLL_BOTTOM_BUFFER_PX,
     scrollPercentage:
       scrollPosition.scrollHeight > scrollPosition.clientHeight
         ? (scrollPosition.scrollTop /

@@ -21,26 +21,15 @@ export class CellValidator extends BaseValidator<Record<string, unknown>> {
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
-    const errors: ValidationError[] = [];
-
-    // Required fields
-    const requiredError = this.validateRequired(cell, "tenant_id", index);
-    if (requiredError) errors.push(requiredError);
-
-    const nameError = this.validateRequired(cell, "name", index);
-    if (nameError) errors.push(nameError);
+    const errors: ValidationError[] = [
+      ...this.validateRequiredFields(cell, ["tenant_id", "name"], index),
+    ];
 
     // Numeric validations
-    const sequenceError = this.validateNumber(cell, "sequence", index, {
-      min: 0,
-      required: false,
-    });
+    const sequenceError = this.validateNumber(cell, "sequence", index, { min: 0, required: false });
     if (sequenceError) errors.push(sequenceError);
 
-    const wipLimitError = this.validateNumber(cell, "wip_limit", index, {
-      min: 0,
-      required: false,
-    });
+    const wipLimitError = this.validateNumber(cell, "wip_limit", index, { min: 0, required: false });
     if (wipLimitError) errors.push(wipLimitError);
 
     return errors;
@@ -60,16 +49,7 @@ export class JobValidator extends BaseValidator<Record<string, unknown>> {
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
-    const errors: ValidationError[] = [];
-
-    // Required fields
-    const tenantError = this.validateRequired(job, "tenant_id", index);
-    if (tenantError) errors.push(tenantError);
-
-    const jobNumberError = this.validateRequired(job, "job_number", index);
-    if (jobNumberError) errors.push(jobNumberError);
-
-    return errors;
+    return this.validateRequiredFields(job, ["tenant_id", "job_number"], index);
   }
 }
 
@@ -86,14 +66,9 @@ export class PartValidator extends BaseValidator<Record<string, unknown>> {
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
-    const errors: ValidationError[] = [];
-
-    // Required fields
-    const tenantError = this.validateRequired(part, "tenant_id", index);
-    if (tenantError) errors.push(tenantError);
-
-    const partNumberError = this.validateRequired(part, "part_number", index);
-    if (partNumberError) errors.push(partNumberError);
+    const errors: ValidationError[] = [
+      ...this.validateRequiredFields(part, ["tenant_id", "part_number"], index),
+    ];
 
     // Foreign key: job_id (required)
     const jobFkError = this.validateForeignKey(
@@ -139,18 +114,9 @@ export class OperationValidator extends BaseValidator<Record<string, unknown>> {
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
-    const errors: ValidationError[] = [];
-
-    // Required fields
-    const tenantError = this.validateRequired(operation, "tenant_id", index);
-    if (tenantError) errors.push(tenantError);
-
-    const operationNameError = this.validateRequired(
-      operation,
-      "operation_name",
-      index,
-    );
-    if (operationNameError) errors.push(operationNameError);
+    const errors: ValidationError[] = [
+      ...this.validateRequiredFields(operation, ["tenant_id", "operation_name"], index),
+    ];
 
     // Foreign key: part_id (required)
     const partFkError = this.validateForeignKey(
@@ -204,11 +170,9 @@ export class TimeEntryValidator extends BaseValidator<Record<string, unknown>> {
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
-    const errors: ValidationError[] = [];
-
-    // Required fields
-    const tenantError = this.validateRequired(timeEntry, "tenant_id", index);
-    if (tenantError) errors.push(tenantError);
+    const errors: ValidationError[] = [
+      ...this.validateRequiredFields(timeEntry, ["tenant_id"], index),
+    ];
 
     // Foreign key: operation_id (required)
     const operationFkError = this.validateForeignKey(
@@ -254,11 +218,9 @@ export class QuantityRecordValidator extends BaseValidator<Record<string, unknow
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
-    const errors: ValidationError[] = [];
-
-    // Required fields
-    const tenantError = this.validateRequired(record, "tenant_id", index);
-    if (tenantError) errors.push(tenantError);
+    const errors: ValidationError[] = [
+      ...this.validateRequiredFields(record, ["tenant_id"], index),
+    ];
 
     // Foreign key: operation_id (required)
     const operationFkError = this.validateForeignKey(
@@ -340,18 +302,9 @@ export class IssueValidator extends BaseValidator<Record<string, unknown>> {
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
-    const errors: ValidationError[] = [];
-
-    // Required fields
-    const tenantError = this.validateRequired(issue, "tenant_id", index);
-    if (tenantError) errors.push(tenantError);
-
-    const descriptionError = this.validateRequired(
-      issue,
-      "description",
-      index,
-    );
-    if (descriptionError) errors.push(descriptionError);
+    const errors: ValidationError[] = [
+      ...this.validateRequiredFields(issue, ["tenant_id", "description"], index),
+    ];
 
     // Foreign key: operation_id (required)
     const operationFkError = this.validateForeignKey(
