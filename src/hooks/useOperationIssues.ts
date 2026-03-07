@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useEntitySubscription } from "./useRealtimeSubscription";
 
 interface Issue {
   id: string;
@@ -13,7 +14,7 @@ export function useOperationIssues(operationId: string, tenantId: string | undef
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadIssues = async () => {
+  const loadIssues = useCallback(async () => {
     if (!tenantId || !operationId) return;
 
     const { data, error } = await supabase
@@ -29,7 +30,7 @@ export function useOperationIssues(operationId: string, tenantId: string | undef
 
     setIssues(data || []);
     setLoading(false);
-  };
+  }, [operationId, tenantId]);
 
   useEffect(() => {
     if (!tenantId || !operationId) {
@@ -43,27 +44,18 @@ export function useOperationIssues(operationId: string, tenantId: string | undef
       void loadIssues();
     }, 0);
 
-    const channel = supabase
-      .channel(`operation-issues-${operationId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "issues",
-          filter: `operation_id=eq.${operationId}`,
-        },
-        () => {
-          void loadIssues();
-        }
-      )
-      .subscribe();
-
     return () => {
       clearTimeout(loadTimeout);
-      supabase.removeChannel(channel);
     };
-  }, [operationId, tenantId]);
+  }, [operationId, tenantId, loadIssues]);
+
+  // Use the existing reusable realtime subscription hook
+  useEntitySubscription(
+    "issues",
+    operationId,
+    loadIssues,
+    { idColumn: "operation_id", debounceMs: 200 }
+  );
 
   const pendingIssues = issues.filter(i => i.status === "pending");
   const highestSeverity = pendingIssues.length > 0
