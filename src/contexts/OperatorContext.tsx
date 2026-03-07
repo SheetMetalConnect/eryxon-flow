@@ -39,12 +39,13 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
   const [activeOperator, setActiveOperator] = useState<ActiveOperator | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Load active operator from sessionStorage on mount (sessionStorage clears on tab close)
   useEffect(() => {
     if (tenant?.id === undefined) {
       return;
     }
 
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = sessionStorage.getItem(STORAGE_KEY);
     let nextOperator: ActiveOperator | null = null;
     if (stored) {
       try {
@@ -52,10 +53,11 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
         if (parsed.tenant_id === tenant.id) {
           nextOperator = parsed;
         } else {
-          localStorage.removeItem(STORAGE_KEY);
+          // Only clear if we have a valid tenant and it doesn't match
+          sessionStorage.removeItem(STORAGE_KEY);
         }
       } catch {
-        localStorage.removeItem(STORAGE_KEY);
+        sessionStorage.removeItem(STORAGE_KEY);
       }
     }
     const loadTimeout = window.setTimeout(() => {
@@ -69,7 +71,7 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
     if (!profile) {
       const clearTimeoutId = window.setTimeout(() => {
         setActiveOperator(null);
-        localStorage.removeItem(STORAGE_KEY);
+        sessionStorage.removeItem(STORAGE_KEY);
       }, 0);
       return () => clearTimeout(clearTimeoutId);
     }
@@ -114,7 +116,7 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
         };
 
         setActiveOperator(operator);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(operator));
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(operator));
 
         return { success: true, operator };
       } else {
@@ -138,7 +140,7 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
 
   const clearActiveOperator = useCallback(() => {
     setActiveOperator(null);
-    localStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(STORAGE_KEY);
   }, []);
 
   return (

@@ -97,12 +97,13 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
           )
         `)
         .eq("id", jobId)
+        .eq("tenant_id", profile?.tenant_id)
         .single();
 
       if (error) throw error;
       return data;
     },
-    enabled: !!jobId,
+    enabled: !!jobId && !!profile?.tenant_id,
   });
 
   const updateJobMutation = useMutation({

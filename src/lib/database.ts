@@ -308,6 +308,7 @@ export async function startTimeTracking(
   const { data: jobOperations } = await supabase
     .from("operations")
     .select("cell_id, cells!inner(sequence)")
+    .eq("tenant_id", tenantId)
     .eq("part_id", operation.part_id)
     .eq("status", "in_progress");
 
@@ -324,6 +325,7 @@ export async function startTimeTracking(
       .from("jobs")
       .select("status, current_cell_id")
       .eq("id", part.job_id)
+      .eq("tenant_id", tenantId)
       .single();
 
     if (job) {

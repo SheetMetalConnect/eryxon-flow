@@ -26,15 +26,20 @@ export function AutoScheduleButton() {
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [operationsWithDates, setOperationsWithDates] = useState(0);
     const { t } = useTranslation();
-    const { tenant } = useAuth();
+    const { tenant, profile } = useAuth();
     const queryClient = useQueryClient();
+    const tenantId = tenant?.id ?? profile?.tenant_id;
 
     const checkExistingSchedules = async (): Promise<number> => {
-        const { count, error } = await supabase
+        let query = supabase
             .from("operations")
             .select("*", { count: "exact", head: true })
             .neq("status", "completed")
             .not("planned_start", "is", null);
+        if (tenantId) {
+            query = query.eq("tenant_id", tenantId);
+        }
+        const { count, error } = await query;
 
         if (error) throw error;
         return count ?? 0;
@@ -68,17 +73,21 @@ export function AutoScheduleButton() {
                 supabase
                     .from("jobs")
                     .select("*")
+                    .eq("tenant_id", tenantId)
                     .neq("status", "completed"),
                 supabase
                     .from("operations")
                     .select("*")
+                    .eq("tenant_id", tenantId)
                     .neq("status", "completed"),
                 supabase
                     .from("cells")
-                    .select("*"),
+                    .select("*")
+                    .eq("tenant_id", tenantId),
                 supabase
                     .from("factory_calendar")
                     .select("*")
+                    .eq("tenant_id", tenantId)
                     .gte("date", format(new Date(), 'yyyy-MM-dd'))
                     .lte("date", format(addMonths(new Date(), 12), 'yyyy-MM-dd'))
             ]);

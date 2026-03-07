@@ -275,7 +275,7 @@ interface UseCADProcessingOptions {
 }
 
 export function useCADProcessing() {
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingError, setProcessingError] = useState<string | null>(null);
@@ -409,11 +409,14 @@ export function useCADProcessing() {
     geometry: GeometryData | null,
     pmi: PMIData | null
   ): Promise<void> => {
-    const { data: part, error: fetchError } = await supabase
+    let partQuery = supabase
+    // Scope metadata reads to the active tenant when available.
+    let partQuery = supabase
       .from('parts')
       .select('metadata')
-      .eq('id', partId)
-      .single();
+      .eq('id', partId);
+    if (profile?.tenant_id) partQuery = partQuery.eq('tenant_id', profile.tenant_id);
+    const { data: part, error: fetchError } = await partQuery.single();
 
     if (fetchError) throw fetchError;
 

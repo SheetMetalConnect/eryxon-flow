@@ -63,6 +63,7 @@ export default function ConfigScrapReasons() {
     queryKey: [...QueryKeys.config.scrapReasons(profile?.tenant_id ?? ''), selectedCategory, activeOnly, searchQuery],
     queryFn: async () => {
       let query = supabase.from("scrap_reasons").select("*");
+      if (profile?.tenant_id) query = query.eq("tenant_id", profile.tenant_id);
       if (selectedCategory !== "all") query = query.eq("category", selectedCategory);
       if (activeOnly) query = query.eq("active", true);
       if (searchQuery) query = query.or(`code.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
