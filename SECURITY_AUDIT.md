@@ -406,22 +406,29 @@ The codebase uses the Supabase JavaScript client exclusively, which uses paramet
 
 ## Remediation Priority
 
-| Priority | Finding | Effort |
-|----------|---------|--------|
-| 1 | C1: Webhook dispatch authentication | Medium |
-| 2 | H1: MQTT publish authentication | Medium |
-| 3 | H2: Wildcard CORS | Low |
-| 4 | H4: Error message leakage | Low |
-| 5 | H3: Timing-safe comparison | Low |
-| 6 | M1: Upload content-type validation | Low |
-| 7 | M3: Email HTML injection | Low |
-| 8 | M4: PATCH validation | Medium |
-| 9 | M2: SVG content type | Low |
-| 10 | M5: Bulk sync limits | Low |
-| 11 | M6: Add Content Security Policy | Low |
-| 12 | M7: Encrypt MQTT broker passwords | Medium |
-| 13 | M8: MCP direct mode scoping | Low |
-| 14 | L1-L6: Low findings | Low |
+| Priority | Finding | Effort | Status |
+|----------|---------|--------|--------|
+| 1 | C1: Webhook dispatch authentication | Medium | FIXED |
+| 2 | H1: MQTT publish authentication | Medium | FIXED |
+| 3 | H2: Wildcard CORS | Low | FIXED |
+| 4 | H4: Error message leakage | Low | FIXED (5 endpoints) |
+| 5 | H3: Timing-safe comparison | Low | FIXED |
+| 6 | M1: Upload content-type validation | Low | FIXED |
+| 7 | M3: Email HTML injection | Low | FIXED |
+| 8 | M4: PATCH validation | Medium | FIXED (partial validation support) |
+| 9 | M2: SVG content type | Low | FIXED (removed from whitelist) |
+| 10 | M5: Bulk sync limits | Low | FIXED (1000-item cap) |
+| 11 | M6: Add Content Security Policy | Low | FIXED |
+| 12 | M7: Encrypt MQTT broker passwords | Medium | DEFERRED (requires DB migration) |
+| 13 | M8: MCP direct mode scoping | Low | FIXED (TENANT_ID env var) |
+| 14 | L1: Frontend tenant_id filtering | Low | FIXED (8 files, 12 queries) |
+| 15 | L2: constantTimeCompare length leak | Low | FIXED |
+| 16 | L3: SSRF IPv6 incomplete | Low | FIXED |
+| 17 | L4: API key entropy | Low | FIXED (hex encoding) |
+| 18 | L5: Request body size limits | Low | SKIPPED (platform handles) |
+| 19 | L6: Operator session localStorage | Low | FIXED (sessionStorage) |
+
+**Remediation Summary:** 17 of 19 actionable findings fixed. 1 deferred (M7: requires DB migration), 1 skipped (L5: platform-level).
 
 ---
 
