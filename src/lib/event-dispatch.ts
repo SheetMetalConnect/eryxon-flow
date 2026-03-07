@@ -421,9 +421,6 @@ export async function dispatchOperationPaused(
   });
 }
 
-/**
- * Dispatch operation.resumed event
- */
 export async function dispatchOperationResumed(
   tenantId: string,
   data: {

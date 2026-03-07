@@ -33,7 +33,6 @@ export function OperatorCreationForm() {
   };
 
   const handleCreateOperator = async () => {
-    // Validation
     if (!fullName.trim()) {
       toast.error(t('users.enterOperatorName'));
       return;
@@ -69,7 +68,6 @@ export function OperatorCreationForm() {
 
       toast.success(t('notifications.created'), { description: t('users.operatorCreatedDesc', { name: fullName }) });
 
-      // Add to created operators list
       setCreatedOperators([
         ...createdOperators,
         {
@@ -80,7 +78,6 @@ export function OperatorCreationForm() {
         },
       ]);
 
-      // Reset form
       setFullName('');
       setEmployeeId('');
       setPin('');
@@ -95,7 +92,6 @@ export function OperatorCreationForm() {
 
   return (
     <div className="space-y-6">
-      {/* Creation Form */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Create Operator (No Email Required)</h3>
         <p className="text-sm text-muted-foreground">
@@ -175,7 +171,6 @@ export function OperatorCreationForm() {
         </div>
       </div>
 
-      {/* Created Operators List */}
       {createdOperators.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-lg font-semibold">Created Operators</h3>

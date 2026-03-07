@@ -156,7 +156,6 @@ export const ActivityMonitor: React.FC = () => {
         },
         (payload) => {
           logger.debug('ActivityMonitor', 'Real-time activity update', payload);
-          // Reload data when changes occur
           loadData();
         },
       )
@@ -320,7 +319,6 @@ export const ActivityMonitor: React.FC = () => {
         }}
       />
 
-      {/* Statistics Row */}
       {stats && (
         <PageStatsRow
           stats={[
@@ -332,7 +330,6 @@ export const ActivityMonitor: React.FC = () => {
         />
       )}
 
-      {/* Filters and Controls */}
       <Card className="glass-card">
         <CardContent className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
@@ -413,7 +410,6 @@ export const ActivityMonitor: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Activity Feed */}
       <Card className="glass-card">
         <div className="p-4 border-b border-border-subtle">
           <div className="flex items-center gap-2">
@@ -510,7 +506,6 @@ export const ActivityMonitor: React.FC = () => {
           )}
         </div>
 
-        {/* Load More */}
         {activities.length >= limit && (
           <div className="p-4 border-t border-border-subtle text-center">
             <Button onClick={() => setLimit(limit + 50)} variant="outline">

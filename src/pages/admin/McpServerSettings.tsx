@@ -201,7 +201,6 @@ export default function McpServerSettings() {
     const startTime = Date.now();
 
     try {
-      // Step 1: Validate configuration
       if (!config.supabase_url) {
         throw new Error("Supabase URL is not configured");
       }
@@ -210,7 +209,6 @@ export default function McpServerSettings() {
         throw new Error("MCP server is disabled. Enable it first to test connection.");
       }
 
-      // Step 2: Test database connectivity by checking if we can query the config
       const { data: configTest, error: configError } = await supabase
         .from("mcp_server_config")
         .select("id")
@@ -225,7 +223,6 @@ export default function McpServerSettings() {
         throw new Error("Configuration not found in database");
       }
 
-      // Step 3: Verify we can write to the health table
       const responseTime = Date.now() - startTime;
       const { error: healthError } = await supabase.rpc("update_mcp_server_health", {
         p_tenant_id: tenant.id,
@@ -237,7 +234,6 @@ export default function McpServerSettings() {
         throw new Error(`Health check update failed: ${healthError.message}`);
       }
 
-      // Step 4: Verify we can read the health record
       const { data: healthData, error: healthReadError } = await supabase
         .from("mcp_server_health")
         .select("*")

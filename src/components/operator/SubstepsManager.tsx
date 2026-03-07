@@ -306,7 +306,6 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
 
     const newSubsteps = arrayMove(substeps, oldIndex, newIndex);
 
-    // Update sequences
     const updatedSubsteps = newSubsteps.map((s, index) => ({
       ...s,
       sequence: index + 1,
@@ -314,7 +313,6 @@ export default function SubstepsManager({ operationId, operationName, onUpdate }
 
     setSubsteps(updatedSubsteps);
 
-    // Update in database
     try {
       const updates = updatedSubsteps.map((s) =>
         supabase

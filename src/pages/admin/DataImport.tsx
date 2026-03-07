@@ -47,7 +47,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-// Entity configurations for import
 const IMPORTABLE_ENTITIES = [
   {
     id: 'jobs',
@@ -127,7 +126,6 @@ export default function DataImport() {
   const { profile } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // State
   const [currentStep, setCurrentStep] = useState<ImportStep>('select');
   const [selectedEntity, setSelectedEntity] = useState<string | null>(null);
   const [parsedData, setParsedData] = useState<ParsedData | null>(null);
@@ -139,7 +137,6 @@ export default function DataImport() {
 
   const entityConfig = IMPORTABLE_ENTITIES.find(e => e.id === selectedEntity);
 
-  // Download template CSV
   const downloadTemplate = (entityId: string) => {
     const entity = IMPORTABLE_ENTITIES.find(e => e.id === entityId);
     if (!entity) return;
@@ -150,7 +147,6 @@ export default function DataImport() {
       data: []
     });
 
-    // Add example row with comments
     const exampleRow = allFields.map(field => {
       if (field === 'external_id') return 'ERP-001';
       if (field === 'external_source') return 'SAP';
@@ -189,7 +185,6 @@ export default function DataImport() {
     toast.success(t('dataImport.templateDownloaded'), { description: t('dataImport.templateDownloadedDesc', { entity: entity.label }) });
   };
 
-  // Handle file selection
   const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -206,7 +201,6 @@ export default function DataImport() {
           errors: results.errors
         });
 
-        // Auto-map fields with matching names
         if (entityConfig) {
           const allEntityFields = [...entityConfig.requiredFields, ...entityConfig.optionalFields];
           const autoMappings: FieldMapping[] = [];
@@ -231,12 +225,10 @@ export default function DataImport() {
     });
   }, [entityConfig, toast, t]);
 
-  // Update field mapping
   const updateMapping = (csvField: string, entityField: string) => {
     setFieldMappings(prev => {
       const existing = prev.findIndex(m => m.csvField === csvField);
       if (entityField === '__ignore__') {
-        // Remove mapping
         return prev.filter(m => m.csvField !== csvField);
       }
       if (existing >= 0) {
@@ -248,12 +240,10 @@ export default function DataImport() {
     });
   };
 
-  // Get mapped entity field for CSV field
   const getMappedField = (csvField: string) => {
     return fieldMappings.find(m => m.csvField === csvField)?.entityField || '__ignore__';
   };
 
-  // Transform data according to mappings
   const transformData = () => {
     if (!parsedData) return [];
 
@@ -276,17 +266,14 @@ export default function DataImport() {
     });
   };
 
-  // Check if required fields are mapped
   const getMissingRequiredFields = () => {
     if (!entityConfig) return [];
     const mappedEntityFields = fieldMappings.map(m => m.entityField);
     return entityConfig.requiredFields.filter(rf => !mappedEntityFields.includes(rf));
   };
 
-  // Preview data
   const previewData = transformData().slice(0, 5);
 
-  // Execute import
   const executeImport = async () => {
     if (!entityConfig || !parsedData) return;
 
@@ -301,7 +288,6 @@ export default function DataImport() {
       const transformedData = transformData();
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co`;
 
-      // Chunk data into batches of 100
       const BATCH_SIZE = 100;
       const batches: Record<string, string | number | boolean | undefined>[][] = [];
       for (let i = 0; i < transformedData.length; i += BATCH_SIZE) {
@@ -367,7 +353,6 @@ export default function DataImport() {
     }
   };
 
-  // Reset import
   const resetImport = () => {
     setCurrentStep('select');
     setSelectedEntity(null);
@@ -391,7 +376,6 @@ export default function DataImport() {
 
       <hr className="title-divider" />
 
-      {/* Quick Links Banner */}
       <Alert className="bg-primary/5 border-primary/20">
         <HelpCircle className="h-4 w-4" />
         <AlertTitle>Need Help?</AlertTitle>
@@ -412,7 +396,6 @@ export default function DataImport() {
         </AlertDescription>
       </Alert>
 
-      {/* Progress Steps */}
       <div className="flex items-center justify-between mb-6">
         {['select', 'upload', 'map', 'preview', 'import', 'complete'].map((step, index) => (
           <div key={step} className="flex items-center">
@@ -441,7 +424,6 @@ export default function DataImport() {
         ))}
       </div>
 
-      {/* Step 1: Select Entity */}
       {currentStep === 'select' && (
         <Card className="glass-card">
           <CardHeader>
@@ -512,7 +494,6 @@ export default function DataImport() {
         </Card>
       )}
 
-      {/* Step 2: Upload CSV */}
       {currentStep === 'upload' && (
         <Card className="glass-card">
           <CardHeader>
@@ -581,7 +562,6 @@ export default function DataImport() {
         </Card>
       )}
 
-      {/* Step 3: Map Fields */}
       {currentStep === 'map' && parsedData && (
         <Card className="glass-card">
           <CardHeader>
@@ -681,7 +661,6 @@ export default function DataImport() {
         </Card>
       )}
 
-      {/* Step 4: Preview */}
       {currentStep === 'preview' && (
         <Card className="glass-card">
           <CardHeader>
@@ -757,7 +736,6 @@ export default function DataImport() {
         </Card>
       )}
 
-      {/* Step 5: Importing */}
       {currentStep === 'import' && (
         <Card className="glass-card">
           <CardHeader>
@@ -778,7 +756,6 @@ export default function DataImport() {
         </Card>
       )}
 
-      {/* Step 6: Complete */}
       {currentStep === 'complete' && importResult && (
         <Card className="glass-card">
           <CardHeader>

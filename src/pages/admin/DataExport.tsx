@@ -66,7 +66,6 @@ export default function DataExport() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 
-      // Call export API
       const entities = selectedEntities.join(',');
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co`;
       const response = await fetch(
@@ -86,7 +85,6 @@ export default function DataExport() {
 
       const exportData = await response.json();
 
-      // Handle JSON export
       if (exportFormat === 'json') {
         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -98,21 +96,17 @@ export default function DataExport() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       }
-      // Handle CSV export (multiple files in a ZIP)
       else if (exportFormat === 'csv') {
         const zip = new JSZip();
 
-        // Add metadata as JSON
         if (exportData._metadata) {
           zip.file('_metadata.json', JSON.stringify(exportData._metadata, null, 2));
         }
 
-        // Add tenant info as JSON
         if (exportData._tenant_info) {
           zip.file('_tenant_info.json', JSON.stringify(exportData._tenant_info, null, 2));
         }
 
-        // Convert each entity to CSV
         for (const entity of selectedEntities) {
           const data = exportData[entity];
           if (data && Array.isArray(data) && data.length > 0) {
@@ -124,7 +118,6 @@ export default function DataExport() {
           }
         }
 
-        // Generate ZIP and download
         const zipBlob = await zip.generateAsync({ type: 'blob' });
         const url = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
@@ -158,7 +151,6 @@ export default function DataExport() {
         <hr className="title-divider" />
 
         <div className="grid gap-6">
-          {/* Export Format Selection */}
           <Card className="glass-card">
             <CardHeader>
               <CardTitle>{t('dataExport.exportFormat')}</CardTitle>
@@ -191,7 +183,6 @@ export default function DataExport() {
             </CardContent>
           </Card>
 
-          {/* Entity Selection */}
           <Card className="glass-card">
             <CardHeader>
               <CardTitle>{t('dataExport.selectData')}</CardTitle>
@@ -233,7 +224,6 @@ export default function DataExport() {
             </CardContent>
           </Card>
 
-          {/* Export Action */}
           <Card className="glass-card">
             <CardHeader>
               <CardTitle>{t('dataExport.exportYourData')}</CardTitle>
@@ -276,7 +266,6 @@ export default function DataExport() {
             </CardContent>
           </Card>
 
-          {/* Important Notes */}
           <Card className="glass-card border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
             <CardHeader>
               <CardTitle className="text-amber-900 dark:text-amber-100">{t('dataExport.importantNotes')}</CardTitle>

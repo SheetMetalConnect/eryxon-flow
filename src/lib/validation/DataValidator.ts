@@ -1,10 +1,3 @@
-/**
- * Data Validation System
- *
- * Modular validation for MES data with rich logging, HTTP status codes,
- * and user-friendly messages for both mock data generation and API operations.
- */
-
 export enum ValidationSeverity {
   ERROR = "error",
   WARNING = "warning",
@@ -48,9 +41,6 @@ export interface ValidationContext {
   tenantId: string;
 }
 
-/**
- * Base validator class
- */
 export abstract class BaseValidator<T> {
   protected entityType: string;
 
@@ -58,18 +48,12 @@ export abstract class BaseValidator<T> {
     this.entityType = entityType;
   }
 
-  /**
-   * Validate a single entity
-   */
   abstract validateEntity(
     entity: T,
     index: number,
     context: ValidationContext,
   ): ValidationError[];
 
-  /**
-   * Validate a batch of entities
-   */
   validateBatch(entities: T[], context: ValidationContext): ValidationResult {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
@@ -111,15 +95,13 @@ export abstract class BaseValidator<T> {
       };
     }
 
-    // Validate each entity
     entities.forEach((entity, index) => {
       const entityErrors = this.validateEntity(entity, index, context);
       errors.push(...entityErrors);
     });
 
-    // Determine result
     const valid = errors.length === 0;
-    const httpStatus = valid ? 200 : 422; // 422 Unprocessable Entity for validation errors
+    const httpStatus = valid ? 200 : 422;
 
     return {
       valid,
@@ -136,9 +118,6 @@ export abstract class BaseValidator<T> {
     };
   }
 
-  /**
-   * Helper: Check if field is a valid UUID
-   */
   protected isValidUUID(value: unknown): boolean {
     if (typeof value !== "string") return false;
     const uuidRegex =
@@ -146,9 +125,6 @@ export abstract class BaseValidator<T> {
     return uuidRegex.test(value);
   }
 
-  /**
-   * Helper: Validate required field
-   */
   protected validateRequired(
     entity: Record<string, unknown>,
     field: string,
@@ -167,9 +143,6 @@ export abstract class BaseValidator<T> {
     return null;
   }
 
-  /**
-   * Helper: Validate foreign key
-   */
   protected validateForeignKey(
     entity: Record<string, unknown>,
     field: string,
@@ -179,7 +152,6 @@ export abstract class BaseValidator<T> {
   ): ValidationError | null {
     const value = entity[field];
 
-    // If field is null/undefined
     if (!value) {
       if (required) {
         return {
@@ -191,10 +163,9 @@ export abstract class BaseValidator<T> {
           entityIndex: index,
         };
       }
-      return null; // Optional FK can be null
+      return null;
     }
 
-    // Check UUID format
     if (!this.isValidUUID(value)) {
       return {
         field,
@@ -206,7 +177,6 @@ export abstract class BaseValidator<T> {
       };
     }
 
-    // Check FK reference exists
     if (validIds && !validIds.includes(value as string)) {
       return {
         field,
@@ -221,9 +191,6 @@ export abstract class BaseValidator<T> {
     return null;
   }
 
-  /**
-   * Helper: Validate number field
-   */
   protected validateNumber(
     entity: Record<string, unknown>,
     field: string,

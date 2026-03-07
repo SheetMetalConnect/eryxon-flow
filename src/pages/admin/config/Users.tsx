@@ -49,12 +49,10 @@ export default function ConfigUsers() {
     is_machine: false,
   });
 
-  // Quick invite form
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<"operator" | "admin">("operator");
   const [inviting, setInviting] = useState(false);
 
-  // Machine worker form
   const [machineDialogOpen, setMachineDialogOpen] = useState(false);
   const [machineForm, setMachineForm] = useState({
     name: "",
@@ -90,7 +88,6 @@ export default function ConfigUsers() {
 
     try {
       if (editingUser) {
-        // Update existing user
         await supabase
           .from("profiles")
           .update({
@@ -102,7 +99,6 @@ export default function ConfigUsers() {
 
         toast.success(t("users.userUpdated"));
       } else {
-        // Create new user with email
         const username = formData.email.split('@')[0];
 
         const { error: authError } = await supabase.auth.signUp({
@@ -180,7 +176,6 @@ export default function ConfigUsers() {
 
       if (error) throw error;
 
-      // The function returns profile_id and api_key
       if (data && data.length > 0) {
         const { api_key } = data[0];
         setCreatedMachineApiKey(api_key);
@@ -372,7 +367,6 @@ export default function ConfigUsers() {
 
   return (
     <div className="container max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
@@ -384,9 +378,7 @@ export default function ConfigUsers() {
 
       <hr className="title-divider" />
 
-      {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Invite Team Member */}
         <Card className="glass-card border-primary/20 hover:border-primary/40 transition-colors">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
@@ -466,7 +458,6 @@ export default function ConfigUsers() {
           </CardContent>
         </Card>
 
-        {/* Create Machine Worker */}
         <Card className="glass-card border-blue-500/20 hover:border-blue-500/40 transition-colors">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
@@ -604,9 +595,7 @@ export default function ConfigUsers() {
         </Card>
       </div>
 
-      {/* Second row for advanced options */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Advanced User Creation */}
         <Card className="glass-card border-muted/30 hover:border-muted/50 transition-colors">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
@@ -731,13 +720,10 @@ export default function ConfigUsers() {
         </Card>
       </div>
 
-      {/* Pending Invitations */}
       <PendingInvitations invitations={invitations} onCancel={cancelInvitation} />
 
-      {/* Operators Management */}
       {profile?.tenant_id && <OperatorsManagement tenantId={profile.tenant_id} />}
 
-      {/* Users Table */}
       <Card className="glass-card">
         <CardHeader>
           <CardTitle className="text-xl flex items-center gap-2">

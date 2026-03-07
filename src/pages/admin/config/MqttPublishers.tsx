@@ -51,7 +51,6 @@ interface MqttLog {
   created_at: string;
 }
 
-// Topic pattern variables for documentation
 const TOPIC_VARIABLES = [
   { name: '{enterprise}', description: 'Company/organization name' },
   { name: '{site}', description: 'Physical location/factory' },
@@ -74,7 +73,6 @@ export default function ConfigMqttPublishers() {
   const [logsLoading, setLogsLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Form state
   const [publisherName, setPublisherName] = useState("");
   const [brokerUrl, setBrokerUrl] = useState("");
   const [port, setPort] = useState(1883);
@@ -160,7 +158,6 @@ export default function ConfigMqttPublishers() {
     setSelectedEvents([]);
   };
 
-  // Generate preview topic
   const previewTopic = useMemo(() => {
     let topic = topicPattern;
     topic = topic.replace('{enterprise}', defaultEnterprise || 'eryxon');
@@ -459,7 +456,6 @@ export default function ConfigMqttPublishers() {
                 </DialogDescription>
               </DialogHeader>
               <div className="flex-1 overflow-y-auto min-h-0 space-y-6">
-                {/* Basic Info */}
                 <div className="space-y-4">
                   <h3 className="font-semibold">{t('mqtt.basicInfo')}</h3>
                   <div className="space-y-2">
@@ -473,7 +469,6 @@ export default function ConfigMqttPublishers() {
                   </div>
                 </div>
 
-                {/* Broker Settings */}
                 <div className="space-y-4">
                   <h3 className="font-semibold">{t('mqtt.brokerSettings')}</h3>
                   <div className="grid grid-cols-2 gap-4">
@@ -527,7 +522,6 @@ export default function ConfigMqttPublishers() {
                   </div>
                 </div>
 
-                {/* Topic Settings - Configurable UNS Pattern */}
                 <div className="space-y-4">
                   <h3 className="font-semibold flex items-center gap-2">
                     {t('mqtt.topicSettings')}
@@ -549,13 +543,11 @@ export default function ConfigMqttPublishers() {
                     </div>
                   </div>
 
-                  {/* Preview */}
                   <div className="bg-muted p-3 rounded-lg">
                     <p className="text-xs text-muted-foreground mb-1">{t('mqtt.topicPreview')}:</p>
                     <code className="text-sm">{previewTopic}</code>
                   </div>
 
-                  {/* Default Values */}
                   <div className="grid grid-cols-3 gap-3">
                     <div className="space-y-2">
                       <Label htmlFor="default-enterprise" className="text-sm">
@@ -595,7 +587,6 @@ export default function ConfigMqttPublishers() {
                     </div>
                   </div>
 
-                  {/* Variable Reference */}
                   <details className="text-sm">
                     <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
                       {t('mqtt.availableVariables')}
@@ -611,7 +602,6 @@ export default function ConfigMqttPublishers() {
                   </details>
                 </div>
 
-                {/* Event Selection */}
                 <div className="space-y-2">
                   <Label>{t('mqtt.events')}</Label>
                   <div className="border rounded-lg p-3 space-y-3 max-h-72 overflow-y-auto">

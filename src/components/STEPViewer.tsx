@@ -115,7 +115,6 @@ export function STEPViewer({
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
 
-    // Use Uint16Array if indices fit, otherwise Uint32Array
     const maxIndex = Math.max(...indices);
     if (maxIndex > 65535) {
       geometry.setIndex(new THREE.BufferAttribute(indices, 1));
@@ -335,7 +334,6 @@ export function STEPViewer({
     });
   }, []);
 
-  // Fit camera to meshes (must be defined before useEffect that uses it)
   const fitCameraToMeshes = useCallback(() => {
     if (
       !cameraRef.current ||
@@ -362,7 +360,6 @@ export function STEPViewer({
     controlsRef.current.update();
   }, []);
 
-  // Update grid size based on model (must be defined before useEffect that uses it)
   const updateGridSize = useCallback(() => {
     if (!gridRef.current || !sceneRef.current || meshesRef.current.length === 0)
       return;
@@ -372,14 +369,12 @@ export function STEPViewer({
     const size = box.getSize(new THREE.Vector3());
     const maxDimension = Math.max(size.x, size.y, size.z);
 
-    // Grid size = 3x assembly size
     const gridSize = Math.max(
       1000,
       Math.ceil((maxDimension * 3) / 100) * 100
     );
     const divisions = Math.max(10, Math.min(100, Math.round(gridSize / 100)));
 
-    // Remove old grid
     sceneRef.current.remove(gridRef.current);
     gridRef.current.geometry.dispose();
     if (Array.isArray(gridRef.current.material)) {
@@ -388,7 +383,6 @@ export function STEPViewer({
       gridRef.current.material.dispose();
     }
 
-    // Create new grid
     const newGrid = new THREE.GridHelper(gridSize, divisions, 0x444444, 0x888888);
     newGrid.material.transparent = true;
     newGrid.material.opacity = 0.35;
@@ -398,11 +392,9 @@ export function STEPViewer({
     gridRef.current = newGrid;
   }, [gridVisible]);
 
-  // Load and render geometry (from server or browser)
   useEffect(() => {
     if (!librariesLoaded || !sceneRef.current) return;
 
-    // If server geometry is provided and preferred, use it
     if (serverGeometry && preferServerGeometry && serverGeometry.meshes.length > 0) {
       setStepLoading(true);
       setLoadingError(null);
@@ -411,21 +403,16 @@ export function STEPViewer({
       try {
         clearMeshes();
 
-        // Convert server meshes to Three.js meshes
         for (const meshData of serverGeometry.meshes) {
           const mesh = createMeshFromServerData(meshData);
           addMeshToScene(mesh);
         }
 
-        // Store original materials for feature highlighting
         originalMaterialsRef.current = meshesRef.current.map((mesh: THREE.Mesh) =>
           (mesh.material as THREE.Material).clone()
         );
 
-        // Calculate dimensions
         calculateDimensions();
-
-        // Fit camera to view
         fitCameraToMeshes();
         updateGridSize();
 
@@ -441,7 +428,6 @@ export function STEPViewer({
       return;
     }
 
-    // Fall back to browser-based STEP processing
     if (!url) return;
 
     const loadSTEP = async () => {
@@ -450,13 +436,11 @@ export function STEPViewer({
         setLoadingError(null);
         setProcessingMode('browser');
 
-        // Initialize occt-import-js
         if (!window.occtimportjs) {
           throw new Error('STEP parser not loaded');
         }
         const occt = await window.occtimportjs();
 
-        // Fetch STEP file
         const response = await fetch(url);
         if (!response.ok) {
           throw new Error(`Failed to fetch file: ${response.statusText}`);
@@ -464,7 +448,6 @@ export function STEPViewer({
         const arrayBuffer = await response.arrayBuffer();
         const fileBuffer = new Uint8Array(arrayBuffer);
 
-        // Parse STEP
         const result = occt.ReadStepFile(fileBuffer, null);
 
         if (!result.meshes || result.meshes.length === 0) {
@@ -473,7 +456,6 @@ export function STEPViewer({
 
         clearMeshes();
 
-        // Convert to Three.js meshes
         for (let i = 0; i < result.meshes.length; i++) {
           const meshData = result.meshes[i];
 
@@ -491,7 +473,6 @@ export function STEPViewer({
             new THREE.BufferAttribute(vertices, 3)
           );
 
-          // Normals
           if (meshData.attributes.normal) {
             const normals =
               meshData.attributes.normal.array instanceof Float32Array
@@ -516,7 +497,6 @@ export function STEPViewer({
             geometry.setIndex(new THREE.BufferAttribute(indices, 1));
           }
 
-          // Material - Using MeshStandardMaterial for better PBR rendering
           const color = meshData.color
             ? new THREE.Color(
               meshData.color[0],
@@ -533,20 +513,15 @@ export function STEPViewer({
             flatShading: false,
           });
 
-          // Create and add mesh
           const mesh = new THREE.Mesh(geometry, material);
           addMeshToScene(mesh);
         }
 
-        // Store original materials for feature highlighting
         originalMaterialsRef.current = meshesRef.current.map((mesh: THREE.Mesh) =>
           (mesh.material as THREE.Material).clone()
         );
 
-        // Calculate dimensions
         calculateDimensions();
-
-        // Fit camera to view
         fitCameraToMeshes();
         updateGridSize();
 
@@ -564,7 +539,6 @@ export function STEPViewer({
   }, [url, librariesLoaded, serverGeometry, preferServerGeometry, edgesVisible, gridVisible, clearMeshes, addMeshToScene, createMeshFromServerData, calculateDimensions, fitCameraToMeshes, updateGridSize]);
 
 
-  // Initialize explosion data
   const initializeExplosionData = () => {
     const box = new THREE.Box3();
     meshesRef.current.forEach((mesh) => box.expandByObject(mesh));
@@ -577,8 +551,7 @@ export function STEPViewer({
       const meshCenter = meshBox.getCenter(new THREE.Vector3());
       const relativePos = meshCenter.clone().sub(center);
 
-      // Determine separation direction
-      const separationVector =
+        const separationVector =
         relativePos.length() > 0
           ? relativePos.clone().normalize()
           : new THREE.Vector3(0, 0, 1);
@@ -592,7 +565,6 @@ export function STEPViewer({
     explosionDataRef.current.initialized = true;
   };
 
-  // Apply explosion effect
   const applyExplosion = (factor: number) => {
     if (!explosionDataRef.current.initialized) return;
 
@@ -611,10 +583,8 @@ export function STEPViewer({
     });
   };
 
-  // Toggle exploded view
   const toggleExplodedView = () => {
     if (!explodedView) {
-      // Store original positions
       meshesRef.current.forEach((mesh, index) => {
         originalPositionsRef.current[index] = mesh.position.clone();
       });
@@ -625,7 +595,6 @@ export function STEPViewer({
 
       applyExplosion(explosionFactor);
     } else {
-      // Return to original positions
       meshesRef.current.forEach((mesh, index) => {
         mesh.position.copy(originalPositionsRef.current[index]);
       });
@@ -634,7 +603,6 @@ export function STEPViewer({
     setExplodedView(!explodedView);
   };
 
-  // Handle explosion factor change
   const handleExplosionFactorChange = (values: number[]) => {
     const newFactor = values[0];
     setExplosionFactor(newFactor);
@@ -643,7 +611,6 @@ export function STEPViewer({
     }
   };
 
-  // Toggle wireframe mode
   const toggleWireframe = () => {
     meshesRef.current.forEach((mesh) => {
       if (mesh.material) {
@@ -659,7 +626,6 @@ export function STEPViewer({
     setWireframeMode(!wireframeMode);
   };
 
-  // Toggle grid visibility
   const toggleGrid = () => {
     if (gridRef.current) {
       gridRef.current.visible = !gridVisible;
@@ -667,7 +633,6 @@ export function STEPViewer({
     }
   };
 
-  // Toggle edges visibility
   const toggleEdges = () => {
     edgesRef.current.forEach((edges) => {
       edges.visible = !edgesVisible;
@@ -676,11 +641,9 @@ export function STEPViewer({
   };
 
 
-  // Create dimension visualization lines in 3D
   const createDimensionVisualization = useCallback(() => {
     if (!sceneRef.current || !dimensions) return;
 
-    // Remove existing dimension lines
     if (dimensionLinesRef.current) {
       sceneRef.current.remove(dimensionLinesRef.current);
       dimensionLinesRef.current.traverse((child: THREE.Object3D) => {
@@ -703,17 +666,14 @@ export function STEPViewer({
     const min = box.min;
     const max = box.max;
 
-    // Offset for dimension lines (outside the model)
     const offset = Math.max(dimensions.x, dimensions.y, dimensions.z) * 0.15;
 
-    // Colors for each axis - matching design system
     const colors = {
       x: 0x4a9eff, // Blue - X axis
       y: 0x34a853, // Green - Y axis
       z: 0xfbbc05, // Yellow - Z axis
     };
 
-    // Create dimension line helper
     const createDimensionLine = (
       start: THREE.Vector3,
       end: THREE.Vector3,
@@ -722,7 +682,6 @@ export function STEPViewer({
     ) => {
       const lineGroup = new THREE.Group();
 
-      // Main dimension line
       const lineMaterial = new THREE.LineBasicMaterial({
         color,
         linewidth: 2,
@@ -734,37 +693,31 @@ export function STEPViewer({
       const line = new THREE.Line(lineGeometry, lineMaterial);
       lineGroup.add(line);
 
-      // End caps (small perpendicular lines)
       const capLength = offset * 0.3;
       const direction = new THREE.Vector3().subVectors(end, start).normalize();
       const perpendicular = new THREE.Vector3();
 
-      // Find a perpendicular vector
       if (Math.abs(direction.y) < 0.9) {
         perpendicular.crossVectors(direction, new THREE.Vector3(0, 1, 0)).normalize();
       } else {
         perpendicular.crossVectors(direction, new THREE.Vector3(1, 0, 0)).normalize();
       }
 
-      // Start cap
       const startCap1 = start.clone().add(perpendicular.clone().multiplyScalar(capLength / 2));
       const startCap2 = start.clone().sub(perpendicular.clone().multiplyScalar(capLength / 2));
       const startCapGeometry = new THREE.BufferGeometry().setFromPoints([startCap1, startCap2]);
       const startCap = new THREE.Line(startCapGeometry, lineMaterial);
       lineGroup.add(startCap);
 
-      // End cap
       const endCap1 = end.clone().add(perpendicular.clone().multiplyScalar(capLength / 2));
       const endCap2 = end.clone().sub(perpendicular.clone().multiplyScalar(capLength / 2));
       const endCapGeometry = new THREE.BufferGeometry().setFromPoints([endCap1, endCap2]);
       const endCap = new THREE.Line(endCapGeometry, lineMaterial);
       lineGroup.add(endCap);
 
-      // Arrow heads
       const arrowLength = offset * 0.2;
       const arrowWidth = offset * 0.08;
 
-      // Arrow at start pointing outward
       const arrowStartDir = direction.clone().negate();
       const arrow1 = start.clone().add(direction.clone().multiplyScalar(arrowLength));
       const arrowGeom1 = new THREE.BufferGeometry().setFromPoints([
@@ -776,7 +729,6 @@ export function STEPViewer({
       const arrowMesh1 = new THREE.Line(arrowGeom1, lineMaterial);
       lineGroup.add(arrowMesh1);
 
-      // Arrow at end pointing outward
       const arrow2 = end.clone().sub(direction.clone().multiplyScalar(arrowLength));
       const arrowGeom2 = new THREE.BufferGeometry().setFromPoints([
         end,
@@ -790,12 +742,10 @@ export function STEPViewer({
       return lineGroup;
     };
 
-    // X dimension (along bottom, offset in -Z direction)
     const xStart = new THREE.Vector3(min.x, min.y, min.z - offset);
     const xEnd = new THREE.Vector3(max.x, min.y, min.z - offset);
     group.add(createDimensionLine(xStart, xEnd, colors.x, `${dimensions.x} mm`));
 
-    // Extension lines for X
     const xExtMaterial = new THREE.LineBasicMaterial({ color: colors.x, transparent: true, opacity: 0.4 });
     const xExt1Geom = new THREE.BufferGeometry().setFromPoints([
       new THREE.Vector3(min.x, min.y, min.z),
@@ -808,12 +758,10 @@ export function STEPViewer({
     ]);
     group.add(new THREE.Line(xExt2Geom, xExtMaterial));
 
-    // Y dimension (along left side, offset in -X direction)
     const yStart = new THREE.Vector3(min.x - offset, min.y, min.z);
     const yEnd = new THREE.Vector3(min.x - offset, max.y, min.z);
     group.add(createDimensionLine(yStart, yEnd, colors.y, `${dimensions.y} mm`));
 
-    // Extension lines for Y
     const yExtMaterial = new THREE.LineBasicMaterial({ color: colors.y, transparent: true, opacity: 0.4 });
     const yExt1Geom = new THREE.BufferGeometry().setFromPoints([
       new THREE.Vector3(min.x, min.y, min.z),
@@ -826,12 +774,10 @@ export function STEPViewer({
     ]);
     group.add(new THREE.Line(yExt2Geom, yExtMaterial));
 
-    // Z dimension (along back edge, offset in -X direction)
     const zStart = new THREE.Vector3(min.x - offset, min.y, min.z);
     const zEnd = new THREE.Vector3(min.x - offset, min.y, max.z);
     group.add(createDimensionLine(zStart, zEnd, colors.z, `${dimensions.z} mm`));
 
-    // Extension lines for Z
     const zExtMaterial = new THREE.LineBasicMaterial({ color: colors.z, transparent: true, opacity: 0.4 });
     const zExt1Geom = new THREE.BufferGeometry().setFromPoints([
       new THREE.Vector3(min.x, min.y, min.z),
@@ -848,7 +794,6 @@ export function STEPViewer({
     dimensionLinesRef.current = group;
   }, [dimensions]);
 
-  // Toggle dimension display
   const toggleDimensionDisplay = useCallback(() => {
     if (!showDimensions) {
       createDimensionVisualization();
@@ -859,12 +804,10 @@ export function STEPViewer({
     setShowDimensions(!showDimensions);
   }, [showDimensions, createDimensionVisualization]);
 
-  // Apply curvature-based feature highlighting
   const applyFeatureHighlighting = useCallback(() => {
     meshesRef.current.forEach((mesh, index) => {
       const geometry = mesh.geometry;
 
-      // Compute vertex normals if not present
       if (!geometry.attributes.normal) {
         geometry.computeVertexNormals();
       }
@@ -874,11 +817,9 @@ export function STEPViewer({
 
       if (!normals || !positions) return;
 
-      // Calculate curvature estimation based on normal variation
       const vertexCount = positions.count;
       const curvatures = new Float32Array(vertexCount);
 
-      // Build vertex neighbor map using indices
       const neighborMap = new Map<number, Set<number>>();
 
       if (geometry.index) {
@@ -898,7 +839,6 @@ export function STEPViewer({
         }
       }
 
-      // Calculate curvature as normal deviation from neighbors
       const normalVec = new THREE.Vector3();
       const neighborNormal = new THREE.Vector3();
 
@@ -930,16 +870,13 @@ export function STEPViewer({
         curvatures[i] = totalDeviation / neighbors.size;
       }
 
-      // Normalize curvatures
       let maxCurvature = 0;
       for (let i = 0; i < vertexCount; i++) {
         if (curvatures[i] > maxCurvature) maxCurvature = curvatures[i];
       }
 
-      // Create vertex colors based on curvature
       const colors = new Float32Array(vertexCount * 3);
 
-      // Get base color from original material
       const originalMaterial = originalMaterialsRef.current[index] as THREE.MeshStandardMaterial;
       const baseColor = originalMaterial?.color || new THREE.Color(0x4a90e2);
 
@@ -980,7 +917,6 @@ export function STEPViewer({
 
       geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-      // Update material to use vertex colors
       const newMaterial = new THREE.MeshStandardMaterial({
         vertexColors: true,
         side: THREE.DoubleSide,
@@ -993,11 +929,9 @@ export function STEPViewer({
     });
   }, []);
 
-  // Remove feature highlighting (restore original materials)
   const removeFeatureHighlighting = useCallback(() => {
     meshesRef.current.forEach((mesh, index) => {
       if (originalMaterialsRef.current[index]) {
-        // Dispose current material
         if (mesh.material) {
           if (Array.isArray(mesh.material)) {
             mesh.material.forEach((m: THREE.Material) => m.dispose());
@@ -1006,10 +940,8 @@ export function STEPViewer({
           }
         }
 
-        // Restore original material clone
         mesh.material = originalMaterialsRef.current[index].clone();
 
-        // Remove vertex colors attribute if present
         if (mesh.geometry.attributes.color) {
           mesh.geometry.deleteAttribute('color');
         }
@@ -1017,7 +949,6 @@ export function STEPViewer({
     });
   }, []);
 
-  // Toggle feature highlighting
   const toggleFeatureHighlight = useCallback(() => {
     if (!showFeatures) {
       applyFeatureHighlighting();
@@ -1027,7 +958,6 @@ export function STEPViewer({
     setShowFeatures(!showFeatures);
   }, [showFeatures, applyFeatureHighlighting, removeFeatureHighlighting]);
 
-  // Transform PMI coordinates from STEP space to Three.js space
   const transformPMIPosition = useCallback((stepPosition: { x: number; y: number; z: number }, fallbackIndex?: number) => {
     if (!stepPosition || 
         typeof stepPosition.x !== 'number' || 
@@ -1040,7 +970,6 @@ export function STEPViewer({
       return new THREE.Vector3(0, 0, 0);
     }
 
-    // Check if backend provided valid coordinates (not all zeros)
     const isZeroPosition = stepPosition.x === 0 && stepPosition.y === 0 && stepPosition.z === 0;
     
     if (isZeroPosition && typeof fallbackIndex === 'number' && meshesRef.current.length > 0) {
@@ -1050,18 +979,16 @@ export function STEPViewer({
       const center = box.getCenter(new THREE.Vector3());
       const size = box.getSize(new THREE.Vector3());
       
-      // Adaptive positioning based on dimension type and geometry
-      const totalDimensions = 27; // Known from backend data
-      const layers = 3; // Distribute in 3 height layers
+      const totalDimensions = 27;
+      const layers = 3;
       const layer = fallbackIndex % layers;
       const itemsPerLayer = Math.ceil(totalDimensions / layers);
       const angleStep = (360 / itemsPerLayer) * Math.PI / 180;
       const angle = (Math.floor(fallbackIndex / layers) * angleStep);
       
-      // Vary radius and height based on dimension type and layer
       const baseRadius = Math.max(size.x, size.y, size.z) * 0.7;
-      const radius = baseRadius + (layer * size.x * 0.1); // Layer-based radius variation
-      const heightOffset = (layer - 1) * size.y * 0.35; // Vertical separation
+      const radius = baseRadius + (layer * size.x * 0.1);
+      const heightOffset = (layer - 1) * size.y * 0.35;
       const height = center.y + heightOffset;
       
       logger.debug('STEPViewer', `Using fallback position for dimension ${fallbackIndex + 1}: [${center.x + Math.cos(angle) * radius}, ${height}, ${center.z + Math.sin(angle) * radius}]`);
@@ -1095,7 +1022,6 @@ export function STEPViewer({
       
       if (distanceFromCenter > reasonableDistance) {
         logger.debug('STEPViewer', `PMI position too far (${distanceFromCenter.toFixed(2)} > ${reasonableDistance.toFixed(2)}), scaling down`);
-        // Scale down the offset from center
         const scaleFactor = reasonableDistance / distanceFromCenter;
         return new THREE.Vector3(
           center.x + (x - center.x) * scaleFactor,
@@ -1108,26 +1034,22 @@ export function STEPViewer({
     return new THREE.Vector3(x, y, z);
   }, []);
 
-  // Create arrowhead mesh for leader lines
   const createArrowhead = useCallback((from: THREE.Vector3, to: THREE.Vector3): THREE.Mesh => {
     const direction = new THREE.Vector3().subVectors(to, from).normalize();
-    const length = 2;  // Arrow length in model units
+    const length = 2;
     const coneGeometry = new THREE.ConeGeometry(0.5, length, 8);
-    const coneMaterial = new THREE.MeshBasicMaterial({ color: 0x00bcd4 }); // Match PMI color
+    const coneMaterial = new THREE.MeshBasicMaterial({ color: 0x00bcd4 });
     const cone = new THREE.Mesh(coneGeometry, coneMaterial);
     
-    // Orient arrow along direction and position at target
     cone.position.copy(to);
     cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
     
     return cone;
   }, []);
 
-  // Create PMI visualization layer
   const createPMIVisualization = useCallback(() => {
     if (!sceneRef.current || !pmiData) return;
 
-    // Get geometry bounding box for reference
     const box = new THREE.Box3();
     meshesRef.current.forEach((mesh) => box.expandByObject(mesh));
     const center = box.getCenter(new THREE.Vector3());
@@ -1147,9 +1069,7 @@ export function STEPViewer({
       }
     });
 
-    // Remove existing PMI layer
     if (pmiLayerRef.current) {
-      // Remove CSS2D objects properly
       pmiLayerRef.current.traverse((child: THREE.Object3D) => {
         if (child instanceof CSS2DObject) {
           if (child.element.parentNode) {
@@ -1171,8 +1091,7 @@ export function STEPViewer({
     const group = new THREE.Group();
     group.name = 'pmiAnnotations';
 
-    // Check for invalid backend coordinates and warn user
-    const invalidCoordinateCount = pmiData.dimensions.filter(dim => 
+    const invalidCoordinateCount = pmiData.dimensions.filter(dim =>
       dim.position.x === 0 && dim.position.y === 0 && dim.position.z === 0
     ).length;
     
@@ -1180,8 +1099,7 @@ export function STEPViewer({
       logger.warn('STEPViewer', `Backend PMI coordinate issue: ${invalidCoordinateCount}/${pmiData.dimensions.length} dimensions have invalid coordinates [0,0,0]. Using fallback positioning.`);
     }
 
-    // PMI dimension line color
-    const pmiColor = 0x00bcd4; // Cyan for PMI
+    const pmiColor = 0x00bcd4;
     const lineMaterial = new THREE.LineBasicMaterial({
       color: pmiColor,
       linewidth: 2,
@@ -1189,11 +1107,9 @@ export function STEPViewer({
       opacity: 0.9,
     });
 
-    // Render dimensions (if filter allows)
     if (pmiFilter === 'all' || pmiFilter === 'dimensions') {
       pmiData.dimensions.forEach((dim, index) => {
         try {
-          // Validate dimension data
           if (!dim || !dim.position || !dim.text) {
             logger.warn('STEPViewer', 'Invalid dimension data', dim);
             return;
@@ -1205,7 +1121,6 @@ export function STEPViewer({
             type: dim.type
           });
 
-          // Create label element
           const labelDiv = document.createElement('div');
           labelDiv.className = 'pmi-label';
           labelDiv.style.cssText = `
@@ -1228,18 +1143,15 @@ export function STEPViewer({
           const label = new CSS2DObject(labelDiv);
           const transformedPos = transformPMIPosition(dim.position, index);
           
-          // Apply slight offset for better visibility - move annotations slightly away from geometry
           if (meshesRef.current.length > 0) {
             const box = new THREE.Box3();
             meshesRef.current.forEach((mesh) => box.expandByObject(mesh));
             const center = box.getCenter(new THREE.Vector3());
             const size = box.getSize(new THREE.Vector3());
             
-            // Calculate direction from geometry center to annotation
             const direction = new THREE.Vector3().subVectors(transformedPos, center).normalize();
-            const offset = Math.max(size.x, size.y, size.z) * 0.15; // 15% of largest dimension
-            
-            // Move annotation outward for clarity
+            const offset = Math.max(size.x, size.y, size.z) * 0.15;
+
             transformedPos.add(direction.multiplyScalar(offset));
           }
           
@@ -1247,18 +1159,15 @@ export function STEPViewer({
           
           label.position.copy(transformedPos);
           group.add(label);
-          // Create leader lines from backend data if available
           if (dim.leader_lines && dim.leader_lines.length > 0) {
             try {
               dim.leader_lines.forEach(leaderLine => {
                 if (leaderLine.points && leaderLine.points.length >= 2) {
-                  // Convert leader line points to Three.js positions
                   const points = leaderLine.points.map(p => transformPMIPosition(p));
                   const leaderGeom = new THREE.BufferGeometry().setFromPoints(points);
                   const line = new THREE.Line(leaderGeom, lineMaterial.clone());
                   group.add(line);
 
-                  // Add arrowhead if specified
                   if (leaderLine.has_arrowhead && points.length >= 2) {
                     const arrowMesh = createArrowhead(points[points.length - 2], points[points.length - 1]);
                     group.add(arrowMesh);
@@ -1269,7 +1178,6 @@ export function STEPViewer({
               logger.error('STEPViewer', 'Error creating leader lines', leaderError);
             }
           }
-          // Fallback: Create leader line from label to target geometry if target geometry has attachment points
           else if (dim.target_geometry && dim.target_geometry.attachment_points && dim.target_geometry.attachment_points.length > 0) {
             try {
               const labelPos = transformedPos;
@@ -1279,7 +1187,6 @@ export function STEPViewer({
               const line = new THREE.Line(leaderGeom, lineMaterial.clone());
               group.add(line);
 
-              // Add arrowhead pointing to target
               const arrowMesh = createArrowhead(labelPos, targetPos);
               group.add(arrowMesh);
             } catch (fallbackError) {
@@ -1292,7 +1199,6 @@ export function STEPViewer({
       });
     }
 
-    // Render geometric tolerances (GD&T) (if filter allows)
     if (pmiFilter === 'all' || pmiFilter === 'tolerances') {
       pmiData.geometric_tolerances.forEach((tol, index) => {
         const labelDiv = document.createElement('div');
@@ -1319,7 +1225,6 @@ export function STEPViewer({
       });
     }
 
-    // Render datums (if filter allows)
     if (pmiFilter === 'all' || pmiFilter === 'datums') {
       pmiData.datums.forEach((datum) => {
         const labelDiv = document.createElement('div');
@@ -1346,7 +1251,6 @@ export function STEPViewer({
       });
     }
 
-    // Render surface finishes (if filter allows)
     if ((pmiFilter === 'all' || pmiFilter === 'surface') && pmiData.surface_finishes) {
       pmiData.surface_finishes.forEach((finish) => {
         const labelDiv = document.createElement('div');
@@ -1373,7 +1277,6 @@ export function STEPViewer({
       });
     }
 
-    // Render weld symbols (if filter allows)
     if ((pmiFilter === 'all' || pmiFilter === 'welds') && pmiData.weld_symbols) {
       pmiData.weld_symbols.forEach((weld) => {
         const labelDiv = document.createElement('div');
@@ -1400,7 +1303,6 @@ export function STEPViewer({
       });
     }
 
-    // Render notes (if filter allows)
     if ((pmiFilter === 'all' || pmiFilter === 'notes') && pmiData.notes) {
       pmiData.notes.forEach((note) => {
         const labelDiv = document.createElement('div');
@@ -1428,7 +1330,6 @@ export function STEPViewer({
         label.position.copy(transformedPos);
         group.add(label);
 
-        // Create leader line if points available
         if (note.leader_points && note.leader_points.length >= 2) {
           const points = note.leader_points.map(p => transformPMIPosition(p));
           const leaderGeom = new THREE.BufferGeometry().setFromPoints(points);
@@ -1477,7 +1378,6 @@ export function STEPViewer({
     logger.debug('STEPViewer', `PMI group added to scene with ${group.children.length} total children. Scene now has ${sceneRef.current.children.length} children.`);
   }, [pmiData, pmiFilter, transformPMIPosition]);
 
-  // Remove PMI visualization
   const removePMIVisualization = useCallback(() => {
     if (!sceneRef.current || !pmiLayerRef.current) return;
 
@@ -1501,25 +1401,20 @@ export function STEPViewer({
     pmiLayerRef.current = null;
   }, []);
 
-  // Toggle PMI display
   const togglePMI = useCallback(() => {
     logger.debug('STEPViewer', 'Toggling PMI display', { currentState: showPMI, pmiDataAvailable: !!pmiData });
     
     if (!pmiData) return;
 
-    // Prevent multiple recreation
     const newState = !showPMI;
-    
+
     if (newState) {
-      // Show PMI - only create if not already created
       if (!pmiLayerRef.current) {
         createPMIVisualization();
       } else {
-        // Already exists, just make it visible
         pmiLayerRef.current.visible = true;
       }
     } else {
-      // Hide PMI
       if (pmiLayerRef.current) {
         pmiLayerRef.current.visible = false;
       }
@@ -1528,14 +1423,12 @@ export function STEPViewer({
     setShowPMI(newState);
   }, [showPMI, createPMIVisualization, removePMIVisualization, pmiData]);
 
-  // Re-render PMI when filter changes
   useEffect(() => {
     if (showPMI && pmiData) {
       createPMIVisualization();
     }
   }, [pmiFilter, showPMI, pmiData, createPMIVisualization]);
 
-  // Check if PMI data is available - covers all 7 backend PMI types
   const hasPMIData = pmiData && (
     pmiData.dimensions.length > 0 ||
     pmiData.geometric_tolerances.length > 0 ||
@@ -1548,7 +1441,6 @@ export function STEPViewer({
 
   return (
     <div className="flex flex-col h-full w-full bg-background">
-      {/* Professional CAD Toolbar */}
       <div className="glass-card m-2 mb-0 rounded-lg overflow-hidden">
         <div className="flex items-center justify-between px-3 py-2 bg-muted/30">
           <div className="flex items-center gap-1">
@@ -1651,7 +1543,6 @@ export function STEPViewer({
           <Sparkles className="h-3.5 w-3.5" />
         </Button>
 
-        {/* PMI Toggle - only shown when PMI data is available */}
         {hasPMIData && (
           <>
             <div className="w-px h-4 bg-border mx-0.5" />
@@ -1671,11 +1562,9 @@ export function STEPViewer({
         </div>
       </div>
 
-      {/* 3D Viewer Container */}
       <div className="flex-1 relative bg-surface">
         <div ref={containerRef} className="absolute inset-0" />
 
-        {/* Dimension Overlay Panel */}
         {showDimensions && dimensions && (
           <div className="absolute top-3 right-3 z-10">
             <div className="glass-card p-3 min-w-[180px]">
@@ -1686,7 +1575,6 @@ export function STEPViewer({
                 </span>
               </div>
               <div className="space-y-2">
-                {/* X Dimension */}
                 <div className="flex items-center justify-between gap-3 group">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-sm flex items-center justify-center text-[8px] font-bold text-white bg-[hsl(var(--brand-primary-light))]">
@@ -1702,7 +1590,6 @@ export function STEPViewer({
                   </span>
                 </div>
 
-                {/* Y Dimension */}
                 <div className="flex items-center justify-between gap-3 group">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-sm flex items-center justify-center text-[8px] font-bold text-white bg-[hsl(var(--color-success))]">
@@ -1718,7 +1605,6 @@ export function STEPViewer({
                   </span>
                 </div>
 
-                {/* Z Dimension */}
                 <div className="flex items-center justify-between gap-3 group">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-sm flex items-center justify-center text-[8px] font-bold text-black bg-[hsl(var(--color-warning))]">
@@ -1735,10 +1621,8 @@ export function STEPViewer({
                 </div>
               </div>
 
-              {/* Divider */}
               <div className="border-t border-border/50 my-2.5" />
 
-              {/* Source indicator */}
               <div className="flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
                 <span className="text-[10px] text-muted-foreground">
@@ -1749,7 +1633,6 @@ export function STEPViewer({
           </div>
         )}
 
-        {/* Feature Highlight Legend */}
         {showFeatures && (
           <div className="absolute bottom-3 right-3 z-10">
             <div className="glass-card p-2.5 min-w-[160px]">
@@ -1778,7 +1661,6 @@ export function STEPViewer({
         )}
 
 
-        {/* Loading Overlay */}
         {stepLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/90 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-2">
@@ -1804,7 +1686,6 @@ export function STEPViewer({
           </div>
         )}
 
-        {/* Error Display */}
         {loadingError && !stepLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background">
             <div className="text-center p-4 max-w-xs">

@@ -1,4 +1,3 @@
-// Config pages barrel export
 export { default as ApiKeys } from './ApiKeys';
 export { default as Materials } from './Materials';
 export { default as McpKeys } from './McpKeys';

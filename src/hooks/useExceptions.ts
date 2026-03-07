@@ -27,7 +27,6 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
   const { profile } = useAuth()
   const queryClient = useQueryClient()
 
-  // Fetch exceptions with their expectations
   const {
     data: exceptions = [],
     isLoading,
@@ -73,7 +72,6 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     enabled: !!profile?.tenant_id,
   })
 
-  // Fetch exception stats
   const { data: stats } = useQuery({
     queryKey: QueryKeys.exceptions.stats(profile?.tenant_id ?? ''),
     queryFn: async () => {
@@ -89,7 +87,6 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     enabled: !!profile?.tenant_id,
   })
 
-  // Acknowledge exception
   const acknowledgeMutation = useMutation({
     mutationFn: async (exceptionId: string) => {
       const { error } = await supabase.rpc('acknowledge_exception', {
@@ -107,7 +104,6 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     },
   })
 
-  // Resolve exception
   const resolveMutation = useMutation({
     mutationFn: async ({
       exceptionId,
@@ -141,7 +137,6 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     },
   })
 
-  // Dismiss exception
   const dismissMutation = useMutation({
     mutationFn: async ({
       exceptionId,

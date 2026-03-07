@@ -27,7 +27,6 @@ export function usePendingIssuesCount() {
     refetchInterval: 30000, // Refetch every 30 seconds
   });
 
-  // Subscribe to real-time changes
   React.useEffect(() => {
     const channel = supabase
       .channel('pending-issues-count')

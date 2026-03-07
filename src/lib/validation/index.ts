@@ -1,9 +1,3 @@
-/**
- * Data Validation System - Public API
- *
- * Export all validators, loggers, and utilities
- */
-
 export * from "./DataValidator";
 export * from "./EntityValidators";
 export * from "./ValidationLogger";

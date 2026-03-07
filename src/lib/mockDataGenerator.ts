@@ -184,7 +184,6 @@ export async function generateMockData(
     reportProgress(2, 'calendar');
     if (options.includeCalendar) {
       const dutchHolidays: Array<{ date: string; day_type: string; name: string; capacity_multiplier: number; opening_time?: string; closing_time?: string; notes?: string }> = [
-        // 2025 Holidays
         { date: '2025-01-01', day_type: 'holiday', name: 'Nieuwjaarsdag', capacity_multiplier: 0 },
         { date: '2025-04-18', day_type: 'holiday', name: 'Goede Vrijdag', capacity_multiplier: 0 },
         { date: '2025-04-20', day_type: 'holiday', name: 'Eerste Paasdag', capacity_multiplier: 0 },
@@ -195,14 +194,12 @@ export async function generateMockData(
         { date: '2025-05-30', day_type: 'closure', name: 'Brugdag Hemelvaart', capacity_multiplier: 0, notes: 'Fabriek gesloten - brugdag' },
         { date: '2025-06-08', day_type: 'holiday', name: 'Eerste Pinksterdag', capacity_multiplier: 0 },
         { date: '2025-06-09', day_type: 'holiday', name: 'Tweede Pinksterdag', capacity_multiplier: 0 },
-        // Christmas / New Year period 2025-2026
         { date: '2025-12-24', day_type: 'half_day', name: 'Kerstavond', capacity_multiplier: 0.5, opening_time: '08:00', closing_time: '12:00', notes: 'Fabriek sluit om 12:00' },
         { date: '2025-12-25', day_type: 'holiday', name: 'Eerste Kerstdag', capacity_multiplier: 0 },
         { date: '2025-12-26', day_type: 'holiday', name: 'Tweede Kerstdag', capacity_multiplier: 0 },
         { date: '2025-12-29', day_type: 'closure', name: 'Kerstvakantie', capacity_multiplier: 0, notes: 'Fabriek gesloten tussen Kerst en Nieuwjaar' },
         { date: '2025-12-30', day_type: 'closure', name: 'Kerstvakantie', capacity_multiplier: 0, notes: 'Fabriek gesloten tussen Kerst en Nieuwjaar' },
         { date: '2025-12-31', day_type: 'half_day', name: 'Oudejaarsdag', capacity_multiplier: 0.5, opening_time: '08:00', closing_time: '12:00', notes: 'Fabriek sluit om 12:00' },
-        // 2026 Holidays
         { date: '2026-01-01', day_type: 'holiday', name: 'Nieuwjaarsdag', capacity_multiplier: 0 },
         { date: '2026-01-02', day_type: 'closure', name: 'Brugdag Nieuwjaar', capacity_multiplier: 0, notes: 'Fabriek gesloten - brugdag' },
         { date: '2026-04-03', day_type: 'holiday', name: 'Goede Vrijdag', capacity_multiplier: 0 },
@@ -252,7 +249,6 @@ export async function generateMockData(
 
     if (options.includeOperators) {
       try {
-        // First check if operators already exist
         const { data: existingOps } = await supabase
           .from("profiles")
           .select("id, full_name")
@@ -307,7 +303,6 @@ export async function generateMockData(
       }
     }
 
-    // Step 3: Seed resources first (needed for operations)
     reportProgress(4, 'resources');
     if (options.includeResources) {
       const { error: resourceSeedError } = await supabase.rpc(
@@ -330,7 +325,6 @@ export async function generateMockData(
       }
     }
 
-    // Step 4: Seed scrap reasons (needed for quantity records)
     const { error: scrapReasonsError } = await supabase.rpc(
       "seed_default_scrap_reasons",
       {
@@ -347,7 +341,6 @@ export async function generateMockData(
       logger.debug('MockData', 'Seeded 31 default scrap reasons');
     }
 
-    // Fetch resources and scrap reasons for later use
     const { data: resourceData } = await supabase
       .from("resources")
       .select("id, name, type")
@@ -358,13 +351,11 @@ export async function generateMockData(
       .select("id, code, category")
       .eq("tenant_id", tenantId);
 
-    // Step 5: Create realistic Dutch customer jobs
     reportProgress(5, 'jobs');
     let jobIds: string[] = [];
     const jobIdMap: Record<string, string> = {};
 
     if (options.includeJobs) {
-      // Dates: Past in Oct/Nov 2025, Future in Jan 2026
       const oct15 = new Date("2025-10-15T09:00:00Z");
       const oct20 = new Date("2025-10-20T14:30:00Z");
       const nov05 = new Date("2025-11-05T08:15:00Z");
@@ -483,13 +474,11 @@ export async function generateMockData(
       logger.debug('MockData', 'Created 6 realistic Dutch customer jobs');
     }
 
-    // Step 6: Create parts with assembly relationships
     reportProgress(6, 'parts');
     let partIds: string[] = [];
     let partData: Array<{ id: string; part_number: string; job_id: string; parent_part_id?: string | null }> = [];
 
     if (options.includeParts && jobIds.length > 0) {
-      // First: Create parent parts
       const parentParts = [
         {
           tenant_id: tenantId,
@@ -609,13 +598,11 @@ export async function generateMockData(
 
       logger.debug('MockData', `Created ${parentPartsData?.length || 0} parent parts`);
 
-      // Build lookup for parent IDs
       const partIdLookup: Record<string, string> = {};
       parentPartsData?.forEach((p) => {
         partIdLookup[p.part_number] = p.id;
       });
 
-      // Second: Create child parts linked to parents
       const childParts = [
         {
           tenant_id: tenantId,
@@ -726,14 +713,12 @@ export async function generateMockData(
 
       logger.debug('MockData', `Created ${childPartsData?.length || 0} child parts`);
 
-      // Combine all parts for operations creation
-      partData = [...(parentPartsData || []), ...(childPartsData || [])];
+      partData =[...(parentPartsData || []), ...(childPartsData || [])];
       partIds = partData.map((p) => p.id);
 
       logger.debug('MockData', `Total parts created: ${partData.length} (${parentPartsData?.length} parents + ${childPartsData?.length} children)`);
     }
 
-    // Step 7: Create QRM-aligned operations with proper routing
     reportProgress(7, 'operations');
     let operationData: Array<{
       id: string;
@@ -749,7 +734,6 @@ export async function generateMockData(
     ) {
       const operations: Record<string, unknown>[] = [];
 
-      // Helper to create operation routing for each part
       const createOperationRouting = (
         partId: string,
         partNumber: string,
@@ -780,7 +764,6 @@ export async function generateMockData(
         });
       };
 
-      // WO-2025-1047 - HF-FRAME-001 (completed - heavy welded frame)
       const frame001 = partData.find((p) => p.part_number === "HF-FRAME-001");
       if (frame001) {
         createOperationRouting(
@@ -860,7 +843,6 @@ export async function generateMockData(
         );
       }
 
-      // WO-2025-1047 - HF-BRACKET-002 (completed brackets)
       const bracket002 = partData.find(
         (p) => p.part_number === "HF-BRACKET-002",
       );
@@ -908,7 +890,6 @@ export async function generateMockData(
         );
       }
 
-      // WO-2025-1089 - CR-PANEL-A1 (in progress - cleanroom panels)
       const crPanelA1 = partData.find((p) => p.part_number === "CR-PANEL-A1");
       if (crPanelA1) {
         createOperationRouting(
@@ -990,7 +971,6 @@ export async function generateMockData(
         );
       }
 
-      // WO-2025-1089 - CR-PANEL-B1
       const crPanelB1 = partData.find((p) => p.part_number === "CR-PANEL-B1");
       if (crPanelB1) {
         createOperationRouting(
@@ -1044,7 +1024,6 @@ export async function generateMockData(
         );
       }
 
-      // WO-2025-1124 - ESS-BOX-TOP (energy storage - aluminum)
       const essTop = partData.find((p) => p.part_number === "ESS-BOX-TOP");
       if (essTop) {
         createOperationRouting(
@@ -1109,7 +1088,6 @@ export async function generateMockData(
         );
       }
 
-      // WO-2025-1124 - ESS-BOX-SIDE
       const essSide = partData.find((p) => p.part_number === "ESS-BOX-SIDE");
       if (essSide) {
         createOperationRouting(
@@ -1154,7 +1132,6 @@ export async function generateMockData(
         );
       }
 
-      // WO-2025-1156 - HTP-FRAME-MAIN (high precision)
       const asmlFrame = partData.find(
         (p) => p.part_number === "HTP-FRAME-MAIN",
       );
@@ -1235,7 +1212,6 @@ export async function generateMockData(
         );
       }
 
-      // WO-2025-1156 - HTP-MOUNT-PLT
       const asmlMount = partData.find(
         (p) => p.part_number === "HTP-MOUNT-PLT",
       );
@@ -1275,7 +1251,6 @@ export async function generateMockData(
         );
       }
 
-      // WO-2025-1178 - FK-BRACKET-A1 (Aerospace bracket - in progress)
       const fkBracketA1 = partData.find(
         (p) => p.part_number === "FK-BRACKET-A1",
       );
@@ -1339,7 +1314,6 @@ export async function generateMockData(
         );
       }
 
-      // WO-2025-1178 - FK-BRACKET-B1
       const fkBracketB1 = partData.find(
         (p) => p.part_number === "FK-BRACKET-B1",
       );
@@ -1386,7 +1360,6 @@ export async function generateMockData(
         );
       }
 
-      // WO-2025-1195 - PH-MED-HOUSING (Medical - not started)
       const phMedHousing = partData.find(
         (p) => p.part_number === "PH-MED-HOUSING",
       );
@@ -1463,7 +1436,6 @@ export async function generateMockData(
         );
       }
 
-      // WO-2025-1195 - PH-MED-COVER
       const phMedCover = partData.find(
         (p) => p.part_number === "PH-MED-COVER",
       );
@@ -1536,8 +1508,7 @@ export async function generateMockData(
       }
     }
 
-    // Step 7.5: Create a few example substeps (only for 2-3 in_progress operations)
-    // Keep it minimal - users can add more via templates or manually
+    // Keep substeps minimal - users can add more via templates or manually
     if (operationData.length > 0) {
       const inProgressOps = operationData.filter(op => op.status === "in_progress").slice(0, 2);
 
@@ -1551,7 +1522,6 @@ export async function generateMockData(
           notes?: string;
         }> = [];
 
-        // Simple substeps - just a few per operation to demonstrate the feature
         for (const op of inProgressOps) {
           const simpleSteps = [
             { name: "Review drawing and specs", status: "completed" },
@@ -1586,7 +1556,6 @@ export async function generateMockData(
       }
     }
 
-    // Step 7.6: Create substep templates for reuse
     const templateDefinitions = [
       {
         name: "Cutting",
@@ -1652,7 +1621,6 @@ export async function generateMockData(
 
     for (const templateDef of templateDefinitions) {
       try {
-        // Create template
         const { data: template, error: templateError } = await supabase
           .from("substep_templates")
           .insert({
@@ -1670,7 +1638,6 @@ export async function generateMockData(
           continue;
         }
 
-        // Create template items
         const items = templateDef.items.map((item, idx) => ({
           template_id: template.id,
           name: item.name,
@@ -1691,7 +1658,6 @@ export async function generateMockData(
     }
     logger.debug('MockData', `Created ${templateDefinitions.length} substep templates`);
 
-    // Step 8: Link resources to operations
     reportProgress(8, 'resourceLinks');
     if (
       options.includeResources &&
@@ -1701,7 +1667,6 @@ export async function generateMockData(
     ) {
       const operationResources = [];
 
-      // Resource mapping by cell
       const resourceMappings: Record<string, string[]> = {
         Lasersnijden: ["Laser Cutting Head"],
         "CNC Kantbank": ["V-Die", "Enclosure Mold", "Bracket Forming Die"],
@@ -1750,7 +1715,6 @@ export async function generateMockData(
       }
     }
 
-    // Step 9: Create time entries for completed and in-progress operations
     reportProgress(9, 'timeEntries');
     if (
       options.includeTimeEntries &&
@@ -1759,20 +1723,17 @@ export async function generateMockData(
     ) {
       const timeEntries = [];
 
-      // Get completed and in-progress operations
       const workableOps = operationData.filter(
         (op) => op.status === "completed" || op.status === "in_progress",
       );
 
       for (const op of workableOps) {
-        // Randomly assign 1-2 operators who worked on this
         const numOperators = Math.random() > 0.7 ? 2 : 1;
         const selectedOperators = operatorIds
           .sort(() => Math.random() - 0.5)
           .slice(0, numOperators);
 
         for (const operatorId of selectedOperators) {
-          // Create realistic time entries in Oct/Nov 2025
           const baseDate = new Date("2025-10-15T08:00:00Z");
           const daysOffset = Math.floor(Math.random() * 45); // 45 days range
           const startHour = 8 + Math.floor(Math.random() * 8); // Between 8:00 and 16:00
@@ -1829,7 +1790,6 @@ export async function generateMockData(
       }
     }
 
-    // Step 10: Create quantity records with some scrap
     reportProgress(10, 'quantities');
     if (
       options.includeQuantityRecords &&
@@ -1839,13 +1799,11 @@ export async function generateMockData(
     ) {
       const quantityRecords = [];
 
-      // Only create quantity records for completed operations
       const completedOps = operationData.filter(
         (op) => op.status === "completed",
       );
 
       for (const op of completedOps) {
-        // Find the part to get quantity
         const part = partData.find((p) => p.id === op.part_id);
         if (!part) continue;
 
@@ -1908,7 +1866,6 @@ export async function generateMockData(
       }
     }
 
-    // Step 11: Create some issues/NCRs
     reportProgress(11, 'issues');
     if (
       options.includeIssues &&
@@ -1917,7 +1874,6 @@ export async function generateMockData(
     ) {
       const issues: Record<string, unknown>[] = [];
 
-      // Create 2-4 issues across different operations
       const numIssues = 2 + Math.floor(Math.random() * 3);
       const selectedOps = operationData
         .sort(() => Math.random() - 0.5)
@@ -2020,7 +1976,6 @@ export async function generateMockData(
       }
     }
 
-    // Enable demo mode flag now that seeding is complete
     const { error: demoModeError } = await supabase.rpc("enable_demo_mode", {
       p_tenant_id: tenantId,
       p_user_id: null, // Could be passed from context if available
@@ -2066,28 +2021,25 @@ export async function clearMockData(
     // CRITICAL: Delete in reverse order of dependencies
     // All deletions MUST include tenant_id filter to prevent cross-tenant contamination
 
-    // 1. Delete notifications (has tenant_id)
     const { error: notifErr } = await supabase
       .from("notifications")
       .delete()
       .eq("tenant_id", tenantId);
     if (notifErr) logger.warn('MockData', 'Notifications deletion warning:', notifErr);
 
-    // 2. Delete issues (has tenant_id)
     const { error: issuesErr } = await supabase
       .from("issues")
       .delete()
       .eq("tenant_id", tenantId);
     if (issuesErr) logger.warn('MockData', 'Issues deletion warning:', issuesErr);
 
-    // 3. Delete operation_quantities (has tenant_id)
     const { error: qtyErr } = await supabase
       .from("operation_quantities")
       .delete()
       .eq("tenant_id", tenantId);
     if (qtyErr) logger.warn('MockData', 'Quantity records deletion warning:', qtyErr);
 
-    // 4. Delete time_entry_pauses (NO tenant_id - must filter through time_entries)
+    // time_entry_pauses has no tenant_id - must filter through time_entries
     const { data: tenantTimeEntries, error: teFetchErr } = await supabase
       .from("time_entries")
       .select("id")
@@ -2104,28 +2056,25 @@ export async function clearMockData(
       if (tepErr) logger.warn('MockData', 'Time entry pauses deletion warning:', tepErr);
     }
 
-    // 5. Delete time_entries (has tenant_id)
     const { error: timeErr } = await supabase
       .from("time_entries")
       .delete()
       .eq("tenant_id", tenantId);
     if (timeErr) logger.warn('MockData', 'Time entries deletion warning:', timeErr);
 
-    // 6. Delete assignments (has tenant_id)
     const { error: assignErr } = await supabase
       .from("assignments")
       .delete()
       .eq("tenant_id", tenantId);
     if (assignErr) logger.warn('MockData', 'Assignments deletion warning:', assignErr);
 
-    // 7. Delete substeps (has tenant_id)
     const { error: substepsErr } = await supabase
       .from("substeps")
       .delete()
       .eq("tenant_id", tenantId);
     if (substepsErr) logger.warn('MockData', 'Substeps deletion warning:', substepsErr);
 
-    // 7.5. Delete substep template items (must delete before templates - FK constraint)
+    // Must delete template items before templates due to FK constraint
     const { data: tenantTemplates, error: templateFetchErr } = await supabase
       .from("substep_templates")
       .select("id")
@@ -2143,15 +2092,13 @@ export async function clearMockData(
         logger.warn('MockData', 'Template items deletion warning:', templateItemsErr);
     }
 
-    // 7.6. Delete substep templates (has tenant_id)
     const { error: templatesErr } = await supabase
       .from("substep_templates")
       .delete()
       .eq("tenant_id", tenantId);
     if (templatesErr) logger.warn('MockData', 'Templates deletion warning:', templatesErr);
 
-    // 8. Delete operation_resources (NO tenant_id - must filter through operations)
-    // CRITICAL: We must get operation IDs first to ensure tenant isolation
+    // CRITICAL: operation_resources has no tenant_id - must filter through operations for tenant isolation
     const { data: tenantOperations, error: opFetchErr } = await supabase
       .from("operations")
       .select("id")
@@ -2169,58 +2116,49 @@ export async function clearMockData(
         logger.warn('MockData', 'Operation resources deletion warning:', opResErr);
     }
 
-    // 9. Delete operations (has tenant_id)
     const { error: opsErr } = await supabase
       .from("operations")
       .delete()
       .eq("tenant_id", tenantId);
     if (opsErr) logger.warn('MockData', 'Operations deletion warning:', opsErr);
 
-    // 10. Delete parts (has tenant_id)
     const { error: partsErr } = await supabase
       .from("parts")
       .delete()
       .eq("tenant_id", tenantId);
     if (partsErr) logger.warn('MockData', 'Parts deletion warning:', partsErr);
 
-    // 11. Delete jobs (has tenant_id)
     const { error: jobsErr } = await supabase
       .from("jobs")
       .delete()
       .eq("tenant_id", tenantId);
     if (jobsErr) logger.warn('MockData', 'Jobs deletion warning:', jobsErr);
 
-    // 12. Delete cells (has tenant_id)
     const { error: cellsErr } = await supabase
       .from("cells")
       .delete()
       .eq("tenant_id", tenantId);
     if (cellsErr) logger.warn('MockData', 'Cells deletion warning:', cellsErr);
 
-    // 13. Delete resources (has tenant_id)
     const { error: resourcesErr } = await supabase
       .from("resources")
       .delete()
       .eq("tenant_id", tenantId);
     if (resourcesErr) logger.warn('MockData', 'Resources deletion warning:', resourcesErr);
 
-    // 14. Delete materials (has tenant_id, if any exist)
     const { error: materialsErr } = await supabase
       .from("materials")
       .delete()
       .eq("tenant_id", tenantId);
     if (materialsErr) logger.warn('MockData', 'Materials deletion warning:', materialsErr);
 
-    // 15. Delete scrap_reasons (has tenant_id)
     const { error: scrapErr } = await supabase
       .from("scrap_reasons")
       .delete()
       .eq("tenant_id", tenantId);
     if (scrapErr) logger.warn('MockData', 'Scrap reasons deletion warning:', scrapErr);
 
-    // 16. Delete demo operators (has tenant_id + email filter for safety)
-    // CRITICAL: Use correct email addresses that match seed_demo_operators function
-    // The SQL function creates: demo.operator1@example.com, demo.operator2@example.com, etc.
+    // CRITICAL: Email filter must match seed_demo_operators function to avoid deleting real operators
     const { error: profilesErr } = await supabase
       .from("profiles")
       .delete()
@@ -2235,14 +2173,12 @@ export async function clearMockData(
     if (profilesErr)
       logger.warn('MockData', 'Demo operators deletion warning:', profilesErr);
 
-    // 17. Delete factory calendar entries (has tenant_id)
     const { error: calendarErr } = await supabase
       .from("factory_calendar")
       .delete()
       .eq("tenant_id", tenantId);
     if (calendarErr) logger.warn('MockData', 'Calendar deletion warning:', calendarErr);
 
-    // Disable demo mode flag now that data is cleared
     const { error: demoModeError } = await supabase.rpc("disable_demo_mode", {
       p_tenant_id: tenantId,
     });

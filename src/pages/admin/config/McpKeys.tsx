@@ -43,16 +43,13 @@ export default function ConfigMcpKeys() {
   const [newKeyDialog, setNewKeyDialog] = useState(false);
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
 
-  // Form state
   const [keyName, setKeyName] = useState("");
   const [keyDescription, setKeyDescription] = useState("");
   const [keyEnvironment, setKeyEnvironment] = useState<"live" | "test">("live");
   const [allowAllTools, setAllowAllTools] = useState(true);
   const [selectedTools, setSelectedTools] = useState<string[]>([]);
 
-  // Available tools with descriptions
   const availableTools = [
-    // Jobs
     { name: "fetch_jobs", description: "List jobs with optional status filter", category: "Jobs" },
     { name: "create_job", description: "Create a new job with customer, job number, priority", category: "Jobs" },
     { name: "update_job", description: "Update job status, priority, or due date", category: "Jobs" },
@@ -60,27 +57,21 @@ export default function ConfigMcpKeys() {
     { name: "stop_job", description: "Pause a job (changes to on_hold)", category: "Jobs" },
     { name: "complete_job", description: "Mark a job as completed", category: "Jobs" },
     { name: "resume_job", description: "Resume a paused job", category: "Jobs" },
-    // Parts
     { name: "fetch_parts", description: "List parts with optional job/status filter", category: "Parts" },
     { name: "update_part", description: "Update part status or current stage", category: "Parts" },
-    // Tasks
     { name: "fetch_tasks", description: "List tasks with optional filters", category: "Tasks" },
     { name: "update_task", description: "Update task status or assignment", category: "Tasks" },
-    // Operations
     { name: "start_operation", description: "Start an operation (creates time entry)", category: "Operations" },
     { name: "pause_operation", description: "Pause an operation", category: "Operations" },
     { name: "complete_operation", description: "Complete an operation", category: "Operations" },
     { name: "add_substep", description: "Add a substep to an operation", category: "Operations" },
     { name: "complete_substep", description: "Mark a substep as complete", category: "Operations" },
-    // Quality & Issues
     { name: "fetch_issues", description: "List quality issues with optional filters", category: "Quality" },
     { name: "fetch_ncrs", description: "List Non-Conformance Reports", category: "Quality" },
     { name: "create_ncr", description: "Create a Non-Conformance Report", category: "Quality" },
-    // Analytics
     { name: "get_dashboard_stats", description: "Get dashboard statistics and metrics", category: "Analytics" },
   ];
 
-  // Group tools by category for display
   const toolsByCategory = availableTools.reduce((acc, tool) => {
     if (!acc[tool.category]) acc[tool.category] = [];
     acc[tool.category].push(tool);
@@ -148,14 +139,12 @@ export default function ConfigMcpKeys() {
       const keyData = Array.isArray(data) ? data[0] : data;
       setGeneratedKey(keyData.api_key);
 
-      // Reset form
       setKeyName("");
       setKeyDescription("");
       setKeyEnvironment("live");
       setAllowAllTools(true);
       setSelectedTools([]);
 
-      // Refresh keys list
       await fetchMcpKeys();
 
       toast.success(t("mcpKeys.generated"));

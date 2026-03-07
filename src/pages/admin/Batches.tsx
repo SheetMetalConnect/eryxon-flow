@@ -70,7 +70,6 @@ export default function Batches() {
   const updateStatus = useUpdateBatchStatus();
   const deleteBatch = useDeleteBatch();
 
-  // Calculate stats
   const stats = {
     total: batches?.length || 0,
     draft: batches?.filter(b => b.status === "draft").length || 0,

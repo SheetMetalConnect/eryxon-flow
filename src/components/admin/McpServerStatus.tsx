@@ -33,7 +33,6 @@ export function McpServerStatus() {
     if (!tenant?.id) return;
 
     try {
-      // Check for MCP endpoints
       const { data, error } = await supabase
         .from("mcp_endpoints")
         .select("id, enabled, last_used_at")
@@ -77,7 +76,6 @@ export function McpServerStatus() {
 
     fetchStatus();
 
-    // Subscribe to changes
     const channel = supabase
       .channel("mcp_endpoints_changes")
       .on(

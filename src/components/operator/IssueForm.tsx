@@ -59,7 +59,6 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
   useEffect(() => {
     if (open) {
       fetchCategories();
-      // Pre-fill affected quantity from production shortfall
       if (prefilledData?.affectedQuantity) {
         setAffectedQuantity(prefilledData.affectedQuantity);
         setIssueType("ncr");
@@ -77,7 +76,6 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
         .eq("active", true)
         .order("code");
       if (!error && data) {
-        // Type cast the severity_default to match our union type
         const typedData = data.map(cat => ({
           ...cat,
           severity_default: cat.severity_default as "low" | "medium" | "high" | "critical"
@@ -108,7 +106,6 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
       const issueId = crypto.randomUUID();
       const imagePaths: string[] = [];
 
-      // Upload images if any
       if (files && files.length > 0) {
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
@@ -126,7 +123,6 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
         }
       }
 
-      // Get operation and part details for webhook
       const { data: operationData } = await supabase
         .from("operations")
         .select(`
@@ -143,13 +139,11 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
         .eq("id", operationId)
         .single();
 
-      // Get category info if selected
       const selectedCategory = categories.find(c => c.id === selectedCategoryId);
       const fullDescription = selectedCategory
         ? `[${selectedCategory.code}] ${description.trim()}`
         : description.trim();
 
-      // Create issue with all fields
       const createdAt = new Date().toISOString();
       const { error } = await supabase.from("issues").insert({
         id: issueId,
@@ -166,7 +160,6 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
 
       if (error) throw error;
 
-      // Dispatch event (webhooks + MQTT) for issue created
       if (operationData) {
         const operation = operationData as {
           operation_name: string;
@@ -232,7 +225,6 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
           )}
         </DialogHeader>
 
-        {/* Shortfall Alert Banner */}
         {isShortfall && (
           <Alert className="shrink-0 border-amber-500/50 bg-amber-500/10">
             <AlertTriangle className="h-4 w-4 text-amber-600" />
@@ -244,7 +236,6 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
 
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
           <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
-          {/* Issue Type */}
           <div>
             <Label htmlFor="issueType">{t("issues.issueType", "Issue Type")}</Label>
             <Select value={issueType} onValueChange={(v: IssueType) => setIssueType(v)}>
@@ -258,7 +249,6 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
             </Select>
           </div>
 
-          {/* NCR Category - only shown for NCR type */}
           {issueType === "ncr" && (
             <div>
               <Label htmlFor="ncrCategory">{t("issues.ncrCategory", "NCR Category")}</Label>
@@ -277,7 +267,6 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
             </div>
           )}
 
-          {/* Affected Quantity */}
           <div>
             <Label htmlFor="affectedQuantity" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
@@ -294,7 +283,6 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
             />
           </div>
 
-          {/* Category selector - only if categories exist in DB */}
           {hasCategories && (
             <div>
               <Label htmlFor="category">{t("issues.category", "Category")}</Label>
@@ -313,7 +301,6 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
             </div>
           )}
 
-          {/* Severity - always shown */}
           <div>
             <Label htmlFor="severity">{t("issues.severityLabel", "Severity")}</Label>
             <Select value={severity} onValueChange={(v: string) => setSeverity(v as "low" | "medium" | "high" | "critical")}>
@@ -329,7 +316,6 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
             </Select>
           </div>
 
-          {/* Description */}
           <div>
             <Label htmlFor="description">{t("issues.description", "Description")} *</Label>
             <Textarea
@@ -345,7 +331,6 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
             />
           </div>
 
-          {/* Photo upload */}
           <div>
             <label
               htmlFor="photos"

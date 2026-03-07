@@ -375,7 +375,6 @@ export default function BatchCreate() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Batch Details */}
           <Card className="glass-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -401,7 +400,6 @@ export default function BatchCreate() {
                 </div>
               </div>
 
-              {/* Parent Batch Selection */}
               <div>
                 <Label>{t("batches.parentBatch")}</Label>
                 <Select value={parentBatchId} onValueChange={setParentBatchId}>
@@ -497,7 +495,6 @@ export default function BatchCreate() {
                 />
               </div>
 
-              {/* Images */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>{t("batches.nestingImage")}</Label>
@@ -539,7 +536,6 @@ export default function BatchCreate() {
                 </div>
               </div>
 
-              {/* Metadata JSON */}
               <div>
                 <Label className="flex items-center gap-2">
                   <FileCode className="h-4 w-4" />
@@ -560,7 +556,6 @@ export default function BatchCreate() {
             </CardContent>
           </Card>
 
-          {/* Operations Selection */}
           <Card className="glass-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -654,7 +649,6 @@ export default function BatchCreate() {
           </Card>
         </div>
 
-        {/* Submit */}
         <div className="flex justify-end gap-4">
           <Button type="button" variant="outline" onClick={() => navigate("/admin/batches")}>
             {t("common.cancel")}

@@ -216,7 +216,6 @@ export function TemplatesManager() {
 
   const handleDeleteItem = (index: number) => {
     const updated = templateItems.filter((_, i) => i !== index);
-    // Resequence
     const resequenced = updated.map((item, i) => ({
       ...item,
       sequence: i + 1
@@ -233,7 +232,6 @@ export function TemplatesManager() {
         const newIndex = items.findIndex(item => item.sequence === over.id);
 
         const reordered = arrayMove(items, oldIndex, newIndex);
-        // Resequence
         return reordered.map((item, i) => ({
           ...item,
           sequence: i + 1
@@ -257,7 +255,6 @@ export function TemplatesManager() {
 
     try {
       if (editingTemplate) {
-        // Update template
         const { error: templateError } = await supabase
           .from("substep_templates")
           .update({
@@ -269,13 +266,11 @@ export function TemplatesManager() {
 
         if (templateError) throw templateError;
 
-        // Delete old items
         await supabase
           .from("substep_template_items")
           .delete()
           .eq('template_id', editingTemplate.id);
 
-        // Insert new items
         const { error: itemsError } = await supabase
           .from("substep_template_items")
           .insert(
@@ -291,7 +286,6 @@ export function TemplatesManager() {
 
         toast.success(t("Template updated successfully"));
       } else {
-        // Create new template
         const { data: template, error: templateError } = await supabase
           .from("substep_templates")
           .insert({
@@ -306,7 +300,6 @@ export function TemplatesManager() {
 
         if (templateError || !template) throw templateError;
 
-        // Insert items
         const { error: itemsError } = await supabase
           .from("substep_template_items")
           .insert(

@@ -94,7 +94,6 @@ export default function SessionTrackingBar() {
     if (!error && data) {
       setActiveEntries(data as unknown as ActiveEntry[]);
       loadCurrentPauses(data as unknown as ActiveEntry[]);
-      // Reset dismissed when new entries appear
       if (data.length > 0 && dismissed) {
         setDismissed(false);
       }
@@ -104,7 +103,6 @@ export default function SessionTrackingBar() {
     }
   }, [operatorId, dismissed]);
 
-  // Calculate elapsed time for each entry
   useEffect(() => {
     const calculateElapsed = () => {
       const now = new Date().getTime();
@@ -112,12 +110,10 @@ export default function SessionTrackingBar() {
 
       activeEntries.forEach(entry => {
         if (entry.is_paused && currentPauses[entry.id]) {
-          // For paused entries, calculate time until pause
           const pausedAt = new Date(currentPauses[entry.id].paused_at).getTime();
           const startTime = new Date(entry.start_time).getTime();
           newElapsed[entry.id] = Math.floor((pausedAt - startTime) / 1000);
         } else {
-          // For active entries, calculate from start to now
           const startTime = new Date(entry.start_time).getTime();
           newElapsed[entry.id] = Math.floor((now - startTime) / 1000);
         }
@@ -136,7 +132,6 @@ export default function SessionTrackingBar() {
 
     loadActiveEntries();
 
-    // Subscribe to time entries changes
     const channel = supabase
       .channel("session-tracking-bar")
       .on(
@@ -214,7 +209,6 @@ export default function SessionTrackingBar() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Don't render if no active entries or dismissed
   if (activeEntries.length === 0 || dismissed) return null;
 
   const primaryEntry = activeEntries[0];
@@ -228,7 +222,6 @@ export default function SessionTrackingBar() {
       )}
       style={{ bottom: 'max(0px, env(safe-area-inset-bottom))' }}
     >
-      {/* Glassmorphism Bottom Bar */}
       <div
         className={cn(
           "mx-2 sm:mx-4 mb-2 sm:mb-4 rounded-xl",
@@ -239,12 +232,9 @@ export default function SessionTrackingBar() {
           "overflow-hidden"
         )}
       >
-        {/* Main Bar Content */}
         <div className="p-3 sm:p-4">
           <div className="flex items-center justify-between gap-3">
-            {/* Left: Status Indicator + Info */}
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              {/* Pulsing Indicator */}
               <div className="relative flex-shrink-0">
                 <div
                   className={cn(
@@ -261,7 +251,6 @@ export default function SessionTrackingBar() {
                     )}
                   />
                 </div>
-                {/* Pulse animation for active tracking */}
                 {!primaryEntry.is_paused && (
                   <span className="absolute -top-1 -right-1 flex h-3 w-3">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
@@ -270,7 +259,6 @@ export default function SessionTrackingBar() {
                 )}
               </div>
 
-              {/* Task Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-medium text-primary uppercase tracking-wide">
@@ -290,7 +278,6 @@ export default function SessionTrackingBar() {
                 </div>
               </div>
 
-              {/* Timer Display */}
               <div className="hidden sm:flex flex-col items-end flex-shrink-0">
                 <div
                   className={cn(
@@ -306,9 +293,7 @@ export default function SessionTrackingBar() {
               </div>
             </div>
 
-            {/* Right: Action Buttons */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              {/* Timer on mobile */}
               <div
                 className={cn(
                   "sm:hidden text-lg font-mono font-bold tabular-nums px-2",
@@ -318,7 +303,6 @@ export default function SessionTrackingBar() {
                 {formatTime(elapsedSeconds[primaryEntry.id] || 0)}
               </div>
 
-              {/* Pause/Resume */}
               {primaryEntry.is_paused ? (
                 <Button
                   onClick={() => handleResume(primaryEntry)}
@@ -348,7 +332,6 @@ export default function SessionTrackingBar() {
                 </Button>
               )}
 
-              {/* Stop */}
               <Button
                 onClick={() => handleStop(primaryEntry)}
                 disabled={loading[primaryEntry.id]}
@@ -363,7 +346,6 @@ export default function SessionTrackingBar() {
                 <span className="hidden sm:inline">{t("sessionTracking.stop")}</span>
               </Button>
 
-              {/* Expand/Collapse for multiple entries */}
               {hasMultiple && (
                 <Button
                   onClick={() => setExpanded(!expanded)}
@@ -375,7 +357,6 @@ export default function SessionTrackingBar() {
                 </Button>
               )}
 
-              {/* Dismiss (minimize) */}
               <Button
                 onClick={() => setDismissed(true)}
                 variant="ghost"
@@ -388,7 +369,6 @@ export default function SessionTrackingBar() {
             </div>
           </div>
 
-          {/* Multiple entries indicator */}
           {hasMultiple && !expanded && (
             <div className="mt-2 pt-2 border-t border-white/10">
               <button
@@ -401,7 +381,6 @@ export default function SessionTrackingBar() {
           )}
         </div>
 
-        {/* Expanded entries list */}
         {expanded && hasMultiple && (
           <div className="border-t border-white/10 bg-black/20">
             {activeEntries.slice(1).map((entry) => (

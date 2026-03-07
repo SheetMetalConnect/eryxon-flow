@@ -59,7 +59,6 @@ export function usePartIssues(partId: string | undefined) {
 
     fetchIssueSummary();
 
-    // Subscribe to changes in issues - filter by status to reduce callback frequency
     // Note: Can't filter by part_id directly since issues link through operations
     const channel = supabase
       .channel(`part-issues-${partId}`)

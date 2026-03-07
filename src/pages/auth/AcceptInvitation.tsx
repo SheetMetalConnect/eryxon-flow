@@ -77,7 +77,6 @@ export default function AcceptInvitation() {
     setSubmitting(true);
 
     try {
-      // Sign up the user with invitation metadata
       const { error: signUpError, data: signUpData } = await signUp(
         invitation.email,
         password,
@@ -92,7 +91,6 @@ export default function AcceptInvitation() {
         throw signUpError;
       }
 
-      // Accept the invitation
       const userData = signUpData as { user?: { id: string } } | undefined;
       if (userData?.user) {
         await acceptInvitation(token, userData.user.id);
@@ -100,7 +98,6 @@ export default function AcceptInvitation() {
 
       toast.success(t('invitation.welcomeToTeam'));
 
-      // Redirect to auth page
       setTimeout(() => {
         navigate('/auth');
       }, 2000);

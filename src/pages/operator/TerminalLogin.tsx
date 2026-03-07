@@ -26,17 +26,6 @@ import { Link } from "react-router-dom";
 import { ROUTES } from "@/routes";
 import { logger } from "@/lib/logger";
 
-/**
- * Terminal Login / Operator Switch Page
- *
- * Factory-friendly login experience for operators using employee ID and PIN.
- * Designed for:
- * - Touch screen terminals on the shop floor
- * - Quick operator authentication without email/password
- * - Multiple shifts with fast user switching
- *
- * Requires: User must already be logged in with a base account (admin/operator)
- */
 export default function TerminalLogin() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -53,7 +42,6 @@ export default function TerminalLogin() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showKeypad, setShowKeypad] = useState(false);
 
-  // Update clock every second
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -61,7 +49,6 @@ export default function TerminalLogin() {
     return () => clearInterval(timer);
   }, []);
 
-  // Calculate remaining lockout time
   const getLockoutRemaining = () => {
     if (!lockedUntil) return null;
     const remaining = Math.max(0, Math.ceil((lockedUntil.getTime() - currentTime.getTime()) / 1000 / 60));
@@ -107,7 +94,6 @@ export default function TerminalLogin() {
       const result = await verifyAndSwitchOperator(employeeId.trim(), pin);
 
       if (result.success) {
-        // Successfully switched operator - go to work queue
         navigate(ROUTES.OPERATOR.WORK_QUEUE);
       } else {
         setErrorCode(result.error_code || null);
@@ -138,7 +124,6 @@ export default function TerminalLogin() {
     navigate(ROUTES.OPERATOR.WORK_QUEUE);
   };
 
-  // Loading state
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -147,7 +132,6 @@ export default function TerminalLogin() {
     );
   }
 
-  // Not logged in - redirect to auth
   if (!user || !profile) {
     return (
       <>

@@ -64,7 +64,6 @@ export function AutoScheduleButton() {
         setLoading(true);
         setShowConfirmDialog(false);
         try {
-            // 1. Fetch all necessary data in parallel
             const [jobsResult, operationsResult, cellsResult, calendarResult] = await Promise.all([
                 supabase
                     .from("jobs")
@@ -77,7 +76,6 @@ export function AutoScheduleButton() {
                 supabase
                     .from("cells")
                     .select("*"),
-                // Fetch calendar for next 12 months
                 supabase
                     .from("factory_calendar")
                     .select("*")
@@ -94,14 +92,12 @@ export function AutoScheduleButton() {
             const operations = operationsResult.data || [];
             const cells = cellsResult.data || [];
 
-            // Convert calendar data to CalendarDay format
             const calendarDays = (calendarResult.data || []).map((d: { date: string; day_type: string; capacity_multiplier: number | null }) => ({
                 date: d.date,
                 day_type: d.day_type as CalendarDay['day_type'],
                 capacity_multiplier: d.capacity_multiplier ?? 1,
             })) as CalendarDay[];
 
-            // Get tenant config
             const tenantConfig = tenant as unknown as Record<string, unknown> | null;
             const config = {
                 workingDaysMask: (tenantConfig?.working_days_mask as number) ?? 31,
@@ -109,11 +105,9 @@ export function AutoScheduleButton() {
                 factoryClosingTime: (tenantConfig?.factory_closing_time as string)?.substring(0, 5) ?? '17:00',
             };
 
-            // 2. Run Scheduler with calendar awareness
             const scheduler = new SchedulerService(cells, calendarDays, config);
             const scheduledOps = scheduler.scheduleOperations(operations);
 
-            // 3. Update Operations in DB
             let updatedCount = 0;
             const updates = scheduledOps
                 .filter(op => op.planned_start && op.planned_end)
@@ -123,7 +117,6 @@ export function AutoScheduleButton() {
                     planned_end: op.planned_end
                 }));
 
-            // Batch update operations
             for (const update of updates) {
                 const { error } = await supabase
                     .from("operations")
@@ -136,15 +129,12 @@ export function AutoScheduleButton() {
                 if (!error) updatedCount++;
             }
 
-            // 4. Save day allocations (for multi-day operations visualization)
-            // First, clear existing allocations for these operations
             const operationIds = scheduledOps.map(op => op.id);
             await supabase
                 .from("operation_day_allocations")
                 .delete()
                 .in("operation_id", operationIds);
 
-            // Insert new allocations
             const allAllocations = scheduledOps.flatMap(op =>
                 op.day_allocations.map(alloc => ({
                     operation_id: alloc.operation_id,
@@ -172,7 +162,6 @@ export function AutoScheduleButton() {
                 description: t("capacity.operationsScheduled", { count: updatedCount }),
             });
 
-            // Invalidate relevant queries to refresh data without full page reload
             await Promise.all([
                 queryClient.invalidateQueries({ queryKey: ["capacity"] }),
                 queryClient.invalidateQueries({ queryKey: ["factoryCalendar"] }),

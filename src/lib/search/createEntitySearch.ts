@@ -1,13 +1,3 @@
-/**
- * Entity Search Factory
- *
- * Creates search functions from configuration objects.
- * Eliminates code duplication across entity search implementations.
- *
- * Single Responsibility: Only handles search execution
- * Open/Closed: New entities added via config, not code changes
- */
-
 import { supabase } from "@/integrations/supabase/client";
 import type { EntitySearchConfig, SearchResult } from "./types";
 import { logger } from '@/lib/logger';
@@ -45,10 +35,8 @@ export function createEntitySearch<T>(
     }
 
     try {
-      // Escape LIKE metacharacters to prevent wildcard injection
       const escapedQuery = escapeLikePattern(query.trim());
 
-      // Build the ilike filter for search columns with escaped query
       const searchFilter = config.searchColumns
         .map((col) => `${col}.ilike.%${escapedQuery}%`)
         .join(",");

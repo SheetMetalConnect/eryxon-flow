@@ -225,7 +225,6 @@ export default function McpSetup() {
         </Button>
       </div>
 
-      {/* Token Display Dialog - shown after creating or regenerating */}
       {newToken && (
         <Dialog open={!!newToken} onOpenChange={() => setNewToken(null)}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -335,7 +334,6 @@ export default function McpSetup() {
         </Dialog>
       )}
 
-      {/* Create Endpoint Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -369,7 +367,6 @@ export default function McpSetup() {
         </DialogContent>
       </Dialog>
 
-      {/* Endpoints List */}
       <Card>
         <CardHeader>
           <CardTitle>{t('mcp.activeEndpoints')}</CardTitle>
@@ -458,7 +455,6 @@ export default function McpSetup() {
         </CardContent>
       </Card>
 
-      {/* Quick Setup Guide */}
       <Card>
         <CardHeader>
           <CardTitle>{t('mcp.quickSetup')}</CardTitle>

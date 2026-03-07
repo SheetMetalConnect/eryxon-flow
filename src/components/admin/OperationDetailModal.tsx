@@ -62,7 +62,6 @@ export default function OperationDetailModal({
   const [currentFileType, setCurrentFileType] = useState<"step" | "pdf" | null>(null);
   const [currentFileTitle, setCurrentFileTitle] = useState<string>("");
 
-  // Fetch operation details with part and job info
   const { data: operation, isLoading } = useQuery({
     queryKey: QueryKeys.operations.detail(operationId),
     queryFn: async () => {
@@ -102,7 +101,6 @@ export default function OperationDetailModal({
     },
   });
 
-  // Fetch resources for this operation with full details
   const { data: resources } = useQuery({
     queryKey: QueryKeys.operations.resources(operationId),
     queryFn: async () => {
@@ -128,7 +126,6 @@ export default function OperationDetailModal({
     },
   });
 
-  // Fetch available operators for assignment
   const { data: operators } = useQuery({
     queryKey: QueryKeys.profiles.operators(profile?.tenant_id || ""),
     queryFn: async () => {
@@ -144,7 +141,6 @@ export default function OperationDetailModal({
     enabled: !!profile?.tenant_id,
   });
 
-  // Mutation to update operation status (with optimistic update)
   const updateStatusMutation = useMutation({
     mutationFn: async (newStatus: "not_started" | "in_progress" | "completed" | "on_hold") => {
       const { error } = await supabase
@@ -181,7 +177,6 @@ export default function OperationDetailModal({
     },
   });
 
-  // Mutation to assign operator
   const assignOperatorMutation = useMutation({
     mutationFn: async (operatorId: string | null) => {
       const { error } = await supabase
@@ -205,7 +200,6 @@ export default function OperationDetailModal({
     },
   });
 
-  // Handle viewing file (STEP or PDF)
   const handleViewFile = async (filePath: string) => {
     try {
       const fileExt = filePath.split(".").pop()?.toLowerCase();
@@ -272,7 +266,6 @@ export default function OperationDetailModal({
     return <Badge variant={variants[status] || "default"}>{labels[status] || status}</Badge>;
   };
 
-  // Get file lists from part
   const stepFiles =
     operation?.parts?.file_paths?.filter((f: string) => {
       const ext = f.split(".").pop()?.toLowerCase();
@@ -283,7 +276,6 @@ export default function OperationDetailModal({
       (f: string) => f.split(".").pop()?.toLowerCase() === "pdf"
     ) || [];
 
-  // Count files for tab badge
   const filesCount = stepFiles.length + pdfFiles.length;
   const resourcesCount = resources?.length || 0;
 
@@ -303,7 +295,6 @@ export default function OperationDetailModal({
     <>
       <Dialog open onOpenChange={onClose}>
         <DialogContent className="sm:max-w-xl lg:max-w-2xl max-h-[85vh] overflow-hidden flex flex-col p-0">
-          {/* Header */}
           <div className="px-4 sm:px-6 py-4 border-b bg-muted/30">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
               <div className="flex-1 min-w-0">
@@ -334,7 +325,6 @@ export default function OperationDetailModal({
             </div>
           </div>
 
-          {/* Content with Tabs */}
           <Tabs defaultValue="details" className="flex-1 flex flex-col overflow-hidden">
             <div className="px-4 sm:px-6 border-b">
               <TabsList className="h-10 w-full justify-start bg-transparent p-0 gap-4 overflow-x-auto">
@@ -358,9 +348,7 @@ export default function OperationDetailModal({
             </div>
 
             <div className="flex-1 overflow-y-auto">
-              {/* Details Tab */}
               <TabsContent value="details" className="p-4 sm:p-6 space-y-5 m-0">
-                {/* Key Info Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="p-3 rounded-lg bg-muted/50 border">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("jobs.dueDate")}</p>
@@ -391,7 +379,6 @@ export default function OperationDetailModal({
                   </div>
                 </div>
 
-                {/* Part & Job Context */}
                 <div className="border rounded-lg p-4 bg-muted/20">
                   <h4 className="text-xs text-muted-foreground uppercase tracking-wide mb-2">{t("operations.context", "Context")}</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -406,7 +393,6 @@ export default function OperationDetailModal({
                   </div>
                 </div>
 
-                {/* Assignment */}
                 <div>
                   <Label className="text-sm font-medium mb-2 block">{t("operations.assignedOperator", "Assigned Operator")}</Label>
                   <Select
@@ -434,7 +420,6 @@ export default function OperationDetailModal({
                   </Select>
                 </div>
 
-                {/* Notes */}
                 {operation?.notes && (
                   <div>
                     <Label className="text-sm font-medium mb-2 block">{t("jobs.notes", "Notes")}</Label>
@@ -444,7 +429,6 @@ export default function OperationDetailModal({
                   </div>
                 )}
 
-                {/* Quick Actions */}
                 <div className="flex flex-wrap gap-2 pt-4 border-t">
                   {operation?.status !== "completed" && (
                     <>
@@ -494,7 +478,6 @@ export default function OperationDetailModal({
                 </div>
               </TabsContent>
 
-              {/* Resources Tab */}
               {resourcesCount > 0 && (
                 <TabsContent value="resources" className="p-4 sm:p-6 space-y-3 m-0">
                   {resources?.map((r: { id: string; quantity: number; notes: string | null; resource?: { name: string; type: string; identifier?: string | null; location?: string | null; status?: string | null; metadata?: Record<string, unknown> | null } }) => {
@@ -558,7 +541,6 @@ export default function OperationDetailModal({
                 </TabsContent>
               )}
 
-              {/* Files Tab */}
               {filesCount > 0 && (
                 <TabsContent value="files" className="p-4 sm:p-6 space-y-4 m-0">
                   {stepFiles.length > 0 && (
@@ -612,7 +594,6 @@ export default function OperationDetailModal({
         </DialogContent>
       </Dialog>
 
-      {/* File Viewer Dialog - Full screen on mobile */}
       <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
         <DialogContent className="glass-card w-full h-[100dvh] sm:h-[90vh] sm:max-w-6xl flex flex-col p-0 rounded-none sm:rounded-lg inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
           <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">

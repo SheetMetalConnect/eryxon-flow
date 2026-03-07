@@ -60,14 +60,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         if (session?.user) {
-          // Fetch profile data after session is established
           setTimeout(() => {
             fetchProfile(session.user.id);
           }, 0);
@@ -77,7 +75,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -103,10 +100,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       setProfile(data as Profile);
 
-      // Fetch tenant info and prefetch common data after profile is loaded
       if (data) {
         await fetchTenant();
-        // Prefetch commonly needed data to improve initial page load
         prefetchCommonData(queryClient, data.tenant_id, {
           fetchCells: () => Promise.resolve(supabase.from('cells').select('*').eq('tenant_id', data.tenant_id).eq('active', true).then(r => r.data)),
           fetchMaterials: () => Promise.resolve(supabase.from('materials').select('*').eq('tenant_id', data.tenant_id).then(r => r.data)),
@@ -126,7 +121,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
 
-      // The RPC returns an array, get the first element
       if (data && data.length > 0) {
         const tenantData = data[0] as Record<string, unknown>;
         setTenant({
@@ -150,22 +144,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const switchTenant = async (tenantId: string) => {
     try {
-      // Only root admins can switch tenants
       if (!profile?.is_root_admin) {
         throw new Error("Only root administrators can switch tenants");
       }
 
-      // Call the set_active_tenant RPC
       const { error } = await supabase.rpc("set_active_tenant", {
         p_tenant_id: tenantId,
       });
 
       if (error) throw error;
 
-      // Refresh tenant info to reflect the change
       await fetchTenant();
-
-      // Optionally reload the page to refresh all data
       window.location.reload();
     } catch (error) {
       logger.error('AuthContext', 'Error switching tenant', error);
@@ -199,7 +188,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     captchaToken?: string | null
   ) => {
     try {
-      // Generate username from email (part before @)
       const username = email.split('@')[0];
 
       const { data, error } = await supabase.auth.signUp({

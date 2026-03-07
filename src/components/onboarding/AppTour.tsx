@@ -17,7 +17,6 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
   const [run, setRun] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
 
-  // Admin tour steps
   const adminSteps: Step[] = [
     {
       target: 'body',
@@ -117,7 +116,6 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
     },
   ];
 
-  // Operator tour steps
   const operatorSteps: Step[] = [
     {
       target: 'body',
@@ -210,7 +208,6 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
   const steps = userRole === 'admin' ? adminSteps : operatorSteps;
 
   useEffect(() => {
-    // Start tour automatically when component mounts
     const timer = setTimeout(() => {
       setRun(true);
     }, 500);
@@ -226,7 +223,6 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
       if (finishedStatuses.includes(status)) {
         setRun(false);
 
-        // Mark tour as completed in database
         if (profile?.id) {
           try {
             await supabase
@@ -242,7 +238,6 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
 
         onComplete?.();
       } else if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
-        // Move to next step
         setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1));
       }
     },
@@ -291,7 +286,6 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
   );
 }
 
-// Hook to restart the tour
 export function useRestartTour() {
   const { profile } = useAuth();
   const { t } = useTranslation();
@@ -307,7 +301,6 @@ export function useRestartTour() {
 
       toast.success(t('onboarding.tourReset'));
 
-      // Reload to restart tour
       window.location.reload();
     } catch (error) {
       logger.error('AppTour', 'Error restarting tour', error);

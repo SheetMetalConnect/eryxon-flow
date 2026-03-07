@@ -14,7 +14,6 @@ export function McpActivityToasts(): null {
   useEffect(() => {
     if (!profile?.tenant_id) return;
 
-    // Subscribe to activity log changes for MCP events
     const channel = supabase
       .channel("mcp_activity_toasts")
       .on(
@@ -28,7 +27,6 @@ export function McpActivityToasts(): null {
         (payload) => {
           const activity = payload.new as Record<string, unknown>;
 
-          // Only show toasts for MCP actions
           if (activity.action === "mcp_execute") {
             const metadata = (activity.metadata || {}) as Record<string, unknown>;
             const toolName = activity.entity_name || metadata.tool_name || "Unknown Tool";
@@ -91,6 +89,5 @@ export function McpActivityToasts(): null {
     };
   }, [profile?.tenant_id]);
 
-  // This component doesn't render anything visible
   return null;
 }

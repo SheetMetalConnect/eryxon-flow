@@ -905,7 +905,6 @@ export async function startBatchTimeTracking(
     throw new Error("batches.errors.alreadyClosed");
   }
 
-  // Check operator isn't already timing something
   const { data: activeEntries } = await supabase
     .from("time_entries")
     .select("id, operation_id")
@@ -917,7 +916,6 @@ export async function startBatchTimeTracking(
     throw new Error("batches.errors.operatorBusy");
   }
 
-  // Get all operations in the batch
   const { data: batchOps, error: batchOpsError } = await supabase
     .from("batch_operations")
     .select("operation_id")
@@ -931,7 +929,6 @@ export async function startBatchTimeTracking(
 
   const now = new Date().toISOString();
 
-  // Create a time entry for each operation in the batch
   const timeEntries = batchOps.map((bo) => ({
     operation_id: bo.operation_id,
     operator_id: operatorId,
@@ -947,7 +944,6 @@ export async function startBatchTimeTracking(
 
   if (insertError) throw insertError;
 
-  // Update batch status to in_progress (conditional: only if draft/ready)
   const { error: batchStatusError } = await supabase
     .from("operation_batches")
     .update({
@@ -960,7 +956,6 @@ export async function startBatchTimeTracking(
     .in("status", ["draft", "ready"]);
   if (batchStatusError) throw batchStatusError;
 
-  // Update all operations to in_progress
   const opIds = batchOps.map((bo) => bo.operation_id);
   const { error: opsStatusError } = await supabase
     .from("operations")
@@ -981,7 +976,6 @@ export async function stopBatchTimeTracking(
   operatorId: string,
   tenantId: string
 ) {
-  // Get all operations in the batch
   const { data: batchOps, error: batchOpsError } = await supabase
     .from("batch_operations")
     .select("operation_id")
@@ -996,7 +990,6 @@ export async function stopBatchTimeTracking(
   const opIds = batchOps.map((bo) => bo.operation_id);
   const endTime = new Date();
 
-  // Find all active time entries for these operations by this operator
   const { data: activeEntries, error: entriesError } = await supabase
     .from("time_entries")
     .select("id, operation_id, start_time")
@@ -1010,7 +1003,6 @@ export async function stopBatchTimeTracking(
     throw new Error("batches.errors.noActiveEntries");
   }
 
-  // Use the earliest start time as the batch start
   const startTimes = activeEntries.map((e) => new Date(e.start_time).getTime());
   const batchStartTime = Math.min(...startTimes);
   const totalSeconds = Math.round((endTime.getTime() - batchStartTime) / 1000);
@@ -1020,13 +1012,11 @@ export async function stopBatchTimeTracking(
   const baseMinutes = Math.floor(totalMinutes / opIds.length);
   const remainder = totalMinutes - baseMinutes * opIds.length;
 
-  // Build a map from operation_id to its allocated minutes
   const opMinutesMap = new Map<string, number>();
   opIds.forEach((opId, index) => {
     opMinutesMap.set(opId, baseMinutes + (index < remainder ? 1 : 0));
   });
 
-  // Close all time entries with distributed duration
   for (const entry of activeEntries) {
     const allocated = opMinutesMap.get(entry.operation_id) ?? baseMinutes;
     const { error: closeEntryError } = await supabase
@@ -1041,7 +1031,6 @@ export async function stopBatchTimeTracking(
     if (closeEntryError) throw closeEntryError;
   }
 
-  // Update each operation's actual_time with the distributed time
   for (const opId of opIds) {
     const allocated = opMinutesMap.get(opId) ?? baseMinutes;
     const { data: operation } = await supabase
@@ -1061,7 +1050,6 @@ export async function stopBatchTimeTracking(
     }
   }
 
-  // Update batch actual_time and status
   const { error: batchCompleteError } = await supabase
     .from("operation_batches")
     .update({

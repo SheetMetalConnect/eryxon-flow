@@ -1,17 +1,5 @@
-/**
- * ERYXON MES THEME - CSS Custom Properties Based
- *
- * This file exports theme-related constants and types.
- * All actual theming is handled via CSS custom properties in design-system.css
- *
- * The ThemeProvider manages the 'dark'/'light' class on :root
- * which triggers CSS variable switching.
- */
-
-// Re-export types from ThemeProvider
 export type { ThemeMode, ResolvedTheme } from './ThemeProvider';
 
-// Brand colors for reference (matching design-system.css)
 export const brandColors = {
   dark: {
     primary: '#1e90ff',
@@ -41,7 +29,6 @@ export const brandColors = {
   },
 };
 
-// Status colors (used across the app)
 export const statusColors = {
   active: 'hsl(var(--status-active))',
   completed: 'hsl(var(--status-completed))',
@@ -50,7 +37,6 @@ export const statusColors = {
   pending: 'hsl(var(--status-pending))',
 };
 
-// Stage colors
 export const stageColors = {
   default: 'hsl(var(--stage-default))',
   cutting: 'hsl(var(--stage-cutting))',
@@ -60,7 +46,6 @@ export const stageColors = {
   finishing: 'hsl(var(--stage-finishing))',
 };
 
-// Severity colors
 export const severityColors = {
   critical: 'hsl(var(--severity-critical))',
   high: 'hsl(var(--severity-high))',

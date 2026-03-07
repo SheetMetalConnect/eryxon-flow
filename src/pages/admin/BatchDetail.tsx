@@ -121,7 +121,6 @@ export default function BatchDetail() {
   const updateBatch = useUpdateBatch();
   const createRequirement = useCreateBatchRequirement();
 
-  // Local state for modals/inputs
   const [isRequirementDialogOpen, setIsRequirementDialogOpen] = useState(false);
   const [newReqMaterial, setNewReqMaterial] = useState("");
   const [newReqQuantity, setNewReqQuantity] = useState("");
@@ -228,7 +227,6 @@ export default function BatchDetail() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* Header */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <Button
@@ -238,7 +236,6 @@ export default function BatchDetail() {
             <ArrowLeft className="mr-2 h-4 w-4" /> {t("batches.backToBatches")}
           </Button>
           <div className="flex gap-2">
-            {/* "Missing Button" Fix: Add Edit Button */}
             <Button variant="outline" onClick={() => navigate(`/admin/batches/${batch.id}/edit`)}> {/* Assuming edit route exists or will exist, or just placeholder */}
               <Edit className="mr-2 h-4 w-4" />
               {t("batches.editBatch")}
@@ -264,10 +261,7 @@ export default function BatchDetail() {
         </div>
       </div>
 
-      {/* Batch Information & Images Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-        {/* Helper visualizer / Images */}
         <Card className="glass-card">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -315,7 +309,6 @@ export default function BatchDetail() {
           </CardContent>
         </Card>
 
-        {/* Requirements & Info */}
         <div className="space-y-6">
           <Card className="glass-card">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -406,7 +399,6 @@ export default function BatchDetail() {
         </div>
       </div>
 
-      {/* Metadata Display */}
       {batch.nesting_metadata && Object.keys(batch.nesting_metadata).length > 0 && (
         <Card className="glass-card">
           <CardHeader>
@@ -424,7 +416,6 @@ export default function BatchDetail() {
       )}
 
 
-      {/* Sub-Batches / Nesting (Master -> Sheets) */}
       {((subBatches && subBatches.length > 0) || batch.batch_type === 'laser_nesting') && (
         <Card className="glass-card">
           <CardHeader className="flex flex-row items-center justify-between">
@@ -462,7 +453,6 @@ export default function BatchDetail() {
       )}
 
 
-      {/* Batch Time Tracking Card */}
       <Card className="glass-card border-primary/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -472,7 +462,6 @@ export default function BatchDetail() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center gap-6 py-4">
-            {/* Timer Display */}
             {isTimerActive && activeTimer?.startTime ? (
               <div className="text-center">
                 <ElapsedTimer startTime={activeTimer.startTime} />
@@ -505,7 +494,6 @@ export default function BatchDetail() {
               </div>
             )}
 
-            {/* Distribution Info */}
             {operationsCount > 0 && (
               <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50 text-sm">
                 <Divide className="h-4 w-4 text-muted-foreground" />
@@ -517,7 +505,6 @@ export default function BatchDetail() {
               </div>
             )}
 
-            {/* Start / Stop Buttons */}
             <div className="flex gap-3">
               {canStartTimer && (
                 <Button
@@ -552,7 +539,6 @@ export default function BatchDetail() {
       </Card>
 
 
-      {/* Operations in Batch */}
       <Card className="glass-card">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
@@ -631,7 +617,6 @@ export default function BatchDetail() {
         </CardContent>
       </Card>
 
-      {/* Status Actions */}
       {batch.status !== "completed" && batch.status !== "cancelled" && (
         <div className="flex justify-end gap-3">
           {batch.status === "blocked" ? (

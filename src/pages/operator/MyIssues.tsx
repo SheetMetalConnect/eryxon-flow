@@ -37,7 +37,6 @@ export default function MyIssues() {
   const [loading, setLoading] = useState(true);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
 
-  // Load signed URLs for issue images
   useEffect(() => {
     const loadImageUrls = async () => {
       if (!selectedIssue?.image_paths || selectedIssue.image_paths.length === 0) {

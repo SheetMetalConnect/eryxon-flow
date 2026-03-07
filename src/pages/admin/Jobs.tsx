@@ -93,7 +93,6 @@ export default function Jobs() {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [overrideJobId, setOverrideJobId] = useState<string | null>(null);
 
-  // File viewer state
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
   const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(null);
   const [currentFileType, setCurrentFileType] = useState<"step" | "pdf" | null>(null);
@@ -114,7 +113,6 @@ export default function Jobs() {
       const { data, error } = await query;
       if (error) throw error;
 
-      // Calculate counts and file information
       return (data as JobRow[]).map((job) => {
         const allFiles: string[] =
           job.parts?.flatMap((part: JobPart) => part.file_paths || []) || [];
@@ -143,10 +141,8 @@ export default function Jobs() {
     },
   });
 
-  // Get job IDs for routing fetch
   const jobIds = useMemo(() => jobs?.map((job: JobData) => job.id) || [], [jobs]);
 
-  // Fetch routing for all jobs
   const { routings, loading: routingsLoading } = useMultipleJobsRouting(jobIds, profile?.tenant_id ?? null);
 
   const handleSetOnHold = async (jobId: string) => {
@@ -169,7 +165,6 @@ export default function Jobs() {
     toast.success(t("jobs.statusUpdated"), { description: t("jobs.jobResumed") });
   };
 
-  // Handle viewing file (STEP or PDF)
   const handleViewFile = async (filePath: string) => {
     try {
       const fileExt = filePath.split(".").pop()?.toLowerCase();
@@ -185,7 +180,6 @@ export default function Jobs() {
         return;
       }
 
-      // Create signed URL
       const { data, error } = await supabase.storage
         .from("parts-cad")
         .createSignedUrl(filePath, 3600);
@@ -469,7 +463,6 @@ export default function Jobs() {
     },
   ], [t]);
 
-  // Responsive column visibility - hide less important columns on mobile
   const { columnVisibility, isMobile } = useResponsiveColumns([
     { id: "job_number", alwaysVisible: true },
     { id: "due_date", alwaysVisible: true },
@@ -480,7 +473,6 @@ export default function Jobs() {
     { id: "actions", alwaysVisible: true },
   ]);
 
-  // Calculate stats
   const jobStats = useMemo(() => {
     if (!jobs) return { total: 0, active: 0, completed: 0, overdue: 0 };
     const today = new Date();
@@ -507,7 +499,6 @@ export default function Jobs() {
         }}
       />
 
-      {/* Stats Row */}
       <PageStatsRow
         stats={[
           { label: t("jobs.totalJobs", "Total Jobs"), value: jobStats.total, icon: Briefcase, color: "primary" },
@@ -517,7 +508,6 @@ export default function Jobs() {
         ]}
       />
 
-      {/* Jobs Table */}
       <div className="glass-card p-2 sm:p-4">
         <DataTable
           columns={columns}
@@ -535,7 +525,6 @@ export default function Jobs() {
         />
       </div>
 
-      {/* Job Detail Modal */}
       {selectedJobId && (
         <JobDetailModal
           jobId={selectedJobId}
@@ -544,7 +533,6 @@ export default function Jobs() {
         />
       )}
 
-      {/* Due Date Override Modal */}
       {overrideJobId && (
         <DueDateOverrideModal
           jobId={overrideJobId}
@@ -553,7 +541,6 @@ export default function Jobs() {
         />
       )}
 
-      {/* File Viewer Dialog - Responsive */}
       <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
         <DialogContent className="glass-card w-full h-[100dvh] sm:h-[90vh] sm:max-w-6xl flex flex-col p-0 rounded-none sm:rounded-lg inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
           <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">

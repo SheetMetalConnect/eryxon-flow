@@ -49,7 +49,6 @@ export default function OrganizationSettings() {
     whitelabel_favicon_url: '',
   });
 
-  // Check if tenant has access to whitelabeling (premium/enterprise only)
   const canUseWhitelabeling = tenant && (tenant.plan === 'premium' || tenant.plan === 'enterprise');
 
   useEffect(() => {
@@ -108,7 +107,6 @@ export default function OrganizationSettings() {
     setSaving(true);
 
     try {
-      // Build update object with base fields
       const updateData: Record<string, unknown> = {
         name: formData.name,
         company_name: formData.company_name,
@@ -260,7 +258,6 @@ export default function OrganizationSettings() {
           </CardContent>
         </Card>
 
-        {/* Factory Hours Card */}
         <Card className="glass-card">
           <CardHeader>
             <div className="flex items-center gap-2">
@@ -322,7 +319,6 @@ export default function OrganizationSettings() {
         </Card>
       </form>
 
-      {/* Whitelabeling Settings (Premium/Enterprise only) */}
       <Card className="glass-card">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -344,7 +340,6 @@ export default function OrganizationSettings() {
         <CardContent className="space-y-6">
           {canUseWhitelabeling ? (
             <>
-              {/* Enable Whitelabeling Toggle */}
               <div className="flex items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
                   <Label htmlFor="whitelabel_enabled" className="text-base">
@@ -363,7 +358,6 @@ export default function OrganizationSettings() {
 
               {formData.whitelabel_enabled && (
                 <div className="space-y-4 pt-2">
-                  {/* Custom App Name */}
                   <div className="space-y-2">
                     <Label htmlFor="whitelabel_app_name">Custom Application Name</Label>
                     <Input
@@ -377,7 +371,6 @@ export default function OrganizationSettings() {
                     </p>
                   </div>
 
-                  {/* Custom Logo URL */}
                   <div className="space-y-2">
                     <Label htmlFor="whitelabel_logo_url">Logo URL</Label>
                     <div className="flex gap-2">
@@ -416,7 +409,6 @@ export default function OrganizationSettings() {
                     )}
                   </div>
 
-                  {/* Custom Primary Color */}
                   <div className="space-y-2">
                     <Label htmlFor="whitelabel_primary_color">Primary Brand Color</Label>
                     <div className="flex gap-2 items-center">
@@ -479,10 +471,8 @@ export default function OrganizationSettings() {
         </CardContent>
       </Card>
 
-      {/* Feature Flags Settings */}
       <FeatureFlagsSettings />
 
-      {/* Subscription Info (Read-only for now) */}
       {tenant && (
         <Card className="glass-card">
           <CardHeader>

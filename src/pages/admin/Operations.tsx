@@ -64,7 +64,6 @@ export const Operations: React.FC = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
 
-  // Fetch operations using React Query
   const { data: operations = [], isLoading, refetch } = useQuery({
     queryKey: QueryKeys.operations.all(profile?.tenant_id ?? ''),
     queryFn: async () => {
@@ -102,7 +101,6 @@ export const Operations: React.FC = () => {
 
       if (!data) return [];
 
-      // Fetch resource counts and names for all operations
       const operationIds = data.map((op: { id: string }) => op.id);
       const { data: resourceData } = await supabase
         .from("operation_resources")
@@ -112,7 +110,6 @@ export const Operations: React.FC = () => {
         `)
         .in("operation_id", operationIds);
 
-      // Build a map of operation_id -> resource info
       const resourceMap = new Map<string, { count: number; names: string[] }>();
       resourceData?.forEach((item: { operation_id: string; resource: { name: string } | null }) => {
         const opId = item.operation_id;
@@ -359,7 +356,6 @@ export const Operations: React.FC = () => {
     },
   ], [uniqueCells]);
 
-  // Responsive column visibility - hide less important columns on mobile
   const { columnVisibility, isMobile } = useResponsiveColumns([
     { id: "operation_name", alwaysVisible: true },
     { id: "part_number", alwaysVisible: true },
@@ -369,7 +365,6 @@ export const Operations: React.FC = () => {
     { id: "status", alwaysVisible: true },
   ]);
 
-  // Calculate stats
   const operationStats = useMemo(() => {
     if (!operations) return { total: 0, inProgress: 0, completed: 0, assigned: 0 };
     return {
@@ -418,7 +413,6 @@ export const Operations: React.FC = () => {
         </div>
       </AdminPageHeader>
 
-      {/* Stats Row */}
       <PageStatsRow
         stats={[
           { label: t("operations.total", "Total Operations"), value: operationStats.total, icon: Wrench, color: "primary" },
@@ -447,7 +441,6 @@ export const Operations: React.FC = () => {
         />
       </div>
 
-      {/* Operation Detail Modal */}
       {selectedOperationId && (
         <OperationDetailModal
           operationId={selectedOperationId}

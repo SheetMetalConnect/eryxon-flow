@@ -31,7 +31,6 @@ export function OnboardingWizard() {
     { id: 4, name: t('onboarding.steps.complete'), description: t('onboarding.steps.completeDesc') },
   ];
 
-  // Load existing onboarding state
   useEffect(() => {
     if ((profile as any)?.onboarding_step) {
       setCurrentStep((profile as any).onboarding_step);
@@ -121,7 +120,6 @@ export function OnboardingWizard() {
   const completeOnboarding = () => {
     toast.success(t('onboarding.onboardingComplete'));
 
-    // Navigate based on user role
     if (profile?.role === 'admin') {
       navigate('/admin/dashboard');
     } else {
@@ -135,7 +133,6 @@ export function OnboardingWizard() {
 
       <div className="relative min-h-screen">
         <div className="container mx-auto px-4 py-8">
-          {/* Header */}
           <div className="text-center mb-8">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">
               {t('onboarding.gettingStarted')}
@@ -148,7 +145,6 @@ export function OnboardingWizard() {
             </p>
           </div>
 
-          {/* Premium Stepper */}
           <nav aria-label="Progress" className="mb-12">
             <div className="onboarding-stepper">
               {steps.map((step, stepIdx) => {
@@ -159,14 +155,12 @@ export function OnboardingWizard() {
 
                 return (
                   <div key={step.id} className="onboarding-stepper-step">
-                    {/* Connector line before (except first) */}
                     {stepIdx > 0 && (
                       <div
                         className={`onboarding-stepper-line ${isCompleted || isActive ? 'completed' : 'pending'}`}
                       />
                     )}
 
-                    {/* Step circle */}
                     <div className="flex flex-col items-center gap-1.5">
                       <div className={`onboarding-stepper-circle ${stateClass}`}>
                         {isCompleted ? (
@@ -194,7 +188,6 @@ export function OnboardingWizard() {
             </div>
           </nav>
 
-          {/* Content Area */}
           <Card className="max-w-6xl mx-auto glass-card">
             <CardContent className="p-8 sm:p-12">
               {currentStep === 1 && (
@@ -209,7 +202,6 @@ export function OnboardingWizard() {
             </CardContent>
           </Card>
 
-          {/* Footer */}
           <div className="text-center mt-8 text-sm text-muted-foreground">
             <p>
               {t('onboarding.needHelp')}{' '}

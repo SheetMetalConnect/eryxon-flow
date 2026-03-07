@@ -105,7 +105,6 @@ export function useRealtimeSubscription(options: RealtimeSubscriptionOptions): v
   const callbackRef = useRef(onDataChange);
   callbackRef.current = onDataChange;
 
-  // Create debounced handler
   const debouncedCallback = useCallback(
     debounce((payload?: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
       callbackRef.current(payload);
@@ -124,10 +123,8 @@ export function useRealtimeSubscription(options: RealtimeSubscriptionOptions): v
       tables: tables.map((t) => t.table).join(', '),
     });
 
-    // Create the channel
     let channel = supabase.channel(channelName);
 
-    // Add subscriptions for each table
     tables.forEach(({ table, filter, event = '*', schema = 'public' }) => {
       const config: {
         event: RealtimeEvent;
@@ -165,7 +162,6 @@ export function useRealtimeSubscription(options: RealtimeSubscriptionOptions): v
       );
     });
 
-    // Subscribe to the channel
     channel.subscribe((status) => {
       if (status === 'SUBSCRIBED') {
         logger.debug('Realtime subscription active', {
@@ -180,7 +176,6 @@ export function useRealtimeSubscription(options: RealtimeSubscriptionOptions): v
       }
     });
 
-    // Cleanup on unmount or when dependencies change
     return () => {
       logger.debug('Cleaning up realtime subscription', {
         operation: 'useRealtimeSubscription',
@@ -231,7 +226,6 @@ export function useTenantSubscription(
 ): void {
   const { additionalFilter, event = '*', debounceMs = 100 } = options || {};
 
-  // Build the filter
   let filter: string | undefined;
   if (tenantId) {
     filter = `tenant_id=eq.${tenantId}`;

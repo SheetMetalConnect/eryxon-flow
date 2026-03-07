@@ -54,7 +54,6 @@ export const useSubscription = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch subscription data using the RPC function
         const { data: subData, error: subError } = await supabase
           .rpc('get_my_tenant_subscription');
 
@@ -64,7 +63,6 @@ export const useSubscription = () => {
           setSubscription(subData[0] as TenantSubscription);
         }
 
-        // Fetch usage statistics (no parameter needed - function uses caller's tenant)
         // Note: get_tenant_usage_stats is not in generated Supabase types yet
         const { data: statsData, error: statsError } = await supabase
           .rpc('get_tenant_usage_stats' as unknown as 'get_my_tenant_subscription');
@@ -75,7 +73,6 @@ export const useSubscription = () => {
           setUsageStats(statsData[0] as unknown as TenantUsageStats);
         }
 
-        // Fetch API usage statistics
         // Note: get_api_usage_stats is not in generated Supabase types yet
         const { data: apiData, error: apiError } = await supabase
           .rpc('get_api_usage_stats' as unknown as 'get_my_tenant_subscription');

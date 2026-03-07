@@ -71,7 +71,6 @@ export default function Parts() {
   const { profile } = useAuth();
   const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
 
-  // File viewer state
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
   const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(null);
   const [currentFileType, setCurrentFileType] = useState<"step" | "pdf" | null>(null);
@@ -150,7 +149,6 @@ export default function Parts() {
     },
   });
 
-  // Handle viewing file (STEP or PDF)
   const handleViewFile = async (filePath: string) => {
     try {
       const fileExt = filePath.split(".").pop()?.toLowerCase();
@@ -166,7 +164,6 @@ export default function Parts() {
         return;
       }
 
-      // Create signed URL
       const { data, error } = await supabase.storage
         .from("parts-cad")
         .createSignedUrl(filePath, 3600);
@@ -414,7 +411,6 @@ export default function Parts() {
     },
   ], [t, materials, jobs]);
 
-  // Responsive column visibility - hide less important columns on mobile
   const { columnVisibility, isMobile } = useResponsiveColumns([
     { id: "part_number", alwaysVisible: true },
     { id: "type", hideBelow: "lg" },           // Hide on mobile/tablet
@@ -427,7 +423,6 @@ export default function Parts() {
     { id: "actions", alwaysVisible: true },
   ]);
 
-  // Calculate stats
   const partStats = useMemo(() => {
     if (!parts) return { total: 0, active: 0, completed: 0, assemblies: 0 };
     return {
@@ -451,7 +446,6 @@ export default function Parts() {
         }
       />
 
-      {/* Stats Row */}
       <PageStatsRow
         stats={[
           { label: t("parts.totalParts", "Total Parts"), value: partStats.total, icon: Package, color: "primary" },
@@ -485,7 +479,6 @@ export default function Parts() {
         />
       )}
 
-      {/* File Viewer Dialog - Responsive */}
       <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
         <DialogContent className="glass-card w-full h-[100dvh] sm:h-[90vh] sm:max-w-6xl flex flex-col p-0 rounded-none sm:rounded-lg inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
           <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">

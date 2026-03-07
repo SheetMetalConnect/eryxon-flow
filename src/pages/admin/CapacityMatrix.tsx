@@ -312,7 +312,6 @@ export default function CapacityMatrix() {
         const baseCapacity = cell.capacity_hours_per_day || 8;
         const capacity = baseCapacity * dayInfo.multiplier;
 
-        // Use allocations if available, otherwise fall back to operations
         const allocations = getAllocationsForCellDate(cellId, date);
         let totalHours = 0;
 
@@ -374,7 +373,6 @@ export default function CapacityMatrix() {
                 </div>
             </AdminPageHeader>
 
-            {/* Legend */}
             <div className="flex flex-wrap gap-2">
                 <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
                     {t("capacity.load050", "0-50%")}
@@ -484,7 +482,6 @@ export default function CapacityMatrix() {
                 </CardContent>
             </Card>
 
-            {/* Schedule Dialog */}
             <CellScheduleDialog
                 open={dialogOpen}
                 onOpenChange={setDialogOpen}

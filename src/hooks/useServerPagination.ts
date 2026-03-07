@@ -104,7 +104,6 @@ export function useServerPagination<T>({
     (column: string | null, direction: "asc" | "desc" = "asc") => {
       const newSorting = { column, direction };
       setSortingState(newSorting);
-      // Reset to first page when sorting changes
       const newPagination = { ...pagination, pageIndex: 0 };
       setPagination(newPagination);
       onSortingChange?.(newSorting);
@@ -230,7 +229,6 @@ export function useInfinitePagination({
     return { from, to };
   }, [currentPage, hasMore, pageSize, totalCount]);
 
-  // Reset when totalCount changes significantly
   useEffect(() => {
     if (totalCount > 0 && loadedCount > totalCount) {
       setLoadedCount(Math.min(pageSize, totalCount));

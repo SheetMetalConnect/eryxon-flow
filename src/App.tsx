@@ -12,20 +12,13 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Loader2 } from "lucide-react";
 import { queryClient } from "./lib/queryClient";
 
-// Route modules
 import { ProtectedRoute, LazyRoute, OperatorRoutes, AdminRoutes, CommonRoutes } from "./routes";
 
-// Auth pages (eagerly loaded as they're the entry point)
 import { Auth, AcceptInvitation, ForgotPassword, ResetPassword } from "./pages/auth";
 import { TerminalLogin } from "./pages/operator";
 
-// Onboarding
 const OnboardingWizard = lazy(() => import("./components/onboarding").then(m => ({ default: m.OnboardingWizard })));
 const NotFound = lazy(() => import("./pages/NotFound"));
-
-// ============================================================================
-// APP ROUTES
-// ============================================================================
 
 function AppRoutes() {
   const { profile, loading } = useAuth();

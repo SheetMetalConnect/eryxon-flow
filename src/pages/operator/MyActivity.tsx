@@ -133,7 +133,6 @@ export default function MyActivity() {
 
   const dayGroups = groupByDate();
 
-  // Calculate summary stats
   const todayTotal = dayGroups.find((g) => g.date === format(new Date(), "yyyy-MM-dd"))?.totalMinutes || 0;
   const weekTotal = dayGroups.reduce((sum, g) => sum + g.totalMinutes, 0);
   const todayCompleted = dayGroups.find((g) => g.date === format(new Date(), "yyyy-MM-dd"))?.completedCount || 0;

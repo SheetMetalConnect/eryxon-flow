@@ -36,7 +36,6 @@ export default function OperatorFooterBar() {
   const { activeOperator } = useOperator();
   const navigate = useNavigate();
 
-  // Use activeOperator if available, otherwise fall back to profile (for non-terminal contexts)
   const operatorId = activeOperator?.id || profile?.id;
   const [activeEntry, setActiveEntry] = useState<ActiveEntry | null>(null);
   const [currentPause, setCurrentPause] = useState<PauseData | null>(null);
@@ -83,7 +82,6 @@ export default function OperatorFooterBar() {
     if (!error && data) {
       setActiveEntry(data as any);
 
-      // If paused, load the current pause
       if (data.is_paused) {
         loadCurrentPause(data.id);
       } else {
@@ -100,12 +98,10 @@ export default function OperatorFooterBar() {
 
     loadActiveEntry();
 
-    // Update every second for elapsed time
     const interval = setInterval(() => {
       setTick((prev) => prev + 1);
     }, 1000);
 
-    // Subscribe to time entries changes
     const channel = supabase
       .channel("operator-footer-time-entries")
       .on(
@@ -174,12 +170,10 @@ export default function OperatorFooterBar() {
   };
 
   const handleReportIssue = () => {
-    // Navigate to work queue which has the operation detail modal
     navigate("/work-queue");
     toast.info(t("production.openOperationForIssue"));
   };
 
-  // Don't render footer if no active entry
   if (!activeEntry) return null;
 
   const isPaused = activeEntry.is_paused;
@@ -191,7 +185,6 @@ export default function OperatorFooterBar() {
     <div className="fixed left-0 right-0 z-40 bg-operator-complete text-white shadow-lg border-t-4 border-primary" style={{ bottom: 'max(0px, env(safe-area-inset-bottom))' }}>
       <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-3">
         <div className="flex items-center justify-between gap-2 sm:gap-4">
-          {/* Left: Operation Info */}
           <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
             <div className={`p-1.5 sm:p-2 rounded-lg ${isPaused ? 'bg-yellow-500/20' : 'bg-white/20'} flex-shrink-0`}>
               <Clock className={`h-5 w-5 sm:h-6 sm:w-6 ${isPaused ? 'text-yellow-300' : 'text-white'}`} />
@@ -213,9 +206,7 @@ export default function OperatorFooterBar() {
             </div>
           </div>
 
-          {/* Right: Action Buttons */}
           <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-            {/* Report Issue Button - Desktop only */}
             <Button
               onClick={handleReportIssue}
               disabled={loading}
@@ -227,7 +218,6 @@ export default function OperatorFooterBar() {
               <span>Report Issue</span>
             </Button>
 
-            {/* Report Issue Button - Mobile icon only */}
             <Button
               onClick={handleReportIssue}
               disabled={loading}
@@ -239,7 +229,6 @@ export default function OperatorFooterBar() {
               <AlertTriangle className="h-4 w-4" />
             </Button>
 
-            {/* Pause/Resume Button */}
             {isPaused ? (
               <Button
                 onClick={handleResume}
@@ -265,7 +254,6 @@ export default function OperatorFooterBar() {
               </Button>
             )}
 
-            {/* Stop Button */}
             <Button
               onClick={handleStop}
               disabled={loading}

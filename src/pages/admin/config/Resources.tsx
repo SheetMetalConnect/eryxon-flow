@@ -93,7 +93,6 @@ export default function ConfigResources() {
 
     try {
       if (editingResource) {
-        // Update existing resource
         await supabase
           .from("resources")
           .update({
@@ -110,7 +109,6 @@ export default function ConfigResources() {
 
         toast.success(t('resources.updated'));
       } else {
-        // Create new resource
         await supabase.from("resources").insert({
           tenant_id: profile.tenant_id,
           name: formData.name,
@@ -324,7 +322,6 @@ export default function ConfigResources() {
                   />
                 </div>
 
-                {/* Metadata Input */}
                 <div className="pt-2">
                   <MetadataInput
                     value={formData.metadata}
@@ -358,7 +355,6 @@ export default function ConfigResources() {
 
         <hr className="title-divider" />
 
-        {/* Filter Tabs */}
         <div className="flex gap-2 flex-wrap">
           <Button
             variant={filterType === "all" ? "default" : "outline"}

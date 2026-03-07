@@ -389,11 +389,10 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                     }),
                   });
                 }
-                // If no PMI found, that's okay - many files don't have PMI
               }
             } catch (pmiError) {
-              logger.warn('PartDetailModal', 'PMI extraction failed', pmiError);
               // Don't show error toast - PMI is optional
+              logger.warn('PartDetailModal', 'PMI extraction failed', pmiError);
             }
           }
         }
@@ -469,7 +468,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
       if (deleteError) throw deleteError;
 
-      // Update part's file_paths
       const currentPaths = part?.file_paths || [];
       const newPaths = currentPaths.filter((p: string) => p !== filePath);
 
@@ -494,10 +492,9 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     }
   };
 
-  // Handle file viewer dialog close
   const handleFileDialogClose = (open: boolean) => {
     if (!open && currentFileUrl?.startsWith("blob:")) {
-      URL.revokeObjectURL(currentFileUrl); // Prevent memory leak
+      URL.revokeObjectURL(currentFileUrl);
       setCurrentFileUrl(null);
     }
     setFileViewerOpen(open);
@@ -516,7 +513,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     );
   }
 
-  // Calculate operations count
   const operationsCount = operations?.length || 0;
   const completedOps = operations?.filter((op: { status: string }) => op.status === "completed").length || 0;
   const filesCount = (part?.file_paths?.length || 0) + (part?.image_paths?.length || 0);
@@ -524,7 +520,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl lg:max-w-3xl max-h-[85vh] overflow-hidden flex flex-col p-0">
-        {/* Header */}
         <div className="px-4 sm:px-6 py-4 border-b bg-muted/30">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
             <div>
@@ -560,7 +555,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           </div>
         </div>
 
-        {/* Tabs */}
         <Tabs defaultValue="details" className="flex-1 flex flex-col overflow-hidden">
           <div className="px-4 sm:px-6 border-b">
             <TabsList className="h-10 w-full justify-start bg-transparent p-0 gap-4 overflow-x-auto">
@@ -577,9 +571,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {/* Details Tab */}
             <TabsContent value="details" className="p-4 sm:p-6 space-y-5 m-0">
-              {/* Key Info Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="p-3 rounded-lg bg-muted/50 border">
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("parts.material")}</p>
@@ -610,7 +602,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                 </div>
               </div>
 
-              {/* Routing Visualization */}
               <div>
                 <h3 className="text-sm font-semibold mb-2">{t("qrm.routing")}</h3>
                 <div className="border rounded-lg p-3 bg-muted/20">
@@ -618,7 +609,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                 </div>
               </div>
 
-              {/* Manufacturing Info */}
               <div className="border rounded-lg p-4 bg-muted/20">
                 <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                   <QrCode className="h-4 w-4" />
@@ -664,14 +654,11 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                 </div>
               </div>
 
-              {/* Issues Summary */}
               <IssuesSummarySection partId={partId} />
             </TabsContent>
 
 
-            {/* Operations Tab */}
             <TabsContent value="operations" className="p-4 sm:p-6 space-y-5 m-0">
-              {/* Routing Visualization */}
               <div>
                 <Label className="text-lg">{t("qrm.routing")}</Label>
                 <div className="mt-3 border rounded-lg p-4 bg-muted">
@@ -679,7 +666,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                 </div>
               </div>
 
-              {/* Notes */}
               {part?.notes && (
                 <div>
                   <Label>{t("parts.notes")}</Label>
@@ -687,7 +673,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                 </div>
               )}
 
-              {/* Metadata */}
               {part?.metadata && Object.keys(part.metadata).length > 0 && (
                 <div>
                   <Label>{t("parts.customMetadata")}</Label>
@@ -706,7 +691,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                 </div>
               )}
 
-              {/* Assembly Tracking Section */}
               {(parentPart || (childParts && childParts.length > 0)) && (
                 <div className="border-t pt-6">
                   <Label className="text-lg flex items-center gap-2 mb-4">
@@ -714,7 +698,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                     {t("parts.assemblyRelationships")}
                   </Label>
 
-                  {/* Parent Part */}
                   {parentPart && (
                     <div className="mb-4">
                       <Label className="text-sm text-muted-foreground">{t("parts.parentAssembly")}</Label>
@@ -735,14 +718,12 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                     </div>
                   )}
 
-                  {/* Child Parts */}
                   {childParts && childParts.length > 0 && (
                     <div>
                       <Label className="text-sm text-muted-foreground">
                         {t("parts.childComponents")} ({childParts.length})
                       </Label>
 
-                      {/* Dependency Warning */}
                       {dependencies && !dependencies.dependenciesMet && (
                         <Alert variant="destructive" className="my-3">
                           <AlertTriangle className="h-4 w-4" />
@@ -804,9 +785,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               )}
             </TabsContent>
 
-            {/* Files Tab */}
             <TabsContent value="files" className="p-4 sm:p-6 space-y-5 m-0">
-              {/* Files Section */}
               <div>
                 <div className="flex justify-between items-center mb-3">
                   <Label className="text-lg flex items-center gap-2">
@@ -815,7 +794,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   </Label>
                 </div>
 
-                {/* File Upload */}
                 <div className="border rounded-lg p-4 mb-3 bg-muted">
                   <div className="flex items-center gap-3">
                     <label
@@ -848,12 +826,10 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   </div>
                 </div>
 
-                {/* Upload Progress */}
                 {uploadProgress.length > 0 && (
                   <UploadProgress progress={uploadProgress} className="mb-4" />
                 )}
 
-                {/* Existing Files List */}
                 <div className="space-y-2">
                   {part?.file_paths?.map((filePath: string, index: number) => {
                     const fileName = filePath.split("/").pop() || "Unknown";
@@ -909,7 +885,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                 </div>
               </div>
 
-              {/* Images Section */}
               <div>
                 <div className="flex justify-between items-center mb-3">
                   <Label className="text-lg flex items-center gap-2">
@@ -918,7 +893,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   </Label>
                 </div>
 
-                {/* Image Gallery */}
                 {part?.image_paths && part.image_paths.length > 0 && (
                   <div className="mb-4">
                     <ImageGallery
@@ -933,7 +907,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   </div>
                 )}
 
-                {/* Image Upload */}
                 <ImageUpload
                   partId={partId}
                   onUploadComplete={async () => {
@@ -944,12 +917,9 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
               </div>
             </TabsContent>
 
-            {/* Operations Tab - Second Section (NCRs and Operations List) */}
             <TabsContent value="operations" className="p-4 sm:p-6 space-y-5 m-0">
-              {/* NCRs / Issues Summary */}
               <IssuesSummarySection partId={partId} />
 
-              {/* Operations */}
               <div>
                 <div className="flex justify-between items-center mb-3">
                   <Label className="text-lg">{t("operations.title")} ({operations?.length || 0})</Label>
@@ -958,7 +928,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   </Button>
                 </div>
 
-                {/* Add Operation Form */}
                 {addingOperation && (
                   <div className="border rounded-lg p-3 sm:p-4 mb-4 bg-alert-info-bg border-alert-info-border">
                     <h4 className="font-semibold mb-3 text-sm sm:text-base">{t("operations.newOperation")}</h4>
@@ -1029,17 +998,14 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                         />
                       </div>
 
-                      {/* Resource Linking Section */}
                       <div className="sm:col-span-2">
                         <div className="flex items-center gap-2 mb-2">
                           <Wrench className="h-4 w-4 text-orange-600" />
                           <Label>{t("operations.requiredResourcesOptional")}</Label>
                         </div>
 
-                        {/* Resource Selection Dropdown */}
                         <Select
                           onValueChange={(resourceId) => {
-                            // Add resource to selected list if not already added
                             if (!newOperation.selected_resources.find(r => r.resource_id === resourceId)) {
                               setNewOperation({
                                 ...newOperation,
@@ -1070,7 +1036,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                           </SelectContent>
                         </Select>
 
-                        {/* Selected Resources List */}
                         {newOperation.selected_resources.length > 0 && (
                           <div className="mt-3 space-y-2">
                             {newOperation.selected_resources.map((selectedRes, idx) => {
@@ -1153,7 +1118,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
                   </div>
                 )}
 
-                {/* Operations List */}
                 <div className="space-y-2">
                   {(operations as unknown as { id: string; operation_name: string; sequence: number; estimated_time: number | null; status: string; resources_count: number; cell?: { name: string; color: string | null }; assigned_operator?: { full_name: string } | null }[])?.map((op) => (
                     <div
@@ -1208,7 +1172,6 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
         </Tabs>
       </DialogContent>
 
-      {/* File Viewer Dialog - Full screen on mobile */}
       <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
         <DialogContent className="w-full h-[100dvh] sm:h-[90vh] sm:max-w-6xl flex flex-col p-0 rounded-none sm:rounded-lg inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
           <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">

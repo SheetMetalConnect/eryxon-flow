@@ -29,10 +29,6 @@ import {
   type CADBackendMode,
 } from '@/config/cadBackend';
 
-// ============================================================================
-// Types
-// ============================================================================
-
 export interface Vector3 {
   x: number;
   y: number;
@@ -213,10 +209,6 @@ export interface CADProcessingResult {
   error?: string;
 }
 
-// ============================================================================
-// Configuration (via cadBackend.ts)
-// ============================================================================
-
 /**
  * Check if CAD processing service is configured (custom or byob backend)
  */
@@ -271,10 +263,6 @@ export function decodeUint32Array(base64: string): Uint32Array {
   return new Uint32Array(bytes.buffer);
 }
 
-// ============================================================================
-// Hook
-// ============================================================================
-
 interface UseCADProcessingOptions {
   /** Include geometry extraction */
   includeGeometry?: boolean;
@@ -308,11 +296,9 @@ export function useCADProcessing() {
       thumbnailSize = 256,
     } = options;
 
-    // Get active backend URL
     const backendUrl = getActiveBackendUrl();
     const currentMode = config.mode;
 
-    // If mode is frontend-only, return early (caller should use browser processing)
     if (currentMode === 'frontend' || !backendUrl) {
       return {
         success: false,
@@ -325,7 +311,6 @@ export function useCADProcessing() {
       };
     }
 
-    // Check file extension
     const ext = fileName.toLowerCase().split('.').pop();
     const supportedFormats = ['step', 'stp', 'iges', 'igs', 'brep'];
     if (!ext || !supportedFormats.includes(ext)) {
@@ -348,13 +333,11 @@ export function useCADProcessing() {
         'Content-Type': 'application/json',
       };
 
-      // Add API key if configured
       const apiKey = getActiveApiKey();
       if (apiKey) {
         headers['X-API-Key'] = apiKey;
       }
 
-      // Add custom headers for BYOB mode
       if (currentMode === 'byob' && config.byob.headers) {
         Object.entries(config.byob.headers).forEach(([key, value]) => {
           headers[key] = value;
@@ -426,7 +409,6 @@ export function useCADProcessing() {
     geometry: GeometryData | null,
     pmi: PMIData | null
   ): Promise<void> => {
-    // Get current metadata
     const { data: part, error: fetchError } = await supabase
       .from('parts')
       .select('metadata')
@@ -435,7 +417,6 @@ export function useCADProcessing() {
 
     if (fetchError) throw fetchError;
 
-    // Merge into existing metadata
     const currentMetadata = (part?.metadata as Record<string, unknown>) || {};
     const updatedMetadata = {
       ...currentMetadata,
@@ -490,27 +471,18 @@ export function useCADProcessing() {
   }, [processCAD, storeProcessedData, queryClient]);
 
   return {
-    // State
     isProcessing,
     processingError,
-
-    // Actions
     processCAD,
     processAndStore,
     storeProcessedData,
-
-    // Utilities
     decodeFloat32Array,
     decodeUint32Array,
-
-    // Backend configuration
     backendMode: getCADConfig().mode,
     isCADServiceEnabled: isCADServiceEnabled(),
     isServerBackendActive: getCADConfig().mode !== 'frontend' && isCADServiceEnabled(),
     isFrontendFallback: getCADConfig().mode === 'frontend',
     config: getCADConfig(),
-
-    // Config management
     switchBackendMode,
     determineBestBackend,
   };
@@ -536,12 +508,10 @@ export function useCachedGeometry(partId: string | undefined) {
 
       const metadata = part?.metadata as Record<string, unknown> | null;
 
-      // Check if geometry was processed
       if (!metadata?.geometry_processed) {
         return null;
       }
 
-      // Return bounding box and stats (full geometry not stored in DB)
       return {
         bounding_box: metadata.bounding_box as BoundingBox | undefined,
         total_vertices: metadata.geometry_vertices as number | undefined,

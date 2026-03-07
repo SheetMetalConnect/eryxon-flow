@@ -31,7 +31,6 @@ export function useBatchActiveTimer(batchId: string | undefined) {
     queryFn: async () => {
       if (!batchId || !profile?.tenant_id) return null;
 
-      // Get operation IDs in this batch
       const { data: batchOps } = await supabase
         .from("batch_operations")
         .select("operation_id")
@@ -42,7 +41,6 @@ export function useBatchActiveTimer(batchId: string | undefined) {
 
       const opIds = batchOps.map((bo) => bo.operation_id);
 
-      // Check for active time entries on these operations
       const { data: activeEntries } = await supabase
         .from("time_entries")
         .select("id, operation_id, start_time, operator_id")

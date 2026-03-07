@@ -39,10 +39,7 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
   const [activeOperator, setActiveOperator] = useState<ActiveOperator | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load active operator from localStorage on mount
   useEffect(() => {
-    // Wait for tenant to be loaded before validating stored operator
-    // If tenant is not yet loaded (undefined), don't do anything yet
     if (tenant?.id === undefined) {
       return;
     }
@@ -52,11 +49,9 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        // Validate that the stored operator belongs to current tenant
         if (parsed.tenant_id === tenant.id) {
           nextOperator = parsed;
         } else {
-          // Only clear if we have a valid tenant and it doesn't match
           localStorage.removeItem(STORAGE_KEY);
         }
       } catch {
@@ -70,7 +65,6 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(loadTimeout);
   }, [tenant?.id]);
 
-  // Clear active operator when user logs out or changes tenant
   useEffect(() => {
     if (!profile) {
       const clearTimeoutId = window.setTimeout(() => {
@@ -101,7 +95,6 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
         };
       }
 
-      // The RPC returns an array with one row
       const result = Array.isArray(data) ? data[0] : data;
 
       if (!result) {

@@ -42,7 +42,6 @@ export function OperatorSwitcher({ variant = "dropdown", className }: OperatorSw
     navigate(ROUTES.OPERATOR.LOGIN);
   };
 
-  // Get initials for avatar
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -52,7 +51,6 @@ export function OperatorSwitcher({ variant = "dropdown", className }: OperatorSw
       .slice(0, 2);
   };
 
-  // Compact button variant (just icon)
   if (variant === "compact") {
     return (
       <Button
@@ -75,7 +73,6 @@ export function OperatorSwitcher({ variant = "dropdown", className }: OperatorSw
     );
   }
 
-  // Simple button variant
   if (variant === "button") {
     return (
       <Button
@@ -94,7 +91,6 @@ export function OperatorSwitcher({ variant = "dropdown", className }: OperatorSw
     );
   }
 
-  // Full dropdown variant
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

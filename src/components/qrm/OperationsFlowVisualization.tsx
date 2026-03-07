@@ -43,14 +43,12 @@ export function OperationsFlowVisualization({
 
   const progress = getRoutingProgress(routing);
 
-  // Get status styling for a step
   const getStepStatus = (step: RoutingStep) => {
     const isCompleted = step.completed_operations === step.operation_count;
     const isInProgress = step.completed_operations > 0 && step.completed_operations < step.operation_count;
     return { isCompleted, isInProgress, isNotStarted: !isCompleted && !isInProgress };
   };
 
-  // Get status icon
   const getStatusIcon = (step: RoutingStep) => {
     const { isCompleted, isInProgress } = getStepStatus(step);
     const iconClass = compact ? 'h-3 w-3' : 'h-4 w-4';
@@ -67,7 +65,6 @@ export function OperationsFlowVisualization({
   return (
     <TooltipProvider>
       <div className="space-y-3">
-        {/* Progress bar */}
         {showProgress && (
           <div className="flex items-center gap-3">
             <div className="flex-1 bg-muted/50 rounded-full h-2.5 overflow-hidden border border-border/30">
@@ -89,7 +86,6 @@ export function OperationsFlowVisualization({
           </div>
         )}
 
-        {/* Arrow-shaped flow visualization */}
         <div className="flex items-center overflow-x-auto pb-1">
           {routing.map((step, index) => {
             const { isCompleted, isInProgress, isNotStarted } = getStepStatus(step);
@@ -97,7 +93,6 @@ export function OperationsFlowVisualization({
             const isFirst = index === 0;
             const isLast = index === routing.length - 1;
 
-            // Arrow shape using clip-path for connected flow
             const clipPath = isFirst && isLast
               ? 'none'
               : isFirst
@@ -114,7 +109,6 @@ export function OperationsFlowVisualization({
                       "relative flex items-center gap-1.5 transition-all duration-300 cursor-default border",
                       compact ? "min-w-[80px] px-3 py-1.5" : "min-w-[110px] px-4 py-2",
                       !isFirst && "-ml-3",
-                      // Status-based styling
                       isInProgress && "shadow-lg ring-2 ring-primary/30 z-10",
                       isNotStarted && "opacity-60"
                     )}
@@ -125,17 +119,14 @@ export function OperationsFlowVisualization({
                       color: isCompleted || isInProgress ? '#FFFFFF' : cellColor,
                     }}
                   >
-                    {/* Status icon */}
                     {getStatusIcon(step)}
 
-                    {/* Cell name */}
                     {showLabels && (
                       <span className={cn("font-medium truncate", compact ? "text-xs" : "text-sm")}>
                         {step.cell_name}
                       </span>
                     )}
 
-                    {/* Operation count badge */}
                     {!compact && (
                       <Badge
                         variant="secondary"
@@ -205,7 +196,6 @@ export function CompactOperationsFlow({
           const isFirst = index === 0;
           const isLast = index === routing.length - 1;
 
-          // Simpler pill clip-path for compact view
           const clipPath = isFirst && isLast
             ? 'none'
             : isFirst

@@ -51,13 +51,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({ errorInfo });
 
-    // Log the error
     logger.error('Uncaught error in component tree', error, {
       operation: 'ErrorBoundary',
       componentStack: errorInfo.componentStack,
     });
 
-    // Call custom error handler if provided
     this.props.onError?.(error, errorInfo);
   }
 
@@ -74,12 +72,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     const { children, fallback, showHomeButton = true, errorMessage } = this.props;
 
     if (hasError) {
-      // Use custom fallback if provided
       if (fallback) {
         return fallback;
       }
 
-      // Default error UI
       return (
         <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
           <div className="glass-card p-8 max-w-md text-center">

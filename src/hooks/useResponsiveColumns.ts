@@ -44,7 +44,6 @@ export function useResponsiveColumns(
       setWindowWidth(window.innerWidth);
     };
 
-    // Set initial width
     handleResize();
 
     window.addEventListener("resize", handleResize);

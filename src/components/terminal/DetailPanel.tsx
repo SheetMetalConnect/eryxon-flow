@@ -55,7 +55,6 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
     const [expandedOperations, setExpandedOperations] = useState<Set<string>>(new Set());
     const { profile } = useAuth();
 
-    // Fetch substeps for all operations
     useEffect(() => {
         const fetchSubsteps = async () => {
             if (!profile?.tenant_id || operations.length === 0) return;
@@ -73,7 +72,6 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                 return;
             }
 
-            // Group substeps by operation_id
             const grouped: Record<string, Substep[]> = {};
             (data || []).forEach((substep) => {
                 if (!grouped[substep.operation_id]) {
@@ -99,7 +97,6 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
         });
     };
 
-    // Compute next operation in the sequence FIRST
     const nextOperation = useMemo(() => {
         if (!job.currentSequence) return null;
         // Find the next operation in sequence order
@@ -109,13 +106,11 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
         return sorted[currentIndex + 1];
     }, [operations, job.currentSequence, job.operationId]);
 
-    // Get QRM metrics for the ACTUAL next cell in the job routing
     const { metrics: nextCellMetrics } = useCellQRMMetrics(
         nextOperation?.cell_id || null,
         profile?.tenant_id || null
     );
 
-    // Check if we can complete (blocked by next cell capacity)
     const isBlockedByCapacity = useMemo(() => {
         if (!nextOperation || !nextCellMetrics) return false;
         // Check if capacity is enforced and if we're at or over the limit
@@ -127,9 +122,7 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
     return (
         <div className="flex flex-col h-full bg-card text-card-foreground">
 
-            {/* Header Card - Compact */}
             <div className="p-3 border-b border-border bg-card">
-                {/* Bullet Card Alert Banner */}
                 {job.isBulletCard && (
                     <div className="mb-2 -mx-3 -mt-3 px-3 py-1.5 bg-destructive/10 border-b border-destructive/30 flex items-center gap-2">
                         <Zap className="w-4 h-4 text-destructive animate-pulse" />
@@ -151,7 +144,6 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                     </div>
                 </div>
 
-                {/* Current Operation Highlight - Compact */}
                 <div className="my-2 p-2 bg-accent/10 border border-accent/20 rounded-md">
                     <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Ready to Start</div>
                     <div className="text-sm font-semibold text-foreground flex items-center gap-1.5">
@@ -170,7 +162,6 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                             <Pause className="w-3.5 h-3.5 mr-1.5" /> Pause
                         </Button>
                     )}
-                    {/* Count Parts - Always visible */}
                     <Button
                         onClick={() => setIsQuantityModalOpen(true)}
                         variant="outline"
@@ -207,7 +198,6 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                 </div>
             </div>
 
-            {/* Job Flow Progress - Compact routing indicator */}
             {job.jobId && (
                 <div className="px-3 py-2 border-b border-border bg-muted/20">
                     <JobFlowProgress
@@ -219,7 +209,6 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                 </div>
             )}
 
-            {/* CNC Program QR Code - Compact inline display */}
             {job.cncProgramName && (
                 <div className="px-3 py-2 border-b border-border flex items-center gap-3">
                     <div className="bg-white p-1.5 rounded border border-border shrink-0">
@@ -235,16 +224,12 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                 </div>
             )}
 
-            {/* Resources & Assembly Dependencies Section */}
             <div className="px-3 py-2 border-b border-border bg-muted/10 space-y-2">
-                {/* Required Resources for this Operation */}
                 <OperationResources operationId={job.operationId} />
 
-                {/* Assembly Dependencies - show if this part has child parts */}
                 <AssemblyDependencies partId={job.partId} />
             </div>
 
-            {/* Main Content Tabs - Compact */}
             <div className="flex-1 min-h-0">
                 <Tabs defaultValue={job.hasModel ? "3d" : job.hasPdf ? "pdf" : "ops"} className="h-full flex flex-col">
                     <div className="px-2 pt-1.5">
@@ -361,7 +346,6 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                                                     {op.status === 'on_hold' && <AlertTriangle className="w-3 h-3 text-amber-500" />}
                                                 </div>
                                             </div>
-                                            {/* Substeps */}
                                             {hasSubsteps && isExpanded && (
                                                 <div className="ml-6 pl-2 border-l border-muted/50 space-y-0.5 py-1">
                                                     {opSubsteps.map((substep) => (
@@ -403,7 +387,6 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                 </Tabs>
             </div>
 
-            {/* Footer Warnings - Compact */}
             {job.warnings && job.warnings.length > 0 && (
                 <div className="px-2 py-1.5 bg-amber-950/20 border-t border-amber-900/50">
                     <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 text-xs font-medium">
@@ -427,7 +410,6 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                 prefilledData={issuePrefilledData}
             />
 
-            {/* Production Quantity Modal */}
             <ProductionQuantityModal
                 isOpen={isQuantityModalOpen}
                 onClose={() => setIsQuantityModalOpen(false)}
@@ -448,13 +430,11 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                 }}
             />
 
-            {/* Fullscreen Viewer Overlay */}
             {fullscreenViewer && createPortal(
                 <div
                     className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-md flex flex-col"
                     onClick={() => setFullscreenViewer(null)}
                 >
-                    {/* Header */}
                     <div
                         className="flex items-center justify-between p-3 border-b border-border bg-card/80 backdrop-blur-sm"
                         onClick={(e) => e.stopPropagation()}
@@ -478,7 +458,6 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                         </Button>
                     </div>
 
-                    {/* Viewer */}
                     <div
                         className="flex-1 p-4 min-h-0"
                         onClick={(e) => e.stopPropagation()}
@@ -499,7 +478,6 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                         </div>
                     </div>
 
-                    {/* Tap hint */}
                     <div className="text-center pb-3 text-muted-foreground text-xs">
                         Tap outside or press X to close
                     </div>

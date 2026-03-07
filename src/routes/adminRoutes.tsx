@@ -4,7 +4,6 @@ import { ProtectedRoute } from "./guards";
 import Layout from "@/components/Layout";
 import { LazyRoute } from "./LazyRoute";
 
-// Admin pages
 const Dashboard = lazy(() => import("@/pages/admin/Dashboard"));
 const IssueQueue = lazy(() => import("@/pages/admin/IssueQueue"));
 const FactoryCalendar = lazy(() => import("@/pages/admin/FactoryCalendar"));
@@ -27,7 +26,6 @@ const Operations = lazy(() => import("@/pages/admin/Operations").then(m => ({ de
 const Settings = lazy(() => import("@/pages/admin/Settings").then(m => ({ default: m.Settings })));
 const StepsTemplatesView = lazy(() => import("@/pages/admin/StepsTemplatesView"));
 
-// Admin config pages
 const ConfigApiKeys = lazy(() => import("@/pages/admin/config/ApiKeys"));
 const ConfigMaterials = lazy(() => import("@/pages/admin/config/Materials"));
 const ConfigMcpKeys = lazy(() => import("@/pages/admin/config/McpKeys"));
@@ -94,7 +92,6 @@ export function AdminRoutes() {
   );
 }
 
-// Common pages accessible to all authenticated users
 const ApiDocs = lazy(() => import("@/pages/common/ApiDocs"));
 const Pricing = lazy(() => import("@/pages/common/Pricing"));
 const MyPlan = lazy(() => import("@/pages/common/MyPlan"));

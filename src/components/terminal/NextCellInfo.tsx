@@ -15,7 +15,6 @@ interface NextCellInfoProps {
  * including capacity status according to QRM methodology
  */
 export function NextCellInfo({ nextCellName, metrics, loading = false, className }: NextCellInfoProps) {
-    // Don't render if there's no next cell
     if (!loading && !metrics) {
         return null;
     }
@@ -37,13 +36,11 @@ export function NextCellInfo({ nextCellName, metrics, loading = false, className
             };
         }
 
-        // Determine status based on QRM metrics
         const hasLimit = metrics.wip_limit !== null && metrics.wip_limit !== undefined;
         const currentWip = metrics.current_wip || 0;
         const wipLimit = metrics.wip_limit || 0;
 
         if (!hasLimit) {
-            // No limit set - always normal
             return {
                 icon: <CheckCircle2 className="w-4 h-4" />,
                 bgColor: 'bg-blue-50 dark:bg-blue-900/30',
@@ -56,7 +53,6 @@ export function NextCellInfo({ nextCellName, metrics, loading = false, className
         const utilizationPercent = wipLimit > 0 ? (currentWip / wipLimit) * 100 : 0;
 
         if (currentWip >= wipLimit) {
-            // At capacity
             return {
                 icon: <XCircle className="w-4 h-4" />,
                 bgColor: 'bg-red-50 dark:bg-red-900/30',
@@ -65,7 +61,6 @@ export function NextCellInfo({ nextCellName, metrics, loading = false, className
                 label: 'At Capacity',
             };
         } else if (utilizationPercent >= 80) {
-            // Warning threshold
             return {
                 icon: <AlertTriangle className="w-4 h-4" />,
                 bgColor: 'bg-amber-50 dark:bg-amber-900/30',
@@ -74,7 +69,6 @@ export function NextCellInfo({ nextCellName, metrics, loading = false, className
                 label: 'High Capacity',
             };
         } else {
-            // Normal
             return {
                 icon: <CheckCircle2 className="w-4 h-4" />,
                 bgColor: 'bg-emerald-50 dark:bg-emerald-900/30',
@@ -126,7 +120,6 @@ export function NextCellInfo({ nextCellName, metrics, loading = false, className
                         )}
                     </div>
 
-                    {/* Blocking indicator */}
                     {metrics.enforce_limit && metrics.wip_limit !== null && metrics.current_wip >= metrics.wip_limit && (
                         <div className="mt-2 flex items-center gap-1.5 text-xs font-bold text-red-700 dark:text-red-300">
                             <XCircle className="w-3 h-3" />
@@ -134,7 +127,6 @@ export function NextCellInfo({ nextCellName, metrics, loading = false, className
                         </div>
                     )}
 
-                    {/* Warning indicator - only show when utilization is at or above warning threshold (80% or custom) */}
                     {metrics.show_warning && metrics.wip_limit !== null && metrics.current_wip < metrics.wip_limit && (() => {
                         const threshold = metrics.wip_warning_threshold ?? Math.floor(metrics.wip_limit * 0.8);
                         return metrics.current_wip >= threshold;

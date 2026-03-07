@@ -457,74 +457,55 @@ export function getTemplatesByCategory(category: MetadataTemplate['category']): 
   return METADATA_TEMPLATES.filter(t => t.category === category);
 }
 
-/**
- * Get templates by resource type
- */
 export function getTemplatesByResourceType(resourceType: string): MetadataTemplate[] {
   return METADATA_TEMPLATES.filter(t => t.resourceType === resourceType);
 }
 
-/**
- * Get templates by process type
- */
 export function getTemplatesByProcessType(processType: string): MetadataTemplate[] {
   return METADATA_TEMPLATES.filter(t => t.processType === processType);
 }
 
-/**
- * Detect metadata type from structure
- */
 export function detectMetadataType(metadata: BaseMetadata): string | null {
   if (!metadata || typeof metadata !== 'object') return null;
 
   const keys = Object.keys(metadata);
 
-  // Check for mold indicators
   if (keys.includes('moldId') || keys.includes('moldName') || keys.includes('cavities')) {
     return 'mold';
   }
 
-  // Check for tooling indicators
   if (keys.includes('toolId') || keys.includes('toolName') || keys.includes('toolType')) {
     return 'tooling';
   }
 
-  // Check for fixture indicators
   if (keys.includes('fixtureId') || keys.includes('fixtureName') || keys.includes('fixtureType')) {
     return 'fixture';
   }
 
-  // Check for material indicators
   if (keys.includes('materialType') || (keys.includes('grade') && keys.includes('thickness'))) {
     return 'material';
   }
 
-  // Check for bend sequence indicators
   if (keys.includes('bendCount') || keys.includes('bends') || keys.includes('bendAllowance')) {
     return 'bend-sequence';
   }
 
-  // Check for welding indicators
   if (keys.includes('weldType') || keys.includes('amperage') || keys.includes('shieldingGas')) {
     return 'welding';
   }
 
-  // Check for laser cutting indicators
   if (keys.includes('power') && keys.includes('speed') && (keys.includes('gasType') || keys.includes('focusHeight'))) {
     return 'laser-cutting';
   }
 
-  // Check for machining indicators
   if ((keys.includes('feedRate') && keys.includes('spindleSpeed')) || keys.includes('program')) {
     return 'machining';
   }
 
-  // Check for assembly indicators
   if (keys.includes('assemblyName') || keys.includes('componentCount') || keys.includes('assemblySequence')) {
     return 'assembly';
   }
 
-  // Check for inspection indicators
   if (keys.includes('inspectionType') || keys.includes('checkpoints') || keys.includes('acceptanceCriteria')) {
     return 'inspection';
   }
@@ -532,9 +513,6 @@ export function detectMetadataType(metadata: BaseMetadata): string | null {
   return null;
 }
 
-/**
- * Get icon for metadata type
- */
 export function getMetadataIcon(type: string | null): string {
   switch (type) {
     case 'mold': return 'Package';
@@ -551,9 +529,6 @@ export function getMetadataIcon(type: string | null): string {
   }
 }
 
-/**
- * Get label for metadata type
- */
 export function getMetadataLabel(type: string | null): string {
   switch (type) {
     case 'mold': return 'Mold';

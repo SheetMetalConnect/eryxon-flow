@@ -17,7 +17,6 @@ import {
 import { useTranslation } from "react-i18next";
 import { QRMDashboardMetrics } from "@/hooks/useQRMDashboardMetrics";
 
-// --- Centralized Chart Styling (Design System) ---
 const COLORS = {
     primary: "hsl(var(--brand-primary))",
     success: "hsl(var(--color-success))",
@@ -28,7 +27,6 @@ const COLORS = {
     grid: "rgba(255,255,255,0.1)",
 };
 
-// Centralized tooltip style for consistency
 const TOOLTIP_STYLE = {
     contentStyle: {
         backgroundColor: "hsl(var(--card))",
@@ -40,7 +38,6 @@ const TOOLTIP_STYLE = {
     cursor: { fill: "rgba(255,255,255,0.05)" },
 };
 
-// Centralized axis styling
 const AXIS_STYLE = {
     stroke: COLORS.muted,
     fontSize: 12,
@@ -48,15 +45,13 @@ const AXIS_STYLE = {
     axisLine: false,
 };
 
-// WIP Age gradient colors
 const AGE_COLORS = [
-    COLORS.success, // 0-2 days
-    COLORS.info,    // 3-5 days
-    COLORS.warning, // 6-10 days
-    COLORS.error,   // >10 days
+    COLORS.success,
+    COLORS.info,
+    COLORS.warning,
+    COLORS.error,
 ];
 
-// --- MCT Chart ---
 export const MCTChart = memo(({ data }: { data: QRMDashboardMetrics["mct"] }) => {
     const { t } = useTranslation();
 
@@ -115,19 +110,16 @@ export const MCTChart = memo(({ data }: { data: QRMDashboardMetrics["mct"] }) =>
     );
 });
 
-// Helper to get color based on performance value
 const getPerformanceColor = (value: number) => {
     if (value >= 95) return COLORS.success;
     if (value >= 85) return COLORS.warning;
     return COLORS.error;
 };
 
-// --- OTP Gauge ---
 export const OTPGauge = memo(({ data }: { data: QRMDashboardMetrics["otp"] }) => {
     const { t } = useTranslation();
     const color = getPerformanceColor(data.current);
 
-    // Data for the semi-circle gauge
     const gaugeData = [
         { name: "value", value: data.current },
         { name: "remainder", value: 100 - data.current },
@@ -161,7 +153,6 @@ export const OTPGauge = memo(({ data }: { data: QRMDashboardMetrics["otp"] }) =>
                     <span className="text-sm text-muted-foreground">{t("qrm.otp.onTime")}</span>
                 </div>
             </div>
-            {/* Mini Trend Line */}
             <div className="h-[40px] w-full px-8 mt-[-20px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={data.trend} accessibilityLayer>
@@ -173,7 +164,6 @@ export const OTPGauge = memo(({ data }: { data: QRMDashboardMetrics["otp"] }) =>
     );
 });
 
-// --- Queue Time Chart ---
 export const QueueTimeChart = memo(({ data }: { data: QRMDashboardMetrics["queueTime"] }) => {
     const { t } = useTranslation();
 
@@ -207,7 +197,6 @@ export const QueueTimeChart = memo(({ data }: { data: QRMDashboardMetrics["queue
     );
 });
 
-// --- Cycle Time Chart ---
 export const CycleTimeChart = memo(({ data }: { data: QRMDashboardMetrics["cycleTime"] }) => {
     const { t } = useTranslation();
 
@@ -242,7 +231,6 @@ export const CycleTimeChart = memo(({ data }: { data: QRMDashboardMetrics["cycle
     );
 });
 
-// --- WIP Age Chart ---
 export const WIPAgeChart = memo(({ data }: { data: QRMDashboardMetrics["wipAge"] }) => {
     const { t } = useTranslation();
 
@@ -282,7 +270,6 @@ export const WIPAgeChart = memo(({ data }: { data: QRMDashboardMetrics["wipAge"]
     );
 });
 
-// --- Issue Rate Chart ---
 export const IssueRateChart = memo(({ data }: { data: QRMDashboardMetrics["issueRate"] }) => {
     const { t } = useTranslation();
 
@@ -312,11 +299,9 @@ export const IssueRateChart = memo(({ data }: { data: QRMDashboardMetrics["issue
     );
 });
 
-// --- Reliability Heatmap ---
 export const ReliabilityHeatmap = memo(({ data }: { data: QRMDashboardMetrics["reliability"] }) => {
     const { t } = useTranslation();
 
-    // Helper to get color based on reliability score
     const getCellColor = (value: number) => {
         if (value >= 95) return COLORS.success;
         if (value >= 90) return COLORS.info;
@@ -360,7 +345,6 @@ export const ReliabilityHeatmap = memo(({ data }: { data: QRMDashboardMetrics["r
     );
 });
 
-// --- Throughput Chart ---
 export const ThroughputChart = memo(({ data }: { data: QRMDashboardMetrics["throughput"] }) => {
     const { t } = useTranslation();
 
@@ -406,7 +390,6 @@ export const ThroughputChart = memo(({ data }: { data: QRMDashboardMetrics["thro
     );
 });
 
-// Add display names for debugging
 MCTChart.displayName = "MCTChart";
 OTPGauge.displayName = "OTPGauge";
 QueueTimeChart.displayName = "QueueTimeChart";

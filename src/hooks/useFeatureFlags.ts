@@ -21,17 +21,14 @@ export interface FeatureFlags {
   // parts: true (always on)
   // operations: true (always on)
 
-  // Toggleable feature groups
-  analytics: boolean;       // Analytics section: QRM, OEE, Quality, Reliability, Jobs Analytics
-  monitoring: boolean;      // Monitoring section: Activity, Expectations, Exceptions
-  operatorViews: boolean;   // Operator views: Cell Overview, Terminal, My Activity, My Issues
-  integrations: boolean;    // Integrations: API Keys, Webhooks, MQTT, Data Import/Export, etc.
-  issues: boolean;          // Issues tracking
-  capacity: boolean;        // Capacity planning
-  assignments: boolean;     // Assignments management
-
-  // External service features (require separate deployment)
-  advancedCAD: boolean;     // PMI/MBD extraction - requires eryxon3d service (services/eryxon3d)
+  analytics: boolean;
+  monitoring: boolean;
+  operatorViews: boolean;
+  integrations: boolean;
+  issues: boolean;
+  capacity: boolean;
+  assignments: boolean;
+  advancedCAD: boolean;
 }
 
 /**
@@ -46,7 +43,6 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   issues: true,
   capacity: true,
   assignments: true,
-  // External service features - enabled for local development with eryxon3d
   advancedCAD: true,
 };
 
@@ -111,7 +107,6 @@ export const FEATURE_FLAG_METADATA: FeatureFlagMeta[] = [
     icon: 'UserCheck',
     category: 'operations',
   },
-  // External service features
   {
     key: 'advancedCAD',
     labelKey: 'featureFlags.advancedCAD.label',
@@ -129,7 +124,6 @@ export function useFeatureFlags() {
   const { tenant } = useAuth();
   const queryClient = useQueryClient();
 
-  // Fetch feature flags from tenant settings
   const { data: flags, isLoading, error } = useQuery({
     queryKey: QueryKeys.config.featureFlags(tenant?.id ?? ''),
     queryFn: async (): Promise<FeatureFlags> => {
@@ -145,7 +139,6 @@ export function useFeatureFlags() {
 
       if (error) throw error;
 
-      // Merge with defaults to ensure all flags exist
       const storedFlags = data?.feature_flags as Partial<FeatureFlags> | null;
       return {
         ...DEFAULT_FEATURE_FLAGS,
@@ -156,7 +149,6 @@ export function useFeatureFlags() {
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 
-  // Mutation to update feature flags
   const updateFlags = useMutation({
     mutationFn: async (newFlags: Partial<FeatureFlags>) => {
       if (!tenant?.id) throw new Error('No tenant');
@@ -185,23 +177,19 @@ export function useFeatureFlags() {
     },
   });
 
-  // Toggle a single flag
   const toggleFlag = (key: keyof FeatureFlags) => {
     const currentValue = flags?.[key] ?? DEFAULT_FEATURE_FLAGS[key];
     updateFlags.mutate({ [key]: !currentValue });
   };
 
-  // Check if a specific feature is enabled
   const isEnabled = (key: keyof FeatureFlags): boolean => {
     return flags?.[key] ?? DEFAULT_FEATURE_FLAGS[key];
   };
 
-  // Enable all flags
   const enableAll = () => {
     updateFlags.mutate(DEFAULT_FEATURE_FLAGS);
   };
 
-  // Disable all optional flags (keep core features)
   const disableAll = () => {
     const allDisabled: FeatureFlags = {
       analytics: false,

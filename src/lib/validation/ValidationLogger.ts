@@ -1,9 +1,3 @@
-/**
- * Validation Logger
- *
- * Rich logging system with proper status codes and user-friendly messages
- */
-
 import {
   ValidationResult,
   ValidationSeverity,
@@ -24,9 +18,6 @@ export interface LogEntry {
 export class ValidationLogger {
   private logs: LogEntry[] = [];
 
-  /**
-   * Log a validation result
-   */
   logValidation(result: ValidationResult, entityType: string): void {
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
@@ -45,13 +36,9 @@ export class ValidationLogger {
 
     this.logs.push(entry);
 
-    // Console logging with colors
     this.consoleLog(entry, result);
   }
 
-  /**
-   * Console log with proper formatting and colors
-   */
   private consoleLog(entry: LogEntry, result: ValidationResult): void {
     const prefix = this.getSeverityPrefix(entry.severity);
     const statusBadge = this.getStatusBadge(entry.httpStatus);
@@ -64,9 +51,6 @@ export class ValidationLogger {
     }
   }
 
-  /**
-   * Get severity prefix for console
-   */
   private getSeverityPrefix(severity: ValidationSeverity): string {
     switch (severity) {
       case ValidationSeverity.ERROR:
@@ -80,9 +64,6 @@ export class ValidationLogger {
     }
   }
 
-  /**
-   * Get HTTP status badge
-   */
   private getStatusBadge(httpStatus: number): string {
     if (httpStatus >= 200 && httpStatus < 300) {
       return `[${httpStatus} OK]`;
@@ -94,16 +75,10 @@ export class ValidationLogger {
     return `[${httpStatus}]`;
   }
 
-  /**
-   * Get all logs
-   */
   getLogs(): LogEntry[] {
     return [...this.logs];
   }
 
-  /**
-   * Get summary of all validations
-   */
   getSummary(): {
     totalValidations: number;
     passed: number;
@@ -124,9 +99,6 @@ export class ValidationLogger {
     };
   }
 
-  /**
-   * Generate user-friendly toast message
-   */
   getToastMessage(): { title: string; description: string; variant: "default" | "destructive" | "success" } {
     const summary = this.getSummary();
 
@@ -151,23 +123,12 @@ export class ValidationLogger {
     }
   }
 
-  /**
-   * Clear all logs
-   */
   clear(): void {
     this.logs = [];
   }
 }
 
-/**
- * API Response Formatter
- *
- * Format validation results for RESTful API responses
- */
 export class APIResponseFormatter {
-  /**
-   * Format validation result as API response
-   */
   static formatResponse(
     result: ValidationResult,
     operationType: "CREATE" | "UPDATE" | "DELETE" | "VALIDATE",
@@ -195,9 +156,6 @@ export class APIResponseFormatter {
     };
   }
 
-  /**
-   * Format batch operation response
-   */
   static formatBatchResponse(
     results: ValidationResult[],
     operationType: "CREATE" | "UPDATE" | "DELETE" | "VALIDATE",

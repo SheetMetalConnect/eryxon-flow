@@ -31,7 +31,6 @@ export default function StuckTimeEntries() {
   const queryClient = useQueryClient();
   const { profile } = useAuth();
 
-  // Fetch all active time entries
   const { data: stuckEntries, isLoading } = useQuery({
     queryKey: QueryKeys.timeEntries.stuck(profile?.tenant_id ?? ''),
     queryFn: async () => {
@@ -66,7 +65,6 @@ export default function StuckTimeEntries() {
     refetchInterval: 5000,
   });
 
-  // Mutation to force stop a time entry
   const stopEntryMutation = useMutation({
     mutationFn: async (entryId: string) => {
       const { data: entry } = await supabase
@@ -100,7 +98,6 @@ export default function StuckTimeEntries() {
     },
   });
 
-  // Mutation to stop all entries
   const stopAllMutation = useMutation({
     mutationFn: async () => {
       if (!stuckEntries || stuckEntries.length === 0) return 0;

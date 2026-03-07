@@ -84,7 +84,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const isActive = (path: string) => location.pathname === path;
   const isActiveGroup = (...paths: string[]) => paths.some(path => location.pathname.startsWith(path));
 
-  // Main navigation - Daily operations (always visible)
   const mainNavItems = [
     {
       path: "/admin/dashboard",
@@ -137,7 +136,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     }] : []),
   ];
 
-  // Monitoring - Activity tracking only
   const monitoringNavItems = [
     {
       path: "/admin/activity",
@@ -148,7 +146,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   ];
 
 
-  // Operator views - Admin can see what operators see
   const operatorViewItems = [
     {
       path: "/operator/work-queue",
@@ -176,7 +173,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     },
   ];
 
-  // Configuration - Setup tasks (rarely changed)
   const configNavItems = [
     {
       path: "/admin/config/stages",
@@ -216,7 +212,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     },
   ];
 
-  // Integrations - Developer tools, APIs, and external connections
   const integrationsNavItems = [
     {
       path: "/admin/config/api-keys",
@@ -262,7 +257,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     },
   ];
 
-  // Account & Support
   const accountNavItems = [
     {
       path: "/admin/my-plan",
@@ -290,7 +284,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     },
   ];
 
-  // External links (open in new tab)
   const externalLinks = [
     {
       href: DOCS_GUIDES_URL,
@@ -301,7 +294,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const renderSidebarContent = () => (
     <div className="flex h-full flex-col">
-      {/* Logo/Brand - Compact */}
       <div className="flex h-12 items-center border-b border-border-subtle px-3">
         <div className="flex items-center gap-2">
           <Factory className="h-6 w-6 text-foreground/80" strokeWidth={1.5} />
@@ -313,7 +305,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
       </div>
 
-      {/* Global Search Button */}
       <div className="px-2 py-2 border-b border-border-subtle">
         {collapsed ? (
           <Button
@@ -346,9 +337,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         )}
       </div>
 
-      {/* Navigation - Compact */}
       <ScrollArea className="flex-1 px-2 py-2">
-        {/* Main Navigation - Daily Operations */}
         <div className="space-y-0.5">
           {mainNavItems.map((item) => {
             const isItemActive = item.exact
@@ -390,7 +379,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
         {!collapsed && featureFlags.operatorViews && <Separator className="my-2" />}
 
-        {/* Operator Views Section - Collapsible */}
         {!collapsed && featureFlags.operatorViews && (
           <Collapsible open={operatorViewsOpen} onOpenChange={setOperatorViewsOpen} className="space-y-0.5">
             <CollapsibleTrigger asChild>
@@ -437,7 +425,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
         {!collapsed && featureFlags.monitoring && <Separator className="my-2" />}
 
-        {/* Monitoring Section - Collapsible */}
         {!collapsed && featureFlags.monitoring && (
           <Collapsible open={monitoringOpen} onOpenChange={setMonitoringOpen} className="space-y-0.5">
             <CollapsibleTrigger asChild>
@@ -484,7 +471,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
         {!collapsed && <Separator className="my-2" />}
 
-        {/* Configuration Section - Collapsible */}
         {!collapsed && (
           <Collapsible open={configOpen} onOpenChange={setConfigOpen} className="space-y-0.5">
             <CollapsibleTrigger asChild>
@@ -531,7 +517,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
         {!collapsed && featureFlags.integrations && <Separator className="my-2" />}
 
-        {/* Integrations Section - Collapsible */}
         {!collapsed && featureFlags.integrations && (
           <Collapsible open={integrationsOpen} onOpenChange={setIntegrationsOpen} className="space-y-0.5">
             <CollapsibleTrigger asChild>
@@ -578,7 +563,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
         {!collapsed && <Separator className="my-2" />}
 
-        {/* Account & Support Section - Collapsible */}
         {!collapsed && (
           <Collapsible open={accountOpen} onOpenChange={setAccountOpen} className="space-y-0.5">
             <CollapsibleTrigger asChild>
@@ -619,7 +603,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   </Link>
                 );
               })}
-              {/* External Links */}
               {externalLinks.map((item) => (
                 <a
                   key={item.href}
@@ -643,9 +626,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         )}
       </ScrollArea>
 
-      {/* User Profile & Sign Out - Compact */}
       <div className="border-t border-border-subtle p-2 space-y-1.5">
-        {/* Compact Tenant Info - Clickable for root admins */}
         {!collapsed && tenant && (
           <button
             onClick={() => profile?.is_root_admin && setTenantSwitcherOpen(true)}
@@ -662,7 +643,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </Badge>
           </button>
         )}
-        {/* Compact User Info */}
         {!collapsed && profile && (
           <div className="flex items-center gap-2 px-1">
             <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center">
@@ -676,7 +656,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </div>
           </div>
         )}
-        {/* MCP Status, Theme & Language - Inline */}
         <div className={cn("flex items-center gap-2", collapsed ? "justify-center flex-col" : "justify-between px-1")}>
           <McpServerStatus />
           <div className="flex items-center gap-1">
@@ -698,7 +677,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </Button>
       </div>
 
-      {/* Collapse Toggle (Desktop) */}
       {!mobileOpen && (
         <Button
           variant="ghost"
@@ -720,7 +698,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     <>
       <AnimatedBackground />
       <div className="relative flex h-screen overflow-hidden bg-background">
-        {/* Mobile Menu Button */}
         <Button
           variant="ghost"
           size="sm"
@@ -730,7 +707,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <Menu className="h-4 w-4" />
         </Button>
 
-        {/* Mobile Sidebar Overlay */}
         {mobileOpen && (
           <div
             className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
@@ -738,7 +714,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           />
         )}
 
-        {/* Sidebar - Mobile */}
         <aside
           className={cn(
             "fixed inset-y-0 left-0 z-50 w-56 border-r sidebar-glass transition-transform lg:hidden",
@@ -748,7 +723,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           {renderSidebarContent()}
         </aside>
 
-        {/* Sidebar - Desktop (auto-collapse on tablet) */}
         <aside
           className={cn(
             "hidden border-r sidebar-glass transition-all md:block",
@@ -760,7 +734,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         </aside>
 
-        {/* Main Content - Reduced padding */}
         <main className="flex-1 overflow-y-auto">
           <TrialStatusBanner />
           <div className="container mx-auto p-3 pt-14 md:p-4 md:pt-4 lg:p-5">
@@ -769,10 +742,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </main>
       </div>
 
-      {/* Global Search Modal */}
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
 
-      {/* Tenant Switcher Modal (Root Admin Only) */}
       <TenantSwitcher open={tenantSwitcherOpen} onClose={() => setTenantSwitcherOpen(false)} />
     </>
   );

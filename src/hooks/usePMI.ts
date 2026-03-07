@@ -15,10 +15,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { QueryKeys } from '@/lib/queryClient';
 import { logger } from '@/lib/logger';
 
-// ============================================================================
-// Types
-// ============================================================================
-
 /**
  * PMI processing status for async extraction
  */
@@ -145,10 +141,6 @@ export interface PMIExtractionResult {
   file_hash?: string;
 }
 
-// ============================================================================
-// Configuration
-// ============================================================================
-
 const PMI_SERVICE_URL = import.meta.env.VITE_PMI_SERVICE_URL || import.meta.env.VITE_CAD_SERVICE_URL;
 const PMI_SERVICE_API_KEY = import.meta.env.VITE_CAD_SERVICE_API_KEY;
 
@@ -158,10 +150,6 @@ const PMI_SERVICE_API_KEY = import.meta.env.VITE_CAD_SERVICE_API_KEY;
 export function isPMIServiceEnabled(): boolean {
   return Boolean(PMI_SERVICE_URL);
 }
-
-// ============================================================================
-// Hook
-// ============================================================================
 
 export function usePMI(partId: string | undefined) {
   const { session } = useAuth();
@@ -484,36 +472,25 @@ export function usePMI(partId: string | undefined) {
   } : null;
 
   return {
-    // Data
     pmiData,
     hasPMI,
     pmiSummary,
     pmiMetadata,
-
-    // Status (for async processing)
     pmiStatus,
     pmiProgress: pmiMetadata?.pmi_progress ?? 0,
     pmiStage: pmiMetadata?.pmi_stage ?? '',
     pmiError: pmiMetadata?.pmi_error,
     pmiExtractedAt: pmiMetadata?.pmi_extracted_at,
     pmiProcessingTime: pmiMetadata?.pmi_processing_time_ms,
-
-    // Loading states
     isLoadingPMI,
     isExtracting,
     isProcessing: pmiStatus === 'processing' || isExtracting,
-
-    // Errors
     fetchError,
     extractionError,
-
-    // Actions
-    extractPMI,        // Sync extraction (legacy)
-    extractPMIAsync,   // Async extraction with realtime updates
+    extractPMI,
+    extractPMIAsync,
     clearPMI,
     refetchPMI,
-
-    // Service status
     isPMIServiceEnabled: isPMIServiceEnabled(),
   };
 }
@@ -556,7 +533,6 @@ export function usePMIExtraction() {
         'Content-Type': 'application/json',
       };
 
-      // Add API key if configured
       if (PMI_SERVICE_API_KEY) {
         headers['X-API-Key'] = PMI_SERVICE_API_KEY;
       }

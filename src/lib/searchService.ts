@@ -1,17 +1,3 @@
-/**
- * Advanced Search Service
- *
- * This module provides advanced search capabilities using PostgreSQL's full-text search.
- * It leverages the tsvector columns and GIN indexes created in the database migration
- * for better performance and relevance ranking.
- *
- * Features:
- * - Full-text search with relevance ranking
- * - Support for multi-word queries
- * - Fallback to ILIKE search for backwards compatibility
- * - Stemming and language support
- */
-
 import { supabase } from '@/integrations/supabase/client';
 import { SearchResult } from '@/hooks/useGlobalSearch';
 import { logger } from '@/lib/logger';
@@ -33,7 +19,6 @@ export interface AdvancedSearchOptions {
  * @public Exported for testing
  */
 export function toTsQuery(query: string): string {
-  // Remove special characters and split into words
   const words = query
     .trim()
     .toLowerCase()
@@ -43,7 +28,6 @@ export function toTsQuery(query: string): string {
 
   if (words.length === 0) return '';
 
-  // Join words with AND operator and add prefix matching
   return words.map(word => `${word}:*`).join(' & ');
 }
 

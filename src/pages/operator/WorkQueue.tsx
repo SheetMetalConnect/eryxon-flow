@@ -24,7 +24,6 @@ import { isAfter, isBefore, addDays, startOfToday, endOfToday } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
 
-// Operator assignment info for parts
 interface PartAssignment {
   part_id: string;
   assigned_by_name: string;
@@ -82,7 +81,6 @@ export default function WorkQueue() {
       setOperations(operationsData);
       if (cellsData.data) setCells(cellsData.data);
 
-      // Load assignments for the active shop floor operator
       if (activeOperator?.id) {
         const { data: assignmentsData } = await supabase
           .from("assignments")
@@ -169,18 +167,14 @@ export default function WorkQueue() {
     });
   };
 
-  // Get unique materials
   const materials = Array.from(
     new Set(operations.map((operation) => operation.part.material))
   ).sort();
 
-  // Filter operations
   const filteredOperations = operations.filter((operation) => {
-    // Material filter
     const matchesMaterial =
       selectedMaterial === "all" || operation.part.material === selectedMaterial;
 
-    // Search filter
     const matchesSearch =
       searchQuery === "" ||
       operation.operation_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -189,18 +183,14 @@ export default function WorkQueue() {
       (operation.part.job.customer &&
         operation.part.job.customer.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    // Status filter
     const matchesStatus =
       statusFilter === "all" || operation.status === statusFilter;
 
-    // Show completed filter
     const matchesCompleted = showCompleted || operation.status !== "completed";
 
-    // Assigned to me filter
     const matchesAssigned =
       !assignedToMe || operation.assigned_operator_id === profile?.id;
 
-    // Due date filter
     let matchesDueDate = true;
     if (dueDateFilter !== "all") {
       const dueDate = new Date(operation.part.job.due_date_override || operation.part.job.due_date);
@@ -227,7 +217,6 @@ export default function WorkQueue() {
     );
   });
 
-  // Sort operations
   const sortedOperations = [...filteredOperations].sort((a, b) => {
     if (sortBy === "sequence") {
       return a.sequence - b.sequence;
@@ -241,14 +230,12 @@ export default function WorkQueue() {
     return 0;
   });
 
-  // Create a map of part_id -> assignment info for quick lookup
   const assignmentsByPartId = useMemo(() => {
     const map = new Map<string, PartAssignment>();
     myAssignments.forEach(a => map.set(a.part_id, a));
     return map;
   }, [myAssignments]);
 
-  // Group operations by cell
   const operationsByCell = cells
     .filter((cell) => !hiddenCells.has(cell.id))
     .map((cell) => ({
@@ -256,7 +243,6 @@ export default function WorkQueue() {
       operations: sortedOperations.filter((operation) => operation.cell_id === cell.id),
     }));
 
-  // Calculate stats
   const totalOperations = filteredOperations.length;
   const inProgressOperations = filteredOperations.filter((o) => o.status === "in_progress").length;
   const completedOperations = filteredOperations.filter((o) => o.status === "completed").length;

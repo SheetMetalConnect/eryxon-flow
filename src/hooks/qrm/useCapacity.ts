@@ -61,7 +61,6 @@ export function useNextCellCapacity(
     }
   }, [currentCellId, tenantId]);
 
-  // Debounced fetch to prevent cascade updates
   const debouncedFetch = useDebouncedCallback(fetchCapacity, 200);
 
   useEffect(() => {
@@ -72,7 +71,6 @@ export function useNextCellCapacity(
 
     fetchCapacity();
 
-    // Subscribe to real-time updates on operations
     // Note: We filter by tenant_id to reduce scope since we can't filter by related cells
     const channel = supabase
       .channel(`next-cell-capacity-${currentCellId}`)

@@ -1,17 +1,3 @@
-/**
- * Structured Logging Utility
- *
- * Provides consistent, context-aware logging throughout the application.
- * This is a foundation for future integration with external logging services
- * (Sentry, DataDog, LogRocket, etc.)
- *
- * Features:
- * 1. Log levels (debug, info, warn, error)
- * 2. Structured context with each log
- * 3. Environment-aware behavior
- * 4. Easy migration path to external services
- */
-
 import { getErrorMessage, ErrorCodeType } from './errors';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
@@ -51,9 +37,6 @@ interface LogEntry {
   };
 }
 
-/**
- * Log level priority for filtering
- */
 const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
   debug: 0,
   info: 1,
@@ -61,56 +44,38 @@ const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
   error: 3,
 };
 
-/**
- * Get the minimum log level from environment
- */
 function getMinLogLevel(): LogLevel {
-  // In production, default to 'warn' to reduce noise
-  // In development, show all logs
   if (import.meta.env.PROD) {
     return 'warn';
   }
   return 'debug';
 }
 
-/**
- * Check if a log level should be output
- */
 function shouldLog(level: LogLevel): boolean {
   const minLevel = getMinLogLevel();
   return LOG_LEVEL_PRIORITY[level] >= LOG_LEVEL_PRIORITY[minLevel];
 }
 
-/**
- * Format a log entry for console output
- */
 function formatLogEntry(entry: LogEntry): string {
   const parts: string[] = [];
 
-  // Add timestamp in development
   if (import.meta.env.DEV) {
     parts.push(`[${new Date(entry.timestamp).toLocaleTimeString()}]`);
   }
 
-  // Add level badge
   parts.push(`[${entry.level.toUpperCase()}]`);
 
-  // Add component or operation context if present
   if (entry.context?.component) {
     parts.push(`[${entry.context.component}]`);
   } else if (entry.context?.operation) {
     parts.push(`[${entry.context.operation}]`);
   }
 
-  // Add message
   parts.push(entry.message);
 
   return parts.join(' ');
 }
 
-/**
- * Get console styling for log level
- */
 function getLogStyle(level: LogLevel): string {
   switch (level) {
     case 'debug':
@@ -124,14 +89,10 @@ function getLogStyle(level: LogLevel): string {
   }
 }
 
-/**
- * Output a log entry to the console
- */
 function outputLog(entry: LogEntry): void {
   const message = formatLogEntry(entry);
   const style = getLogStyle(entry.level);
 
-  // Use appropriate console method
   switch (entry.level) {
     case 'debug':
       console.debug(`%c${message}`, style, entry.context || '');
@@ -151,9 +112,6 @@ function outputLog(entry: LogEntry): void {
   }
 }
 
-/**
- * Create a log entry
- */
 function createLogEntry(
   level: LogLevel,
   message: string,
@@ -277,8 +235,6 @@ export const logger = {
     const entry = createLogEntry('error', message, context, error);
     outputLog(entry);
 
-    // Future: Send to external error tracking service
-    // Sentry.captureException(error, { extra: context });
   },
 
   /**
@@ -367,9 +323,6 @@ export function createScopedLogger(baseContext: LogContext) {
   };
 }
 
-/**
- * Performance tracking utility
- */
 export function measurePerformance(name: string): () => void {
   const start = performance.now();
   return () => {

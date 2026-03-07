@@ -37,7 +37,6 @@ export interface Batch {
   parent_batch_id: string | null;
   material_requirement_raised: boolean;
   material_requirement_metadata: Record<string, unknown> | null;
-  // Joined data
   cell?: {
     id: string;
     name: string;
@@ -55,7 +54,6 @@ export interface BatchOperation {
   quantity_in_batch: number | null;
   tenant_id: string;
   created_at: string;
-  // Joined data
   operation?: {
     id: string;
     operation_name: string;
@@ -253,7 +251,6 @@ export function useCreateBatch() {
     mutationFn: async (input: CreateBatchInput) => {
       if (!profile?.tenant_id) throw new Error(t("common.noTenantId"));
 
-      // Create the batch
       const insertData = {
           tenant_id: profile.tenant_id,
           batch_number: input.batch_number,
@@ -278,7 +275,6 @@ export function useCreateBatch() {
 
       if (batchError) throw batchError;
 
-      // Add operations to batch if provided
       if (input.operation_ids && input.operation_ids.length > 0) {
         const batchOperations = input.operation_ids.map((opId, index) => ({
           tenant_id: profile.tenant_id,
@@ -395,7 +391,6 @@ export function useAddOperationsToBatch() {
     mutationFn: async ({ batchId, operationIds }: { batchId: string; operationIds: string[] }) => {
       if (!profile?.tenant_id) throw new Error(t("common.noTenantId"));
 
-      // Get current max sequence
       const { data: existing } = await supabase
         .from("batch_operations")
         .select("sequence_in_batch")
@@ -464,14 +459,12 @@ export function useDeleteBatch() {
     mutationFn: async (batchId: string) => {
       if (!profile?.tenant_id) throw new Error(t("common.noTenantId"));
 
-      // First delete batch operations
       await supabase
         .from("batch_operations")
         .delete()
         .eq("batch_id", batchId)
         .eq("tenant_id", profile.tenant_id);
 
-      // Then delete the batch
       const { error } = await supabase
         .from("operation_batches")
         .delete()

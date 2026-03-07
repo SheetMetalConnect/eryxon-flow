@@ -62,7 +62,6 @@ export default function ConfigMaterials() {
 
     try {
       if (editingMaterial) {
-        // Update existing material
         await supabase
           .from("materials")
           .update({
@@ -75,7 +74,6 @@ export default function ConfigMaterials() {
 
         toast.success(t("materials.materialUpdated"));
       } else {
-        // Create new material
         await supabase.from("materials").insert({
           tenant_id: profile.tenant_id,
           name: formData.name,

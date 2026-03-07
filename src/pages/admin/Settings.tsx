@@ -98,7 +98,6 @@ export const Settings: React.FC = () => {
   const handleDeleteAccount = async () => {
     setIsDeletingAccount(true);
     try {
-      // Delete account by signing out and clearing session
       await signOut();
       toast.success(t("settings.accountDeleted"));
     } catch (error: unknown) {
@@ -114,7 +113,6 @@ export const Settings: React.FC = () => {
 
     setIsDeletingTenant(true);
     try {
-      // Clear all tenant data by signing out
       await signOut();
       toast.success(t("settings.tenantDeleted"));
       setTimeout(async () => {
@@ -139,7 +137,6 @@ export const Settings: React.FC = () => {
 
       <hr className="title-divider" />
 
-      {/* Demo Data Card */}
       <Card className="glass-card">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -204,7 +201,6 @@ export const Settings: React.FC = () => {
       </Card>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Appearance Settings */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -232,7 +228,6 @@ export const Settings: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Language Settings */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -256,7 +251,6 @@ export const Settings: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Account Info */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -285,7 +279,6 @@ export const Settings: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Organization Info */}
         {tenant && (
           <Card>
             <CardHeader>
@@ -325,7 +318,6 @@ export const Settings: React.FC = () => {
         )}
       </div>
 
-      {/* Quick Links to Configuration */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -381,7 +373,6 @@ export const Settings: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* GDPR Compliance: Data Deletion */}
       <Card className="border-destructive/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-destructive">
@@ -393,7 +384,6 @@ export const Settings: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Delete Account */}
           <div className="space-y-3">
             <div>
               <Label className="text-base font-semibold">{t("settings.gdpr.deleteAccount.title")}</Label>
@@ -418,7 +408,6 @@ export const Settings: React.FC = () => {
             </Button>
           </div>
 
-          {/* Delete Tenant (Admin Only) */}
           {profile?.role === 'admin' && (
             <>
               <Separator />
@@ -463,7 +452,6 @@ export const Settings: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Delete Account Confirmation Dialog */}
       <AlertDialog open={showDeleteAccountDialog} onOpenChange={setShowDeleteAccountDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -507,7 +495,6 @@ export const Settings: React.FC = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Delete Tenant Confirmation Dialog */}
       <AlertDialog open={showDeleteTenantDialog} onOpenChange={setShowDeleteTenantDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -554,7 +541,6 @@ export const Settings: React.FC = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Exit Demo Mode Confirmation Dialog */}
       <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

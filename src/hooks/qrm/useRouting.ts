@@ -128,7 +128,6 @@ export function usePartRouting(
     }
   }, [partId]);
 
-  // Debounced fetch
   const debouncedFetch = useDebouncedCallback(fetchRouting, 150);
 
   useEffect(() => {
@@ -140,7 +139,6 @@ export function usePartRouting(
 
     fetchRouting();
 
-    // Subscribe to real-time updates on operations
     // Use tenant_id filter for RLS compliance; client-side filter by part_id
     if (tenantId) {
       const channel = supabase
@@ -203,8 +201,6 @@ export function useJobRouting(jobId: string | null, tenantId: string | null) {
     setError(null);
 
     try {
-      // Fetch all operations for the job's parts with cell information
-      // Include tenant_id filter for RLS compliance
       const { data, error: queryError } = await supabase
         .from("operations")
         .select(
@@ -266,7 +262,6 @@ export function useJobRouting(jobId: string | null, tenantId: string | null) {
     }
   }, [jobId, tenantId]);
 
-  // Debounced fetch
   const debouncedFetch = useDebouncedCallback(fetchRouting, 200);
 
   useEffect(() => {
@@ -278,7 +273,6 @@ export function useJobRouting(jobId: string | null, tenantId: string | null) {
 
     fetchRouting();
 
-    // Subscribe to real-time updates
     // Filter by tenant_id for RLS compliance
     const channel = supabase
       .channel(`job-routing-${jobId}`)
@@ -335,7 +329,6 @@ export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null
     setError(null);
 
     try {
-      // Fetch all operations for all jobs in one query with tenant filter
       const { data, error: queryError } = await supabase
         .from("operations")
         .select(
@@ -361,15 +354,12 @@ export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null
 
       if (queryError) throw queryError;
 
-      // Group operations by job, then by cell
       const jobRoutingsMap: Record<string, Map<string, CellRoutingData>> = {};
 
-      // Initialize maps for each job
       jobIds.forEach((jobId) => {
         jobRoutingsMap[jobId] = new Map();
       });
 
-      // Process operations
       (data || []).forEach(
         (op: {
           id: string;
@@ -412,7 +402,6 @@ export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null
         }
       );
 
-      // Convert to final format
       const result: Record<string, JobRouting> = {};
       Object.entries(jobRoutingsMap).forEach(([jobId, cellMap]) => {
         result[jobId] = Array.from(cellMap.values()).sort(

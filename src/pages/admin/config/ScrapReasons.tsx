@@ -160,7 +160,6 @@ export default function ConfigScrapReasons() {
       .slice(0, 5)
       .filter((r) => r.totalScrapQuantity > 0);
 
-    // Group by category
     const byCategory = categories.map((cat) => ({
       ...cat,
       count: usageStats.filter((r) => r.category === cat.value).length,
@@ -181,7 +180,6 @@ export default function ConfigScrapReasons() {
     };
   }, [usageStats]);
 
-  // Create a map for quick lookup of usage stats
   const usageMap = useMemo(() => {
     if (!usageStats) return new Map();
     return new Map(usageStats.map((u) => [u.id, u]));
