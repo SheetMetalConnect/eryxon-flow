@@ -1,6 +1,7 @@
 import { serveApi } from "@shared/handler.ts";
 import type { HandlerContext } from "@shared/handler.ts";
 import { createSuccessResponse, BadRequestError } from "@shared/validation/errorHandler.ts";
+import { validateContentType } from "@shared/security.ts";
 
 export default serveApi(async (req: Request, ctx: HandlerContext) => {
   const { supabase, tenantId } = ctx;
@@ -10,6 +11,12 @@ export default serveApi(async (req: Request, ctx: HandlerContext) => {
 
   if (!filename || !content_type) {
     throw new BadRequestError('filename and content_type are required');
+  }
+
+  // Validate content type against whitelist
+  const contentTypeCheck = validateContentType(content_type);
+  if (!contentTypeCheck.valid) {
+    throw new BadRequestError(contentTypeCheck.error!);
   }
 
   // Basic filename validation
