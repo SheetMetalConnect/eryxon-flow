@@ -280,7 +280,20 @@
       "pmiNotes": "Notities",
       "pmiGraphical": "Grafische PMI",
       "noPmiData": "Geen PMI-gegevens in dit bestand",
-      "pmiNotSupported": "PMI vereist STEP AP242-formaat"
+      "pmiNotSupported": "PMI vereist STEP AP242-formaat",
+      "measurements": {
+        "title": "Metingen",
+        "pointToPoint": "Punt-tot-punt afstand",
+        "faceDistance": "Vlak-tot-vlak afstand",
+        "angle": "Hoek tussen vlakken",
+        "radius": "Straal / Diameter",
+        "selectFirstPoint": "Klik om het eerste punt te selecteren",
+        "selectSecondPoint": "Klik om het tweede punt te selecteren",
+        "selectFirstFace": "Klik om het eerste vlak te selecteren",
+        "selectSecondFace": "Klik om het tweede vlak te selecteren",
+        "clearAll": "Alle metingen wissen",
+        "meshDisclaimer": "Gemeten van getrianguleerd oppervlak"
+      }
     },
     "pmiExtracted": "PMI Geëxtraheerd",
     "pmiExtractedDesc": "{{count}} afmeting(en) gevonden in het model"
