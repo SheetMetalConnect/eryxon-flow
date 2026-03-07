@@ -1,397 +1,534 @@
-# Implementation Plan: Interactive 3D Viewer Measurements
+# Implementation Plan: Interactive 3D Viewer Measurements (v2 - Revised)
 
 ## Overview
 
-Add interactive measurement tools to the STEPViewer that allow users to select points, edges, and faces on CAD models to measure distances, lengths, and angles directly in the 3D viewport. This goes beyond the current bounding-box dimensions and read-only PMI data by giving users hands-on measurement capabilities.
+Add interactive measurement tools to the STEPViewer that let users click on model geometry to measure distances, lengths, and angles. This fills the gap between the existing bounding-box overlay (overall X/Y/Z) and the read-only PMI data (which depends on STEP file metadata that many files lack).
 
 ---
 
-## Current State
+## Current State (from code review)
 
-| Capability | Status | Limitation |
+**STEPViewer.tsx** (1,872 lines) is a monolithic component with:
+
+| What exists | Where in code | Gap |
 |---|---|---|
-| Bounding box dimensions (X/Y/Z) | Exists | Only overall envelope, not specific features |
-| PMI visualization (dims, tolerances) | Exists | Read-only from STEP metadata; not all files contain PMI |
-| Interactive point picking | Missing | No raycasting for user-selected points |
-| Point-to-point distance | Missing | Cannot measure width of a bar, length of a tube |
-| Angle measurement | Missing | Cannot measure bend angles on sheet metal |
-| Face/plane selection | Missing | Cannot select surfaces for reference |
+| Bounding box dims (X/Y/Z overlay) | Lines 720-889, 1719-1789 | Only overall envelope |
+| PMI visualization (7 types) | Lines 1167-1518 | Read-only, depends on file metadata |
+| CSS2DRenderer for labels | Line 255, `css2dRendererRef` | Already set up, reusable |
+| OrbitControls on canvas | Line 249, `controlsRef` | Needs click/drag disambiguation |
+| `meshesRef` (all loaded meshes) | Line 92 | Ready for raycasting |
+| EdgesGeometry (30 deg threshold) | Lines 450-475 area | Edge data available for edge selection |
+| `pointerEvents: 'none'` on CSS2D layer | Line 260 | Clicks go through to WebGL canvas -- good |
+
+**Key constraint**: STEPViewer is already 1,872 lines. All measurement logic must be extracted into separate files to avoid making it worse.
+
+**No existing** `src/components/viewer/` directory. We create it fresh.
 
 ---
 
-## Proposed Measurement Modes
+## Measurement Modes
 
-### 1. Point-to-Point Distance
-- **Use case**: Measure width of a bar, length of a tube, hole-to-hole spacing
-- **Interaction**: Click point A on model surface, click point B -> display linear distance
-- **Display**: Dashed leader line between points + distance label in mm
+### Mode 1: Point-to-Point Distance
+**Use cases**: width of a bar, length of a tube, hole-to-hole spacing, slot dimensions
+**Interaction**: Click point A -> click point B -> show distance
+**Display**: Marker dots + dashed line + CSS2D label at midpoint ("127.4 mm")
 
-### 2. Edge Length
-- **Use case**: Measure length of a specific edge (milled edge, tube segment)
-- **Interaction**: Hover to highlight edge, click to select -> display edge length
-- **Display**: Highlighted edge + length label
+### Mode 2: Face-to-Face Distance (Thickness / Gap)
+**Use cases**: Wall thickness, gap between parallel planes, plate thickness
+**Interaction**: Click face A -> click face B -> show perpendicular distance
+**Display**: Arrow between highlighted faces + distance label
 
-### 3. Face-to-Face Distance (Thickness)
-- **Use case**: Measure wall thickness, gap between parallel planes
-- **Interaction**: Click face A, click face B -> display minimum or perpendicular distance
-- **Display**: Arrow between faces + distance label
+### Mode 3: Angle Between Faces
+**Use cases**: Sheet metal bend angle, V-groove angle, chamfer angle
+**Interaction**: Click face A -> click face B -> show angle
+**Display**: Arc glyph at intersection + angle label ("90.0 deg")
 
-### 4. Angle Between Faces
-- **Use case**: Measure bend angle on sheet metal, angle between intersecting surfaces
-- **Interaction**: Click face A, click face B -> display angle between normals
-- **Display**: Arc annotation + angle in degrees
-
-### 5. Radius / Diameter
-- **Use case**: Measure hole diameter, fillet radius, bend radius
-- **Interaction**: Click on cylindrical or curved face -> display radius/diameter
-- **Display**: Dimension line with R or D prefix
+### Mode 4: Radius / Diameter
+**Use cases**: Hole diameter, fillet radius, bend inner radius
+**Interaction**: Click on curved surface -> detect curvature -> show R or D
+**Display**: Dimension line with "R 5.0 mm" or "D 10.0 mm"
 
 ---
 
 ## Architecture
 
-### New Files
+### New File Structure
 
 ```
 src/components/viewer/
-  MeasurementToolbar.tsx       # Toolbar UI for selecting measurement mode
-  MeasurementOverlay.tsx       # CSS2D overlay for measurement results
   measurements/
-    types.ts                   # Shared types (MeasurementMode, MeasurementResult, etc.)
-    useRaycaster.ts            # Hook: raycasting + snap-to-vertex/edge/face logic
-    useMeasurements.ts         # Hook: state machine for measurement workflow
-    pointToPoint.ts            # Pure fn: compute distance between two 3D points
-    edgeLength.ts              # Pure fn: compute length of a selected edge
-    faceDistance.ts             # Pure fn: compute distance between two faces
-    faceAngle.ts               # Pure fn: compute angle between two face normals
-    radiusDiameter.ts          # Pure fn: detect curvature, compute R/D
-    renderAnnotations.ts       # Three.js helpers: draw dimension lines, arcs, labels
+    types.ts                   # Types: MeasurementMode, MeasurementResult, SnapTarget
+    useMeasurementMode.ts      # Hook: mode state machine + results array
+    useRaycastPicker.ts        # Hook: raycaster, snap logic, hover preview
+    computations.ts            # Pure fns: distance, angle, radius fitting
+    MeasurementAnnotations.ts  # Three.js render helpers: lines, arcs, labels
+    MeasurementToolbar.tsx     # React toolbar buttons for mode selection
+    MeasurementPanel.tsx       # React panel listing active measurements
 ```
 
 ### Modified Files
 
 ```
-src/components/STEPViewer.tsx          # Wire in measurement system
-src/i18n/locales/en/jobs.json         # Translation keys
-src/i18n/locales/nl/jobs.json         # Translation keys
-src/i18n/locales/de/jobs.json         # Translation keys
+src/components/STEPViewer.tsx        # ~50 lines added: wire in hooks + toolbar
+src/i18n/locales/en/jobs.json        # Translation keys
+src/i18n/locales/nl/jobs.json        # Translation keys
+src/i18n/locales/de/jobs.json        # Translation keys
 ```
+
+### Integration Points in STEPViewer.tsx
+
+The hooks need access to these existing refs:
+
+| Ref | Type | Used for |
+|---|---|---|
+| `containerRef` | `HTMLDivElement` | Attach pointer event listeners |
+| `sceneRef` | `THREE.Scene` | Add/remove measurement objects |
+| `cameraRef` | `THREE.PerspectiveCamera` | Raycaster unprojection |
+| `rendererRef` | `THREE.WebGLRenderer` | Get canvas size for NDC coords |
+| `meshesRef` | `THREE.Mesh[]` | Raycast targets |
+| `controlsRef` | `OrbitControls` | Temporarily disable on measurement click |
+| `css2dRendererRef` | `CSS2DRenderer` | Already rendering labels |
 
 ---
 
-## Detailed Implementation Plan
+## Detailed Implementation
 
-### Phase 1: Core Raycasting & Point-to-Point (MVP)
+### Phase 1: Point-to-Point Distance (MVP)
 
-**Goal**: Users can click two points on the model and see the distance.
-
-#### 1.1 Raycasting Infrastructure (`useRaycaster.ts`)
-
-- Set up `THREE.Raycaster` on the STEPViewer canvas
-- On mouse move: cast ray, find intersection with model meshes
-- Snap logic (priority order):
-  1. **Vertex snap**: If intersection is within threshold of a mesh vertex, snap to it
-  2. **Edge snap**: If near an edge midpoint or along an edge, snap to edge
-  3. **Face snap**: Default to exact intersection point on the face
-- Visual feedback: render a small sphere/crosshair at the snap point
-- Store the intersected face index and mesh reference for later use
-
-**Key considerations**:
-- Use `raycaster.intersectObjects(meshes, true)` for recursive scene traversal
-- For vertex snapping, access `geometry.attributes.position` and find nearest vertex to intersection point within a configurable threshold (e.g. 2mm or 5px screen-space)
-- Edge snapping requires iterating the face's edges (from index buffer) and projecting the intersection onto each edge segment
-- Show snap indicator type (vertex = dot, edge = line segment highlight, face = ring)
-
-#### 1.2 Measurement State Machine (`useMeasurements.ts`)
-
-States:
-```
-idle -> selecting_first_point -> selecting_second_point -> measurement_complete
-                                                              |
-                                                              v
-                                                         idle (reset)
-```
-
-- `idle`: No measurement in progress. Cursor is default.
-- `selecting_first_point`: Measurement mode active. Next click sets point A.
-- `selecting_second_point`: Point A set. Next click sets point B. Show live preview line from A to cursor.
-- `measurement_complete`: Both points set. Display result. User can start new measurement or clear.
-
-Store measurement results in an array so multiple measurements can coexist on screen.
-
-#### 1.3 Point-to-Point Calculation (`pointToPoint.ts`)
+#### 1.1 Types (`types.ts`)
 
 ```typescript
-interface PointMeasurement {
+import * as THREE from 'three';
+
+export type MeasurementMode = 'none' | 'point-to-point' | 'face-distance' | 'face-angle' | 'radius';
+
+export type SnapType = 'vertex' | 'edge' | 'face';
+
+export interface SnapTarget {
+  point: THREE.Vector3;       // World-space snapped position
+  type: SnapType;
+  mesh: THREE.Mesh;
+  faceIndex: number;
+  normal: THREE.Vector3;      // Face normal at hit point
+}
+
+export interface PointToPointResult {
   id: string;
   type: 'point-to-point';
   pointA: THREE.Vector3;
   pointB: THREE.Vector3;
-  distance: number; // in mm (model units)
+  distance: number;           // mm (model units)
 }
 
-function computePointToPoint(a: Vector3, b: Vector3): number {
-  return a.distanceTo(b);
+export interface FaceDistanceResult {
+  id: string;
+  type: 'face-distance';
+  faceA: { point: THREE.Vector3; normal: THREE.Vector3 };
+  faceB: { point: THREE.Vector3; normal: THREE.Vector3 };
+  distance: number;
+  isParallel: boolean;
+}
+
+export interface FaceAngleResult {
+  id: string;
+  type: 'face-angle';
+  faceA: { point: THREE.Vector3; normal: THREE.Vector3 };
+  faceB: { point: THREE.Vector3; normal: THREE.Vector3 };
+  angleDeg: number;          // Included angle
+  bendAngleDeg: number;      // 180 - included (for sheet metal)
+  intersectionPoint: THREE.Vector3;
+}
+
+export interface RadiusResult {
+  id: string;
+  type: 'radius';
+  center: THREE.Vector3;
+  radius: number;
+  diameter: number;
+  confidence: number;        // 0-1 fit quality
+}
+
+export type MeasurementResult =
+  | PointToPointResult
+  | FaceDistanceResult
+  | FaceAngleResult
+  | RadiusResult;
+```
+
+#### 1.2 Raycaster Hook (`useRaycastPicker.ts`)
+
+**Core responsibility**: Convert mouse position to a SnapTarget on the model.
+
+```typescript
+// Inputs: containerRef, cameraRef, meshesRef
+// Outputs: currentSnap (reactive), castRay(event) -> SnapTarget | null
+
+function useRaycastPicker(
+  containerRef: RefObject<HTMLDivElement>,
+  cameraRef: RefObject<THREE.PerspectiveCamera>,
+  meshesRef: RefObject<THREE.Mesh[]>,
+  active: boolean  // only raycast when a measurement mode is active
+)
+```
+
+**Snap priority logic**:
+
+1. Raycast against `meshesRef.current` -> get `intersection`
+2. From `intersection.face`, get the 3 vertex positions via `geometry.attributes.position` + index buffer
+3. Find closest vertex to `intersection.point` within screen-space threshold (5px)
+4. If vertex found -> snap type = `'vertex'`, show dot indicator
+5. Else find closest edge (project point onto each of the 3 triangle edges) within threshold
+6. If edge found -> snap type = `'edge'`, show edge highlight
+7. Else -> snap type = `'face'`, use raw intersection point
+
+**Screen-space threshold calculation**:
+```typescript
+// Convert world distance to screen pixels
+const worldPoint = vertex.clone();
+worldPoint.project(camera);
+const screenX = (worldPoint.x + 1) / 2 * container.clientWidth;
+// Compare pixel distance to threshold (5px)
+```
+
+**Hover preview**: Render a small `THREE.SphereGeometry(1.5)` at the snap point, colored by snap type:
+- Vertex: orange dot
+- Edge: cyan line highlight
+- Face: green ring
+
+#### 1.3 Measurement State Machine (`useMeasurementMode.ts`)
+
+```typescript
+// State transitions:
+// 'none' -> user clicks toolbar -> 'selecting_first'
+// 'selecting_first' -> user clicks model -> 'selecting_second' (stores pointA)
+// 'selecting_second' -> user clicks model -> creates result, back to 'selecting_first' (ready for next)
+// Any state -> ESC or toolbar toggle -> 'none' (clears in-progress)
+
+interface MeasurementState {
+  mode: MeasurementMode;
+  phase: 'none' | 'selecting_first' | 'selecting_second';
+  pendingPoint: SnapTarget | null;  // First selection, waiting for second
+  results: MeasurementResult[];
 }
 ```
 
-#### 1.4 Annotation Rendering (`renderAnnotations.ts`)
+**Click vs. Drag discrimination**:
+This is critical because OrbitControls uses the same canvas for rotation.
 
-For each completed measurement, render into the Three.js scene:
-- **Marker spheres** at point A and point B (small, colored)
-- **Dashed line** connecting the two points (`THREE.LineDashedMaterial`)
-- **CSS2D label** at midpoint showing distance value (e.g. "127.4 mm")
-- **Delete button** (small X) on the label to remove a measurement
+```typescript
+// On pointerdown: record timestamp + position
+// On pointerup: if elapsed < 200ms AND distance < 5px -> it's a click -> handle measurement
+// Otherwise -> it was a drag -> let OrbitControls handle it (it already did)
+```
 
-Use the existing `CSS2DRenderer` already set up in STEPViewer.
+This is better than disabling OrbitControls because the user can still orbit while measuring.
 
-#### 1.5 Measurement Toolbar (`MeasurementToolbar.tsx`)
+#### 1.4 Annotation Rendering (`MeasurementAnnotations.ts`)
 
-- Positioned in existing toolbar area of STEPViewer
-- Buttons:
-  - **Ruler icon**: Point-to-point mode (Phase 1)
-  - **Angle icon**: Angle mode (Phase 2)
-  - **Circle icon**: Radius/diameter mode (Phase 3)
-  - **Clear all**: Remove all measurements
-- Active mode highlighted
-- ESC key cancels current measurement
+For each `PointToPointResult`, add to a `THREE.Group` named `'measurementAnnotations'`:
 
-#### 1.6 Integration into STEPViewer
+```
+Point A marker (SphereGeometry r=1.5, orange MeshBasicMaterial)
+Point B marker (same)
+Dashed line A->B (LineDashedMaterial, color: #4a9eff, dashSize: 3, gapSize: 2)
+CSS2DObject at midpoint:
+  <div style="background: rgba(0,0,0,0.8); color: white; padding: 2px 8px;
+              border-radius: 4px; font-size: 11px; font-family: monospace;">
+    127.38 mm
+    <button style="margin-left: 6px; opacity: 0.6;">x</button>
+  </div>
+```
 
-- Add measurement mode state to STEPViewer
-- When measurement mode is active, disable orbit controls on single-click (keep drag for rotate)
-  - Strategy: Use `pointerdown`/`pointerup` timing -- short click (<200ms, <5px movement) = measurement pick; drag = orbit
-- Pass scene, camera, renderer, meshes refs to measurement hooks
-- Render measurement toolbar alongside existing toolbar buttons
-- Clean up measurement objects on component unmount
+The CSS2D label reuses the same pattern as the existing PMI labels (backdrop blur, small font) but with a distinct dark background to differentiate user measurements from file metadata.
+
+**Live preview line**: While `phase === 'selecting_second'`, render a thin line from `pendingPoint` to `currentSnap` that updates on mouse move. Use `THREE.LineBasicMaterial` with low opacity.
+
+#### 1.5 Toolbar Integration (`MeasurementToolbar.tsx`)
+
+Add a new button group after the existing PMI toggle (line ~1709 in STEPViewer.tsx):
+
+```tsx
+// After the PMI section, add:
+<div className="w-px h-4 bg-border mx-0.5" />
+<MeasurementToolbar
+  mode={measurementMode}
+  onModeChange={setMeasurementMode}
+  onClearAll={clearAllMeasurements}
+  measurementCount={measurements.length}
+  disabled={stepLoading || meshesRef.current.length === 0}
+/>
+```
+
+Buttons follow the same `h-7 w-7 p-0` ghost style as existing toolbar buttons:
+- **Move** icon (lucide `Move`): Point-to-point mode
+- **Trash2** icon: Clear all measurements (only visible when count > 0)
+
+Active state uses `bg-amber-500/20 text-amber-600` to distinguish from the blue/cyan used by other toggles.
+
+#### 1.6 Status Bar
+
+When a measurement mode is active, show a floating instruction bar at the bottom of the viewport:
+
+```tsx
+{measurementMode !== 'none' && (
+  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
+    <div className="glass-card px-4 py-2 text-xs text-muted-foreground flex items-center gap-2">
+      <Move className="h-3.5 w-3.5 text-amber-500" />
+      {phase === 'selecting_first'
+        ? t('parts.cadViewer.measurements.selectFirstPoint')
+        : t('parts.cadViewer.measurements.selectSecondPoint')}
+      <kbd className="text-[10px] bg-muted px-1 rounded">ESC</kbd>
+    </div>
+  </div>
+)}
+```
 
 ---
 
-### Phase 2: Edge Length & Face Selection
+### Phase 2: Face Selection & Face-to-Face Distance
 
-**Goal**: Users can select individual edges and faces for more precise measurements.
+#### 2.1 Face Selection via Coplanar Flood Fill
 
-#### 2.1 Edge Detection & Selection
+When in `face-distance` or `face-angle` mode, clicking selects an entire logical face (not just one triangle).
 
-- On hover with edge-measurement mode active:
-  - Use raycaster to find intersected face
-  - From the face's triangle, identify the closest edge (using `EdgesGeometry` data or index buffer)
-  - Highlight the edge with a colored line overlay
-- On click: select the edge, compute its length
-- For straight edges: simple `pointA.distanceTo(pointB)`
-- For curved edges (from tessellation): sum of segment lengths along the polyline approximation
+**Algorithm**:
+1. Raycaster hits triangle at `faceIndex`
+2. Get the face normal from `geometry.attributes.normal` (average of 3 vertex normals)
+3. Flood fill: BFS from hit triangle to adjacent triangles (sharing an edge) with normal difference < 5 degrees
+4. Collect all triangle indices that belong to this logical face
+5. Highlight by adding a semi-transparent overlay mesh using the same geometry but with `THREE.MeshBasicMaterial({ color: 0x4a9eff, opacity: 0.3, transparent: true, side: THREE.DoubleSide })`
+6. Compute average normal and centroid of the selected face group
 
-#### 2.2 Face/Plane Selection
+**Adjacency building** (done once on model load):
+```typescript
+// Build edge -> face adjacency map from index buffer
+// For each triangle, hash its 3 edges (sorted vertex pair)
+// Two triangles sharing an edge are adjacent
+type EdgeKey = string; // `${min(v1,v2)}_${max(v1,v2)}`
+const edgeToFaces: Map<EdgeKey, number[]>;
+```
 
-- On hover with face-measurement mode active:
-  - Raycaster gives us the face index
-  - Expand selection to coplanar adjacent faces (flood fill by normal similarity within tolerance)
-  - Highlight selected face group with semi-transparent overlay material
-- Store face normal (`THREE.Vector3`) and a reference point on the face
-- Face data is needed for face-to-face distance and angle calculations
+This is O(n) where n = triangle count. For a typical part (~50K triangles), takes <10ms.
 
-#### 2.3 Face-to-Face Distance (`faceDistance.ts`)
+#### 2.2 Face-to-Face Distance (`computations.ts`)
 
-- Select two faces
-- If faces are approximately parallel (normals within ~5 degrees):
-  - Project a point from face A onto face B's plane -> perpendicular distance
-  - Display as thickness/gap measurement
-- If not parallel:
-  - Compute and display minimum distance between the two face meshes
-  - Show the two closest points and the connecting line
+```typescript
+function computeFaceDistance(
+  faceA: { centroid: Vector3; normal: Vector3 },
+  faceB: { centroid: Vector3; normal: Vector3 }
+): { distance: number; isParallel: boolean } {
+  const normalDot = Math.abs(faceA.normal.dot(faceB.normal));
+  const isParallel = normalDot > 0.996; // < ~5 degrees
+
+  if (isParallel) {
+    // Project centroid of A onto plane of B
+    const d = faceB.normal.dot(faceB.centroid);
+    const dist = Math.abs(faceA.normal.dot(faceA.centroid) - d);
+    return { distance: dist, isParallel: true };
+  } else {
+    // Non-parallel: use centroid-to-centroid distance
+    return { distance: faceA.centroid.distanceTo(faceB.centroid), isParallel: false };
+  }
+}
+```
+
+**Annotation**: Arrow between the two face centroids + distance label. For parallel faces, show perpendicular projection line.
 
 ---
 
 ### Phase 3: Angle Measurement & Radius/Diameter
 
-**Goal**: Measure bend angles on sheet metal and detect hole/fillet radii.
+#### 3.1 Angle Between Faces
 
-#### 3.1 Angle Between Faces (`faceAngle.ts`)
-
-- Select two adjacent or nearby faces
-- Compute angle between their normals: `angle = Math.acos(n1.dot(n2))`
-- For sheet metal: the bend angle is typically the supplement (180 - angle between outward normals)
-- Display:
-  - Arc glyph between the two faces at their intersection
-  - Label showing angle in degrees (e.g. "90.0 deg")
-  - Option to show as bend angle (supplement) vs. included angle
-
-**Sheet metal specific logic**:
-- Detect that two flat faces are connected by a small curved (bend) face
-- Auto-compute: bend angle, bend radius, and K-factor if material thickness is known
-- Highlight the bend zone with a distinct color
-
-#### 3.2 Radius / Diameter Detection (`radiusDiameter.ts`)
-
-- On click on a curved surface:
-  - Sample multiple points on the selected face triangles
-  - Fit a circle/cylinder to the sampled points (least-squares fit)
-  - If good fit (low residual): display radius and diameter
-  - If poor fit: show "non-circular surface" warning
-- For holes:
-  - Detect cylindrical inner surfaces (normals pointing inward)
-  - Show diameter dimension line across the hole
-- For fillets/rounds:
-  - Detect small curved transition faces
-  - Show radius
-
-#### 3.3 Bend Analysis (Sheet Metal Focus)
-
-- Auto-detect bend regions:
-  - Find narrow curved faces between two larger flat faces
-  - Compute bend angle, inner radius, outer radius
-  - Display bend annotation with all three values
-- Optional: show bend allowance / developed length if material thickness provided
-- Color-code bends by angle range (e.g. green=0-45, yellow=45-90, red=90+)
-
----
-
-### Phase 4: UX Polish & Persistence
-
-#### 4.1 Measurement Management Panel
-
-- Collapsible side panel listing all active measurements
-- Each measurement shows:
-  - Type icon (distance, angle, radius)
-  - Value with units
-  - Delete button
-  - Visibility toggle (eye icon)
-- Export measurements as CSV or JSON
-
-#### 4.2 Snap Improvements
-
-- Add snap-to-midpoint (edge midpoints)
-- Add snap-to-center (circular face centers)
-- Add snap-to-intersection (where two edges meet)
-- Show snap type indicator icon near cursor
-- User preference for snap sensitivity
-
-#### 4.3 Unit System
-
-- Support mm (default), cm, m, inches
-- Unit selector in toolbar
-- All measurements display in selected unit
-- Persist preference per user
-
-#### 4.4 Measurement Persistence
-
-- Save measurements to Supabase (per part, per user)
-- Reload measurements when revisiting the same part
-- Share measurements between team members (optional toggle)
-
-#### 4.5 Keyboard Shortcuts
-
-| Key | Action |
-|---|---|
-| `D` | Activate point-to-point distance mode |
-| `A` | Activate angle measurement mode |
-| `R` | Activate radius/diameter mode |
-| `Escape` | Cancel current measurement / exit mode |
-| `Delete` | Remove last measurement |
-| `Ctrl+Shift+M` | Toggle measurement panel |
-
----
-
-## Technical Considerations
-
-### Performance
-
-- **Raycasting cost**: Use `Raycaster` with `firstHitOnly` when available; limit ray tests to visible meshes only
-- **Vertex snap**: Build a spatial index (octree or k-d tree) for vertex positions on model load to avoid O(n) search per frame
-- **Hover highlighting**: Use a separate highlight material overlay rather than modifying original mesh materials (avoids costly material swaps)
-- **Annotation count**: Cap at ~50 simultaneous measurements; warn user above that
-
-### Accuracy
-
-- All measurements are on the **tessellated** (triangulated) mesh, not the original B-rep geometry
-- This means:
-  - Straight edges and flat faces: exact
-  - Curved surfaces: accuracy depends on tessellation density
-  - Radius/diameter: fitted from sampled points, not from true geometry
-- Display a "measured from tessellated mesh" disclaimer
-- For server-processed files: request higher tessellation quality for measurement mode (optional future enhancement)
-- Consider adding a tolerance/confidence indicator for curved surface measurements
-
-### Coordinate Systems
-
-- Three.js scene uses the same units as the STEP file (typically mm)
-- Ensure all measurements account for any transforms applied to meshes (use `mesh.localToWorld()`)
-- Handle multi-part assemblies: measurements across different parts must use world coordinates
-
-### Interaction with Existing Features
-
-- **Orbit controls**: Must coexist with measurement clicks (use timing/distance threshold to distinguish click vs. drag)
-- **Exploded view**: Measurements should track with exploded positions or be cleared/warned when explosion changes
-- **Wireframe mode**: Measurements should still work (raycast against invisible solid, show annotations)
-- **PMI overlay**: Measurement annotations use the same CSS2DRenderer; avoid visual collision via z-ordering or spatial offset
-- **Feature highlighting**: Can coexist; measurement hover highlight should take precedence
-
----
-
-## Phased Delivery Summary
-
-| Phase | Scope | Key Deliverables |
-|---|---|---|
-| **Phase 1** | Point-to-Point MVP | Raycaster, snap-to-vertex, click-to-measure, dashed line + label, toolbar button |
-| **Phase 2** | Edge & Face Selection | Edge length, face highlighting, face-to-face distance (thickness) |
-| **Phase 3** | Angles & Radii | Face angle measurement, bend detection, radius/diameter fitting |
-| **Phase 4** | Polish & Persistence | Measurement panel, units, persistence to DB, keyboard shortcuts, export |
-
----
-
-## Translation Keys Needed
-
-Namespace: `jobs.json` (under `parts.cadViewer.measurements`)
-
-```json
-{
-  "parts": {
-    "cadViewer": {
-      "measurements": {
-        "title": "Measurements",
-        "pointToPoint": "Point-to-Point Distance",
-        "edgeLength": "Edge Length",
-        "faceDistance": "Face-to-Face Distance",
-        "angle": "Angle",
-        "radius": "Radius",
-        "diameter": "Diameter",
-        "bendAngle": "Bend Angle",
-        "bendRadius": "Bend Radius",
-        "selectFirstPoint": "Click to select the first point",
-        "selectSecondPoint": "Click to select the second point",
-        "selectFirstFace": "Click to select the first face",
-        "selectSecondFace": "Click to select the second face",
-        "selectEdge": "Click on an edge to measure",
-        "selectCurvedFace": "Click on a curved surface",
-        "clearAll": "Clear All Measurements",
-        "units": "Units",
-        "mm": "Millimeters",
-        "cm": "Centimeters",
-        "inches": "Inches",
-        "tessellationDisclaimer": "Measured from tessellated mesh",
-        "snapVertex": "Vertex",
-        "snapEdge": "Edge",
-        "snapFace": "Face",
-        "exportMeasurements": "Export Measurements",
-        "measurementPanel": "Measurement Panel",
-        "noMeasurements": "No measurements yet"
-      }
-    }
-  }
+**Computation**:
+```typescript
+function computeFaceAngle(normalA: Vector3, normalB: Vector3): {
+  includedAngle: number;  // degrees
+  bendAngle: number;      // 180 - included (sheet metal convention)
+} {
+  const dot = normalA.dot(normalB);
+  const clamped = Math.max(-1, Math.min(1, dot));
+  const includedAngle = Math.acos(clamped) * (180 / Math.PI);
+  return {
+    includedAngle,
+    bendAngle: 180 - includedAngle
+  };
 }
 ```
 
-All keys must be added to `en/jobs.json`, `nl/jobs.json`, and `de/jobs.json`.
+**Sheet metal bend detection heuristic**:
+When two flat faces are selected and they're connected by a narrow curved face region:
+1. After selecting face A and face B, check if there's a strip of curved triangles between them
+2. If yes, auto-label as "Bend" with both the bend angle and the bend radius
+3. The bend radius can be estimated from the curved strip's curvature
+
+**Annotation**:
+- Arc drawn at the geometric intersection of the two planes
+- Label showing angle: "90.0 deg" (and optionally "Bend: 90.0 deg, R: 3.0 mm")
+- Arc rendered as a `THREE.Line` with points sampled along a circular arc
+
+#### 3.2 Radius / Diameter Detection
+
+**Algorithm** (least-squares circle fit on curved face):
+
+1. Select a curved face (flood fill stops at sharp normal changes)
+2. Collect all vertex positions from selected triangles
+3. Project points onto the plane perpendicular to the cylinder axis
+   - Estimate axis as the direction of least variance in normals
+4. Fit a circle to the 2D projected points (algebraic circle fit - Kasa method)
+5. Compute fit residual; if < 2% of radius -> good fit -> show R and D
+
+```typescript
+function fitCircle2D(points: Vector2[]): {
+  center: Vector2;
+  radius: number;
+  residual: number; // average distance error
+} {
+  // Kasa method: minimize sum of (x^2 + y^2 - 2*cx*x - 2*cy*y - (r^2 - cx^2 - cy^2))^2
+  // Reduces to linear system Ax = b
+  const n = points.length;
+  let sumX = 0, sumY = 0, sumX2 = 0, sumY2 = 0, sumXY = 0;
+  let sumX3 = 0, sumY3 = 0, sumX2Y = 0, sumXY2 = 0;
+  // ... standard linear algebra
+}
+```
+
+**Annotation**: Dimension line across the diameter with "R 5.0 mm" or "D 10.0 mm" label.
+
+---
+
+### Phase 4: Polish & Persistence
+
+#### 4.1 Measurement Panel (`MeasurementPanel.tsx`)
+
+Collapsible panel anchored to the right side (similar to the existing dimensions overlay):
+
+```tsx
+<div className="absolute top-3 right-3 z-10 w-[220px]">
+  <div className="glass-card p-3">
+    <div className="flex items-center justify-between mb-2">
+      <span className="text-xs font-semibold">{t('...measurements.title')}</span>
+      <span className="text-[10px] text-muted-foreground">{results.length}</span>
+    </div>
+    {results.map(r => (
+      <div key={r.id} className="flex items-center justify-between py-1 border-t border-border/30">
+        <TypeIcon type={r.type} />
+        <span className="text-xs font-mono">{formatValue(r)}</span>
+        <button onClick={() => remove(r.id)}>
+          <X className="h-3 w-3 text-muted-foreground" />
+        </button>
+      </div>
+    ))}
+  </div>
+</div>
+```
+
+#### 4.2 Keyboard Shortcuts
+
+| Key | Action |
+|---|---|
+| `M` | Toggle measurement mode (point-to-point) |
+| `Escape` | Cancel current measurement / exit mode |
+| `Backspace` | Remove last measurement |
+
+Keep it minimal - avoid conflicting with browser shortcuts.
+
+#### 4.3 Interaction with Existing Features
+
+| Feature | Behavior |
+|---|---|
+| **Exploded view** | Clear all measurements when explosion factor changes (positions shift) |
+| **Wireframe mode** | Measurements still work (raycast against mesh geometry regardless of material) |
+| **Feature highlighting** | Coexists; measurement highlights override feature colors on selected faces |
+| **PMI overlay** | Both use CSS2DRenderer; measurement labels get higher z-index |
+| **Dimension bounding box** | Independent feature; both can be active simultaneously |
+
+#### 4.4 Persistence (Future)
+
+- Supabase table: `part_measurements` (part_id, user_id, tenant_id, measurement_json, created_at)
+- Save/load on viewer open
+- Not in MVP scope
+
+---
+
+## Technical Risks & Mitigations
+
+### Risk 1: Tessellation Accuracy
+**Problem**: Measurements on triangulated mesh may differ from true B-rep geometry.
+**Mitigation**:
+- Display "Measured from mesh" indicator (like existing "measuredFromCad" label)
+- Straight edges and flat faces are exact
+- For curves: accuracy is typically within 0.1mm for default tessellation
+- Future: request finer tessellation from server backend for measurement mode
+
+### Risk 2: Click/Drag Confusion
+**Problem**: Users accidentally create measurement points when trying to rotate.
+**Mitigation**:
+- Strict threshold: click must be <200ms AND <5px movement
+- Visual: cursor changes to crosshair in measurement mode
+- ESC always cancels and returns to orbit-only mode
+- Clear mode indicator in toolbar (amber highlight)
+
+### Risk 3: Performance on Complex Models
+**Problem**: Per-frame raycasting and vertex snapping could be slow on 100K+ triangle models.
+**Mitigation**:
+- Only raycast when measurement mode is active (no cost in normal viewing)
+- Use `Raycaster` with `firstHitOnly: true` (Three.js r163+)
+- Build adjacency map lazily (only when face selection mode is first activated)
+- For vertex snap: if model has >100K vertices, skip vertex snap and only use face snap
+- Future: add `three-mesh-bvh` for O(log n) raycasting
+
+### Risk 4: STEPViewer Already Too Large
+**Problem**: 1,872 lines is already pushing maintainability limits.
+**Mitigation**:
+- All measurement logic in separate files under `src/components/viewer/measurements/`
+- STEPViewer only adds: state declaration (~5 lines), hook calls (~10 lines), toolbar JSX (~15 lines), status bar JSX (~15 lines), cleanup (~5 lines)
+- Total STEPViewer additions: ~50 lines
+
+---
+
+## Phased Delivery
+
+| Phase | Scope | Estimated Complexity | Dependencies |
+|---|---|---|---|
+| **Phase 1** | Point-to-point distance | Medium | None |
+| **Phase 2** | Face selection + face-to-face distance | Medium-High | Phase 1 (raycaster) |
+| **Phase 3** | Angle measurement + radius/diameter | High | Phase 2 (face selection) |
+| **Phase 4** | Panel, shortcuts, persistence | Low-Medium | Phase 1-3 |
+
+**Phase 1 is the MVP** and delivers immediate value for the most common use case (measuring a width, length, or distance between two points on a part).
+
+---
+
+## Translation Keys
+
+Add to `parts.cadViewer.measurements` in `en/jobs.json`, `nl/jobs.json`, `de/jobs.json`:
+
+| Key | EN | NL | DE |
+|---|---|---|---|
+| `title` | Measurements | Metingen | Messungen |
+| `pointToPoint` | Distance | Afstand | Abstand |
+| `faceDistance` | Thickness | Dikte | Dicke |
+| `angle` | Angle | Hoek | Winkel |
+| `radius` | Radius | Straal | Radius |
+| `diameter` | Diameter | Diameter | Durchmesser |
+| `bendAngle` | Bend Angle | Buighoek | Biegewinkel |
+| `selectFirstPoint` | Click first point | Klik eerste punt | Ersten Punkt anklicken |
+| `selectSecondPoint` | Click second point | Klik tweede punt | Zweiten Punkt anklicken |
+| `selectFirstFace` | Click first face | Klik eerste vlak | Erste Flache anklicken |
+| `selectSecondFace` | Click second face | Klik tweede vlak | Zweite Flache anklicken |
+| `clearAll` | Clear All | Alles wissen | Alle loschen |
+| `meshDisclaimer` | Measured from mesh | Gemeten van mesh | Vom Netz gemessen |
 
 ---
 
 ## Dependencies
 
-No new npm packages required. The implementation uses:
-- `THREE.Raycaster` (already available)
-- `THREE.LineDashedMaterial` (already available)
-- `CSS2DRenderer` / `CSS2DObject` (already imported in STEPViewer)
-- Standard Three.js geometry utilities
+**No new npm packages required.** Everything uses existing Three.js APIs:
+- `THREE.Raycaster` - intersection testing
+- `THREE.LineDashedMaterial` - measurement lines
+- `THREE.SphereGeometry` - snap point indicators
+- `CSS2DObject` - measurement labels (already imported)
+- `THREE.BufferGeometry` index/position attributes - vertex/edge snap
 
-Optional future addition:
-- `three-mesh-bvh` for faster raycasting on complex models (can be added in Phase 4 if perf is an issue)
+**Optional future**: `three-mesh-bvh` for accelerated raycasting on large models.
