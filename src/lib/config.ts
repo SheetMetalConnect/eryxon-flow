@@ -10,4 +10,5 @@ export const DOCS_URL = import.meta.env.VITE_DOCS_URL || 'https://eryxon.eu';
 
 // Convenience exports for common doc paths
 export const DOCS_GUIDES_URL = `${DOCS_URL}/guides/`;
+export const DOCS_SELF_HOSTING_URL = `${DOCS_GUIDES_URL}self-hosting/`;
 export const DOCS_ERP_INTEGRATION_URL = `${DOCS_URL}/features/erp-integration/`;

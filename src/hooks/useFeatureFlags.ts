@@ -12,7 +12,7 @@ import { logger } from '@/lib/logger';
  *
  * Note: Some features require external services (marked below).
  * These are optional components that must be separately deployed.
- * See docs/SELF_HOSTING_GUIDE.md for deployment instructions.
+ * See website/src/content/docs/guides/self-hosting.md for deployment instructions.
  */
 export interface FeatureFlags {
   // Core modules (always enabled - listed for reference)

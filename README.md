@@ -80,19 +80,21 @@ See `.env.example` for complete list.
 **Frontend**: React + TypeScript + Vite
 **UI**: shadcn/ui + Tailwind CSS + Custom Design System
 **Backend**: Supabase (PostgreSQL + Edge Functions + Realtime)
-**Deployment**: Cloudflare Pages
-**Database**: 88 migrations, multi-tenant schema with RLS
-**API**: 28 Edge Functions (refactored with shared CRUD builder)
+**Deployment**: Cloudflare Pages, Docker, or self-hosted reverse proxy setups
+**Database**: Multi-tenant schema with RLS and versioned migrations under `supabase/migrations/`
+**API**: Supabase Edge Functions with shared auth, validation, and webhook helpers
 **3D Rendering**: Three.js + occt-import-js (client-side STEP parsing)
 
 ## Documentation
 
 - [CHANGELOG.md](CHANGELOG.md) - Version history and release notes
-- [DEPLOY.md](DEPLOY.md) - Deployment guide
-- [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) - API reference
-- [docs/SELF_HOSTING_GUIDE.md](docs/SELF_HOSTING_GUIDE.md) - Self-hosting
-- [docs/DATABASE.md](docs/DATABASE.md) - Database schema
-- [docs/](docs/) - Complete documentation
+- [DEPLOY.md](DEPLOY.md) - Quick deployment guide for the application
+- [docs/README.md](docs/README.md) - Developer and engineering documentation index
+- [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) - Backend API reference
+- [docs/API_PAYLOAD_REFERENCE.md](docs/API_PAYLOAD_REFERENCE.md) - API payload shapes and examples
+- [website/src/content/docs/](website/src/content/docs/) - Source for public-facing product, architecture, and operator/admin docs
+- [website/src/content/docs/guides/self-hosting.md](website/src/content/docs/guides/self-hosting.md) - Canonical self-hosting guide
+- [website/src/content/docs/architecture/app-architecture.md](website/src/content/docs/architecture/app-architecture.md) - Architecture overview
 
 ## License
 
@@ -111,6 +113,6 @@ See [LICENSE](LICENSE) for full terms.
 
 ## Support
 
-- Documentation: [docs/](docs/)
+- Documentation: [website/src/content/docs/](website/src/content/docs/)
 - Issues: [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues)
 - Commercial support: office@sheetmetalconnect.com

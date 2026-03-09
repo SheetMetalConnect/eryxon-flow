@@ -4,11 +4,18 @@
 **Scope:** Full codebase security review (frontend, edge functions, MCP server)
 **Methodology:** Manual code review covering OWASP Top 10
 
+> Status note for release `0.3.2`: this document is the audit baseline that informed the security work merged through PRs `#434` and `#435`. Use it as an audit trail and revalidation checklist, not as a statement that every finding below remains open on the current release branch.
+
 ---
 
 ## Executive Summary
 
 The Eryxon MES codebase demonstrates **good security awareness overall** with proper patterns for multi-tenancy (RLS + tenant_id filtering), API key hashing (SHA-256), rate limiting, SSRF protection on webhooks, filename sanitization, and input validation frameworks. However, several issues of varying severity were identified that should be addressed.
+
+For the current release state:
+- `0.3.2` integrated authentication, validation, CORS, XSS, and type-safety hardening from the parallel security PRs.
+- Release rollout now relies on explicit environment-level webhook configuration instead of hardcoded migration URLs.
+- Remaining findings in this document should be revalidated against the current branch before being treated as open defects.
 
 **Finding Summary:**
 | Severity | Count |

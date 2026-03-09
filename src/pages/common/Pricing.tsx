@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Server, Cloud, ExternalLink } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { DOCS_SELF_HOSTING_URL } from "@/lib/config";
 
 export default function Pricing() {
   const { t } = useTranslation();
@@ -74,7 +74,7 @@ export default function Pricing() {
             </ul>
             <Button asChild className="w-full">
               <a
-                href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/docs/SELF_HOSTING_GUIDE.md"
+                href={DOCS_SELF_HOSTING_URL}
                 target="_blank"
                 rel="noopener noreferrer"
               >

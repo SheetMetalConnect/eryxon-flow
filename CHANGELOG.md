@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes merged after `0.3.2` should be added here until the next tagged release.
 
+### Changed
+
+- Aligned package metadata with the product name by renaming the npm package to `eryxon-flow`
+- Standardized self-hosting documentation references across the repo and in-app upgrade CTAs around the website docs structure
+- Clarified the root README so public docs, developer docs, and architecture references point to their current source-of-truth locations
+
+### Fixed
+
+- Removed broken links to deleted root documentation files
+- Removed tracked root artifacts (`test_output.txt`, `temp_rules.json`, and committed `*.tsbuildinfo` caches)
+
 ## Versioning Policy
 
 - `MAJOR` for breaking API contracts, incompatible database or deployment changes, or architectural resets.

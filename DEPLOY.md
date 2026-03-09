@@ -119,4 +119,4 @@ chmod +x scripts/verify-setup.sh
 
 ## Full Documentation
 
-See [docs/SELF_HOSTING_GUIDE.md](docs/SELF_HOSTING_GUIDE.md) for the complete self-hosting guide including Docker, Cloudflare Pages, and troubleshooting.
+See [website/src/content/docs/guides/self-hosting.md](website/src/content/docs/guides/self-hosting.md) for the complete self-hosting guide, rollout notes, and troubleshooting.
