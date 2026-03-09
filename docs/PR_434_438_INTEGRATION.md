@@ -1,5 +1,7 @@
 # PR 434-438 Integration Guide
 
+**Target Release:** `0.3.2`
+
 ## Scope
 
 This document captures the combined rollout for these parallel pull requests:

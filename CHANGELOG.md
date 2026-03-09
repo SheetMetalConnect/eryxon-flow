@@ -7,11 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+Changes merged after `0.3.2` should be added here until the next tagged release.
+
+## Versioning Policy
+
+- `MAJOR` for breaking API contracts, incompatible database or deployment changes, or architectural resets.
+- `MINOR` for backward-compatible features, new modules, significant UI/workflow additions, and integration expansions.
+- `PATCH` for backward-compatible fixes, security hardening, documentation-only updates, and release stabilization.
+- Pre-release tags should use `-beta.N` or `-rc.N` when a branch is being validated before a stable tag.
+
 ## [0.3.2] - 2026-03-09
 
 ### Focus: Security Hardening, API Coverage, and Integrated Viewer Planning
 
 This release combines the parallel work from PRs `#434` through `#438` into a single testable integration branch. It prioritizes the strongest overlapping implementations across security, route structure, API documentation, E2E testing, and 3D viewer planning.
+
+**Release classification:** `MINOR`
 
 ### ⚠️ Migration Required for Existing Environments
 

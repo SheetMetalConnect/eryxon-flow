@@ -4,6 +4,8 @@ Manufacturing Execution System (MES) for job shops and make-to-order manufacture
 
 **[Live Demo](https://app.eryxon.eu)** · [Documentation](https://eryxon.eu) · [GitHub](https://github.com/SheetMetalConnect/eryxon-flow)
 
+**Current Release:** `0.3.2`
+
 ## Who It's For
 
 **Job shops** running high-mix, low-volume production — sheet metal, machine shops, custom fabrication. If you're tracking thousands of unique parts through multiple operations, this is built for you.
@@ -33,6 +35,16 @@ Manufacturing Execution System (MES) for job shops and make-to-order manufacture
 ## Quick Deploy
 
 See **[DEPLOY.md](DEPLOY.md)** for complete deployment instructions.
+
+## Releases
+
+Eryxon Flow uses a simple SemVer-based release model:
+
+- `MAJOR` for breaking API, database, or deployment changes
+- `MINOR` for backward-compatible features and meaningful platform expansions
+- `PATCH` for fixes, security hardening, docs, and release stabilization
+
+Work in progress should land in the `Unreleased` section of [CHANGELOG.md](CHANGELOG.md) until tagged.
 
 ## Prerequisites
 
@@ -69,7 +81,7 @@ See `.env.example` for complete list.
 **UI**: shadcn/ui + Tailwind CSS + Custom Design System
 **Backend**: Supabase (PostgreSQL + Edge Functions + Realtime)
 **Deployment**: Cloudflare Pages
-**Database**: 87 migrations, multi-tenant schema with RLS
+**Database**: 88 migrations, multi-tenant schema with RLS
 **API**: 28 Edge Functions (refactored with shared CRUD builder)
 **3D Rendering**: Three.js + occt-import-js (client-side STEP parsing)
 
