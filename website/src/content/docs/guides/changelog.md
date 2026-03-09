@@ -3,9 +3,7 @@ title: "Changelog"
 description: "Full release history for Eryxon Flow."
 ---
 
-# Changelog
-
-All notable changes to Eryxon Flow will be documented in this file.
+All notable changes to Eryxon Flow are documented on this page.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
