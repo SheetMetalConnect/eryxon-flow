@@ -98,19 +98,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .from("profiles")
         .select("id, tenant_id, username, full_name, email, role, active, is_machine, is_root_admin")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      setProfile(data as Profile);
 
-      if (data) {
-        await fetchTenant();
-        prefetchCommonData(queryClient, data.tenant_id, {
-          fetchCells: () => Promise.resolve(supabase.from('cells').select('*').eq('tenant_id', data.tenant_id).eq('active', true).then(r => r.data)),
-          fetchMaterials: () => Promise.resolve(supabase.from('materials').select('*').eq('tenant_id', data.tenant_id).then(r => r.data)),
-          fetchScrapReasons: () => Promise.resolve(supabase.from('scrap_reasons').select('*').eq('tenant_id', data.tenant_id).then(r => r.data)),
-        });
+      if (!data) {
+        setProfile(null);
+        setTenant(null);
+        return;
       }
+
+      setProfile(data as Profile);
+      await fetchTenant();
+      prefetchCommonData(queryClient, data.tenant_id, {
+        fetchCells: () => Promise.resolve(supabase.from('cells').select('*').eq('tenant_id', data.tenant_id).eq('active', true).then(r => r.data)),
+        fetchMaterials: () => Promise.resolve(supabase.from('materials').select('*').eq('tenant_id', data.tenant_id).then(r => r.data)),
+        fetchScrapReasons: () => Promise.resolve(supabase.from('scrap_reasons').select('*').eq('tenant_id', data.tenant_id).then(r => r.data)),
+      });
     } catch (error) {
       logger.error('AuthContext', 'Error fetching profile', error);
     } finally {

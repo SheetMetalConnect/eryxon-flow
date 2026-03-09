@@ -201,6 +201,7 @@ VITE_SUPABASE_PROJECT_ID="${VITE_SUPABASE_PROJECT_ID}"
 
 # Cloudflare Turnstile (Optional)
 VITE_TURNSTILE_SITE_KEY="${VITE_TURNSTILE_SITE_KEY}"
+
 ENVEOF
 
   ok "Created .env file at ${ENV_FILE}"

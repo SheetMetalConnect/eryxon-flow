@@ -180,7 +180,7 @@ graph TD
 - JWT tokens with short expiration
 - Auto-refresh mechanism
 - Invitation acceptance and password validation hardening
-- Optional Turnstile protection on public auth flows
+- Optional Turnstile protection on public auth flows, with CSP and hosting config allowing the Cloudflare widget where enabled
 
 **2. Authorization:**
 - Role-based access control (RBAC)

@@ -331,6 +331,7 @@ Add bot protection to auth forms:
    VITE_TURNSTILE_SITE_KEY="your-site-key"
    ```
 3. Configure secret key in Supabase **Authentication** → **Captcha Protection**
+4. On Vercel, keep the repo `vercel.json` so SPA rewrites and CSP headers continue to allow `https://challenges.cloudflare.com`
 
 ### Redis Caching (Upstash)
 
