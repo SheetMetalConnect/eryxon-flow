@@ -7,6 +7,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.2] - 2026-03-09
+
+### Focus: Security Hardening, API Coverage, and Integrated Viewer Planning
+
+This release combines the parallel work from PRs `#434` through `#438` into a single testable integration branch. It prioritizes the strongest overlapping implementations across security, route structure, API documentation, E2E testing, and 3D viewer planning.
+
+### ⚠️ Migration Required for Existing Environments
+
+**Apply database changes before validating signup flows or admin notifications:**
+
+```bash
+# Link to the target Supabase project
+supabase link --project-ref YOUR_PROJECT_REF
+
+# Apply schema changes
+supabase db push
+
+# Deploy updated edge functions
+supabase functions deploy
+
+# Verify the new migration is present
+supabase migration list
+```
+
+**New migration in this release:**
+
+1. **20260202200000_fix_signup_notification_trigger.sql** ⚠️ **IMPORTANT**
+   - Replaces the tenant-level signup notification trigger with a profile-level admin signup trigger
+   - Prevents duplicate signup emails
+   - Preserves contact details in the notification payload for true admin-led company signups
+
+### Added
+
+- API reference expansion in `docs/API_PAYLOAD_REFERENCE.md`
+- End-to-end API validation tooling:
+  - `scripts/api-test-utils.ts`
+  - `scripts/test-api-e2e.sh`
+  - `tsconfig.scripts.json`
+- Implementation plan and measurement UI scaffolding for interactive STEP viewer measurements
+- Integrated rollout guide for the combined PR set in `docs/PR_434_438_INTEGRATION.md`
+
+### Changed
+
+- Refactored route definitions and component composition around the `#436` architecture
+- Consolidated realtime hook patterns across issue-related hooks
+- Tightened tenant scoping in scheduler, CAD processing, issue queries, and auth-adjacent data access
+- Strengthened invitation acceptance and password validation flows
+- Standardized logger-driven error handling in places that previously mixed logging styles
+
+### Fixed
+
+- Security audit findings covering authentication, CORS, validation, XSS prevention, and edge-function hardening
+- Type safety issues and unsafe query patterns surfaced in parallel code review
+- Signup notification trigger behavior that previously produced duplicate emails
+- Merge regressions in hook tests and realtime cleanup behavior
+
+### Documentation
+
+- Added a deployment-ready combined changelog and verification guide for PRs `#434`-`#438`
+- Added 3D viewer measurement implementation planning
+- Expanded API payload and E2E testing documentation for backend validation
+
 ## [0.3.1] - 2026-01-28
 
 ### Focus: MCP Server Modernization & Code Quality

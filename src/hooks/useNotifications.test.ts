@@ -8,10 +8,16 @@ const mockFns = {
   mockRpc: vi.fn(),
   mockSubscribe: vi.fn(),
   mockRemoveChannel: vi.fn(),
+  mockQueryEq: vi.fn(),
+  mockQueryOrder: vi.fn(),
+  mockQueryOr: vi.fn(),
 };
 
 const mockToastSuccess = vi.fn();
 const mockToastError = vi.fn();
+const mockAuthState = {
+  profile: { id: 'user-1', tenant_id: 'tenant-1' },
+};
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
@@ -29,9 +35,7 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 vi.mock('@/contexts/AuthContext', () => ({
-  useAuth: () => ({
-    profile: { id: 'user-1', tenant_id: 'tenant-1' },
-  }),
+  useAuth: () => mockAuthState,
 }));
 
 vi.mock('sonner', () => ({
@@ -77,21 +81,36 @@ describe('useNotifications', () => {
     },
   ];
 
+  const createQueryMock = (data = mockNotifications, error: Error | null = null) => {
+    const query = {
+      eq: vi.fn(),
+      order: vi.fn(),
+      or: vi.fn(),
+      then: vi.fn(),
+    };
+
+    query.eq.mockImplementation((...args: unknown[]) => {
+      mockFns.mockQueryEq(...args);
+      return query;
+    });
+    query.order.mockImplementation((...args: unknown[]) => {
+      mockFns.mockQueryOrder(...args);
+      return query;
+    });
+    query.or.mockImplementation((...args: unknown[]) => {
+      mockFns.mockQueryOr(...args);
+      return query;
+    });
+    query.then.mockImplementation((onFulfilled, onRejected) =>
+      Promise.resolve({ data, error }).then(onFulfilled, onRejected)
+    );
+
+    return query;
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
-
-    mockFns.mockSelect.mockReturnValue({
-      eq: vi.fn().mockReturnValue({
-        order: vi.fn().mockReturnValue({
-          or: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({
-              data: mockNotifications,
-              error: null,
-            }),
-          }),
-        }),
-      }),
-    });
+    mockFns.mockSelect.mockReturnValue(createQueryMock());
 
     mockFns.mockSubscribe.mockReturnValue({ unsubscribe: vi.fn() });
     mockFns.mockRpc.mockResolvedValue({ data: null, error: null });
@@ -314,6 +333,10 @@ describe('useNotifications', () => {
       expect(mockFns.mockSelect).toHaveBeenCalled();
     });
 
-    // Filters should be applied in the query chain
+    expect(mockFns.mockQueryEq).toHaveBeenCalledWith('tenant_id', 'tenant-1');
+    expect(mockFns.mockQueryEq).toHaveBeenCalledWith('type', 'info');
+    expect(mockFns.mockQueryEq).toHaveBeenCalledWith('read', false);
+    expect(mockFns.mockQueryEq).toHaveBeenCalledWith('pinned', false);
+    expect(mockFns.mockQueryEq).toHaveBeenCalledWith('dismissed', false);
   });
 });

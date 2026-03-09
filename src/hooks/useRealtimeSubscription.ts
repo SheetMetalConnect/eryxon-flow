@@ -181,7 +181,16 @@ export function useRealtimeSubscription(options: RealtimeSubscriptionOptions): v
         operation: 'useRealtimeSubscription',
         channelName,
       });
-      supabase.removeChannel(channel);
+      if (typeof supabase.removeChannel === 'function') {
+        supabase.removeChannel(channel);
+      } else if (typeof (channel as { unsubscribe?: () => unknown }).unsubscribe === 'function') {
+        channel.unsubscribe();
+      } else {
+        logger.debug('Skipping realtime unsubscribe for mock channel without cleanup method', {
+          operation: 'useRealtimeSubscription',
+          channelName,
+        });
+      }
     };
   }, [channelName, tables, enabled, debounceMs, includePayload, debouncedCallback]);
 }

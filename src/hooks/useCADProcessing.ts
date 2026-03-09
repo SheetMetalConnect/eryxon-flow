@@ -409,7 +409,6 @@ export function useCADProcessing() {
     geometry: GeometryData | null,
     pmi: PMIData | null
   ): Promise<void> => {
-    let partQuery = supabase
     // Scope metadata reads to the active tenant when available.
     let partQuery = supabase
       .from('parts')
@@ -440,13 +439,15 @@ export function useCADProcessing() {
     // as they can be large. Instead, we could store in a separate
     // storage bucket or cache if needed.
 
-    const { error: updateError } = await supabase
+    let updateQuery = supabase
       .from('parts')
       .update({ metadata: JSON.parse(JSON.stringify(updatedMetadata)) })
       .eq('id', partId);
+    if (profile?.tenant_id) updateQuery = updateQuery.eq('tenant_id', profile.tenant_id);
+    const { error: updateError } = await updateQuery;
 
     if (updateError) throw updateError;
-  }, []);
+  }, [profile?.tenant_id]);
 
   /**
    * Process and store CAD data for a part
