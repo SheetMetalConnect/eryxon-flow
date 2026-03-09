@@ -10,6 +10,8 @@ This folder contains **technical documentation for developers and AI agents**.
 - **CODING_PATTERNS.md** - Code patterns and guidelines for developers/Claude
 - **DESIGN_SYSTEM.md** - Complete design system reference
 - **DATABASE_DIAGRAM.dbml** - Database diagram (DBML format)
+- **guides/DEPLOYMENT.md** - Repository-level deployment and setup guide
+- **operations/SECURITY_AUDIT.md** - Security audit baseline and remediation trail
 
 ## User Documentation
 

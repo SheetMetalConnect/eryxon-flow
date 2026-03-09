@@ -34,7 +34,7 @@ Manufacturing Execution System (MES) for job shops and make-to-order manufacture
 
 ## Quick Deploy
 
-See **[DEPLOY.md](DEPLOY.md)** for complete deployment instructions.
+See **[docs/guides/DEPLOYMENT.md](docs/guides/DEPLOYMENT.md)** for complete deployment instructions.
 
 ## Releases
 
@@ -88,7 +88,8 @@ See `.env.example` for complete list.
 ## Documentation
 
 - [CHANGELOG.md](CHANGELOG.md) - Version history and release notes
-- [DEPLOY.md](DEPLOY.md) - Quick deployment guide for the application
+- [docs/guides/DEPLOYMENT.md](docs/guides/DEPLOYMENT.md) - Quick deployment guide for the application
+- [docs/operations/SECURITY_AUDIT.md](docs/operations/SECURITY_AUDIT.md) - Security audit baseline and remediation tracking
 - [docs/README.md](docs/README.md) - Developer and engineering documentation index
 - [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) - Backend API reference
 - [docs/API_PAYLOAD_REFERENCE.md](docs/API_PAYLOAD_REFERENCE.md) - API payload shapes and examples

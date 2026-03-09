@@ -16,6 +16,7 @@ Changes merged after `0.3.2` should be added here until the next tagged release.
 - Aligned package metadata with the product name by renaming the npm package to `eryxon-flow`
 - Standardized self-hosting documentation references across the repo and in-app upgrade CTAs around the website docs structure
 - Clarified the root README so public docs, developer docs, and architecture references point to their current source-of-truth locations
+- Moved operational markdown (`DEPLOY.md`, `SECURITY_AUDIT.md`) out of the repository root into `docs/`
 
 ### Fixed
 
