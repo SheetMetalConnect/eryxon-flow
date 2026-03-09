@@ -67,6 +67,47 @@ What it does:
 - Replaces it with a profile insert trigger for first admin signups
 - Keeps notification delivery non-blocking for the signup transaction
 
+## Environment Setup
+
+### Frontend `.env`
+
+Copy `.env.example` to `.env` and set at least:
+
+```bash
+VITE_SUPABASE_URL="https://YOUR_PROJECT.supabase.co"
+VITE_SUPABASE_PUBLISHABLE_KEY="YOUR_SUPABASE_ANON_KEY"
+VITE_SUPABASE_PROJECT_ID="YOUR_PROJECT_ID"
+```
+
+Optional but commonly used:
+
+```bash
+VITE_TURNSTILE_SITE_KEY="YOUR_TURNSTILE_SITE_KEY"
+VITE_CAD_SERVICE_URL="https://YOUR_CAD_SERVICE"
+VITE_CAD_SERVICE_API_KEY="YOUR_CAD_API_KEY"
+VITE_TEST_TENANT_ID="YOUR_TEST_TENANT_UUID"
+```
+
+### Edge Function secrets
+
+For Supabase edge functions, set:
+
+```bash
+supabase secrets set \
+  SUPABASE_URL="https://YOUR_PROJECT.supabase.co" \
+  SUPABASE_SERVICE_ROLE_KEY="YOUR_SERVICE_ROLE_KEY"
+```
+
+Optional secrets used by this PR stack:
+
+- `RESEND_API_KEY`
+- `SIGNUP_NOTIFY_EMAIL`
+- `APP_URL`
+- `EMAIL_FROM`
+- `ALLOWED_ORIGIN`
+- `CRON_SECRET`
+- `INTERNAL_SERVICE_SECRET`
+
 ## Deployment Steps
 
 Run these commands against the target environment:
@@ -87,6 +128,37 @@ export API_KEY="YOUR_API_KEY"
 npm run test:api:e2e
 ```
 
+## Local Development Validation
+
+Recommended local validation order:
+
+```bash
+cp .env.example .env
+# fill in the required frontend values
+
+npm install
+supabase link --project-ref YOUR_PROJECT_REF
+supabase db push
+supabase functions deploy
+npm run dev
+```
+
+Expected result:
+
+- Vite starts without compile errors
+- auth screens load with the configured Supabase project
+- signup/invitation flows work against the migrated schema
+- issue hooks and route tree load without runtime errors
+
+## Best Practices For This Rollout
+
+- Apply migrations before deploying the frontend, not after
+- Deploy edge functions in the same rollout window as the migration
+- Validate signup notifications in a non-production project first because the trigger behavior changed
+- Keep `VITE_SUPABASE_URL` explicit rather than relying on project-id-derived fallbacks
+- Use live API E2E checks only against a project with representative tenant/test data
+- Review `docs/PLAN_3D_VIEWER_MEASUREMENTS.md` as planning/scaffolding, not as a finished feature-complete QA target
+
 ## Verification Completed On This Branch
 
 The integration branch was validated with:
@@ -95,6 +167,7 @@ The integration branch was validated with:
 - `npx tsc -p tsconfig.scripts.json --noEmit`
 - `npm run build`
 - `npm run test:run`
+- `npm run dev`
 
 Current result:
 
