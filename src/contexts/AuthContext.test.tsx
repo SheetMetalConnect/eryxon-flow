@@ -102,7 +102,7 @@ describe('AuthContext', () => {
     mockFrom.mockReturnValue({
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({
+          maybeSingle: vi.fn().mockResolvedValue({
             data: mockProfile,
             error: null,
           }),
@@ -145,6 +145,34 @@ describe('AuthContext', () => {
     it('sets up auth state listener on mount', () => {
       renderHook(() => useAuth(), { wrapper });
       expect(mockOnAuthStateChange).toHaveBeenCalled();
+    });
+
+    it('handles users without a profile row without throwing a 406-style lookup error', async () => {
+      mockGetSession.mockResolvedValue({
+        data: { session: mockSession },
+        error: null,
+      });
+
+      mockFrom.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            maybeSingle: vi.fn().mockResolvedValue({
+              data: null,
+              error: null,
+            }),
+          }),
+        }),
+      });
+
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      expect(result.current.user?.id).toBe(mockUser.id);
+      expect(result.current.profile).toBeNull();
+      expect(result.current.tenant).toBeNull();
     });
   });
 

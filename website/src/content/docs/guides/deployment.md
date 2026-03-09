@@ -113,6 +113,7 @@ To enable:
 1. Create a Turnstile widget at [Cloudflare Dashboard](https://dash.cloudflare.com/?to=/:account/turnstile)
 2. Set `VITE_TURNSTILE_SITE_KEY` in your environment
 3. Configure the Turnstile secret key in Supabase Dashboard > Auth > Captcha
+4. On Vercel, keep the repo `vercel.json` so SPA rewrites and CSP headers continue to allow `https://challenges.cloudflare.com`
 
 ## Verification
 

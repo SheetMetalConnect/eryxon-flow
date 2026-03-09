@@ -1,6 +1,7 @@
 import { useState, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import type { TurnstileInstance } from "@marsidev/react-turnstile";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,8 +36,7 @@ export default function Auth() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const turnstileRef = useRef<any>(null);
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
   const { signIn, signUp, profile } = useAuth();
   const navigate = useNavigate();
 
@@ -260,7 +260,7 @@ export default function Auth() {
                   >
                     {t("auth.agreeToTerms")}{" "}
                     <Link
-                      to="/privacy"
+                      to={ROUTES.COMMON.PRIVACY_POLICY}
                       className="text-primary hover:underline"
                       target="_blank"
                     >
@@ -268,7 +268,7 @@ export default function Auth() {
                     </Link>{" "}
                     {t("auth.and")}{" "}
                     <Link
-                      to="/terms"
+                      to={ROUTES.COMMON.TERMS_OF_SERVICE}
                       className="text-primary hover:underline"
                       target="_blank"
                     >
@@ -295,7 +295,6 @@ export default function Auth() {
               </Alert>
             )}
 
-            {/* Cloudflare Turnstile Captcha — only loaded when VITE_TURNSTILE_SITE_KEY is set */}
             {TURNSTILE_ENABLED && LazyTurnstile && (
               <Suspense fallback={<div className="flex justify-center py-2"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}>
                 <div className="flex justify-center">
