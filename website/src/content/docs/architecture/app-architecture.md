@@ -3,7 +3,7 @@ title: "App Architecture"
 description: "Technical and functional architecture overview of Eryxon Flow."
 ---
 
-> Current documented release: `0.3.2`
+> Current documented release: `0.3.3`
 
 **Eryxon Flow** is a comprehensive manufacturing execution system (MES) designed specifically for sheet metal fabrication operations. It provides end-to-end tracking from job creation through production completion, with real-time visibility, time tracking, issue management, and integration capabilities.
 

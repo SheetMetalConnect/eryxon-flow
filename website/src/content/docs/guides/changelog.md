@@ -12,7 +12,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Changes merged after `0.3.2` should be added here until the next tagged release.
+Changes merged after `0.3.3` should be added here until the next tagged release.
+
+## [0.3.3] - 2026-03-09
+
+### Focus: Release Packaging, Dependency Maintenance, and Documentation Alignment
+
+This patch release finalizes the integrated branch for production by aligning dependency versions, consolidating the final documentation sweep, and packaging the repository under one release number.
+
+**Release classification:** `PATCH`
+
+### Changed
+
+- Updated non-breaking app dependencies across the React, Supabase, testing, linting, and docs tooling stacks
+- Updated the documentation site dependencies for Astro, Starlight, Tailwind, and related build tooling
+- Aligned repository, app, and docs package metadata to release `0.3.3`
+- Refreshed the architecture and operations docs so security, API auth, release guidance, and the 3D viewer runtime model match the current codebase
+
+### Fixed
+
+- Cleared website dependency audit findings that were addressable without forced major-version changes
+- Resolved the docs-site release packaging mismatch that had left Cloudflare deployments on an older docs state
+- Removed contradictory documentation around API key hashing, API authentication headers, and viewer capabilities
+
+### Documentation
+
+- Added a dedicated security architecture reference
+- Updated release notes, self-hosting guidance, quick start notes, and landing-page copy to reflect the current release
+- Consolidated the repository cleanup, docs migration, and final architecture refresh into the tagged release history
 
 ### Changed
 

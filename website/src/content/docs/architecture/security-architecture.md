@@ -3,7 +3,7 @@ title: "Security Architecture"
 description: "Authentication, authorization, tenant isolation, API key handling, and deployment security in Eryxon Flow."
 ---
 
-> Current documented release: `0.3.2`
+> Current documented release: `0.3.3`
 
 Eryxon Flow uses a layered security model built around Supabase Auth, Postgres Row Level Security, tenant-scoped data access, and hardened edge-function helpers.
 
@@ -80,7 +80,7 @@ This is especially important for a multi-customer manufacturing system where job
 
 ## Edge Function Hardening
 
-The integrated security work in `0.3.2` tightened the edge-function layer in several ways:
+The integrated security work delivered through `0.3.2` and packaged in `0.3.3` tightened the edge-function layer in several ways:
 
 - shared validation and sanitization helpers are used more consistently
 - wildcard CORS was replaced by environment-driven origin handling
@@ -104,7 +104,7 @@ This matters for STEP files, PDFs, issue attachments, and other shop-floor artif
 
 ## Webhooks and Internal Event Paths
 
-Release `0.3.2` also clarifies the difference between public integration endpoints and internal automation paths:
+Release `0.3.3` keeps the same deployment model and clarifies the difference between public integration endpoints and internal automation paths:
 
 - public API endpoints use API key auth
 - signup notification delivery uses an explicit Supabase Database Webhook

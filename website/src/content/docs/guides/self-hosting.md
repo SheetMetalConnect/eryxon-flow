@@ -5,7 +5,7 @@ description: "Production-ready self-hosting guide for Eryxon Flow MES"
 
 Deploy Eryxon Flow on your own infrastructure with full control.
 
-> Current documented release: `0.3.2`
+> Current documented release: `0.3.3`
 
 ## Quick Start (Recommended)
 
@@ -137,7 +137,7 @@ supabase secrets set \
 
 ### 7. Configure signup notification webhook
 
-Release `0.3.2` intentionally removes any hardcoded project-specific signup webhook URL from SQL migrations. Configure this in Supabase Dashboard so the setup stays portable across environments:
+Release `0.3.3` keeps the signup notification path free of hardcoded project-specific SQL webhook URLs. Configure this in Supabase Dashboard so the setup stays portable across environments:
 
 1. Open **Database -> Webhooks**
 2. Create a webhook named `notify-new-signup`
@@ -517,7 +517,7 @@ Private buckets require signed URLs, not public URLs. Use `createSignedUrl()` wi
 
 The `on_auth_user_created` trigger must exist on `auth.users`. Without it, new signups won't get profiles/tenants. Migration `20260127232000_add_missing_auth_trigger.sql` ensures this.
 
-Release `0.3.2` also expects the signup notification path to be configured as a **Database Webhook**, not a hardcoded SQL URL. That keeps hosted and self-hosted deployments aligned.
+Release `0.3.3` expects the signup notification path to be configured as a **Database Webhook**, not a hardcoded SQL URL. That keeps hosted and self-hosted deployments aligned.
 
 ### Edge Functions Return 502
 

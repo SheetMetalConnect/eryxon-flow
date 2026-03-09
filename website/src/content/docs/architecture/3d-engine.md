@@ -3,13 +3,13 @@ title: "3D CAD Engine"
 description: "Overview of Eryxon Flow's 3D rendering architecture, measurement support, and PMI strategy."
 ---
  
-> Current documented release: `0.3.2`
+> Current documented release: `0.3.3`
 
 Eryxon Flow uses a browser-first 3D CAD architecture with an optional server-side CAD processing path for richer geometry and PMI workflows.
 
 ## Default Runtime Model
 
-For release `0.3.2`, the application is designed to work in two complementary modes:
+For release `0.3.3`, the application is designed to work in two complementary modes:
 
 - **Browser fallback**: direct STEP viewing in the browser for geometry visualization with no CAD service required
 - **Preferred enriched path**: optional CAD backend for server-processed geometry and PMI extraction, with browser rendering still handled in the client

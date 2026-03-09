@@ -43,7 +43,7 @@ supabase db push
 supabase functions deploy
 ```
 
-For hosted and self-hosted environments on release `0.3.2`, configure the `notify-new-signup` Database Webhook explicitly after migrations are applied.
+For hosted and self-hosted environments on release `0.3.3`, configure the `notify-new-signup` Database Webhook explicitly after migrations are applied.
 
 ---
 

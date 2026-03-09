@@ -4,7 +4,7 @@ Manufacturing Execution System (MES) for job shops and make-to-order manufacture
 
 **[Live Demo](https://app.eryxon.eu)** · [Documentation](https://eryxon.eu) · [GitHub](https://github.com/SheetMetalConnect/eryxon-flow)
 
-**Current Release:** `0.3.2`
+**Current Release:** `0.3.3`
 
 ## Who It's For
 
@@ -83,7 +83,7 @@ See `.env.example` for complete list.
 **Deployment**: Cloudflare Pages, Docker, or self-hosted reverse proxy setups
 **Database**: Multi-tenant schema with RLS and versioned migrations under `supabase/migrations/`
 **API**: Supabase Edge Functions with shared auth, validation, and webhook helpers
-**3D Rendering**: Three.js + occt-import-js (client-side STEP parsing)
+**3D Rendering**: Three.js with browser STEP parsing and optional backend-assisted CAD processing
 
 ## Documentation
 
