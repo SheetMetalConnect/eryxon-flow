@@ -1,3 +1,8 @@
+---
+title: "Changelog"
+description: "Full release history for Eryxon Flow."
+---
+
 # Changelog
 
 All notable changes to Eryxon Flow will be documented in this file.
@@ -16,7 +21,7 @@ Changes merged after `0.3.2` should be added here until the next tagged release.
 - Aligned package metadata with the product name by renaming the npm package to `eryxon-flow`
 - Standardized self-hosting documentation references across the repo and in-app upgrade CTAs around the website docs structure
 - Clarified the root README so public docs, developer docs, and architecture references point to their current source-of-truth locations
-- Moved operational markdown (`DEPLOY.md`, `SECURITY_AUDIT.md`) out of the repository root into `docs/`
+- Moved operational markdown into the website documentation tree so the main repository keeps only the top-level README
 
 ### Fixed
 
@@ -66,13 +71,13 @@ supabase migration list
 
 ### Added
 
-- API reference expansion in `docs/API_PAYLOAD_REFERENCE.md`
+- API reference expansion in the website API reference and payload reference pages
 - End-to-end API validation tooling:
   - `scripts/api-test-utils.ts`
   - `scripts/test-api-e2e.sh`
   - `tsconfig.scripts.json`
 - Implementation plan and measurement UI scaffolding for interactive STEP viewer measurements
-- Integrated rollout guide for the combined PR set in `docs/PR_434_438_INTEGRATION.md`
+- Integrated rollout guidance into the website deployment and release documentation
 
 ### Changed
 
@@ -244,7 +249,7 @@ supabase migration list
 - **MCP README** - Cleaned up (removed marketing bloat)
 - **MCP Demo Guide** - Updated with current tool counts and setup callouts
 - **API Documentation** - Added both Bearer token and X-API-Key authentication methods
-- Removed temporary refactoring documentation per CLAUDE.md rules
+- Removed temporary refactoring documentation during repository guideline cleanup
 
 ---
 
@@ -343,7 +348,7 @@ These features have been removed to focus development effort on core capabilitie
 - Updated ESLint configuration for better code quality
 - Improved TypeScript types with modular architecture
 - Better hook patterns and memory leak prevention
-- Enhanced documentation in `CODING_PATTERNS.md`
+- Enhanced the engineering coding patterns documentation
 
 ---
 

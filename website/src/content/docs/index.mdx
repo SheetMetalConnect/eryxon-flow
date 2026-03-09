@@ -107,31 +107,42 @@ import ListCard from "~/components/user-components/ListCard.astro";
     </ListCard>
 
     <ListCard title="Guides" icon="open-book" number="4">
-      - [Operator Guides](/guides/quick-start/)
-      - [Manager Guides](/guides/quick-start/)
-      - [Admin Guides](/guides/quick-start/)
+      - [Deployment](/guides/deployment/)
       - [Self Hosting](/guides/self-hosting/)
+      - [Release Notes](/guides/releases/)
+      - [Changelog](/guides/changelog/)
+    </ListCard>
+
+    <ListCard title="Operations" icon="shield" number="2">
+      - [Security Audit](/operations/security-audit-baseline/)
+      - [Monthly Reset Cron](/operations/monthly-reset-cron/)
     </ListCard>
 
     <ListCard title="Architecture" icon="puzzle" number="3">
-      - [System Design](/architecture/connectivity-rest-api/)
-      - [Data Flow](/architecture/connectivity-rest-api/)
+      - [App Architecture](/architecture/app-architecture/)
       - [Database Schema](/architecture/database/)
+      - [Validation System](/engineering/validation-system/)
     </ListCard>
   </Grid>
   <Grid columns={3}>
-    <ListCard title="Reference" icon="document" number="2">
-      - [Configuration](/architecture/database/)
-      - [Release Notes](/guides/releases/)
+    <ListCard title="API" icon="seti:json" number="4">
+      - [REST API Overview](/architecture/connectivity-rest-api/)
+      - [REST API Reference](/api/rest-api-reference/)
+      - [Payload Reference](/api/payload-reference/)
+      - [MCP Server Reference](/api/mcp-server-reference/)
     </ListCard>
 
-    <ListCard title="Features" icon="list-format" number="2">
-      - [Job Tracking](/guides/quick-start/)
-      - [Scheduling](/guides/quick-start/)
+    <ListCard title="Engineering" icon="seti:code" number="4">
+      - [Coding Patterns](/engineering/coding-patterns/)
+      - [Design System](/engineering/design-system-reference/)
+      - [Agent Guidelines](/engineering/agent-guidelines/)
+      - [3D Viewer Plan](/engineering/3d-viewer-measurements-plan/)
     </ListCard>
 
-    <ListCard title="API" icon="seti:json" number="1">
-       - [REST API](/architecture/connectivity-rest-api/)
+    <ListCard title="User Guides" icon="open-book" number="3">
+      - [Operator Manual](/guides/operator-manual/)
+      - [Admin Manual](/guides/admin-manual/)
+      - [Quality Management](/guides/quality-management/)
     </ListCard>
   </Grid>
 </Section>
@@ -180,7 +191,7 @@ import ListCard from "~/components/user-components/ListCard.astro";
       Self-hosting is community-supported only.
       <br/><br/>
       <strong>GitHub Issues:</strong> Bug reports<br/>
-      <strong>Documentation:</strong> <a href="/introduction/" class="text-primary hover:underline">/docs</a> folder
+      <strong>Documentation:</strong> <a href="/guides/quick-start/" class="text-primary hover:underline">start here</a>
     </Card>
     
     <Card title="Professional Services" icon="seti:notebook" iconColor="#4a9eff">

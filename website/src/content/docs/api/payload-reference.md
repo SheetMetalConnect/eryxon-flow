@@ -1,3 +1,8 @@
+---
+title: "API Payload Reference"
+description: "Payload schemas, field constraints, and copy-paste examples for Eryxon Flow APIs."
+---
+
 # Eryxon Flow - API Payload Reference
 
 This document provides exact payload schemas, field constraints, and copy-paste examples for every API endpoint. Use this as a quick reference when integrating with the Eryxon API.

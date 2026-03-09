@@ -1,3 +1,8 @@
+---
+title: "REST API Reference"
+description: "Complete API and integration reference for Eryxon Flow."
+---
+
 # Eryxon Flow - Complete API & Integration Documentation
 
 ## Overview

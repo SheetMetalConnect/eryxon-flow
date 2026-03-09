@@ -35,9 +35,15 @@ Go to **Settings** → **API** and copy:
 
 ### 1.3 Apply Database Schema
 
-1. Go to **SQL Editor**
-2. Copy contents of `supabase/schema.sql` from this repo
-3. Paste and click **Run**
+Use the Supabase CLI against your target project:
+
+```bash
+supabase link --project-ref YOUR_PROJECT_REF
+supabase db push
+supabase functions deploy
+```
+
+For hosted and self-hosted environments on release `0.3.2`, configure the `notify-new-signup` Database Webhook explicitly after migrations are applied.
 
 ---
 
@@ -45,7 +51,7 @@ Go to **Settings** → **API** and copy:
 
 ```bash
 
-git clone https://github.com/your-org/eryxon-flow.git
+git clone https://github.com/SheetMetalConnect/eryxon-flow.git
 cd eryxon-flow
 
 
@@ -59,6 +65,7 @@ Edit `.env`:
 ```bash
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
+VITE_SUPABASE_PROJECT_ID=your-project-id
 ```
 
 Start the app:
@@ -105,19 +112,21 @@ Want to see the app with sample data?
 ## What's Next?
 
 **Setup & Deployment:**
-- [Self-Hosting Guide](/guides/self-hosting) - Production deployment options
-- [MCP Server Setup](/guides/mcp-setup) - AI assistant integration setup
+- [Deployment Guide](/guides/deployment/) - Production deployment options
+- [Self-Hosting Guide](/guides/self-hosting/) - Environment and rollout details
+- [MCP Server Setup](/guides/mcp-setup/) - AI assistant integration setup
 
 **API & Integration:**
-- [REST API Documentation](/architecture/connectivity-rest-api) - Complete API reference
-- [MCP Demo Guide](/api/mcp-demo-guide) - AI assistant usage examples
-- [Connectivity Overview](/architecture/connectivity-overview) - Integration architecture
-- [Webhooks & MQTT](/architecture/connectivity-mqtt) - Event-driven integration
+- [REST API Overview](/architecture/connectivity-rest-api/) - Integration architecture
+- [REST API Reference](/api/rest-api-reference/) - Complete endpoint reference
+- [API Payload Reference](/api/payload-reference/) - Copy-paste payload examples
+- [MCP Demo Guide](/api/mcp-demo-guide/) - AI assistant usage examples
+- [Webhooks & MQTT](/architecture/connectivity-mqtt/) - Event-driven integration
 - **Swagger/OpenAPI** - Available in the app at `/api-docs`
 
 **Architecture & Help:**
-- [App Architecture](/architecture/app-architecture) - System design overview
-- [Database Schema](/architecture/database) - Data model reference
+- [App Architecture](/architecture/app-architecture/) - System design overview
+- [Database Schema](/architecture/database/) - Data model reference
 - [FAQ](/guides/faq) - Frequently asked questions
 
 ---
@@ -140,7 +149,7 @@ Want to see the app with sample data?
 
 ## Need Help?
 
-- Check the [documentation](../README.md)
+- Start from the [documentation home](/)
 - Open an issue on GitHub
 - Join our community discussions
 

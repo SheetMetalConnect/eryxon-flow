@@ -1,3 +1,8 @@
+---
+title: "MCP Server Reference"
+description: "Operational reference for the Eryxon Flow MCP server."
+---
+
 # Eryxon Flow MCP Server v2.5.0
 
 **Universal MCP server for Eryxon Flow MES** - Works in both self-hosted and cloud SaaS deployments.
@@ -96,9 +101,9 @@ Your Data
 
 ## Documentation
 
-- [MCP Demo Guide](../website/src/content/docs/api/mcp-demo-guide.md) - Complete tool reference and usage
-- [Self-Hosting Guide](../website/src/content/docs/guides/self-hosting.md) - Self-hosted setup
-- [Website Docs](../website/src/content/docs/) - Full documentation
+- [MCP Demo Guide](/api/mcp-demo-guide/) - Complete tool reference and usage
+- [Self-Hosting Guide](/guides/self-hosting/) - Self-hosted setup
+- [Documentation Home](/) - Full documentation
 
 ## Development
 

@@ -12,13 +12,14 @@ import sidebar from "./src/config/sidebar.json";
 import { fileURLToPath } from "url";
 
 const { site } = config;
-const { title, logo, logo_darkmode } = site;
+const { title, logo, logo_darkmode, url } = site;
 
 export const locales = locals
 
 
 // https://astro.build/config
 export default defineConfig({
+  site: url,
   image: {
     service: { entrypoint: "astro/assets/services/noop" },
   },

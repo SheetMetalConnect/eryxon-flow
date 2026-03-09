@@ -12,8 +12,20 @@
           "slug": "guides/quick-start"
         },
         {
+          "label": "Deployment",
+          "slug": "guides/deployment"
+        },
+        {
           "label": "Self Hosting",
           "slug": "guides/self-hosting"
+        },
+        {
+          "label": "Release Notes",
+          "slug": "guides/releases"
+        },
+        {
+          "label": "Changelog",
+          "slug": "guides/changelog"
         },
         {
           "label": "Roadmap",
@@ -87,6 +99,14 @@
           "slug": "architecture/error-handling"
         },
         {
+          "label": "Validation System",
+          "slug": "engineering/validation-system"
+        },
+        {
+          "label": "Database Migrations",
+          "slug": "engineering/database-migrations"
+        },
+        {
           "label": "Notifications",
           "slug": "architecture/notifications-system"
         },
@@ -122,6 +142,40 @@
       ]
     },
     {
+      "label": "Engineering",
+      "items": [
+        {
+          "label": "Coding Patterns",
+          "slug": "engineering/coding-patterns"
+        },
+        {
+          "label": "Design System Reference",
+          "slug": "engineering/design-system-reference"
+        },
+        {
+          "label": "3D Viewer Measurements Plan",
+          "slug": "engineering/3d-viewer-measurements-plan"
+        },
+        {
+          "label": "Agent Guidelines",
+          "slug": "engineering/agent-guidelines"
+        }
+      ]
+    },
+    {
+      "label": "Operations",
+      "items": [
+        {
+          "label": "Security Audit Baseline",
+          "slug": "operations/security-audit-baseline"
+        },
+        {
+          "label": "Monthly Reset Cron",
+          "slug": "operations/monthly-reset-cron"
+        }
+      ]
+    },
+    {
       "label": "Help",
       "items": [
         {
@@ -142,8 +196,20 @@
           "slug": "architecture/connectivity-rest-api"
         },
         {
+          "label": "REST API Reference",
+          "slug": "api/rest-api-reference"
+        },
+        {
+          "label": "API Payload Reference",
+          "slug": "api/payload-reference"
+        },
+        {
           "label": "MCP Server Setup",
           "slug": "guides/mcp-setup"
+        },
+        {
+          "label": "MCP Server Reference",
+          "slug": "api/mcp-server-reference"
         },
         {
           "label": "MCP Demo Guide",

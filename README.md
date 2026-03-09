@@ -34,7 +34,7 @@ Manufacturing Execution System (MES) for job shops and make-to-order manufacture
 
 ## Quick Deploy
 
-See **[docs/guides/DEPLOYMENT.md](docs/guides/DEPLOYMENT.md)** for complete deployment instructions.
+See **[website/src/content/docs/guides/deployment.md](website/src/content/docs/guides/deployment.md)** for deployment instructions and **[website/src/content/docs/guides/self-hosting.md](website/src/content/docs/guides/self-hosting.md)** for the full self-hosting walkthrough.
 
 ## Releases
 
@@ -44,7 +44,7 @@ Eryxon Flow uses a simple SemVer-based release model:
 - `MINOR` for backward-compatible features and meaningful platform expansions
 - `PATCH` for fixes, security hardening, docs, and release stabilization
 
-Work in progress should land in the `Unreleased` section of [CHANGELOG.md](CHANGELOG.md) until tagged.
+Work in progress should land in the release notes and changelog pages under `website/src/content/docs/guides/` until tagged.
 
 ## Prerequisites
 
@@ -87,13 +87,13 @@ See `.env.example` for complete list.
 
 ## Documentation
 
-- [CHANGELOG.md](CHANGELOG.md) - Version history and release notes
-- [docs/guides/DEPLOYMENT.md](docs/guides/DEPLOYMENT.md) - Quick deployment guide for the application
-- [docs/operations/SECURITY_AUDIT.md](docs/operations/SECURITY_AUDIT.md) - Security audit baseline and remediation tracking
-- [docs/README.md](docs/README.md) - Developer and engineering documentation index
-- [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) - Backend API reference
-- [docs/API_PAYLOAD_REFERENCE.md](docs/API_PAYLOAD_REFERENCE.md) - API payload shapes and examples
-- [website/src/content/docs/](website/src/content/docs/) - Source for public-facing product, architecture, and operator/admin docs
+- [website/src/content/docs/](website/src/content/docs/) - Canonical documentation source
+- [website/src/content/docs/guides/changelog.md](website/src/content/docs/guides/changelog.md) - Full release history
+- [website/src/content/docs/guides/releases.md](website/src/content/docs/guides/releases.md) - Versioning policy and current release summary
+- [website/src/content/docs/guides/deployment.md](website/src/content/docs/guides/deployment.md) - Deployment guide
+- [website/src/content/docs/operations/security-audit-baseline.md](website/src/content/docs/operations/security-audit-baseline.md) - Security audit baseline and remediation tracking
+- [website/src/content/docs/api/rest-api-reference.md](website/src/content/docs/api/rest-api-reference.md) - Backend API reference
+- [website/src/content/docs/api/payload-reference.md](website/src/content/docs/api/payload-reference.md) - API payload shapes and examples
 - [website/src/content/docs/guides/self-hosting.md](website/src/content/docs/guides/self-hosting.md) - Canonical self-hosting guide
 - [website/src/content/docs/architecture/app-architecture.md](website/src/content/docs/architecture/app-architecture.md) - Architecture overview
 

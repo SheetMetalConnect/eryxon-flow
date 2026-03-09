@@ -1,8 +1,8 @@
 {
-  "name": "dockit-astro",
-  "version": "0.0.2",
-  "description": "DocKit Astro is a simple, modern documentation theme built using Astro and Tailwind CSS",
-  "author": "Themefisher",
+  "name": "eryxon-flow-docs",
+  "version": "0.3.2",
+  "description": "Documentation site for Eryxon Flow, the open manufacturing execution system for metal fabrication teams.",
+  "author": "Sheet Metal Connect e.U.",
   "license": "MIT",
   "type": "module",
   "scripts": {

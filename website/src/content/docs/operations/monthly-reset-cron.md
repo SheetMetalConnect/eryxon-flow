@@ -1,3 +1,8 @@
+---
+title: "Monthly Reset Cron"
+description: "Operational reference for the monthly parts counter reset function."
+---
+
 # Monthly Parts Counter Reset Cron Job
 
 This Supabase Edge Function resets the `current_month_parts` counter for all active tenants at the start of each billing cycle (monthly).

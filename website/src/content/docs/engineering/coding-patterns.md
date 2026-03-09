@@ -1,6 +1,11 @@
+---
+title: "Coding Patterns"
+description: "Technical patterns and implementation reference for contributors working on Eryxon Flow."
+---
+
 # Coding Patterns & Technical Reference
 
-Technical patterns and code examples for Eryxon MES development. For high-level principles and guidelines, see [CLAUDE.md](../CLAUDE.md).
+Technical patterns and code examples for Eryxon MES development. For contributor workflow guidance, see [Agent Guidelines](/engineering/agent-guidelines/).
 
 ---
 
@@ -299,7 +304,7 @@ const appError = fromSupabaseError(error);
 toast.error(appError.toUserMessage()); // "The requested resource was not found."
 ```
 
-For detailed error handling patterns, see [docs/ERROR_HANDLING.md](./ERROR_HANDLING.md).
+For detailed error handling patterns, see [Error Handling](/architecture/error-handling/).
 
 ---
 
@@ -949,4 +954,3 @@ Before completing code:
 - [ ] **Focused interfaces** - Small, specific interfaces for query results
 - [ ] **Graceful errors** - Event dispatch failures don't crash operations
 - [ ] **Simple patterns** - Code is easy to understand at a glance
-

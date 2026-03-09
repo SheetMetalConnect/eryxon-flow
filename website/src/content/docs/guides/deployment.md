@@ -1,3 +1,8 @@
+---
+title: "Deployment Guide"
+description: "Application deployment guide for Eryxon Flow."
+---
+
 # Deployment Guide
 
 > **Want to try it first?** Check out the [live demo at app.eryxon.eu](https://app.eryxon.eu) before deploying your own instance.
@@ -119,4 +124,4 @@ chmod +x scripts/verify-setup.sh
 
 ## Full Documentation
 
-See [website/src/content/docs/guides/self-hosting.md](website/src/content/docs/guides/self-hosting.md) for the complete self-hosting guide, rollout notes, and troubleshooting.
+See the [Self-Hosting Guide](/guides/self-hosting/) for the complete rollout, troubleshooting, and environment notes.

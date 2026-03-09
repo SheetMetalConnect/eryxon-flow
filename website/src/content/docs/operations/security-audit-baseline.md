@@ -1,3 +1,8 @@
+---
+title: "Security Audit Baseline"
+description: "Security audit baseline and remediation tracking for Eryxon Flow."
+---
+
 # Security Audit Report - Eryxon MES
 
 **Date:** 2026-03-06

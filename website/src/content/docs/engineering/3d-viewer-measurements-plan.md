@@ -1,3 +1,8 @@
+---
+title: "3D Viewer Measurements Plan"
+description: "Implementation plan for interactive measurement tools in the STEP viewer."
+---
+
 # Implementation Plan: Interactive 3D Viewer Measurements (v3)
 
 ## Overview

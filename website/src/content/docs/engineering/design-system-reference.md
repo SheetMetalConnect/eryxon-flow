@@ -1,3 +1,8 @@
+---
+title: "Design System Reference"
+description: "Detailed design system reference for contributors extending the Eryxon Flow UI."
+---
+
 # Eryxon Flow Design System
 
 **Modern design system for manufacturing execution with dark/light/auto theme support**
@@ -1796,7 +1801,7 @@ export default function BrowserOnboarding() {
 - **Theme Provider**: `/src/theme/ThemeProvider.tsx`
 - **Tailwind Config**: `/tailwind.config.ts`
 - **Animated Background**: `/src/components/AnimatedBackground.tsx`
-- **Reference Layout**: `docs/DESIGN_SYSTEM.md` (this guide)
+- **Reference Layout**: `website/src/content/docs/engineering/design-system-reference.md` (this guide)
 - **shadcn/ui Components**: `/components/ui/*` (generated via `npx shadcn@latest add ...`)
 
 ### Inspiration

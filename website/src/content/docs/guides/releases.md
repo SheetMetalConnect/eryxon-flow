@@ -13,7 +13,7 @@ The project uses Semantic Versioning:
 - **MINOR** for backward-compatible features and platform expansions
 - **PATCH** for fixes, security hardening, documentation updates, and release stabilization
 
-All upcoming work should land in the `Unreleased` section of the root changelog before the next version is tagged.
+All upcoming work should land in the website changelog before the next version is tagged.
 
 ## Current Release: 0.3.2
 
@@ -37,6 +37,6 @@ Security hardening, API coverage, integrated route refactoring, and 3D viewer me
 
 ## Source of Truth
 
-For the full release history, use the repository changelog:
+For the full release history, use the website changelog:
 
-- [CHANGELOG.md](https://github.com/SheetMetalConnect/eryxon-flow/blob/main/CHANGELOG.md)
+- [Changelog](/guides/changelog/)
