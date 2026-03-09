@@ -4,18 +4,24 @@ import { ValidationSeverity, ValidationResult } from './DataValidator';
 
 describe('ValidationLogger', () => {
   let logger: ValidationLogger;
-  let consoleSpy: { log: ReturnType<typeof vi.spyOn>; error: ReturnType<typeof vi.spyOn> };
+  let consoleSpy: {
+    log: ReturnType<typeof vi.spyOn>;
+    debug: ReturnType<typeof vi.spyOn>;
+    error: ReturnType<typeof vi.spyOn>;
+  };
 
   beforeEach(() => {
     logger = new ValidationLogger();
     consoleSpy = {
       log: vi.spyOn(console, 'log').mockImplementation(() => {}),
+      debug: vi.spyOn(console, 'debug').mockImplementation(() => {}),
       error: vi.spyOn(console, 'error').mockImplementation(() => {}),
     };
   });
 
   afterEach(() => {
     consoleSpy.log.mockRestore();
+    consoleSpy.debug.mockRestore();
     consoleSpy.error.mockRestore();
   });
 
@@ -33,7 +39,7 @@ describe('ValidationLogger', () => {
 
       logger.logValidation(result, 'jobs');
 
-      expect(consoleSpy.log).toHaveBeenCalled();
+      expect(consoleSpy.debug).toHaveBeenCalled();
       expect(logger.getLogs()).toHaveLength(1);
       expect(logger.getLogs()[0].entityType).toBe('jobs');
     });

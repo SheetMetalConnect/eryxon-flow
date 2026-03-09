@@ -8,13 +8,12 @@ import { Zap, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
  * Real-time toast notifications for MCP events
  * Displays toasts when MCP tools are executed
  */
-export function McpActivityToasts() {
+export function McpActivityToasts(): null {
   const { profile } = useAuth();
 
   useEffect(() => {
     if (!profile?.tenant_id) return;
 
-    // Subscribe to activity log changes for MCP events
     const channel = supabase
       .channel("mcp_activity_toasts")
       .on(
@@ -26,13 +25,12 @@ export function McpActivityToasts() {
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
         (payload) => {
-          const activity = payload.new as any;
+          const activity = payload.new as Record<string, unknown>;
 
-          // Only show toasts for MCP actions
           if (activity.action === "mcp_execute") {
-            const metadata = activity.metadata || {};
+            const metadata = (activity.metadata || {}) as Record<string, unknown>;
             const toolName = activity.entity_name || metadata.tool_name || "Unknown Tool";
-            const responseTime = metadata.response_time_ms;
+            const responseTime = metadata.response_time_ms as number | undefined;
 
             toast.success(
               <div className="flex items-start gap-3">
@@ -40,12 +38,11 @@ export function McpActivityToasts() {
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold">MCP Tool Executed</div>
                   <div className="text-sm text-muted-foreground">
-                    {activity.description ||
-                      `Tool "${toolName}" executed successfully`}
+                    {String(activity.description || `Tool "${toolName}" executed successfully`)}
                   </div>
                   {responseTime && (
                     <div className="text-xs text-muted-foreground mt-1">
-                      Response time: {responseTime}ms
+                      Response time: {String(responseTime)}ms
                     </div>
                   )}
                 </div>
@@ -57,9 +54,9 @@ export function McpActivityToasts() {
               }
             );
           } else if (activity.action === "mcp_error") {
-            const metadata = activity.metadata || {};
+            const metadata = (activity.metadata || {}) as Record<string, unknown>;
             const toolName = activity.entity_name || metadata.tool_name || "Unknown Tool";
-            const errorMessage = metadata.error_message;
+            const errorMessage = metadata.error_message as string | undefined;
 
             toast.error(
               <div className="flex items-start gap-3">
@@ -67,11 +64,11 @@ export function McpActivityToasts() {
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold">MCP Tool Failed</div>
                   <div className="text-sm text-muted-foreground">
-                    {activity.description || `Tool "${toolName}" execution failed`}
+                    {String(activity.description || `Tool "${toolName}" execution failed`)}
                   </div>
                   {errorMessage && (
                     <div className="text-xs text-muted-foreground mt-1 font-mono bg-black/20 p-1 rounded">
-                      {errorMessage}
+                      {String(errorMessage)}
                     </div>
                   )}
                 </div>
@@ -92,6 +89,5 @@ export function McpActivityToasts() {
     };
   }, [profile?.tenant_id]);
 
-  // This component doesn't render anything visible
   return null;
 }

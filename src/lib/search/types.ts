@@ -1,10 +1,3 @@
-/**
- * Search Types
- *
- * Centralized type definitions for the global search functionality.
- * Follows Interface Segregation Principle - small, focused interfaces.
- */
-
 export type SearchResultType =
   | "job"
   | "part"

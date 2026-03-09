@@ -51,4 +51,4 @@ The Capacity Matrix page at **Admin → Capacity Matrix** shows:
 - Only cell capacity is considered, not worker availability or materials
 - No what-if scenario simulation
 
-For complex scheduling needs, use a dedicated APS tool and sync dates via the [REST API](/docs/architecture/connectivity-rest-api) or [CSV Import](/docs/features/csv-import).
+For complex scheduling needs, use a dedicated APS tool and sync dates via the [REST API](/architecture/connectivity-rest-api/) or [CSV Import](/features/csv-import/).

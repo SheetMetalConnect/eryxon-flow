@@ -10,6 +10,7 @@ import { Loader2, ArrowRight, Factory, CheckCircle2 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import { ROUTES } from "@/routes";
+import { logger } from "@/lib/logger";
 
 export default function ResetPassword() {
   const { t } = useTranslation();
@@ -55,13 +56,13 @@ export default function ResetPassword() {
       const { error } = await supabase.auth.updateUser({ password });
 
       if (error) {
-        console.error("Password update error:", error.message);
+        logger.error('ResetPassword', 'Password update error', error.message);
         setError(t("auth.unexpectedError"));
       } else {
         setSuccess(true);
       }
     } catch (err) {
-      console.error("Password update error:", err);
+      logger.error('ResetPassword', 'Password update error', err);
       setError(t("auth.unexpectedError"));
     } finally {
       setLoading(false);

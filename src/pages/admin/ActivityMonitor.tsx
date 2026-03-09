@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { logger } from "@/lib/logger";
 import {
   Activity,
   Search,
@@ -56,16 +57,16 @@ interface ActivityLog {
   entity_id: string | null;
   entity_name: string | null;
   description: string;
-  changes: any;
-  metadata: any;
+  changes: Record<string, unknown>;
+  metadata: Record<string, unknown>;
   created_at: string;
 }
 
 interface ActivityStats {
   total_activities: number;
   unique_users: number;
-  activities_by_action: any;
-  activities_by_entity: any;
+  activities_by_action: Record<string, number>;
+  activities_by_entity: Record<string, number>;
 }
 
 export const ActivityMonitor: React.FC = () => {
@@ -81,12 +82,10 @@ export const ActivityMonitor: React.FC = () => {
   const [limit, setLimit] = useState(50);
   const { profile } = useAuth();
 
-  // Load activity data
   const loadData = useCallback(async () => {
     if (!profile) return;
 
     try {
-      // Get activity logs with filters
       const { data: activityData, error: activityError } = await supabase.rpc(
         "get_activity_logs",
         {
@@ -99,12 +98,11 @@ export const ActivityMonitor: React.FC = () => {
       );
 
       if (activityError) {
-        console.error("Error loading activities:", activityError);
+        logger.error('ActivityMonitor', 'Error loading activities', activityError);
       } else {
-        setActivities(activityData || []);
+        setActivities((activityData || []) as unknown as ActivityLog[]);
       }
 
-      // Get activity statistics
       const { data: statsData, error: statsError } = await supabase.rpc(
         "get_activity_stats",
         {
@@ -116,25 +114,27 @@ export const ActivityMonitor: React.FC = () => {
       );
 
       if (statsError) {
-        console.error("Error loading stats:", statsError);
+        logger.error('ActivityMonitor', 'Error loading stats', statsError);
       } else if (statsData && statsData.length > 0) {
-        setStats(statsData[0]);
+        setStats(statsData[0] as unknown as ActivityStats);
       }
 
       setLastUpdate(new Date());
       setLoading(false);
     } catch (error) {
-      console.error("Error loading activity data:", error);
+      logger.error('ActivityMonitor', 'Error loading activity data', error);
       setLoading(false);
     }
   }, [profile, filterAction, filterEntityType, searchQuery, limit]);
 
-  // Initial load
   useEffect(() => {
-    loadData();
+    const loadTimeout = window.setTimeout(() => {
+      void loadData();
+    }, 0);
+
+    return () => clearTimeout(loadTimeout);
   }, [loadData]);
 
-  // Auto-refresh every 10 seconds
   useEffect(() => {
     if (!autoRefresh) return;
 
@@ -145,11 +145,9 @@ export const ActivityMonitor: React.FC = () => {
     return () => clearInterval(interval);
   }, [autoRefresh, loadData]);
 
-  // Real-time subscription
   useEffect(() => {
     if (!profile) return;
 
-    // Subscribe to activity log changes
     const channel = supabase
       .channel("activity_log_changes")
       .on(
@@ -161,8 +159,7 @@ export const ActivityMonitor: React.FC = () => {
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
         (payload) => {
-          console.log("Real-time activity update:", payload);
-          // Reload data when changes occur
+          logger.debug('ActivityMonitor', 'Real-time activity update', payload);
           loadData();
         },
       )
@@ -173,7 +170,6 @@ export const ActivityMonitor: React.FC = () => {
     };
   }, [profile, loadData]);
 
-  // Get action icon
   const getActionIcon = (action: string) => {
     const iconClass = "h-3.5 w-3.5";
     switch (action) {
@@ -204,7 +200,6 @@ export const ActivityMonitor: React.FC = () => {
     }
   };
 
-  // Get action color using design system tokens
   const getActionColor = (action: string) => {
     switch (action) {
       case "create":
@@ -233,7 +228,6 @@ export const ActivityMonitor: React.FC = () => {
     }
   };
 
-  // Get entity icon
   const getEntityIcon = (entityType: string | null) => {
     const iconClass = "h-4 w-4";
     switch (entityType) {
@@ -257,7 +251,6 @@ export const ActivityMonitor: React.FC = () => {
     }
   };
 
-  // Get user initials
   const getUserInitials = (name: string | null, email: string | null) => {
     if (name) {
       const parts = name.split(" ");
@@ -272,7 +265,6 @@ export const ActivityMonitor: React.FC = () => {
     return "??";
   };
 
-  // Export activity log
   const handleExport = () => {
     const csv = [
       [
@@ -304,7 +296,6 @@ export const ActivityMonitor: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  // Get unique actions and entity types for filters
   const uniqueActions = Array.from(
     new Set(activities.map((a) => a.action).filter(Boolean)),
   );
@@ -332,7 +323,6 @@ export const ActivityMonitor: React.FC = () => {
         }}
       />
 
-      {/* Statistics Row */}
       {stats && (
         <PageStatsRow
           stats={[
@@ -344,7 +334,6 @@ export const ActivityMonitor: React.FC = () => {
         />
       )}
 
-      {/* Filters and Controls */}
       <Card className="glass-card">
         <CardContent className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
@@ -425,7 +414,6 @@ export const ActivityMonitor: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Activity Feed */}
       <Card className="glass-card">
         <div className="p-4 border-b border-border-subtle">
           <div className="flex items-center gap-2">
@@ -522,7 +510,6 @@ export const ActivityMonitor: React.FC = () => {
           )}
         </div>
 
-        {/* Load More */}
         {activities.length >= limit && (
           <div className="p-4 border-t border-border-subtle text-center">
             <Button onClick={() => setLimit(limit + 50)} variant="outline">

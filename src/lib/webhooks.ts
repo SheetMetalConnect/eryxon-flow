@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 export type WebhookEvent =
   // Job lifecycle events
@@ -30,7 +31,7 @@ export type WebhookEvent =
   | 'production.scrap_recorded';
 
 export interface WebhookData {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -46,12 +47,15 @@ export async function triggerWebhook(
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      console.error('No active session for webhook dispatch');
+      logger.error('Webhooks', 'No active session for webhook dispatch');
       return { success: false, error: 'Not authenticated' };
     }
 
     // Get Supabase URL from environment or construct from current origin
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co';
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!supabaseUrl) {
+      return { success: false, error: 'Missing VITE_SUPABASE_URL configuration' };
+    }
     
     const response = await fetch(
       `${supabaseUrl}/functions/v1/webhook-dispatch`,
@@ -72,13 +76,13 @@ export async function triggerWebhook(
     const result = await response.json();
 
     if (!response.ok) {
-      console.error('Webhook dispatch failed:', result);
+      logger.error('Webhooks', 'Webhook dispatch failed', result);
       return { success: false, error: result.error || 'Webhook dispatch failed' };
     }
 
     return { success: true };
   } catch (error) {
-    console.error('Error triggering webhook:', error);
+    logger.error('Webhooks', 'Error triggering webhook', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "@supabase/supabase-js";
 import { encode as hexEncode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
+import { sanitizeError } from "../_shared/security.ts";
 
 // Hash function using Web Crypto API (compatible with Edge Functions)
 async function hashApiKey(apiKey: string): Promise<string> {
@@ -10,7 +11,7 @@ async function hashApiKey(apiKey: string): Promise<string> {
   return new TextDecoder().decode(hexEncode(new Uint8Array(hashBuffer)));
 }
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
@@ -153,11 +154,10 @@ serve(async (req) => {
       );
     }
 
-    // Generate random API key
-    const randomPart = Array.from(crypto.getRandomValues(new Uint8Array(24)))
-      .map(b => b.toString(36))
-      .join('')
-      .substring(0, 32);
+    // Generate random API key (hex encoding preserves full entropy)
+    const randomPart = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
 
     const apiKey = `ery_live_${randomPart}`;
     const keyPrefix = apiKey.substring(0, 12);
@@ -201,11 +201,11 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in api-key-generate:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const sanitized = sanitizeError(error);
     return new Response(
       JSON.stringify({
         success: false,
-        error: { code: 'INTERNAL_ERROR', message }
+        error: { code: sanitized.code, message: sanitized.message }
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

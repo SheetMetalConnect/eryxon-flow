@@ -42,8 +42,9 @@ import {
 import { format } from "date-fns";
 import { useBatches, useUpdateBatchStatus, useDeleteBatch, type Batch, type BatchStatus, type BatchType } from "@/hooks/useBatches";
 import { cn } from "@/lib/utils";
+import type { LucideIcon } from "lucide-react";
 
-const BATCH_TYPE_CONFIG: Record<BatchType, { label: string; icon: any; color: string }> = {
+const BATCH_TYPE_CONFIG: Record<BatchType, { label: string; icon: LucideIcon; color: string }> = {
   laser_nesting: { label: "batches.types.laserNesting", icon: Scissors, color: "text-orange-500" },
   tube_batch: { label: "batches.types.tubeBatch", icon: CircleDot, color: "text-blue-500" },
   saw_batch: { label: "batches.types.sawBatch", icon: Scissors, color: "text-yellow-500" },
@@ -69,7 +70,6 @@ export default function Batches() {
   const updateStatus = useUpdateBatchStatus();
   const deleteBatch = useDeleteBatch();
 
-  // Calculate stats
   const stats = {
     total: batches?.length || 0,
     draft: batches?.filter(b => b.status === "draft").length || 0,
@@ -228,7 +228,7 @@ export default function Batches() {
     },
   ];
 
-  const filterableColumns: DataTableFilterableColumn<Batch>[] = [
+  const filterableColumns: DataTableFilterableColumn[] = [
     {
       id: "batch_type",
       title: t("batches.type"),
@@ -293,7 +293,7 @@ export default function Batches() {
           { id: "batch_number", title: t("batches.batchNumber") },
           { id: "material", title: t("batches.material") },
         ]}
-        isLoading={isLoading}
+        loading={isLoading}
       />
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>

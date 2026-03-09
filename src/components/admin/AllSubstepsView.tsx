@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from '@/lib/logger';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -92,10 +93,10 @@ export function AllSubstepsView() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error("Error loading substeps:", error);
+      logger.error('AllSubstepsView', 'Error loading substeps', error);
       toast.error(t("Failed to load substeps"));
     } else {
-      const transformedData = (data || []).map((item: any) => ({
+      const transformedData = ((data || []) as unknown as { id: string; name: string; status: string; sequence: number; notes: string | null; icon_name: string | null; operation_id: string; operations: { id: string; operation_name: string; parts: { id: string; part_number: string; jobs: { id: string; job_number: string } } } }[]).map((item) => ({
         ...item,
         operation: {
           id: item.operations.id,
@@ -110,7 +111,7 @@ export function AllSubstepsView() {
           },
         },
       }));
-      setSubsteps(transformedData);
+      setSubsteps(transformedData as unknown as Substep[]);
     }
 
     setLoading(false);
@@ -184,7 +185,7 @@ export function AllSubstepsView() {
       .eq('id', editingSubstep.id);
 
     if (error) {
-      console.error("Error updating substep:", error);
+      logger.error('AllSubstepsView', 'Error updating substep', error);
       toast.error(t("Failed to update substep"));
     } else {
       toast.success(t("Substep updated successfully"));
@@ -202,7 +203,7 @@ export function AllSubstepsView() {
       .eq('id', substep.id);
 
     if (error) {
-      console.error("Error deleting substep:", error);
+      logger.error('AllSubstepsView', 'Error deleting substep', error);
       toast.error(t("Failed to delete substep"));
     } else {
       toast.success(t("Substep deleted successfully"));

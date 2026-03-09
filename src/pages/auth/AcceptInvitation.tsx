@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import AnimatedBackground from '@/components/AnimatedBackground';
+import { logger } from '@/lib/logger';
 
 export default function AcceptInvitation() {
   const { t } = useTranslation();
@@ -20,7 +21,13 @@ export default function AcceptInvitation() {
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [invitation, setInvitation] = useState<any>(null);
+  const [invitation, setInvitation] = useState<{
+    email: string;
+    role: string;
+    tenant_id: string;
+    tenant_name: string;
+    invited_by_name: string;
+  } | null>(null);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +38,7 @@ export default function AcceptInvitation() {
 
   const loadInvitation = async () => {
     if (!token) {
-      setError('Invalid invitation link');
+      setError(t('invitation.invalidLink'));
       setLoading(false);
       return;
     }
@@ -42,7 +49,7 @@ export default function AcceptInvitation() {
     if (data) {
       setInvitation(data);
     } else {
-      setError('Invitation not found or has expired');
+      setError(t('invitation.notFoundOrExpired'));
     }
 
     setLoading(false);
@@ -53,30 +60,34 @@ export default function AcceptInvitation() {
     setError(null);
 
     if (!invitation || !token) {
-      setError('Invalid invitation');
+      setError(t('invitation.invalid'));
       return;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (password.length < 12) {
+      setError(t('auth.passwordMinLength'));
+      return;
+    }
+
+    if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+      setError(t('auth.passwordComplexity'));
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('invitation.passwordsDoNotMatch'));
       return;
     }
 
     setSubmitting(true);
 
     try {
-      // Sign up the user with invitation metadata
       const { error: signUpError, data: signUpData } = await signUp(
         invitation.email,
         password,
         {
           full_name: invitation.email.split('@')[0], // Temporary, user can update later
-          role: invitation.role,
+          role: invitation.role as 'admin' | 'operator',
           tenant_id: invitation.tenant_id,
         }
       );
@@ -85,20 +96,19 @@ export default function AcceptInvitation() {
         throw signUpError;
       }
 
-      // Accept the invitation
-      if (signUpData?.user) {
-        await acceptInvitation(token, signUpData.user.id);
+      const userData = signUpData as { user?: { id: string } } | undefined;
+      if (userData?.user) {
+        await acceptInvitation(token, userData.user.id);
       }
 
       toast.success(t('invitation.welcomeToTeam'));
 
-      // Redirect to auth page
       setTimeout(() => {
         navigate('/auth');
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || 'Failed to accept invitation');
-      console.error('Error accepting invitation:', err);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t('invitation.acceptFailed'));
+      logger.error('AcceptInvitation', 'Error accepting invitation', err);
     } finally {
       setSubmitting(false);
     }
@@ -125,11 +135,11 @@ export default function AcceptInvitation() {
               <Factory className="w-12 h-12 text-destructive" strokeWidth={1.5} />
             </div>
 
-            <h1 className="text-2xl font-bold mb-2">Invalid Invitation</h1>
+            <h1 className="text-2xl font-bold mb-2">{t('invitation.invalidTitle')}</h1>
             <p className="text-sm text-muted-foreground mb-6">{error}</p>
 
             <Button onClick={() => navigate('/auth')} className="w-full cta-button">
-              Go to Login
+              {t('invitation.goToLogin')}
               <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />
             </Button>
           </div>
@@ -152,17 +162,17 @@ export default function AcceptInvitation() {
 
           {/* Welcome Text */}
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">
-            You're Invited
+            {t('invitation.youreInvited')}
           </p>
 
           {/* Hero Title */}
           <h1 className="hero-title">
-            Join Your Team
+            {t('invitation.joinYourTeam')}
           </h1>
 
           {/* Tagline */}
           <p className="text-base text-foreground/80 mb-6">
-            Welcome to Eryxon Flow
+            {t('invitation.welcomeToEryxon')}
           </p>
 
           {/* Divider */}
@@ -175,7 +185,7 @@ export default function AcceptInvitation() {
                 <div className="flex items-start gap-3">
                   <UserCheck className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground">Invited by</p>
+                    <p className="text-sm font-medium text-foreground">{t('invitation.invitedBy')}</p>
                     <p className="text-sm text-muted-foreground truncate">{invitation.invited_by_name}</p>
                   </div>
                 </div>
@@ -183,7 +193,7 @@ export default function AcceptInvitation() {
                 <div className="flex items-start gap-3">
                   <Building2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground">Organization</p>
+                    <p className="text-sm font-medium text-foreground">{t('invitation.organization')}</p>
                     <p className="text-sm text-muted-foreground truncate">{invitation.tenant_name}</p>
                   </div>
                 </div>
@@ -191,7 +201,7 @@ export default function AcceptInvitation() {
                 <div className="flex items-start gap-3">
                   <Mail className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground">Email</p>
+                    <p className="text-sm font-medium text-foreground">{t('invitation.email')}</p>
                     <p className="text-sm text-muted-foreground truncate">{invitation.email}</p>
                   </div>
                 </div>
@@ -203,7 +213,7 @@ export default function AcceptInvitation() {
                     </span>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground">Role</p>
+                    <p className="text-sm font-medium text-foreground">{t('invitation.role')}</p>
                     <p className="text-sm text-muted-foreground capitalize">{invitation.role}</p>
                   </div>
                 </div>
@@ -213,7 +223,7 @@ export default function AcceptInvitation() {
               <form onSubmit={handleAccept} className="space-y-4 text-left">
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-sm font-medium">
-                    Create Password *
+                    {t('invitation.createPassword')}
                   </Label>
                   <Input
                     id="password"
@@ -225,12 +235,12 @@ export default function AcceptInvitation() {
                     placeholder="••••••••"
                     className="bg-input-background border-input"
                   />
-                  <p className="text-xs text-muted-foreground">Minimum 6 characters</p>
+                  <p className="text-xs text-muted-foreground">{t('auth.passwordRequirements')}</p>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                    Confirm Password *
+                    {t('invitation.confirmPassword')}
                   </Label>
                   <Input
                     id="confirmPassword"
@@ -253,13 +263,13 @@ export default function AcceptInvitation() {
                 <div className="pt-2">
                   <Button type="submit" className="w-full cta-button" disabled={submitting}>
                     {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Accept Invitation & Join
+                    {t('invitation.acceptAndJoin')}
                     <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />
                   </Button>
                 </div>
 
                 <p className="text-xs text-center text-muted-foreground pt-4">
-                  By accepting, you agree to create an account and join {invitation.tenant_name}
+                  {t('invitation.acceptTerms', { tenantName: invitation.tenant_name })}
                 </p>
               </form>
             </div>

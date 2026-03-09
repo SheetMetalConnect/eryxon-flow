@@ -74,7 +74,10 @@ export const QueryKeys = {
   // Jobs
   jobs: {
     all: (tenantId: string) => ["jobs", "all", tenantId] as const,
+    list: (tenantId: string) => ["jobs", "list", tenantId] as const,
+    active: (tenantId: string) => ["jobs", "active", tenantId] as const,
     detail: (jobId: string) => ["jobs", "detail", jobId] as const,
+    dates: (jobId: string) => ["jobs", "dates", jobId] as const,
     byStatus: (tenantId: string, status: string) =>
       ["jobs", "byStatus", tenantId, status] as const,
   },
@@ -84,6 +87,9 @@ export const QueryKeys = {
     all: (tenantId: string) => ["parts", "all", tenantId] as const,
     detail: (partId: string) => ["parts", "detail", partId] as const,
     byJob: (jobId: string) => ["parts", "byJob", jobId] as const,
+    parent: (partId: string) => ["parts", "parent", partId] as const,
+    children: (partId: string) => ["parts", "children", partId] as const,
+    assemblyDeps: (partId: string) => ["parts", "assemblyDeps", partId] as const,
   },
 
   // Operations
@@ -93,12 +99,17 @@ export const QueryKeys = {
     byCell: (cellId: string) => ["operations", "byCell", cellId] as const,
     byPart: (partId: string) => ["operations", "byPart", partId] as const,
     workQueue: (cellId: string) => ["operations", "workQueue", cellId] as const,
+    resources: (operationId: string) => ["operations", "resources", operationId] as const,
+    production: (operationId: string) => ["operations", "production", operationId] as const,
+    forBatch: (batchId: string) => ["operations", "forBatch", batchId] as const,
   },
 
   // Cells
   cells: {
     all: (tenantId: string) => ["cells", "all", tenantId] as const,
+    active: (tenantId: string) => ["cells", "active", tenantId] as const,
     detail: (cellId: string) => ["cells", "detail", cellId] as const,
+    capacity: (tenantId: string) => ["cells", "capacity", tenantId] as const,
     qrmMetrics: (cellId: string, tenantId: string) =>
       ["cells", "qrmMetrics", cellId, tenantId] as const,
     allQrmMetrics: (tenantId: string) =>
@@ -112,12 +123,15 @@ export const QueryKeys = {
       ["timeEntries", "byOperation", operationId] as const,
     byUser: (userId: string) => ["timeEntries", "byUser", userId] as const,
     active: (tenantId: string) => ["timeEntries", "active", tenantId] as const,
+    stuck: (tenantId: string) => ["timeEntries", "stuck", tenantId] as const,
   },
 
   // Issues
   issues: {
     all: (tenantId: string) => ["issues", "all", tenantId] as const,
     pending: (tenantId: string) => ["issues", "pending", tenantId] as const,
+    pendingCount: (tenantId: string) => ["issues", "pendingCount", tenantId] as const,
+    summary: (partId?: string, jobId?: string) => ["issues", "summary", partId, jobId] as const,
     byOperation: (operationId: string) =>
       ["issues", "byOperation", operationId] as const,
   },
@@ -127,16 +141,72 @@ export const QueryKeys = {
     all: (tenantId: string) => ["profiles", "all", tenantId] as const,
     detail: (userId: string) => ["profiles", "detail", userId] as const,
     current: () => ["profiles", "current"] as const,
+    operators: (tenantId: string) => ["profiles", "operators", tenantId] as const,
   },
 
   // Configuration
   config: {
     materials: (tenantId: string) => ["config", "materials", tenantId] as const,
+    materialsActive: (tenantId: string) => ["config", "materialsActive", tenantId] as const,
     scrapReasons: (tenantId: string) =>
       ["config", "scrapReasons", tenantId] as const,
     resources: (tenantId: string) => ["config", "resources", tenantId] as const,
+    availableResources: (tenantId: string) => ["config", "availableResources", tenantId] as const,
     stepsTemplates: (tenantId: string) =>
       ["config", "stepsTemplates", tenantId] as const,
+    featureFlags: (tenantId: string) => ["config", "featureFlags", tenantId] as const,
+  },
+
+  // Batches
+  batches: {
+    all: (tenantId: string, filters?: Record<string, unknown>) =>
+      ["batches", "all", tenantId, filters] as const,
+    detail: (batchId: string) => ["batches", "detail", batchId] as const,
+    subBatches: (batchId: string, tenantId: string) =>
+      ["batches", "subBatches", batchId, tenantId] as const,
+    operations: (batchId: string) => ["batches", "operations", batchId] as const,
+    requirements: (batchId: string) => ["batches", "requirements", batchId] as const,
+    potentialParents: (tenantId: string) =>
+      ["batches", "potentialParents", tenantId] as const,
+    activeTimer: (batchId: string) => ["batches", "activeTimer", batchId] as const,
+  },
+
+  // Quality metrics
+  quality: {
+    metrics: (tenantId: string) => ["quality", "metrics", tenantId] as const,
+    scrapUsage: (tenantId: string) => ["quality", "scrapUsage", tenantId] as const,
+    byJob: (jobId: string) => ["quality", "byJob", jobId] as const,
+    byPart: (partId: string) => ["quality", "byPart", partId] as const,
+  },
+
+  // PMI (Product Manufacturing Information)
+  pmi: {
+    byPart: (partId: string) => ["pmi", "byPart", partId] as const,
+    geometry: (partId: string) => ["pmi", "geometry", partId] as const,
+  },
+
+  // Exceptions
+  exceptions: {
+    all: (tenantId: string, status?: string, limit?: number) =>
+      ["exceptions", "all", tenantId, status, limit] as const,
+    stats: (tenantId: string) => ["exceptions", "stats", tenantId] as const,
+    detail: (exceptionId: string) => ["exceptions", "detail", exceptionId] as const,
+  },
+
+  // Capacity
+  capacity: {
+    operations: (tenantId: string) => ["capacity", "operations", tenantId] as const,
+    dayAllocations: (tenantId: string) => ["capacity", "dayAllocations", tenantId] as const,
+  },
+
+  // Factory calendar
+  factoryCalendar: {
+    all: (tenantId: string) => ["factoryCalendar", "all", tenantId] as const,
+  },
+
+  // Production
+  production: {
+    byJob: (jobId: string) => ["production", "byJob", jobId] as const,
   },
 
   // Dashboard stats

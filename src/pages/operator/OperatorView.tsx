@@ -35,8 +35,8 @@ import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 
-// Define the interface locally if not exported, matching the one in JobRow
 import { TerminalJob } from "@/types/terminal";
 
 interface Cell {
@@ -58,23 +58,19 @@ export default function OperatorView() {
   const [loading, setLoading] = useState(true);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 
-  // File URLs
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [stepUrl, setStepUrl] = useState<string | null>(null);
   const [signedStepUrl, setSignedStepUrl] = useState<string | null>(null);
   const [pmiData, setPmiData] = useState<PMIData | null>(null);
   const [geometryData, setGeometryData] = useState<GeometryData | null>(null);
 
-  // CAD Processing hook
   const { processCAD, isProcessing: cadProcessing } = useCADProcessing();
 
-  // Panel collapse/resize states
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
   const [leftPanelWidth, setLeftPanelWidth] = useState(70); // percentage
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Resizable panel handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -94,7 +90,6 @@ export default function OperatorView() {
     setIsDragging(false);
   }, []);
 
-  // Touch support for tablets
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -126,13 +121,11 @@ export default function OperatorView() {
     };
   }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove]);
 
-  // Load Data
   const loadData = async () => {
     if (!profile?.tenant_id) return;
     try {
       setLoading(true);
 
-      // Fetch operations and cells in parallel
       const [opsData, cellsData] = await Promise.all([
         fetchOperationsWithDetails(profile.tenant_id),
         supabase
@@ -146,7 +139,7 @@ export default function OperatorView() {
       setOperations(opsData);
       if (cellsData.data) setCells(cellsData.data);
     } catch (error) {
-      console.error("Error loading data:", error);
+      logger.error("OperatorView", "Error loading data", error);
       toast.error(t("notifications.failedToLoadData"));
     } finally {
       setLoading(false);
@@ -156,7 +149,6 @@ export default function OperatorView() {
   useEffect(() => {
     loadData();
 
-    // Real-time subscription
     if (!profile?.tenant_id) return;
     const channel = supabase
       .channel("operator-terminal-changes")
@@ -187,25 +179,19 @@ export default function OperatorView() {
     };
   }, [profile?.tenant_id]);
 
-  // Handle cell selection change
   const handleCellChange = (value: string) => {
     setSelectedCellId(value);
     localStorage.setItem("operator_selected_cell", value);
     setSelectedJobId(null); // Clear selection when changing cells
   };
 
-  // Map operations to TerminalJob
   const mapOperationToJob = (op: OperationWithDetails): TerminalJob => {
-    // Debug log for part data
     if (op.part.file_paths && op.part.file_paths.length > 0) {
-      console.log(
-        "Mapping op with files:",
-        op.id,
-        op.part.part_number,
-        op.part.file_paths,
+      logger.debug(
+        "OperatorView",
+        "Mapping op with files",
+        { id: op.id, partNumber: op.part.part_number, filePaths: op.part.file_paths },
       );
-    } else {
-      // console.log("Mapping op WITHOUT files:", op.id, op.part.part_number, op.part);
     }
 
     const hasPdf =
@@ -217,7 +203,6 @@ export default function OperatorView() {
           p.toLowerCase().endsWith(".step") || p.toLowerCase().endsWith(".stp"),
       ) || false;
 
-    // Map operation status - skip completed operations (handled by filter below)
     let status: TerminalJob["status"] = "expected";
     if (op.status === "in_progress") status = "in_progress";
     else if (op.status === "on_hold") status = "on_hold";
@@ -227,7 +212,6 @@ export default function OperatorView() {
     // If there's an active time entry, the operation should be considered in_progress
     if (op.active_time_entry) status = "in_progress";
 
-    // Calculate remaining hours
     const estimated = op.estimated_time || 0;
     const actual = op.actual_time || 0;
     const remaining = Math.max(0, estimated - actual);
@@ -270,17 +254,14 @@ export default function OperatorView() {
     [operations, operatorId],
   );
 
-  // Filter by Cell
   const filteredJobs = useMemo(() => {
     if (selectedCellId === "all") return allJobs;
     return allJobs.filter((job) => job.cellId === selectedCellId);
   }, [allJobs, selectedCellId]);
 
-  // Filter into 3 lists
   const inProcessJobs = filteredJobs.filter((j) => j.status === "in_progress");
 
-  // For Buffer vs Expected, let's just split the 'in_buffer' ones (which are 'not_started')
-  // We'll take the first 5 as Buffer, rest as Expected for now to simulate the flow
+  // First 5 not-started operations go to Buffer, rest to Expected
   const notStartedJobs = filteredJobs.filter(
     (j) => j.status === "in_buffer" || j.status === "expected",
   );
@@ -293,7 +274,6 @@ export default function OperatorView() {
 
   const selectedJob = allJobs.find((j) => j.id === selectedJobId) || null;
 
-  // Get all operations for the selected part to show in the Ops tab
   const selectedPartOperations = useMemo(() => {
     if (!selectedJob) return [];
     return operations
@@ -301,11 +281,10 @@ export default function OperatorView() {
       .sort((a, b) => a.sequence - b.sequence);
   }, [selectedJob, operations]);
 
-  // Load file URLs when selection changes
   useEffect(() => {
     const loadFiles = async () => {
       if (!selectedJob?.filePaths?.length) {
-        console.log("No file paths for job:", selectedJob?.jobCode);
+        logger.debug("OperatorView", "No file paths for job", selectedJob?.jobCode);
         setPdfUrl(null);
         setStepUrl(null);
         setSignedStepUrl(null);
@@ -313,10 +292,10 @@ export default function OperatorView() {
         return;
       }
 
-      console.log(
-        "Loading files for:",
-        selectedJob.jobCode,
-        selectedJob.filePaths,
+      logger.debug(
+        "OperatorView",
+        "Loading files for job",
+        { jobCode: selectedJob.jobCode, filePaths: selectedJob.filePaths },
       );
 
       try {
@@ -327,7 +306,7 @@ export default function OperatorView() {
 
         for (const path of selectedJob.filePaths) {
           const ext = path.toLowerCase();
-          console.log("Checking file:", path, "Ext:", ext);
+          logger.debug("OperatorView", "Checking file", { path, ext });
 
           if (ext.endsWith(".pdf") && !pdf) {
             const { data } = await supabase.storage
@@ -339,8 +318,9 @@ export default function OperatorView() {
               .from("parts-cad")
               .createSignedUrl(path, 3600);
             if (data?.signedUrl) {
-              console.log(
-                "Found STEP file, creating blob URL from:",
+              logger.debug(
+                "OperatorView",
+                "Found STEP file, creating blob URL",
                 data.signedUrl,
               );
               signedStep = data.signedUrl;
@@ -356,15 +336,11 @@ export default function OperatorView() {
         setSignedStepUrl(signedStep);
 
         setSignedStepUrl(signedStep);
-        setStepUrl(step); // Keep blob URL as fallback or for initial render? Actually better to clear it if we want server forced?
-        // Let's keep stepUrl (blob) so there's something while server processes?
-        // No, if we want server mode, STEPViewer needs serverGeometry.
-        // But STEPViewer falls back to url if serverGeometry is missing.
-        // So we can keep stepUrl for immediate feedback (browser mode) and then switch to server mode when data arrives.
+        setStepUrl(step);
 
-        // Call backend for PMI extraction if CAD service is enabled
+
         if (signedStep && stepFileName && isCADServiceEnabled()) {
-          console.log("Calling backend for PMI extraction:", signedStep);
+          logger.debug("OperatorView", "Calling backend for PMI extraction", signedStep);
           try {
             const result = await processCAD(signedStep, stepFileName, {
               includeGeometry: true, // Server handles geometry
@@ -372,12 +348,11 @@ export default function OperatorView() {
               generateThumbnail: false,
             });
             if (result.success) {
-              console.log("CAD processing successful", result);
+              logger.debug("OperatorView", "CAD processing successful", result);
               if (result.pmi) setPmiData(result.pmi);
               if (result.geometry) setGeometryData(result.geometry);
             } else if (result.error) {
-              console.warn("CAD processing failed:", result.error);
-              // Show user-friendly toast notification
+              logger.warn("OperatorView", "CAD processing failed", result.error);
               if (
                 result.error.includes("invalid geometry") ||
                 result.error.includes("segfault")
@@ -392,7 +367,7 @@ export default function OperatorView() {
               setGeometryData(null);
             }
           } catch (pmiError) {
-            console.error("Error during CAD processing:", pmiError);
+            logger.error("OperatorView", "Error during CAD processing", pmiError);
             toast.error(t("production.cadProcessingFailed"));
             setPmiData(null);
             setGeometryData(null);
@@ -402,14 +377,13 @@ export default function OperatorView() {
           setGeometryData(null);
         }
       } catch (e) {
-        console.error("Error loading file URLs", e);
+        logger.error("OperatorView", "Error loading file URLs", e);
       }
     };
 
     loadFiles();
   }, [selectedJob, processCAD]);
 
-  // Actions
   const handleStart = async () => {
     if (!selectedJob || !operatorId || !profile?.tenant_id) return;
     try {
@@ -419,9 +393,8 @@ export default function OperatorView() {
         profile.tenant_id,
       );
       toast.success(t("notifications.success"));
-      // Data will reload via subscription
-    } catch (error: any) {
-      toast.error(error.message || t("notifications.failed"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
     }
   };
 
@@ -430,8 +403,8 @@ export default function OperatorView() {
     try {
       await stopTimeTracking(selectedJob.operationId, operatorId);
       toast.success(t("production.operationPaused"));
-    } catch (error: any) {
-      toast.error(error.message || t("notifications.failed"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
     }
   };
 
@@ -445,8 +418,8 @@ export default function OperatorView() {
       );
       toast.success(t("production.operationCompleted"));
       setSelectedJobId(null); // Deselect
-    } catch (error: any) {
-      toast.error(error.message || t("notifications.failed"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
     }
   };
 

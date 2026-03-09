@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Check, Minus, Plus, AlertTriangle, Trash2, PlusCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useRecordProduction } from "@/hooks/useProductionMetrics";
+import { logger } from "@/lib/logger";
 
 interface ScrapReasonEntry {
   reasonId: string;
@@ -61,7 +62,6 @@ export default function ProductionReportModal({
   const [scrapReasons, setScrapReasons] = useState<ScrapReason[]>([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  // Calculate totals
   const totalScrap = scrapEntries.reduce((sum, e) => sum + e.quantity, 0);
   const totalGoodAfter = previouslyRecordedGood + quantityGood;
   const remaining = plannedQuantity ? Math.max(0, plannedQuantity - totalGoodAfter) : 0;
@@ -95,7 +95,7 @@ export default function ProductionReportModal({
       const totalGood = data?.reduce((sum, rec) => sum + (rec.quantity_good || 0), 0) || 0;
       setPreviouslyRecordedGood(totalGood);
     } catch (error) {
-      console.error("Error fetching previous quantities:", error);
+      logger.error("ProductionReportModal", "Error fetching previous quantities", error);
     }
   };
 
@@ -109,7 +109,7 @@ export default function ProductionReportModal({
       if (error) throw error;
       setScrapReasons(data || []);
     } catch (error) {
-      console.error("Error fetching scrap reasons:", error);
+      logger.error("ProductionReportModal", "Error fetching scrap reasons", error);
     }
   };
 
@@ -141,14 +141,12 @@ export default function ProductionReportModal({
       return;
     }
 
-    // Validate scrap entries have reasons selected
     const invalidScrap = scrapEntries.some((e) => e.quantity > 0 && !e.reasonId);
     if (invalidScrap) {
       toast.error(t("production.selectScrapReason", "Select a reason for each scrap entry"));
       return;
     }
 
-    // If there's a shortfall and we haven't asked yet, ask
     if (hasShortfall && !showShortfallPrompt && quantityGood > 0) {
       setShowShortfallPrompt(true);
       return;
@@ -172,16 +170,15 @@ export default function ProductionReportModal({
         })
       );
 
-      // Open issue form if requested
       if (fileIssue && onFileIssue) {
         onFileIssue();
       }
 
       onSuccess(quantityGood, targetAchieved);
       handleClose();
-    } catch (error: any) {
-      console.error("Error recording production:", error);
-      toast.error(error.message || t("notifications.failed"));
+    } catch (error: unknown) {
+      logger.error("ProductionReportModal", "Error recording production", error);
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -200,7 +197,6 @@ export default function ProductionReportModal({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto min-h-0 space-y-4 py-2">
-          {/* Part info */}
           <div className="text-center text-sm text-muted-foreground">
             <div className="font-medium text-foreground">{partNumber}</div>
             {plannedQuantity && (
@@ -215,7 +211,6 @@ export default function ProductionReportModal({
             )}
           </div>
 
-          {/* Good quantity counter */}
           <div className="space-y-2">
             <Label className="text-center block">{t("production.goodParts", "Good Parts")}</Label>
             <div className="flex items-center justify-center gap-4">
@@ -242,7 +237,6 @@ export default function ProductionReportModal({
             </div>
           </div>
 
-          {/* Status indicator */}
           {quantityGood > 0 && (
             <div className="text-center text-sm">
               {targetAchieved ? (
@@ -258,7 +252,6 @@ export default function ProductionReportModal({
             </div>
           )}
 
-          {/* Advanced: Scrap and Rework */}
           {!showAdvanced && (
             <Button
               type="button"
@@ -272,7 +265,6 @@ export default function ProductionReportModal({
 
           {showAdvanced && (
             <div className="space-y-4 border-t pt-4">
-              {/* Rework quantity */}
               <div className="flex items-center justify-between">
                 <Label>{t("production.rework", "Rework")}</Label>
                 <div className="flex items-center gap-2">
@@ -299,7 +291,6 @@ export default function ProductionReportModal({
                 </div>
               </div>
 
-              {/* Scrap entries with reasons */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>{t("production.scrap", "Scrap")}</Label>
@@ -370,7 +361,6 @@ export default function ProductionReportModal({
                 )}
               </div>
 
-              {/* Notes */}
               <div className="space-y-2">
                 <Label htmlFor="notes">{t("production.notes", "Notes")}</Label>
                 <Textarea
@@ -384,7 +374,6 @@ export default function ProductionReportModal({
             </div>
           )}
 
-          {/* Shortfall prompt */}
           {showShortfallPrompt && (
             <Alert className="border-amber-500/50 bg-amber-500/10">
               <AlertTriangle className="h-4 w-4 text-amber-600" />

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
+import { logger } from '@/lib/logger';
 
 export type SubscriptionPlan = 'free' | 'pro' | 'premium' | 'enterprise' | 'self_hosted';
 export type SubscriptionStatus = 'active' | 'cancelled' | 'suspended' | 'trial';
@@ -53,38 +54,37 @@ export const useSubscription = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch subscription data using the RPC function
         const { data: subData, error: subError } = await supabase
-          .rpc('get_my_tenant_subscription' as any);
+          .rpc('get_my_tenant_subscription');
 
         if (subError) throw subError;
 
         if (subData && subData.length > 0) {
-          setSubscription(subData[0] as any);
+          setSubscription(subData[0] as TenantSubscription);
         }
 
-        // Fetch usage statistics (no parameter needed - function uses caller's tenant)
+        // Note: get_tenant_usage_stats is not in generated Supabase types yet
         const { data: statsData, error: statsError } = await supabase
-          .rpc('get_tenant_usage_stats' as any);
+          .rpc('get_tenant_usage_stats' as unknown as 'get_my_tenant_subscription');
 
         if (statsError) throw statsError;
 
         if (statsData && statsData.length > 0) {
-          setUsageStats(statsData[0] as any);
+          setUsageStats(statsData[0] as unknown as TenantUsageStats);
         }
 
-        // Fetch API usage statistics
+        // Note: get_api_usage_stats is not in generated Supabase types yet
         const { data: apiData, error: apiError } = await supabase
-          .rpc('get_api_usage_stats' as any);
+          .rpc('get_api_usage_stats' as unknown as 'get_my_tenant_subscription');
 
         if (apiError) {
-          console.warn('API usage stats not available:', apiError);
+          logger.warn('useSubscription', 'API usage stats not available', apiError);
           // Don't throw - API usage stats are optional
         } else if (apiData && apiData.length > 0) {
-          setApiUsageStats(apiData[0] as any);
+          setApiUsageStats(apiData[0] as unknown as ApiUsageStats);
         }
       } catch (err) {
-        console.error('Error fetching subscription:', err);
+        logger.error('useSubscription', 'Error fetching subscription', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch subscription data');
       } finally {
         setLoading(false);

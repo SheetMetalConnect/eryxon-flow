@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { QueryKeys } from '@/lib/queryClient';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle } from 'lucide-react';
@@ -15,7 +16,7 @@ export function IssuesSummarySection({ partId, jobId }: IssuesSummarySectionProp
   const { t } = useTranslation();
 
   const { data: issues, isLoading } = useQuery({
-    queryKey: ['issues-summary', partId, jobId],
+    queryKey: QueryKeys.issues.summary(partId, jobId),
     queryFn: async () => {
       let query = supabase
         .from('issues_with_context')
@@ -85,7 +86,7 @@ export function IssuesSummarySection({ partId, jobId }: IssuesSummarySectionProp
       </Label>
 
       <div className="space-y-3">
-        {issues.map((issue: any) => (
+        {issues.map((issue: { id: string; severity: string; status: string; created_at: string; description: string; operation_name: string; part_number: string; creator_name: string; resolution_notes: string | null; reviewer_name: string | null; image_paths: string[] | null }) => (
           <div
             key={issue.id}
             className="border rounded-md p-3 bg-card"

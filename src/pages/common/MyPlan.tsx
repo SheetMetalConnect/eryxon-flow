@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
+import { DOCS_SELF_HOSTING_URL } from "@/lib/config";
 import { cn } from "@/lib/utils";
 import { useSubscription } from "@/hooks/useSubscription";
 
@@ -94,7 +95,7 @@ const MyPlan: React.FC = () => {
                 className="bg-white text-primary hover:bg-white/90 font-semibold"
               >
                 <a
-                  href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/docs/SELF_HOSTING_GUIDE.md"
+                  href={DOCS_SELF_HOSTING_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -295,7 +296,7 @@ const MyPlan: React.FC = () => {
                 </ul>
                 <Button asChild className="w-full">
                   <a
-                    href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/docs/SELF_HOSTING_GUIDE.md"
+                    href={DOCS_SELF_HOSTING_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

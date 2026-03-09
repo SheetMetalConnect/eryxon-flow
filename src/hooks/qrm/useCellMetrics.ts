@@ -62,7 +62,6 @@ export function useCellQRMMetrics(
     }
   }, [cellId, tenantId]);
 
-  // Debounced fetch to prevent cascade updates
   const debouncedFetch = useDebouncedCallback(fetchMetrics, 150);
 
   useEffect(() => {
@@ -73,7 +72,6 @@ export function useCellQRMMetrics(
 
     fetchMetrics();
 
-    // Subscribe to real-time updates with tenant-level filtering
     // Supabase RLS requires single-filter; we filter by tenant and check cell client-side
     const channel = supabase
       .channel(`qrm-cell-${cellId}`)
@@ -121,7 +119,7 @@ export function useCellQRMMetrics(
       });
 
     return () => {
-      channel.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [cellId, tenantId, fetchMetrics, debouncedFetch]);
 
@@ -151,7 +149,6 @@ export function useAllCellsQRMMetrics(tenantId: string | null) {
     setError(null);
 
     try {
-      // First, get all active cells
       const { data: cells, error: cellsError } = await supabase
         .from("cells")
         .select("id")
@@ -160,7 +157,6 @@ export function useAllCellsQRMMetrics(tenantId: string | null) {
 
       if (cellsError) throw cellsError;
 
-      // Fetch metrics for each cell with proper error handling
       const metricsPromises = (cells || []).map(async (cell) => {
         const { data, error: rpcError } = await supabase.rpc(
           "get_cell_qrm_metrics",
@@ -179,23 +175,19 @@ export function useAllCellsQRMMetrics(tenantId: string | null) {
         return { cellId: cell.id, data: data as unknown as CellQRMMetrics };
       });
 
-      // Use Promise.allSettled to capture all results
       const results = await Promise.allSettled(metricsPromises);
 
-      // Check for any failures
       const failures = results.filter(
         (r): r is PromiseRejectedResult => r.status === "rejected"
       );
 
       if (failures.length > 0) {
-        // Aggregate error messages from all failures
-        const errorMessages = failures
+          const errorMessages = failures
           .map((f) => f.reason?.message || "Unknown error")
           .join("; ");
         throw new Error(`Failed to fetch cell metrics: ${errorMessages}`);
       }
 
-      // All succeeded - extract values
       const successResults = results
         .filter(
           (r): r is PromiseFulfilledResult<{
@@ -226,7 +218,6 @@ export function useAllCellsQRMMetrics(tenantId: string | null) {
     }
   }, [tenantId]);
 
-  // Debounced fetch with longer delay to prevent cascade from multiple operation updates
   const debouncedFetch = useDebouncedCallback(fetchAllMetrics, 300);
 
   useEffect(() => {
@@ -237,8 +228,6 @@ export function useAllCellsQRMMetrics(tenantId: string | null) {
 
     fetchAllMetrics();
 
-    // Subscribe to real-time updates on operations and cells
-    // IMPORTANT: Filter by tenant_id to reduce scope significantly
     const channel = supabase
       .channel(`qrm-all-cells-${tenantId}`)
       .on(
@@ -275,7 +264,7 @@ export function useAllCellsQRMMetrics(tenantId: string | null) {
       });
 
     return () => {
-      channel.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [tenantId, fetchAllMetrics, debouncedFetch]);
 

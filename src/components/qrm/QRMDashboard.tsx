@@ -5,9 +5,11 @@ import { Loader2, ChevronDown, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { logger } from '@/lib/logger';
 
 interface Operation {
   id: string;
@@ -40,7 +42,7 @@ export function QRMDashboard() {
 
   // Fetch cell details and operations
   const { data: cells } = useQuery({
-    queryKey: ["cells", profile?.tenant_id],
+    queryKey: QueryKeys.cells.active(profile?.tenant_id || ""),
     queryFn: async () => {
       if (!profile?.tenant_id) return [];
       const { data, error } = await supabase
@@ -56,7 +58,7 @@ export function QRMDashboard() {
   });
 
   const { data: operations = [] } = useQuery({
-    queryKey: ["operations-by-cell", profile?.tenant_id],
+    queryKey: QueryKeys.operations.all(profile?.tenant_id || ""),
     queryFn: async () => {
       if (!profile?.tenant_id) return [];
       const { data, error } = await supabase
@@ -83,12 +85,31 @@ export function QRMDashboard() {
         .in("status", ["not_started", "in_progress"]);
       
       if (error) {
-        console.error("Error fetching operations:", error);
+        logger.error('QRMDashboard', 'Error fetching operations', error);
         throw error;
       }
       
       // Transform the data to match the Operation interface
-      const transformedData = (data || []).map((op: any) => ({
+      interface RawOperation {
+        id: string;
+        operation_name: string;
+        status: string;
+        estimated_time: number;
+        actual_time: number | null;
+        cell_id: string;
+        parts: {
+          id: string;
+          part_number: string;
+          material: string;
+          quantity: number;
+          jobs: {
+            job_number: string;
+            due_date: string | null;
+          };
+        };
+      }
+
+      const transformedData = ((data || []) as RawOperation[]).map((op) => ({
         id: op.id,
         operation_name: op.operation_name,
         status: op.status,

@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { logger } from "@/lib/logger";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -114,7 +115,6 @@ export default function Assignments() {
     if (!profile?.tenant_id) return;
 
     try {
-      // Load available parts (not completed)
       const { data: partsData } = await supabase
         .from("parts")
         .select(
@@ -131,7 +131,6 @@ export default function Assignments() {
         .neq("status", "completed")
         .order("part_number");
 
-      // Count operations per part
       if (partsData) {
         const partsWithCounts = await Promise.all(
           partsData.map(async (part) => {
@@ -145,7 +144,6 @@ export default function Assignments() {
         setParts(partsWithCounts);
       }
 
-      // Load active operators
       const { data: operatorsData } = await supabase
         .from("profiles")
         .select("id, full_name, username")
@@ -155,7 +153,6 @@ export default function Assignments() {
         .eq("is_machine", false)
         .order("full_name");
 
-      // Count assignments and active entries per operator
       if (operatorsData) {
         const operatorsWithCounts = await Promise.all(
           operatorsData.map(async (op) => {
@@ -182,7 +179,6 @@ export default function Assignments() {
         setOperators(operatorsWithCounts);
       }
 
-      // Load shop floor operators (PIN-based)
       try {
         const { data: sfOperators, error: sfError } = await supabase.rpc('list_operators' as any);
         if (!sfError && sfOperators) {
@@ -200,7 +196,6 @@ export default function Assignments() {
         }
       }
 
-      // Load current assignments (both profile-based and shop floor operator assignments)
       const { data: assignmentsData } = await supabase
         .from("assignments")
         .select(
@@ -225,7 +220,7 @@ export default function Assignments() {
 
       if (assignmentsData) setAssignments(assignmentsData as any);
     } catch (error) {
-      console.error("Error loading assignments:", error);
+      logger.error('Assignments', 'Error loading assignments', error);
       toast.error(t("assignments.failedToLoad"));
     } finally {
       setLoading(false);
@@ -265,13 +260,12 @@ export default function Assignments() {
       const part = parts.find((p) => p.id === selectedPart);
       if (!part) return;
 
-      // Create assignment based on operator type
-      const assignmentData: any = {
+      const assignmentData: Record<string, unknown> = {
         tenant_id: profile.tenant_id,
         part_id: selectedPart,
-        job_id: (part.job as any)?.id || null,
+        job_id: (part.job as Record<string, unknown>)?.id || null,
         assigned_by: profile.id,
-        status: "assigned",
+        status: "assigned" as const,
       };
 
       if (operatorType === "shop_floor") {
@@ -282,7 +276,7 @@ export default function Assignments() {
         assignmentData.shop_floor_operator_id = null;
       }
 
-      const { error: assignError } = await supabase.from("assignments").insert(assignmentData);
+      const { error: assignError } = await supabase.from("assignments").insert(assignmentData as never);
 
       if (assignError) throw assignError;
 
@@ -297,7 +291,6 @@ export default function Assignments() {
         if (operationError) throw operationError;
       }
 
-      // Get assigned operator name for success message
       const operatorName = operatorType === "shop_floor"
         ? shopFloorOperators.find(o => o.id === selectedOperator)?.full_name
         : operators.find(o => o.id === selectedOperator)?.full_name;
@@ -306,8 +299,8 @@ export default function Assignments() {
       setSelectedPart("");
       setSelectedOperator("");
       loadData();
-    } catch (error: any) {
-      toast.error(error.message || t("assignments.failedToAssign"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("assignments.failedToAssign"));
     } finally {
       setAssigning(false);
     }
@@ -317,7 +310,6 @@ export default function Assignments() {
     if (!profile?.tenant_id) return;
 
     try {
-      // Delete assignment
       const { error: deleteError } = await supabase
         .from("assignments")
         .delete()
@@ -325,7 +317,6 @@ export default function Assignments() {
 
       if (deleteError) throw deleteError;
 
-      // Clear assigned_operator_id from operations
       const { error: operationError } = await supabase
         .from("operations")
         .update({ assigned_operator_id: null })
@@ -336,8 +327,8 @@ export default function Assignments() {
 
       toast.success(t("assignments.removed"));
       loadData();
-    } catch (error: any) {
-      toast.error(error.message || t("assignments.failedToRemove"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("assignments.failedToRemove"));
     }
   };
 
@@ -380,9 +371,9 @@ export default function Assignments() {
         pin: "",
       });
       loadData();
-    } catch (error: any) {
-      toast.error(error.message || t("notifications.failed"));
-      console.error("Error creating operator:", error);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
+      logger.error('Assignments', 'Error creating operator', error);
     } finally {
       setCreatingOperator(false);
     }
@@ -499,7 +490,6 @@ export default function Assignments() {
         description={t("assignments.description")}
       />
 
-      {/* Stats Row */}
       <PageStatsRow
         stats={[
           { label: t("assignments.totalAssignments", "Total Assignments"), value: assignmentStats.totalAssignments, icon: UserCheck, color: "primary" },
@@ -509,9 +499,7 @@ export default function Assignments() {
         ]}
       />
 
-      {/* Assignment Interface */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        {/* Select Part Card */}
         <Card className="glass-card">
           <CardHeader className="pb-3">
             <CardTitle className="text-base sm:text-lg">1. {t("assignments.selectPart")}</CardTitle>
@@ -557,7 +545,6 @@ export default function Assignments() {
           </CardContent>
         </Card>
 
-        {/* Select Operator Card */}
         <Card className="glass-card">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -640,7 +627,6 @@ export default function Assignments() {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {/* Operator type toggle */}
             <div className="flex gap-1 p-1 bg-muted/30 rounded-lg">
               <Button
                 variant={operatorType === "shop_floor" ? "secondary" : "ghost"}
@@ -662,7 +648,6 @@ export default function Assignments() {
               </Button>
             </div>
 
-            {/* Shop Floor Operators dropdown */}
             {operatorType === "shop_floor" && (
               <>
                 <Select value={selectedOperator} onValueChange={setSelectedOperator}>
@@ -710,7 +695,6 @@ export default function Assignments() {
               </>
             )}
 
-            {/* Profile-based operators dropdown */}
             {operatorType === "profile" && (
               <>
                 <Select value={selectedOperator} onValueChange={setSelectedOperator}>
@@ -757,7 +741,6 @@ export default function Assignments() {
           </CardContent>
         </Card>
 
-        {/* Assign Action Card */}
         <Card className="glass-card border-primary/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-base sm:text-lg">3. {t("assignments.assignWork")}</CardTitle>
@@ -791,7 +774,6 @@ export default function Assignments() {
         </Card>
       </div>
 
-      {/* Current Assignments Table */}
       <Card className="glass-card">
         <CardHeader>
           <CardTitle className="text-lg sm:text-xl flex items-center gap-2">

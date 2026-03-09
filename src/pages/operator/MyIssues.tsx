@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { format } from "date-fns";
 import { AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 
 interface Issue {
   id: string;
@@ -36,7 +37,6 @@ export default function MyIssues() {
   const [loading, setLoading] = useState(true);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
 
-  // Load signed URLs for issue images
   useEffect(() => {
     const loadImageUrls = async () => {
       if (!selectedIssue?.image_paths || selectedIssue.image_paths.length === 0) {
@@ -78,7 +78,7 @@ export default function MyIssues() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Error loading issues:", error);
+      logger.error("MyIssues", "Error loading issues", error);
     } else {
       setIssues(data || []);
     }

@@ -128,9 +128,9 @@ export function ImageUpload({ partId, onUploadComplete, className }: ImageUpload
           });
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(t("parts.images.uploadFailed"), {
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }, [previewImages, uploadFiles, partId, t, onUploadComplete]);

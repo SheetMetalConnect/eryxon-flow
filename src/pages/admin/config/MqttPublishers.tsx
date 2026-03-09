@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table/DataTable";
 import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
 import { AVAILABLE_EVENTS } from "@/lib/event-dispatch";
+import { logger } from "@/lib/logger";
 
 interface MqttPublisher {
   id: string;
@@ -50,7 +51,6 @@ interface MqttLog {
   created_at: string;
 }
 
-// Topic pattern variables for documentation
 const TOPIC_VARIABLES = [
   { name: '{enterprise}', description: 'Company/organization name' },
   { name: '{site}', description: 'Physical location/factory' },
@@ -73,7 +73,6 @@ export default function ConfigMqttPublishers() {
   const [logsLoading, setLogsLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Form state
   const [publisherName, setPublisherName] = useState("");
   const [brokerUrl, setBrokerUrl] = useState("");
   const [port, setPort] = useState(1883);
@@ -86,7 +85,7 @@ export default function ConfigMqttPublishers() {
   const [useTls, setUseTls] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
 
-  const fetchPublishers = async () => {
+  const fetchPublishers = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('mqtt_publishers')
@@ -100,9 +99,9 @@ export default function ConfigMqttPublishers() {
       setPublishers(data || []);
     }
     setLoading(false);
-  };
+  }, [profile?.tenant_id, t]);
 
-  const fetchMqttLogs = async () => {
+  const fetchMqttLogs = useCallback(async () => {
     setLogsLoading(true);
 
     const { data: tenantPublishers } = await supabase
@@ -126,13 +125,13 @@ export default function ConfigMqttPublishers() {
       .limit(100);
 
     if (error) {
-      console.error('Error fetching MQTT logs:', error);
+      logger.error('MqttPublishers', 'Error fetching MQTT logs', error);
       toast.error(t('mqtt.error'), { description: t('mqtt.failedToFetchLogs') });
     } else {
       setMqttLogs(data || []);
     }
     setLogsLoading(false);
-  };
+  }, [profile?.tenant_id, t]);
 
   useEffect(() => {
     if (profile?.tenant_id) {
@@ -143,7 +142,7 @@ export default function ConfigMqttPublishers() {
       return () => clearTimeout(loadTimeout);
     }
     return;
-  }, [profile?.tenant_id]);
+  }, [profile?.tenant_id, fetchPublishers, fetchMqttLogs]);
 
   const resetForm = () => {
     setPublisherName("");
@@ -159,7 +158,6 @@ export default function ConfigMqttPublishers() {
     setSelectedEvents([]);
   };
 
-  // Generate preview topic
   const previewTopic = useMemo(() => {
     let topic = topicPattern;
     topic = topic.replace('{enterprise}', defaultEnterprise || 'eryxon');
@@ -175,7 +173,7 @@ export default function ConfigMqttPublishers() {
     return topic.split('/').filter(s => s.length > 0).join('/');
   }, [topicPattern, defaultEnterprise, defaultSite, defaultArea]);
 
-  const createPublisher = async () => {
+  const createPublisher = useCallback(async () => {
     if (!publisherName.trim()) {
       toast.error(t('mqtt.error'), { description: t('mqtt.enterName') });
       return;
@@ -218,9 +216,25 @@ export default function ConfigMqttPublishers() {
       resetForm();
       fetchPublishers();
     }
-  };
+  }, [
+    brokerUrl,
+    defaultArea,
+    defaultEnterprise,
+    defaultSite,
+    fetchPublishers,
+    password,
+    port,
+    profile?.id,
+    profile?.tenant_id,
+    publisherName,
+    selectedEvents,
+    t,
+    topicPattern,
+    useTls,
+    username,
+  ]);
 
-  const deletePublisher = async (publisherId: string) => {
+  const deletePublisher = useCallback(async (publisherId: string) => {
     const { error } = await supabase
       .from('mqtt_publishers')
       .delete()
@@ -232,9 +246,9 @@ export default function ConfigMqttPublishers() {
       toast.success(t('mqtt.success'), { description: t('mqtt.deleted') });
       fetchPublishers();
     }
-  };
+  }, [fetchPublishers, t]);
 
-  const togglePublisher = async (publisherId: string, currentStatus: boolean) => {
+  const togglePublisher = useCallback(async (publisherId: string, currentStatus: boolean) => {
     const { error } = await supabase
       .from('mqtt_publishers')
       .update({ active: !currentStatus })
@@ -245,7 +259,7 @@ export default function ConfigMqttPublishers() {
     } else {
       fetchPublishers();
     }
-  };
+  }, [fetchPublishers, t]);
 
   const publisherColumns: ColumnDef<MqttPublisher>[] = useMemo(() => [
     {
@@ -360,7 +374,7 @@ export default function ConfigMqttPublishers() {
         );
       },
     },
-  ], [t]);
+  ], [deletePublisher, t, togglePublisher]);
 
   const logColumns: ColumnDef<MqttLog>[] = useMemo(() => [
     {
@@ -458,7 +472,6 @@ export default function ConfigMqttPublishers() {
                 </DialogDescription>
               </DialogHeader>
               <div className="flex-1 overflow-y-auto min-h-0 space-y-6">
-                {/* Basic Info */}
                 <div className="space-y-4">
                   <h3 className="font-semibold">{t('mqtt.basicInfo')}</h3>
                   <div className="space-y-2">
@@ -472,7 +485,6 @@ export default function ConfigMqttPublishers() {
                   </div>
                 </div>
 
-                {/* Broker Settings */}
                 <div className="space-y-4">
                   <h3 className="font-semibold">{t('mqtt.brokerSettings')}</h3>
                   <div className="grid grid-cols-2 gap-4">
@@ -526,7 +538,6 @@ export default function ConfigMqttPublishers() {
                   </div>
                 </div>
 
-                {/* Topic Settings - Configurable UNS Pattern */}
                 <div className="space-y-4">
                   <h3 className="font-semibold flex items-center gap-2">
                     {t('mqtt.topicSettings')}
@@ -548,13 +559,11 @@ export default function ConfigMqttPublishers() {
                     </div>
                   </div>
 
-                  {/* Preview */}
                   <div className="bg-muted p-3 rounded-lg">
                     <p className="text-xs text-muted-foreground mb-1">{t('mqtt.topicPreview')}:</p>
                     <code className="text-sm">{previewTopic}</code>
                   </div>
 
-                  {/* Default Values */}
                   <div className="grid grid-cols-3 gap-3">
                     <div className="space-y-2">
                       <Label htmlFor="default-enterprise" className="text-sm">
@@ -594,7 +603,6 @@ export default function ConfigMqttPublishers() {
                     </div>
                   </div>
 
-                  {/* Variable Reference */}
                   <details className="text-sm">
                     <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
                       {t('mqtt.availableVariables')}
@@ -610,7 +618,6 @@ export default function ConfigMqttPublishers() {
                   </details>
                 </div>
 
-                {/* Event Selection */}
                 <div className="space-y-2">
                   <Label>{t('mqtt.events')}</Label>
                   <div className="border rounded-lg p-3 space-y-3 max-h-72 overflow-y-auto">

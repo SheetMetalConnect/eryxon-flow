@@ -33,7 +33,6 @@ export function canAccessApp(tenant: Tenant | null): SubscriptionAccessResult {
     };
   }
 
-  // Check if subscription is active
   if (tenant.status === 'active') {
     return {
       allowed: true,
@@ -41,7 +40,6 @@ export function canAccessApp(tenant: Tenant | null): SubscriptionAccessResult {
     };
   }
 
-  // Check if in trial period
   if (tenant.status === 'trial' && tenant.trial_ends_at) {
     const trialEnd = new Date(tenant.trial_ends_at);
     if (trialEnd > now) {
@@ -53,7 +51,6 @@ export function canAccessApp(tenant: Tenant | null): SubscriptionAccessResult {
     }
   }
 
-  // Payment failed or tenant suspended (requires approval)
   if (tenant.status === 'suspended') {
     return {
       allowed: false,
@@ -61,7 +58,6 @@ export function canAccessApp(tenant: Tenant | null): SubscriptionAccessResult {
     };
   }
 
-  // Subscription cancelled
   if (tenant.status === 'cancelled') {
     return {
       allowed: false,
@@ -69,7 +65,6 @@ export function canAccessApp(tenant: Tenant | null): SubscriptionAccessResult {
     };
   }
 
-  // Default: Access denied - subscription required
   return {
     allowed: false,
     reason: 'subscription_required',
@@ -106,6 +101,5 @@ export function getSubscriptionMessage(result: SubscriptionAccessResult): string
  * Check if billing features should be shown to user
  */
 export function canSeeBillingFeatures(tenant: Tenant | null, isAdmin: boolean): boolean {
-  // Billing features not implemented yet
   return false;
 }

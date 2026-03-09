@@ -50,10 +50,11 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { EnhancedMetadataDisplay } from "@/components/ui/EnhancedMetadataDisplay";
 import IssueForm from "./IssueForm";
-import { STEPViewer } from "@/components/STEPViewer";
-import { PDFViewer } from "@/components/PDFViewer";
+import { STEPViewer } from "@/components/STEPViewerLazy";
+import { PDFViewer } from "@/components/PDFViewerLazy";
 import SubstepsManager from "./SubstepsManager";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 
 interface OperationDetailModalProps {
   operation: OperationWithDetails;
@@ -90,10 +91,8 @@ export default function OperationDetailModal({
     !operation.active_time_entry && operation.status !== "completed";
   const canComplete =
     operation.status !== "completed" && !operation.active_time_entry;
-  // Allow reporting issues anytime, not just when timing
   const canReportIssue = operation.status !== "completed";
 
-  // Fetch required resources for this operation
   useEffect(() => {
     const fetchResources = async () => {
       if (!operation.id) return;
@@ -119,7 +118,6 @@ export default function OperationDetailModal({
   const checkAssemblyDependencies = async () => {
     if (!profile?.tenant_id) return true;
 
-    // Check if this part has children
     const { data: children } = await supabase
       .from("parts")
       .select("id, part_number, status")
@@ -146,7 +144,6 @@ export default function OperationDetailModal({
   const handleStartTiming = async () => {
     if (!operatorId || !profile?.tenant_id) return;
 
-    // Check assembly dependencies first
     const canProceed = await checkAssemblyDependencies();
     if (!canProceed) return;
 
@@ -155,8 +152,8 @@ export default function OperationDetailModal({
       await startTimeTracking(operation.id, operatorId, profile.tenant_id);
       toast.success(t("operations.timeTrackingStarted"));
       onUpdate();
-    } catch (error: any) {
-      toast.error(error.message || t("operations.failedToStartTimeTracking"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("operations.failedToStartTimeTracking"));
     } finally {
       setLoading(false);
     }
@@ -171,8 +168,8 @@ export default function OperationDetailModal({
       await startTimeTracking(operation.id, operatorId, profile.tenant_id);
       toast.success(t("operations.timeTrackingStarted"));
       onUpdate();
-    } catch (error: any) {
-      toast.error(error.message || t("operations.failedToStartTimeTracking"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("operations.failedToStartTimeTracking"));
     } finally {
       setLoading(false);
     }
@@ -186,8 +183,8 @@ export default function OperationDetailModal({
       await stopTimeTracking(operation.id, operatorId);
       toast.success(t("operations.timeTrackingStopped"));
       onUpdate();
-    } catch (error: any) {
-      toast.error(error.message || t("operations.failedToStopTimeTracking"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("operations.failedToStopTimeTracking"));
     } finally {
       setLoading(false);
     }
@@ -202,8 +199,8 @@ export default function OperationDetailModal({
       toast.success(t("operations.operationComplete"));
       onUpdate();
       onOpenChange(false);
-    } catch (error: any) {
-      toast.error(error.message || t("operations.failedToComplete"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("operations.failedToComplete"));
     } finally {
       setLoading(false);
     }
@@ -224,7 +221,6 @@ export default function OperationDetailModal({
         return;
       }
 
-      // Create signed URL
       const { data, error } = await supabase.storage
         .from("parts-cad")
         .createSignedUrl(filePath, 3600);
@@ -245,8 +241,8 @@ export default function OperationDetailModal({
       setCurrentFileType(fileType);
       setCurrentFileTitle(fileName);
       setFileViewerOpen(true);
-    } catch (error: any) {
-      console.error("Error opening file:", error);
+    } catch (error: unknown) {
+      logger.error("OperationDetailModal", "Error opening file", error);
       toast.error(t("operations.failedToOpenFile"));
     }
   };
@@ -270,7 +266,6 @@ export default function OperationDetailModal({
         side="right"
         className="w-full sm:max-w-[600px] p-0 flex flex-col glass-card border-l border-white/10"
       >
-        {/* Fixed Header */}
         <div className="flex-shrink-0 border-b border-white/10 bg-background/95 backdrop-blur-sm">
           <SheetHeader className="p-4">
             <div className="flex items-start justify-between gap-3 pr-8">
@@ -296,7 +291,6 @@ export default function OperationDetailModal({
             </div>
           </SheetHeader>
 
-          {/* Time Info Bar */}
           <div className="grid grid-cols-3 gap-2 px-4 pb-3">
             <div className="bg-muted/50 rounded-md p-2 text-center">
               <div className="text-xs text-muted-foreground">{t("operations.estimated")}</div>
@@ -318,10 +312,8 @@ export default function OperationDetailModal({
           </div>
         </div>
 
-        {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto">
           <div className="p-4 space-y-4">
-            {/* Job & Part Details */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-muted/30 rounded-md p-3">
                 <div className="text-xs text-muted-foreground mb-0.5">{t("operations.part")}</div>
@@ -349,7 +341,6 @@ export default function OperationDetailModal({
               </div>
             )}
 
-            {/* Assembly Warning */}
             {operation.part.parent_part_id && (
               <div className="flex items-start gap-2 p-2.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-md">
                 <Package className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
@@ -364,7 +355,6 @@ export default function OperationDetailModal({
               </div>
             )}
 
-            {/* Active Operator */}
             {operation.active_time_entry && !isCurrentUserTiming && (
               <div className="flex items-center gap-2 p-2.5 bg-active-work/10 border border-active-work/30 rounded-md">
                 <AlertCircle className="h-4 w-4 text-active-work shrink-0" />
@@ -377,7 +367,6 @@ export default function OperationDetailModal({
               </div>
             )}
 
-            {/* Notes */}
             {operation.notes && (
               <div className="bg-muted/30 rounded-md p-3">
                 <div className="text-xs text-muted-foreground mb-1">{t("operations.notes")}</div>
@@ -385,7 +374,6 @@ export default function OperationDetailModal({
               </div>
             )}
 
-            {/* Operation Metadata (Process-specific settings) */}
             {(operation as any).metadata && (
               <EnhancedMetadataDisplay
                 metadata={(operation as any).metadata}
@@ -395,7 +383,6 @@ export default function OperationDetailModal({
               />
             )}
 
-            {/* Required Resources Section */}
             {requiredResources.length > 0 && (
               <div>
                 <div className="text-xs font-medium mb-2 flex items-center gap-1.5 text-muted-foreground">
@@ -472,7 +459,6 @@ export default function OperationDetailModal({
               </div>
             )}
 
-            {/* Files Section */}
             {operation.part.file_paths && operation.part.file_paths.length > 0 && (
               <div>
                 <div className="text-xs font-medium mb-2 text-muted-foreground">
@@ -521,7 +507,6 @@ export default function OperationDetailModal({
               </div>
             )}
 
-            {/* Substeps Section */}
             <SubstepsManager
               operationId={operation.id}
               operationName={operation.operation_name}
@@ -530,7 +515,6 @@ export default function OperationDetailModal({
           </div>
         </div>
 
-        {/* Fixed Footer with Actions */}
         <div className="flex-shrink-0 border-t border-white/10 p-4 bg-background/95 backdrop-blur-sm space-y-2">
           {canReportIssue && (
             <Button
@@ -636,7 +620,6 @@ export default function OperationDetailModal({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* File Viewer Dialog */}
       <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
         <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0">
           <DialogHeader className="px-6 py-4 border-b">

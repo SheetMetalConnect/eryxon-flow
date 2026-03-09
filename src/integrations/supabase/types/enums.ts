@@ -97,3 +97,36 @@ export const EnumConstants = {
   task_status: ["not_started", "in_progress", "completed", "on_hold"],
   waitlist_status: ["pending", "approved", "rejected", "converted"],
 } as const
+
+/**
+ * Named status constants for use in code instead of string literals.
+ * Prevents typos and enables IDE autocomplete.
+ */
+export const JobStatus = {
+  NOT_STARTED: "not_started",
+  IN_PROGRESS: "in_progress",
+  COMPLETED: "completed",
+  ON_HOLD: "on_hold",
+} as const;
+
+export const OperationStatus = {
+  NOT_STARTED: "not_started",
+  IN_PROGRESS: "in_progress",
+  COMPLETED: "completed",
+  ON_HOLD: "on_hold",
+} as const;
+
+export const PartStatus = {
+  NOT_STARTED: "not_started",
+  IN_PROGRESS: "in_progress",
+  COMPLETED: "completed",
+} as const;
+
+export const BatchStatus = {
+  DRAFT: "draft",
+  READY: "ready",
+  IN_PROGRESS: "in_progress",
+  COMPLETED: "completed",
+  CANCELLED: "cancelled",
+  BLOCKED: "blocked",
+} as const;

@@ -15,6 +15,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 // Configure PDF.js worker from CDN
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -39,7 +40,7 @@ export function PDFViewer({ url, title, compact = false }: PDFViewerProps) {
   }, []);
 
   const onDocumentLoadError = useCallback((error: Error) => {
-    console.error('PDF load error:', error);
+    logger.error('PDFViewer', 'PDF load error', error);
     setLoading(false);
     setError('Failed to load PDF file. The file may be corrupted or unavailable.');
   }, []);

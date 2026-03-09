@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,43 @@ import { OperationsFlowVisualization } from "@/components/qrm/OperationsFlowVisu
 import { useJobRouting } from "@/hooks/useQRMMetrics";
 import { ResourceCountBadge } from "@/components/ui/ResourceUsageDisplay";
 
+interface JobOperationCell {
+  name: string;
+  color: string;
+}
+
+interface JobOperation {
+  id: string;
+  operation_name: string;
+  status: string;
+  estimated_time: number | null;
+  cell: JobOperationCell | null;
+}
+
+interface JobPart {
+  id: string;
+  part_number: string;
+  material: string;
+  quantity: number;
+  status: string;
+  parent_part_id: string | null;
+  weight_kg: number | null;
+  length_mm: number | null;
+  width_mm: number | null;
+  height_mm: number | null;
+  operations?: JobOperation[];
+}
+
+interface JobUpdatePayload {
+  customer: string;
+  notes: string | null;
+  metadata: Record<string, unknown> | null;
+  delivery_address: string | null;
+  delivery_city: string | null;
+  delivery_postal_code: string | null;
+  delivery_country: string | null;
+}
+
 interface JobDetailModalProps {
   jobId: string;
   onClose: () => void;
@@ -37,13 +75,14 @@ interface JobDetailModalProps {
 
 export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailModalProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedJob, setEditedJob] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [editedJob, setEditedJob] = useState<Record<string, any> | null>(null);
   const { t } = useTranslation();
   const { profile } = useAuth();
   const { routing, loading: routingLoading } = useJobRouting(jobId, profile?.tenant_id ?? null);
 
   const { data: job, isLoading, error } = useQuery({
-    queryKey: ["job-detail", jobId],
+    queryKey: QueryKeys.jobs.detail(jobId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("jobs")
@@ -58,19 +97,20 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
           )
         `)
         .eq("id", jobId)
+        .eq("tenant_id", profile?.tenant_id)
         .single();
 
       if (error) throw error;
       return data;
     },
-    enabled: !!jobId,
+    enabled: !!jobId && !!profile?.tenant_id,
   });
 
   const updateJobMutation = useMutation({
-    mutationFn: async (updates: any) => {
+    mutationFn: async (updates: JobUpdatePayload) => {
       const { error } = await supabase
         .from("jobs")
-        .update(updates)
+        .update(updates as never)
         .eq("id", jobId);
 
       if (error) throw error;
@@ -82,7 +122,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
       setIsEditing(false);
       onUpdate();
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), {
         description: error.message,
       });
@@ -129,16 +169,14 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
     );
   }
 
-  // Calculate summary stats
   const partsCount = job?.parts?.length || 0;
-  const operationsCount = job?.parts?.reduce((sum: number, p: any) => sum + (p.operations?.length || 0), 0) || 0;
-  const completedOps = job?.parts?.reduce((sum: number, p: any) =>
-    sum + (p.operations?.filter((op: any) => op.status === "completed").length || 0), 0) || 0;
+  const operationsCount = job?.parts?.reduce((sum: number, p: JobPart) => sum + (p.operations?.length || 0), 0) || 0;
+  const completedOps = job?.parts?.reduce((sum: number, p: JobPart) =>
+    sum + (p.operations?.filter((op: JobOperation) => op.status === "completed").length || 0), 0) || 0;
 
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl lg:max-w-3xl max-h-[85vh] overflow-hidden flex flex-col p-0">
-        {/* Header */}
         <div className="px-4 sm:px-6 py-4 border-b bg-muted/30">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
             <div>
@@ -173,7 +211,6 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
           </div>
         </div>
 
-        {/* Content with Tabs */}
         <Tabs defaultValue="overview" className="flex-1 flex flex-col overflow-hidden">
           <div className="px-4 sm:px-6 border-b">
             <TabsList className="h-10 w-full justify-start bg-transparent p-0 gap-4">
@@ -190,9 +227,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {/* Overview Tab */}
             <TabsContent value="overview" className="p-4 sm:p-6 space-y-5 m-0">
-              {/* Key Info Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="p-3 rounded-lg bg-muted/50 border">
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("jobs.dueDate")}</p>
@@ -217,7 +252,6 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                 </div>
               </div>
 
-              {/* Operations Flow */}
               <div>
                 <h3 className="text-sm font-semibold mb-2">{t("qrm.operationsFlow", "Operations Flow")}</h3>
                 <div className="border rounded-lg p-3 bg-muted/20">
@@ -225,7 +259,6 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                 </div>
               </div>
 
-              {/* Notes */}
               <div>
                 <h3 className="text-sm font-semibold mb-2">{t("jobs.notes")}</h3>
                 {isEditing ? (
@@ -242,7 +275,6 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                 )}
               </div>
 
-              {/* Metadata */}
               {job?.metadata && Object.keys(job.metadata).length > 0 && (
                 <Collapsible>
                   <CollapsibleTrigger className="flex items-center gap-2 text-sm font-semibold hover:text-primary transition-colors">
@@ -264,19 +296,16 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                 </Collapsible>
               )}
 
-              {/* Issues Summary */}
               <IssuesSummarySection jobId={jobId} />
             </TabsContent>
 
-            {/* Parts Tab */}
             <TabsContent value="parts" className="p-4 sm:p-6 space-y-3 m-0">
-              {job?.parts?.map((part: any) => {
-                const partCompletedOps = part.operations?.filter((op: any) => op.status === "completed").length || 0;
+              {job?.parts?.map((part: JobPart) => {
+                const partCompletedOps = part.operations?.filter((op: JobOperation) => op.status === "completed").length || 0;
                 const partTotalOps = part.operations?.length || 0;
 
                 return (
                   <div key={part.id} className="border rounded-lg overflow-hidden">
-                    {/* Part Header */}
                     <div className="flex items-center justify-between p-3 bg-muted/30">
                       <div className="flex items-center gap-3">
                         <div>
@@ -304,17 +333,15 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                       </div>
                     </div>
 
-                    {/* Operations List - Simplified */}
                     {part.operations && part.operations.length > 0 && (
                       <div className="divide-y">
-                        {part.operations.map((operation: any, index: number) => {
+                        {part.operations.map((operation: JobOperation, index: number) => {
                           const isCompleted = operation.status === "completed";
                           const isInProgress = operation.status === "in_progress";
                           const cellColor = operation.cell?.color || '#6B7280';
 
                           return (
                             <div key={operation.id} className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted/20 transition-colors">
-                              {/* Status Icon */}
                               {isCompleted ? (
                                 <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
                               ) : isInProgress ? (
@@ -323,10 +350,8 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                                 <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
                               )}
 
-                              {/* Sequence */}
                               <span className="text-xs text-muted-foreground w-6 shrink-0">{index + 1}.</span>
 
-                              {/* Cell Badge */}
                               <div
                                 className="px-2 py-0.5 rounded text-xs font-medium shrink-0"
                                 style={{ backgroundColor: `${cellColor}15`, color: cellColor }}
@@ -334,15 +359,12 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                                 {operation.cell?.name || 'No cell'}
                               </div>
 
-                              {/* Operation Name */}
                               <span className={`flex-1 truncate ${isCompleted ? 'text-muted-foreground' : ''}`}>
                                 {operation.operation_name}
                               </span>
 
-                              {/* Resource Badge */}
                               <ResourceCountBadge operationId={operation.id} />
 
-                              {/* Time (desktop only) */}
                               <span className="text-xs text-muted-foreground hidden md:block w-16 text-right">
                                 {operation.estimated_time || 0}m
                               </span>
@@ -356,7 +378,6 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
               })}
             </TabsContent>
 
-            {/* Delivery Tab */}
             <TabsContent value="delivery" className="p-4 sm:p-6 space-y-4 m-0">
               {isEditing ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -396,7 +417,6 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                 </div>
               ) : (
                 <>
-                  {/* Address Display */}
                   <div className="border rounded-lg p-4 bg-muted/20">
                     <div className="flex items-start gap-3">
                       <MapPin className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
@@ -413,11 +433,10 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                     </div>
                   </div>
 
-                  {/* Weight/Volume Summary */}
                   {job?.parts && job.parts.length > 0 && (() => {
-                    const totalWeight = job.parts.reduce((sum: number, part: any) =>
+                    const totalWeight = job.parts.reduce((sum: number, part: JobPart) =>
                       sum + ((part.weight_kg || 0) * (part.quantity || 1)), 0);
-                    const totalVolume = job.parts.reduce((sum: number, part: any) => {
+                    const totalVolume = job.parts.reduce((sum: number, part: JobPart) => {
                       if (part.length_mm && part.width_mm && part.height_mm) {
                         const volumeM3 = (part.length_mm * part.width_mm * part.height_mm) / 1000000000;
                         return sum + (volumeM3 * (part.quantity || 1));

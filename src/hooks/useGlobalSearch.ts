@@ -10,6 +10,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { logger } from '@/lib/logger';
 import {
   searchConfigs,
   createSearchFunctions,
@@ -18,7 +19,6 @@ import {
   type SearchFilters,
 } from "@/lib/search";
 
-// Re-export types for backward compatibility
 export type { SearchResult, SearchResultType, SearchFilters };
 
 /**
@@ -35,13 +35,11 @@ export function useGlobalSearch() {
   const [error, setError] = useState<Error | null>(null);
   const { profile } = useAuth();
 
-  // Create search functions from configs (memoized)
   const searchFunctions = useMemo(
     () => createSearchFunctions(searchConfigs),
     []
   );
 
-  // All available search types
   const allTypes: SearchResultType[] = [
     "job",
     "part",
@@ -70,7 +68,6 @@ export function useGlobalSearch() {
         const limit = filters?.limit || 10;
         const types = filters?.types || allTypes;
 
-        // Execute searches in parallel for selected types
         const searchPromises = types
           .filter((type) => type in searchFunctions)
           .map((type) => searchFunctions[type](query, tenantId, limit));
@@ -78,7 +75,6 @@ export function useGlobalSearch() {
         const results = await Promise.all(searchPromises);
         const flatResults = results.flat();
 
-        // Apply status filter if provided
         if (filters?.statuses && filters.statuses.length > 0) {
           return flatResults.filter(
             (result) =>
@@ -91,7 +87,7 @@ export function useGlobalSearch() {
         const searchError =
           err instanceof Error ? err : new Error("Search failed");
         setError(searchError);
-        console.error("Search error:", searchError);
+        logger.error('useGlobalSearch', 'Search error', searchError);
         return [];
       } finally {
         setLoading(false);

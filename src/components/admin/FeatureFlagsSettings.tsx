@@ -24,7 +24,6 @@ import {
 } from '@/hooks/useFeatureFlags';
 import { cn } from '@/lib/utils';
 
-// Icon mapping for feature flags
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   BarChart3,
   Activity,
@@ -37,16 +36,12 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Box,
 };
 
-// Category labels and order
 const CATEGORIES = [
   { key: 'operations', labelKey: 'featureFlags.categories.operations' },
   { key: 'analytics', labelKey: 'featureFlags.categories.analytics' },
   { key: 'admin', labelKey: 'featureFlags.categories.admin' },
 ] as const;
 
-// External services category (shown separately with warning)
-
-// Feature flags that require external services
 const EXTERNAL_SERVICE_FLAGS = ['advancedCAD'] as const;
 
 interface FeatureFlagItemProps {
@@ -132,13 +127,11 @@ export function FeatureFlagsSettings() {
     isSaving,
   } = useFeatureFlags();
 
-  // Group flags by category
   const flagsByCategory = CATEGORIES.map((category) => ({
     ...category,
     flags: FEATURE_FLAG_METADATA.filter((meta) => meta.category === category.key),
   }));
 
-  // Count enabled flags
   const enabledCount = Object.values(flags).filter(Boolean).length;
   const totalCount = Object.keys(flags).length;
 
@@ -175,7 +168,6 @@ export function FeatureFlagsSettings() {
 
       <Separator />
 
-      {/* Quick Actions */}
       <div className="flex items-center justify-between border-b bg-muted/30 px-6 py-3">
         <span className="text-sm text-muted-foreground">
           {t('featureFlags.quickActions')}
@@ -205,7 +197,6 @@ export function FeatureFlagsSettings() {
       </div>
 
       <CardContent className="p-6 space-y-6">
-        {/* Info Banner */}
         <div className="rounded-lg bg-info/10 border border-info/20 p-4">
           <p className="text-sm text-info">
             <span className="font-medium">{t('featureFlags.infoTitle')}</span>{' '}
@@ -213,7 +204,6 @@ export function FeatureFlagsSettings() {
           </p>
         </div>
 
-        {/* Feature Flags by Category */}
         {flagsByCategory.map((category) => (
           <div key={category.key} className="space-y-3">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
@@ -233,7 +223,6 @@ export function FeatureFlagsSettings() {
           </div>
         ))}
 
-        {/* Footer Note */}
         <div className="pt-4 border-t">
           <p className="text-xs text-muted-foreground">
             {t('featureFlags.footerNote')}

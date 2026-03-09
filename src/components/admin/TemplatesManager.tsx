@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Plus, Edit, Trash2, Loader2, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { logger } from '@/lib/logger';
 import {
   DndContext,
   closestCenter,
@@ -161,7 +162,7 @@ export function TemplatesManager() {
       .order('sequence', { foreignTable: 'substep_template_items', ascending: true });
 
     if (error) {
-      console.error("Error loading templates:", error);
+      logger.error('TemplatesManager', 'Error loading templates', error);
       toast.error(t("Failed to load templates"));
     } else {
       setTemplates(data || []);
@@ -215,7 +216,6 @@ export function TemplatesManager() {
 
   const handleDeleteItem = (index: number) => {
     const updated = templateItems.filter((_, i) => i !== index);
-    // Resequence
     const resequenced = updated.map((item, i) => ({
       ...item,
       sequence: i + 1
@@ -232,7 +232,6 @@ export function TemplatesManager() {
         const newIndex = items.findIndex(item => item.sequence === over.id);
 
         const reordered = arrayMove(items, oldIndex, newIndex);
-        // Resequence
         return reordered.map((item, i) => ({
           ...item,
           sequence: i + 1
@@ -256,7 +255,6 @@ export function TemplatesManager() {
 
     try {
       if (editingTemplate) {
-        // Update template
         const { error: templateError } = await supabase
           .from("substep_templates")
           .update({
@@ -268,13 +266,11 @@ export function TemplatesManager() {
 
         if (templateError) throw templateError;
 
-        // Delete old items
         await supabase
           .from("substep_template_items")
           .delete()
           .eq('template_id', editingTemplate.id);
 
-        // Insert new items
         const { error: itemsError } = await supabase
           .from("substep_template_items")
           .insert(
@@ -290,7 +286,6 @@ export function TemplatesManager() {
 
         toast.success(t("Template updated successfully"));
       } else {
-        // Create new template
         const { data: template, error: templateError } = await supabase
           .from("substep_templates")
           .insert({
@@ -305,7 +300,6 @@ export function TemplatesManager() {
 
         if (templateError || !template) throw templateError;
 
-        // Insert items
         const { error: itemsError } = await supabase
           .from("substep_template_items")
           .insert(
@@ -325,7 +319,7 @@ export function TemplatesManager() {
       handleCloseDialog();
       loadTemplates();
     } catch (error) {
-      console.error("Error saving template:", error);
+      logger.error('TemplatesManager', 'Error saving template', error);
       toast.error(t("Failed to save template"));
     }
   };
@@ -344,7 +338,7 @@ export function TemplatesManager() {
       .eq('id', template.id);
 
     if (error) {
-      console.error("Error deleting template:", error);
+      logger.error('TemplatesManager', 'Error deleting template', error);
       toast.error(t("Failed to delete template"));
     } else {
       toast.success(t("Template deleted successfully"));

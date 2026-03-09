@@ -14,6 +14,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { corsHeaders, handleCors } from "@shared/cors.ts";
+import { sanitizeError, escapeHtml } from "@shared/security.ts";
 
 interface WebhookPayload {
   type: "INSERT";
@@ -70,8 +71,11 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const companyName = tenant?.company_name || tenant?.name || "Unknown";
-    const planDisplay = `${tenant?.plan || "free"} (${tenant?.status || "trial"})`;
+    const companyName = escapeHtml(tenant?.company_name || tenant?.name || "Unknown");
+    const planDisplay = escapeHtml(`${tenant?.plan || "free"} (${tenant?.status || "trial"})`);
+    const safeFullName = escapeHtml(profile.full_name || "Not provided");
+    const safeEmail = escapeHtml(profile.email || "Not provided");
+    const safeTenantId = escapeHtml(profile.tenant_id || "");
     const createdAt = tenant?.created_at
       ? new Date(tenant.created_at).toLocaleString("en-US", {
           dateStyle: "medium",
@@ -114,11 +118,11 @@ Deno.serve(async (req: Request) => {
                       </tr>
                       <tr>
                         <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Contact Person</td>
-                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${profile.full_name || "Not provided"}</td>
+                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${safeFullName}</td>
                       </tr>
                       <tr>
                         <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Email</td>
-                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${profile.email || "Not provided"}</td>
+                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${safeEmail}</td>
                       </tr>
                       <tr>
                         <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Plan</td>
@@ -130,7 +134,7 @@ Deno.serve(async (req: Request) => {
                       </tr>
                       <tr>
                         <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Tenant ID</td>
-                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${profile.tenant_id}</td>
+                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${safeTenantId}</td>
                       </tr>
                     </table>
                   </td>
@@ -197,7 +201,8 @@ Deno.serve(async (req: Request) => {
     });
   } catch (err) {
     console.error("Error in notify-new-signup:", err);
-    return new Response(JSON.stringify({ error: err.message }), {
+    const sanitized = sanitizeError(err);
+    return new Response(JSON.stringify({ error: sanitized.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

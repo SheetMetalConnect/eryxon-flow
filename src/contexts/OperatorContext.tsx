@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
+import { logger } from "@/lib/logger";
 
 /**
  * Active Operator - the employee currently working at the terminal
@@ -38,28 +39,36 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
   const [activeOperator, setActiveOperator] = useState<ActiveOperator | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load active operator from localStorage on mount
+  // Load active operator from sessionStorage on mount (sessionStorage clears on tab close)
   useEffect(() => {
-    // Wait for tenant to be loaded before validating stored operator
-    // If tenant is not yet loaded (undefined), don't do anything yet
     if (tenant?.id === undefined) {
       return;
     }
 
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = sessionStorage.getItem(STORAGE_KEY);
     let nextOperator: ActiveOperator | null = null;
     if (stored) {
       try {
-        const parsed = JSON.parse(stored);
-        // Validate that the stored operator belongs to current tenant
-        if (parsed.tenant_id === tenant.id) {
-          nextOperator = parsed;
+        const parsed: unknown = JSON.parse(stored);
+        if (
+          typeof parsed === "object" &&
+          parsed !== null &&
+          "id" in parsed &&
+          typeof (parsed as Record<string, unknown>).id === "string" &&
+          "employee_id" in parsed &&
+          typeof (parsed as Record<string, unknown>).employee_id === "string" &&
+          "full_name" in parsed &&
+          typeof (parsed as Record<string, unknown>).full_name === "string" &&
+          "tenant_id" in parsed &&
+          (parsed as Record<string, unknown>).tenant_id === tenant.id
+        ) {
+          nextOperator = parsed as ActiveOperator;
         } else {
           // Only clear if we have a valid tenant and it doesn't match
-          localStorage.removeItem(STORAGE_KEY);
+          sessionStorage.removeItem(STORAGE_KEY);
         }
       } catch {
-        localStorage.removeItem(STORAGE_KEY);
+        sessionStorage.removeItem(STORAGE_KEY);
       }
     }
     const loadTimeout = window.setTimeout(() => {
@@ -69,12 +78,11 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(loadTimeout);
   }, [tenant?.id]);
 
-  // Clear active operator when user logs out or changes tenant
   useEffect(() => {
     if (!profile) {
       const clearTimeoutId = window.setTimeout(() => {
         setActiveOperator(null);
-        localStorage.removeItem(STORAGE_KEY);
+        sessionStorage.removeItem(STORAGE_KEY);
       }, 0);
       return () => clearTimeout(clearTimeoutId);
     }
@@ -86,13 +94,13 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
     pin: string
   ): Promise<VerifyPinResult> => {
     try {
-      const { data, error } = await supabase.rpc("verify_operator_pin" as any, {
+      const { data, error } = await supabase.rpc("verify_operator_pin", {
         p_employee_id: employeeId,
         p_pin: pin,
       });
 
       if (error) {
-        console.error("PIN verification error:", error);
+        logger.error('OperatorContext', 'PIN verification error', error);
         return {
           success: false,
           error_code: "RPC_ERROR",
@@ -100,7 +108,6 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
         };
       }
 
-      // The RPC returns an array with one row
       const result = Array.isArray(data) ? data[0] : data;
 
       if (!result) {
@@ -120,7 +127,7 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
         };
 
         setActiveOperator(operator);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(operator));
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(operator));
 
         return { success: true, operator };
       } else {
@@ -132,19 +139,19 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
           locked_until: result.locked_until_ts ? new Date(result.locked_until_ts) : null,
         };
       }
-    } catch (err: any) {
-      console.error("Operator verification error:", err);
+    } catch (err: unknown) {
+      logger.error('OperatorContext', 'Operator verification error', err);
       return {
         success: false,
         error_code: "EXCEPTION",
-        error_message: err.message || "An unexpected error occurred",
+        error_message: err instanceof Error ? err.message : "An unexpected error occurred",
       };
     }
   }, []);
 
   const clearActiveOperator = useCallback(() => {
     setActiveOperator(null);
-    localStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(STORAGE_KEY);
   }, []);
 
   return (

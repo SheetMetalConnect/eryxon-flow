@@ -20,7 +20,6 @@ export const NotificationToastProvider: React.FC<{ children: React.ReactNode }> 
   useEffect(() => {
     if (!profile) return;
 
-    // Set up real-time subscription for new notifications
     const channel = supabase
       .channel('notification_toasts')
       .on(
@@ -43,7 +42,6 @@ export const NotificationToastProvider: React.FC<{ children: React.ReactNode }> 
           ) {
             lastNotificationIdRef.current = notification.id;
 
-            // Choose toast type based on severity
             const toastFn = notification.severity === 'high'
               ? toast.error
               : notification.severity === 'medium'

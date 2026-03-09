@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,13 +10,29 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 
+interface StuckTimeEntry {
+  id: string;
+  start_time: string;
+  is_paused: boolean | null;
+  operator_id: string;
+  operation_id: string;
+  profiles: { full_name: string | null; username: string | null } | null;
+  operations: {
+    operation_name: string | null;
+    parts: {
+      part_number: string;
+      jobs: { job_number: string } | null;
+    } | null;
+  } | null;
+}
+
 export default function StuckTimeEntries() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
 
-  // Fetch all active time entries
   const { data: stuckEntries, isLoading } = useQuery({
-    queryKey: ["stuck-time-entries"],
+    queryKey: QueryKeys.timeEntries.stuck(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("time_entries")
@@ -47,7 +65,6 @@ export default function StuckTimeEntries() {
     refetchInterval: 5000,
   });
 
-  // Mutation to force stop a time entry
   const stopEntryMutation = useMutation({
     mutationFn: async (entryId: string) => {
       const { data: entry } = await supabase
@@ -73,7 +90,7 @@ export default function StuckTimeEntries() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["stuck-time-entries"] });
+      queryClient.invalidateQueries({ queryKey: ["timeEntries", "stuck"] });
       toast.success(t("stuckTimeEntries.stopped"));
     },
     onError: (error: Error) => {
@@ -81,7 +98,6 @@ export default function StuckTimeEntries() {
     },
   });
 
-  // Mutation to stop all entries
   const stopAllMutation = useMutation({
     mutationFn: async () => {
       if (!stuckEntries || stuckEntries.length === 0) return 0;
@@ -107,7 +123,7 @@ export default function StuckTimeEntries() {
       return stoppedCount;
     },
     onSuccess: (count) => {
-      queryClient.invalidateQueries({ queryKey: ["stuck-time-entries"] });
+      queryClient.invalidateQueries({ queryKey: ["timeEntries", "stuck"] });
       toast.success(t("notifications.success"));
     },
     onError: (error: Error) => {
@@ -162,7 +178,7 @@ export default function StuckTimeEntries() {
         </Card>
       ) : (
         <div className="space-y-3">
-          {stuckEntries.map((entry: any) => (
+          {stuckEntries.map((entry: StuckTimeEntry) => (
             <Card key={entry.id}>
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">

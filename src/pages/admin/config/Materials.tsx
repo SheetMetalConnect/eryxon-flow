@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Loader2, Package } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 
 interface Material {
   id: string;
@@ -35,12 +36,7 @@ export default function ConfigMaterials() {
     active: true,
   });
 
-  useEffect(() => {
-    if (!profile?.tenant_id) return;
-    loadMaterials();
-  }, [profile?.tenant_id]);
-
-  const loadMaterials = async () => {
+  async function loadMaterials() {
     if (!profile?.tenant_id) return;
 
     const { data, error } = await supabase
@@ -53,7 +49,16 @@ export default function ConfigMaterials() {
       setMaterials(data as any);
     }
     setLoading(false);
-  };
+  }
+
+  useEffect(() => {
+    if (!profile?.tenant_id) return;
+    const loadTimeout = window.setTimeout(() => {
+      void loadMaterials();
+    }, 0);
+
+    return () => clearTimeout(loadTimeout);
+  }, [profile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +66,6 @@ export default function ConfigMaterials() {
 
     try {
       if (editingMaterial) {
-        // Update existing material
         await supabase
           .from("materials")
           .update({
@@ -74,7 +78,6 @@ export default function ConfigMaterials() {
 
         toast.success(t("materials.materialUpdated"));
       } else {
-        // Create new material
         await supabase.from("materials").insert({
           tenant_id: profile.tenant_id,
           name: formData.name,
@@ -91,7 +94,7 @@ export default function ConfigMaterials() {
       loadMaterials();
     } catch (error) {
       toast.error(t("materials.failedToSaveMaterial"));
-      console.error(error);
+      logger.error('Materials', 'Failed to save material', error);
     }
   };
 

@@ -4,6 +4,7 @@ import { Wrench, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { EnhancedMetadataDisplay } from '@/components/ui/EnhancedMetadataDisplay';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 interface Resource {
   id: string;
@@ -12,7 +13,7 @@ interface Resource {
   identifier?: string | null;
   location?: string | null;
   status?: string | null;
-  metadata?: any;
+  metadata?: Record<string, unknown> | null;
 }
 
 interface OperationResource {
@@ -59,10 +60,10 @@ export function ResourceUsageDisplay({
           .eq('operation_id', operationId);
 
         if (!error && data) {
-          setResources(data as any);
+          setResources(data as unknown as OperationResource[]);
         }
       } catch (error) {
-        console.error('Error fetching resources:', error);
+        logger.error('ResourceUsageDisplay', 'Error fetching resources', error);
       } finally {
         setLoading(false);
       }
@@ -183,7 +184,7 @@ export function ResourceUsageDisplay({
             {opResource.resource.metadata && (
               <div className="mt-3">
                 <EnhancedMetadataDisplay
-                  metadata={opResource.resource.metadata}
+                  metadata={opResource.resource.metadata as unknown as import('@/types/metadata').BaseMetadata}
                   compact={true}
                   showTypeIndicator={false}
                 />
@@ -218,7 +219,7 @@ export function ResourceCountBadge({ operationId }: { operationId: string }) {
           setCount(resourceCount);
         }
       } catch (error) {
-        console.error('Error fetching resource count:', error);
+        logger.error('ResourceCountBadge', 'Error fetching resource count', error);
       } finally {
         setLoading(false);
       }

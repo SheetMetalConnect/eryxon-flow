@@ -1,19 +1,6 @@
-/**
- * Advanced Search Service
- *
- * This module provides advanced search capabilities using PostgreSQL's full-text search.
- * It leverages the tsvector columns and GIN indexes created in the database migration
- * for better performance and relevance ranking.
- *
- * Features:
- * - Full-text search with relevance ranking
- * - Support for multi-word queries
- * - Fallback to ILIKE search for backwards compatibility
- * - Stemming and language support
- */
-
 import { supabase } from '@/integrations/supabase/client';
 import { SearchResult } from '@/hooks/useGlobalSearch';
+import { logger } from '@/lib/logger';
 
 export interface AdvancedSearchOptions {
   /** Use full-text search (tsvector) when available */
@@ -32,7 +19,6 @@ export interface AdvancedSearchOptions {
  * @public Exported for testing
  */
 export function toTsQuery(query: string): string {
-  // Remove special characters and split into words
   const words = query
     .trim()
     .toLowerCase()
@@ -42,7 +28,6 @@ export function toTsQuery(query: string): string {
 
   if (words.length === 0) return '';
 
-  // Join words with AND operator and add prefix matching
   return words.map(word => `${word}:*`).join(' & ');
 }
 
@@ -72,7 +57,7 @@ export async function searchJobsFullText(
       .limit(limit);
 
     if (error) {
-      console.error('Full-text search error for jobs:', error);
+      logger.error('SearchService', 'Full-text search error for jobs', error);
       return [];
     }
 
@@ -91,7 +76,7 @@ export async function searchJobsFullText(
       },
     }));
   } catch (err) {
-    console.error('Error in searchJobsFullText:', err);
+    logger.error('SearchService', 'Error in searchJobsFullText', err);
     return [];
   }
 }
@@ -132,11 +117,11 @@ export async function searchPartsFullText(
       .limit(limit);
 
     if (error) {
-      console.error('Full-text search error for parts:', error);
+      logger.error('SearchService', 'Full-text search error for parts', error);
       return [];
     }
 
-    return (data || []).map((part: any) => ({
+    return (data || []).map((part: { id: string; part_number: string; material: string; status: string; notes: string | null; metadata: unknown; quantity: number; job_id: string; jobs?: { job_number: string; customer: string | null } }) => ({
       id: part.id,
       type: 'part' as const,
       title: `Part #${part.part_number}`,
@@ -152,7 +137,7 @@ export async function searchPartsFullText(
       },
     }));
   } catch (err) {
-    console.error('Error in searchPartsFullText:', err);
+    logger.error('SearchService', 'Error in searchPartsFullText', err);
     return [];
   }
 }
@@ -196,11 +181,11 @@ export async function searchOperationsFullText(
       .limit(limit);
 
     if (error) {
-      console.error('Full-text search error for operations:', error);
+      logger.error('SearchService', 'Full-text search error for operations', error);
       return [];
     }
 
-    return (data || []).map((operation: any) => ({
+    return ((data || []) as unknown as { id: string; operation_name: string; status: string; notes: string | null; sequence: number; estimated_time: number; actual_time: number; completion_percentage: number; part_id: string; parts?: { part_number: string; job_id: string; jobs?: { job_number: string; customer: string | null } }; cells?: { name: string }; profiles?: { full_name: string | null; email: string } }[]).map((operation) => ({
       id: operation.id,
       type: 'operation' as const,
       title: operation.operation_name,
@@ -217,7 +202,7 @@ export async function searchOperationsFullText(
       },
     }));
   } catch (err) {
-    console.error('Error in searchOperationsFullText:', err);
+    logger.error('SearchService', 'Error in searchOperationsFullText', err);
     return [];
   }
 }
@@ -248,7 +233,7 @@ export async function searchUsersFullText(
       .limit(limit);
 
     if (error) {
-      console.error('Full-text search error for users:', error);
+      logger.error('SearchService', 'Full-text search error for users', error);
       return [];
     }
 
@@ -265,7 +250,7 @@ export async function searchUsersFullText(
       },
     }));
   } catch (err) {
-    console.error('Error in searchUsersFullText:', err);
+    logger.error('SearchService', 'Error in searchUsersFullText', err);
     return [];
   }
 }
@@ -308,11 +293,11 @@ export async function searchIssuesFullText(
       .limit(limit);
 
     if (error) {
-      console.error('Full-text search error for issues:', error);
+      logger.error('SearchService', 'Full-text search error for issues', error);
       return [];
     }
 
-    return (data || []).map((issue: any) => ({
+    return (data || []).map((issue: { id: string; description: string; severity: string; status: string; resolution_notes: string | null; operation_id: string; operations?: { operation_name: string; parts?: { part_number: string; jobs?: { job_number: string } } }; profiles?: { full_name: string | null; email: string } }) => ({
       id: issue.id,
       type: 'issue' as const,
       title: issue.description || 'Untitled Issue',
@@ -327,7 +312,7 @@ export async function searchIssuesFullText(
       },
     }));
   } catch (err) {
-    console.error('Error in searchIssuesFullText:', err);
+    logger.error('SearchService', 'Error in searchIssuesFullText', err);
     return [];
   }
 }
@@ -356,7 +341,7 @@ export async function searchAll(
     const results = await Promise.all(searchPromises);
     return results.flat();
   } catch (error) {
-    console.error('Error in searchAll:', error);
+    logger.error('SearchService', 'Error in searchAll', error);
     return [];
   }
 }

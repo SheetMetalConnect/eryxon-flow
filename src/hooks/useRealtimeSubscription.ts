@@ -35,7 +35,7 @@
  * });
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { logger } from '@/lib/logger';
@@ -71,13 +71,18 @@ export interface RealtimeSubscriptionOptions {
 /**
  * Debounce function for callback
  */
+interface DebouncedCallback<T extends (...args: unknown[]) => void> {
+  (...args: Parameters<T>): void;
+  cancel: () => void;
+}
+
 function debounce<T extends (...args: unknown[]) => void>(
   fn: T,
   delay: number
-): (...args: Parameters<T>) => void {
+): DebouncedCallback<T> {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-  return (...args: Parameters<T>) => {
+  const debounced = (...args: Parameters<T>) => {
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
@@ -86,6 +91,15 @@ function debounce<T extends (...args: unknown[]) => void>(
       timeoutId = null;
     }, delay);
   };
+
+  debounced.cancel = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+  };
+
+  return debounced;
 }
 
 /**
@@ -101,22 +115,17 @@ export function useRealtimeSubscription(options: RealtimeSubscriptionOptions): v
     includePayload = false,
   } = options;
 
-  // Stable callback ref to avoid re-subscribing on callback changes
-  const callbackRef = useRef(onDataChange);
-  callbackRef.current = onDataChange;
-
-  // Create debounced handler
-  const debouncedCallback = useCallback(
-    debounce((payload?: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-      callbackRef.current(payload);
-    }, debounceMs),
-    [debounceMs]
-  );
-
   useEffect(() => {
     if (!enabled || tables.length === 0) {
       return;
     }
+
+    const debouncedCallback = debounce(
+      (payload?: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
+        onDataChange(payload);
+      },
+      debounceMs
+    );
 
     logger.debug('Setting up realtime subscription', {
       operation: 'useRealtimeSubscription',
@@ -124,10 +133,8 @@ export function useRealtimeSubscription(options: RealtimeSubscriptionOptions): v
       tables: tables.map((t) => t.table).join(', '),
     });
 
-    // Create the channel
     let channel = supabase.channel(channelName);
 
-    // Add subscriptions for each table
     tables.forEach(({ table, filter, event = '*', schema = 'public' }) => {
       const config: {
         event: RealtimeEvent;
@@ -165,7 +172,6 @@ export function useRealtimeSubscription(options: RealtimeSubscriptionOptions): v
       );
     });
 
-    // Subscribe to the channel
     channel.subscribe((status) => {
       if (status === 'SUBSCRIBED') {
         logger.debug('Realtime subscription active', {
@@ -180,15 +186,24 @@ export function useRealtimeSubscription(options: RealtimeSubscriptionOptions): v
       }
     });
 
-    // Cleanup on unmount or when dependencies change
     return () => {
+      debouncedCallback.cancel();
       logger.debug('Cleaning up realtime subscription', {
         operation: 'useRealtimeSubscription',
         channelName,
       });
-      supabase.removeChannel(channel);
+      if (typeof supabase.removeChannel === 'function') {
+        supabase.removeChannel(channel);
+      } else if (typeof (channel as { unsubscribe?: () => unknown }).unsubscribe === 'function') {
+        channel.unsubscribe();
+      } else {
+        logger.debug('Skipping realtime unsubscribe for mock channel without cleanup method', {
+          operation: 'useRealtimeSubscription',
+          channelName,
+        });
+      }
     };
-  }, [channelName, tables, enabled, debounceMs, includePayload, debouncedCallback]);
+  }, [channelName, tables, enabled, debounceMs, includePayload, onDataChange]);
 }
 
 /**
@@ -231,7 +246,6 @@ export function useTenantSubscription(
 ): void {
   const { additionalFilter, event = '*', debounceMs = 100 } = options || {};
 
-  // Build the filter
   let filter: string | undefined;
   if (tenantId) {
     filter = `tenant_id=eq.${tenantId}`;

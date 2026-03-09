@@ -1,7 +1,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { logger } from "@/lib/logger";
+import { queryClient } from "@/lib/queryClient";
+import { prefetchCommonData } from "@/lib/cacheInvalidation";
 
 // SECURITY NOTE: The role field here is for UI convenience only (showing/hiding UI elements).
 // All actual authorization is enforced server-side via Row Level Security (RLS) policies
@@ -41,7 +43,7 @@ interface AuthContextType {
   tenant: TenantInfo | null;
   loading: boolean;
   signIn: (email: string, password: string, captchaToken?: string | null) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, userData: Partial<Profile> & { company_name?: string }, captchaToken?: string | null) => Promise<{ error: Error | null; data?: any }>;
+  signUp: (email: string, password: string, userData: Partial<Profile> & { company_name?: string }, captchaToken?: string | null) => Promise<{ error: Error | null; data?: unknown }>;
   signOut: () => Promise<void>;
   switchTenant: (tenantId: string) => Promise<void>;
   refreshTenant: () => Promise<void>;
@@ -57,24 +59,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         if (session?.user) {
-          // Fetch profile data after session is established
           setTimeout(() => {
             fetchProfile(session.user.id);
           }, 0);
         } else {
           setProfile(null);
+          setTenant(null);
+          setLoading(false);
         }
       }
     );
 
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -82,6 +83,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         fetchProfile(session.user.id);
       } else {
+        setProfile(null);
+        setTenant(null);
         setLoading(false);
       }
     });
@@ -100,12 +103,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       setProfile(data as Profile);
 
-      // Fetch tenant info after profile is loaded
       if (data) {
         await fetchTenant();
+        prefetchCommonData(queryClient, data.tenant_id, {
+          fetchCells: () => Promise.resolve(supabase.from('cells').select('*').eq('tenant_id', data.tenant_id).eq('active', true).then(r => r.data)),
+          fetchMaterials: () => Promise.resolve(supabase.from('materials').select('*').eq('tenant_id', data.tenant_id).then(r => r.data)),
+          fetchScrapReasons: () => Promise.resolve(supabase.from('scrap_reasons').select('*').eq('tenant_id', data.tenant_id).then(r => r.data)),
+        });
       }
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      logger.error('AuthContext', 'Error fetching profile', error);
     } finally {
       setLoading(false);
     }
@@ -117,49 +124,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
 
-      // The RPC returns an array, get the first element
       if (data && data.length > 0) {
-        const tenantData = data[0] as any;
+        const tenantData = data[0] as Record<string, unknown>;
         setTenant({
-          id: tenantData.id,
-          name: tenantData.name,
-          company_name: tenantData.company_name,
-          plan: tenantData.plan,
-          status: tenantData.status,
-          trial_ends_at: tenantData.trial_ends_at ?? null,
-          whitelabel_enabled: tenantData.whitelabel_enabled ?? false,
-          whitelabel_logo_url: tenantData.whitelabel_logo_url ?? null,
-          whitelabel_app_name: tenantData.whitelabel_app_name ?? null,
-          whitelabel_primary_color: tenantData.whitelabel_primary_color ?? null,
-          whitelabel_favicon_url: tenantData.whitelabel_favicon_url ?? null,
+          id: tenantData.id as string,
+          name: tenantData.name as string,
+          company_name: (tenantData.company_name as string | null) ?? null,
+          plan: tenantData.plan as TenantInfo['plan'],
+          status: tenantData.status as TenantInfo['status'],
+          trial_ends_at: (tenantData.trial_ends_at as string | null) ?? null,
+          whitelabel_enabled: (tenantData.whitelabel_enabled as boolean) ?? false,
+          whitelabel_logo_url: (tenantData.whitelabel_logo_url as string | null) ?? null,
+          whitelabel_app_name: (tenantData.whitelabel_app_name as string | null) ?? null,
+          whitelabel_primary_color: (tenantData.whitelabel_primary_color as string | null) ?? null,
+          whitelabel_favicon_url: (tenantData.whitelabel_favicon_url as string | null) ?? null,
         });
       }
     } catch (error) {
-      console.error("Error fetching tenant:", error);
+      logger.error('AuthContext', 'Error fetching tenant', error);
     }
   };
 
   const switchTenant = async (tenantId: string) => {
     try {
-      // Only root admins can switch tenants
       if (!profile?.is_root_admin) {
         throw new Error("Only root administrators can switch tenants");
       }
 
-      // Call the set_active_tenant RPC
       const { error } = await supabase.rpc("set_active_tenant", {
         p_tenant_id: tenantId,
       });
 
       if (error) throw error;
 
-      // Refresh tenant info to reflect the change
       await fetchTenant();
-
-      // Optionally reload the page to refresh all data
       window.location.reload();
     } catch (error) {
-      console.error("Error switching tenant:", error);
+      logger.error('AuthContext', 'Error switching tenant', error);
       throw error;
     }
   };
@@ -190,7 +191,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     captchaToken?: string | null
   ) => {
     try {
-      // Generate username from email (part before @)
       const username = email.split('@')[0];
 
       const { data, error } = await supabase.auth.signUp({

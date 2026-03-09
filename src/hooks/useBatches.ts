@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { QueryKeys } from "@/lib/queryClient";
+import { logger } from '@/lib/logger';
 
 export type BatchType = "laser_nesting" | "tube_batch" | "saw_batch" | "finishing_batch" | "general";
 export type BatchStatus = "draft" | "ready" | "in_progress" | "completed" | "cancelled" | "blocked";
@@ -20,7 +22,7 @@ export interface Batch {
   actual_time: number | null;
   operations_count: number;
   notes: string | null;
-  nesting_metadata: Record<string, any> | null;
+  nesting_metadata: Record<string, unknown> | null;
   external_id: string | null;
   external_source: string | null;
   created_by: string | null;
@@ -34,8 +36,7 @@ export interface Batch {
   layout_image_url: string | null;
   parent_batch_id: string | null;
   material_requirement_raised: boolean;
-  material_requirement_metadata: Record<string, any> | null;
-  // Joined data
+  material_requirement_metadata: Record<string, unknown> | null;
   cell?: {
     id: string;
     name: string;
@@ -53,7 +54,6 @@ export interface BatchOperation {
   quantity_in_batch: number | null;
   tenant_id: string;
   created_at: string;
-  // Joined data
   operation?: {
     id: string;
     operation_name: string;
@@ -88,7 +88,7 @@ export interface CreateBatchInput {
   thickness_mm?: number;
   estimated_time?: number;
   notes?: string;
-  nesting_metadata?: Record<string, any>;
+  nesting_metadata?: Record<string, unknown>;
   nesting_image_url?: string;
   layout_image_url?: string;
   parent_batch_id?: string;
@@ -103,8 +103,9 @@ export function useBatches(filters?: {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["batches", filters, profile?.tenant_id],
+    queryKey: QueryKeys.batches.all(profile?.tenant_id ?? "", filters as Record<string, unknown>),
     queryFn: async () => {
+      if (!profile?.tenant_id) throw new Error("No tenant_id available");
       let query = supabase
         .from("operation_batches")
         .select(`
@@ -112,11 +113,11 @@ export function useBatches(filters?: {
           cell:cells(id, name),
           created_by_profile:profiles!operation_batches_created_by_fkey(full_name)
         `)
-        .eq("tenant_id", profile!.tenant_id)
+        .eq("tenant_id", profile.tenant_id)
         .order("created_at", { ascending: false });
 
       if (filters?.status) {
-        query = query.eq("status", filters.status as any);
+        query = query.eq("status", filters.status);
       }
       if (filters?.batch_type) {
         query = query.eq("batch_type", filters.batch_type);
@@ -137,9 +138,9 @@ export function useBatch(batchId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["batch", batchId],
+    queryKey: QueryKeys.batches.detail(batchId ?? ""),
     queryFn: async () => {
-      if (!batchId) return null;
+      if (!batchId || !profile?.tenant_id) return null;
 
       const { data, error } = await supabase
         .from("operation_batches")
@@ -151,11 +152,11 @@ export function useBatch(batchId: string | undefined) {
           completed_by_profile:profiles!operation_batches_completed_by_fkey(full_name)
         `)
         .eq("id", batchId)
-        .eq("tenant_id", profile!.tenant_id)
+        .eq("tenant_id", profile.tenant_id)
         .single();
 
       if (error) throw error;
-      return data as any as Batch;
+      return data as unknown as Batch;
     },
     enabled: !!batchId && !!profile?.tenant_id,
   });
@@ -165,22 +166,20 @@ export function useSubBatches(batchId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["sub-batches", batchId, profile?.tenant_id],
+    queryKey: QueryKeys.batches.subBatches(batchId ?? "", profile?.tenant_id ?? ""),
     queryFn: async () => {
-      if (!batchId) return [];
+      if (!batchId || !profile?.tenant_id) return [];
 
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
         .from("operation_batches")
-        .select(`
-          *,
-          cell:cells(id, name)
-        `)
+        .select("*, cell:cells(id, name)")
         .eq("parent_batch_id", batchId)
-        .eq("tenant_id", profile!.tenant_id)
+        .eq("tenant_id", profile.tenant_id)
         .order("created_at", { ascending: true });
 
       if (error) throw error;
-      return data as Batch[];
+      return (data ?? []) as unknown as Batch[];
     },
     enabled: !!batchId && !!profile?.tenant_id,
   });
@@ -190,9 +189,9 @@ export function useBatchOperations(batchId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["batch-operations", batchId],
+    queryKey: QueryKeys.batches.operations(batchId ?? ""),
     queryFn: async () => {
-      if (!batchId) return [];
+      if (!batchId || !profile?.tenant_id) return [];
 
       const { data, error } = await supabase
         .from("batch_operations")
@@ -211,7 +210,7 @@ export function useBatchOperations(batchId: string | undefined) {
           )
         `)
         .eq("batch_id", batchId)
-        .eq("tenant_id", profile!.tenant_id)
+        .eq("tenant_id", profile.tenant_id)
         .order("sequence_in_batch", { ascending: true });
 
       if (error) throw error;
@@ -225,19 +224,19 @@ export function useBatchRequirements(batchId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["batch-requirements", batchId],
+    queryKey: QueryKeys.batches.requirements(batchId ?? ""),
     queryFn: async () => {
-      if (!batchId) return [];
+      if (!batchId || !profile?.tenant_id) return [];
 
       const { data, error } = await supabase
         .from("batch_requirements")
         .select("*")
         .eq("batch_id", batchId)
-        .eq("tenant_id", profile!.tenant_id)
+        .eq("tenant_id", profile.tenant_id)
         .order("created_at", { ascending: true });
 
       if (error) throw error;
-      return data as BatchRequirement[];
+      return (data ?? []) as unknown as BatchRequirement[];
     },
     enabled: !!batchId && !!profile?.tenant_id,
   });
@@ -252,10 +251,7 @@ export function useCreateBatch() {
     mutationFn: async (input: CreateBatchInput) => {
       if (!profile?.tenant_id) throw new Error(t("common.noTenantId"));
 
-      // Create the batch
-      const { data: batch, error: batchError } = await supabase
-        .from("operation_batches")
-        .insert({
+      const insertData = {
           tenant_id: profile.tenant_id,
           batch_number: input.batch_number,
           batch_type: input.batch_type,
@@ -264,19 +260,21 @@ export function useCreateBatch() {
           thickness_mm: input.thickness_mm,
           estimated_time: input.estimated_time,
           notes: input.notes,
-          nesting_metadata: input.nesting_metadata,
+          nesting_metadata: input.nesting_metadata as unknown,
           nesting_image_url: input.nesting_image_url,
           layout_image_url: input.layout_image_url,
           parent_batch_id: input.parent_batch_id,
           created_by: profile.id,
-          status: "draft",
-        })
+          status: "draft" as const,
+      };
+      const { data: batch, error: batchError } = await supabase
+        .from("operation_batches")
+        .insert(insertData as never)
         .select()
         .single();
 
       if (batchError) throw batchError;
 
-      // Add operations to batch if provided
       if (input.operation_ids && input.operation_ids.length > 0) {
         const batchOperations = input.operation_ids.map((opId, index) => ({
           tenant_id: profile.tenant_id,
@@ -296,10 +294,9 @@ export function useCreateBatch() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
-      queryClient.invalidateQueries({ queryKey: ["sub-batches"] });
       toast.success(t("batches.createSuccess"), { description: t("batches.createSuccessDesc") });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: error.message });
     },
   });
@@ -316,7 +313,7 @@ export function useUpdateBatch() {
 
       const { data, error } = await supabase
         .from("operation_batches")
-        .update(updates)
+        .update(updates as never)
         .eq("id", id)
         .eq("tenant_id", profile.tenant_id)
         .select()
@@ -326,11 +323,11 @@ export function useUpdateBatch() {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["batch", variables.id] });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.batches.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: ["batches"] });
       toast.success(t("batches.updateSuccess"));
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: error.message });
     },
   });
@@ -343,7 +340,7 @@ export function useUpdateBatchStatus() {
 
   return useMutation({
     mutationFn: async ({ batchId, status }: { batchId: string; status: BatchStatus }) => {
-      const updates: Record<string, any> = { status };
+      const updates: Record<string, string> = { status };
 
       if (status === "in_progress" && profile?.id) {
         updates.started_at = new Date().toISOString();
@@ -364,13 +361,23 @@ export function useUpdateBatchStatus() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["batches"] });
-      queryClient.invalidateQueries({ queryKey: ["batch", variables.batchId] });
-      queryClient.invalidateQueries({ queryKey: ["sub-batches"] }); // Status change might affect list view
+    onMutate: async ({ batchId, status }) => {
+      await queryClient.cancelQueries({ queryKey: QueryKeys.batches.detail(batchId) });
+      const previous = queryClient.getQueryData(QueryKeys.batches.detail(batchId));
+      queryClient.setQueryData(QueryKeys.batches.detail(batchId), (old: Record<string, unknown> | undefined) =>
+        old ? { ...old, status } : old
+      );
+      return { previous, batchId };
     },
-    onError: (error: any) => {
+    onError: (error: Error, _variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(QueryKeys.batches.detail(context.batchId), context.previous);
+      }
       toast.error(t("common.error"), { description: error.message });
+    },
+    onSettled: (_, _error, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["batches"] });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.batches.detail(variables.batchId) });
     },
   });
 }
@@ -384,7 +391,6 @@ export function useAddOperationsToBatch() {
     mutationFn: async ({ batchId, operationIds }: { batchId: string; operationIds: string[] }) => {
       if (!profile?.tenant_id) throw new Error(t("common.noTenantId"));
 
-      // Get current max sequence
       const { data: existing } = await supabase
         .from("batch_operations")
         .select("sequence_in_batch")
@@ -409,12 +415,12 @@ export function useAddOperationsToBatch() {
       if (error) throw error;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["batch-operations", variables.batchId] });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.batches.operations(variables.batchId) });
       queryClient.invalidateQueries({ queryKey: ["batches"] });
-      queryClient.invalidateQueries({ queryKey: ["batch", variables.batchId] }); // Update counts
+      queryClient.invalidateQueries({ queryKey: QueryKeys.batches.detail(variables.batchId) });
       toast.success(t("batches.operationsAdded"));
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: error.message });
     },
   });
@@ -436,10 +442,9 @@ export function useRemoveOperationFromBatch() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["batch-operations"] });
       queryClient.invalidateQueries({ queryKey: ["batches"] });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: error.message });
     },
   });
@@ -454,14 +459,12 @@ export function useDeleteBatch() {
     mutationFn: async (batchId: string) => {
       if (!profile?.tenant_id) throw new Error(t("common.noTenantId"));
 
-      // First delete batch operations
       await supabase
         .from("batch_operations")
         .delete()
         .eq("batch_id", batchId)
         .eq("tenant_id", profile.tenant_id);
 
-      // Then delete the batch
       const { error } = await supabase
         .from("operation_batches")
         .delete()
@@ -472,10 +475,9 @@ export function useDeleteBatch() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
-      queryClient.invalidateQueries({ queryKey: ["sub-batches"] });
       toast.success(t("batches.deleteSuccess"));
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: error.message });
     },
   });
@@ -491,14 +493,14 @@ export function useCreateBatchRequirement() {
       if (!profile?.tenant_id) throw new Error(t("common.noTenantId"));
 
       const { data, error } = await supabase
-        .from("batch_requirements")
+        .from("batch_requirements" as "operation_batches")
         .insert({
           tenant_id: profile.tenant_id,
           batch_id: batchId,
           material_name: materialName,
           quantity: quantity,
           status: 'pending'
-        })
+        } as never)
         .select()
         .single();
 
@@ -506,10 +508,10 @@ export function useCreateBatchRequirement() {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["batch-requirements", variables.batchId] });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.batches.requirements(variables.batchId) });
       toast.success(t("batches.requirementAdded"));
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: error.message });
     },
   });
@@ -521,7 +523,7 @@ export function useRaiseMaterialRequirement() {
   return useMutation({
     mutationFn: async ({ batchId }: { batchId: string }) => {
       // Placeholder implementation to satisfy existing calls
-      console.log("Legacy raise requirement called for", batchId);
+      logger.debug('useBatches', 'Legacy raise requirement called for', batchId);
     }
   })
 }

@@ -55,7 +55,9 @@
     "creating": "Creating...",
     "helpAndDocs": "Help & Docs",
     "refresh": "Refresh",
-    "noTenantId": "No tenant ID"
+    "noTenantId": "No tenant ID",
+    "pageNotFound": "Oops! Page not found",
+    "returnToHome": "Return to Home"
   },
   "forms": {
     "required": "This field is required",

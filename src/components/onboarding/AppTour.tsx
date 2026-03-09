@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 interface AppTourProps {
   userRole: 'admin' | 'operator';
@@ -12,10 +13,10 @@ interface AppTourProps {
 
 export function AppTour({ userRole, onComplete }: AppTourProps) {
   const { profile } = useAuth();
+  const { t } = useTranslation();
   const [run, setRun] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
 
-  // Admin tour steps
   const adminSteps: Step[] = [
     {
       target: 'body',
@@ -115,7 +116,6 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
     },
   ];
 
-  // Operator tour steps
   const operatorSteps: Step[] = [
     {
       target: 'body',
@@ -208,7 +208,6 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
   const steps = userRole === 'admin' ? adminSteps : operatorSteps;
 
   useEffect(() => {
-    // Start tour automatically when component mounts
     const timer = setTimeout(() => {
       setRun(true);
     }, 500);
@@ -224,7 +223,6 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
       if (finishedStatuses.includes(status)) {
         setRun(false);
 
-        // Mark tour as completed in database
         if (profile?.id) {
           try {
             await supabase
@@ -234,17 +232,16 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
 
             toast.success(t('onboarding.tourCompleted'));
           } catch (error) {
-            console.error('Error updating tour completion:', error);
+            logger.error('AppTour', 'Error updating tour completion', error);
           }
         }
 
         onComplete?.();
       } else if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
-        // Move to next step
         setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1));
       }
     },
-    [profile, onComplete]
+    [profile, onComplete, t]
   );
 
   return (
@@ -289,7 +286,6 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
   );
 }
 
-// Hook to restart the tour
 export function useRestartTour() {
   const { profile } = useAuth();
   const { t } = useTranslation();
@@ -305,10 +301,9 @@ export function useRestartTour() {
 
       toast.success(t('onboarding.tourReset'));
 
-      // Reload to restart tour
       window.location.reload();
     } catch (error) {
-      console.error('Error restarting tour:', error);
+      logger.error('AppTour', 'Error restarting tour', error);
       toast.error(t('onboarding.tourRestartFailed'));
     }
   }, [profile, t]);

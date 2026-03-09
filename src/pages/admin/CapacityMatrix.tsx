@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import { format, addDays, startOfWeek, isSameDay, parseISO, getDay, isWithinInterval } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,7 +46,6 @@ interface DayAllocation {
     };
 }
 
-// Memoized cell component for better performance
 const CapacityCell = memo(function CapacityCell({
     cellId,
     cellName,
@@ -160,12 +160,10 @@ export default function CapacityMatrix() {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
 
-    // Working days mask from tenant (default Mon-Fri = 31)
     const workingDaysMask = (tenant as any)?.working_days_mask ?? 31;
 
-    // Fetch cells first (usually cached, fast)
     const { data: cells, isLoading: cellsLoading } = useQuery({
-        queryKey: ["cells-capacity"],
+        queryKey: QueryKeys.cells.capacity(tenant?.id ?? ''),
         queryFn: async () => {
             const { data, error } = await supabase
                 .from("cells")
@@ -177,9 +175,8 @@ export default function CapacityMatrix() {
         staleTime: 5 * 60 * 1000, // 5 minutes
     });
 
-    // Fetch calendar data
     const { data: calendarDays, isLoading: calendarLoading } = useQuery({
-        queryKey: ["factory-calendar", format(startDate, 'yyyy-MM-dd')],
+        queryKey: [...QueryKeys.factoryCalendar.all(tenant?.id ?? ''), format(startDate, 'yyyy-MM-dd')],
         queryFn: async () => {
             const endDate = addDays(startDate, 14);
             const { data, error } = await supabase
@@ -193,9 +190,8 @@ export default function CapacityMatrix() {
         staleTime: 60 * 1000, // 1 minute
     });
 
-    // Fetch day allocations (main data source)
     const { data: dayAllocations, isLoading: allocationsLoading, isFetching: allocationsFetching } = useQuery({
-        queryKey: ["day-allocations", format(startDate, 'yyyy-MM-dd')],
+        queryKey: [...QueryKeys.capacity.dayAllocations(tenant?.id ?? ''), format(startDate, 'yyyy-MM-dd')],
         queryFn: async () => {
             const endDate = addDays(startDate, 14);
             const { data, error } = await supabase
@@ -221,7 +217,7 @@ export default function CapacityMatrix() {
 
     // Fallback: fetch operations with planned dates if no allocations
     const { data: operations, isLoading: opsLoading } = useQuery({
-        queryKey: ["operations-capacity", format(startDate, 'yyyy-MM-dd')],
+        queryKey: [...QueryKeys.capacity.operations(tenant?.id ?? ''), format(startDate, 'yyyy-MM-dd')],
         queryFn: async () => {
             const { data, error } = await supabase
                 .from("operations")
@@ -249,26 +245,22 @@ export default function CapacityMatrix() {
         [startDate]
     );
 
-    // Check if a date is a default working day
     const isDefaultWorkingDay = useCallback((date: Date): boolean => {
         const jsDay = getDay(date);
         const maskBits = [64, 1, 2, 4, 8, 16, 32];
         return (workingDaysMask & maskBits[jsDay]) !== 0;
     }, [workingDaysMask]);
 
-    // Memoized calendar lookup map
     const calendarMap = useMemo(() => {
         const map = new Map<string, CalendarDay>();
         calendarDays?.forEach(day => map.set(day.date, day));
         return map;
     }, [calendarDays]);
 
-    // Get calendar entry for a date
     const getCalendarEntry = useCallback((date: Date): CalendarDay | null => {
         return calendarMap.get(format(date, 'yyyy-MM-dd')) || null;
     }, [calendarMap]);
 
-    // Get day type and label
     const getDayInfo = useCallback((date: Date): { type: string; label: string | null; multiplier: number } => {
         const entry = getCalendarEntry(date);
         if (entry) {
@@ -284,7 +276,6 @@ export default function CapacityMatrix() {
         return { type: 'working', label: null, multiplier: 1 };
     }, [getCalendarEntry, isDefaultWorkingDay]);
 
-    // Memoized allocations by cell and date
     const allocationsByCellDate = useMemo(() => {
         const map = new Map<string, DayAllocation[]>();
         dayAllocations?.forEach(a => {
@@ -295,12 +286,10 @@ export default function CapacityMatrix() {
         return map;
     }, [dayAllocations]);
 
-    // Get allocations for a cell on a date
     const getAllocationsForCellDate = useCallback((cellId: string, date: Date): DayAllocation[] => {
         return allocationsByCellDate.get(`${cellId}-${format(date, 'yyyy-MM-dd')}`) || [];
     }, [allocationsByCellDate]);
 
-    // Get operations for a cell on a date (fallback when no allocations)
     const getOperationsForCellDate = useCallback((cellId: string, date: Date): any[] => {
         if (!operations) return [];
         return operations.filter(op => {
@@ -316,7 +305,6 @@ export default function CapacityMatrix() {
         });
     }, [operations]);
 
-    // Calculate load for a cell on a date
     const getCellLoad = useCallback((cellId: string, date: Date, cell: any) => {
         if (!cell) return { hours: 0, percent: 0, capacity: 0 };
 
@@ -324,7 +312,6 @@ export default function CapacityMatrix() {
         const baseCapacity = cell.capacity_hours_per_day || 8;
         const capacity = baseCapacity * dayInfo.multiplier;
 
-        // Use allocations if available, otherwise fall back to operations
         const allocations = getAllocationsForCellDate(cellId, date);
         let totalHours = 0;
 
@@ -352,14 +339,12 @@ export default function CapacityMatrix() {
         setSelectedDate(newDate);
     }, []);
 
-    // Show skeleton during initial load
     const isInitialLoading = cellsLoading;
 
     if (isInitialLoading || !cells) {
         return <CapacityMatrixSkeleton rowCount={6} />;
     }
 
-    // Get dialog data
     const dialogAllocations = selectedCell && selectedDate
         ? getAllocationsForCellDate(selectedCell.id, selectedDate)
         : [];
@@ -388,7 +373,6 @@ export default function CapacityMatrix() {
                 </div>
             </AdminPageHeader>
 
-            {/* Legend */}
             <div className="flex flex-wrap gap-2">
                 <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
                     {t("capacity.load050", "0-50%")}
@@ -498,7 +482,6 @@ export default function CapacityMatrix() {
                 </CardContent>
             </Card>
 
-            {/* Schedule Dialog */}
             <CellScheduleDialog
                 open={dialogOpen}
                 onOpenChange={setDialogOpen}

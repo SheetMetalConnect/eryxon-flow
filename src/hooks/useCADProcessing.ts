@@ -16,6 +16,8 @@ import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { QueryKeys } from '@/lib/queryClient';
+import { logger } from '@/lib/logger';
 import {
   getCADConfig,
   getActiveBackendUrl,
@@ -26,10 +28,6 @@ import {
   setCADBackendMode,
   type CADBackendMode,
 } from '@/config/cadBackend';
-
-// ============================================================================
-// Types
-// ============================================================================
 
 export interface Vector3 {
   x: number;
@@ -211,10 +209,6 @@ export interface CADProcessingResult {
   error?: string;
 }
 
-// ============================================================================
-// Configuration (via cadBackend.ts)
-// ============================================================================
-
 /**
  * Check if CAD processing service is configured (custom or byob backend)
  */
@@ -269,10 +263,6 @@ export function decodeUint32Array(base64: string): Uint32Array {
   return new Uint32Array(bytes.buffer);
 }
 
-// ============================================================================
-// Hook
-// ============================================================================
-
 interface UseCADProcessingOptions {
   /** Include geometry extraction */
   includeGeometry?: boolean;
@@ -285,7 +275,7 @@ interface UseCADProcessingOptions {
 }
 
 export function useCADProcessing() {
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingError, setProcessingError] = useState<string | null>(null);
@@ -306,11 +296,9 @@ export function useCADProcessing() {
       thumbnailSize = 256,
     } = options;
 
-    // Get active backend URL
     const backendUrl = getActiveBackendUrl();
     const currentMode = config.mode;
 
-    // If mode is frontend-only, return early (caller should use browser processing)
     if (currentMode === 'frontend' || !backendUrl) {
       return {
         success: false,
@@ -323,7 +311,6 @@ export function useCADProcessing() {
       };
     }
 
-    // Check file extension
     const ext = fileName.toLowerCase().split('.').pop();
     const supportedFormats = ['step', 'stp', 'iges', 'igs', 'brep'];
     if (!ext || !supportedFormats.includes(ext)) {
@@ -346,13 +333,11 @@ export function useCADProcessing() {
         'Content-Type': 'application/json',
       };
 
-      // Add API key if configured
       const apiKey = getActiveApiKey();
       if (apiKey) {
         headers['X-API-Key'] = apiKey;
       }
 
-      // Add custom headers for BYOB mode
       if (currentMode === 'byob' && config.byob.headers) {
         Object.entries(config.byob.headers).forEach(([key, value]) => {
           headers[key] = value;
@@ -424,16 +409,16 @@ export function useCADProcessing() {
     geometry: GeometryData | null,
     pmi: PMIData | null
   ): Promise<void> => {
-    // Get current metadata
-    const { data: part, error: fetchError } = await supabase
+    // Scope metadata reads to the active tenant when available.
+    let partQuery = supabase
       .from('parts')
       .select('metadata')
-      .eq('id', partId)
-      .single();
+      .eq('id', partId);
+    if (profile?.tenant_id) partQuery = partQuery.eq('tenant_id', profile.tenant_id);
+    const { data: part, error: fetchError } = await partQuery.single();
 
     if (fetchError) throw fetchError;
 
-    // Merge into existing metadata
     const currentMetadata = (part?.metadata as Record<string, unknown>) || {};
     const updatedMetadata = {
       ...currentMetadata,
@@ -454,13 +439,15 @@ export function useCADProcessing() {
     // as they can be large. Instead, we could store in a separate
     // storage bucket or cache if needed.
 
-    const { error: updateError } = await supabase
+    let updateQuery = supabase
       .from('parts')
       .update({ metadata: JSON.parse(JSON.stringify(updatedMetadata)) })
       .eq('id', partId);
+    if (profile?.tenant_id) updateQuery = updateQuery.eq('tenant_id', profile.tenant_id);
+    const { error: updateError } = await updateQuery;
 
     if (updateError) throw updateError;
-  }, []);
+  }, [profile?.tenant_id]);
 
   /**
    * Process and store CAD data for a part
@@ -476,10 +463,10 @@ export function useCADProcessing() {
     if (result.success) {
       try {
         await storeProcessedData(partId, result.geometry, result.pmi);
-        queryClient.invalidateQueries({ queryKey: ['pmi', partId] });
-        queryClient.invalidateQueries({ queryKey: ['part', partId] });
+        queryClient.invalidateQueries({ queryKey: QueryKeys.pmi.byPart(partId) });
+        queryClient.invalidateQueries({ queryKey: QueryKeys.parts.detail(partId) });
       } catch (error) {
-        console.error('Failed to store processed data:', error);
+        logger.error('useCADProcessing', 'Failed to store processed data', error);
         // Don't fail the whole operation if storage fails
       }
     }
@@ -488,27 +475,18 @@ export function useCADProcessing() {
   }, [processCAD, storeProcessedData, queryClient]);
 
   return {
-    // State
     isProcessing,
     processingError,
-
-    // Actions
     processCAD,
     processAndStore,
     storeProcessedData,
-
-    // Utilities
     decodeFloat32Array,
     decodeUint32Array,
-
-    // Backend configuration
     backendMode: getCADConfig().mode,
     isCADServiceEnabled: isCADServiceEnabled(),
     isServerBackendActive: getCADConfig().mode !== 'frontend' && isCADServiceEnabled(),
     isFrontendFallback: getCADConfig().mode === 'frontend',
     config: getCADConfig(),
-
-    // Config management
     switchBackendMode,
     determineBestBackend,
   };
@@ -520,7 +498,7 @@ export function useCADProcessing() {
  */
 export function useCachedGeometry(partId: string | undefined) {
   return useQuery({
-    queryKey: ['geometry', partId],
+    queryKey: QueryKeys.pmi.geometry(partId ?? ''),
     queryFn: async () => {
       if (!partId) return null;
 
@@ -534,12 +512,10 @@ export function useCachedGeometry(partId: string | undefined) {
 
       const metadata = part?.metadata as Record<string, unknown> | null;
 
-      // Check if geometry was processed
       if (!metadata?.geometry_processed) {
         return null;
       }
 
-      // Return bounding box and stats (full geometry not stored in DB)
       return {
         bounding_box: metadata.bounding_box as BoundingBox | undefined,
         total_vertices: metadata.geometry_vertices as number | undefined,

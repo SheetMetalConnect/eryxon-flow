@@ -298,5 +298,5 @@ Interactive elements maintain adequate touch targets (44px minimum) on all devic
 
 ## Related Documentation
 
-- [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) - CSS tokens and design classes
-- [CODING_PATTERNS.md](./CODING_PATTERNS.md) - Code patterns and examples
+- [Design System Reference](/engineering/design-system-reference/) - CSS tokens and design classes
+- [Coding Patterns](/engineering/coding-patterns/) - Code patterns and examples

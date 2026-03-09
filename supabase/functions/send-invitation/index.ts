@@ -12,6 +12,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { corsHeaders, handleCors } from "@shared/cors.ts";
+import { sanitizeError, escapeHtml } from "@shared/security.ts";
 
 interface InvitationRequest {
   email: string;
@@ -217,8 +218,9 @@ Deno.serve(async (req: Request) => {
 
     const organizationName =
       tenantInfo?.company_name || tenantInfo?.name || "your organization";
-    const inviterName = profile.full_name || user.email || "A team member";
+    const inviterName = escapeHtml(profile.full_name || user.email || "A team member");
     const roleDisplay = role === "admin" ? "Administrator" : "Operator";
+    const safeOrgName = escapeHtml(organizationName);
 
     // If Resend API key is configured, send email
     if (resendApiKey) {
@@ -228,7 +230,7 @@ Deno.serve(async (req: Request) => {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>You're Invited to Join ${organizationName}</title>
+  <title>You're Invited to Join ${safeOrgName}</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f5;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f5; padding: 40px 20px;">
@@ -250,7 +252,7 @@ Deno.serve(async (req: Request) => {
                 Hello,
               </p>
               <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px; line-height: 1.6;">
-                <strong>${inviterName}</strong> has invited you to join <strong>${organizationName}</strong> on Eryxon Flow as an <strong>${roleDisplay}</strong>.
+                <strong>${inviterName}</strong> has invited you to join <strong>${safeOrgName}</strong> on Eryxon Flow as an <strong>${roleDisplay}</strong>.
               </p>
 
               <!-- Info Box -->
@@ -260,7 +262,7 @@ Deno.serve(async (req: Request) => {
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
                         <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Organization:</td>
-                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${organizationName}</td>
+                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 500; text-align: right;">${safeOrgName}</td>
                       </tr>
                       <tr>
                         <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Role:</td>
@@ -305,7 +307,7 @@ Deno.serve(async (req: Request) => {
                 Eryxon Flow - Manufacturing Execution System
               </p>
               <p style="margin: 8px 0 0 0; color: #94a3b8; font-size: 11px;">
-                This email was sent to ${email}
+                This email was sent to ${escapeHtml(email)}
               </p>
             </td>
           </tr>
@@ -320,7 +322,7 @@ Deno.serve(async (req: Request) => {
       const emailPayload: ResendEmailPayload = {
         from: emailFrom,
         to: email,
-        subject: `You're invited to join ${organizationName} on Eryxon Flow`,
+        subject: `You're invited to join ${safeOrgName} on Eryxon Flow`,
         html: emailHtml,
       };
 
@@ -405,9 +407,10 @@ Deno.serve(async (req: Request) => {
     }
   } catch (error) {
     console.error("Unexpected error:", error);
+    const sanitized = sanitizeError(error);
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : "Internal server error",
+        error: sanitized.message,
       }),
       {
         status: 500,

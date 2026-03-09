@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Check, Minus, Plus, AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 
 interface ProductionQuantityModalProps {
   isOpen: boolean;
@@ -37,7 +38,6 @@ export default function ProductionQuantityModal({
   const [previouslyRecordedGood, setPreviouslyRecordedGood] = useState<number>(0);
   const [showShortfallPrompt, setShowShortfallPrompt] = useState(false);
 
-  // Calculate totals
   const totalGoodAfter = previouslyRecordedGood + quantityGood;
   const remaining = plannedQuantity ? Math.max(0, plannedQuantity - totalGoodAfter) : 0;
   const targetAchieved = plannedQuantity ? totalGoodAfter >= plannedQuantity : false;
@@ -61,7 +61,7 @@ export default function ProductionQuantityModal({
       const totalGood = data?.reduce((sum, rec) => sum + (rec.quantity_good || 0), 0) || 0;
       setPreviouslyRecordedGood(totalGood);
     } catch (error) {
-      console.error("Error fetching previous quantities:", error);
+      logger.error("ProductionQuantityModal", "Error fetching previous quantities", error);
     }
   };
 
@@ -78,7 +78,6 @@ export default function ProductionQuantityModal({
       return;
     }
 
-    // If there's a shortfall and we haven't asked yet, ask
     if (hasShortfall && !showShortfallPrompt && quantityGood > 0) {
       setShowShortfallPrompt(true);
       return;
@@ -86,9 +85,6 @@ export default function ProductionQuantityModal({
 
     setIsSubmitting(true);
     try {
-      // Only record what was actually made as good parts
-      // Shortfall is remaining work, NOT scrap
-      // Scrap should only be recorded when parts were made but failed quality
       const { error } = await supabase.from("operation_quantities").insert([{
         tenant_id: profile.tenant_id,
         operation_id: operationId,
@@ -102,16 +98,15 @@ export default function ProductionQuantityModal({
 
       toast.success(t("production.recorded", "{{count}} good parts recorded", { count: quantityGood }));
 
-      // Open issue form if requested with shortfall quantity
       if (fileIssue && onFileIssue) {
         onFileIssue(remaining);
       }
 
       onSuccess(quantityGood, targetAchieved);
       handleClose();
-    } catch (error: any) {
-      console.error("Error recording production:", error);
-      toast.error(error.message || t("notifications.failed"));
+    } catch (error: unknown) {
+      logger.error("ProductionQuantityModal", "Error recording production", error);
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -131,7 +126,6 @@ export default function ProductionQuantityModal({
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {/* Part info */}
           <div className="text-center text-sm text-muted-foreground">
             <div className="font-medium text-foreground">{partNumber}</div>
             {plannedQuantity && (
@@ -144,7 +138,6 @@ export default function ProductionQuantityModal({
             )}
           </div>
 
-          {/* Counter */}
           <div className="flex items-center justify-center gap-4">
             <Button
               type="button"
@@ -170,7 +163,6 @@ export default function ProductionQuantityModal({
             </Button>
           </div>
 
-          {/* Status indicator */}
           {quantityGood > 0 && (
             <div className="text-center text-sm">
               {targetAchieved ? (
@@ -186,7 +178,6 @@ export default function ProductionQuantityModal({
             </div>
           )}
 
-          {/* Shortfall prompt */}
           {showShortfallPrompt && (
             <Alert className="border-amber-500/50 bg-amber-500/10">
               <AlertTriangle className="h-4 w-4 text-amber-600" />

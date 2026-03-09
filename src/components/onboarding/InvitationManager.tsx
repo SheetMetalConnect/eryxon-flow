@@ -9,6 +9,7 @@ import { Plus, X, Mail, Loader2, Trash2 } from 'lucide-react';
 import { useInvitations } from '@/hooks/useInvitations';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 interface InviteEntry {
   id: string;
@@ -42,7 +43,6 @@ export function InvitationManager() {
   };
 
   const handleSendInvitations = async () => {
-    // Filter out empty emails
     const validEntries = inviteEntries.filter(entry => entry.email.trim() !== '');
 
     if (validEntries.length === 0) {
@@ -50,7 +50,6 @@ export function InvitationManager() {
       return;
     }
 
-    // Validate email formats
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const invalidEmails = validEntries.filter(entry => !emailRegex.test(entry.email));
 
@@ -62,19 +61,17 @@ export function InvitationManager() {
     setSending(true);
 
     try {
-      // Send invitations
       const promises = validEntries.map(entry =>
         createInvitation(entry.email, entry.role)
       );
 
       await Promise.all(promises);
 
-      // Clear form
       setInviteEntries([{ id: Date.now().toString(), email: '', role: 'operator' }]);
 
       toast.success(t('notifications.success'), { description: t('invitation.invitationsSent', { count: validEntries.length }) });
     } catch (error: unknown) {
-      console.error('Error sending invitations:', error);
+      logger.error('InvitationManager', 'Error sending invitations', error);
       toast.error(t('notifications.error'), { description: error instanceof Error ? error.message : t('invitation.sendFailed') });
     } finally {
       setSending(false);
@@ -89,7 +86,6 @@ export function InvitationManager() {
 
   return (
     <div className="space-y-6">
-      {/* New Invitations Form */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Invite Team Members</h3>
@@ -162,7 +158,6 @@ export function InvitationManager() {
         </Button>
       </div>
 
-      {/* Pending Invitations List */}
       {pendingInvitations.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-lg font-semibold">Pending Invitations</h3>

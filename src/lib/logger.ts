@@ -1,22 +1,10 @@
-/**
- * Structured Logging Utility
- *
- * Provides consistent, context-aware logging throughout the application.
- * This is a foundation for future integration with external logging services
- * (Sentry, DataDog, LogRocket, etc.)
- *
- * Features:
- * 1. Log levels (debug, info, warn, error)
- * 2. Structured context with each log
- * 3. Environment-aware behavior
- * 4. Easy migration path to external services
- */
-
 import { getErrorMessage, ErrorCodeType } from './errors';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 export interface LogContext {
+  /** Component name for simple API context */
+  component?: string;
   /** The operation being performed */
   operation?: string;
   /** Entity type (job, part, operation, etc.) */
@@ -49,9 +37,6 @@ interface LogEntry {
   };
 }
 
-/**
- * Log level priority for filtering
- */
 const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
   debug: 0,
   info: 1,
@@ -59,54 +44,38 @@ const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
   error: 3,
 };
 
-/**
- * Get the minimum log level from environment
- */
 function getMinLogLevel(): LogLevel {
-  // In production, default to 'warn' to reduce noise
-  // In development, show all logs
   if (import.meta.env.PROD) {
     return 'warn';
   }
   return 'debug';
 }
 
-/**
- * Check if a log level should be output
- */
 function shouldLog(level: LogLevel): boolean {
   const minLevel = getMinLogLevel();
   return LOG_LEVEL_PRIORITY[level] >= LOG_LEVEL_PRIORITY[minLevel];
 }
 
-/**
- * Format a log entry for console output
- */
 function formatLogEntry(entry: LogEntry): string {
   const parts: string[] = [];
 
-  // Add timestamp in development
   if (import.meta.env.DEV) {
     parts.push(`[${new Date(entry.timestamp).toLocaleTimeString()}]`);
   }
 
-  // Add level badge
   parts.push(`[${entry.level.toUpperCase()}]`);
 
-  // Add operation context if present
-  if (entry.context?.operation) {
+  if (entry.context?.component) {
+    parts.push(`[${entry.context.component}]`);
+  } else if (entry.context?.operation) {
     parts.push(`[${entry.context.operation}]`);
   }
 
-  // Add message
   parts.push(entry.message);
 
   return parts.join(' ');
 }
 
-/**
- * Get console styling for log level
- */
 function getLogStyle(level: LogLevel): string {
   switch (level) {
     case 'debug':
@@ -120,14 +89,10 @@ function getLogStyle(level: LogLevel): string {
   }
 }
 
-/**
- * Output a log entry to the console
- */
 function outputLog(entry: LogEntry): void {
   const message = formatLogEntry(entry);
   const style = getLogStyle(entry.level);
 
-  // Use appropriate console method
   switch (entry.level) {
     case 'debug':
       console.debug(`%c${message}`, style, entry.context || '');
@@ -147,9 +112,6 @@ function outputLog(entry: LogEntry): void {
   }
 }
 
-/**
- * Create a log entry
- */
 function createLogEntry(
   level: LogLevel,
   message: string,
@@ -177,46 +139,102 @@ function createLogEntry(
 }
 
 /**
- * Main logger object with methods for each log level
+ * Resolve overloaded arguments for debug/info/warn methods.
+ * Detects whether the caller used the simple API (component, message, data)
+ * or the legacy API (message, context).
+ */
+function resolveArgs(
+  first: string,
+  second?: string | LogContext,
+  third?: unknown
+): { message: string; context?: LogContext } {
+  if (typeof second === 'string') {
+    // Simple API: logger.debug('Component', 'message', data?)
+    const context: LogContext = { component: first };
+    if (third !== undefined) {
+      (context as Record<string, unknown>).data = third;
+    }
+    return { message: second, context };
+  }
+  // Legacy API: logger.debug('message', context?)
+  return { message: first, context: second };
+}
+
+/**
+ * Main logger object with methods for each log level.
+ *
+ * Supports two calling conventions:
+ *
+ * 1. Simple component-context API:
+ *    logger.debug('MyComponent', 'Fetching data', optionalData)
+ *
+ * 2. Legacy structured API (backward-compatible):
+ *    logger.debug('message', { operation: 'fetch' })
  */
 export const logger = {
   /**
    * Debug level - verbose information for development
+   * @overload (component: string, message: string, data?: unknown)
+   * @overload (message: string, context?: LogContext)
    */
-  debug(message: string, context?: LogContext): void {
+  debug(componentOrMessage: string, messageOrContext?: string | LogContext, data?: unknown): void {
     if (!shouldLog('debug')) return;
+    const { message, context } = resolveArgs(componentOrMessage, messageOrContext, data);
     const entry = createLogEntry('debug', message, context);
     outputLog(entry);
   },
 
   /**
    * Info level - general operational information
+   * @overload (component: string, message: string, data?: unknown)
+   * @overload (message: string, context?: LogContext)
    */
-  info(message: string, context?: LogContext): void {
+  info(componentOrMessage: string, messageOrContext?: string | LogContext, data?: unknown): void {
     if (!shouldLog('info')) return;
+    const { message, context } = resolveArgs(componentOrMessage, messageOrContext, data);
     const entry = createLogEntry('info', message, context);
     outputLog(entry);
   },
 
   /**
    * Warn level - potential issues that don't prevent operation
+   * @overload (component: string, message: string, data?: unknown)
+   * @overload (message: string, context?: LogContext)
    */
-  warn(message: string, context?: LogContext): void {
+  warn(componentOrMessage: string, messageOrContext?: string | LogContext, data?: unknown): void {
     if (!shouldLog('warn')) return;
+    const { message, context } = resolveArgs(componentOrMessage, messageOrContext, data);
     const entry = createLogEntry('warn', message, context);
     outputLog(entry);
   },
 
   /**
    * Error level - errors that affect functionality
+   * @overload (component: string, message: string, errorOrData?: unknown)
+   * @overload (message: string, error?: unknown, context?: LogContext)
    */
-  error(message: string, error?: unknown, context?: LogContext): void {
+  error(componentOrMessage: string, messageOrError?: string | unknown, errorOrContext?: unknown): void {
     if (!shouldLog('error')) return;
+
+    let message: string;
+    let context: LogContext | undefined;
+    let error: unknown;
+
+    if (typeof messageOrError === 'string') {
+      // Simple API: logger.error('Component', 'message', error)
+      message = messageOrError;
+      context = { component: componentOrMessage };
+      error = errorOrContext;
+    } else {
+      // Legacy API: logger.error('message', error, context)
+      message = componentOrMessage;
+      error = messageOrError;
+      context = errorOrContext as LogContext | undefined;
+    }
+
     const entry = createLogEntry('error', message, context, error);
     outputLog(entry);
 
-    // Future: Send to external error tracking service
-    // Sentry.captureException(error, { extra: context });
   },
 
   /**
@@ -305,9 +323,6 @@ export function createScopedLogger(baseContext: LogContext) {
   };
 }
 
-/**
- * Performance tracking utility
- */
 export function measurePerformance(name: string): () => void {
   const start = performance.now();
   return () => {

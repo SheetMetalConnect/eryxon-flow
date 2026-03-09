@@ -1,36 +1,27 @@
-/**
- * Entity-specific validators for MES data
- */
-
 import {
   BaseValidator,
   ValidationContext,
   ValidationError,
 } from "./DataValidator";
 
-/**
- * Cell Validator
- */
-export class CellValidator extends BaseValidator<any> {
+export class CellValidator extends BaseValidator<Record<string, unknown>> {
   constructor() {
     super("cells");
   }
 
   validateEntity(
-    cell: any,
+    cell: Record<string, unknown>,
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
     const errors: ValidationError[] = [];
 
-    // Required fields
     const requiredError = this.validateRequired(cell, "tenant_id", index);
     if (requiredError) errors.push(requiredError);
 
     const nameError = this.validateRequired(cell, "name", index);
     if (nameError) errors.push(nameError);
 
-    // Numeric validations
     const sequenceError = this.validateNumber(cell, "sequence", index, {
       min: 0,
       required: false,
@@ -47,22 +38,18 @@ export class CellValidator extends BaseValidator<any> {
   }
 }
 
-/**
- * Job Validator
- */
-export class JobValidator extends BaseValidator<any> {
+export class JobValidator extends BaseValidator<Record<string, unknown>> {
   constructor() {
     super("jobs");
   }
 
   validateEntity(
-    job: any,
+    job: Record<string, unknown>,
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
     const errors: ValidationError[] = [];
 
-    // Required fields
     const tenantError = this.validateRequired(job, "tenant_id", index);
     if (tenantError) errors.push(tenantError);
 
@@ -73,29 +60,24 @@ export class JobValidator extends BaseValidator<any> {
   }
 }
 
-/**
- * Part Validator
- */
-export class PartValidator extends BaseValidator<any> {
+export class PartValidator extends BaseValidator<Record<string, unknown>> {
   constructor() {
     super("parts");
   }
 
   validateEntity(
-    part: any,
+    part: Record<string, unknown>,
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
     const errors: ValidationError[] = [];
 
-    // Required fields
     const tenantError = this.validateRequired(part, "tenant_id", index);
     if (tenantError) errors.push(tenantError);
 
     const partNumberError = this.validateRequired(part, "part_number", index);
     if (partNumberError) errors.push(partNumberError);
 
-    // Foreign key: job_id (required)
     const jobFkError = this.validateForeignKey(
       part,
       "job_id",
@@ -105,7 +87,6 @@ export class PartValidator extends BaseValidator<any> {
     );
     if (jobFkError) errors.push(jobFkError);
 
-    // Foreign key: parent_part_id (optional, self-referential)
     const parentFkError = this.validateForeignKey(
       part,
       "parent_part_id",
@@ -115,7 +96,6 @@ export class PartValidator extends BaseValidator<any> {
     );
     if (parentFkError) errors.push(parentFkError);
 
-    // Numeric validation
     const quantityError = this.validateNumber(part, "quantity", index, {
       min: 0,
       required: false,
@@ -126,22 +106,18 @@ export class PartValidator extends BaseValidator<any> {
   }
 }
 
-/**
- * Operation Validator
- */
-export class OperationValidator extends BaseValidator<any> {
+export class OperationValidator extends BaseValidator<Record<string, unknown>> {
   constructor() {
     super("operations");
   }
 
   validateEntity(
-    operation: any,
+    operation: Record<string, unknown>,
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
     const errors: ValidationError[] = [];
 
-    // Required fields
     const tenantError = this.validateRequired(operation, "tenant_id", index);
     if (tenantError) errors.push(tenantError);
 
@@ -152,7 +128,6 @@ export class OperationValidator extends BaseValidator<any> {
     );
     if (operationNameError) errors.push(operationNameError);
 
-    // Foreign key: part_id (required)
     const partFkError = this.validateForeignKey(
       operation,
       "part_id",
@@ -162,7 +137,6 @@ export class OperationValidator extends BaseValidator<any> {
     );
     if (partFkError) errors.push(partFkError);
 
-    // Foreign key: cell_id (required)
     const cellFkError = this.validateForeignKey(
       operation,
       "cell_id",
@@ -172,7 +146,6 @@ export class OperationValidator extends BaseValidator<any> {
     );
     if (cellFkError) errors.push(cellFkError);
 
-    // Numeric validations
     const sequenceError = this.validateNumber(operation, "sequence", index, {
       min: 0,
       required: false,
@@ -191,26 +164,21 @@ export class OperationValidator extends BaseValidator<any> {
   }
 }
 
-/**
- * Time Entry Validator
- */
-export class TimeEntryValidator extends BaseValidator<any> {
+export class TimeEntryValidator extends BaseValidator<Record<string, unknown>> {
   constructor() {
     super("time_entries");
   }
 
   validateEntity(
-    timeEntry: any,
+    timeEntry: Record<string, unknown>,
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
     const errors: ValidationError[] = [];
 
-    // Required fields
     const tenantError = this.validateRequired(timeEntry, "tenant_id", index);
     if (tenantError) errors.push(tenantError);
 
-    // Foreign key: operation_id (required)
     const operationFkError = this.validateForeignKey(
       timeEntry,
       "operation_id",
@@ -220,7 +188,6 @@ export class TimeEntryValidator extends BaseValidator<any> {
     );
     if (operationFkError) errors.push(operationFkError);
 
-    // Foreign key: operator_id (optional - can be null if no operators)
     const operatorFkError = this.validateForeignKey(
       timeEntry,
       "operator_id",
@@ -230,7 +197,6 @@ export class TimeEntryValidator extends BaseValidator<any> {
     );
     if (operatorFkError) errors.push(operatorFkError);
 
-    // Numeric validations
     const durationError = this.validateNumber(timeEntry, "duration", index, {
       min: 0,
       required: false,
@@ -241,26 +207,21 @@ export class TimeEntryValidator extends BaseValidator<any> {
   }
 }
 
-/**
- * Quantity Record Validator
- */
-export class QuantityRecordValidator extends BaseValidator<any> {
+export class QuantityRecordValidator extends BaseValidator<Record<string, unknown>> {
   constructor() {
     super("quantity_records");
   }
 
   validateEntity(
-    record: any,
+    record: Record<string, unknown>,
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
     const errors: ValidationError[] = [];
 
-    // Required fields
     const tenantError = this.validateRequired(record, "tenant_id", index);
     if (tenantError) errors.push(tenantError);
 
-    // Foreign key: operation_id (required)
     const operationFkError = this.validateForeignKey(
       record,
       "operation_id",
@@ -270,7 +231,6 @@ export class QuantityRecordValidator extends BaseValidator<any> {
     );
     if (operationFkError) errors.push(operationFkError);
 
-    // Foreign key: recorded_by (optional)
     const operatorFkError = this.validateForeignKey(
       record,
       "recorded_by",
@@ -280,7 +240,6 @@ export class QuantityRecordValidator extends BaseValidator<any> {
     );
     if (operatorFkError) errors.push(operatorFkError);
 
-    // Foreign key: scrap_reason_id (optional)
     const scrapReasonFkError = this.validateForeignKey(
       record,
       "scrap_reason_id",
@@ -290,7 +249,6 @@ export class QuantityRecordValidator extends BaseValidator<any> {
     );
     if (scrapReasonFkError) errors.push(scrapReasonFkError);
 
-    // Numeric validations
     const quantityProducedError = this.validateNumber(
       record,
       "quantity_produced",
@@ -327,22 +285,18 @@ export class QuantityRecordValidator extends BaseValidator<any> {
   }
 }
 
-/**
- * Issue/NCR Validator
- */
-export class IssueValidator extends BaseValidator<any> {
+export class IssueValidator extends BaseValidator<Record<string, unknown>> {
   constructor() {
     super("issues");
   }
 
   validateEntity(
-    issue: any,
+    issue: Record<string, unknown>,
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
     const errors: ValidationError[] = [];
 
-    // Required fields
     const tenantError = this.validateRequired(issue, "tenant_id", index);
     if (tenantError) errors.push(tenantError);
 
@@ -353,7 +307,6 @@ export class IssueValidator extends BaseValidator<any> {
     );
     if (descriptionError) errors.push(descriptionError);
 
-    // Foreign key: operation_id (required)
     const operationFkError = this.validateForeignKey(
       issue,
       "operation_id",
@@ -363,7 +316,6 @@ export class IssueValidator extends BaseValidator<any> {
     );
     if (operationFkError) errors.push(operationFkError);
 
-    // Foreign key: created_by (optional)
     const createdByFkError = this.validateForeignKey(
       issue,
       "created_by",
@@ -373,7 +325,6 @@ export class IssueValidator extends BaseValidator<any> {
     );
     if (createdByFkError) errors.push(createdByFkError);
 
-    // Foreign key: reviewed_by (optional)
     const reviewedByFkError = this.validateForeignKey(
       issue,
       "reviewed_by",
@@ -387,22 +338,18 @@ export class IssueValidator extends BaseValidator<any> {
   }
 }
 
-/**
- * Operation Resource Link Validator
- */
-export class OperationResourceValidator extends BaseValidator<any> {
+export class OperationResourceValidator extends BaseValidator<Record<string, unknown>> {
   constructor() {
     super("operation_resources");
   }
 
   validateEntity(
-    link: any,
+    link: Record<string, unknown>,
     index: number,
     context: ValidationContext,
   ): ValidationError[] {
     const errors: ValidationError[] = [];
 
-    // Foreign key: operation_id (required)
     const operationFkError = this.validateForeignKey(
       link,
       "operation_id",
@@ -412,7 +359,6 @@ export class OperationResourceValidator extends BaseValidator<any> {
     );
     if (operationFkError) errors.push(operationFkError);
 
-    // Foreign key: resource_id (required)
     const resourceFkError = this.validateForeignKey(
       link,
       "resource_id",
@@ -422,7 +368,6 @@ export class OperationResourceValidator extends BaseValidator<any> {
     );
     if (resourceFkError) errors.push(resourceFkError);
 
-    // Numeric validation
     const quantityError = this.validateNumber(link, "quantity", index, {
       min: 0,
       required: false,

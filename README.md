@@ -4,6 +4,8 @@ Manufacturing Execution System (MES) for job shops and make-to-order manufacture
 
 **[Live Demo](https://app.eryxon.eu)** · [Documentation](https://eryxon.eu) · [GitHub](https://github.com/SheetMetalConnect/eryxon-flow)
 
+**Current Release:** `0.3.3`
+
 ## Who It's For
 
 **Job shops** running high-mix, low-volume production — sheet metal, machine shops, custom fabrication. If you're tracking thousands of unique parts through multiple operations, this is built for you.
@@ -32,7 +34,17 @@ Manufacturing Execution System (MES) for job shops and make-to-order manufacture
 
 ## Quick Deploy
 
-See **[DEPLOY.md](DEPLOY.md)** for complete deployment instructions.
+See **[website/src/content/docs/guides/deployment.md](website/src/content/docs/guides/deployment.md)** for deployment instructions and **[website/src/content/docs/guides/self-hosting.md](website/src/content/docs/guides/self-hosting.md)** for the full self-hosting walkthrough.
+
+## Releases
+
+Eryxon Flow uses a simple SemVer-based release model:
+
+- `MAJOR` for breaking API, database, or deployment changes
+- `MINOR` for backward-compatible features and meaningful platform expansions
+- `PATCH` for fixes, security hardening, docs, and release stabilization
+
+Work in progress should land in the release notes and changelog pages under `website/src/content/docs/guides/` until tagged.
 
 ## Prerequisites
 
@@ -68,19 +80,22 @@ See `.env.example` for complete list.
 **Frontend**: React + TypeScript + Vite
 **UI**: shadcn/ui + Tailwind CSS + Custom Design System
 **Backend**: Supabase (PostgreSQL + Edge Functions + Realtime)
-**Deployment**: Cloudflare Pages
-**Database**: 87 migrations, multi-tenant schema with RLS
-**API**: 28 Edge Functions (refactored with shared CRUD builder)
-**3D Rendering**: Three.js + occt-import-js (client-side STEP parsing)
+**Deployment**: Cloudflare Pages, Docker, or self-hosted reverse proxy setups
+**Database**: Multi-tenant schema with RLS and versioned migrations under `supabase/migrations/`
+**API**: Supabase Edge Functions with shared auth, validation, and webhook helpers
+**3D Rendering**: Three.js with browser STEP parsing and optional backend-assisted CAD processing
 
 ## Documentation
 
-- [CHANGELOG.md](CHANGELOG.md) - Version history and release notes
-- [DEPLOY.md](DEPLOY.md) - Deployment guide
-- [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) - API reference
-- [docs/SELF_HOSTING_GUIDE.md](docs/SELF_HOSTING_GUIDE.md) - Self-hosting
-- [docs/DATABASE.md](docs/DATABASE.md) - Database schema
-- [docs/](docs/) - Complete documentation
+- [website/src/content/docs/](website/src/content/docs/) - Canonical documentation source
+- [website/src/content/docs/guides/changelog.md](website/src/content/docs/guides/changelog.md) - Full release history
+- [website/src/content/docs/guides/releases.md](website/src/content/docs/guides/releases.md) - Versioning policy and current release summary
+- [website/src/content/docs/guides/deployment.md](website/src/content/docs/guides/deployment.md) - Deployment guide
+- [website/src/content/docs/operations/security-audit-baseline.md](website/src/content/docs/operations/security-audit-baseline.md) - Security audit baseline and remediation tracking
+- [website/src/content/docs/api/rest-api-reference.md](website/src/content/docs/api/rest-api-reference.md) - Backend API reference
+- [website/src/content/docs/api/payload-reference.md](website/src/content/docs/api/payload-reference.md) - API payload shapes and examples
+- [website/src/content/docs/guides/self-hosting.md](website/src/content/docs/guides/self-hosting.md) - Canonical self-hosting guide
+- [website/src/content/docs/architecture/app-architecture.md](website/src/content/docs/architecture/app-architecture.md) - Architecture overview
 
 ## License
 
@@ -99,6 +114,6 @@ See [LICENSE](LICENSE) for full terms.
 
 ## Support
 
-- Documentation: [docs/](docs/)
+- Documentation: [website/src/content/docs/](website/src/content/docs/)
 - Issues: [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues)
 - Commercial support: office@sheetmetalconnect.com

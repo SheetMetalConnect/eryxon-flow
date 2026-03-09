@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { startBatchTimeTracking, stopBatchTimeTracking } from "@/lib/database";
+import { QueryKeys } from "@/lib/queryClient";
 
 /**
  * Resolve an error message that may be an i18n key.
@@ -26,11 +27,10 @@ export function useBatchActiveTimer(batchId: string | undefined) {
   const { profile } = useAuth();
 
   return useQuery({
-    queryKey: ["batch-active-timer", batchId],
+    queryKey: QueryKeys.batches.activeTimer(batchId ?? ""),
     queryFn: async () => {
       if (!batchId || !profile?.tenant_id) return null;
 
-      // Get operation IDs in this batch
       const { data: batchOps } = await supabase
         .from("batch_operations")
         .select("operation_id")
@@ -41,7 +41,6 @@ export function useBatchActiveTimer(batchId: string | undefined) {
 
       const opIds = batchOps.map((bo) => bo.operation_id);
 
-      // Check for active time entries on these operations
       const { data: activeEntries } = await supabase
         .from("time_entries")
         .select("id, operation_id, start_time, operator_id")
@@ -79,12 +78,10 @@ export function useStartBatchTimer() {
       await startBatchTimeTracking(batchId, profile.id, profile.tenant_id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["batch-active-timer"] });
       queryClient.invalidateQueries({ queryKey: ["batches"] });
-      queryClient.invalidateQueries({ queryKey: ["batch"] });
       toast.success(t("batches.timeTracking.started"), { description: t("batches.timeTracking.startedDesc") });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: resolveErrorMessage(t, error.message) });
     },
   });
@@ -106,10 +103,7 @@ export function useStopBatchTimer() {
       return await stopBatchTimeTracking(batchId, profile.id, profile.tenant_id);
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ["batch-active-timer"] });
-      queryClient.invalidateQueries({ queryKey: ["batch-operations"] });
       queryClient.invalidateQueries({ queryKey: ["batches"] });
-      queryClient.invalidateQueries({ queryKey: ["batch"] });
       toast.success(t("batches.timeTracking.stopped"), {
         description: t("batches.timeTracking.stoppedDesc", {
           total: result.totalMinutes,
@@ -118,7 +112,7 @@ export function useStopBatchTimer() {
         }),
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: resolveErrorMessage(t, error.message) });
     },
   });

@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
+import { useAuth } from "@/contexts/AuthContext";
 import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
+import { logger } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import PartDetailModal from "@/components/admin/PartDetailModal";
@@ -21,8 +24,8 @@ import {
 import { useTranslation } from "react-i18next";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { PageStatsRow } from "@/components/admin/PageStatsRow";
-import { STEPViewer } from "@/components/STEPViewer";
-import { PDFViewer } from "@/components/PDFViewer";
+import { STEPViewer } from "@/components/STEPViewerLazy";
+import { PDFViewer } from "@/components/PDFViewerLazy";
 import {
   Dialog,
   DialogContent,
@@ -50,19 +53,31 @@ interface PartData {
   hasPDF: boolean;
 }
 
+interface PartRow {
+  id: string;
+  part_number: string;
+  material: string | null;
+  status: string;
+  parent_part_id: string | null;
+  file_paths: string[] | null;
+  job: { job_number: string } | null;
+  cell: { name: string; color: string } | null;
+  operations: { count: number }[];
+}
+
 export default function Parts() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
 
-  // File viewer state
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
   const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(null);
   const [currentFileType, setCurrentFileType] = useState<"step" | "pdf" | null>(null);
   const [currentFileTitle, setCurrentFileTitle] = useState<string>("");
 
   const { data: materials } = useQuery({
-    queryKey: ["materials"],
+    queryKey: QueryKeys.config.materials(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("parts")
@@ -77,7 +92,7 @@ export default function Parts() {
   });
 
   const { data: jobs } = useQuery({
-    queryKey: ["jobs-list"],
+    queryKey: QueryKeys.jobs.list(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("jobs")
@@ -94,7 +109,7 @@ export default function Parts() {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["admin-parts-all"],
+    queryKey: QueryKeys.parts.all(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const query = supabase.from("parts").select(`
           *,
@@ -108,10 +123,10 @@ export default function Parts() {
 
       // Build children set from already-fetched data (no second query needed)
       const partsWithChildren = new Set(
-        data?.filter((p: any) => p.parent_part_id).map((p: any) => p.parent_part_id) || [],
+        (data as PartRow[])?.filter((p) => p.parent_part_id).map((p) => p.parent_part_id) || [],
       );
 
-      return data.map((part: any) => {
+      return (data as PartRow[]).map((part) => {
         const files = part.file_paths || [];
         const stepFiles = files.filter((f: string) => {
           const ext = f.split(".").pop()?.toLowerCase();
@@ -134,7 +149,6 @@ export default function Parts() {
     },
   });
 
-  // Handle viewing file (STEP or PDF)
   const handleViewFile = async (filePath: string) => {
     try {
       const fileExt = filePath.split(".").pop()?.toLowerCase();
@@ -150,7 +164,6 @@ export default function Parts() {
         return;
       }
 
-      // Create signed URL
       const { data, error } = await supabase.storage
         .from("parts-cad")
         .createSignedUrl(filePath, 3600);
@@ -171,8 +184,8 @@ export default function Parts() {
       setCurrentFileType(fileType);
       setCurrentFileTitle(fileName);
       setFileViewerOpen(true);
-    } catch (error: any) {
-      console.error("Error opening file:", error);
+    } catch (error: unknown) {
+      logger.error('Parts', 'Error opening file', error);
       toast.error(t("notifications.error"), { description: t("notifications.failedToOpenFileViewer") });
     }
   };
@@ -398,7 +411,6 @@ export default function Parts() {
     },
   ], [t, materials, jobs]);
 
-  // Responsive column visibility - hide less important columns on mobile
   const { columnVisibility, isMobile } = useResponsiveColumns([
     { id: "part_number", alwaysVisible: true },
     { id: "type", hideBelow: "lg" },           // Hide on mobile/tablet
@@ -411,7 +423,6 @@ export default function Parts() {
     { id: "actions", alwaysVisible: true },
   ]);
 
-  // Calculate stats
   const partStats = useMemo(() => {
     if (!parts) return { total: 0, active: 0, completed: 0, assemblies: 0 };
     return {
@@ -435,7 +446,6 @@ export default function Parts() {
         }
       />
 
-      {/* Stats Row */}
       <PageStatsRow
         stats={[
           { label: t("parts.totalParts", "Total Parts"), value: partStats.total, icon: Package, color: "primary" },
@@ -469,7 +479,6 @@ export default function Parts() {
         />
       )}
 
-      {/* File Viewer Dialog - Responsive */}
       <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
         <DialogContent className="glass-card w-full h-[100dvh] sm:h-[90vh] sm:max-w-6xl flex flex-col p-0 rounded-none sm:rounded-lg inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
           <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">

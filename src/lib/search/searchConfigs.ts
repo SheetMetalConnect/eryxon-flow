@@ -1,9 +1,4 @@
 /**
- * Search Configurations
- *
- * Defines search behavior for each entity type.
- * Open/Closed Principle - add new entities by adding configs, not modifying code.
- *
  * IMPORTANT: No user-facing strings in this file.
  * All fallbacks should be null - UI layer handles localization.
  *
@@ -14,7 +9,6 @@
 
 import type { EntitySearchConfig, SearchResult } from "./types";
 
-// Type helpers for raw database results
 interface JobRow {
   id: string;
   job_number: string;
@@ -31,7 +25,6 @@ interface PartRow {
   material: string | null;
   status: string | null;
   notes: string | null;
-  // !inner join - parts must have jobs
   jobs: { job_number: string; customer: string | null } | null;
 }
 
@@ -40,14 +33,11 @@ interface OperationRow {
   operation_name: string;
   status: string | null;
   notes: string | null;
-  // !inner join - operations must have parts with jobs
   parts: {
     part_number: string;
     jobs: { job_number: string; customer: string | null } | null;
   } | null;
-  // Regular join - cell assignment is optional
   cells: { name: string } | null;
-  // Regular join - operator assignment is optional
   profiles: { full_name: string | null; email: string } | null;
 }
 
@@ -66,7 +56,6 @@ interface IssueRow {
   severity: string;
   status: string | null;
   resolution_notes: string | null;
-  // !inner join - issues must have operations with parts
   operations: {
     operation_name: string;
     parts: {
@@ -107,9 +96,6 @@ function buildSubtitle(
   return validSegments.length > 0 ? validSegments.join(" • ") : null;
 }
 
-/**
- * Job search configuration
- */
 export const jobSearchConfig: EntitySearchConfig<JobRow> = {
   tableName: "jobs",
   type: "job",
@@ -133,14 +119,9 @@ export const jobSearchConfig: EntitySearchConfig<JobRow> = {
   }),
 };
 
-/**
- * Part search configuration
- * Uses !inner join on jobs - parts must belong to a job
- */
 export const partSearchConfig: EntitySearchConfig<PartRow> = {
   tableName: "parts",
   type: "part",
-  // !inner: Parts must have jobs - excludes orphaned parts
   selectFields: `
     id,
     part_number,
@@ -171,16 +152,9 @@ export const partSearchConfig: EntitySearchConfig<PartRow> = {
   }),
 };
 
-/**
- * Operation search configuration
- * Uses !inner join on parts/jobs - operations must belong to parts with jobs
- * Uses regular join on cells/profiles - these are optional
- */
 export const operationSearchConfig: EntitySearchConfig<OperationRow> = {
   tableName: "operations",
   type: "operation",
-  // !inner on parts/jobs: Operations must have parts with jobs
-  // Regular join on cells/profiles: Cell and operator assignment are optional
   selectFields: `
     id,
     operation_name,
@@ -213,9 +187,6 @@ export const operationSearchConfig: EntitySearchConfig<OperationRow> = {
   }),
 };
 
-/**
- * User search configuration
- */
 export const userSearchConfig: EntitySearchConfig<UserRow> = {
   tableName: "profiles",
   type: "user",
@@ -237,14 +208,9 @@ export const userSearchConfig: EntitySearchConfig<UserRow> = {
   }),
 };
 
-/**
- * Issue search configuration
- * Uses !inner joins - issues must have operations with parts
- */
 export const issueSearchConfig: EntitySearchConfig<IssueRow> = {
   tableName: "issues",
   type: "issue",
-  // !inner: Issues must have operations with parts - excludes orphaned issues
   selectFields: `
     id,
     description,
@@ -277,9 +243,6 @@ export const issueSearchConfig: EntitySearchConfig<IssueRow> = {
   }),
 };
 
-/**
- * Resource search configuration
- */
 export const resourceSearchConfig: EntitySearchConfig<ResourceRow> = {
   tableName: "resources",
   type: "resource",
@@ -302,9 +265,6 @@ export const resourceSearchConfig: EntitySearchConfig<ResourceRow> = {
   }),
 };
 
-/**
- * Material search configuration
- */
 export const materialSearchConfig: EntitySearchConfig<MaterialRow> = {
   tableName: "materials",
   type: "material",
@@ -325,10 +285,6 @@ export const materialSearchConfig: EntitySearchConfig<MaterialRow> = {
   }),
 };
 
-/**
- * All search configurations mapped by type
- * Open for extension - add new configs here
- */
 export const searchConfigs = {
   job: jobSearchConfig,
   part: partSearchConfig,

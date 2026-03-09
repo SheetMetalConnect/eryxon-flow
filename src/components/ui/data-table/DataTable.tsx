@@ -29,7 +29,6 @@ import { DataTableToolbar } from "./DataTableToolbar";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 
-// Global filter function for searching across all columns
 const globalFilterFn: FilterFn<any> = (row, columnId, filterValue) => {
   const search = filterValue.toLowerCase();
 
@@ -44,7 +43,6 @@ const globalFilterFn: FilterFn<any> = (row, columnId, filterValue) => {
   return rowValues.some(value => value.toLowerCase().includes(search));
 };
 
-// Memoized table row component for better performance
 interface MemoizedRowProps<TData> {
   row: Row<TData>;
   onRowClick?: (row: TData) => void;
@@ -140,7 +138,7 @@ interface DataTableProps<TData, TValue> {
   /** Row selection state */
   rowSelection?: Record<string, boolean>;
   /** Callback when row selection changes */
-  onRowSelectionChange?: (selection: any) => void;
+  onRowSelectionChange?: (selection: Record<string, boolean> | ((prev: Record<string, boolean>) => Record<string, boolean>)) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -174,14 +172,12 @@ export function DataTable<TData, TValue>({
   const [internalRowSelection, setInternalRowSelection] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState("");
 
-  // Use controlled or internal visibility state
   const columnVisibility = controlledColumnVisibility ?? internalColumnVisibility;
   const setColumnVisibility = onColumnVisibilityChange ?? setInternalColumnVisibility;
 
   const rowSelection = controlledRowSelection ?? internalRowSelection;
   const setRowSelection = onRowSelectionChange ?? setInternalRowSelection;
 
-  // Debounce the global filter for better performance
   const debouncedGlobalFilter = useDebounce(globalFilter, searchDebounce);
 
   const table = useReactTable({

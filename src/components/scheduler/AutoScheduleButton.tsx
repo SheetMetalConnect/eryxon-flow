@@ -7,7 +7,9 @@ import { SchedulerService, CalendarDay } from "@/lib/scheduler";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
+import { QueryKeys } from "@/lib/queryClient";
 import { addMonths, format } from "date-fns";
+import { logger } from '@/lib/logger';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -24,15 +26,20 @@ export function AutoScheduleButton() {
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [operationsWithDates, setOperationsWithDates] = useState(0);
     const { t } = useTranslation();
-    const { tenant } = useAuth();
+    const { tenant, profile } = useAuth();
     const queryClient = useQueryClient();
+    const tenantId = tenant?.id ?? profile?.tenant_id;
 
     const checkExistingSchedules = async (): Promise<number> => {
-        const { count, error } = await supabase
+        let query = supabase
             .from("operations")
             .select("*", { count: "exact", head: true })
             .neq("status", "completed")
             .not("planned_start", "is", null);
+        if (tenantId) {
+            query = query.eq("tenant_id", tenantId);
+        }
+        const { count, error } = await query;
 
         if (error) throw error;
         return count ?? 0;
@@ -49,10 +56,10 @@ export function AutoScheduleButton() {
                 return;
             }
             await runScheduler();
-        } catch (error: any) {
-            console.error("Error checking schedules:", error);
+        } catch (error: unknown) {
+            logger.error('AutoScheduleButton', 'Error checking schedules', error);
             toast.error(t("capacity.schedulingFailed", "Scheduling Failed"), {
-                description: error.message,
+                description: error instanceof Error ? error.message : 'Unknown error',
             });
             setLoading(false);
         }
@@ -62,23 +69,25 @@ export function AutoScheduleButton() {
         setLoading(true);
         setShowConfirmDialog(false);
         try {
-            // 1. Fetch all necessary data in parallel
             const [jobsResult, operationsResult, cellsResult, calendarResult] = await Promise.all([
                 supabase
                     .from("jobs")
                     .select("*")
+                    .eq("tenant_id", tenantId)
                     .neq("status", "completed"),
                 supabase
                     .from("operations")
                     .select("*")
+                    .eq("tenant_id", tenantId)
                     .neq("status", "completed"),
                 supabase
                     .from("cells")
-                    .select("*"),
-                // Fetch calendar for next 12 months
+                    .select("*")
+                    .eq("tenant_id", tenantId),
                 supabase
                     .from("factory_calendar")
                     .select("*")
+                    .eq("tenant_id", tenantId)
                     .gte("date", format(new Date(), 'yyyy-MM-dd'))
                     .lte("date", format(addMonths(new Date(), 12), 'yyyy-MM-dd'))
             ]);
@@ -92,26 +101,22 @@ export function AutoScheduleButton() {
             const operations = operationsResult.data || [];
             const cells = cellsResult.data || [];
 
-            // Convert calendar data to CalendarDay format
-            const calendarDays: CalendarDay[] = (calendarResult.data || []).map((d: any) => ({
+            const calendarDays = (calendarResult.data || []).map((d: { date: string; day_type: string; capacity_multiplier: number | null }) => ({
                 date: d.date,
-                day_type: d.day_type,
+                day_type: d.day_type as CalendarDay['day_type'],
                 capacity_multiplier: d.capacity_multiplier ?? 1,
-            }));
+            })) as CalendarDay[];
 
-            // Get tenant config
-            const tenantConfig = tenant as any;
+            const tenantConfig = tenant as unknown as Record<string, unknown> | null;
             const config = {
-                workingDaysMask: tenantConfig?.working_days_mask ?? 31,
-                factoryOpeningTime: tenantConfig?.factory_opening_time?.substring(0, 5) ?? '07:00',
-                factoryClosingTime: tenantConfig?.factory_closing_time?.substring(0, 5) ?? '17:00',
+                workingDaysMask: (tenantConfig?.working_days_mask as number) ?? 31,
+                factoryOpeningTime: (tenantConfig?.factory_opening_time as string)?.substring(0, 5) ?? '07:00',
+                factoryClosingTime: (tenantConfig?.factory_closing_time as string)?.substring(0, 5) ?? '17:00',
             };
 
-            // 2. Run Scheduler with calendar awareness
             const scheduler = new SchedulerService(cells, calendarDays, config);
             const scheduledOps = scheduler.scheduleOperations(operations);
 
-            // 3. Update Operations in DB
             let updatedCount = 0;
             const updates = scheduledOps
                 .filter(op => op.planned_start && op.planned_end)
@@ -121,7 +126,6 @@ export function AutoScheduleButton() {
                     planned_end: op.planned_end
                 }));
 
-            // Batch update operations
             for (const update of updates) {
                 const { error } = await supabase
                     .from("operations")
@@ -134,15 +138,12 @@ export function AutoScheduleButton() {
                 if (!error) updatedCount++;
             }
 
-            // 4. Save day allocations (for multi-day operations visualization)
-            // First, clear existing allocations for these operations
             const operationIds = scheduledOps.map(op => op.id);
             await supabase
                 .from("operation_day_allocations")
                 .delete()
                 .in("operation_id", operationIds);
 
-            // Insert new allocations
             const allAllocations = scheduledOps.flatMap(op =>
                 op.day_allocations.map(alloc => ({
                     operation_id: alloc.operation_id,
@@ -158,10 +159,11 @@ export function AutoScheduleButton() {
             if (allAllocations.length > 0) {
                 const { error: allocError } = await supabase
                     .from("operation_day_allocations")
-                    .insert(allAllocations);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    .insert(allAllocations as any);
 
                 if (allocError) {
-                    console.warn("Failed to save day allocations:", allocError);
+                    logger.warn('AutoScheduleButton', 'Failed to save day allocations', allocError);
                 }
             }
 
@@ -169,19 +171,17 @@ export function AutoScheduleButton() {
                 description: t("capacity.operationsScheduled", { count: updatedCount }),
             });
 
-            // Invalidate relevant queries to refresh data without full page reload
             await Promise.all([
-                queryClient.invalidateQueries({ queryKey: ["day-allocations"] }),
-                queryClient.invalidateQueries({ queryKey: ["operations-capacity"] }),
-                queryClient.invalidateQueries({ queryKey: ["factory-calendar"] }),
+                queryClient.invalidateQueries({ queryKey: ["capacity"] }),
+                queryClient.invalidateQueries({ queryKey: ["factoryCalendar"] }),
                 queryClient.invalidateQueries({ queryKey: ["operations"] }),
                 queryClient.invalidateQueries({ queryKey: ["jobs"] }),
             ]);
 
-        } catch (error: any) {
-            console.error("Scheduling error:", error);
+        } catch (error: unknown) {
+            logger.error('AutoScheduleButton', 'Scheduling error', error);
             toast.error(t("capacity.schedulingFailed", "Scheduling Failed"), {
-                description: error.message,
+                description: error instanceof Error ? error.message : 'Unknown error',
             });
         } finally {
             setLoading(false);

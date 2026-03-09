@@ -1,11 +1,130 @@
-# Changelog
+---
+title: "Changelog"
+description: "Full release history for Eryxon Flow."
+---
 
-All notable changes to Eryxon Flow will be documented in this file.
+All notable changes to Eryxon Flow are documented on this page.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+
+## [Unreleased]
+
+Changes merged after `0.3.3` should be added here until the next tagged release.
+
+## [0.3.3] - 2026-03-09
+
+### Focus: Release Packaging, Dependency Maintenance, and Documentation Alignment
+
+This patch release finalizes the integrated branch for production by aligning dependency versions, consolidating the final documentation sweep, and packaging the repository under one release number.
+
+**Release classification:** `PATCH`
+
+### Changed
+
+- Updated non-breaking app dependencies across the React, Supabase, testing, linting, and docs tooling stacks
+- Updated the documentation site dependencies for Astro, Starlight, Tailwind, and related build tooling
+- Aligned repository, app, and docs package metadata to release `0.3.3`
+- Refreshed the architecture and operations docs so security, API auth, release guidance, and the 3D viewer runtime model match the current codebase
+
+### Fixed
+
+- Cleared website dependency audit findings that were addressable without forced major-version changes
+- Resolved the docs-site release packaging mismatch that had left Cloudflare deployments on an older docs state
+- Removed contradictory documentation around API key hashing, API authentication headers, and viewer capabilities
+
+### Documentation
+
+- Added a dedicated security architecture reference
+- Updated release notes, self-hosting guidance, quick start notes, and landing-page copy to reflect the current release
+- Consolidated the repository cleanup, docs migration, and final architecture refresh into the tagged release history
+
+### Changed
+
+- Aligned package metadata with the product name by renaming the npm package to `eryxon-flow`
+- Standardized self-hosting documentation references across the repo and in-app upgrade CTAs around the website docs structure
+- Clarified the root README so public docs, developer docs, and architecture references point to their current source-of-truth locations
+- Moved operational markdown into the website documentation tree so the main repository keeps only the top-level README
+- Refreshed architecture documentation for security boundaries, API authentication, and the current 3D viewer runtime model
+
+### Fixed
+
+- Removed broken links to deleted root documentation files
+- Removed tracked root artifacts (`test_output.txt`, `temp_rules.json`, and committed `*.tsbuildinfo` caches)
+
+## Versioning Policy
+
+- `MAJOR` for breaking API contracts, incompatible database or deployment changes, or architectural resets.
+- `MINOR` for backward-compatible features, new modules, significant UI/workflow additions, and integration expansions.
+- `PATCH` for backward-compatible fixes, security hardening, documentation-only updates, and release stabilization.
+- Pre-release tags should use `-beta.N` or `-rc.N` when a branch is being validated before a stable tag.
+
+## [0.3.2] - 2026-03-09
+
+### Focus: Security Hardening, API Coverage, and Integrated Viewer Planning
+
+This release combines the parallel work from PRs `#434` through `#438` into a single testable integration branch. It prioritizes the strongest overlapping implementations across security, route structure, API documentation, E2E testing, and 3D viewer planning.
+
+**Release classification:** `MINOR`
+
+### ⚠️ Migration Required for Existing Environments
+
+**Apply database changes before validating signup flows or admin notifications:**
+
+```bash
+# Link to the target Supabase project
+supabase link --project-ref YOUR_PROJECT_REF
+
+# Apply schema changes
+supabase db push
+
+# Deploy updated edge functions
+supabase functions deploy
+
+# Verify the new migration is present
+supabase migration list
+```
+
+**New migration in this release:**
+
+1. **20260202200000_fix_signup_notification_trigger.sql** ⚠️ **IMPORTANT**
+   - Removes the tenant-level signup notification trigger that caused duplicate emails
+   - Removes any hardcoded profile-level webhook implementation
+   - Prevents duplicate signup emails
+   - Requires explicit environment-level webhook configuration for `notify-new-signup`
+
+### Added
+
+- API reference expansion in the website API reference and payload reference pages
+- End-to-end API validation tooling:
+  - `scripts/api-test-utils.ts`
+  - `scripts/test-api-e2e.sh`
+  - `tsconfig.scripts.json`
+- Implementation plan and measurement UI scaffolding for interactive STEP viewer measurements
+- Integrated rollout guidance into the website deployment and release documentation
+
+### Changed
+
+- Refactored route definitions and component composition around the `#436` architecture
+- Consolidated realtime hook patterns across issue-related hooks
+- Tightened tenant scoping in scheduler, CAD processing, issue queries, and auth-adjacent data access
+- Strengthened invitation acceptance and password validation flows
+- Standardized logger-driven error handling in places that previously mixed logging styles
+
+### Fixed
+
+- Security audit findings covering authentication, CORS, validation, XSS prevention, and edge-function hardening
+- Type safety issues and unsafe query patterns surfaced in parallel code review
+- Signup notification trigger behavior that previously produced duplicate emails
+- Merge regressions in hook tests and realtime cleanup behavior
+
+### Documentation
+
+- Added a deployment-ready combined changelog and verification guide for PRs `#434`-`#438`
+- Added 3D viewer measurement implementation planning
+- Expanded API payload and E2E testing documentation for backend validation
 
 ## [0.3.1] - 2026-01-28
 
@@ -156,7 +275,7 @@ supabase migration list
 - **MCP README** - Cleaned up (removed marketing bloat)
 - **MCP Demo Guide** - Updated with current tool counts and setup callouts
 - **API Documentation** - Added both Bearer token and X-API-Key authentication methods
-- Removed temporary refactoring documentation per CLAUDE.md rules
+- Removed temporary refactoring documentation during repository guideline cleanup
 
 ---
 
@@ -255,7 +374,7 @@ These features have been removed to focus development effort on core capabilitie
 - Updated ESLint configuration for better code quality
 - Improved TypeScript types with modular architecture
 - Better hook patterns and memory leak prevention
-- Enhanced documentation in `CODING_PATTERNS.md`
+- Enhanced the engineering coding patterns documentation
 
 ---
 

@@ -3,6 +3,8 @@ title: "App Architecture"
 description: "Technical and functional architecture overview of Eryxon Flow."
 ---
 
+> Current documented release: `0.3.3`
+
 **Eryxon Flow** is a comprehensive manufacturing execution system (MES) designed specifically for sheet metal fabrication operations. It provides end-to-end tracking from job creation through production completion, with real-time visibility, time tracking, issue management, and integration capabilities.
 
 ### What Does Eryxon Flow Do?
@@ -19,10 +21,11 @@ The system tracks manufacturing work through three hierarchical levels:
 
 ### Technology Stack
 
-- **Frontend:** React 18 + TypeScript + Material UI v7
-- **Backend:** Supabase (PostgreSQL database, Edge Functions)
+- **Frontend:** React 18 + TypeScript + Vite
+- **UI:** shadcn/ui + Radix primitives + Tailwind CSS
+- **Backend:** Supabase (PostgreSQL, Row Level Security, Edge Functions, Realtime, Storage)
 - **Authentication:** Supabase Auth with JWT tokens
-- **3D Viewer:** Three.js + occt-import-js for STEP files
+- **3D Viewer:** Three.js + browser STEP parsing + optional CAD backend + measurement support modules
 - **API:** RESTful Edge Functions with API key authentication
 - **Real-time:** Supabase Realtime for live updates
 
@@ -30,7 +33,8 @@ The system tracks manufacturing work through three hierarchical levels:
 
 - **Multi-tenant:** Complete tenant isolation at database and application level
 - **Role-based access:** Admin and Operator roles with different permissions
-- **Progressive Web App:** Mobile-responsive, can be installed as PWA
+- **API-first:** ERP and automation systems integrate through APIs, webhooks, and MQTT
+- **Responsive app shell:** Optimized for desktop admin workflows and tablet operator terminals
 
 ### Data Model Hierarchy
 
@@ -59,7 +63,7 @@ graph TD
 
 ### Frontend Architecture
 
-**Framework:** React 18 with TypeScript
+**Framework:** React 18 with TypeScript and Vite
 
 **State Management:**
 - React Context (`AuthContext`) - Global auth state
@@ -67,19 +71,21 @@ graph TD
 - React Hook Form - Form state
 - Local state (useState) - Component UI state
 
-**Routing:** React Router v6
+**Routing:** React Router v7
 - Protected routes with auth check
 - Role-based route access
-- Automatic redirects
+- Route groups split by admin, operator, and shared flows
 
 **UI Libraries:**
-- Material UI v7 - Complex components (DataGrid, date pickers)
 - shadcn/ui - Base UI primitives (Button, Card, Dialog)
+- Radix UI - Accessible behavior primitives
 - Tailwind CSS - Utility styling
 
 **3D Rendering:**
 - Three.js - WebGL 3D graphics
-- occt-import-js - STEP file parser
+- Browser STEP parsing for fallback rendering
+- Optional CAD backend for server-processed geometry and PMI extraction
+- three-mesh-bvh - Efficient picking and measurement acceleration
 
 ### Backend Architecture
 
@@ -96,12 +102,16 @@ graph TD
 - Request validation
 - Response formatting
 - Webhook dispatch
+- Shared security and handler helpers under `supabase/functions/_shared`
 
 **Authentication:** Supabase Auth
 - JWT-based sessions
 - Email/password auth
+- Invitation-based onboarding
+- Optional Turnstile CAPTCHA for public auth flows
 - Auto-refresh tokens
 - Session persistence
+- Immediate tenant/profile teardown when session state is lost
 
 **Storage:** Supabase Storage
 - File uploads (STEP, images, PDFs)
@@ -169,29 +179,43 @@ graph TD
 **1. Authentication:**
 - JWT tokens with short expiration
 - Auto-refresh mechanism
+- Invitation acceptance and password validation hardening
+- Optional Turnstile protection on public auth flows
 
 **2. Authorization:**
 - Role-based access control (RBAC)
 - Admin vs. Operator permissions
 - UI route protection
 - API endpoint validation
+- Server-side enforcement via RLS and role-aware queries
+- Client-side role checks are UX-only and not treated as a security boundary
 
 **3. Data Isolation:**
 - Row-Level Security (RLS)
 - Tenant-scoped queries
 - API key tenant binding
+- Tenant-aware realtime subscriptions and storage paths
 
 **4. API Security:**
-- API key hashing (bcrypt)
-- HMAC signature for webhooks
+- API key hashing (SHA-256)
+- Constant-time API key comparison
+- Shared validation and sanitization helpers
+- CORS enforcement in edge functions
 - Rate limiting
 - Input validation
+- Internal token checks for internal-only webhook and MQTT paths
 
 **5. Storage Security:**
 - Private buckets
 - Signed URLs with expiration
 - Tenant-scoped paths
 - File type validation
+
+**6. Deployment Security:**
+- Environment-specific webhook wiring instead of hardcoded project URLs in migrations
+- Service-role secrets stay in Supabase Edge Function secrets, never in frontend config
+- Self-hosted setups can opt into Redis and CAPTCHA without changing core app behavior
+- `ALLOWED_ORIGIN` should be set for production edge-function CORS restrictions
 
 ---
 
@@ -205,6 +229,8 @@ graph TD
 ```
 Authorization: Bearer ery_live_xxxxxxxxxxxxx
 ```
+
+The REST API currently authenticates through the `Authorization` header rather than a separate `X-API-Key` header.
 
 ### Webhooks (External Real-Time)
 
@@ -221,3 +247,9 @@ Authorization: Bearer ery_live_xxxxxxxxxxxxx
 - Send notifications to Slack/Teams
 - Trigger automated workflows
 - Update external dashboards
+
+## Related Docs
+
+- [Security Architecture](/architecture/security-architecture/)
+- [Connectivity Overview](/architecture/connectivity-overview/)
+- [3D CAD Engine](/architecture/3d-engine/)

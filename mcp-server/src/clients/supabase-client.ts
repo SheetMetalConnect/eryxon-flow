@@ -8,9 +8,12 @@ import type { UnifiedClient, QueryResult, CountResult, SelectOptions } from "../
 
 export class DirectSupabaseClient implements UnifiedClient {
   private client: SupabaseClient;
+  private enforcedTenantId: string | undefined;
 
   constructor(supabaseUrl: string, supabaseServiceKey: string) {
     this.client = createClient(supabaseUrl, supabaseServiceKey);
+    // Optional tenant scoping for direct mode (set TENANT_ID env var to enforce)
+    this.enforcedTenantId = process.env.TENANT_ID;
   }
 
   getMode(): 'direct' | 'api' {
@@ -20,6 +23,11 @@ export class DirectSupabaseClient implements UnifiedClient {
   async select(table: string, options: SelectOptions = {}): Promise<QueryResult> {
     try {
       let query = this.client.from(table).select(options.select || '*');
+
+      // Enforce tenant scoping if configured
+      if (this.enforcedTenantId) {
+        query = query.eq('tenant_id', this.enforcedTenantId);
+      }
 
       // Apply filters
       if (options.eq) {
@@ -106,9 +114,15 @@ export class DirectSupabaseClient implements UnifiedClient {
 
   async insert(table: string, data: any | any[]): Promise<QueryResult> {
     try {
+      // Enforce tenant scoping if configured
+      const insertData = this.enforcedTenantId
+        ? (Array.isArray(data)
+            ? data.map(d => ({ ...d, tenant_id: this.enforcedTenantId }))
+            : { ...data, tenant_id: this.enforcedTenantId })
+        : data;
       const { data: result, error } = await this.client
         .from(table)
-        .insert(data)
+        .insert(insertData)
         .select();
       return { data: result, error };
     } catch (error) {
@@ -118,11 +132,12 @@ export class DirectSupabaseClient implements UnifiedClient {
 
   async update(table: string, id: string, data: any): Promise<QueryResult> {
     try {
-      const { data: result, error } = await this.client
+      let query = this.client
         .from(table)
         .update(data)
-        .eq('id', id)
-        .select();
+        .eq('id', id);
+      if (this.enforcedTenantId) query = query.eq('tenant_id', this.enforcedTenantId);
+      const { data: result, error } = await query.select();
       return { data: result, error };
     } catch (error) {
       return { data: null, error: error as Error };
@@ -131,10 +146,12 @@ export class DirectSupabaseClient implements UnifiedClient {
 
   async delete(table: string, id: string): Promise<QueryResult> {
     try {
-      const { data, error } = await this.client
+      let query = this.client
         .from(table)
         .delete()
         .eq('id', id);
+      if (this.enforcedTenantId) query = query.eq('tenant_id', this.enforcedTenantId);
+      const { data, error } = await query;
       return { data, error };
     } catch (error) {
       return { data: null, error: error as Error };
@@ -143,9 +160,14 @@ export class DirectSupabaseClient implements UnifiedClient {
 
   async upsert(table: string, data: any | any[]): Promise<QueryResult> {
     try {
+      const upsertData = this.enforcedTenantId
+        ? (Array.isArray(data)
+            ? data.map(d => ({ ...d, tenant_id: this.enforcedTenantId }))
+            : { ...data, tenant_id: this.enforcedTenantId })
+        : data;
       const { data: result, error } = await this.client
         .from(table)
-        .upsert(data)
+        .upsert(upsertData)
         .select();
       return { data: result, error };
     } catch (error) {
@@ -165,6 +187,11 @@ export class DirectSupabaseClient implements UnifiedClient {
   async count(table: string, options: SelectOptions = {}): Promise<CountResult> {
     try {
       let query = this.client.from(table).select('*', { count: 'exact', head: true });
+
+      // Enforce tenant scoping if configured
+      if (this.enforcedTenantId) {
+        query = query.eq('tenant_id', this.enforcedTenantId);
+      }
 
       // Apply all filters (same as select)
       if (options.eq) {

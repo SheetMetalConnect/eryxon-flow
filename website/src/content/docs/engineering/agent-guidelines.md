@@ -1,3 +1,8 @@
+---
+title: "Agent Guidelines"
+description: "Contributor workflow and automation guidance preserved from the repository agent rules."
+---
+
 # Claude Agent Guidelines for Eryxon MES
 
 This document provides essential guidelines for AI agents (Claude) working on the Eryxon MES codebase. Following these rules ensures consistency, quality, and maintainability.
@@ -76,7 +81,7 @@ Work until the goal is **fully achieved**:
 - [Code Quality Standards](#code-quality-standards)
 - [File Structure Reference](#file-structure-reference)
 
-**For technical code patterns and examples, see [docs/CODING_PATTERNS.md](docs/CODING_PATTERNS.md).**
+**For technical code patterns and examples, see [Coding Patterns](/engineering/coding-patterns/).**
 
 ---
 
@@ -317,7 +322,7 @@ This script reads the namespace mappings and regenerates all namespace files fro
 ### CRITICAL: Read Before Any UI Work
 
 **Before writing any UI code, ALWAYS read:**
-- `docs/DESIGN_SYSTEM.md` - Complete design guidelines
+- `engineering/design-system-reference.md` - Complete design guidelines
 - `src/styles/design-system.css` - All CSS tokens and classes
 
 ### Never Improvise Styles
@@ -592,7 +597,7 @@ function JobCard({ job, onEdit, onDelete }: JobCardProps) {
 
 | Path | Purpose |
 |------|---------|
-| `docs/DESIGN_SYSTEM.md` | Design guidelines (READ FIRST for UI work) |
+| `engineering/design-system-reference.md` | Design guidelines (READ FIRST for UI work) |
 | `src/styles/design-system.css` | CSS tokens and classes |
 | `src/routes.ts` | Centralized route definitions |
 | `src/integrations/supabase/client.ts` | Supabase client |
@@ -670,7 +675,7 @@ import Auth from "./pages/auth/Auth";
 
 ## Coding Patterns
 
-For detailed code patterns and technical examples, see **[docs/CODING_PATTERNS.md](docs/CODING_PATTERNS.md)**.
+For detailed code patterns and technical examples, see **[Coding Patterns](/engineering/coding-patterns/)**.
 
 Key patterns documented there:
 - Supabase types modular architecture

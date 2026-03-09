@@ -144,7 +144,7 @@ describe('BaseValidator', () => {
     });
 
     it('returns null for optional null FK', () => {
-      const entity = { job_id: null };
+      const entity = { job_id: null as string | null };
       const result = validator.testValidateForeignKey(
         entity,
         'job_id',
@@ -156,7 +156,7 @@ describe('BaseValidator', () => {
     });
 
     it('returns error for required null FK', () => {
-      const entity = { job_id: null };
+      const entity = { job_id: null as string | null };
       const result = validator.testValidateForeignKey(
         entity,
         'job_id',

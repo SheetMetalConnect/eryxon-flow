@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { Loader2, Server, CheckCircle2, XCircle, AlertCircle, Copy } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { logger } from "@/lib/logger";
 
 interface McpConfig {
   id?: string;
@@ -39,7 +40,7 @@ interface McpServerLog {
   id: string;
   event_type: string;
   message: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   created_at: string;
 }
 
@@ -93,8 +94,8 @@ export default function McpServerSettings() {
           },
         });
       }
-    } catch (error: any) {
-      console.error("Error fetching MCP config:", error);
+    } catch (error: unknown) {
+      logger.error('McpServerSettings', 'Error fetching MCP config', error);
       toast.error(t("mcpServer.failedToLoadConfig"));
     } finally {
       setIsLoading(false);
@@ -115,7 +116,7 @@ export default function McpServerSettings() {
         .maybeSingle();
 
       if (error && error.code !== "PGRST116") {
-        console.error("Error fetching health:", error);
+        logger.error('McpServerSettings', 'Error fetching health', error);
         toast.error(t("mcpServer.failedToLoadHealth"));
         return;
       }
@@ -123,9 +124,9 @@ export default function McpServerSettings() {
       if (data) {
         setHealth(data as McpServerHealth);
       }
-    } catch (error: any) {
-      console.error("Error fetching health:", error);
-      toast.error(t("mcpServer.failedToLoadHealthData") + ": " + (error.message || t("notifications.error")));
+    } catch (error: unknown) {
+      logger.error('McpServerSettings', 'Error fetching health', error);
+      toast.error(t("mcpServer.failedToLoadHealthData") + ": " + (error instanceof Error ? error.message : t("notifications.error")));
     } finally {
       setIsLoadingHealth(false);
     }
@@ -144,15 +145,15 @@ export default function McpServerSettings() {
         .limit(50);
 
       if (error) {
-        console.error("Error fetching logs:", error);
+        logger.error('McpServerSettings', 'Error fetching logs', error);
         toast.error(t("mcpServer.failedToLoadLogs"));
         return;
       }
 
-      setLogs(data || []);
-    } catch (error: any) {
-      console.error("Error fetching logs:", error);
-      toast.error(t("mcpServer.failedToLoadLogsData") + ": " + (error.message || t("notifications.error")));
+      setLogs((data || []) as McpServerLog[]);
+    } catch (error: unknown) {
+      logger.error('McpServerSettings', 'Error fetching logs', error);
+      toast.error(t("mcpServer.failedToLoadLogsData") + ": " + (error instanceof Error ? error.message : t("notifications.error")));
     } finally {
       setIsLoadingLogs(false);
     }
@@ -182,9 +183,9 @@ export default function McpServerSettings() {
 
       toast.success(t("mcpServer.configSaved"));
       fetchConfig();
-    } catch (error: any) {
-      console.error("Error saving config:", error);
-      toast.error(t("mcpServer.configSaveFailed") + ": " + error.message);
+    } catch (error: unknown) {
+      logger.error('McpServerSettings', 'Error saving config', error);
+      toast.error(t("mcpServer.configSaveFailed") + ": " + (error instanceof Error ? error.message : String(error)));
     } finally {
       setIsSaving(false);
     }
@@ -200,7 +201,6 @@ export default function McpServerSettings() {
     const startTime = Date.now();
 
     try {
-      // Step 1: Validate configuration
       if (!config.supabase_url) {
         throw new Error("Supabase URL is not configured");
       }
@@ -209,7 +209,6 @@ export default function McpServerSettings() {
         throw new Error("MCP server is disabled. Enable it first to test connection.");
       }
 
-      // Step 2: Test database connectivity by checking if we can query the config
       const { data: configTest, error: configError } = await supabase
         .from("mcp_server_config")
         .select("id")
@@ -224,7 +223,6 @@ export default function McpServerSettings() {
         throw new Error("Configuration not found in database");
       }
 
-      // Step 3: Verify we can write to the health table
       const responseTime = Date.now() - startTime;
       const { error: healthError } = await supabase.rpc("update_mcp_server_health", {
         p_tenant_id: tenant.id,
@@ -236,7 +234,6 @@ export default function McpServerSettings() {
         throw new Error(`Health check update failed: ${healthError.message}`);
       }
 
-      // Step 4: Verify we can read the health record
       const { data: healthData, error: healthReadError } = await supabase
         .from("mcp_server_health")
         .select("*")
@@ -257,8 +254,8 @@ export default function McpServerSettings() {
         `MCP server connection test successful (${responseTime}ms response time)`
       );
       fetchHealth();
-    } catch (error: any) {
-      console.error("Connection test failed:", error);
+    } catch (error: unknown) {
+      logger.error('McpServerSettings', 'Connection test failed', error);
 
       // Update health status to offline on failure
       try {
@@ -266,14 +263,14 @@ export default function McpServerSettings() {
           p_tenant_id: tenant.id,
           p_status: "offline",
           p_response_time_ms: null,
-          p_error_message: error.message || "Connection test failed",
+          p_error_message: error instanceof Error ? error.message : "Connection test failed",
         });
         fetchHealth();
       } catch (updateError) {
-        console.error("Failed to update health status:", updateError);
+        logger.error('McpServerSettings', 'Failed to update health status', updateError);
       }
 
-      toast.error(t("mcpServer.connectionTestFailed") + ": " + error.message);
+      toast.error(t("mcpServer.connectionTestFailed") + ": " + (error instanceof Error ? error.message : String(error)));
     }
   };
 

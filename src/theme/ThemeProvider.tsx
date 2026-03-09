@@ -1,22 +1,5 @@
 import React, { createContext, useContext, useMemo, useEffect, useState, useCallback } from 'react';
 
-/**
- * ERYXON MES THEME PROVIDER - Dark/Light/Auto Mode Support
- *
- * Pure CSS-based theme provider using CSS custom properties
- *
- * This provider supports:
- * - 'dark': Always use dark theme
- * - 'light': Always use light theme
- * - 'auto': Follow system/browser preference (default)
- *
- * Features:
- * - Persists user preference to localStorage
- * - Detects browser color scheme preference
- * - Syncs HTML class for Tailwind CSS
- * - No MUI dependency - pure CSS custom properties
- */
-
 export type ThemeMode = 'dark' | 'light' | 'auto';
 export type ResolvedTheme = 'dark' | 'light';
 
@@ -38,13 +21,11 @@ const ThemeContext = createContext<ThemeContextType>({
 
 export const useThemeMode = () => useContext(ThemeContext);
 
-// Get system preference
 const getSystemTheme = (): ResolvedTheme => {
   if (typeof window === 'undefined') return 'dark';
   return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
 };
 
-// Get stored preference
 const getStoredTheme = (): ThemeMode => {
   if (typeof window === 'undefined') return 'auto';
   const stored = localStorage.getItem(STORAGE_KEY);
@@ -54,7 +35,6 @@ const getStoredTheme = (): ThemeMode => {
   return 'auto';
 };
 
-// Resolve the actual theme based on mode
 const resolveTheme = (mode: ThemeMode): ResolvedTheme => {
   if (mode === 'auto') {
     return getSystemTheme();
@@ -62,7 +42,6 @@ const resolveTheme = (mode: ThemeMode): ResolvedTheme => {
   return mode;
 };
 
-// Apply theme to document
 const applyThemeToDocument = (resolvedTheme: ResolvedTheme) => {
   const root = document.documentElement;
 
@@ -84,7 +63,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children,
   defaultMode
 }) => {
-  // Initialize with stored preference or default
   const [mode, setModeState] = useState<ThemeMode>(() => {
     return defaultMode ?? getStoredTheme();
   });
@@ -102,7 +80,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     localStorage.setItem(STORAGE_KEY, mode);
   }, [mode, resolvedTheme]);
 
-  // Listen for system theme changes when in auto mode
   useEffect(() => {
     if (mode !== 'auto') return;
 

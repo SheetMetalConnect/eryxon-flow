@@ -48,7 +48,6 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
   const navigate = useNavigate();
   const { search, loading } = useGlobalSearch();
 
-  // Debounced search
   React.useEffect(() => {
     if (!query.trim()) {
       setResults([]);
@@ -63,7 +62,6 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
     return () => clearTimeout(timeoutId);
   }, [query, search]);
 
-  // Reset on close
   React.useEffect(() => {
     if (!open) {
       setQuery("");
@@ -149,7 +147,6 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
     return acc;
   }, {} as Record<string, SearchResultType[]>);
 
-  // Ordered type labels for consistent display
   const typeOrder: ResultTypeEnum[] = ['job', 'part', 'operation', 'user', 'issue', 'resource', 'material'];
 
   return (
@@ -169,7 +166,6 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
         </DialogHeader>
 
         <CommandPrimitive className="bg-transparent" shouldFilter={false}>
-          {/* Search Input Area */}
           <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3 bg-white/[0.02]">
             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 border border-primary/20">
               <Search className="h-4 w-4 text-primary" />
@@ -191,7 +187,6 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
             </div>
           </div>
 
-          {/* Keyboard Shortcut Hint */}
           <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/[0.01]">
             <span className="text-[10px] text-muted-foreground/60">
               {t("globalSearch.keyboardHint")}
@@ -205,7 +200,6 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
           </div>
 
           <CommandList className="max-h-[60vh] overflow-y-auto">
-            {/* Initial State - No Query */}
             {!query.trim() && (
               <div className="px-6 py-14 text-center">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 mb-5">
@@ -218,7 +212,6 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
                   {t("globalSearch.searchFields")}
                 </p>
 
-                {/* Quick Type Pills */}
                 <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
                   {typeOrder.map((type) => (
                     <div
@@ -238,7 +231,6 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
               </div>
             )}
 
-            {/* No Results */}
             {query.trim() && !loading && results.length === 0 && (
               <CommandEmpty className="py-14 text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 border border-white/10 mb-4">
@@ -250,7 +242,6 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
               </CommandEmpty>
             )}
 
-            {/* Search Results */}
             {typeOrder.map((type) => {
               const items = groupedResults[type];
               if (!items?.length) return null;
@@ -319,7 +310,6 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
   );
 };
 
-// Search Trigger Button Component for reuse
 interface SearchTriggerButtonProps {
   onClick: () => void;
   className?: string;
@@ -333,10 +323,8 @@ export const SearchTriggerButton: React.FC<SearchTriggerButtonProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // Keyboard shortcut handler
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd/Ctrl + K to open search
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         onClick();

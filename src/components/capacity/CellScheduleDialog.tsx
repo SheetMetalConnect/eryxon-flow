@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import {
   Dialog,
   DialogContent,
@@ -102,13 +103,13 @@ export function CellScheduleDialog({
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["day-allocations"] });
+      queryClient.invalidateQueries({ queryKey: ["capacity"] });
       setEditingId(null);
       toast.success(t("capacity.updated", "Updated"), {
         description: t("capacity.allocationUpdated", "Allocation hours updated successfully"),
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error", "Error"), {
         description: error.message,
       });
@@ -125,12 +126,12 @@ export function CellScheduleDialog({
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["day-allocations"] });
+      queryClient.invalidateQueries({ queryKey: ["capacity"] });
       toast.success(t("capacity.deleted", "Deleted"), {
         description: t("capacity.allocationDeleted", "Allocation removed from this day"),
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error", "Error"), {
         description: error.message,
       });

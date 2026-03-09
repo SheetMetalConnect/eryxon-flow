@@ -4,17 +4,18 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import { usePendingIssuesCount } from './usePendingIssuesCount';
 
-// Mock Supabase
-const mockSelect = vi.fn();
-const mockEq = vi.fn();
-const mockChannel = vi.fn();
-const mockOn = vi.fn();
-const mockSubscribe = vi.fn();
+const mockFns = vi.hoisted(() => ({
+  mockSelect: vi.fn(),
+  mockEqTenant: vi.fn(),
+  mockEqStatus: vi.fn(),
+  mockRemoveChannel: vi.fn(),
+  mockUseAuth: vi.fn(),
+}));
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: () => ({
-      select: mockSelect,
+      select: mockFns.mockSelect,
     }),
     channel: () => ({
       on: () => ({
@@ -23,7 +24,12 @@ vi.mock('@/integrations/supabase/client', () => ({
         }),
       }),
     }),
+    removeChannel: mockFns.mockRemoveChannel,
   },
+}));
+
+vi.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => mockFns.mockUseAuth(),
 }));
 
 // Create wrapper with QueryClient
@@ -43,11 +49,18 @@ const createWrapper = () => {
 describe('usePendingIssuesCount', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSelect.mockReturnValue({
-      eq: vi.fn().mockResolvedValue({
-        count: 0,
-        error: null,
-      }),
+    mockFns.mockUseAuth.mockReturnValue({
+      profile: { tenant_id: 'tenant-1' },
+    });
+    mockFns.mockSelect.mockReturnValue({
+      eq: mockFns.mockEqTenant,
+    });
+    mockFns.mockEqTenant.mockReturnValue({
+      eq: mockFns.mockEqStatus,
+    });
+    mockFns.mockEqStatus.mockResolvedValue({
+      count: 0,
+      error: null,
     });
   });
 
@@ -64,11 +77,9 @@ describe('usePendingIssuesCount', () => {
   });
 
   it('returns count of pending issues', async () => {
-    mockSelect.mockReturnValue({
-      eq: vi.fn().mockResolvedValue({
-        count: 5,
-        error: null,
-      }),
+    mockFns.mockEqStatus.mockResolvedValue({
+      count: 5,
+      error: null,
     });
 
     const { result } = renderHook(() => usePendingIssuesCount(), {
@@ -83,11 +94,9 @@ describe('usePendingIssuesCount', () => {
   });
 
   it('returns 0 when no pending issues', async () => {
-    mockSelect.mockReturnValue({
-      eq: vi.fn().mockResolvedValue({
-        count: 0,
-        error: null,
-      }),
+    mockFns.mockEqStatus.mockResolvedValue({
+      count: 0,
+      error: null,
     });
 
     const { result } = renderHook(() => usePendingIssuesCount(), {
@@ -102,11 +111,9 @@ describe('usePendingIssuesCount', () => {
   });
 
   it('handles null count gracefully', async () => {
-    mockSelect.mockReturnValue({
-      eq: vi.fn().mockResolvedValue({
-        count: null,
-        error: null,
-      }),
+    mockFns.mockEqStatus.mockResolvedValue({
+      count: null,
+      error: null,
     });
 
     const { result } = renderHook(() => usePendingIssuesCount(), {
@@ -121,28 +128,22 @@ describe('usePendingIssuesCount', () => {
   });
 
   it('queries with correct parameters', async () => {
-    const eqMock = vi.fn().mockResolvedValue({ count: 0, error: null });
-    mockSelect.mockReturnValue({ eq: eqMock });
-
     renderHook(() => usePendingIssuesCount(), {
       wrapper: createWrapper(),
     });
 
     await waitFor(() => {
-      expect(mockSelect).toHaveBeenCalled();
+      expect(mockFns.mockSelect).toHaveBeenCalled();
     });
 
-    expect(mockSelect).toHaveBeenCalledWith('*', { count: 'exact', head: true });
-    expect(eqMock).toHaveBeenCalledWith('status', 'pending');
+    expect(mockFns.mockSelect).toHaveBeenCalledWith('id', { count: 'exact', head: true });
+    expect(mockFns.mockEqTenant).toHaveBeenCalledWith('tenant_id', 'tenant-1');
+    expect(mockFns.mockEqStatus).toHaveBeenCalledWith('status', 'pending');
   });
 
-  it('throws error on fetch failure', async () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    mockSelect.mockReturnValue({
-      eq: vi.fn().mockResolvedValue({
-        count: null,
-        error: new Error('Database error'),
-      }),
+  it('returns 0 when the tenant is unavailable', async () => {
+    mockFns.mockUseAuth.mockReturnValue({
+      profile: null,
     });
 
     const { result } = renderHook(() => usePendingIssuesCount(), {
@@ -153,6 +154,24 @@ describe('usePendingIssuesCount', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    consoleSpy.mockRestore();
+    expect(result.current.count).toBe(0);
+    expect(mockFns.mockSelect).not.toHaveBeenCalled();
+  });
+
+  it('surfaces query errors', async () => {
+    mockFns.mockEqStatus.mockResolvedValue({
+      count: null,
+      error: new Error('Database error'),
+    });
+
+    const { result } = renderHook(() => usePendingIssuesCount(), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.count).toBe(0);
   });
 });

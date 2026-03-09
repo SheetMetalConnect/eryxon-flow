@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,7 @@ import {
   Edit2,
   Save,
 } from "lucide-react";
+import { logger } from "@/lib/logger";
 import {
   Select,
   SelectContent,
@@ -56,26 +58,22 @@ export default function JobCreate() {
   const { t } = useTranslation();
   const [step, setStep] = useState(1);
 
-  // Step 1: Job details
   const [jobNumber, setJobNumber] = useState("");
   const [customer, setCustomer] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [jobNotes, setJobNotes] = useState("");
   const [jobMetadata, setJobMetadata] = useState<Record<string, string>>({});
 
-  // Step 2: Parts
   const [parts, setParts] = useState<Part[]>([]);
   const [editingPart, setEditingPart] = useState<Partial<Part> | null>(null);
 
-  // Step 3: Operations
   const [editingOperation, setEditingOperation] = useState<{
     partId: string;
     operation: Partial<Operation>;
   } | null>(null);
 
-  // Fetch cells for operation creation
   const { data: cells } = useQuery({
-    queryKey: ["cells"],
+    queryKey: QueryKeys.cells.active(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cells")
@@ -92,7 +90,6 @@ export default function JobCreate() {
     mutationFn: async () => {
       if (!profile?.tenant_id) throw new Error("No tenant ID");
 
-      // Start transaction
       const { data: job, error: jobError } = await supabase
         .from("jobs")
         .insert({
@@ -109,7 +106,6 @@ export default function JobCreate() {
 
       if (jobError) throw jobError;
 
-      // Insert parts
       const partsToInsert = parts.map((part) => ({
         tenant_id: profile.tenant_id,
         job_id: job.id,
@@ -129,7 +125,6 @@ export default function JobCreate() {
 
       if (partsError) throw partsError;
 
-      // Insert operations for each part
       for (let i = 0; i < parts.length; i++) {
         const part = parts[i];
         const insertedPart = insertedParts[i];
@@ -165,7 +160,7 @@ export default function JobCreate() {
         created_at: job.created_at,
       }).then(result => {
         if (!result.success) {
-          console.error('Failed to dispatch job.created event:', result.errors);
+          logger.error('JobCreate', 'Failed to dispatch job.created event', result.errors);
         }
       });
 
@@ -175,7 +170,7 @@ export default function JobCreate() {
       toast.success(t("jobs.createSuccess"), { description: t("jobs.createSuccessDesc", { jobNumber: job.job_number, count: parts.length }) });
       navigate("/admin/jobs");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(t("common.error"), { description: error.message });
     },
   });
@@ -296,7 +291,6 @@ export default function JobCreate() {
 
       <hr className="title-divider" />
 
-      {/* Progress Indicator */}
       <div className="flex justify-between">
         {[1, 2, 3, 4].map((s) => (
           <div key={s} className="flex items-center">
@@ -316,7 +310,6 @@ export default function JobCreate() {
         ))}
       </div>
 
-      {/* Step 1: Job Details */}
       {step === 1 && (
         <Card className="glass-card">
           <CardHeader>
@@ -394,7 +387,6 @@ export default function JobCreate() {
         </Card>
       )}
 
-      {/* Step 2: Parts */}
       {step === 2 && (
         <Card className="glass-card">
           <CardHeader>
@@ -406,7 +398,6 @@ export default function JobCreate() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Part Form */}
             {editingPart && (
               <div className="border rounded-lg p-4 bg-blue-50">
                 <h4 className="font-semibold mb-3">{t("parts.newPart")}</h4>
@@ -474,7 +465,6 @@ export default function JobCreate() {
                     />
                   </div>
 
-                  {/* Material Traceability Section */}
                   <div className="col-span-2 border-t pt-3 mt-2">
                     <h5 className="text-sm font-medium mb-2">Material Traceability (Optional)</h5>
                     <div className="grid grid-cols-3 gap-3">
@@ -531,7 +521,6 @@ export default function JobCreate() {
               </div>
             )}
 
-            {/* Parts List */}
             <div className="space-y-2">
               {parts.map((part) => (
                 <div key={part.id} className="border rounded-lg p-3">
@@ -562,7 +551,6 @@ export default function JobCreate() {
         </Card>
       )}
 
-      {/* Step 3: Operations */}
       {step === 3 && (
         <Card className="glass-card">
           <CardHeader>
@@ -583,7 +571,6 @@ export default function JobCreate() {
                   </Button>
                 </div>
 
-                {/* Operation Form */}
                 {editingOperation?.partId === part.id && (
                   <div className="border rounded-lg p-3 bg-blue-50 mb-3">
                     <div className="grid grid-cols-2 gap-3">
@@ -666,7 +653,6 @@ export default function JobCreate() {
                   </div>
                 )}
 
-                {/* Operations List */}
                 <div className="space-y-2">
                   {part.operations.map((operation) => (
                     <div
@@ -710,7 +696,6 @@ export default function JobCreate() {
         </Card>
       )}
 
-      {/* Step 4: Summary */}
       {step === 4 && (
         <Card className="glass-card">
           <CardHeader>
@@ -754,7 +739,6 @@ export default function JobCreate() {
         </Card>
       )}
 
-      {/* Navigation Buttons */}
       <div className="flex justify-between">
         <Button
           variant="outline"

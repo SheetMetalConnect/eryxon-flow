@@ -12,13 +12,10 @@
  *   import { useCellQRMMetrics, useJobRouting } from '@/hooks/qrm';
  */
 
-// Cell Metrics
 export { useCellQRMMetrics, useAllCellsQRMMetrics } from "./useCellMetrics";
 
-// Capacity
 export { useNextCellCapacity } from "./useCapacity";
 
-// Routing
 export {
   usePartRouting,
   useJobRouting,

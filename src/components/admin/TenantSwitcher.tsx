@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { logger } from "@/lib/logger";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
@@ -56,7 +57,7 @@ export const TenantSwitcher: React.FC<TenantSwitcherProps> = ({
 
       setTenants(data || []);
     } catch (error) {
-      console.error("Error loading tenants:", error);
+      logger.error('TenantSwitcher', 'Error loading tenants', error);
     } finally {
       setLoading(false);
     }
@@ -70,7 +71,7 @@ export const TenantSwitcher: React.FC<TenantSwitcherProps> = ({
       await switchTenant(tenantId);
       onClose();
     } catch (error) {
-      console.error("Error switching tenant:", error);
+      logger.error('TenantSwitcher', 'Error switching tenant', error);
       setSwitching(false);
     }
   };

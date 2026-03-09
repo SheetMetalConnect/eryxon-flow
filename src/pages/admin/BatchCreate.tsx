@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,11 +76,9 @@ export default function BatchCreate() {
   const { profile } = useAuth();
   const createBatch = useCreateBatch();
   const updateBatch = useUpdateBatch();
-  // Fetch data if editing
   const { data: existingBatch, isLoading: batchLoading } = useBatch(id);
   const { data: existingOperations, isLoading: opsLoading } = useBatchOperations(id);
 
-  // Form state
   const [batchNumber, setBatchNumber] = useState("");
   const [batchType, setBatchType] = useState<BatchType>("laser_nesting");
   const [cellId, setCellId] = useState("");
@@ -90,14 +89,12 @@ export default function BatchCreate() {
   const [operationSearch, setOperationSearch] = useState("");
   const [searchParams] = useSearchParams();
 
-  // New fields
   const [parentBatchId, setParentBatchId] = useState<string>("__none__");
   const [nestingImageUrl, setNestingImageUrl] = useState("");
   const [layoutImageUrl, setLayoutImageUrl] = useState("");
   const [metadataJson, setMetadataJson] = useState("{}");
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  // Populate form when editing
   useEffect(() => {
     if (isEditing && existingBatch && existingOperations) {
       setBatchNumber(existingBatch.batch_number);
@@ -114,7 +111,6 @@ export default function BatchCreate() {
         setMetadataJson(JSON.stringify(existingBatch.nesting_metadata, null, 2));
       }
 
-      // Set selected operations
       const opIds = existingOperations.map(bo => bo.operation_id);
       setSelectedOperations(opIds);
     }
@@ -135,9 +131,8 @@ export default function BatchCreate() {
     }
   }, [searchParams, isEditing]);
 
-  // Fetch cells
   const { data: cells } = useQuery({
-    queryKey: ["cells-active", profile?.tenant_id],
+    queryKey: QueryKeys.cells.active(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cells")
@@ -151,9 +146,8 @@ export default function BatchCreate() {
     enabled: !!profile?.tenant_id,
   });
 
-  // Fetch materials from config
   const { data: materials } = useQuery({
-    queryKey: ["materials-active", profile?.tenant_id],
+    queryKey: QueryKeys.config.materialsActive(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("materials")
@@ -167,9 +161,8 @@ export default function BatchCreate() {
     enabled: !!profile?.tenant_id,
   });
 
-  // Fetch potential parent batches
   const { data: parentBatches } = useQuery({
-    queryKey: ["batches-potential-parents", profile?.tenant_id],
+    queryKey: QueryKeys.batches.potentialParents(profile?.tenant_id ?? ''),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("operation_batches")
@@ -185,9 +178,8 @@ export default function BatchCreate() {
   });
 
 
-  // Fetch available operations
   const { data: availableOperations } = useQuery({
-    queryKey: ["operations-for-batch", cellId, profile?.tenant_id],
+    queryKey: QueryKeys.operations.forBatch(cellId || ''),
     queryFn: async () => {
       let query = supabase
         .from("operations")
@@ -232,7 +224,6 @@ export default function BatchCreate() {
     enabled: !!profile?.tenant_id,
   });
 
-  // Filter operations by search
   const filteredOperations = availableOperations?.filter(op => {
     if (!operationSearch) return true;
     const search = operationSearch.toLowerCase();
@@ -287,8 +278,8 @@ export default function BatchCreate() {
       }
 
       toast.success(t("batches.imageUploaded"), { description: t("batches.imageUploadedDesc") });
-    } catch (error: any) {
-      toast.error(t("batches.imageUploadFailed"), { description: error.message });
+    } catch (error: unknown) {
+      toast.error(t("batches.imageUploadFailed"), { description: error instanceof Error ? error.message : String(error) });
     } finally {
       setUploadingImage(false);
     }
@@ -384,7 +375,6 @@ export default function BatchCreate() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Batch Details */}
           <Card className="glass-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -410,7 +400,6 @@ export default function BatchCreate() {
                 </div>
               </div>
 
-              {/* Parent Batch Selection */}
               <div>
                 <Label>{t("batches.parentBatch")}</Label>
                 <Select value={parentBatchId} onValueChange={setParentBatchId}>
@@ -506,7 +495,6 @@ export default function BatchCreate() {
                 />
               </div>
 
-              {/* Images */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>{t("batches.nestingImage")}</Label>
@@ -548,7 +536,6 @@ export default function BatchCreate() {
                 </div>
               </div>
 
-              {/* Metadata JSON */}
               <div>
                 <Label className="flex items-center gap-2">
                   <FileCode className="h-4 w-4" />
@@ -569,7 +556,6 @@ export default function BatchCreate() {
             </CardContent>
           </Card>
 
-          {/* Operations Selection */}
           <Card className="glass-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -663,7 +649,6 @@ export default function BatchCreate() {
           </Card>
         </div>
 
-        {/* Submit */}
         <div className="flex justify-end gap-4">
           <Button type="button" variant="outline" onClick={() => navigate("/admin/batches")}>
             {t("common.cancel")}

@@ -20,12 +20,15 @@ Eryxon MES uses a **Unified Event Dispatcher** to coordinate communication acros
 ## Authentication
 
 ### API Key Authentication
-All external API calls require a Bearer token:
+All external API calls currently require a Bearer token in the `Authorization` header:
 ```http
 Authorization: Bearer ery_live_xxxxxxxxxxxxxxxxxxxx
 ```
 - `ery_live_`: Production keys.
 - `ery_test_`: Sandbox/testing keys.
+- Keys are hashed with SHA-256 and validated in edge functions with constant-time comparison.
+
+For the detailed API contract, see [REST API Reference](/api/rest-api-reference/).
 
 ### MCP Authentication
 Model Context Protocol keys are configured separately in the Admin panel to allow AI agents like Claude to securely interact with your shop floor data. See the [MCP Server Setup Guide](/guides/mcp-setup) for complete deployment instructions.
@@ -37,10 +40,13 @@ Model Context Protocol keys are configured separately in the Admin panel to allo
 Eryxon uses Supabase Realtime (WebSockets) to push updates to the frontend and connected clients instantly.
 
 ### Hooks for Developers
-We provide several React hooks to simplify real-time data binding:
-- `useTableSubscription`: Simple single-table listener.
-- `useTenantSubscription`: Automatically filters by the current tenant.
-- `useEntitySubscription`: Listens for changes to a specific record (e.g., one operation).
+The current app standardizes realtime subscription behavior around shared subscription utilities and tenant-aware hooks used by operator, issue, notification, and dashboard flows.
+
+The important behavior is:
+
+- subscriptions are tenant-scoped
+- cleanup is explicit on unmount
+- debounced realtime handlers are canceled during teardown
 
 ---
 
@@ -84,4 +90,14 @@ All major actions (job created, operation started, issue reported) trigger event
 - `429 Too Many Requests`: Rate limit exceeded.
 
 ### Rate Limits
-Limits are applied per API key and vary by subscription plan (e.g., Free: 60 RPM, Professional: 1,000 RPM).
+Limits are enforced per tenant plan in the edge-function auth layer. In the current implementation these are conservative daily limits rather than RPM-based examples:
+
+- Free: 100 requests/day
+- Pro: 1,000 requests/day
+- Premium: 10,000 requests/day
+- Enterprise: unlimited
+
+## Related Docs
+
+- [Security Architecture](/architecture/security-architecture/)
+- [REST API Reference](/api/rest-api-reference/)

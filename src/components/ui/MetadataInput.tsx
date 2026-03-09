@@ -93,7 +93,7 @@ export function MetadataInput({
     const fieldValue = value[field.key];
     const fieldId = `metadata-${field.key}`;
 
-    const handleChange = (newValue: any) => {
+    const handleChange = (newValue: string | number | boolean | null) => {
       onChange({
         ...value,
         [field.key]: newValue,
@@ -296,7 +296,7 @@ export function MetadataInput({
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent>
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'template' | 'manual')}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="template">
               <Sparkles className="h-4 w-4 mr-2" />

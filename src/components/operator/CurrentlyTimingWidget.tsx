@@ -105,8 +105,8 @@ export default function CurrentlyTimingWidget() {
       await stopTimeTracking(operationId, operatorId);
       toast.success(t("operations.timeTrackingStopped"));
       loadActiveEntries();
-    } catch (error: any) {
-      toast.error(error.message || t("operations.failedToStopTimeTracking"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("operations.failedToStopTimeTracking"));
     }
   };
 

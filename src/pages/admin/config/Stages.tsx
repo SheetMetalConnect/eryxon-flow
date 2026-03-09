@@ -18,6 +18,7 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, v
 import { CSS } from "@dnd-kit/utilities";
 import { useCellQRMMetrics } from "@/hooks/useQRMMetrics";
 import { WIPIndicator, WIPBar } from "@/components/qrm/WIPIndicator";
+import { logger } from "@/lib/logger";
 import { IconPicker, IconDisplay } from "@/components/ui/icon-picker";
 
 // Default colors using design system tokens
@@ -44,7 +45,7 @@ interface SortableStageCardProps {
   onEdit: (stage: Stage) => void;
   onDelete: (stage: Stage) => void;
   tenantId: string;
-  t: any;
+  t: (key: string, options?: Record<string, unknown>) => string;
 }
 
 function SortableStageCard({ stage, onEdit, onDelete, tenantId, t }: SortableStageCardProps) {
@@ -66,7 +67,6 @@ function SortableStageCard({ stage, onEdit, onDelete, tenantId, t }: SortableSta
   return (
     <div ref={setNodeRef} style={style}>
       <Card className="hover:shadow-md transition-shadow duration-200 overflow-hidden">
-        {/* Color accent bar */}
         <div
           className="h-1 w-full"
           style={{ backgroundColor: stage.color || DEFAULT_STAGE_COLOR }}
@@ -75,7 +75,6 @@ function SortableStageCard({ stage, onEdit, onDelete, tenantId, t }: SortableSta
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-3 flex-1 min-w-0">
-              {/* Drag handle */}
               <div
                 {...attributes}
                 {...listeners}
@@ -84,7 +83,6 @@ function SortableStageCard({ stage, onEdit, onDelete, tenantId, t }: SortableSta
                 <GripVertical className="h-4 w-4 text-muted-foreground" />
               </div>
 
-              {/* Icon */}
               <div
                 className="h-12 w-12 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
                 style={{ backgroundColor: stage.color || DEFAULT_STAGE_COLOR }}
@@ -96,7 +94,6 @@ function SortableStageCard({ stage, onEdit, onDelete, tenantId, t }: SortableSta
                 />
               </div>
 
-              {/* Title and status */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <CardTitle className="text-lg truncate">{stage.name}</CardTitle>
@@ -117,7 +114,7 @@ function SortableStageCard({ stage, onEdit, onDelete, tenantId, t }: SortableSta
                   {stage.wip_limit !== null ? (
                     <span className="flex items-center gap-1">
                       <Settings2 className="h-3.5 w-3.5" />
-                      {t("qrm.wipLimit", "WIP")}: {stage.wip_limit}
+                      {t("qrm.wipLimit", { defaultValue: "WIP" })}: {stage.wip_limit}
                       {stage.enforce_wip_limit && (
                         <span className="text-xs text-orange-600 font-medium">(enforced)</span>
                       )}
@@ -127,7 +124,6 @@ function SortableStageCard({ stage, onEdit, onDelete, tenantId, t }: SortableSta
               </div>
             </div>
 
-            {/* Actions */}
             <div className="flex gap-1.5 flex-shrink-0">
               <Button
                 variant="ghost"
@@ -149,7 +145,6 @@ function SortableStageCard({ stage, onEdit, onDelete, tenantId, t }: SortableSta
           </div>
         </CardHeader>
 
-        {/* Content section */}
         {(stage.description || stage.wip_limit !== null) && (
           <CardContent className="pt-0 space-y-3">
             {stage.description && (
@@ -220,7 +215,6 @@ export default function ConfigStages() {
 
     try {
       if (editingStage) {
-        // Update existing stage
         await supabase
           .from("cells")
           .update({
@@ -239,7 +233,6 @@ export default function ConfigStages() {
 
         toast.success(t("stages.stageUpdated"));
       } else {
-        // Create new cell
         const maxSequence = Math.max(...stages.map((s) => s.sequence), 0);
         await supabase.from("cells").insert({
           tenant_id: profile.tenant_id,
@@ -264,7 +257,7 @@ export default function ConfigStages() {
       loadStages();
     } catch (error) {
       toast.error(t("stages.failedToSaveStage"));
-      console.error(error);
+      logger.error('Stages', 'Failed to save stage', error);
     }
   };
 
@@ -310,7 +303,6 @@ export default function ConfigStages() {
     if (!stageToDelete || !profile?.tenant_id) return;
 
     try {
-      // Check if there are operations using this cell
       const { count } = await supabase
         .from("operations")
         .select("*", { count: "exact", head: true })
@@ -322,7 +314,6 @@ export default function ConfigStages() {
         return;
       }
 
-      // Delete the cell
       const { error } = await supabase
         .from("cells")
         .delete()
@@ -336,7 +327,7 @@ export default function ConfigStages() {
       loadStages();
     } catch (error) {
       toast.error(t("stages.failedToDeleteStage"));
-      console.error(error);
+      logger.error('Stages', 'Failed to delete stage', error);
     }
   };
 
@@ -350,10 +341,8 @@ export default function ConfigStages() {
 
     const reorderedStages = arrayMove(stages, oldIndex, newIndex);
 
-    // Update local state immediately for better UX
     setStages(reorderedStages);
 
-    // Update sequences in the database
     try {
       const updates = reorderedStages.map((stage, index) => ({
         id: stage.id,
@@ -374,7 +363,7 @@ export default function ConfigStages() {
       toast.success(t("stages.stagesReordered"));
     } catch (error) {
       toast.error(t("stages.failedToReorderStages"));
-      console.error(error);
+      logger.error('Stages', 'Failed to reorder stages', error);
       // Reload stages to revert to correct order
       loadStages();
     }
@@ -430,7 +419,6 @@ export default function ConfigStages() {
               </DialogHeader>
               <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
                 <div className="flex-1 overflow-y-auto min-h-0 space-y-6">
-                {/* Basic Information */}
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">{t("stages.stageName")} *</Label>
@@ -512,7 +500,6 @@ export default function ConfigStages() {
                   </div>
                 </div>
 
-                {/* Scheduling Capacity */}
                 <div className="space-y-4 pt-2 border-t">
                   <div className="flex items-center gap-2">
                     <CalendarClock className="h-4 w-4 text-muted-foreground" />
@@ -545,7 +532,6 @@ export default function ConfigStages() {
                   </div>
                 </div>
 
-                {/* QRM Settings */}
                 <div className="space-y-4 pt-2 border-t">
                   <div className="flex items-center gap-2">
                     <Settings2 className="h-4 w-4 text-muted-foreground" />
@@ -648,7 +634,6 @@ export default function ConfigStages() {
 
         <hr className="title-divider" />
 
-        {/* Stages List */}
         {stages.length === 0 ? (
           <Card className="glass-card border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-16">
@@ -699,7 +684,6 @@ export default function ConfigStages() {
           </DndContext>
         )}
 
-        {/* Delete Confirmation Dialog */}
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <AlertDialogContent className="glass-card">
             <AlertDialogHeader>
@@ -720,7 +704,6 @@ export default function ConfigStages() {
   );
 }
 
-// Component to display WIP metrics for a stage
 function StageWIPDisplay({
   stageId,
   tenantId,
@@ -733,7 +716,6 @@ function StageWIPDisplay({
   const { metrics, loading } = useCellQRMMetrics(stageId, tenantId);
   const { t } = useTranslation();
 
-  // Show visual bar for stages with WIP limits
   if (wipLimit !== null) {
     if (loading) {
       return (
@@ -778,6 +760,5 @@ function StageWIPDisplay({
     );
   }
 
-  // No WIP limit set - don't display anything
   return null;
 }

@@ -2,10 +2,8 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { AlertTriangle, Clock, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
+import { DOCS_SELF_HOSTING_URL } from "@/lib/config";
 import { cn } from "@/lib/utils";
-
-const SELF_HOSTING_GUIDE_URL =
-  "https://github.com/SheetMetalConnect/eryxon-flow/blob/main/docs/SELF_HOSTING_GUIDE.md";
 
 export function TrialStatusBanner() {
   const { t } = useTranslation();
@@ -86,7 +84,7 @@ export function TrialStatusBanner() {
           {t("trialBanner.viewPlan")}
         </Link>
         <a
-          href={SELF_HOSTING_GUIDE_URL}
+          href={DOCS_SELF_HOSTING_URL}
           target="_blank"
           rel="noopener noreferrer"
           className={cn(

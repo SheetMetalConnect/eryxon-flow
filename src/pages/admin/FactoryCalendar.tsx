@@ -20,6 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { logger } from "@/lib/logger";
 import {
   ChevronLeft,
   ChevronRight,
@@ -49,7 +50,6 @@ import {
 } from "date-fns";
 import type { Database } from "@/integrations/supabase/types";
 
-// Use database types for consistency
 type FactoryCalendarRow = Database['public']['Tables']['factory_calendar']['Row'];
 type TenantRow = Database['public']['Tables']['tenants']['Row'];
 
@@ -105,7 +105,6 @@ export default function FactoryCalendar() {
   // Default 31 = Mon-Fri
   const workingDaysMask = (tenant as any)?.working_days_mask ?? 31;
 
-  // Translation helpers for day types
   const getDayTypeLabel = (type: DayType): string => {
     const labels: Record<DayType, string> = {
       working: t("calendar.dayTypes.working", "Working Day"),
@@ -137,7 +136,7 @@ export default function FactoryCalendar() {
       .lte("date", format(monthEnd, 'yyyy-MM-dd'));
 
     if (error) {
-      console.error("Error loading calendar:", error);
+      logger.error('FactoryCalendar', 'Error loading calendar', error);
       toast.error(t("calendar.messages.loadFailed", "Failed to load calendar"));
     } else {
       setCalendarDays((data || []) as CalendarDay[]);
@@ -160,7 +159,7 @@ export default function FactoryCalendar() {
     return calendarDays.find(d => d.date === dateStr) || null;
   };
 
-  const getDayType = (date: Date | null | undefined): string => {
+  const getDayType = (date: Date | null | undefined): DayType => {
     if (!date || isNaN(date.getTime())) return 'closure';
     const calDay = getCalendarDay(date);
     if (calDay) return calDay.day_type;
@@ -198,7 +197,6 @@ export default function FactoryCalendar() {
 
     try {
       if (existing?.id) {
-        // Update existing
         const { error } = await supabase
           .from("factory_calendar")
           .update({
@@ -214,7 +212,6 @@ export default function FactoryCalendar() {
         if (error) throw error;
         toast.success(t("calendar.messages.updated", "Calendar updated"));
       } else {
-        // Insert new
         const { error } = await supabase
           .from("factory_calendar")
           .insert({
@@ -234,9 +231,9 @@ export default function FactoryCalendar() {
 
       setDialogOpen(false);
       loadCalendarDays();
-    } catch (error: any) {
-      console.error("Error saving calendar:", error);
-      toast.error(error.message || t("calendar.messages.saveFailed", "Failed to save"));
+    } catch (error: unknown) {
+      logger.error('FactoryCalendar', 'Error saving calendar', error);
+      toast.error(error instanceof Error ? error.message : t("calendar.messages.saveFailed", "Failed to save"));
     } finally {
       setSaving(false);
     }
@@ -268,8 +265,8 @@ export default function FactoryCalendar() {
       setDeleteDialogOpen(false);
       setDialogOpen(false);
       loadCalendarDays();
-    } catch (error: any) {
-      console.error("Error deleting:", error);
+    } catch (error: unknown) {
+      logger.error('FactoryCalendar', 'Error deleting', error);
       toast.error(t("calendar.messages.deleteFailed", "Failed to delete"));
     } finally {
       setSaving(false);
@@ -281,7 +278,6 @@ export default function FactoryCalendar() {
     return formData.capacity_multiplier ?? 0;
   };
 
-  // Get days for the calendar grid (including padding from prev/next months)
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
@@ -311,7 +307,6 @@ export default function FactoryCalendar() {
 
       <hr className="title-divider" />
 
-      {/* Legend */}
       <Card className="glass-card">
         <CardContent className="pt-4 pb-3">
           <div className="flex flex-wrap items-center gap-2">
@@ -332,7 +327,6 @@ export default function FactoryCalendar() {
         </CardContent>
       </Card>
 
-      {/* Calendar Card */}
       <Card className="glass-card">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -369,7 +363,6 @@ export default function FactoryCalendar() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Day headers */}
           <div className="grid grid-cols-7 gap-1 mb-2">
             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
               <div
@@ -381,7 +374,6 @@ export default function FactoryCalendar() {
             ))}
           </div>
 
-          {/* Calendar grid */}
           <div className="grid grid-cols-7 gap-1">
             {calendarDates.map(date => {
               const isCurrentMonth = isSameMonth(date, currentMonth);
@@ -428,7 +420,6 @@ export default function FactoryCalendar() {
         </CardContent>
       </Card>
 
-      {/* Upcoming Special Days */}
       {calendarDays.length > 0 && (
         <Card className="glass-card">
           <CardHeader>
@@ -487,7 +478,6 @@ export default function FactoryCalendar() {
         </Card>
       )}
 
-      {/* Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="glass-card sm:max-w-md overflow-hidden flex flex-col">
           <DialogHeader className="shrink-0">
@@ -501,7 +491,6 @@ export default function FactoryCalendar() {
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto min-h-0 space-y-5">
-            {/* Day Type Selection */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">
                 {t("calendar.form.dayType", "Day Type")}
@@ -534,7 +523,6 @@ export default function FactoryCalendar() {
               </Select>
             </div>
 
-            {/* Name / Description */}
             <div className="space-y-2">
               <Label htmlFor="name" className="text-sm font-medium">
                 {t("calendar.form.name", "Name / Description")}
@@ -548,7 +536,6 @@ export default function FactoryCalendar() {
               />
             </div>
 
-            {/* Time Override for Half Day */}
             {(formData.day_type === 'half_day' || formData.day_type === 'working') && (
               <div className="space-y-2">
                 <Label className="text-sm font-medium flex items-center gap-2">
@@ -587,7 +574,6 @@ export default function FactoryCalendar() {
               </div>
             )}
 
-            {/* Capacity Slider */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-medium flex items-center gap-2">
@@ -616,7 +602,6 @@ export default function FactoryCalendar() {
               </div>
             </div>
 
-            {/* Notes */}
             <div className="space-y-2">
               <Label htmlFor="notes" className="text-sm font-medium">
                 {t("calendar.form.notes", "Notes")}
@@ -664,7 +649,6 @@ export default function FactoryCalendar() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

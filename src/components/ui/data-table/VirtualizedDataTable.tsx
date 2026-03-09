@@ -29,8 +29,7 @@ import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Loader2 } from "lucide-react";
 
-// Global filter function for searching across all columns
-const globalFilterFn: FilterFn<any> = (row, columnId, filterValue) => {
+const globalFilterFn: FilterFn<unknown> = (row, columnId, filterValue) => {
   const search = filterValue.toLowerCase();
 
   // Search through all column values
@@ -93,7 +92,6 @@ interface VirtualizedDataTableProps<TData, TValue> {
   totalCount?: number;
 }
 
-// Memoized table row component for performance
 const MemoizedTableRow = React.memo(
   ({
     row,
@@ -105,9 +103,9 @@ const MemoizedTableRow = React.memo(
     virtualRow,
     measureElement,
   }: {
-    row: Row<any>;
-    onRowClick?: (row: any) => void;
-    rowClassName?: (row: any) => string;
+    row: Row<unknown>;
+    onRowClick?: (row: unknown) => void;
+    rowClassName?: (row: unknown) => string;
     compact: boolean;
     striped: boolean;
     index: number;
@@ -142,7 +140,6 @@ const MemoizedTableRow = React.memo(
     </TableRow>
   ),
   (prevProps, nextProps) => {
-    // Custom comparison for better memoization
     return (
       prevProps.row.id === nextProps.row.id &&
       prevProps.row.getIsSelected() === nextProps.row.getIsSelected() &&
@@ -186,12 +183,12 @@ export function VirtualizedDataTable<TData, TValue>({
   const [rowSelection, setRowSelection] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState("");
 
-  // Debounce the global filter for better performance
   const debouncedGlobalFilter = useDebounce(globalFilter, searchDebounce);
 
-  const table = useReactTable({
+  const table = useReactTable<TData>({
     data,
-    columns,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    columns: columns as ColumnDef<TData, any>[],
     state: {
       sorting,
       columnFilters,
@@ -213,10 +210,8 @@ export function VirtualizedDataTable<TData, TValue>({
 
   const { rows } = table.getRowModel();
 
-  // Reference to the scrollable container
   const parentRef = React.useRef<HTMLDivElement>(null);
 
-  // Virtual row configuration
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
@@ -231,7 +226,6 @@ export function VirtualizedDataTable<TData, TValue>({
   const virtualRows = rowVirtualizer.getVirtualItems();
   const totalSize = rowVirtualizer.getTotalSize();
 
-  // Handle infinite scroll
   React.useEffect(() => {
     const [lastItem] = [...virtualRows].reverse();
 
@@ -254,7 +248,6 @@ export function VirtualizedDataTable<TData, TValue>({
     overscan,
   ]);
 
-  // Scroll to top when sorting or filtering changes
   React.useEffect(() => {
     if (parentRef.current) {
       parentRef.current.scrollTop = 0;
@@ -323,7 +316,6 @@ export function VirtualizedDataTable<TData, TValue>({
               </TableRow>
             ) : rows.length ? (
               <>
-                {/* Spacer for virtual scroll */}
                 <tr style={{ height: `${totalSize}px`, position: "relative" }}>
                   <td style={{ padding: 0, border: "none" }}>
                     <div style={{ position: "relative", width: "100%" }}>
@@ -374,7 +366,6 @@ export function VirtualizedDataTable<TData, TValue>({
             )}
           </TableBody>
         </Table>
-        {/* Loading more indicator */}
         {loadingMore && (
           <div className="flex items-center justify-center py-4 border-t">
             <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -384,7 +375,6 @@ export function VirtualizedDataTable<TData, TValue>({
           </div>
         )}
       </div>
-      {/* Footer with count info */}
       <div className="flex items-center justify-between px-2">
         <div className="text-sm text-muted-foreground">
           {totalCount !== undefined ? (

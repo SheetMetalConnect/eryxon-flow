@@ -251,9 +251,9 @@ export async function prefetchCommonData(
   queryClient: QueryClient,
   tenantId: string,
   fetchFunctions: {
-    fetchCells?: () => Promise<any>;
-    fetchMaterials?: () => Promise<any>;
-    fetchScrapReasons?: () => Promise<any>;
+    fetchCells?: () => Promise<unknown>;
+    fetchMaterials?: () => Promise<unknown>;
+    fetchScrapReasons?: () => Promise<unknown>;
   }
 ) {
   const prefetchPromises: Promise<void>[] = [];

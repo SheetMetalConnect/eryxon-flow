@@ -40,7 +40,6 @@ export default function Auth() {
   const { signIn, signUp, profile } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already logged in
   if (profile) {
     if (profile.role === "admin") {
       navigate("/dashboard");
@@ -57,7 +56,6 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      // Validate captcha token (only when Turnstile is enabled)
       if (TURNSTILE_ENABLED && !captchaToken) {
         setError(t("auth.captchaRequired"));
         setLoading(false);
@@ -73,7 +71,6 @@ export default function Auth() {
           setCaptchaToken(null);
         }
       } else {
-        // Validate required fields
         if (!fullName.trim()) {
           setError(t("auth.fullNameRequired"));
           setLoading(false);
@@ -90,7 +87,6 @@ export default function Auth() {
           return;
         }
 
-        // Validate terms agreement
         if (!termsAgreed) {
           setError(t("auth.mustAgreeToTerms"));
           setLoading(false);
@@ -99,7 +95,6 @@ export default function Auth() {
           return;
         }
 
-        // Sign up creates tenant with 30-day free trial
         const { error } = await signUp(email, password, {
           full_name: fullName,
           company_name: companyName,
@@ -111,9 +106,7 @@ export default function Auth() {
           turnstileRef.current?.reset();
           setCaptchaToken(null);
         } else {
-          // Show success message
           setSuccess(t("auth.pendingApprovalMessage"));
-          // Clear form
           setEmail("");
           setPassword("");
           setFullName("");

@@ -3,8 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
+import { logger } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -29,8 +31,8 @@ import { PageStatsRow } from "@/components/admin/PageStatsRow";
 import { format, isBefore, addDays, isAfter } from "date-fns";
 import JobDetailModal from "@/components/admin/JobDetailModal";
 import DueDateOverrideModal from "@/components/admin/DueDateOverrideModal";
-import { STEPViewer } from "@/components/STEPViewer";
-import { PDFViewer } from "@/components/PDFViewer";
+import { STEPViewer } from "@/components/STEPViewerLazy";
+import { PDFViewer } from "@/components/PDFViewerLazy";
 import {
   Dialog,
   DialogContent,
@@ -52,6 +54,22 @@ import { DataTable } from "@/components/ui/data-table/DataTable";
 import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
 import type { DataTableFilterableColumn } from "@/components/ui/data-table/DataTable";
 import { cn } from "@/lib/utils";
+
+interface JobPart {
+  id: string;
+  file_paths: string[] | null;
+  operations: { id: string }[];
+}
+
+interface JobRow {
+  id: string;
+  job_number: string;
+  customer: string;
+  due_date: string;
+  due_date_override: string | null;
+  status: string;
+  parts: JobPart[] | null;
+}
 
 interface JobData {
   id: string;
@@ -75,7 +93,6 @@ export default function Jobs() {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [overrideJobId, setOverrideJobId] = useState<string | null>(null);
 
-  // File viewer state
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
   const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(null);
   const [currentFileType, setCurrentFileType] = useState<"step" | "pdf" | null>(null);
@@ -86,20 +103,23 @@ export default function Jobs() {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["admin-jobs-all"],
+    queryKey: QueryKeys.jobs.all(profile?.tenant_id ?? ''),
     queryFn: async () => {
-      const query = supabase.from("jobs").select(`
+      let query = supabase.from("jobs").select(`
           *,
           parts(id, file_paths, operations(id))
         `);
 
+      if (profile?.tenant_id) {
+        query = query.eq("tenant_id", profile.tenant_id);
+      }
+
       const { data, error } = await query;
       if (error) throw error;
 
-      // Calculate counts and file information
-      return data.map((job: any) => {
+      return (data as JobRow[]).map((job) => {
         const allFiles: string[] =
-          job.parts?.flatMap((part: any) => part.file_paths || []) || [];
+          job.parts?.flatMap((part: JobPart) => part.file_paths || []) || [];
         const stepFiles = allFiles.filter((f) => {
           const ext = f.split(".").pop()?.toLowerCase();
           return ext === "step" || ext === "stp";
@@ -113,7 +133,7 @@ export default function Jobs() {
           parts_count: job.parts?.length || 0,
           operations_count:
             job.parts?.reduce(
-              (sum: number, part: any) => sum + (part.operations?.length || 0),
+              (sum: number, part: JobPart) => sum + (part.operations?.length || 0),
               0,
             ) || 0,
           stepFiles,
@@ -125,10 +145,8 @@ export default function Jobs() {
     },
   });
 
-  // Get job IDs for routing fetch
-  const jobIds = useMemo(() => jobs?.map((job: any) => job.id) || [], [jobs]);
+  const jobIds = useMemo(() => jobs?.map((job: JobData) => job.id) || [], [jobs]);
 
-  // Fetch routing for all jobs
   const { routings, loading: routingsLoading } = useMultipleJobsRouting(jobIds, profile?.tenant_id ?? null);
 
   const handleSetOnHold = async (jobId: string) => {
@@ -151,7 +169,6 @@ export default function Jobs() {
     toast.success(t("jobs.statusUpdated"), { description: t("jobs.jobResumed") });
   };
 
-  // Handle viewing file (STEP or PDF)
   const handleViewFile = async (filePath: string) => {
     try {
       const fileExt = filePath.split(".").pop()?.toLowerCase();
@@ -167,7 +184,6 @@ export default function Jobs() {
         return;
       }
 
-      // Create signed URL
       const { data, error } = await supabase.storage
         .from("parts-cad")
         .createSignedUrl(filePath, 3600);
@@ -188,8 +204,8 @@ export default function Jobs() {
       setCurrentFileType(fileType);
       setCurrentFileTitle(fileName);
       setFileViewerOpen(true);
-    } catch (error: any) {
-      console.error("Error opening file:", error);
+    } catch (error: unknown) {
+      logger.error('Jobs', 'Error opening file', error);
       toast.error(t("notifications.error"), { description: t("notifications.failedToOpenFileViewer") });
     }
   };
@@ -225,7 +241,7 @@ export default function Jobs() {
     );
   };
 
-  const getDueDateDisplay = (job: any) => {
+  const getDueDateDisplay = (job: JobData) => {
     const dueDate = new Date(job.due_date_override || job.due_date);
     const today = new Date();
     const weekFromNow = addDays(today, 7);
@@ -451,7 +467,6 @@ export default function Jobs() {
     },
   ], [t]);
 
-  // Responsive column visibility - hide less important columns on mobile
   const { columnVisibility, isMobile } = useResponsiveColumns([
     { id: "job_number", alwaysVisible: true },
     { id: "due_date", alwaysVisible: true },
@@ -462,7 +477,6 @@ export default function Jobs() {
     { id: "actions", alwaysVisible: true },
   ]);
 
-  // Calculate stats
   const jobStats = useMemo(() => {
     if (!jobs) return { total: 0, active: 0, completed: 0, overdue: 0 };
     const today = new Date();
@@ -489,7 +503,6 @@ export default function Jobs() {
         }}
       />
 
-      {/* Stats Row */}
       <PageStatsRow
         stats={[
           { label: t("jobs.totalJobs", "Total Jobs"), value: jobStats.total, icon: Briefcase, color: "primary" },
@@ -499,7 +512,6 @@ export default function Jobs() {
         ]}
       />
 
-      {/* Jobs Table */}
       <div className="glass-card p-2 sm:p-4">
         <DataTable
           columns={columns}
@@ -517,7 +529,6 @@ export default function Jobs() {
         />
       </div>
 
-      {/* Job Detail Modal */}
       {selectedJobId && (
         <JobDetailModal
           jobId={selectedJobId}
@@ -526,7 +537,6 @@ export default function Jobs() {
         />
       )}
 
-      {/* Due Date Override Modal */}
       {overrideJobId && (
         <DueDateOverrideModal
           jobId={overrideJobId}
@@ -535,7 +545,6 @@ export default function Jobs() {
         />
       )}
 
-      {/* File Viewer Dialog - Responsive */}
       <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
         <DialogContent className="glass-card w-full h-[100dvh] sm:h-[90vh] sm:max-w-6xl flex flex-col p-0 rounded-none sm:rounded-lg inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
           <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">

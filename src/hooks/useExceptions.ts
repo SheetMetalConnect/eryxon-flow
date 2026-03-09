@@ -2,8 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
+import { QueryKeys } from '@/lib/queryClient'
 import { toast } from 'sonner'
 import type { ExceptionStatus, ExceptionWithExpectation } from '@/integrations/supabase/types/tables/expectations'
+import { logger } from '@/lib/logger'
 
 interface ExceptionStats {
   open_count: number
@@ -25,14 +27,13 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
   const { profile } = useAuth()
   const queryClient = useQueryClient()
 
-  // Fetch exceptions with their expectations
   const {
     data: exceptions = [],
     isLoading,
     error,
     refetch,
   } = useQuery({
-    queryKey: ['exceptions', profile?.tenant_id, status, limit],
+    queryKey: QueryKeys.exceptions.all(profile?.tenant_id ?? '', status, limit),
     queryFn: async () => {
       if (!profile?.tenant_id) return []
 
@@ -71,9 +72,8 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     enabled: !!profile?.tenant_id,
   })
 
-  // Fetch exception stats
   const { data: stats } = useQuery({
-    queryKey: ['exception-stats', profile?.tenant_id],
+    queryKey: QueryKeys.exceptions.stats(profile?.tenant_id ?? ''),
     queryFn: async () => {
       if (!profile?.tenant_id) return null
 
@@ -87,7 +87,6 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     enabled: !!profile?.tenant_id,
   })
 
-  // Acknowledge exception
   const acknowledgeMutation = useMutation({
     mutationFn: async (exceptionId: string) => {
       const { error } = await supabase.rpc('acknowledge_exception', {
@@ -97,16 +96,14 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exceptions'] })
-      queryClient.invalidateQueries({ queryKey: ['exception-stats'] })
       toast.success(t('admin:exceptionInbox.exceptionAcknowledged'))
     },
     onError: (error) => {
       toast.error(t('admin:exceptionInbox.actionFailed'))
-      console.error(error)
+      logger.error('useExceptions', 'Action failed', error)
     },
   })
 
-  // Resolve exception
   const resolveMutation = useMutation({
     mutationFn: async ({
       exceptionId,
@@ -132,16 +129,14 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exceptions'] })
-      queryClient.invalidateQueries({ queryKey: ['exception-stats'] })
       toast.success(t('admin:exceptionInbox.exceptionResolved'))
     },
     onError: (error) => {
       toast.error(t('admin:exceptionInbox.actionFailed'))
-      console.error(error)
+      logger.error('useExceptions', 'Action failed', error)
     },
   })
 
-  // Dismiss exception
   const dismissMutation = useMutation({
     mutationFn: async ({
       exceptionId,
@@ -158,12 +153,11 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exceptions'] })
-      queryClient.invalidateQueries({ queryKey: ['exception-stats'] })
       toast.success(t('admin:exceptionInbox.exceptionDismissed'))
     },
     onError: (error) => {
       toast.error(t('admin:exceptionInbox.actionFailed'))
-      console.error(error)
+      logger.error('useExceptions', 'Action failed', error)
     },
   })
 
@@ -186,7 +180,7 @@ export function useException(exceptionId: string | undefined) {
   const { profile } = useAuth()
 
   return useQuery({
-    queryKey: ['exception', exceptionId],
+    queryKey: QueryKeys.exceptions.detail(exceptionId ?? ''),
     queryFn: async () => {
       if (!exceptionId || !profile?.tenant_id) return null
 

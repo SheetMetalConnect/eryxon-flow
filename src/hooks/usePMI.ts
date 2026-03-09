@@ -12,10 +12,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-
-// ============================================================================
-// Types
-// ============================================================================
+import { QueryKeys } from '@/lib/queryClient';
+import { logger } from '@/lib/logger';
 
 /**
  * PMI processing status for async extraction
@@ -41,13 +39,12 @@ export interface PMIMetadata {
   };
 }
 
-// Debug logging - only in development
-const DEBUG = import.meta.env.DEV;
+// Structured logging via centralized logger
 const log = {
-  debug: (msg: string, data?: unknown) => DEBUG && console.debug(`[PMI] ${msg}`, data ?? ''),
-  info: (msg: string, data?: unknown) => DEBUG && console.info(`[PMI] ${msg}`, data ?? ''),
-  warn: (msg: string, data?: unknown) => console.warn(`[PMI] ${msg}`, data ?? ''),
-  error: (msg: string, data?: unknown) => console.error(`[PMI] ${msg}`, data ?? ''),
+  debug: (msg: string, data?: unknown) => logger.debug('usePMI', msg, data),
+  info: (msg: string, data?: unknown) => logger.info('usePMI', msg, data),
+  warn: (msg: string, data?: unknown) => logger.warn('usePMI', msg, data),
+  error: (msg: string, data?: unknown) => logger.error('usePMI', msg, data),
 };
 
 export interface Vector3 {
@@ -144,12 +141,14 @@ export interface PMIExtractionResult {
   file_hash?: string;
 }
 
-// ============================================================================
-// Configuration
-// ============================================================================
-
 const PMI_SERVICE_URL = import.meta.env.VITE_PMI_SERVICE_URL || import.meta.env.VITE_CAD_SERVICE_URL;
 const PMI_SERVICE_API_KEY = import.meta.env.VITE_CAD_SERVICE_API_KEY;
+const STEP_EXTENSIONS = ['step', 'stp'];
+
+function isStepFile(fileName: string): boolean {
+  const ext = fileName.toLowerCase().split('.').pop();
+  return STEP_EXTENSIONS.includes(ext || '');
+}
 
 /**
  * Check if PMI service is configured
@@ -158,10 +157,6 @@ export function isPMIServiceEnabled(): boolean {
   return Boolean(PMI_SERVICE_URL);
 }
 
-// ============================================================================
-// Hook
-// ============================================================================
-
 export function usePMI(partId: string | undefined) {
   const { session } = useAuth();
   const queryClient = useQueryClient();
@@ -169,16 +164,13 @@ export function usePMI(partId: string | undefined) {
   const [extractionError, setExtractionError] = useState<string | null>(null);
   const [pmiStatus, setPmiStatus] = useState<PMIStatus | null>(null);
 
-  /**
-   * Fetch PMI data from parts.metadata
-   */
   const {
     data: pmiMetadata,
     isLoading: isLoadingPMI,
     error: fetchError,
     refetch: refetchPMI,
   } = useQuery({
-    queryKey: ['pmi', partId],
+    queryKey: QueryKeys.pmi.byPart(partId ?? ''),
     queryFn: async (): Promise<PMIMetadata | null> => {
       if (!partId) return null;
 
@@ -190,7 +182,6 @@ export function usePMI(partId: string | undefined) {
 
       if (error) throw error;
 
-      // Extract PMI metadata
       const metadata = part?.metadata as PMIMetadata | null;
       return metadata || null;
     },
@@ -198,23 +189,17 @@ export function usePMI(partId: string | undefined) {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Extract PMI data and status from metadata
   const pmiData = pmiMetadata?.pmi || null;
 
-  /**
-   * Subscribe to realtime updates for PMI status
-   */
   useEffect(() => {
     if (!partId) return;
 
-    // Set initial status from fetched data
     if (pmiMetadata?.pmi_status) {
       setPmiStatus(pmiMetadata.pmi_status);
     }
 
     log.debug(`Subscribing to realtime updates for part ${partId}`);
 
-    // Subscribe to changes on this specific part
     const channel = supabase
       .channel(`pmi-status-${partId}`)
       .on(
@@ -228,32 +213,28 @@ export function usePMI(partId: string | undefined) {
         (payload) => {
           const newMetadata = payload.new?.metadata as PMIMetadata | undefined;
           if (newMetadata) {
-            // Log progress updates
             if (newMetadata.pmi_progress !== undefined || newMetadata.pmi_stage) {
               log.info(`Progress: ${newMetadata.pmi_progress ?? 0}% - ${newMetadata.pmi_stage ?? ''}`);
             }
 
-            // Update local status
             if (newMetadata.pmi_status) {
               log.debug(`Status changed: ${newMetadata.pmi_status}`);
               setPmiStatus(newMetadata.pmi_status);
 
-              // If processing complete, invalidate query to get fresh data
               if (newMetadata.pmi_status === 'complete') {
                 log.info('Processing complete', {
                   time: newMetadata.pmi_processing_time_ms,
                   summary: newMetadata.pmi_summary,
                 });
-                queryClient.invalidateQueries({ queryKey: ['pmi', partId] });
+                queryClient.invalidateQueries({ queryKey: QueryKeys.pmi.byPart(partId ?? '') });
                 setIsExtracting(false);
               } else if (newMetadata.pmi_status === 'error') {
                 log.error('Processing failed', newMetadata.pmi_error);
-                queryClient.invalidateQueries({ queryKey: ['pmi', partId] });
+                queryClient.invalidateQueries({ queryKey: QueryKeys.pmi.byPart(partId ?? '') });
                 setIsExtracting(false);
               }
             }
 
-            // Update error if present
             if (newMetadata.pmi_error) {
               setExtractionError(newMetadata.pmi_error);
             }
@@ -264,7 +245,6 @@ export function usePMI(partId: string | undefined) {
         log.debug(`Subscription status: ${status}`);
       });
 
-    // Cleanup subscription on unmount
     return () => {
       log.debug(`Unsubscribing from part ${partId}`);
       supabase.removeChannel(channel);
@@ -289,9 +269,7 @@ export function usePMI(partId: string | undefined) {
       return { accepted: false, error: 'No part ID provided' };
     }
 
-    // Only process STEP files
-    const ext = fileName.toLowerCase().split('.').pop();
-    if (!['step', 'stp'].includes(ext || '')) {
+    if (!isStepFile(fileName)) {
       log.debug(`Skipping non-STEP file: ${fileName}`);
       return { accepted: false, error: 'Not a STEP file' };
     }
@@ -307,7 +285,6 @@ export function usePMI(partId: string | undefined) {
         'Content-Type': 'application/json',
       };
 
-      // Add API key if configured
       if (PMI_SERVICE_API_KEY) {
         headers['X-API-Key'] = PMI_SERVICE_API_KEY;
       }
@@ -336,7 +313,6 @@ export function usePMI(partId: string | undefined) {
         throw new Error(result.message || 'Extraction not accepted');
       }
 
-      // Processing started - status updates will come via realtime subscription
       return { accepted: true };
 
     } catch (error) {
@@ -348,14 +324,10 @@ export function usePMI(partId: string | undefined) {
     }
   }, [partId, session?.access_token]);
 
-  /**
-   * Extract PMI synchronously (legacy) - returns result directly
-   */
   const extractPMI = useCallback(async (
     fileUrl: string,
     fileName: string
   ): Promise<PMIExtractionResult> => {
-    // Check if PMI service is configured
     if (!PMI_SERVICE_URL) {
       return {
         success: false,
@@ -365,9 +337,7 @@ export function usePMI(partId: string | undefined) {
       };
     }
 
-    // Only process STEP files
-    const ext = fileName.toLowerCase().split('.').pop();
-    if (!['step', 'stp'].includes(ext || '')) {
+    if (!isStepFile(fileName)) {
       return {
         success: false,
         pmi: null,
@@ -384,7 +354,6 @@ export function usePMI(partId: string | undefined) {
         'Content-Type': 'application/json',
       };
 
-      // Add API key if configured
       if (PMI_SERVICE_API_KEY) {
         headers['X-API-Key'] = PMI_SERVICE_API_KEY;
       }
@@ -405,11 +374,9 @@ export function usePMI(partId: string | undefined) {
       const result: PMIExtractionResult = await response.json();
 
       if (result.success && result.pmi) {
-        // Store PMI data in parts.metadata
         if (partId) {
           await storePMI(partId, result.pmi);
-          // Invalidate cache to refresh data
-          queryClient.invalidateQueries({ queryKey: ['pmi', partId] });
+          queryClient.invalidateQueries({ queryKey: QueryKeys.pmi.byPart(partId ?? '') });
         }
       }
 
@@ -429,11 +396,7 @@ export function usePMI(partId: string | undefined) {
     }
   }, [partId, queryClient]);
 
-  /**
-   * Store PMI data in parts.metadata
-   */
   const storePMI = useCallback(async (partId: string, pmi: PMIData): Promise<void> => {
-    // Get current metadata
     const { data: part, error: fetchError } = await supabase
       .from('parts')
       .select('metadata')
@@ -442,7 +405,6 @@ export function usePMI(partId: string | undefined) {
 
     if (fetchError) throw fetchError;
 
-    // Merge PMI into existing metadata
     const currentMetadata = (part?.metadata as Record<string, unknown>) || {};
     const updatedMetadata = {
       ...currentMetadata,
@@ -450,7 +412,6 @@ export function usePMI(partId: string | undefined) {
       pmi_extracted_at: new Date().toISOString(),
     };
 
-    // Update the part
     const { error: updateError } = await supabase
       .from('parts')
       .update({ metadata: JSON.parse(JSON.stringify(updatedMetadata)) })
@@ -481,7 +442,7 @@ export function usePMI(partId: string | undefined) {
       .update({ metadata: JSON.parse(JSON.stringify(restMetadata)) })
       .eq('id', partId);
 
-    queryClient.invalidateQueries({ queryKey: ['pmi', partId] });
+    queryClient.invalidateQueries({ queryKey: QueryKeys.pmi.byPart(partId ?? '') });
   }, [partId, queryClient]);
 
   /**
@@ -515,36 +476,25 @@ export function usePMI(partId: string | undefined) {
   } : null;
 
   return {
-    // Data
     pmiData,
     hasPMI,
     pmiSummary,
     pmiMetadata,
-
-    // Status (for async processing)
     pmiStatus,
     pmiProgress: pmiMetadata?.pmi_progress ?? 0,
     pmiStage: pmiMetadata?.pmi_stage ?? '',
     pmiError: pmiMetadata?.pmi_error,
     pmiExtractedAt: pmiMetadata?.pmi_extracted_at,
     pmiProcessingTime: pmiMetadata?.pmi_processing_time_ms,
-
-    // Loading states
     isLoadingPMI,
     isExtracting,
     isProcessing: pmiStatus === 'processing' || isExtracting,
-
-    // Errors
     fetchError,
     extractionError,
-
-    // Actions
-    extractPMI,        // Sync extraction (legacy)
-    extractPMIAsync,   // Async extraction with realtime updates
+    extractPMI,
+    extractPMIAsync,
     clearPMI,
     refetchPMI,
-
-    // Service status
     isPMIServiceEnabled: isPMIServiceEnabled(),
   };
 }
@@ -570,8 +520,7 @@ export function usePMIExtraction() {
       };
     }
 
-    const ext = fileName.toLowerCase().split('.').pop();
-    if (!['step', 'stp'].includes(ext || '')) {
+    if (!isStepFile(fileName)) {
       return {
         success: false,
         pmi: null,
@@ -587,7 +536,6 @@ export function usePMIExtraction() {
         'Content-Type': 'application/json',
       };
 
-      // Add API key if configured
       if (PMI_SERVICE_API_KEY) {
         headers['X-API-Key'] = PMI_SERVICE_API_KEY;
       }

@@ -1,9 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "@supabase/supabase-js";
 import { createHmac } from "https://deno.land/std@0.168.0/node/crypto.ts";
+import { sanitizeError, constantTimeCompare } from "../_shared/security.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
@@ -87,8 +88,18 @@ serve(async (req) => {
   );
 
   try {
-    // This function is called internally, so we use the service role key
-    // In production, you might want to add an internal authentication mechanism
+    // Verify internal service-to-service authentication
+    const internalSecret = Deno.env.get('INTERNAL_SERVICE_SECRET');
+    if (internalSecret) {
+      const authHeader = req.headers.get('authorization');
+      const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : '';
+      if (!constantTimeCompare(token, internalSecret)) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Unauthorized' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
 
     const body = await req.json();
     const { tenant_id, event_type, data } = body;
@@ -172,11 +183,11 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in webhook-dispatch:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const sanitized = sanitizeError(error);
     return new Response(
       JSON.stringify({
         success: false,
-        error: message
+        error: sanitized.message
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

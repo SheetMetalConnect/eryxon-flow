@@ -8,6 +8,7 @@ import { UserPlus, Loader2, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 interface CreatedOperator {
   id: string;
@@ -26,13 +27,21 @@ export function OperatorCreationForm() {
   const [creating, setCreating] = useState(false);
   const [createdOperators, setCreatedOperators] = useState<CreatedOperator[]>([]);
 
+  const createOperatorWithPin = supabase.rpc as unknown as (
+    fn: 'create_operator_with_pin',
+    params: {
+      p_full_name: string;
+      p_pin: string;
+      p_employee_id?: string;
+    }
+  ) => Promise<{ data: string | null; error: unknown }>;
+
   const generateEmployeeId = () => {
     const timestamp = Date.now().toString().slice(-6);
     return `OPR-${timestamp}`;
   };
 
   const handleCreateOperator = async () => {
-    // Validation
     if (!fullName.trim()) {
       toast.error(t('users.enterOperatorName'));
       return;
@@ -58,7 +67,7 @@ export function OperatorCreationForm() {
     setCreating(true);
 
     try {
-      const { data, error } = await supabase.rpc('create_operator_with_pin' as any, {
+      const { data, error } = await createOperatorWithPin('create_operator_with_pin', {
         p_full_name: fullName.trim(),
         p_pin: pin,
         p_employee_id: finalEmployeeId || undefined,
@@ -68,25 +77,23 @@ export function OperatorCreationForm() {
 
       toast.success(t('notifications.created'), { description: t('users.operatorCreatedDesc', { name: fullName }) });
 
-      // Add to created operators list
       setCreatedOperators([
         ...createdOperators,
         {
-          id: (data as any) || finalEmployeeId,
+          id: (data as unknown as string) || finalEmployeeId,
           full_name: fullName,
           employee_id: finalEmployeeId,
           role: 'operator',
         },
       ]);
 
-      // Reset form
       setFullName('');
       setEmployeeId('');
       setPin('');
       setConfirmPin('');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create operator');
-      console.error('Error creating operator:', error);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Failed to create operator');
+      logger.error('OperatorCreationForm', 'Error creating operator', error);
     } finally {
       setCreating(false);
     }
@@ -94,7 +101,6 @@ export function OperatorCreationForm() {
 
   return (
     <div className="space-y-6">
-      {/* Creation Form */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Create Operator (No Email Required)</h3>
         <p className="text-sm text-muted-foreground">
@@ -174,7 +180,6 @@ export function OperatorCreationForm() {
         </div>
       </div>
 
-      {/* Created Operators List */}
       {createdOperators.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-lg font-semibold">Created Operators</h3>

@@ -13,6 +13,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
+import { logger } from "@/lib/logger";
 import {
   AlertCircle,
   CheckCircle,
@@ -62,7 +63,6 @@ export default function IssueQueue() {
   const [actionLoading, setActionLoading] = useState(false);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
 
-  // Filters
   const [statusFilter, setStatusFilter] = useState<
     "approved" | "closed" | "pending" | "rejected" | "all"
   >("pending");
@@ -120,17 +120,14 @@ export default function IssueQueue() {
       )
       .eq("tenant_id", profile.tenant_id);
 
-    // Apply status filter
     if (statusFilter !== "all") {
       query = query.eq("status", statusFilter);
     }
 
-    // Apply severity filter
     if (severityFilter !== "all") {
       query = query.eq("severity", severityFilter);
     }
 
-    // Apply search query (job number, part number, or operation name)
     if (searchQuery) {
       query = query.or(
         `operation.part.job.job_number.ilike.%${searchQuery}%,operation.part.part_number.ilike.%${searchQuery}%,operation.operation_name.ilike.%${searchQuery}%`,
@@ -144,7 +141,7 @@ export default function IssueQueue() {
     const { data, error } = await query;
 
     if (error) {
-      console.error("Error loading issues:", error);
+      logger.error('IssueQueue', 'Error loading issues', error);
     } else {
       setIssues(data || []);
     }
@@ -197,8 +194,8 @@ export default function IssueQueue() {
       setSelectedIssue(null);
       setResolutionNotes("");
       loadIssues();
-    } catch (error: any) {
-      toast.error(error.message || t("issues.failedToUpdateIssue"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("issues.failedToUpdateIssue"));
     } finally {
       setActionLoading(false);
     }
@@ -231,7 +228,6 @@ export default function IssueQueue() {
     );
   };
 
-  // Table columns
   const columns: ColumnDef<Issue>[] = useMemo(() => [
     {
       accessorKey: "severity",
@@ -303,7 +299,6 @@ export default function IssueQueue() {
     },
   ], [t]);
 
-  // Filterable columns
   const filterableColumns: DataTableFilterableColumn[] = useMemo(() => [
     {
       id: "severity",
@@ -327,10 +322,8 @@ export default function IssueQueue() {
     },
   ], [t]);
 
-  // State for all issues (unfiltered) for analytics
   const [allIssues, setAllIssues] = useState<Issue[]>([]);
 
-  // Load all issues for analytics
   useEffect(() => {
     const loadAllIssues = async () => {
       if (!profile?.tenant_id) return;
@@ -348,7 +341,6 @@ export default function IssueQueue() {
     loadAllIssues();
   }, [profile?.tenant_id]);
 
-  // Compute analytics from all issues
   const analytics = useMemo(() => {
     const total = allIssues.length;
     const byStatus = {
@@ -402,7 +394,6 @@ export default function IssueQueue() {
         description={t("issues.subtitle", "Review and manage quality issues reported from the shop floor")}
       />
 
-      {/* Stats Row */}
       <PageStatsRow
         stats={[
           { label: t("issues.totalIssues", "Total Issues"), value: analytics.total, icon: AlertCircle, color: "primary" },
@@ -412,7 +403,6 @@ export default function IssueQueue() {
         ]}
       />
 
-      {/* Issues Table */}
       <div className="glass-card p-4">
         <DataTable
           columns={columns}
@@ -431,7 +421,6 @@ export default function IssueQueue() {
         />
       </div>
 
-      {/* Review Modal */}
       <Dialog
         open={!!selectedIssue}
         onOpenChange={() => setSelectedIssue(null)}

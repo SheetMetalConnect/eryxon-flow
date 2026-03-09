@@ -25,6 +25,7 @@ import { seedDemoData } from "@/lib/seed";
 import { clearMockData } from "@/lib/mockDataGenerator";
 import { QRMDashboard } from "@/components/qrm/QRMDashboard";
 import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
+import { logger } from "@/lib/logger";
 import {
   Table,
   TableBody,
@@ -136,7 +137,6 @@ export default function Dashboard() {
     if (!profile?.tenant_id) return;
 
     try {
-      // Load active work
       const { data: activeData } = await supabase
         .from("time_entries")
         .select(
@@ -160,7 +160,6 @@ export default function Dashboard() {
 
       if (activeData) setActiveWork(activeData as any);
 
-      // Load stats + check cells
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
 
@@ -226,7 +225,7 @@ export default function Dashboard() {
 
       setNeedsSetup((cellsHead.count || 0) === 0);
     } catch (error) {
-      console.error("Error loading dashboard data:", error);
+      logger.error('Dashboard', 'Error loading dashboard data', error);
     } finally {
       setLoading(false);
     }
@@ -255,7 +254,7 @@ export default function Dashboard() {
         setIsPastClosingTime(now > closingTime);
       }
     } catch (error) {
-      console.error("Error checking factory hours:", error);
+      logger.error('Dashboard', 'Error checking factory hours', error);
     }
   };
 
@@ -381,8 +380,8 @@ export default function Dashboard() {
       await loadData();
       setNeedsSetup(false);
       toast.success(t("dashboard.demoDataAdded"), { description: t("dashboard.demoDataDescription") });
-    } catch (e: any) {
-      toast.error(t("dashboard.seedingFailed"), { description: e?.message || String(e) });
+    } catch (e: unknown) {
+      toast.error(t("dashboard.seedingFailed"), { description: e instanceof Error ? e.message : String(e) });
     } finally {
       setSeeding(false);
     }
@@ -391,7 +390,6 @@ export default function Dashboard() {
   const handleWipeDemo = async () => {
     if (!profile?.tenant_id) return;
 
-    // Confirm before wiping
     if (
       !confirm(
         "Are you sure you want to wipe all demo data? This cannot be undone.",
@@ -411,8 +409,8 @@ export default function Dashboard() {
       } else {
         throw new Error(result.error || "Failed to clear demo data");
       }
-    } catch (e: any) {
-      toast.error(t("dashboard.wipeFailed"), { description: e?.message || String(e) });
+    } catch (e: unknown) {
+      toast.error(t("dashboard.wipeFailed"), { description: e instanceof Error ? e.message : String(e) });
     } finally {
       setWiping(false);
     }
@@ -436,8 +434,8 @@ export default function Dashboard() {
       setStopDialogOpen(false);
       setSelectedWork(null);
       loadData();
-    } catch (error: any) {
-      toast.error(t("dashboard.stopFailed"), { description: error?.message || String(error) });
+    } catch (error: unknown) {
+      toast.error(t("dashboard.stopFailed"), { description: error instanceof Error ? error.message : String(error) });
     } finally {
       setStopping(false);
     }
@@ -445,7 +443,7 @@ export default function Dashboard() {
 
   const handleStopAllClockings = async () => {
     if (!profile?.tenant_id) {
-      console.error("No tenant ID available");
+      logger.error('Dashboard', 'No tenant ID available');
       return;
     }
 
@@ -459,9 +457,9 @@ export default function Dashboard() {
       const stoppedCount = await stopAllActiveTimeEntries(profile.tenant_id);
       toast.success(t("dashboard.allClockingsStopped"), { description: t("dashboard.allClockingsStoppedDescription", { count: stoppedCount }) });
       await loadData();
-    } catch (error: any) {
-      console.error("Failed to stop all clockings:", error);
-      toast.error(t("dashboard.stopAllFailed"), { description: error?.message || String(error) });
+    } catch (error: unknown) {
+      logger.error('Dashboard', 'Failed to stop all clockings', error);
+      toast.error(t("dashboard.stopAllFailed"), { description: error instanceof Error ? error.message : String(error) });
     } finally {
       setStoppingAll(false);
     }
@@ -477,7 +475,7 @@ export default function Dashboard() {
           <p className="text-muted-foreground text-lg">{t("dashboard.description")}</p>
         </div>
         {!needsSetup &&
-          profile?.tenant_id === "11111111-1111-1111-1111-111111111111" && (
+          import.meta.env.VITE_TEST_TENANT_ID && profile?.tenant_id === import.meta.env.VITE_TEST_TENANT_ID && (
             <Button
               variant="destructive"
               onClick={handleWipeDemo}
@@ -523,7 +521,6 @@ export default function Dashboard() {
         </Card>
       )}
 
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4" data-tour="dashboard-stats">
         <StatCard
           title={t("dashboard.activeWorkers")}
@@ -558,7 +555,6 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Quick Stats Panel */}
       <Card className="glass-card">
         <CardHeader>
           <CardTitle className="text-xl">{t("dashboard.quickStats")}</CardTitle>
@@ -593,10 +589,8 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* QRM Dashboard */}
       <QRMDashboard />
 
-      {/* Past Closing Time Warning */}
       {isPastClosingTime && activeWork.length > 0 && (
         <Card className="glass-card border-warning/50 bg-warning/5">
           <CardContent className="py-4">
@@ -640,7 +634,6 @@ export default function Dashboard() {
         </Card>
       )}
 
-      {/* Active Work Table */}
       <Card className="glass-card" data-tour="active-operations">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-xl flex items-center gap-2">
@@ -726,7 +719,6 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* Stop Clocking Dialog */}
       <Dialog open={stopDialogOpen} onOpenChange={setStopDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

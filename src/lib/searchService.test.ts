@@ -159,10 +159,10 @@ describe('searchService - Result Formatting', () => {
         job_number: '1047',
         customer: 'Van den Berg B.V.',
         due_date: '2025-01-15',
-        due_date_override: null,
+        due_date_override: null as string | null,
         status: 'active',
         notes: 'Test notes',
-        metadata: null,
+        metadata: null as Record<string, unknown> | null,
       };
 
       // Expected format

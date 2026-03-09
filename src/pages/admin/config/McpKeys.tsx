@@ -18,6 +18,7 @@ import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColum
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Switch } from "@/components/ui/switch";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 
 interface McpKey {
   id: string;
@@ -42,16 +43,13 @@ export default function ConfigMcpKeys() {
   const [newKeyDialog, setNewKeyDialog] = useState(false);
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
 
-  // Form state
   const [keyName, setKeyName] = useState("");
   const [keyDescription, setKeyDescription] = useState("");
   const [keyEnvironment, setKeyEnvironment] = useState<"live" | "test">("live");
   const [allowAllTools, setAllowAllTools] = useState(true);
   const [selectedTools, setSelectedTools] = useState<string[]>([]);
 
-  // Available tools with descriptions
   const availableTools = [
-    // Jobs
     { name: "fetch_jobs", description: "List jobs with optional status filter", category: "Jobs" },
     { name: "create_job", description: "Create a new job with customer, job number, priority", category: "Jobs" },
     { name: "update_job", description: "Update job status, priority, or due date", category: "Jobs" },
@@ -59,27 +57,21 @@ export default function ConfigMcpKeys() {
     { name: "stop_job", description: "Pause a job (changes to on_hold)", category: "Jobs" },
     { name: "complete_job", description: "Mark a job as completed", category: "Jobs" },
     { name: "resume_job", description: "Resume a paused job", category: "Jobs" },
-    // Parts
     { name: "fetch_parts", description: "List parts with optional job/status filter", category: "Parts" },
     { name: "update_part", description: "Update part status or current stage", category: "Parts" },
-    // Tasks
     { name: "fetch_tasks", description: "List tasks with optional filters", category: "Tasks" },
     { name: "update_task", description: "Update task status or assignment", category: "Tasks" },
-    // Operations
     { name: "start_operation", description: "Start an operation (creates time entry)", category: "Operations" },
     { name: "pause_operation", description: "Pause an operation", category: "Operations" },
     { name: "complete_operation", description: "Complete an operation", category: "Operations" },
     { name: "add_substep", description: "Add a substep to an operation", category: "Operations" },
     { name: "complete_substep", description: "Mark a substep as complete", category: "Operations" },
-    // Quality & Issues
     { name: "fetch_issues", description: "List quality issues with optional filters", category: "Quality" },
     { name: "fetch_ncrs", description: "List Non-Conformance Reports", category: "Quality" },
     { name: "create_ncr", description: "Create a Non-Conformance Report", category: "Quality" },
-    // Analytics
     { name: "get_dashboard_stats", description: "Get dashboard statistics and metrics", category: "Analytics" },
   ];
 
-  // Group tools by category for display
   const toolsByCategory = availableTools.reduce((acc, tool) => {
     if (!acc[tool.category]) acc[tool.category] = [];
     acc[tool.category].push(tool);
@@ -110,8 +102,8 @@ export default function ConfigMcpKeys() {
           ? key.allowed_tools.map(tool => String(tool))
           : ["*"],
       })));
-    } catch (error: any) {
-      console.error("Error fetching MCP keys:", error);
+    } catch (error: unknown) {
+      logger.error('McpKeys', 'Error fetching MCP keys', error);
       toast.error(t("mcpKeys.failedToFetch"));
     } finally {
       setLoading(false);
@@ -147,20 +139,18 @@ export default function ConfigMcpKeys() {
       const keyData = Array.isArray(data) ? data[0] : data;
       setGeneratedKey(keyData.api_key);
 
-      // Reset form
       setKeyName("");
       setKeyDescription("");
       setKeyEnvironment("live");
       setAllowAllTools(true);
       setSelectedTools([]);
 
-      // Refresh keys list
       await fetchMcpKeys();
 
       toast.success(t("mcpKeys.generated"));
-    } catch (error: any) {
-      console.error("Error generating MCP key:", error);
-      toast.error(error.message || t("notifications.failed"));
+    } catch (error: unknown) {
+      logger.error('McpKeys', 'Error generating MCP key', error);
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
     } finally {
       setIsGenerating(false);
     }
@@ -177,14 +167,14 @@ export default function ConfigMcpKeys() {
 
       toast.success(t("notifications.updated"));
       await fetchMcpKeys();
-    } catch (error: any) {
-      console.error("Error toggling key status:", error);
+    } catch (error: unknown) {
+      logger.error('McpKeys', 'Error toggling key status', error);
       toast.error(t("mcpKeys.statusUpdateFailed"));
     }
   };
 
   const deleteKey = async (keyId: string) => {
-    if (!confirm("Are you sure you want to delete this MCP key? This action cannot be undone.")) {
+    if (!confirm(t("mcpKeys.confirmDelete"))) {
       return;
     }
 
@@ -198,8 +188,8 @@ export default function ConfigMcpKeys() {
 
       toast.success(t("mcpKeys.deleted"));
       await fetchMcpKeys();
-    } catch (error: any) {
-      console.error("Error deleting MCP key:", error);
+    } catch (error: unknown) {
+      logger.error('McpKeys', 'Error deleting MCP key', error);
       toast.error(t("mcpKeys.deleteFailed"));
     }
   };
@@ -213,7 +203,7 @@ export default function ConfigMcpKeys() {
     () => [
       {
         accessorKey: "name",
-        header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
+        header: ({ column }) => <DataTableColumnHeader column={column} title={t("mcpKeys.name")} />,
         cell: ({ row }) => (
           <div>
             <div className="font-medium">{row.original.name}</div>
@@ -225,14 +215,14 @@ export default function ConfigMcpKeys() {
       },
       {
         accessorKey: "key_prefix",
-        header: "Key Prefix",
+        header: t("mcpKeys.keyPrefix"),
         cell: ({ row }) => (
           <code className="text-xs bg-muted px-2 py-1 rounded">{row.original.key_prefix}...</code>
         ),
       },
       {
         accessorKey: "environment",
-        header: "Environment",
+        header: t("mcpKeys.environment"),
         cell: ({ row }) => (
           <Badge variant={row.original.environment === "live" ? "default" : "secondary"}>
             {row.original.environment}
@@ -241,27 +231,27 @@ export default function ConfigMcpKeys() {
       },
       {
         accessorKey: "allowed_tools",
-        header: "Tools",
+        header: t("mcpKeys.tools"),
         cell: ({ row }) => {
           const tools = row.original.allowed_tools;
           if (tools.includes("*")) {
-            return <Badge variant="outline">All Tools</Badge>;
+            return <Badge variant="outline">{t("mcpKeys.allTools")}</Badge>;
           }
-          return <Badge variant="outline">{tools.length} tools</Badge>;
+          return <Badge variant="outline">{t("mcpKeys.toolCount", { count: tools.length })}</Badge>;
         },
       },
       {
         accessorKey: "usage_count",
-        header: "Usage",
+        header: t("mcpKeys.usage"),
         cell: ({ row }) => (
           <div className="text-sm">
-            {row.original.usage_count.toLocaleString()} requests
+            {t("mcpKeys.requests", { count: row.original.usage_count })}
           </div>
         ),
       },
       {
         accessorKey: "enabled",
-        header: "Status",
+        header: t("mcpKeys.status"),
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
             {row.original.enabled ? (
@@ -270,18 +260,18 @@ export default function ConfigMcpKeys() {
               <AlertCircle className="h-4 w-4 text-red-500" />
             )}
             <span className="text-sm">
-              {row.original.enabled ? "Enabled" : "Disabled"}
+              {row.original.enabled ? t("mcpKeys.enabled") : t("mcpKeys.disabled")}
             </span>
           </div>
         ),
       },
       {
         accessorKey: "last_used_at",
-        header: "Last Used",
+        header: t("mcpKeys.lastUsed"),
         cell: ({ row }) =>
           row.original.last_used_at
             ? format(new Date(row.original.last_used_at), "MMM d, yyyy HH:mm")
-            : "Never",
+            : t("mcpKeys.never"),
       },
       {
         id: "actions",
@@ -308,18 +298,17 @@ export default function ConfigMcpKeys() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">MCP Keys</h1>
+        <h1 className="text-3xl font-bold">{t("mcpKeys.title")}</h1>
         <p className="text-muted-foreground mt-2">
-          Manage Model Context Protocol (MCP) authentication keys for AI assistant integration
+          {t("mcpKeys.description")}
         </p>
       </div>
 
       <Alert>
         <Activity className="h-4 w-4" />
-        <AlertTitle>Per-Tenant Authentication</AlertTitle>
+        <AlertTitle>{t("mcpKeys.perTenantAuth")}</AlertTitle>
         <AlertDescription>
-          MCP keys provide secure, per-tenant access to your manufacturing data through AI assistants like Claude.
-          Each key can be configured with specific tool permissions and rate limits.
+          {t("mcpKeys.perTenantAuthDescription")}
         </AlertDescription>
       </Alert>
 
@@ -327,23 +316,23 @@ export default function ConfigMcpKeys() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Active MCP Keys</CardTitle>
+              <CardTitle>{t("mcpKeys.activeKeys")}</CardTitle>
               <CardDescription>
-                Generate and manage MCP authentication keys for your tenant
+                {t("mcpKeys.activeKeysDescription")}
               </CardDescription>
             </div>
             <Dialog open={newKeyDialog} onOpenChange={setNewKeyDialog}>
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
-                  Generate New Key
+                  {t("mcpKeys.generateNewKey")}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl overflow-hidden flex flex-col">
                 <DialogHeader className="shrink-0">
-                  <DialogTitle>Generate New MCP Key</DialogTitle>
+                  <DialogTitle>{t("mcpKeys.generateNewKeyTitle")}</DialogTitle>
                   <DialogDescription>
-                    Create a new authentication key for MCP server access
+                    {t("mcpKeys.generateNewKeyDescription")}
                   </DialogDescription>
                 </DialogHeader>
 
@@ -351,14 +340,14 @@ export default function ConfigMcpKeys() {
                   <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
                     <Alert>
                       <Key className="h-4 w-4" />
-                      <AlertTitle>Key Generated!</AlertTitle>
+                      <AlertTitle>{t("mcpKeys.keyGenerated")}</AlertTitle>
                       <AlertDescription>
-                        Save this key now - you won't be able to see it again.
+                        {t("mcpKeys.saveKeyWarning")}
                       </AlertDescription>
                     </Alert>
 
                     <div className="space-y-2">
-                      <Label>Your MCP Key</Label>
+                      <Label>{t("mcpKeys.yourKey")}</Label>
                       <div className="flex gap-2">
                         <Input value={generatedKey} readOnly className="font-mono text-sm" />
                         <Button onClick={() => copyToClipboard(generatedKey)}>
@@ -368,7 +357,7 @@ export default function ConfigMcpKeys() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Usage in Claude Desktop</Label>
+                      <Label>{t("mcpKeys.usageInClaude")}</Label>
                       <pre className="bg-muted p-4 rounded-lg text-xs overflow-x-auto">
 {`{
   "mcpServers": {
@@ -391,27 +380,27 @@ export default function ConfigMcpKeys() {
                       }}
                       className="w-full"
                     >
-                      Done
+                      {t("common.done")}
                     </Button>
                   </div>
                 ) : (
                   <>
                   <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="keyName">Key Name *</Label>
+                      <Label htmlFor="keyName">{t("mcpKeys.keyNameLabel")}</Label>
                       <Input
                         id="keyName"
-                        placeholder="Production Claude Integration"
+                        placeholder={t("mcpKeys.keyNamePlaceholder")}
                         value={keyName}
                         onChange={(e) => setKeyName(e.target.value)}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="keyDescription">Description</Label>
+                      <Label htmlFor="keyDescription">{t("mcpKeys.descriptionLabel")}</Label>
                       <Textarea
                         id="keyDescription"
-                        placeholder="Used for Claude Desktop integration in production"
+                        placeholder={t("mcpKeys.descriptionPlaceholder")}
                         value={keyDescription}
                         onChange={(e) => setKeyDescription(e.target.value)}
                         rows={3}
@@ -419,24 +408,24 @@ export default function ConfigMcpKeys() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="environment">Environment *</Label>
+                      <Label htmlFor="environment">{t("mcpKeys.environmentLabel")}</Label>
                       <Select value={keyEnvironment} onValueChange={(v: "live" | "test") => setKeyEnvironment(v)}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="live">Live (Production)</SelectItem>
-                          <SelectItem value="test">Test (Development)</SelectItem>
+                          <SelectItem value="live">{t("mcpKeys.envLive")}</SelectItem>
+                          <SelectItem value="test">{t("mcpKeys.envTest")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label>Tool Permissions</Label>
+                        <Label>{t("mcpKeys.toolPermissions")}</Label>
                         <div className="flex items-center gap-2">
                           <Label htmlFor="allowAll" className="text-sm font-normal">
-                            Allow all tools
+                            {t("mcpKeys.allowAllTools")}
                           </Label>
                           <Switch
                             id="allowAll"
@@ -488,13 +477,13 @@ export default function ConfigMcpKeys() {
                       disabled={isGenerating}
                       className="flex-1"
                     >
-                      {isGenerating ? "Generating..." : "Generate Key"}
+                      {isGenerating ? t("mcpKeys.generating") : t("mcpKeys.generateKey")}
                     </Button>
                     <Button
                       variant="outline"
                       onClick={() => setNewKeyDialog(false)}
                     >
-                      Cancel
+                      {t("common.cancel")}
                     </Button>
                   </div>
                   </>

@@ -11,6 +11,7 @@ import { cacheOrFetch, invalidateCache } from "./cache-utils.ts";
 import { CacheKeys, CacheTTL } from "./cache.ts";
 import { checkRateLimit, RateLimitResult } from "./rate-limiter.ts";
 import { getRateLimitConfig } from "./plan-limits.ts";
+import { constantTimeCompare } from "./security.ts";
 
 // Custom error classes
 export class UnauthorizedError extends Error {
@@ -102,8 +103,7 @@ export async function authenticateApiKey(
 
   // Compare against candidate keys (should typically be just 1)
   for (const key of candidateKeys) {
-    // Constant-time comparison would be ideal, but SHA-256 comparison is secure
-    if (providedKeyHash === key.key_hash) {
+    if (constantTimeCompare(providedKeyHash, key.key_hash)) {
       // Update last_used_at asynchronously (don't block the response)
       updateLastUsed(supabase, key.id).catch((err) => {
         console.error("[Auth] Failed to update last_used_at:", err);

@@ -50,7 +50,7 @@ export function AdminPageHeader({
                 {action.label}
               </Button>
             )}
-            {action && !isActionObject && action}
+            {action && !isActionObject && (action as ReactNode)}
           </div>
         </div>
         {description && (

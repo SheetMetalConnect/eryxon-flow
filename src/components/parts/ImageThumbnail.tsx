@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { logger } from '@/lib/logger';
 
 interface ImageThumbnailProps {
   imagePath: string;
@@ -34,7 +35,7 @@ export function ImageThumbnail({
           setError(false);
         }
       } catch (err) {
-        console.error("Error loading thumbnail:", err);
+        logger.error('ImageThumbnail', 'Error loading thumbnail', err);
         if (mounted) {
           setError(true);
         }

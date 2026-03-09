@@ -78,7 +78,6 @@ export default function ApiDocs() {
     }
   };
 
-  // Simple JSON to YAML converter (handles common cases)
   const jsonToYaml = (obj: any, indent = 0): string => {
     const spaces = '  '.repeat(indent);
     let result = '';
@@ -266,11 +265,10 @@ apiClient.post('/api-jobs', jobData)
   .catch(error => console.error(error));`
   };
 
-  // Custom Swagger UI plugin to inject API key
   const ApiKeyPlugin = () => {
     return {
       wrapComponents: {
-        authorizeBtn: (Original: any) => (props: any) => {
+        authorizeBtn: (_Original: React.ComponentType) => (_props: Record<string, unknown>): null => {
           return null; // Hide default authorize button
         }
       }

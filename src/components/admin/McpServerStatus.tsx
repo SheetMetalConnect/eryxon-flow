@@ -9,6 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { logger } from '@/lib/logger';
 import { useNavigate } from "react-router-dom";
 
 interface McpStatus {
@@ -32,7 +33,6 @@ export function McpServerStatus() {
     if (!tenant?.id) return;
 
     try {
-      // Check for MCP endpoints
       const { data, error } = await supabase
         .from("mcp_endpoints")
         .select("id, enabled, last_used_at")
@@ -44,7 +44,7 @@ export function McpServerStatus() {
           setStatus({ status: "not_configured", endpoint_count: 0, active_count: 0 });
           return;
         }
-        console.error("Error fetching MCP status:", error);
+        logger.error('McpServerStatus', 'Error fetching MCP status', error);
         setStatus({ status: "not_configured", endpoint_count: 0, active_count: 0 });
         return;
       }
@@ -64,7 +64,7 @@ export function McpServerStatus() {
         last_used: lastUsed,
       });
     } catch (err) {
-      console.error("Error fetching MCP status:", err);
+      logger.error('McpServerStatus', 'Error fetching MCP status', err);
       setStatus({ status: "not_configured", endpoint_count: 0, active_count: 0 });
     } finally {
       setIsLoading(false);
@@ -76,7 +76,6 @@ export function McpServerStatus() {
 
     fetchStatus();
 
-    // Subscribe to changes
     const channel = supabase
       .channel("mcp_endpoints_changes")
       .on(

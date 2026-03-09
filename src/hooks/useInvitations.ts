@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { logger } from '@/lib/logger';
 
 export interface Invitation {
   id: string;
@@ -24,7 +25,6 @@ export function useInvitations() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load invitations for current tenant
   const loadInvitations = async () => {
     if (!profile?.tenant_id) return;
 
@@ -39,16 +39,16 @@ export function useInvitations() {
         .order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
-      setInvitations((data || []) as any);
-    } catch (err: any) {
-      setError(err.message);
-      console.error('Error loading invitations:', err);
+      setInvitations((data || []) as Invitation[]);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      setError(message);
+      logger.error('useInvitations', 'Error loading invitations', err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Create new invitation and send email via Edge Function
   const createInvitation = async (email: string, role: 'operator' | 'admin' = 'operator') => {
     if (!profile?.tenant_id) {
       toast.error(t('notifications.noTenantFound'));
@@ -56,7 +56,6 @@ export function useInvitations() {
     }
 
     try {
-      // Get the current session for auth - refresh if needed
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !session) {
         // Try to refresh the session
@@ -67,7 +66,6 @@ export function useInvitations() {
         }
       }
 
-      // Call the Edge Function to create invitation and send email
       const { data: funcData, error: funcError } = await supabase.functions.invoke('send-invitation', {
         body: {
           email,
@@ -93,21 +91,20 @@ export function useInvitations() {
         description: result.invitation_url || undefined,
       });
 
-      // Reload invitations
       await loadInvitations();
 
       return result.invitation_id;
-    } catch (err: any) {
-      toast.error(err.message || t('notifications.failed'));
-      console.error('Error creating invitation:', err);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : t('notifications.failed');
+      toast.error(message);
+      logger.error('useInvitations', 'Error creating invitation', err);
       return null;
     }
   };
 
-  // Cancel invitation
-  const cancelInvitation = async (invitationId: string) => {
+  const cancelInvitation = async (invitationId: string): Promise<void> => {
     try {
-      const { data, error: rpcError } = await supabase.rpc('cancel_invitation' as any, {
+      const { data, error: rpcError } = await supabase.rpc('cancel_invitation', {
         p_invitation_id: invitationId,
       });
 
@@ -115,18 +112,15 @@ export function useInvitations() {
 
       toast.success(t('invitation.cancelled'));
 
-      // Reload invitations
       await loadInvitations();
 
-      return data;
-    } catch (err: any) {
-      toast.error(err.message || t('notifications.failed'));
-      console.error('Error cancelling invitation:', err);
-      return null;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : t('notifications.failed');
+      toast.error(message);
+      logger.error('useInvitations', 'Error cancelling invitation', err);
     }
   };
 
-  // Get invitation by token (public - no auth required)
   const getInvitationByToken = async (token: string) => {
     try {
       const { data, error: rpcError } = await supabase.rpc('get_invitation_by_token', {
@@ -140,17 +134,17 @@ export function useInvitations() {
       }
 
       return data[0];
-    } catch (err: any) {
-      toast.error(err.message || t('notifications.failed'));
-      console.error('Error getting invitation:', err);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : t('notifications.failed');
+      toast.error(message);
+      logger.error('useInvitations', 'Error getting invitation', err);
       return null;
     }
   };
 
-  // Accept invitation (called during signup)
   const acceptInvitation = async (token: string, userId: string) => {
     try {
-      const { data, error: rpcError } = await supabase.rpc('accept_invitation' as any, {
+      const { data, error: rpcError } = await supabase.rpc('accept_invitation', {
         p_token: token,
         p_user_id: userId,
       });
@@ -158,14 +152,14 @@ export function useInvitations() {
       if (rpcError) throw rpcError;
 
       return data;
-    } catch (err: any) {
-      toast.error(err.message || t('notifications.failed'));
-      console.error('Error accepting invitation:', err);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : t('notifications.failed');
+      toast.error(message);
+      logger.error('useInvitations', 'Error accepting invitation', err);
       return null;
     }
   };
 
-  // Load invitations on mount
   useEffect(() => {
     if (profile?.tenant_id) {
       loadInvitations();

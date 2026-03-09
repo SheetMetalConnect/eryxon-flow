@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
 import { useNavigate } from "react-router-dom";
@@ -40,6 +41,22 @@ interface Operation {
   resource_names: string[];
 }
 
+interface OperationRow {
+  id: string;
+  operation_name: string | null;
+  status: string | null;
+  assigned_operator_id: string | null;
+  part_id: string;
+  parts: {
+    part_number: string;
+    job_id: string;
+    current_cell_id: string | null;
+    jobs: { job_number: string } | null;
+  } | null;
+  cells: { name: string; color: string | null } | null;
+  profiles: { full_name: string | null; email: string } | null;
+}
+
 export const Operations: React.FC = () => {
   const { t } = useTranslation();
   const [selectedOperationId, setSelectedOperationId] = useState<string | null>(null);
@@ -47,9 +64,8 @@ export const Operations: React.FC = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
 
-  // Fetch operations using React Query
   const { data: operations = [], isLoading, refetch } = useQuery({
-    queryKey: ["admin-operations", profile?.tenant_id],
+    queryKey: QueryKeys.operations.all(profile?.tenant_id ?? ''),
     queryFn: async () => {
       if (!profile?.tenant_id) return [];
 
@@ -85,8 +101,7 @@ export const Operations: React.FC = () => {
 
       if (!data) return [];
 
-      // Fetch resource counts and names for all operations
-      const operationIds = data.map((op: any) => op.id);
+      const operationIds = data.map((op: { id: string }) => op.id);
       const { data: resourceData } = await supabase
         .from("operation_resources")
         .select(`
@@ -95,9 +110,8 @@ export const Operations: React.FC = () => {
         `)
         .in("operation_id", operationIds);
 
-      // Build a map of operation_id -> resource info
       const resourceMap = new Map<string, { count: number; names: string[] }>();
-      resourceData?.forEach((item: any) => {
+      resourceData?.forEach((item: { operation_id: string; resource: { name: string } | null }) => {
         const opId = item.operation_id;
         const resourceName = item.resource?.name || "Unknown";
 
@@ -110,7 +124,7 @@ export const Operations: React.FC = () => {
         info.names.push(resourceName);
       });
 
-      return data.map((op: any) => {
+      return (data as unknown as OperationRow[]).map((op) => {
         const resourceInfo = resourceMap.get(op.id) || { count: 0, names: [] };
 
         return {
@@ -125,7 +139,7 @@ export const Operations: React.FC = () => {
           cell_color: op.cells?.color || null,
           assigned_operator_id: op.assigned_operator_id,
           assigned_name: op.profiles?.full_name || op.profiles?.email || null,
-          due_date: null,
+          due_date: null as string | null,
           resources_count: resourceInfo.count,
           resource_names: resourceInfo.names,
         };
@@ -309,7 +323,7 @@ export const Operations: React.FC = () => {
         return value.includes(row.getValue(id));
       },
     },
-  ], [navigate]);
+  ], [navigate, t]);
 
   const uniqueCells = useMemo(() =>
     [...new Set(operations.map((op) => op.cell))],
@@ -342,7 +356,6 @@ export const Operations: React.FC = () => {
     },
   ], [uniqueCells]);
 
-  // Responsive column visibility - hide less important columns on mobile
   const { columnVisibility, isMobile } = useResponsiveColumns([
     { id: "operation_name", alwaysVisible: true },
     { id: "part_number", alwaysVisible: true },
@@ -352,7 +365,6 @@ export const Operations: React.FC = () => {
     { id: "status", alwaysVisible: true },
   ]);
 
-  // Calculate stats
   const operationStats = useMemo(() => {
     if (!operations) return { total: 0, inProgress: 0, completed: 0, assigned: 0 };
     return {
@@ -401,7 +413,6 @@ export const Operations: React.FC = () => {
         </div>
       </AdminPageHeader>
 
-      {/* Stats Row */}
       <PageStatsRow
         stats={[
           { label: t("operations.total", "Total Operations"), value: operationStats.total, icon: Wrench, color: "primary" },
@@ -430,7 +441,6 @@ export const Operations: React.FC = () => {
         />
       </div>
 
-      {/* Operation Detail Modal */}
       {selectedOperationId && (
         <OperationDetailModal
           operationId={selectedOperationId}

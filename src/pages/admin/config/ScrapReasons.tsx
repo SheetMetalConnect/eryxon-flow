@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,13 +57,13 @@ export default function ConfigScrapReasons() {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [editingReason, setEditingReason] = useState<Partial<ScrapReason> | null>(null);
 
-  // Fetch usage statistics
   const { data: usageStats } = useScrapReasonUsage();
 
   const { data: scrapReasons, isLoading } = useQuery({
-    queryKey: ["scrap-reasons", selectedCategory, activeOnly, searchQuery],
+    queryKey: [...QueryKeys.config.scrapReasons(profile?.tenant_id ?? ''), selectedCategory, activeOnly, searchQuery],
     queryFn: async () => {
       let query = supabase.from("scrap_reasons").select("*");
+      if (profile?.tenant_id) query = query.eq("tenant_id", profile.tenant_id);
       if (selectedCategory !== "all") query = query.eq("category", selectedCategory);
       if (activeOnly) query = query.eq("active", true);
       if (searchQuery) query = query.or(`code.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
@@ -80,7 +81,7 @@ export default function ConfigScrapReasons() {
     },
     onSuccess: () => {
       toast.success(t("scrapReasons.defaultCreated"));
-      queryClient.invalidateQueries({ queryKey: ["scrap-reasons"] });
+      queryClient.invalidateQueries({ queryKey: ["config", "scrapReasons"] });
     },
     onError: (error: any) => toast.error(error.message || t("notifications.failed")),
   });
@@ -103,7 +104,7 @@ export default function ConfigScrapReasons() {
     },
     onSuccess: (_, variables) => {
       toast.success(variables.id ? t("notifications.updated") : t("notifications.created"));
-      queryClient.invalidateQueries({ queryKey: ["scrap-reasons"] });
+      queryClient.invalidateQueries({ queryKey: ["config", "scrapReasons"] });
       setDialogOpen(false);
       setEditingReason(null);
     },
@@ -117,7 +118,7 @@ export default function ConfigScrapReasons() {
     },
     onSuccess: () => {
       toast.success(t("scrapReasons.deleted"));
-      queryClient.invalidateQueries({ queryKey: ["scrap-reasons"] });
+      queryClient.invalidateQueries({ queryKey: ["config", "scrapReasons"] });
     },
     onError: (error: any) => toast.error(error.message || t("notifications.failed")),
   });
@@ -146,7 +147,6 @@ export default function ConfigScrapReasons() {
     return categories.find((c) => c.value === category)?.color || "bg-gray-100 text-gray-800";
   };
 
-  // Compute usage analytics
   const analytics = useMemo(() => {
     if (!usageStats) return null;
 
@@ -156,13 +156,11 @@ export default function ConfigScrapReasons() {
     const usedReasons = usageStats.filter((r) => r.usageCount > 0).length;
     const unusedReasons = usageStats.filter((r) => r.usageCount === 0 && r.active).length;
 
-    // Get top 5 most used reasons
     const topReasons = [...usageStats]
       .sort((a, b) => b.totalScrapQuantity - a.totalScrapQuantity)
       .slice(0, 5)
       .filter((r) => r.totalScrapQuantity > 0);
 
-    // Group by category
     const byCategory = categories.map((cat) => ({
       ...cat,
       count: usageStats.filter((r) => r.category === cat.value).length,
@@ -183,7 +181,6 @@ export default function ConfigScrapReasons() {
     };
   }, [usageStats]);
 
-  // Create a map for quick lookup of usage stats
   const usageMap = useMemo(() => {
     if (!usageStats) return new Map();
     return new Map(usageStats.map((u) => [u.id, u]));
@@ -202,11 +199,9 @@ export default function ConfigScrapReasons() {
 
       <hr className="title-divider" />
 
-      {/* Usage Statistics Dashboard */}
       {analytics && (
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {/* Total Reasons */}
             <Card className="glass-card transition-smooth hover:scale-[1.02]">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
@@ -221,7 +216,6 @@ export default function ConfigScrapReasons() {
               </CardContent>
             </Card>
 
-            {/* Active */}
             <Card className="glass-card transition-smooth hover:scale-[1.02]">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
@@ -236,7 +230,6 @@ export default function ConfigScrapReasons() {
               </CardContent>
             </Card>
 
-            {/* Used */}
             <Card className="glass-card transition-smooth hover:scale-[1.02]">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
@@ -251,7 +244,6 @@ export default function ConfigScrapReasons() {
               </CardContent>
             </Card>
 
-            {/* Unused */}
             <Card className={cn(
               "glass-card transition-smooth hover:scale-[1.02]",
               analytics.unusedReasons > 0 && "border-[hsl(var(--color-warning))]/30"
@@ -272,7 +264,6 @@ export default function ConfigScrapReasons() {
               </CardContent>
             </Card>
 
-            {/* Total Usage */}
             <Card className="glass-card transition-smooth hover:scale-[1.02]">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
@@ -287,7 +278,6 @@ export default function ConfigScrapReasons() {
               </CardContent>
             </Card>
 
-            {/* Total Scrap Qty */}
             <Card className="glass-card transition-smooth hover:scale-[1.02]">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
@@ -305,9 +295,7 @@ export default function ConfigScrapReasons() {
             </Card>
           </div>
 
-          {/* Top Reasons and Category Breakdown */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Top Scrap Reasons */}
             {analytics.topReasons.length > 0 && (
               <Card className="glass-card">
                 <CardHeader className="pb-2">
@@ -337,7 +325,6 @@ export default function ConfigScrapReasons() {
               </Card>
             )}
 
-            {/* By Category */}
             <Card className="glass-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">

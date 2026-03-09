@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 interface ChildPart {
   id: string;
@@ -46,7 +47,7 @@ export function AssemblyDependencies({ partId, className }: AssemblyDependencies
           setHasChildren(false);
         }
       } catch (error) {
-        console.error('Error fetching child parts:', error);
+        logger.error("AssemblyDependencies", "Error fetching child parts", error);
       } finally {
         setLoading(false);
       }

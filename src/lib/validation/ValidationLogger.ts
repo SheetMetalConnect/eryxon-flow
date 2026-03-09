@@ -1,30 +1,23 @@
-/**
- * Validation Logger
- *
- * Rich logging system with proper status codes and user-friendly messages
- */
-
 import {
   ValidationResult,
   ValidationSeverity,
   ValidationError,
+  ValidationWarning,
 } from "./DataValidator";
+import { logger } from "@/lib/logger";
 
 export interface LogEntry {
   timestamp: string;
   severity: ValidationSeverity;
   httpStatus: number;
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
   entityType?: string;
 }
 
 export class ValidationLogger {
   private logs: LogEntry[] = [];
 
-  /**
-   * Log a validation result
-   */
   logValidation(result: ValidationResult, entityType: string): void {
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
@@ -43,32 +36,21 @@ export class ValidationLogger {
 
     this.logs.push(entry);
 
-    // Console logging with colors
     this.consoleLog(entry, result);
   }
 
-  /**
-   * Console log with proper formatting and colors
-   */
   private consoleLog(entry: LogEntry, result: ValidationResult): void {
     const prefix = this.getSeverityPrefix(entry.severity);
     const statusBadge = this.getStatusBadge(entry.httpStatus);
 
     if (result.valid) {
-      console.log(
-        `${prefix} ${statusBadge} ${entry.message}`,
-      );
+      logger.debug('ValidationLogger', `${prefix} ${statusBadge} ${entry.message}`);
     } else {
-      console.error(
-        `${prefix} ${statusBadge} ${entry.message}`,
-      );
-      console.error(result.technicalDetails);
+      logger.error('ValidationLogger', `${prefix} ${statusBadge} ${entry.message}`);
+      logger.error('ValidationLogger', 'Technical details', result.technicalDetails);
     }
   }
 
-  /**
-   * Get severity prefix for console
-   */
   private getSeverityPrefix(severity: ValidationSeverity): string {
     switch (severity) {
       case ValidationSeverity.ERROR:
@@ -82,9 +64,6 @@ export class ValidationLogger {
     }
   }
 
-  /**
-   * Get HTTP status badge
-   */
   private getStatusBadge(httpStatus: number): string {
     if (httpStatus >= 200 && httpStatus < 300) {
       return `[${httpStatus} OK]`;
@@ -96,16 +75,10 @@ export class ValidationLogger {
     return `[${httpStatus}]`;
   }
 
-  /**
-   * Get all logs
-   */
   getLogs(): LogEntry[] {
     return [...this.logs];
   }
 
-  /**
-   * Get summary of all validations
-   */
   getSummary(): {
     totalValidations: number;
     passed: number;
@@ -126,9 +99,6 @@ export class ValidationLogger {
     };
   }
 
-  /**
-   * Generate user-friendly toast message
-   */
   getToastMessage(): { title: string; description: string; variant: "default" | "destructive" | "success" } {
     const summary = this.getSummary();
 
@@ -153,23 +123,12 @@ export class ValidationLogger {
     }
   }
 
-  /**
-   * Clear all logs
-   */
   clear(): void {
     this.logs = [];
   }
 }
 
-/**
- * API Response Formatter
- *
- * Format validation results for RESTful API responses
- */
 export class APIResponseFormatter {
-  /**
-   * Format validation result as API response
-   */
   static formatResponse(
     result: ValidationResult,
     operationType: "CREATE" | "UPDATE" | "DELETE" | "VALIDATE",
@@ -177,9 +136,9 @@ export class APIResponseFormatter {
     status: number;
     success: boolean;
     message: string;
-    data?: any;
-    errors?: any[];
-    warnings?: any[];
+    data?: { operationType: string; validatedAt: string };
+    errors?: ValidationError[];
+    warnings?: ValidationWarning[];
   } {
     return {
       status: result.httpStatus,
@@ -197,9 +156,6 @@ export class APIResponseFormatter {
     };
   }
 
-  /**
-   * Format batch operation response
-   */
   static formatBatchResponse(
     results: ValidationResult[],
     operationType: "CREATE" | "UPDATE" | "DELETE" | "VALIDATE",
@@ -212,7 +168,14 @@ export class APIResponseFormatter {
       successful: number;
       failed: number;
     };
-    results: any[];
+    results: Array<{
+      index: number;
+      valid: boolean;
+      httpStatus: number;
+      summary: string;
+      errors: ValidationError[];
+      warnings: ValidationWarning[];
+    }>;
   } {
     const successful = results.filter((r) => r.valid).length;
     const failed = results.filter((r) => !r.valid).length;

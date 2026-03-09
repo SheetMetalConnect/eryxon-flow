@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SchedulerService, CalendarDay, SchedulerConfig } from './scheduler';
 import { addDays, format, startOfDay } from 'date-fns';
+import type { Database } from '@/integrations/supabase/types';
+
+type Operation = Database['public']['Tables']['operations']['Row'];
+type Job = Database['public']['Tables']['jobs']['Row'];
+type Cell = Database['public']['Tables']['cells']['Row'];
 
 // Mock cell data
 const createMockCells = () => [
@@ -19,13 +24,13 @@ const createMockCells = () => [
     show_capacity_warning: true,
     wip_limit: 10,
     wip_warning_threshold: 8,
-    deleted_at: null,
-    deleted_by: null,
-    external_id: null,
-    external_source: null,
-    synced_at: null,
-    icon_name: null,
-    image_url: null,
+    deleted_at: null as string | null,
+    deleted_by: null as string | null,
+    external_id: null as string | null,
+    external_source: null as string | null,
+    synced_at: null as string | null,
+    icon_name: null as string | null,
+    image_url: null as string | null,
   },
   {
     id: 'cell-2',
@@ -42,13 +47,13 @@ const createMockCells = () => [
     show_capacity_warning: true,
     wip_limit: 5,
     wip_warning_threshold: 4,
-    deleted_at: null,
-    deleted_by: null,
-    external_id: null,
-    external_source: null,
-    synced_at: null,
-    icon_name: null,
-    image_url: null,
+    deleted_at: null as string | null,
+    deleted_by: null as string | null,
+    external_id: null as string | null,
+    external_source: null as string | null,
+    synced_at: null as string | null,
+    icon_name: null as string | null,
+    image_url: null as string | null,
   },
 ];
 
@@ -88,7 +93,7 @@ const createMockOperation = (overrides: Partial<{
   changeover_time: 0,
   icon_name: null,
   search_vector: null,
-});
+}) as Operation;
 
 // Mock job data factory
 const createMockJob = (overrides: Partial<{
@@ -125,7 +130,7 @@ const createMockJob = (overrides: Partial<{
   total_volume_m3: null,
   total_weight_kg: null,
   search_vector: null,
-});
+}) as Job;
 
 describe('SchedulerService', () => {
   let scheduler: SchedulerService;

@@ -1,40 +1,62 @@
 ---
 title: "3D CAD Engine"
-description: "Overview of Eryxon Flow's 3D rendering architecture and PMI strategy in 0.1 BETA."
+description: "Overview of Eryxon Flow's 3D rendering architecture, measurement support, and PMI strategy."
 ---
+ 
+> Current documented release: `0.3.3`
 
+Eryxon Flow uses a browser-first 3D CAD architecture with an optional server-side CAD processing path for richer geometry and PMI workflows.
 
+## Default Runtime Model
 
-Eryxon Flow features a modern, flexible 3D CAD viewing architecture designed specifically for the unique needs of the metals industry.
+For release `0.3.3`, the application is designed to work in two complementary modes:
 
-## Recommended: Client-Side Rendering (Default)
+- **Browser fallback**: direct STEP viewing in the browser for geometry visualization with no CAD service required
+- **Preferred enriched path**: optional CAD backend for server-processed geometry and PMI extraction, with browser rendering still handled in the client
 
-For the **0.1 BETA** release, we recommend the **browser-based (Client)** renderer for all standard production environments.
+In practice, the viewer prefers server-provided geometry when available and falls back to browser-side STEP parsing when it is not.
 
-- **Technology**: Three.js + custom WASM-based STEP parser.
-- **Support**: Native support for `.step` and `.stp` files directly in the browser.
-- **Capabilities**: Zoom, Orbit, Pan, Exploded views, and Wireframe modes.
-- **PMI Support**: **No PMI support** in the default client-side viewer.
-- **Why we recommend it**: It requires zero additional server infrastructure, provides instant loading times, and handles most visualization needs for cutting, bending, and welding.
+## Browser Viewer Capabilities
 
-## Experimental: PMI Data Extraction
+- orbit, zoom, and pan controls
+- exploded view
+- wireframe and edge overlays
+- fit-to-view and dimension overlays
+- BVH-accelerated picking for measurement tools
 
-We are currently working on an **experimental custom back-end** specifically for automated PMI (Product Manufacturing Information) data extraction.
+This path is sufficient for many production-floor workflows and keeps self-hosted deployments simple.
 
-- **Status**: Experimental / Development in progress.
-- **Approach**: Parsing STEP file text structures directly on the server to extract critical dimensions and tolerances.
-- **Usage**: Intended for automated quality checks and advanced operation planning.
+## Measurement Support
+
+The current viewer architecture includes integrated measurement tooling under the viewer measurement subsystem:
+
+- point-to-point measurements
+- face distance and face angle calculations
+- radius measurements
+- annotation rendering, previews, and measurement history panel
+- BVH-accelerated picking infrastructure
+
+These tools are active application functionality, not just design notes. They are intended to support practical shop-floor inspection and review workflows without requiring a separate CAD desktop application.
+
+## PMI and Backend-Assisted CAD Processing
+
+PMI is no longer best described as "not supported". The current app can render PMI overlays when PMI data is available, but full PMI extraction still depends on an optional backend service.
+
+- **Browser-only mode**: geometry-first, no guaranteed PMI extraction
+- **CAD-service mode**: optional backend can provide tessellated geometry plus PMI payloads
+- **UI support**: STEP viewer can toggle PMI overlays when PMI data has already been extracted and stored
+
+This is the right model for a manufacturing system: lightweight viewing by default, richer inspection capability when a deployment chooses to run the CAD service.
 
 ## Engine Extensibility
 
 Eryxon is built for flexibility. Organizations with specific high-fidelity needs can integrate their own engines:
 
-- **FreeCAD**: Can be deployed as a server-side processing node.
-- **Commercial Engines**: Integration-ready for engines like **CAD Exchanger** if you wish to purchase specific licenses for multi-format or high-fidelity PMI support.
+- **Custom backend**: Eryxon3D-style service for geometry and PMI extraction
+- **Bring Your Own Backend**: integration point for external CAD services or commercial SDK-backed pipelines
+- **Browser-only fallback**: retained for deployments that want zero extra CAD infrastructure
 
 ---
 
 > [!NOTE]
-> **Status**: Eryxon Flow 0.1 BETA
-> **Author**: Luke van Enkhuizen
-> **Company**: [Sheet Metal Connect e.U.](https://www.sheetmetalconnect.com/)
+> **Status**: Browser-first 3D viewing is production-capable. Measurement tooling is integrated in the app. PMI overlays are supported when backend PMI data exists, while extraction itself remains an optional service-backed capability.

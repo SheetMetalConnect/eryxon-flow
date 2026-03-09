@@ -14,22 +14,20 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Trash2, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { logger } from "@/lib/logger";
 import { DataTable } from "@/components/ui/data-table/DataTable";
 import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
 
 const AVAILABLE_EVENTS = [
-  // Job lifecycle events
   { id: 'job.created', label: 'Job Created', description: 'When a new job is created via API' },
   { id: 'job.started', label: 'Job Started', description: 'When a job changes to in_progress' },
   { id: 'job.stopped', label: 'Job Stopped', description: 'When a job is put on hold' },
   { id: 'job.completed', label: 'Job Completed', description: 'When a job is marked complete' },
   { id: 'job.resumed', label: 'Job Resumed', description: 'When a paused job is resumed' },
-  // Operation lifecycle events
   { id: 'operation.started', label: 'Operation Started', description: 'When an operator starts an operation' },
   { id: 'operation.paused', label: 'Operation Paused', description: 'When an operation is paused' },
   { id: 'operation.resumed', label: 'Operation Resumed', description: 'When a paused operation is resumed' },
   { id: 'operation.completed', label: 'Operation Completed', description: 'When an operation is marked complete' },
-  // Issue/NCR events
   { id: 'issue.created', label: 'Issue Created', description: 'When a quality issue or NCR is reported' },
 ];
 
@@ -45,7 +43,7 @@ interface WebhookLog {
   id: string;
   webhook_id: string;
   event_type: string;
-  payload: any;
+  payload: Record<string, unknown>;
   status_code: number | null;
   error_message: string | null;
   created_at: string;
@@ -112,10 +110,10 @@ export default function ConfigWebhooks() {
       .limit(100);
 
     if (error) {
-      console.error('Error fetching webhook logs:', error);
+      logger.error('Webhooks', 'Error fetching webhook logs', error);
       toast.error(t('webhooks.error'), { description: t('webhooks.failedToFetchLogs') });
     } else {
-      setWebhookLogs(data || []);
+      setWebhookLogs((data || []) as WebhookLog[]);
     }
     setLogsLoading(false);
   };
