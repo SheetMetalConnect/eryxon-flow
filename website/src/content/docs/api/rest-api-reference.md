@@ -324,23 +324,18 @@ When validation fails (422), you'll receive detailed field-level errors:
 
 ## Authentication
 
-All API endpoints require an API key. Two authentication methods are supported:
+All API endpoints require an API key passed as a Bearer token:
 
-**Method 1: Bearer Token (Recommended)**
+**Required header**
 ```
 Authorization: Bearer ery_live_xxxxxxxxxx
-```
-
-**Method 2: X-API-Key Header**
-```
-X-API-Key: ery_live_xxxxxxxxxx
 ```
 
 API keys are managed through the admin interface and come in two types:
 - `ery_live_*` - Production keys
 - `ery_test_*` - Testing keys
 
-**Security:** API keys are verified using SHA-256 hashing against the `api_keys` table. Never expose your API keys in client-side code or public repositories.
+**Security:** API keys are verified using SHA-256 hashing against the `api_keys` table and compared with constant-time matching in the edge auth helper. Never expose your API keys in client-side code or public repositories.
 
 ---
 

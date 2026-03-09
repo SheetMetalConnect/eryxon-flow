@@ -5,18 +5,23 @@ description: "Documentation for 3D STEP Viewer"
 
 ## Overview
 
-A **client-side** browser-based 3D STEP file viewer integrated into Eryxon Flow. Built with React, Three.js, and occt-import-js to parse and render CAD models entirely in the browser with no backend service required.
+Eryxon Flow ships with a browser-rendered 3D STEP viewer for production use, plus an optional backend-assisted CAD path for richer geometry and PMI workflows.
 
-**Key Point:** This is a purely client-side implementation. STEP files are parsed in the browser using WebAssembly (occt-import-js), not on a server.
+The viewer always renders in the browser, but it can source geometry in two ways:
+
+- browser-side STEP parsing for zero-extra-infrastructure deployments
+- server-processed geometry and PMI payloads when a CAD backend is configured
 
 ## Features
 
-✅ **STEP File Support**: Parse and render .step and .stp files
+✅ **STEP File Support**: Parse and render `.step` and `.stp` files
 ✅ **Interactive 3D Controls**: Orbit, zoom, and pan with mouse/touch
 ✅ **Exploded View**: Visualize assemblies with adjustable separation
 ✅ **Wireframe Mode**: Toggle between solid and wireframe rendering
 ✅ **Dynamic Grid**: Auto-sized grid based on model dimensions
 ✅ **Fit to View**: Automatically frame the model in the viewport
+✅ **Measurement Tools**: Distance, thickness, angle, and radius measurements
+✅ **PMI Overlay Support**: Show PMI when backend-extracted PMI data exists
 ✅ **File Management**: Upload, view, and delete CAD files
 ✅ **Multi-tenant**: Secure tenant-isolated file storage
 
@@ -29,14 +34,16 @@ A **client-side** browser-based 3D STEP file viewer integrated into Eryxon Flow.
 }
 ```
 
-### External Libraries (CDN)
-- **occt-import-js** (v0.0.23): STEP file parser loaded from CDN
+### Runtime Paths
+- **Browser fallback**: STEP parsing in the browser through occt-import-js
+- **Optional CAD backend**: server geometry and PMI extraction through the configurable CAD service
 
 ### Existing Dependencies
 - `@radix-ui/react-dialog`: Modal dialogs
 - `@radix-ui/react-slider`: Explosion factor control
 - `lucide-react`: Icons
 - `@supabase/supabase-js`: File storage
+- `three-mesh-bvh`: accelerated raycasting for measurements
 
 ## Database Setup
 
@@ -143,7 +150,7 @@ parts-cad/
               └── ...
 ```
 
-## Architecture
+## Runtime Architecture
 
 ```
 User opens Part Detail Modal
@@ -160,15 +167,15 @@ Create signed URL → Fetch as blob → Create blob URL
     ↓
 Opens STEPViewer component in Dialog
     ↓
-STEPViewer loads occt-import-js from CDN
+Initialize Three.js scene + controls + measurement subsystem
     ↓
-Initializes Three.js scene (camera, renderer, lights, controls)
+If CAD backend geometry exists, prefer server geometry
     ↓
-Fetches STEP file → Convert to ArrayBuffer → Parse with occt-import-js
+Otherwise parse STEP in browser and build meshes locally
     ↓
-Convert parsed meshes to Three.js geometry
+If PMI data exists, allow PMI overlay toggles
     ↓
-Add to scene → Fit camera → Render loop
+Add scene content → Fit camera → Render loop
 ```
 
 ## File Structure
@@ -191,16 +198,23 @@ src/
 
 Main 3D viewer component with:
 - Three.js scene initialization
-- STEP file parsing with occt-import-js
+- browser fallback STEP parsing
+- server-geometry rendering path
 - Interactive controls (orbit, zoom, pan)
 - Feature toggles (wireframe, grid, exploded view)
+- measurement toolbar and measurement panel
+- optional PMI overlay rendering
 - Loading states and error handling
 
 **Props:**
 ```typescript
 interface STEPViewerProps {
-  url: string;      // Blob URL to STEP file
-  title?: string;   // Display title
+  url: string;
+  title?: string;
+  compact?: boolean;
+  pmiData?: PMIData | null;
+  serverGeometry?: GeometryData | null;
+  preferServerGeometry?: boolean;
 }
 ```
 
@@ -210,7 +224,20 @@ interface STEPViewerProps {
 - 🔲 **Wireframe Mode**: Toggle between solid and wireframe rendering
 - 📐 **Dynamic Grid**: Auto-sized based on model dimensions
 - 🎯 **Fit to View**: Automatically center and frame the model
-- ⚡ **Optimized**: Efficient rendering with requestAnimationFrame
+- 📏 **Measurements**: Point distance, face distance, face angle, and radius tools
+- 🏷️ **PMI Overlay**: Toggle extracted PMI when available
+- ⚡ **Optimized**: Efficient rendering with requestAnimationFrame and BVH picking
+
+## Deployment Notes
+
+- No CAD backend is required for baseline STEP viewing.
+- A CAD backend is recommended when you want server-tessellated geometry, backend PMI extraction, or future advanced CAD workflows.
+- The viewer remains tenant-safe because files are fetched from private storage via signed URLs.
+
+## Related Docs
+
+- [3D CAD Engine](/architecture/3d-engine/)
+- [3D Viewer Measurements Plan](/engineering/3d-viewer-measurements-plan/)
 
 ### PartDetailModal (Modified)
 **Location**: `/src/components/admin/PartDetailModal.tsx`

@@ -25,7 +25,7 @@ The system tracks manufacturing work through three hierarchical levels:
 - **UI:** shadcn/ui + Radix primitives + Tailwind CSS
 - **Backend:** Supabase (PostgreSQL, Row Level Security, Edge Functions, Realtime, Storage)
 - **Authentication:** Supabase Auth with JWT tokens
-- **3D Viewer:** Three.js + occt-import-js + three-mesh-bvh measurement support modules
+- **3D Viewer:** Three.js + browser STEP parsing + optional CAD backend + measurement support modules
 - **API:** RESTful Edge Functions with API key authentication
 - **Real-time:** Supabase Realtime for live updates
 
@@ -83,7 +83,8 @@ graph TD
 
 **3D Rendering:**
 - Three.js - WebGL 3D graphics
-- occt-import-js - STEP file parser
+- Browser STEP parsing for fallback rendering
+- Optional CAD backend for server-processed geometry and PMI extraction
 - three-mesh-bvh - Efficient picking and measurement acceleration
 
 ### Backend Architecture
@@ -110,6 +111,7 @@ graph TD
 - Optional Turnstile CAPTCHA for public auth flows
 - Auto-refresh tokens
 - Session persistence
+- Immediate tenant/profile teardown when session state is lost
 
 **Storage:** Supabase Storage
 - File uploads (STEP, images, PDFs)
@@ -178,6 +180,7 @@ graph TD
 - JWT tokens with short expiration
 - Auto-refresh mechanism
 - Invitation acceptance and password validation hardening
+- Optional Turnstile protection on public auth flows
 
 **2. Authorization:**
 - Role-based access control (RBAC)
@@ -185,6 +188,7 @@ graph TD
 - UI route protection
 - API endpoint validation
 - Server-side enforcement via RLS and role-aware queries
+- Client-side role checks are UX-only and not treated as a security boundary
 
 **3. Data Isolation:**
 - Row-Level Security (RLS)
@@ -193,11 +197,13 @@ graph TD
 - Tenant-aware realtime subscriptions and storage paths
 
 **4. API Security:**
-- API key hashing (bcrypt)
+- API key hashing (SHA-256)
+- Constant-time API key comparison
 - Shared validation and sanitization helpers
 - CORS enforcement in edge functions
 - Rate limiting
 - Input validation
+- Internal token checks for internal-only webhook and MQTT paths
 
 **5. Storage Security:**
 - Private buckets
@@ -209,6 +215,7 @@ graph TD
 - Environment-specific webhook wiring instead of hardcoded project URLs in migrations
 - Service-role secrets stay in Supabase Edge Function secrets, never in frontend config
 - Self-hosted setups can opt into Redis and CAPTCHA without changing core app behavior
+- `ALLOWED_ORIGIN` should be set for production edge-function CORS restrictions
 
 ---
 
@@ -222,6 +229,8 @@ graph TD
 ```
 Authorization: Bearer ery_live_xxxxxxxxxxxxx
 ```
+
+The REST API currently authenticates through the `Authorization` header rather than a separate `X-API-Key` header.
 
 ### Webhooks (External Real-Time)
 
@@ -238,3 +247,9 @@ Authorization: Bearer ery_live_xxxxxxxxxxxxx
 - Send notifications to Slack/Teams
 - Trigger automated workflows
 - Update external dashboards
+
+## Related Docs
+
+- [Security Architecture](/architecture/security-architecture/)
+- [Connectivity Overview](/architecture/connectivity-overview/)
+- [3D CAD Engine](/architecture/3d-engine/)

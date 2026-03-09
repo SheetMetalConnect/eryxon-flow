@@ -432,7 +432,7 @@ REST API authentication keys.
 | `id` | UUID | Primary key |
 | `tenant_id` | UUID | FK to tenants |
 | `name` | TEXT | Key name |
-| `key_hash` | TEXT | bcrypt hash of full key |
+| `key_hash` | TEXT | SHA-256 hash of full key |
 | `key_prefix` | TEXT | First 8 chars for lookup |
 | `active` | BOOLEAN | Is active |
 | `created_by` | UUID | User who created |
@@ -488,7 +488,7 @@ MCP server authentication keys.
 | `id` | UUID | Primary key |
 | `tenant_id` | UUID | FK to tenants |
 | `name` | TEXT | Key name |
-| `key_hash` | TEXT | bcrypt hash |
+| `key_hash` | TEXT | SHA-256 hash |
 | `key_prefix` | TEXT | Lookup prefix |
 | `environment` | TEXT | development, staging, production |
 | `enabled` | BOOLEAN | Is enabled |

@@ -28,6 +28,7 @@ Security hardening, API coverage, integrated route refactoring, and 3D viewer me
 - expanded API payload documentation and E2E API tooling
 - improved release/migration guidance for self-hosted deployments
 - integrated 3D viewer measurement architecture and planning
+- consolidated documentation into the website with updated security and 3D architecture references
 
 ### Operational Notes
 
@@ -40,3 +41,5 @@ Security hardening, API coverage, integrated route refactoring, and 3D viewer me
 For the full release history, use the website changelog:
 
 - [Changelog](/guides/changelog/)
+- [Security Architecture](/architecture/security-architecture/)
+- [3D CAD Engine](/architecture/3d-engine/)

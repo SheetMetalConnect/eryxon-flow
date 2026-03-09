@@ -20,6 +20,7 @@ Changes merged after `0.3.2` should be added here until the next tagged release.
 - Standardized self-hosting documentation references across the repo and in-app upgrade CTAs around the website docs structure
 - Clarified the root README so public docs, developer docs, and architecture references point to their current source-of-truth locations
 - Moved operational markdown into the website documentation tree so the main repository keeps only the top-level README
+- Refreshed architecture documentation for security boundaries, API authentication, and the current 3D viewer runtime model
 
 ### Fixed
 

@@ -91,6 +91,10 @@
           "slug": "architecture/connectivity-overview"
         },
         {
+          "label": "Security Architecture",
+          "slug": "architecture/security-architecture"
+        },
+        {
           "label": "Caching",
           "slug": "architecture/caching"
         },
