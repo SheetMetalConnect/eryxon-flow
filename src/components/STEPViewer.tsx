@@ -18,6 +18,7 @@ import {
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 import { useTranslation } from 'react-i18next';
+import { getCADConfig } from '@/config/cadBackend';
 import type {
   PMIData,
   PMIDimension,
@@ -69,6 +70,7 @@ export function STEPViewer({
   preferServerGeometry = true
 }: STEPViewerProps) {
   const { t } = useTranslation();
+  const occtScriptUrl = getCADConfig().frontend.wasmUrl;
 
   const [stepLoading, setStepLoading] = useState(false);
   const [loadingError, setLoadingError] = useState<string | null>(null);
@@ -156,7 +158,7 @@ export function STEPViewer({
     const loadOcct = async () => {
       if (!window.occtimportjs) {
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/occt-import-js@0.0.23/dist/occt-import-js.js';
+        script.src = occtScriptUrl;
 
         script.onload = () => {
           setTimeout(() => {
@@ -179,7 +181,7 @@ export function STEPViewer({
     };
 
     loadOcct();
-  }, [serverGeometry, preferServerGeometry]);
+  }, [occtScriptUrl, serverGeometry, preferServerGeometry]);
 
   useEffect(() => {
     if (!librariesLoaded || !containerRef.current) return;
