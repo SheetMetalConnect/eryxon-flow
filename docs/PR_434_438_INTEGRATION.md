@@ -64,8 +64,9 @@ Primary migration in this integration:
 What it does:
 
 - Removes the old tenant trigger that could send multiple signup notifications
-- Replaces it with a profile insert trigger for first admin signups
-- Keeps notification delivery non-blocking for the signup transaction
+- Removes any project-specific hardcoded profile webhook implementation
+- Leaves signup notification delivery to explicit environment-level webhook configuration
+- Keeps the database layer portable across hosted and self-hosted deployments
 
 ## Environment Setup
 
@@ -107,6 +108,20 @@ Optional secrets used by this PR stack:
 - `ALLOWED_ORIGIN`
 - `CRON_SECRET`
 - `INTERNAL_SERVICE_SECRET`
+
+### Manual signup notification webhook
+
+After applying migrations and deploying functions, configure this once in Supabase:
+
+1. Go to `Database -> Webhooks`
+2. Create a webhook named `notify-new-signup`
+3. Table: `public.profiles`
+4. Events: `INSERT`
+5. Type: `Supabase Edge Function`
+6. Edge Function: `notify-new-signup`
+7. Filter: `record.role = 'admin' AND record.has_email_login = true`
+
+This is intentionally not hardcoded in SQL so the project stays portable across environments.
 
 ## Deployment Steps
 
@@ -154,6 +169,7 @@ Expected result:
 
 - Apply migrations before deploying the frontend, not after
 - Deploy edge functions in the same rollout window as the migration
+- Treat environment-specific webhook wiring as deployment config, not schema
 - Validate signup notifications in a non-production project first because the trigger behavior changed
 - Keep `VITE_SUPABASE_URL` explicit rather than relying on project-id-derived fallbacks
 - Use live API E2E checks only against a project with representative tenant/test data

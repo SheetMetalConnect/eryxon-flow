@@ -10,13 +10,16 @@ const mockSignUp = vi.fn();
 const mockSignOut = vi.fn();
 const mockFrom = vi.fn();
 const mockRpc = vi.fn();
+let authStateChangeCallback:
+  | ((event: string, session: { user?: { id: string } } | null) => Promise<void> | void)
+  | undefined;
 
 // Mock Supabase
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     auth: {
       getSession: () => mockGetSession(),
-      onAuthStateChange: () => mockOnAuthStateChange(),
+      onAuthStateChange: (callback: (event: string, session: { user?: { id: string } } | null) => Promise<void> | void) => mockOnAuthStateChange(callback),
       signInWithPassword: (params: unknown) => mockSignInWithPassword(params),
       signUp: (params: unknown) => mockSignUp(params),
       signOut: () => mockSignOut(),
@@ -79,6 +82,7 @@ describe('AuthContext', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    authStateChangeCallback = undefined;
 
     // Default mock implementations
     mockGetSession.mockResolvedValue({
@@ -86,10 +90,13 @@ describe('AuthContext', () => {
       error: null,
     });
 
-    mockOnAuthStateChange.mockReturnValue({
-      data: {
-        subscription: { unsubscribe: vi.fn() },
-      },
+    mockOnAuthStateChange.mockImplementation((callback) => {
+      authStateChangeCallback = callback;
+      return {
+        data: {
+          subscription: { unsubscribe: vi.fn() },
+        },
+      };
     });
 
     mockFrom.mockReturnValue({
@@ -289,6 +296,31 @@ describe('AuthContext', () => {
 
       expect(result.current.profile).toBeNull();
       expect(result.current.tenant).toBeNull();
+    });
+  });
+
+  describe('auth state changes', () => {
+    it('clears tenant state when auth session becomes null', async () => {
+      mockGetSession.mockResolvedValue({
+        data: { session: mockSession },
+        error: null,
+      });
+
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      expect(result.current.tenant?.id).toBe('tenant-123');
+
+      await act(async () => {
+        await authStateChangeCallback?.('SIGNED_OUT', null);
+      });
+
+      expect(result.current.profile).toBeNull();
+      expect(result.current.tenant).toBeNull();
+      expect(result.current.loading).toBe(false);
     });
   });
 

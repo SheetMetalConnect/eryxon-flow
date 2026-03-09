@@ -34,9 +34,10 @@ supabase migration list
 **New migration in this release:**
 
 1. **20260202200000_fix_signup_notification_trigger.sql** ⚠️ **IMPORTANT**
-   - Replaces the tenant-level signup notification trigger with a profile-level admin signup trigger
+   - Removes the tenant-level signup notification trigger that caused duplicate emails
+   - Removes any hardcoded profile-level webhook implementation
    - Prevents duplicate signup emails
-   - Preserves contact details in the notification payload for true admin-led company signups
+   - Requires explicit environment-level webhook configuration for `notify-new-signup`
 
 ### Added
 

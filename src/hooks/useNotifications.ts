@@ -8,7 +8,6 @@ import { logger } from '@/lib/logger';
 
 type Notification = Database['public']['Tables']['notifications']['Row'];
 type NotificationType = Notification['type'];
-type NotificationSeverity = Notification['severity'];
 
 export interface NotificationFilters {
   type?: NotificationType;

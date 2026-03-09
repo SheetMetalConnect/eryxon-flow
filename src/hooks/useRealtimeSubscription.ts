@@ -71,13 +71,18 @@ export interface RealtimeSubscriptionOptions {
 /**
  * Debounce function for callback
  */
+interface DebouncedCallback<T extends (...args: unknown[]) => void> {
+  (...args: Parameters<T>): void;
+  cancel: () => void;
+}
+
 function debounce<T extends (...args: unknown[]) => void>(
   fn: T,
   delay: number
-): (...args: Parameters<T>) => void {
+): DebouncedCallback<T> {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-  return (...args: Parameters<T>) => {
+  const debounced = (...args: Parameters<T>) => {
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
@@ -86,6 +91,15 @@ function debounce<T extends (...args: unknown[]) => void>(
       timeoutId = null;
     }, delay);
   };
+
+  debounced.cancel = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+  };
+
+  return debounced;
 }
 
 /**
@@ -177,6 +191,7 @@ export function useRealtimeSubscription(options: RealtimeSubscriptionOptions): v
     });
 
     return () => {
+      debouncedCallback.cancel();
       logger.debug('Cleaning up realtime subscription', {
         operation: 'useRealtimeSubscription',
         channelName,
