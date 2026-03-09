@@ -5,6 +5,8 @@ description: "Production-ready self-hosting guide for Eryxon Flow MES"
 
 Deploy Eryxon Flow on your own infrastructure with full control.
 
+> Current documented release: `0.3.2`
+
 ## Quick Start (Recommended)
 
 The fastest way to get production-ready deployment using our automated script.
@@ -133,7 +135,21 @@ supabase secrets set \
   SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
 ```
 
-### 7. Install and Run
+### 7. Configure signup notification webhook
+
+Release `0.3.2` intentionally removes any hardcoded project-specific signup webhook URL from SQL migrations. Configure this in Supabase Dashboard so the setup stays portable across environments:
+
+1. Open **Database -> Webhooks**
+2. Create a webhook named `notify-new-signup`
+3. Table: `public.profiles`
+4. Event: `INSERT`
+5. Type: `Supabase Edge Function`
+6. Edge Function: `notify-new-signup`
+7. Filter: `record.role = 'admin' AND record.has_email_login = true`
+
+This is required only if you want admin signup email notifications.
+
+### 8. Install and Run
 
 ```bash
 # Install dependencies
@@ -456,6 +472,11 @@ docker compose up -d
    - Without it, new signups won't get profiles/tenants
    - Migration `20260127232000_add_missing_auth_trigger.sql` ensures this
 
+2. **Admin signup notifications are duplicated or missing**
+   - Migration `20260202200000_fix_signup_notification_trigger.sql` removes the old duplicate-prone trigger path
+   - Confirm the `notify-new-signup` database webhook is configured in Supabase Dashboard
+   - Confirm `RESEND_API_KEY` and `SIGNUP_NOTIFY_EMAIL` are set for the edge function
+
 ### Security Checklist
 
 - [ ] `.env` file is in `.gitignore` (never commit)
@@ -495,6 +516,8 @@ Private buckets require signed URLs, not public URLs. Use `createSignedUrl()` wi
 ### New Users Can't Log In
 
 The `on_auth_user_created` trigger must exist on `auth.users`. Without it, new signups won't get profiles/tenants. Migration `20260127232000_add_missing_auth_trigger.sql` ensures this.
+
+Release `0.3.2` also expects the signup notification path to be configured as a **Database Webhook**, not a hardcoded SQL URL. That keeps hosted and self-hosted deployments aligned.
 
 ### Edge Functions Return 502
 
@@ -538,4 +561,3 @@ SELECT * FROM pg_extension WHERE extname = 'pg_cron';
 ```
 
 If empty, run `seed.sql` to schedule jobs.
-
