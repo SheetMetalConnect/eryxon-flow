@@ -36,12 +36,7 @@ export default function ConfigMaterials() {
     active: true,
   });
 
-  useEffect(() => {
-    if (!profile?.tenant_id) return;
-    loadMaterials();
-  }, [profile?.tenant_id]);
-
-  const loadMaterials = async () => {
+  async function loadMaterials() {
     if (!profile?.tenant_id) return;
 
     const { data, error } = await supabase
@@ -54,7 +49,16 @@ export default function ConfigMaterials() {
       setMaterials(data as any);
     }
     setLoading(false);
-  };
+  }
+
+  useEffect(() => {
+    if (!profile?.tenant_id) return;
+    const loadTimeout = window.setTimeout(() => {
+      void loadMaterials();
+    }, 0);
+
+    return () => clearTimeout(loadTimeout);
+  }, [profile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

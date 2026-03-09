@@ -241,7 +241,7 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
         setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1));
       }
     },
-    [profile, onComplete]
+    [profile, onComplete, t]
   );
 
   return (

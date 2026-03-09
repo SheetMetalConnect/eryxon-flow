@@ -21,7 +21,8 @@ describe('utils', () => {
 
     it('handles boolean values', () => {
       expect(cn('foo', false, 'bar')).toBe('foo bar');
-      expect(cn('foo', true && 'active', 'bar')).toBe('foo active bar');
+      const isActive = true;
+      expect(cn('foo', isActive && 'active', 'bar')).toBe('foo active bar');
     });
 
     it('handles conditional classes', () => {

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { PostgrestFilterBuilder } from "@supabase/postgrest-js";
 
 export interface PaginationState {
@@ -197,14 +197,37 @@ export function useInfinitePagination({
     return Math.ceil(totalCount / pageSize);
   }, [totalCount, pageSize]);
 
-  const hasMore = currentPage < totalPages - 1 && loadedCount < totalCount;
+  const normalizedPageState = useMemo(() => {
+    if (totalCount > 0 && loadedCount > totalCount) {
+      return {
+        currentPage: 0,
+        loadedCount: Math.min(pageSize, totalCount),
+      };
+    }
+
+    return {
+      currentPage,
+      loadedCount,
+    };
+  }, [currentPage, loadedCount, pageSize, totalCount]);
+
+  const hasMore =
+    normalizedPageState.currentPage < totalPages - 1 &&
+    normalizedPageState.loadedCount < totalCount;
 
   const loadMore = useCallback(() => {
     if (hasMore) {
-      setCurrentPage((prev) => prev + 1);
-      setLoadedCount((prev) => Math.min(prev + pageSize, totalCount));
+      setCurrentPage((prev) => {
+        const basePage = totalCount > 0 && loadedCount > totalCount ? 0 : prev;
+        return basePage + 1;
+      });
+      setLoadedCount((prev) => {
+        const baseLoaded =
+          totalCount > 0 && prev > totalCount ? Math.min(pageSize, totalCount) : prev;
+        return Math.min(baseLoaded + pageSize, totalCount);
+      });
     }
-  }, [hasMore, pageSize, totalCount]);
+  }, [hasMore, loadedCount, pageSize, totalCount]);
 
   const reset = useCallback(() => {
     setCurrentPage(0);
@@ -213,33 +236,26 @@ export function useInfinitePagination({
 
   const getRanges = useCallback(() => {
     const ranges: Array<{ from: number; to: number }> = [];
-    for (let i = 0; i <= currentPage; i++) {
+    for (let i = 0; i <= normalizedPageState.currentPage; i++) {
       const from = i * pageSize;
       const to = Math.min(from + pageSize - 1, totalCount - 1);
       ranges.push({ from, to });
     }
     return ranges;
-  }, [currentPage, pageSize, totalCount]);
+  }, [normalizedPageState.currentPage, pageSize, totalCount]);
 
   const getNextRange = useCallback(() => {
     if (!hasMore) return null;
-    const nextPage = currentPage + 1;
+    const nextPage = normalizedPageState.currentPage + 1;
     const from = nextPage * pageSize;
     const to = Math.min(from + pageSize - 1, totalCount - 1);
     return { from, to };
-  }, [currentPage, hasMore, pageSize, totalCount]);
-
-  useEffect(() => {
-    if (totalCount > 0 && loadedCount > totalCount) {
-      setLoadedCount(Math.min(pageSize, totalCount));
-      setCurrentPage(0);
-    }
-  }, [totalCount, loadedCount, pageSize]);
+  }, [normalizedPageState.currentPage, hasMore, pageSize, totalCount]);
 
   return {
-    currentPage,
+    currentPage: normalizedPageState.currentPage,
     totalPages,
-    loadedCount,
+    loadedCount: normalizedPageState.loadedCount,
     hasMore,
     loadMore,
     reset,

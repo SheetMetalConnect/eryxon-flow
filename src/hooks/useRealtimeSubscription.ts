@@ -35,7 +35,7 @@
  * });
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { logger } from '@/lib/logger';
@@ -115,21 +115,17 @@ export function useRealtimeSubscription(options: RealtimeSubscriptionOptions): v
     includePayload = false,
   } = options;
 
-  // Stable callback ref to avoid re-subscribing on callback changes
-  const callbackRef = useRef(onDataChange);
-  callbackRef.current = onDataChange;
-
-  const debouncedCallback = useCallback(
-    debounce((payload?: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-      callbackRef.current(payload);
-    }, debounceMs),
-    [debounceMs]
-  );
-
   useEffect(() => {
     if (!enabled || tables.length === 0) {
       return;
     }
+
+    const debouncedCallback = debounce(
+      (payload?: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
+        onDataChange(payload);
+      },
+      debounceMs
+    );
 
     logger.debug('Setting up realtime subscription', {
       operation: 'useRealtimeSubscription',
@@ -207,7 +203,7 @@ export function useRealtimeSubscription(options: RealtimeSubscriptionOptions): v
         });
       }
     };
-  }, [channelName, tables, enabled, debounceMs, includePayload, debouncedCallback]);
+  }, [channelName, tables, enabled, debounceMs, includePayload, onDataChange]);
 }
 
 /**

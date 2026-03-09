@@ -128,7 +128,11 @@ export const ActivityMonitor: React.FC = () => {
   }, [profile, filterAction, filterEntityType, searchQuery, limit]);
 
   useEffect(() => {
-    loadData();
+    const loadTimeout = window.setTimeout(() => {
+      void loadData();
+    }, 0);
+
+    return () => clearTimeout(loadTimeout);
   }, [loadData]);
 
   useEffect(() => {

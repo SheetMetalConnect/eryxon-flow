@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,7 +85,7 @@ export default function ConfigMqttPublishers() {
   const [useTls, setUseTls] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
 
-  const fetchPublishers = async () => {
+  const fetchPublishers = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('mqtt_publishers')
@@ -99,9 +99,9 @@ export default function ConfigMqttPublishers() {
       setPublishers(data || []);
     }
     setLoading(false);
-  };
+  }, [profile?.tenant_id, t]);
 
-  const fetchMqttLogs = async () => {
+  const fetchMqttLogs = useCallback(async () => {
     setLogsLoading(true);
 
     const { data: tenantPublishers } = await supabase
@@ -131,7 +131,7 @@ export default function ConfigMqttPublishers() {
       setMqttLogs(data || []);
     }
     setLogsLoading(false);
-  };
+  }, [profile?.tenant_id, t]);
 
   useEffect(() => {
     if (profile?.tenant_id) {
@@ -142,7 +142,7 @@ export default function ConfigMqttPublishers() {
       return () => clearTimeout(loadTimeout);
     }
     return;
-  }, [profile?.tenant_id]);
+  }, [profile?.tenant_id, fetchPublishers, fetchMqttLogs]);
 
   const resetForm = () => {
     setPublisherName("");
@@ -173,7 +173,7 @@ export default function ConfigMqttPublishers() {
     return topic.split('/').filter(s => s.length > 0).join('/');
   }, [topicPattern, defaultEnterprise, defaultSite, defaultArea]);
 
-  const createPublisher = async () => {
+  const createPublisher = useCallback(async () => {
     if (!publisherName.trim()) {
       toast.error(t('mqtt.error'), { description: t('mqtt.enterName') });
       return;
@@ -216,9 +216,25 @@ export default function ConfigMqttPublishers() {
       resetForm();
       fetchPublishers();
     }
-  };
+  }, [
+    brokerUrl,
+    defaultArea,
+    defaultEnterprise,
+    defaultSite,
+    fetchPublishers,
+    password,
+    port,
+    profile?.id,
+    profile?.tenant_id,
+    publisherName,
+    selectedEvents,
+    t,
+    topicPattern,
+    useTls,
+    username,
+  ]);
 
-  const deletePublisher = async (publisherId: string) => {
+  const deletePublisher = useCallback(async (publisherId: string) => {
     const { error } = await supabase
       .from('mqtt_publishers')
       .delete()
@@ -230,9 +246,9 @@ export default function ConfigMqttPublishers() {
       toast.success(t('mqtt.success'), { description: t('mqtt.deleted') });
       fetchPublishers();
     }
-  };
+  }, [fetchPublishers, t]);
 
-  const togglePublisher = async (publisherId: string, currentStatus: boolean) => {
+  const togglePublisher = useCallback(async (publisherId: string, currentStatus: boolean) => {
     const { error } = await supabase
       .from('mqtt_publishers')
       .update({ active: !currentStatus })
@@ -243,7 +259,7 @@ export default function ConfigMqttPublishers() {
     } else {
       fetchPublishers();
     }
-  };
+  }, [fetchPublishers, t]);
 
   const publisherColumns: ColumnDef<MqttPublisher>[] = useMemo(() => [
     {
@@ -358,7 +374,7 @@ export default function ConfigMqttPublishers() {
         );
       },
     },
-  ], [t]);
+  ], [deletePublisher, t, togglePublisher]);
 
   const logColumns: ColumnDef<MqttLog>[] = useMemo(() => [
     {

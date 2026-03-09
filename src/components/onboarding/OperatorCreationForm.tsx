@@ -27,6 +27,15 @@ export function OperatorCreationForm() {
   const [creating, setCreating] = useState(false);
   const [createdOperators, setCreatedOperators] = useState<CreatedOperator[]>([]);
 
+  const createOperatorWithPin = supabase.rpc as unknown as (
+    fn: 'create_operator_with_pin',
+    params: {
+      p_full_name: string;
+      p_pin: string;
+      p_employee_id?: string;
+    }
+  ) => Promise<{ data: string | null; error: unknown }>;
+
   const generateEmployeeId = () => {
     const timestamp = Date.now().toString().slice(-6);
     return `OPR-${timestamp}`;
@@ -58,7 +67,7 @@ export function OperatorCreationForm() {
     setCreating(true);
 
     try {
-      const { data, error } = await (supabase.rpc as Function)('create_operator_with_pin', {
+      const { data, error } = await createOperatorWithPin('create_operator_with_pin', {
         p_full_name: fullName.trim(),
         p_pin: pin,
         p_employee_id: finalEmployeeId || undefined,

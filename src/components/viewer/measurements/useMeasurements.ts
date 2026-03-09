@@ -49,9 +49,12 @@ export function useMeasurements({ viewerRefs }: UseMeasurementsOptions) {
   const modeRef = useRef(mode);
   const phaseRef = useRef(phase);
   const resultsRef = useRef(results);
-  modeRef.current = mode;
-  phaseRef.current = phase;
-  resultsRef.current = results;
+
+  useEffect(() => {
+    modeRef.current = mode;
+    phaseRef.current = phase;
+    resultsRef.current = results;
+  }, [mode, phase, results]);
 
   // ── Attach annotation group to scene ───────────────────────────
   useEffect(() => {

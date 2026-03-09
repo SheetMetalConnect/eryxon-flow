@@ -323,7 +323,7 @@ export const Operations: React.FC = () => {
         return value.includes(row.getValue(id));
       },
     },
-  ], [navigate]);
+  ], [navigate, t]);
 
   const uniqueCells = useMemo(() =>
     [...new Set(operations.map((op) => op.cell))],
