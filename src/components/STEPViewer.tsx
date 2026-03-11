@@ -75,6 +75,7 @@ export function STEPViewer({
   const [stepLoading, setStepLoading] = useState(false);
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [librariesLoaded, setLibrariesLoaded] = useState(false);
+  const [loadRetryCount, setLoadRetryCount] = useState(0);
   const [wireframeMode, setWireframeMode] = useState(false);
   const [explodedView, setExplodedView] = useState(false);
   const [explosionFactor, setExplosionFactor] = useState(1);
@@ -156,32 +157,44 @@ export function STEPViewer({
     }
 
     const loadOcct = async () => {
-      if (!window.occtimportjs) {
-        const script = document.createElement('script');
-        script.src = occtScriptUrl;
-
-        script.onload = () => {
-          setTimeout(() => {
-            if (window.occtimportjs) {
-              setLibrariesLoaded(true);
-            } else {
-              setLoadingError('Failed to initialize STEP parser');
-            }
-          }, 500);
-        };
-
-        script.onerror = () => {
-          setLoadingError('Failed to load STEP parser library');
-        };
-
-        document.head.appendChild(script);
-      } else {
+      if (window.occtimportjs) {
         setLibrariesLoaded(true);
+        return;
       }
+
+      // Remove any previously failed script tag so retry works
+      const existing = document.querySelector(`script[src="${occtScriptUrl}"]`);
+      if (existing) existing.remove();
+
+      const script = document.createElement('script');
+      script.src = occtScriptUrl;
+
+      script.onload = () => {
+        // Poll for the global to appear instead of a fixed timeout —
+        // WASM init time varies by device/network speed
+        let attempts = 0;
+        const maxAttempts = 40; // 40 × 150ms = 6s max wait
+        const poll = setInterval(() => {
+          attempts++;
+          if (window.occtimportjs) {
+            clearInterval(poll);
+            setLibrariesLoaded(true);
+          } else if (attempts >= maxAttempts) {
+            clearInterval(poll);
+            setLoadingError('Failed to initialize STEP parser');
+          }
+        }, 150);
+      };
+
+      script.onerror = () => {
+        setLoadingError('Failed to load STEP parser library');
+      };
+
+      document.head.appendChild(script);
     };
 
     loadOcct();
-  }, [occtScriptUrl, serverGeometry, preferServerGeometry]);
+  }, [occtScriptUrl, serverGeometry, preferServerGeometry, loadRetryCount]);
 
   useEffect(() => {
     if (!librariesLoaded || !containerRef.current) return;
@@ -1799,7 +1812,7 @@ export function STEPViewer({
                 onClick={() => {
                   setLoadingError(null);
                   setLibrariesLoaded(false);
-                  setTimeout(() => setLibrariesLoaded(true), 100);
+                  setLoadRetryCount(c => c + 1);
                 }}
                 className="text-xs"
               >
