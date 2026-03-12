@@ -30,6 +30,7 @@ Release packaging, dependency maintenance, and documentation alignment on top of
 
 ### Operational Notes
 
+- The post-schema migration is now fully idempotent — safe to re-run against databases that already have the policies and constraints in place
 - Run database migrations before validating signup and notification flows
 - Deploy edge functions in the same rollout window as the schema updates
 - Configure the `notify-new-signup` Supabase Database Webhook explicitly for your environment

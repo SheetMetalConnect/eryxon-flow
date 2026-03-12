@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes merged after `0.3.3` should be added here until the next tagged release.
 
+### Fixed
+
+- Made consolidated post-schema migration (`20260127230000`) fully idempotent so it can be re-run safely against existing databases
+  - Wrapped `parent_batch_id` foreign-key constraint in an existence check to avoid `duplicate_object` errors
+  - Wrapped all `batch_requirements` RLS policies in `EXCEPTION WHEN duplicate_object` handlers
+  - Storage-bucket policies and other sections already used this pattern; this brings the remaining sections into alignment
+
 ## [0.3.3] - 2026-03-09
 
 ### Focus: Release Packaging, Dependency Maintenance, and Documentation Alignment
