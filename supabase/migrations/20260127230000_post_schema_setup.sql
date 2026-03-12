@@ -97,11 +97,18 @@ ALTER TYPE public.batch_status ADD VALUE IF NOT EXISTS 'blocked';
 ALTER TABLE public.operation_batches
 ADD COLUMN IF NOT EXISTS parent_batch_id UUID;
 
-ALTER TABLE public.operation_batches
-ADD CONSTRAINT operation_batches_parent_batch_id_fkey
-FOREIGN KEY (parent_batch_id)
-REFERENCES public.operation_batches(id)
-ON DELETE CASCADE;
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'operation_batches_parent_batch_id_fkey'
+    ) THEN
+        ALTER TABLE public.operation_batches
+        ADD CONSTRAINT operation_batches_parent_batch_id_fkey
+        FOREIGN KEY (parent_batch_id)
+        REFERENCES public.operation_batches(id)
+        ON DELETE CASCADE;
+    END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_operation_batches_parent
 ON public.operation_batches(parent_batch_id)
