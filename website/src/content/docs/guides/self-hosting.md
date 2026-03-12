@@ -360,16 +360,38 @@ supabase secrets set \
   UPSTASH_REDIS_REST_TOKEN="your-token"
 ```
 
-### CAD Processing Service
+### 3D STEP Viewer & CAD Processing
 
-For server-side CAD file processing (optional):
+The built-in 3D STEP viewer works **out of the box** using browser-based WASM parsing (`occt-import-js`). No server-side CAD service is required.
+
+**How it works:** STEP/STP files uploaded to the `parts-cad` storage bucket are parsed client-side using WebAssembly. The viewer supports orbit controls, exploded view, wireframe mode, and measurement tools (distance, angle, radius).
+
+**CSP requirements:** The STEP parser needs specific Content Security Policy directives. These are already configured in the shipped `index.html` and `vercel.json`, but if your reverse proxy (Nginx, Caddy, Cloudflare) **adds its own CSP headers**, make sure they include:
+
+```
+script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' https://cdn.jsdelivr.net;
+worker-src 'self' blob:;
+```
+
+| Directive | Reason |
+|-----------|--------|
+| `'unsafe-eval'` | Emscripten embind (occt-import-js) uses `new Function()` |
+| `'wasm-unsafe-eval'` | Explicit WASM compilation permission |
+| `https://cdn.jsdelivr.net` | CDN host for the `occt-import-js` library |
+| `worker-src blob:` | occt-import-js creates Web Workers from blob URLs |
+
+> **Note:** The default Nginx and Caddy configs shipped with this repo do **not** set CSP headers (they rely on the `<meta>` tag in `index.html`), so you only need to worry about this if you add custom CSP rules at the proxy level.
+
+**Optional: Server-side CAD processing**
+
+For server-side geometry extraction and PMI (Product Manufacturing Information) data, configure an external CAD service:
 
 ```bash
 VITE_CAD_SERVICE_URL="https://your-cad-service.example.com"
 VITE_CAD_SERVICE_API_KEY="your-api-key"
 ```
 
-If not configured, browser-based processing is used.
+If not configured, browser-based processing is used automatically. The viewer supports three backend modes: `custom` (Eryxon3D Docker), `byob` (Bring Your Own Backend), and `frontend` (browser-only, the default).
 
 ### MCP Server (Optional - Local Use Only)
 
@@ -574,6 +596,16 @@ curl https://yourproject.supabase.co/functions/v1/api-jobs \
 ```
 
 Should return JSON (not 404/502).
+
+### STEP Viewer Shows "Failed to load STEP parser library"
+
+This is usually a CSP (Content Security Policy) issue. Check your browser console for errors:
+
+- **`EvalError: Refused to evaluate`** → Your proxy is blocking `'unsafe-eval'`. The STEP parser's Emscripten embind requires it. Add `'unsafe-eval'` to your proxy's `script-src` directive, or remove any proxy-level CSP to let the built-in `<meta>` tag handle it.
+- **`Refused to create a worker`** → Add `worker-src 'self' blob:` to your CSP. The WASM parser spawns Web Workers from blob URLs.
+- **`Failed to fetch` from cdn.jsdelivr.net** → The `occt-import-js` library is loaded from the jsDelivr CDN. Ensure `https://cdn.jsdelivr.net` is allowed in `script-src`.
+
+If you're behind a corporate firewall that blocks CDN access, the viewer will not work without network access to jsDelivr.
 
 ### Cron Jobs Not Running
 
