@@ -30,20 +30,26 @@ The viewer always renders in the browser, but it can source geometry in two ways
 ### Dependencies
 ```json
 {
-  "three": "^0.180.0"
+  "three": "^0.182.0",
+  "three-mesh-bvh": "^0.9.9"
 }
 ```
 
+**Browser STEP parser** (loaded from CDN at runtime):
+- `occt-import-js@0.0.23` via `https://cdn.jsdelivr.net/npm/occt-import-js@0.0.23/dist/occt-import-js.js`
+- Compiled with Emscripten (WASM + Web Workers)
+
+> **Note:** Version `0.0.23` is pinned. Version `0.0.24` does not exist on the CDN and was previously referenced in error (fixed in commit `5cf7bd7`).
+
 ### Runtime Paths
-- **Browser fallback**: STEP parsing in the browser through occt-import-js
+- **Browser fallback** (default): STEP parsing in the browser through occt-import-js — no server required
 - **Optional CAD backend**: server geometry and PMI extraction through the configurable CAD service
 
-### Existing Dependencies
+### Other Dependencies
 - `@radix-ui/react-dialog`: Modal dialogs
 - `@radix-ui/react-slider`: Explosion factor control
 - `lucide-react`: Icons
 - `@supabase/supabase-js`: File storage
-- `three-mesh-bvh`: accelerated raycasting for measurements
 
 ## Database Setup
 
@@ -66,76 +72,34 @@ VALUES (
   'parts-cad',
   'parts-cad',
   false,
-  52428800, -- 50MB max file size
-  ARRAY['application/step', 'application/stp', 'application/octet-stream']
-);
+  104857600, -- 100MB max file size
+  ARRAY['model/step', 'model/stl', 'application/sla', 'application/octet-stream', 'model/3mf']
+)
+ON CONFLICT (id) DO NOTHING;
 ```
 
-### 2. Set Up Storage Policies
+> **Note:** If you ran `supabase db push` and `seed.sql`, this bucket is already created by the migrations. This SQL is only needed for manual setup.
 
-Add RLS (Row Level Security) policies for the `parts-cad` bucket:
+### 2. Storage Policies
+
+The migrations create bucket-level RLS policies for authenticated users. These are applied automatically by `supabase db push` + `seed.sql`. For reference, the actual policies are:
 
 ```sql
--- Policy: Allow authenticated users to upload files to their tenant's folder
-CREATE POLICY "Users can upload CAD files to their tenant folder"
-ON storage.objects
-FOR INSERT
-TO authenticated
-WITH CHECK (
-  bucket_id = 'parts-cad' AND
-  (storage.foldername(name))[1] = get_user_tenant_id()::text
-);
+-- Applied by migration 20260127230000_post_schema_setup.sql (idempotent)
+CREATE POLICY "Authenticated users can upload CAD files"
+  ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'parts-cad');
 
--- Policy: Allow authenticated users to read files from their tenant's folder
-CREATE POLICY "Users can view CAD files from their tenant"
-ON storage.objects
-FOR SELECT
-TO authenticated
-USING (
-  bucket_id = 'parts-cad' AND
-  (storage.foldername(name))[1] = get_user_tenant_id()::text
-);
+CREATE POLICY "Authenticated users can view CAD files"
+  ON storage.objects FOR SELECT TO authenticated
+  USING (bucket_id = 'parts-cad');
 
--- Policy: Allow authenticated users to delete files from their tenant's folder
-CREATE POLICY "Users can delete CAD files from their tenant"
-ON storage.objects
-FOR DELETE
-TO authenticated
-USING (
-  bucket_id = 'parts-cad' AND
-  (storage.foldername(name))[1] = get_user_tenant_id()::text
-);
+CREATE POLICY "Authenticated users can delete CAD files"
+  ON storage.objects FOR DELETE TO authenticated
+  USING (bucket_id = 'parts-cad');
 ```
 
-### 3. Verify Parts Table Schema
-
-The `parts` table should already have the `file_paths` column (as TEXT[]). Verify it exists:
-
-```sql
--- Check if file_paths column exists
-SELECT column_name, data_type, is_nullable
-FROM information_schema.columns
-WHERE table_name = 'parts' AND column_name = 'file_paths';
-
--- If it doesn't exist, add it:
-ALTER TABLE parts ADD COLUMN IF NOT EXISTS file_paths TEXT[];
-```
-
-### 4. Create Helper Function
-
-Create a helper function to get user's tenant ID:
-
-```sql
--- Function to get current user's tenant ID
-CREATE OR REPLACE FUNCTION get_user_tenant_id()
-RETURNS UUID
-LANGUAGE sql
-SECURITY DEFINER
-STABLE
-AS $$
-  SELECT tenant_id FROM profiles WHERE id = auth.uid()
-$$;
-```
+Tenant isolation is enforced at the application level through the folder structure (`{tenant_id}/parts/{part_id}/`) and signed URL generation, not at the storage policy level.
 
 ### Storage Structure
 
@@ -183,9 +147,22 @@ Add scene content → Fit camera → Render loop
 ```
 src/
 ├── components/
-│   ├── STEPViewer.tsx              # 3D viewer component
-│   └── admin/
-│       └── PartDetailModal.tsx     # Modified - Added CAD file section
+│   ├── STEPViewer.tsx              # Main 3D viewer component (1,827 lines)
+│   ├── STEPViewerLazy.tsx          # Lazy-loaded wrapper with Suspense
+│   └── viewer/
+│       └── measurements/
+│           ├── setupBVH.ts         # BVH acceleration installation
+│           ├── types.ts            # Measurement type definitions
+│           ├── useRaycastPicker.ts  # Raycasting and snap detection
+│           ├── useMeasurements.ts   # Measurement state machine
+│           ├── computations.ts      # Distance, angle, radius math
+│           ├── annotations.ts       # Three.js annotation rendering
+│           ├── MeasurementToolbar.tsx
+│           └── MeasurementPanel.tsx
+├── config/
+│   └── cadBackend.ts               # CAD backend mode configuration
+├── hooks/
+│   └── useCADProcessing.ts         # CAD file processing with backend integration
 └── integrations/
     └── supabase/
         └── types.ts                # parts table types
@@ -301,9 +278,9 @@ import { STEPViewer } from '@/components/STEPViewer';
 - Signed URLs expire after 1 hour
 
 ### File Validation
-- Client-side: Only .step and .stp extensions allowed
+- Client-side: `.step`, `.stp`, `.stl`, `.3mf` extensions
 - Server-side: RLS policies enforce tenant access
-- MIME types: `application/step`, `application/stp`, `application/octet-stream`
+- MIME types: `model/step`, `model/stl`, `application/sla`, `application/octet-stream`, `model/3mf`
 
 ### Storage Policies
 All storage operations are protected by RLS policies that enforce tenant isolation.
@@ -311,7 +288,8 @@ All storage operations are protected by RLS policies that enforce tenant isolati
 ## Performance Considerations
 
 ### File Size Limits
-- **Maximum file size**: 50MB per file
+- **Storage limit**: 100MB per file (bucket configuration)
+- **Browser parsing limit**: ~50MB (browser-only mode; larger files may cause memory pressure)
 - **Recommended**: Keep files under 10MB for optimal performance
 - **Large assemblies**: Consider splitting into sub-assemblies
 
@@ -326,10 +304,29 @@ All storage operations are protected by RLS policies that enforce tenant isolati
 - Three.js geometries and materials disposed on unmount
 - Animation frame cancelled on cleanup
 
+## CSP Requirements
+
+The STEP parser (occt-import-js) uses Emscripten/WASM and requires specific Content Security Policy directives. These are already set in the shipped `index.html` `<meta>` tag, but if your deployment adds CSP headers at the proxy level, ensure they include:
+
+| Directive | Value | Reason |
+|-----------|-------|--------|
+| `script-src` | `'unsafe-eval'` | Emscripten embind uses `new Function()` |
+| `script-src` | `'wasm-unsafe-eval'` | WASM compilation |
+| `script-src` | `https://cdn.jsdelivr.net` | CDN for occt-import-js |
+| `worker-src` | `'self' blob:` | Web Workers from blob URLs |
+
+The default Nginx and Caddy configs shipped with the repo do **not** set CSP headers, so this only matters if you add custom CSP rules at the proxy level.
+
 ## Troubleshooting
 
 ### Issue: "Failed to load STEP parser library"
-**Solution**: Check internet connection, occt-import-js CDN may be down
+
+**Most common cause:** CSP (Content Security Policy) blocking. Check the browser console:
+
+- **`EvalError: Refused to evaluate a string as JavaScript`** — your proxy is blocking `'unsafe-eval'`. Add it to `script-src` (required for Emscripten embind).
+- **`Refused to create a worker from 'blob:...'`** — add `worker-src 'self' blob:` to your CSP.
+- **`Failed to fetch` from cdn.jsdelivr.net** — ensure `https://cdn.jsdelivr.net` is allowed in `script-src`, or check network/firewall access.
+- **None of the above** — check internet connectivity; the occt-import-js library is loaded from jsDelivr CDN at runtime.
 
 ### Issue: "No geometry found in STEP file"
 **Causes**:
@@ -346,7 +343,7 @@ All storage operations are protected by RLS policies that enforce tenant isolati
 **Solution**: We fetch signed URLs as blobs to avoid CORS issues
 
 ### Issue: Memory leaks
-**Solution**: Always revoke blob URLs when closing the viewer
+**Solution**: The viewer automatically revokes blob URLs and disposes Three.js resources on close. If you see memory growth, ensure dialogs are properly unmounted.
 
 ## Testing Checklist
 
