@@ -147,26 +147,13 @@ ON public.batch_requirements(tenant_id);
 
 ALTER TABLE public.batch_requirements ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view batch_requirements from their tenant"
-ON public.batch_requirements
-FOR SELECT
-USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
-
-CREATE POLICY "Users can insert batch_requirements for their tenant"
-ON public.batch_requirements
-FOR INSERT
-WITH CHECK (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
-
-CREATE POLICY "Users can update batch_requirements from their tenant"
-ON public.batch_requirements
-FOR UPDATE
-USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid)
-WITH CHECK (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
-
-CREATE POLICY "Users can delete batch_requirements from their tenant"
-ON public.batch_requirements
-FOR DELETE
-USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
+DO $$
+BEGIN
+    BEGIN CREATE POLICY "Users can view batch_requirements from their tenant" ON public.batch_requirements FOR SELECT USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid); EXCEPTION WHEN duplicate_object THEN NULL; END;
+    BEGIN CREATE POLICY "Users can insert batch_requirements for their tenant" ON public.batch_requirements FOR INSERT WITH CHECK (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid); EXCEPTION WHEN duplicate_object THEN NULL; END;
+    BEGIN CREATE POLICY "Users can update batch_requirements from their tenant" ON public.batch_requirements FOR UPDATE USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid) WITH CHECK (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid); EXCEPTION WHEN duplicate_object THEN NULL; END;
+    BEGIN CREATE POLICY "Users can delete batch_requirements from their tenant" ON public.batch_requirements FOR DELETE USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid); EXCEPTION WHEN duplicate_object THEN NULL; END;
+END $$;
 
 COMMENT ON TABLE public.batch_requirements IS 'Material requirements tracked within operation batches';
 COMMENT ON COLUMN public.batch_requirements.batch_id IS 'Reference to the operation batch';
