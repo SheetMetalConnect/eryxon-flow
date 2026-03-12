@@ -25,6 +25,10 @@ The fastest way to get production-ready deployment using our automated script.
 git clone https://github.com/SheetMetalConnect/eryxon-flow.git
 cd eryxon-flow
 
+# Create your .env file (the automated script requires it)
+cp .env.example .env
+# Edit .env and fill in your Supabase credentials (URL, anon key, project ID)
+
 # Set your database password
 export SUPABASE_DB_PASSWORD='your-database-password'
 
@@ -132,8 +136,11 @@ supabase functions deploy
 # Set required secrets
 supabase secrets set \
   SUPABASE_URL="https://yourproject.supabase.co" \
-  SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+  SUPABASE_SERVICE_ROLE_KEY="your-service-role-key" \
+  SELF_HOSTED_MODE="true"
 ```
+
+> `SELF_HOSTED_MODE` disables hosted-only plan restrictions in edge functions.
 
 ### 7. Configure signup notification webhook
 
@@ -197,21 +204,25 @@ docker run -d -p 80:80 --name eryxon-flow eryxon-flow
 
 ### Docker Compose (Recommended)
 
-Create `docker-compose.yml`:
+The repository ships with a ready-to-use `docker-compose.yml`. To use the pre-built image:
+
+```bash
+docker compose up -d
+```
+
+To build a custom image with your credentials, edit `docker-compose.yml` and uncomment the `build` section:
 
 ```yaml
-version: '3.8'
-
 services:
   eryxon-flow:
-    image: ghcr.io/sheetmetalconnect/eryxon-flow:latest
-    # Or use your custom build:
-    # build:
-    #   context: .
-    #   args:
-    #     VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
-    #     VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
-    #     VITE_SUPABASE_PROJECT_ID: ${VITE_SUPABASE_PROJECT_ID}
+    # Comment out the image line and uncomment build:
+    # image: ghcr.io/sheetmetalconnect/eryxon-flow:latest
+    build:
+      context: .
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
+        VITE_SUPABASE_PROJECT_ID: ${VITE_SUPABASE_PROJECT_ID}
     container_name: eryxon-flow
     restart: unless-stopped
     ports:
@@ -223,18 +234,16 @@ services:
       retries: 3
 ```
 
-Start:
+Then rebuild and start:
 ```bash
-docker compose up -d
+docker compose up -d --build
 ```
 
 ### Docker Compose with SSL (Production)
 
-Includes Caddy reverse proxy for automatic HTTPS:
+The repository includes `docker-compose.prod.yml` with Caddy reverse proxy for automatic HTTPS:
 
 ```yaml
-version: '3.8'
-
 services:
   app:
     image: ghcr.io/sheetmetalconnect/eryxon-flow:latest
@@ -242,6 +251,11 @@ services:
     restart: unless-stopped
     expose:
       - "80"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   caddy:
     image: caddy:alpine
@@ -262,7 +276,7 @@ volumes:
   caddy_config:
 ```
 
-Create `Caddyfile`:
+Edit the included `Caddyfile` — replace the domain with yours:
 
 ```caddyfile
 your-domain.com {
@@ -310,16 +324,19 @@ Best for edge deployment with global CDN.
 
 ## Optional Enhancements
 
-### Email Invitations (Resend)
+### Email Notifications (Resend)
 
-Enable automated email invitations:
+Enable automated email invitations and admin signup notifications:
 
 ```bash
 supabase secrets set \
   RESEND_API_KEY="re_your_api_key" \
   APP_URL="https://your-domain.com" \
-  EMAIL_FROM="Eryxon <noreply@your-domain.com>"
+  EMAIL_FROM="Eryxon <noreply@your-domain.com>" \
+  SIGNUP_NOTIFY_EMAIL="admin@your-domain.com"
 ```
+
+> `SIGNUP_NOTIFY_EMAIL` is the address that receives notifications when a new company signs up. Required for the `notify-new-signup` edge function to send emails.
 
 ### Cloudflare Turnstile (CAPTCHA)
 
@@ -444,10 +461,15 @@ docker compose up -d
 
 2. **Database Migrations**
    - Always run migrations in order
-   - The `20260127235000_enhance_batch_management.sql` migration adds:
+   - The consolidated `20260127230000_post_schema_setup.sql` migration adds:
+     - Storage buckets and RLS policies
+     - Cron jobs (pg_cron)
+     - Auth trigger for new user signup (`on_auth_user_created`)
      - `blocked` status to batch_status enum
      - `parent_batch_id` column for batch nesting
      - `nesting_image_url` and `layout_image_url` columns
+     - `batch_requirements` table with RLS
+     - Signup notification trigger cleanup (migrated to Database Webhook)
    - Never skip migrations
 
 3. **Storage Buckets**
@@ -471,12 +493,12 @@ docker compose up -d
 6. **Authentication Trigger**
    - The `on_auth_user_created` trigger must exist on `auth.users`
    - Without it, new signups won't get profiles/tenants
-   - Migration `20260127232000_add_missing_auth_trigger.sql` ensures this
+   - The consolidated migration `20260127230000_post_schema_setup.sql` ensures this trigger exists
 
-2. **Admin signup notifications are duplicated or missing**
-   - Migration `20260202200000_fix_signup_notification_trigger.sql` removes the old duplicate-prone trigger path
-   - Confirm the `notify-new-signup` database webhook is configured in Supabase Dashboard
-   - Confirm `RESEND_API_KEY` and `SIGNUP_NOTIFY_EMAIL` are set for the edge function
+7. **Admin signup notifications are duplicated or missing**
+   - The consolidated migration `20260127230000_post_schema_setup.sql` removes the old duplicate-prone trigger path
+   - Confirm the `notify-new-signup` database webhook is configured in Supabase Dashboard (see Step 7 above)
+   - Confirm `RESEND_API_KEY`, `SIGNUP_NOTIFY_EMAIL`, `APP_URL`, and `EMAIL_FROM` are set as edge function secrets
 
 ### Security Checklist
 
@@ -516,7 +538,7 @@ Private buckets require signed URLs, not public URLs. Use `createSignedUrl()` wi
 
 ### New Users Can't Log In
 
-The `on_auth_user_created` trigger must exist on `auth.users`. Without it, new signups won't get profiles/tenants. Migration `20260127232000_add_missing_auth_trigger.sql` ensures this.
+The `on_auth_user_created` trigger must exist on `auth.users`. Without it, new signups won't get profiles/tenants. The consolidated migration `20260127230000_post_schema_setup.sql` ensures this.
 
 Release `0.3.3` expects the signup notification path to be configured as a **Database Webhook**, not a hardcoded SQL URL. That keeps hosted and self-hosted deployments aligned.
 
