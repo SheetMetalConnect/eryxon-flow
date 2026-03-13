@@ -16,7 +16,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -621,11 +620,12 @@ export default function OperationDetailModal({
       </AlertDialog>
 
       <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
-        <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0">
-          <DialogHeader className="px-6 py-4 border-b">
-            <DialogTitle>{currentFileTitle}</DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 overflow-hidden">
+        <DialogContent className="w-full h-[100dvh] sm:h-[90vh] sm:max-w-6xl flex flex-col p-0 gap-0 border-0 bg-transparent shadow-2xl rounded-none sm:rounded-xl overflow-hidden inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
+          <div className="relative flex-1 min-h-0 bg-background sm:rounded-xl overflow-hidden">
+            <div className="absolute top-2 left-3 z-10 max-w-[60%]">
+              <span className="text-[11px] text-muted-foreground/70 font-medium truncate block">{currentFileTitle}</span>
+            </div>
+            <DialogTitle className="sr-only">{currentFileTitle}</DialogTitle>
             {currentFileUrl && currentFileType === "step" && (
               <STEPViewer url={currentFileUrl} title={currentFileTitle} />
             )}

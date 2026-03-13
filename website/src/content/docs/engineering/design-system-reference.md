@@ -1587,6 +1587,67 @@ All dialogs should use glass morphism for consistency.
 </Dialog>
 ```
 
+### File Viewer Modals (STEP / PDF)
+
+File viewer modals follow a **single-container** pattern — no nested borders, no header bars, no extra wrappers. The viewer fills the entire modal and the filename is shown as a subtle overlay label.
+
+**Why?** Nested containers (border inside border inside border) look unpolished. The viewer content should be the hero — maximize it.
+
+**Standard Dialog-based pattern** (used in Parts, Jobs, PartDetailModal, OperationDetailModal):
+
+```tsx
+<Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
+  <DialogContent className="w-full h-[100dvh] sm:h-[90vh] sm:max-w-6xl flex flex-col p-0 gap-0 border-0 bg-transparent shadow-2xl rounded-none sm:rounded-xl overflow-hidden inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
+    <div className="relative flex-1 min-h-0 bg-background sm:rounded-xl overflow-hidden">
+      <div className="absolute top-2 left-3 z-10 max-w-[60%]">
+        <span className="text-[11px] text-muted-foreground/70 font-medium truncate block">
+          {currentFileTitle}
+        </span>
+      </div>
+      <DialogTitle className="sr-only">{currentFileTitle}</DialogTitle>
+      {currentFileType === "step" && currentFileUrl && (
+        <STEPViewer url={currentFileUrl} />
+      )}
+      {currentFileType === "pdf" && currentFileUrl && (
+        <PDFViewer url={currentFileUrl} />
+      )}
+    </div>
+  </DialogContent>
+</Dialog>
+```
+
+**Key rules:**
+- `p-0 gap-0 border-0 bg-transparent` — strip all default DialogContent chrome
+- Single inner container with `bg-background` and `sm:rounded-xl`
+- Filename as an absolute-positioned overlay (`text-[11px] text-muted-foreground/70`)
+- `DialogTitle` with `sr-only` for accessibility (screen readers still announce the title)
+- No `DialogHeader`, no `border-b` dividers, no `m-2` inner margins
+- Full height: `h-[100dvh]` mobile, `sm:h-[90vh]` desktop
+- `sm:max-w-6xl` for the max-width constraint
+
+**Standard Portal-based fullscreen pattern** (used in terminal DetailPanel):
+
+```tsx
+{fullscreenViewer && createPortal(
+  <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex flex-col">
+    <div className="relative flex-1 min-h-0">
+      <div className="absolute top-3 left-4 z-10">
+        <span className="text-xs text-muted-foreground/70 font-medium">{title}</span>
+      </div>
+      <Button variant="ghost" size="sm"
+        className="absolute top-2 right-3 z-10 h-8 w-8 p-0 hover:bg-accent/50 text-muted-foreground"
+        onClick={() => setFullscreenViewer(null)}>
+        <X className="w-4 h-4" />
+      </Button>
+      <div className="h-full bg-background overflow-hidden">
+        <STEPViewer url={stepUrl} ... />
+      </div>
+    </div>
+  </div>,
+  document.body
+)}
+```
+
 ### Status Badges with Manufacturing Colors
 
 Use consistent color coding for manufacturing statuses.
