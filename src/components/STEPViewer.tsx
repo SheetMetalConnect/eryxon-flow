@@ -396,10 +396,10 @@ export function STEPViewer({
 
     const edgesGeometry = new THREE.EdgesGeometry(mesh.geometry, 30);
     const edgesMaterial = new THREE.LineBasicMaterial({
-      color: 0x1a1a1a,
+      color: 0x1a3a8a,
       linewidth: 2,
-      opacity: 0.9,
-      transparent: true,
+      opacity: 1.0,
+      transparent: false,
     });
     const edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
     edges.visible = edgesVisible;
