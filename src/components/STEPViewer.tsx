@@ -13,7 +13,9 @@ import {
   Hexagon,
   Ruler,
   Sparkles,
-  Crosshair
+  Crosshair,
+  Maximize,
+  Minimize,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
@@ -28,6 +30,7 @@ import type {
   MeshData,
 } from '@/hooks/useCADProcessing';
 import { decodeFloat32Array, decodeUint32Array } from '@/hooks/useCADProcessing';
+import { viewerColors } from '@/theme/theme';
 import { installBVH } from './viewer/measurements/setupBVH';
 import { useMeasurements } from './viewer/measurements/useMeasurements';
 import { MeasurementToolbar } from './viewer/measurements/MeasurementToolbar';
@@ -36,6 +39,69 @@ import type { ViewerRefs } from './viewer/measurements/types';
 
 // Install BVH acceleration for fast raycasting
 installBVH();
+
+// ── Two-level grid with edge fade (Onshape/Fusion 360 style) ──────────
+
+function createFadingGridMaterial(color: number, baseOpacity: number): THREE.ShaderMaterial {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uColor: { value: new THREE.Color(color) },
+      uOpacity: { value: baseOpacity },
+      uGridExtent: { value: 500 },
+    },
+    vertexShader: /* glsl */ `
+      varying vec3 vWorldPos;
+      void main() {
+        vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+        vWorldPos = worldPosition.xyz;
+        gl_Position = projectionMatrix * viewMatrix * worldPosition;
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uColor;
+      uniform float uOpacity;
+      uniform float uGridExtent;
+      varying vec3 vWorldPos;
+      void main() {
+        float dist = length(vWorldPos.xz);
+        float fadeStart = uGridExtent * 0.6;
+        float fadeEnd = uGridExtent;
+        float fade = 1.0 - smoothstep(fadeStart, fadeEnd, dist);
+        gl_FragColor = vec4(uColor, uOpacity * fade);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  });
+}
+
+function createTwoLevelGrid(size: number, majorDivisions: number): THREE.Group {
+  const group = new THREE.Group();
+  group.name = 'viewer_grid';
+
+  // Minor grid: 5x subdivisions
+  const minorDivisions = majorDivisions * 5;
+  const minorGrid = new THREE.GridHelper(size, minorDivisions);
+  minorGrid.material = createFadingGridMaterial(
+    viewerColors.gridMinor,
+    viewerColors.gridMinorOpacity
+  );
+  (minorGrid.material as THREE.ShaderMaterial).uniforms.uGridExtent.value = size / 2;
+  group.add(minorGrid);
+
+  // Major grid
+  const majorGrid = new THREE.GridHelper(size, majorDivisions);
+  majorGrid.material = createFadingGridMaterial(
+    viewerColors.gridMajor,
+    viewerColors.gridMajorOpacity
+  );
+  (majorGrid.material as THREE.ShaderMaterial).uniforms.uGridExtent.value = size / 2;
+  majorGrid.position.y = 0.01; // Slight offset to render on top of minor
+  group.add(majorGrid);
+
+  return group;
+}
 
 interface ModelDimensions {
   x: number;
@@ -87,6 +153,9 @@ export function STEPViewer({
   const [dimensions, setDimensions] = useState<ModelDimensions | null>(null);
 
   const [processingMode, setProcessingMode] = useState<'server' | 'browser' | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const fullscreenContainerRef = useRef<HTMLDivElement>(null);
 
   const [pmiFilter, setPmiFilter] = useState<'all' | 'dimensions' | 'tolerances' | 'datums' | 'surface' | 'welds' | 'notes' | 'graphical'>('all');
 
@@ -133,17 +202,15 @@ export function STEPViewer({
       geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
     }
 
-    const color = new THREE.Color(
-      meshData.color[0],
-      meshData.color[1],
-      meshData.color[2]
-    );
+    const color = meshData.color
+      ? new THREE.Color(meshData.color[0], meshData.color[1], meshData.color[2])
+      : new THREE.Color(viewerColors.modelDefault);
 
     const material = new THREE.MeshStandardMaterial({
       color,
       side: THREE.DoubleSide,
-      metalness: 0.3,
-      roughness: 0.6,
+      metalness: viewerColors.modelMetalness,
+      roughness: viewerColors.modelRoughness,
       flatShading: false,
     });
 
@@ -202,7 +269,7 @@ export function STEPViewer({
     const container = containerRef.current;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf5f5f5);
+    scene.background = new THREE.Color(viewerColors.sceneBackground);
     sceneRef.current = scene;
 
     const camera = new THREE.PerspectiveCamera(
@@ -237,11 +304,9 @@ export function STEPViewer({
     backLight.position.set(0, 5, -5);
     scene.add(backLight);
 
-    const grid = new THREE.GridHelper(1000, 50, 0x444444, 0x888888);
-    grid.material.transparent = true;
-    grid.material.opacity = 0.35;
-    scene.add(grid);
-    gridRef.current = grid;
+    const gridGroup = createTwoLevelGrid(1000, 50);
+    scene.add(gridGroup);
+    gridRef.current = gridGroup as unknown as THREE.GridHelper;
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -402,21 +467,22 @@ export function STEPViewer({
     );
     const divisions = Math.max(10, Math.min(100, Math.round(gridSize / 100)));
 
-    sceneRef.current.remove(gridRef.current);
-    gridRef.current.geometry.dispose();
-    if (Array.isArray(gridRef.current.material)) {
-      gridRef.current.material.forEach((m: THREE.Material) => m.dispose());
-    } else {
-      gridRef.current.material.dispose();
-    }
+    // Dispose old grid group
+    const oldGroup = gridRef.current as unknown as THREE.Group;
+    sceneRef.current.remove(oldGroup);
+    oldGroup.traverse((child) => {
+      if ((child as THREE.Mesh).geometry) (child as THREE.Mesh).geometry.dispose();
+      if ((child as THREE.Mesh).material) {
+        const mat = (child as THREE.Mesh).material;
+        if (Array.isArray(mat)) mat.forEach((m: THREE.Material) => m.dispose());
+        else (mat as THREE.Material).dispose();
+      }
+    });
 
-    const newGrid = new THREE.GridHelper(gridSize, divisions, 0x444444, 0x888888);
-    newGrid.material.transparent = true;
-    newGrid.material.opacity = 0.35;
-    newGrid.visible = gridVisible;
-
-    sceneRef.current.add(newGrid);
-    gridRef.current = newGrid;
+    const newGridGroup = createTwoLevelGrid(gridSize, divisions);
+    newGridGroup.visible = gridVisible;
+    sceneRef.current.add(newGridGroup);
+    gridRef.current = newGridGroup as unknown as THREE.GridHelper;
   }, [gridVisible]);
 
   useEffect(() => {
@@ -530,13 +596,13 @@ export function STEPViewer({
               meshData.color[1],
               meshData.color[2]
             )
-            : new THREE.Color(0x4a90e2);
+            : new THREE.Color(viewerColors.modelDefault);
 
           const material = new THREE.MeshStandardMaterial({
             color,
             side: THREE.DoubleSide,
-            metalness: 0.3,
-            roughness: 0.6,
+            metalness: viewerColors.modelMetalness,
+            roughness: viewerColors.modelRoughness,
             flatShading: false,
           });
 
@@ -666,6 +732,38 @@ export function STEPViewer({
     });
     setEdgesVisible(!edgesVisible);
   };
+
+  // ── Fullscreen toggle ──────────────────────────────────────────
+
+  const toggleFullscreen = useCallback(async () => {
+    const el = fullscreenContainerRef.current;
+    if (!el) return;
+
+    try {
+      if (!document.fullscreenElement) {
+        await el.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      logger.error('STEPViewer', 'Fullscreen toggle failed', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      const isFull = !!document.fullscreenElement;
+      setIsFullscreen(isFull);
+
+      // Trigger resize after transition so renderers pick up new dimensions
+      requestAnimationFrame(() => {
+        window.dispatchEvent(new Event('resize'));
+      });
+    };
+
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+  }, []);
 
 
   const createDimensionVisualization = useCallback(() => {
@@ -1497,7 +1595,13 @@ export function STEPViewer({
   );
 
   return (
-    <div className="flex flex-col h-full w-full bg-background">
+    <div
+      ref={fullscreenContainerRef}
+      className={cn(
+        "flex flex-col h-full w-full bg-background",
+        isFullscreen && "fixed inset-0 z-[9999]"
+      )}
+    >
       <div className="glass-card m-2 mb-0 rounded-lg overflow-hidden">
         <div className="flex items-center justify-between px-3 py-2 bg-muted/30">
           <div className="flex items-center gap-1">
@@ -1627,6 +1731,20 @@ export function STEPViewer({
           disabled={stepLoading || meshesRef.current.length === 0}
         />
           </div>
+
+          {/* Right side — fullscreen toggle */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleFullscreen}
+            className="h-7 w-7 p-0 ml-auto"
+            title={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen'}
+          >
+            {isFullscreen
+              ? <Minimize className="h-3.5 w-3.5" />
+              : <Maximize className="h-3.5 w-3.5" />
+            }
+          </Button>
         </div>
       </div>
 

@@ -29,6 +29,38 @@ export const brandColors = {
   },
 };
 
+/** 3D viewer / CAD color palette (Three.js hex values) */
+export const viewerColors = {
+  /** Neutral warm gray — matches Onshape/Fusion 360 defaults */
+  modelDefault: 0xB8B8B0,
+  modelMetalness: 0.2,
+  modelRoughness: 0.65,
+  sceneBackground: 0xf5f5f5,
+
+  /** Measurement accent & markers */
+  measurementAccent: 0xFF6B00,
+  measurementMarker: 0xFF6B00,
+  measurementMarkerSize: 1.5,
+  measurementLineWidth: 2,
+
+  /** Per-type line colors */
+  linePointToPoint: 0x4a9eff,
+  lineFaceDistance: 0x34a853,
+  lineFaceAngle: 0xfbbc05,
+  lineRadius: 0xe040fb,
+
+  /** Snap indicator colors */
+  snapVertex: 0xFF6B00,
+  snapEdge: 0x00bcd4,
+  snapFace: 0x4caf50,
+
+  /** Grid */
+  gridMajor: 0x666666,
+  gridMinor: 0xaaaaaa,
+  gridMajorOpacity: 0.45,
+  gridMinorOpacity: 0.2,
+};
+
 export const statusColors = {
   active: 'hsl(var(--status-active))',
   completed: 'hsl(var(--status-completed))',
