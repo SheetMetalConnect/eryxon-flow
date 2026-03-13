@@ -67,7 +67,7 @@ function formatTypeLabel(r: MeasurementResult): string {
 
 export function MeasurementPanel({ results, onDelete }: MeasurementPanelProps) {
   const { t } = useTranslation();
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
   const prevCountRef = useRef(results.length);
 
   // Auto-expand when a new measurement is added

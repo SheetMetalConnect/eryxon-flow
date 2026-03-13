@@ -32,7 +32,7 @@ export const brandColors = {
 /** 3D viewer / CAD color palette (Three.js hex values) */
 export const viewerColors = {
   /** Neutral warm gray — matches Onshape/Fusion 360 defaults */
-  modelDefault: 0xB8B8B0,
+  modelDefault: 0xD0D0C8,
   modelMetalness: 0.2,
   modelRoughness: 0.65,
   sceneBackground: 0xf5f5f5,
@@ -40,14 +40,16 @@ export const viewerColors = {
   /** Measurement accent & markers */
   measurementAccent: 0xFF6B00,
   measurementMarker: 0xFF6B00,
-  measurementMarkerSize: 1.5,
+  /** Marker size as fraction of model bounding-box diagonal (absolute fallback: 3) */
+  measurementMarkerScale: 0.008,
+  measurementMarkerMinSize: 3,
   measurementLineWidth: 2,
 
-  /** Per-type line colors */
-  linePointToPoint: 0x4a9eff,
-  lineFaceDistance: 0x34a853,
-  lineFaceAngle: 0xfbbc05,
-  lineRadius: 0xe040fb,
+  /** Per-type line colors — ALL high-contrast orange family for visibility */
+  linePointToPoint: 0xFF6B00,
+  lineFaceDistance: 0x00E676,
+  lineFaceAngle: 0xFFD600,
+  lineRadius: 0xFF40FF,
 
   /** Snap indicator colors */
   snapVertex: 0xFF6B00,
