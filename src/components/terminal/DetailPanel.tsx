@@ -431,40 +431,38 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
             />
 
             {fullscreenViewer && createPortal(
-                <div
-                    className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex flex-col"
-                    onClick={() => setFullscreenViewer(null)}
-                >
-                    <div
-                        className="relative flex-1 min-h-0"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="absolute top-3 left-4 z-10 flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground/70 font-medium">{job.jobCode}</span>
-                            <span className="text-[10px] text-muted-foreground/50">{fullscreenViewer === '3d' ? '3D' : 'PDF'}</span>
+                <div className="fixed inset-0 z-[100] bg-background flex flex-col">
+                    <div className="flex items-center h-10 px-4 border-b border-border/50 shrink-0 bg-muted/30">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                            {fullscreenViewer === '3d' ? (
+                                <Box className="w-3.5 h-3.5 text-primary shrink-0" />
+                            ) : (
+                                <FileText className="w-3.5 h-3.5 text-primary shrink-0" />
+                            )}
+                            <span className="text-xs font-medium text-muted-foreground truncate">{job.jobCode}</span>
                         </div>
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => setFullscreenViewer(null)}
-                            className="absolute top-2 right-3 z-10 h-8 w-8 p-0 hover:bg-accent/50 text-muted-foreground"
+                            className="h-7 w-7 p-0 shrink-0"
                         >
                             <X className="w-4 h-4" />
                         </Button>
-                        <div className="h-full bg-background overflow-hidden">
-                            {fullscreenViewer === '3d' && stepUrl && (
-                                <STEPViewer
-                                    url={stepUrl}
-                                    title={job.jobCode}
-                                    pmiData={pmiData}
-                                    serverGeometry={serverGeometry}
-                                    preferServerGeometry={true}
-                                />
-                            )}
-                            {fullscreenViewer === 'pdf' && pdfUrl && (
-                                <PDFViewer url={pdfUrl} title={job.jobCode} />
-                            )}
-                        </div>
+                    </div>
+                    <div className="flex-1 overflow-hidden min-h-0">
+                        {fullscreenViewer === '3d' && stepUrl && (
+                            <STEPViewer
+                                url={stepUrl}
+                                title={job.jobCode}
+                                pmiData={pmiData}
+                                serverGeometry={serverGeometry}
+                                preferServerGeometry={true}
+                            />
+                        )}
+                        {fullscreenViewer === 'pdf' && pdfUrl && (
+                            <PDFViewer url={pdfUrl} title={job.jobCode} />
+                        )}
                     </div>
                 </div>,
                 document.body

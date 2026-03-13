@@ -479,12 +479,11 @@ export default function Parts() {
       )}
 
       <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
-        <DialogContent className="w-full h-[100dvh] sm:h-[90vh] sm:max-w-6xl flex flex-col p-0 gap-0 border-0 bg-transparent shadow-2xl rounded-none sm:rounded-xl overflow-hidden inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
-          <div className="relative flex-1 min-h-0 bg-background sm:rounded-xl overflow-hidden">
-            <div className="absolute top-2 left-3 z-10 max-w-[60%]">
-              <span className="text-[11px] text-muted-foreground/70 font-medium truncate block">{currentFileTitle}</span>
-            </div>
-            <DialogTitle className="sr-only">{currentFileTitle}</DialogTitle>
+        <DialogContent className="sm:max-w-6xl w-full h-[100dvh] sm:h-[90vh] flex flex-col p-0 gap-0 overflow-hidden rounded-none sm:rounded-xl inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
+          <div className="flex items-center h-10 px-4 pr-12 border-b border-border/50 shrink-0 bg-muted/30">
+            <DialogTitle className="text-xs font-medium text-muted-foreground truncate">{currentFileTitle}</DialogTitle>
+          </div>
+          <div className="flex-1 overflow-hidden min-h-0">
             {currentFileType === "step" && currentFileUrl && (
               <STEPViewer url={currentFileUrl} />
             )}
