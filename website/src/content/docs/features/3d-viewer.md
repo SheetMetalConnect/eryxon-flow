@@ -278,9 +278,9 @@ import { STEPViewer } from '@/components/STEPViewer';
 - Signed URLs expire after 1 hour
 
 ### File Validation
-- Client-side: `.step`, `.stp`, `.stl`, `.3mf` extensions
-- Server-side: RLS policies enforce tenant access
-- MIME types: `model/step`, `model/stl`, `application/sla`, `application/octet-stream`, `model/3mf`
+- Client-side upload: `.step`, `.stp`, `.pdf` extensions (validated in `useFileUpload.ts` and `PartDetailModal.tsx`)
+- Server-side storage bucket: `model/step`, `model/stl`, `application/sla`, `application/octet-stream`, `model/3mf` MIME types (bucket allows more formats than the client currently uses, for forward compatibility)
+- RLS policies enforce tenant access
 
 ### Storage Policies
 All storage operations are protected by RLS policies that enforce tenant isolation.

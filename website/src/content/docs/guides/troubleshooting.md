@@ -123,8 +123,8 @@ This is usually a CSP (Content Security Policy) issue. Check your browser consol
 If you're behind a corporate firewall that blocks CDN access, the viewer will not work without network access to jsDelivr.
 
 ### 3D CAD viewer won't load
-- Verify file is `.step`, `.stp`, `.stl`, or `.3mf` format.
-- Storage limit is **100MB**, but browser parsing works best under **50MB**.
+- Verify file is `.step` or `.stp` format (the viewer only supports STEP files; PDF viewing is separate).
+- Storage limit is **100MB**, but browser STEP parsing works best under **50MB**.
 - Try re-exporting from CAD software.
 - Click **"Fit View"** if model is off-screen.
 
