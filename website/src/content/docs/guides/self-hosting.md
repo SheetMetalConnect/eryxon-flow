@@ -25,6 +25,10 @@ The fastest way to get production-ready deployment using our automated script.
 git clone https://github.com/SheetMetalConnect/eryxon-flow.git
 cd eryxon-flow
 
+# Create your .env file (the automated script requires it)
+cp .env.example .env
+# Edit .env and fill in your Supabase credentials (URL, anon key, project ID)
+
 # Set your database password
 export SUPABASE_DB_PASSWORD='your-database-password'
 
@@ -132,8 +136,11 @@ supabase functions deploy
 # Set required secrets
 supabase secrets set \
   SUPABASE_URL="https://yourproject.supabase.co" \
-  SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+  SUPABASE_SERVICE_ROLE_KEY="your-service-role-key" \
+  SELF_HOSTED_MODE="true"
 ```
+
+> `SELF_HOSTED_MODE` indicates deployment mode to the `plan-mode` edge function (used for UI messaging only). It does **not** disable plan limits. Unlimited operations are achieved by setting the tenant's `plan` field in the database to `enterprise` with `null` limit columns — the app treats `null` as unlimited. Valid plan values are: `free`, `pro`, `premium`, `enterprise`.
 
 ### 7. Configure signup notification webhook
 
@@ -197,21 +204,26 @@ docker run -d -p 80:80 --name eryxon-flow eryxon-flow
 
 ### Docker Compose (Recommended)
 
-Create `docker-compose.yml`:
+The repository ships with a ready-to-use `docker-compose.yml`. To use the pre-built image:
+
+```bash
+docker compose up -d
+```
+
+To build a custom image with your own Supabase credentials baked in, replace the `image` line in `docker-compose.yml` with a `build` block:
 
 ```yaml
-version: '3.8'
-
 services:
   eryxon-flow:
-    image: ghcr.io/sheetmetalconnect/eryxon-flow:latest
-    # Or use your custom build:
-    # build:
-    #   context: .
-    #   args:
-    #     VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
-    #     VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
-    #     VITE_SUPABASE_PROJECT_ID: ${VITE_SUPABASE_PROJECT_ID}
+    # Replace this:
+    #   image: ghcr.io/sheetmetalconnect/eryxon-flow:latest
+    # With this:
+    build:
+      context: .
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
+        VITE_SUPABASE_PROJECT_ID: ${VITE_SUPABASE_PROJECT_ID}
     container_name: eryxon-flow
     restart: unless-stopped
     ports:
@@ -223,18 +235,18 @@ services:
       retries: 3
 ```
 
-Start:
+Make sure the corresponding `VITE_SUPABASE_*` variables are set in your `.env` file (Docker Compose reads `.env` automatically).
+
+Then rebuild and start:
 ```bash
-docker compose up -d
+docker compose up -d --build
 ```
 
 ### Docker Compose with SSL (Production)
 
-Includes Caddy reverse proxy for automatic HTTPS:
+The repository includes `docker-compose.prod.yml` with Caddy reverse proxy for automatic HTTPS:
 
 ```yaml
-version: '3.8'
-
 services:
   app:
     image: ghcr.io/sheetmetalconnect/eryxon-flow:latest
@@ -242,6 +254,11 @@ services:
     restart: unless-stopped
     expose:
       - "80"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   caddy:
     image: caddy:alpine
@@ -262,7 +279,7 @@ volumes:
   caddy_config:
 ```
 
-Create `Caddyfile`:
+Edit the included `Caddyfile` — replace the domain with yours:
 
 ```caddyfile
 your-domain.com {
@@ -310,16 +327,19 @@ Best for edge deployment with global CDN.
 
 ## Optional Enhancements
 
-### Email Invitations (Resend)
+### Email Notifications (Resend)
 
-Enable automated email invitations:
+Enable automated email invitations and admin signup notifications:
 
 ```bash
 supabase secrets set \
   RESEND_API_KEY="re_your_api_key" \
   APP_URL="https://your-domain.com" \
-  EMAIL_FROM="Eryxon <noreply@your-domain.com>"
+  EMAIL_FROM="Eryxon <noreply@your-domain.com>" \
+  SIGNUP_NOTIFY_EMAIL="admin@your-domain.com"
 ```
+
+> `SIGNUP_NOTIFY_EMAIL` is the address that receives notifications when a new company signs up. Required for the `notify-new-signup` edge function to send emails.
 
 ### Cloudflare Turnstile (CAPTCHA)
 
@@ -343,16 +363,38 @@ supabase secrets set \
   UPSTASH_REDIS_REST_TOKEN="your-token"
 ```
 
-### CAD Processing Service
+### 3D STEP Viewer & CAD Processing
 
-For server-side CAD file processing (optional):
+The built-in 3D STEP viewer works **out of the box** using browser-based WASM parsing (`occt-import-js`). No server-side CAD service is required.
+
+**How it works:** STEP/STP files uploaded to the `parts-cad` storage bucket are parsed client-side using WebAssembly. The viewer supports orbit controls, exploded view, wireframe mode, and measurement tools (distance, angle, radius).
+
+**CSP requirements:** The STEP parser needs specific Content Security Policy directives. These are already configured in the shipped `index.html` and `vercel.json`, but if your reverse proxy (Nginx, Caddy, Cloudflare) **adds its own CSP headers**, make sure they include:
+
+```
+script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' https://cdn.jsdelivr.net;
+worker-src 'self' blob:;
+```
+
+| Directive | Reason |
+|-----------|--------|
+| `'unsafe-eval'` | Emscripten embind (occt-import-js) uses `new Function()` |
+| `'wasm-unsafe-eval'` | Explicit WASM compilation permission |
+| `https://cdn.jsdelivr.net` | CDN host for the `occt-import-js` library |
+| `worker-src blob:` | occt-import-js creates Web Workers from blob URLs |
+
+> **Note:** The default Nginx and Caddy configs shipped with this repo do **not** set CSP headers (they rely on the `<meta>` tag in `index.html`), so you only need to worry about this if you add custom CSP rules at the proxy level.
+
+**Optional: Server-side CAD processing**
+
+For server-side geometry extraction and PMI (Product Manufacturing Information) data, configure an external CAD service:
 
 ```bash
 VITE_CAD_SERVICE_URL="https://your-cad-service.example.com"
 VITE_CAD_SERVICE_API_KEY="your-api-key"
 ```
 
-If not configured, browser-based processing is used.
+If not configured, browser-based processing is used automatically. The viewer supports three backend modes: `custom` (Eryxon3D Docker), `byob` (Bring Your Own Backend), and `frontend` (browser-only, the default).
 
 ### MCP Server (Optional - Local Use Only)
 
@@ -433,52 +475,7 @@ docker compose up -d
 
 ---
 
-## ⚠️ Special Attention Points
-
-### Critical Configuration Items
-
-1. **Environment Variables**
-   - Always use `VITE_SUPABASE_PROJECT_ID` (not hardcoded)
-   - Template literals need **backticks** not quotes: `` `https://${var}` ``
-   - Validate all environment variables before using them
-
-2. **Database Migrations**
-   - Always run migrations in order
-   - The `20260127235000_enhance_batch_management.sql` migration adds:
-     - `blocked` status to batch_status enum
-     - `parent_batch_id` column for batch nesting
-     - `nesting_image_url` and `layout_image_url` columns
-   - Never skip migrations
-
-3. **Storage Buckets**
-   - Private buckets require **signed URLs** (not public URLs)
-   - We use `createSignedUrl()` with 1-year expiry for batch images
-   - Buckets needed: `parts-images`, `issues`, `parts-cad`, `batch-images`
-
-4. **Edge Functions**
-   - Must be redeployed after code changes
-   - Check logs if APIs return 502: `supabase functions logs`
-   - Verify secrets are set: `supabase secrets list`
-   - If experiencing 15s+ timeouts or cold start issues:
-     - Functions use consolidated handlers to avoid deep module resolution
-     - Import map (`import_map.json`) enables `@shared/*` path aliases
-     - Circular dependencies in `_shared/` folder can cause startup delays
-
-5. **SQL Syntax**
-   - ✅ Use `IF EXISTS ... THEN ... END IF` blocks
-   - ❌ Don't use `PERFORM ... WHERE EXISTS` (invalid syntax)
-
-6. **Authentication Trigger**
-   - The `on_auth_user_created` trigger must exist on `auth.users`
-   - Without it, new signups won't get profiles/tenants
-   - Migration `20260127232000_add_missing_auth_trigger.sql` ensures this
-
-2. **Admin signup notifications are duplicated or missing**
-   - Migration `20260202200000_fix_signup_notification_trigger.sql` removes the old duplicate-prone trigger path
-   - Confirm the `notify-new-signup` database webhook is configured in Supabase Dashboard
-   - Confirm `RESEND_API_KEY` and `SIGNUP_NOTIFY_EMAIL` are set for the edge function
-
-### Security Checklist
+## Security Checklist
 
 - [ ] `.env` file is in `.gitignore` (never commit)
 - [ ] Service role key is kept secret
@@ -487,78 +484,8 @@ docker compose up -d
 - [ ] Storage bucket policies restrict access properly
 - [ ] HTTPS is enabled in production (use Caddy or Cloudflare)
 
-### Performance Tips
-
-- Enable Redis caching for high-traffic deployments
-- Use Cloudflare Pages for global edge distribution
-- Configure proper database indexes (included in migrations)
-- Monitor Edge Function execution times in Supabase dashboard
-
 ---
 
-## Common Issues
+## Troubleshooting
 
-### Template Literal Errors
-
-If URLs aren't interpolating correctly, you're using single quotes instead of backticks:
-
-```javascript
-// Wrong
-const url = 'https://${projectId}.supabase.co';
-
-// Correct
-const url = `https://${projectId}.supabase.co`;
-```
-
-### Storage 403 Forbidden Errors
-
-Private buckets require signed URLs, not public URLs. Use `createSignedUrl()` with appropriate expiry.
-
-### New Users Can't Log In
-
-The `on_auth_user_created` trigger must exist on `auth.users`. Without it, new signups won't get profiles/tenants. Migration `20260127232000_add_missing_auth_trigger.sql` ensures this.
-
-Release `0.3.3` expects the signup notification path to be configured as a **Database Webhook**, not a hardcoded SQL URL. That keeps hosted and self-hosted deployments aligned.
-
-### Edge Functions Return 502
-
-Import map might not be deployed. Redeploy all functions:
-
-```bash
-supabase functions deploy
-```
-
-### Migrations Fail with "Type Already Exists"
-
-Database has partial state from previous attempts. For fresh setups only (DESTRUCTIVE):
-
-```sql
-DROP SCHEMA IF EXISTS public CASCADE;
-CREATE SCHEMA public;
-GRANT USAGE ON SCHEMA public TO postgres, anon, authenticated, service_role;
-GRANT ALL ON SCHEMA public TO postgres;
-GRANT ALL ON SCHEMA public TO service_role;
-```
-
-Then re-run: `supabase db push`
-
-### Verify Edge Functions Work
-
-Test the health endpoint:
-
-```bash
-curl https://yourproject.supabase.co/functions/v1/api-jobs \
-  -H "Authorization: Bearer YOUR_ANON_KEY"
-```
-
-Should return JSON (not 404/502).
-
-### Cron Jobs Not Running
-
-Verify `pg_cron` extension is enabled:
-
-```sql
-SELECT * FROM pg_extension WHERE extname = 'pg_cron';
-```
-
-If empty, run `seed.sql` to schedule jobs.
+For deployment-specific issues (migrations, edge functions, storage, STEP viewer CSP), see the [Troubleshooting Guide](/guides/troubleshooting/).

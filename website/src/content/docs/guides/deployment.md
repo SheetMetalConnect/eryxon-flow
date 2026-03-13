@@ -45,7 +45,7 @@ supabase db push
 supabase db execute < supabase/seed.sql
 ```
 
-This creates storage buckets (`parts-images`, `issues`, `parts-cad`) and schedules cron jobs.
+This creates storage buckets (`parts-images`, `issues`, `parts-cad`, `batch-images`) and schedules cron jobs.
 
 ### Deploy Edge Functions
 ```bash
@@ -87,6 +87,7 @@ npm run dev
 docker build \
   --build-arg VITE_SUPABASE_URL=<url> \
   --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=<key> \
+  --build-arg VITE_SUPABASE_PROJECT_ID=<project-id> \
   -t eryxon-flow .
 
 docker run -p 80:80 eryxon-flow
