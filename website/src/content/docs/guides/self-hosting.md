@@ -140,7 +140,7 @@ supabase secrets set \
   SELF_HOSTED_MODE="true"
 ```
 
-> `SELF_HOSTED_MODE` indicates deployment mode to the `plan-mode` edge function (used for UI messaging only). It does **not** disable plan limits. Unlimited operations are achieved by setting the tenant's `plan` field in the database (e.g. `enterprise` or `self_hosted`) with `null` limit columns — the app treats `null` as unlimited.
+> `SELF_HOSTED_MODE` indicates deployment mode to the `plan-mode` edge function (used for UI messaging only). It does **not** disable plan limits. Unlimited operations are achieved by setting the tenant's `plan` field in the database to `enterprise` with `null` limit columns — the app treats `null` as unlimited. Valid plan values are: `free`, `pro`, `premium`, `enterprise`.
 
 ### 7. Configure signup notification webhook
 

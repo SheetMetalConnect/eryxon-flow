@@ -20,7 +20,7 @@ description: "Common issues and solutions for Eryxon Flow."
 
 ### 4. Can't create new job (Admin)
 - Check **My Plan** page. You might have hit the Hosted Alpha Trial limits.
-- **Fix**: Delete old jobs or switch to Self-Hosted (Unlimited).
+- **Fix**: Delete old jobs, or switch to a self-hosted deployment and set the tenant's `plan` to `enterprise` with `null` limit columns in the database (see [Self-Hosting Guide](/guides/self-hosting/) for details on plan configuration).
 
 ### 5. "Data export taking too long"
 - Large datasets take 30-60s. **Do not close the tab.**
@@ -89,14 +89,16 @@ Then re-run: `supabase db push`
 
 ### Verify Edge Functions Work
 
-Test the health endpoint:
+Smoke-test function reachability with the `plan-mode` endpoint (no API key required):
 
 ```bash
-curl https://yourproject.supabase.co/functions/v1/api-jobs \
+curl https://yourproject.supabase.co/functions/v1/plan-mode \
   -H "Authorization: Bearer YOUR_ANON_KEY"
 ```
 
-Should return JSON (not 404/502).
+A successful response returns a JSON payload with `selfHosted`, `trialDays`, and `pricingStatus` fields. If you get 404 or 502, the functions are not deployed correctly — redeploy with `supabase functions deploy`.
+
+> **Note:** The `api-*` endpoints (e.g. `api-jobs`) require an Eryxon API key (`ery_live_*` / `ery_test_*`), not the Supabase anon key. Use `plan-mode` for reachability checks.
 
 ### Cron Jobs Not Running
 
