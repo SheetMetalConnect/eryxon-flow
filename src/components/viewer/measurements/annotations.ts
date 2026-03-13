@@ -32,12 +32,24 @@ export function createMeasurementAnnotation(
 
 // ── Point-to-Point ───────────────────────────────────────────────
 
+function computeMarkerSize(points: THREE.Vector3[]): number {
+  if (points.length < 2) return viewerColors.measurementMarkerMinSize;
+  let maxDist = 0;
+  for (let i = 0; i < points.length; i++) {
+    for (let j = i + 1; j < points.length; j++) {
+      maxDist = Math.max(maxDist, points[i].distanceTo(points[j]));
+    }
+  }
+  return Math.max(viewerColors.measurementMarkerMinSize, maxDist * viewerColors.measurementMarkerScale);
+}
+
 function addPointToPointAnnotation(
   group: THREE.Group,
   result: { pointA: THREE.Vector3; pointB: THREE.Vector3; distance: number; id: string },
   onDelete: (id: string) => void
 ) {
-  const markerGeo = new THREE.SphereGeometry(viewerColors.measurementMarkerSize, 16, 16);
+  const markerRadius = computeMarkerSize([result.pointA, result.pointB]);
+  const markerGeo = new THREE.SphereGeometry(markerRadius, 16, 16);
   const markerMat = new THREE.MeshBasicMaterial({
     color: viewerColors.measurementMarker,
     depthTest: false,
@@ -112,8 +124,9 @@ function addFaceDistanceAnnotation(
   line.renderOrder = 997;
   group.add(line);
 
-  group.add(createArrowhead(faceA.centroid, faceB.centroid, viewerColors.lineFaceDistance));
-  group.add(createArrowhead(faceB.centroid, faceA.centroid, viewerColors.lineFaceDistance));
+  const dimScale = faceA.centroid.distanceTo(faceB.centroid);
+  group.add(createArrowhead(faceA.centroid, faceB.centroid, viewerColors.lineFaceDistance, dimScale));
+  group.add(createArrowhead(faceB.centroid, faceA.centroid, viewerColors.lineFaceDistance, dimScale));
 
   const midpoint = new THREE.Vector3()
     .addVectors(faceA.centroid, faceB.centroid)
@@ -221,7 +234,8 @@ function addRadiusAnnotation(
   },
   onDelete: (id: string) => void
 ) {
-  const markerGeo = new THREE.SphereGeometry(viewerColors.measurementMarkerSize, 16, 16);
+  const markerRadius = Math.max(viewerColors.measurementMarkerMinSize, result.radius * 0.02);
+  const markerGeo = new THREE.SphereGeometry(markerRadius, 16, 16);
   const markerMat = new THREE.MeshBasicMaterial({
     color: viewerColors.lineRadius,
     depthTest: false,
@@ -294,11 +308,14 @@ function createMeasurementLabel(
 function createArrowhead(
   from: THREE.Vector3,
   to: THREE.Vector3,
-  color: number
+  color: number,
+  dimScale?: number
 ): THREE.Mesh {
   const direction = new THREE.Vector3().subVectors(to, from).normalize();
-  const length = 2.5;
-  const coneGeo = new THREE.ConeGeometry(0.8, length, 8);
+  const dist = dimScale ?? from.distanceTo(to);
+  const length = Math.max(1, dist * 0.04);
+  const radius = length * 0.3;
+  const coneGeo = new THREE.ConeGeometry(radius, length, 8);
   const coneMat = new THREE.MeshBasicMaterial({ color, depthTest: false });
   const cone = new THREE.Mesh(coneGeo, coneMat);
   cone.position.copy(to);

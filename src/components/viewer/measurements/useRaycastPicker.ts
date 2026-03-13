@@ -29,9 +29,14 @@ export function useRaycastPicker({
   const pointerDownRef = useRef<{ x: number; y: number; time: number } | null>(null);
   const snapIndicatorRef = useRef<THREE.Mesh | null>(null);
 
-  const createSnapIndicator = useCallback((scene: THREE.Scene) => {
+  const createSnapIndicator = useCallback((scene: THREE.Scene, meshes: THREE.Mesh[]) => {
     if (snapIndicatorRef.current) return;
-    const geo = new THREE.SphereGeometry(viewerColors.measurementMarkerSize, 16, 16);
+    // Compute snap indicator size from model bounding box
+    const box = new THREE.Box3();
+    for (const m of meshes) box.expandByObject(m);
+    const diag = box.getSize(new THREE.Vector3()).length();
+    const radius = Math.max(viewerColors.measurementMarkerMinSize, diag * viewerColors.measurementMarkerScale);
+    const geo = new THREE.SphereGeometry(radius, 16, 16);
     const mat = new THREE.MeshBasicMaterial({
       color: viewerColors.snapVertex,
       depthTest: false,
@@ -120,7 +125,7 @@ export function useRaycastPicker({
     if (!active || !viewerRefs) return;
     const { container, scene } = viewerRefs;
 
-    createSnapIndicator(scene);
+    createSnapIndicator(scene, viewerRefs.meshes);
 
     const onPointerMove = (e: PointerEvent) => {
       const snap = castRay(e.clientX, e.clientY);

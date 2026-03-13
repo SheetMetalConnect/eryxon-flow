@@ -396,9 +396,9 @@ export function STEPViewer({
 
     const edgesGeometry = new THREE.EdgesGeometry(mesh.geometry, 30);
     const edgesMaterial = new THREE.LineBasicMaterial({
-      color: 0x000000,
+      color: 0x333333,
       linewidth: 1,
-      opacity: 0.8,
+      opacity: 0.6,
       transparent: true,
     });
     const edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
@@ -780,6 +780,9 @@ export function STEPViewer({
             child.material.dispose();
           }
         }
+        if (child instanceof CSS2DObject) {
+          child.element.remove();
+        }
       });
     }
 
@@ -791,34 +794,45 @@ export function STEPViewer({
     const min = box.min;
     const max = box.max;
 
-    const offset = Math.max(dimensions.x, dimensions.y, dimensions.z) * 0.15;
+    const maxDim = Math.max(dimensions.x, dimensions.y, dimensions.z);
+    const offset = maxDim * 0.12;
 
     const colors = {
-      x: 0x4a9eff, // Blue - X axis
-      y: 0x34a853, // Green - Y axis
-      z: 0xfbbc05, // Yellow - Z axis
+      x: 0xEF4444, // Red - X axis
+      y: 0x22C55E, // Green - Y axis
+      z: 0x3B82F6, // Blue - Z axis
+    };
+
+    const colorLabels = {
+      x: '#EF4444',
+      y: '#22C55E',
+      z: '#3B82F6',
     };
 
     const createDimensionLine = (
       start: THREE.Vector3,
       end: THREE.Vector3,
       color: number,
-      label: string
+      colorLabel: string,
+      label: string,
+      axisName: string
     ) => {
       const lineGroup = new THREE.Group();
 
       const lineMaterial = new THREE.LineBasicMaterial({
         color,
-        linewidth: 2,
+        linewidth: 1,
         transparent: true,
-        opacity: 0.9,
+        opacity: 0.8,
+        depthTest: false,
       });
 
+      // Main dimension line
       const lineGeometry = new THREE.BufferGeometry().setFromPoints([start, end]);
       const line = new THREE.Line(lineGeometry, lineMaterial);
+      line.renderOrder = 990;
       lineGroup.add(line);
 
-      const capLength = offset * 0.3;
       const direction = new THREE.Vector3().subVectors(end, start).normalize();
       const perpendicular = new THREE.Vector3();
 
@@ -828,92 +842,111 @@ export function STEPViewer({
         perpendicular.crossVectors(direction, new THREE.Vector3(1, 0, 0)).normalize();
       }
 
-      const startCap1 = start.clone().add(perpendicular.clone().multiplyScalar(capLength / 2));
-      const startCap2 = start.clone().sub(perpendicular.clone().multiplyScalar(capLength / 2));
-      const startCapGeometry = new THREE.BufferGeometry().setFromPoints([startCap1, startCap2]);
-      const startCap = new THREE.Line(startCapGeometry, lineMaterial);
-      lineGroup.add(startCap);
+      // Small end caps (ticks)
+      const capLength = maxDim * 0.015;
+      for (const pt of [start, end]) {
+        const cap1 = pt.clone().add(perpendicular.clone().multiplyScalar(capLength));
+        const cap2 = pt.clone().sub(perpendicular.clone().multiplyScalar(capLength));
+        const capGeo = new THREE.BufferGeometry().setFromPoints([cap1, cap2]);
+        const cap = new THREE.Line(capGeo, lineMaterial);
+        cap.renderOrder = 990;
+        lineGroup.add(cap);
+      }
 
-      const endCap1 = end.clone().add(perpendicular.clone().multiplyScalar(capLength / 2));
-      const endCap2 = end.clone().sub(perpendicular.clone().multiplyScalar(capLength / 2));
-      const endCapGeometry = new THREE.BufferGeometry().setFromPoints([endCap1, endCap2]);
-      const endCap = new THREE.Line(endCapGeometry, lineMaterial);
-      lineGroup.add(endCap);
+      // Small filled arrowheads (CAD-style)
+      const arrowLen = maxDim * 0.02;
+      const arrowHalfW = maxDim * 0.005;
 
-      const arrowLength = offset * 0.2;
-      const arrowWidth = offset * 0.08;
+      for (const [origin, dir] of [[start, direction], [end, direction.clone().negate()]] as const) {
+        const tip = origin;
+        const back = origin.clone().add((dir as THREE.Vector3).clone().multiplyScalar(arrowLen));
+        const positions = new Float32Array([
+          tip.x, tip.y, tip.z,
+          back.x + perpendicular.x * arrowHalfW, back.y + perpendicular.y * arrowHalfW, back.z + perpendicular.z * arrowHalfW,
+          back.x - perpendicular.x * arrowHalfW, back.y - perpendicular.y * arrowHalfW, back.z - perpendicular.z * arrowHalfW,
+        ]);
+        const arrowGeo = new THREE.BufferGeometry();
+        arrowGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const arrowMat = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, depthTest: false, transparent: true, opacity: 0.8 });
+        const arrowMesh = new THREE.Mesh(arrowGeo, arrowMat);
+        arrowMesh.renderOrder = 991;
+        lineGroup.add(arrowMesh);
+      }
 
-      const arrowStartDir = direction.clone().negate();
-      const arrow1 = start.clone().add(direction.clone().multiplyScalar(arrowLength));
-      const arrowGeom1 = new THREE.BufferGeometry().setFromPoints([
-        start,
-        arrow1.clone().add(perpendicular.clone().multiplyScalar(arrowWidth)),
-        arrow1.clone().sub(perpendicular.clone().multiplyScalar(arrowWidth)),
-        start,
-      ]);
-      const arrowMesh1 = new THREE.Line(arrowGeom1, lineMaterial);
-      lineGroup.add(arrowMesh1);
-
-      const arrow2 = end.clone().sub(direction.clone().multiplyScalar(arrowLength));
-      const arrowGeom2 = new THREE.BufferGeometry().setFromPoints([
-        end,
-        arrow2.clone().add(perpendicular.clone().multiplyScalar(arrowWidth)),
-        arrow2.clone().sub(perpendicular.clone().multiplyScalar(arrowWidth)),
-        end,
-      ]);
-      const arrowMesh2 = new THREE.Line(arrowGeom2, lineMaterial);
-      lineGroup.add(arrowMesh2);
+      // CSS2D label at midpoint
+      const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+      const labelDiv = document.createElement('div');
+      labelDiv.style.cssText = [
+        `background: rgba(0, 0, 0, 0.75)`,
+        `color: ${colorLabel}`,
+        'padding: 2px 6px',
+        'border-radius: 3px',
+        'font-size: 11px',
+        'font-weight: 600',
+        "font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace",
+        'white-space: nowrap',
+        'pointer-events: none',
+        'user-select: none',
+        `border: 1px solid ${colorLabel}40`,
+        'backdrop-filter: blur(4px)',
+        'z-index: 5',
+      ].join(';');
+      labelDiv.textContent = `${axisName} ${label}`;
+      const css2dLabel = new CSS2DObject(labelDiv);
+      css2dLabel.position.copy(midpoint);
+      lineGroup.add(css2dLabel);
 
       return lineGroup;
     };
 
+    // X dimension (along bottom-front edge)
     const xStart = new THREE.Vector3(min.x, min.y, min.z - offset);
     const xEnd = new THREE.Vector3(max.x, min.y, min.z - offset);
-    group.add(createDimensionLine(xStart, xEnd, colors.x, `${dimensions.x} mm`));
+    group.add(createDimensionLine(xStart, xEnd, colors.x, colorLabels.x, `${dimensions.x.toFixed(2)} mm`, 'X'));
 
-    const xExtMaterial = new THREE.LineBasicMaterial({ color: colors.x, transparent: true, opacity: 0.4 });
-    const xExt1Geom = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(min.x, min.y, min.z),
-      new THREE.Vector3(min.x, min.y, min.z - offset * 1.2),
-    ]);
-    group.add(new THREE.Line(xExt1Geom, xExtMaterial));
-    const xExt2Geom = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(max.x, min.y, min.z),
-      new THREE.Vector3(max.x, min.y, min.z - offset * 1.2),
-    ]);
-    group.add(new THREE.Line(xExt2Geom, xExtMaterial));
+    // Extension lines for X
+    const xExtMat = new THREE.LineBasicMaterial({ color: colors.x, transparent: true, opacity: 0.3, depthTest: false });
+    for (const xVal of [min.x, max.x]) {
+      const extGeo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(xVal, min.y, min.z),
+        new THREE.Vector3(xVal, min.y, min.z - offset * 1.15),
+      ]);
+      const ext = new THREE.Line(extGeo, xExtMat);
+      ext.renderOrder = 989;
+      group.add(ext);
+    }
 
+    // Y dimension (along left edge)
     const yStart = new THREE.Vector3(min.x - offset, min.y, min.z);
     const yEnd = new THREE.Vector3(min.x - offset, max.y, min.z);
-    group.add(createDimensionLine(yStart, yEnd, colors.y, `${dimensions.y} mm`));
+    group.add(createDimensionLine(yStart, yEnd, colors.y, colorLabels.y, `${dimensions.y.toFixed(2)} mm`, 'Y'));
 
-    const yExtMaterial = new THREE.LineBasicMaterial({ color: colors.y, transparent: true, opacity: 0.4 });
-    const yExt1Geom = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(min.x, min.y, min.z),
-      new THREE.Vector3(min.x - offset * 1.2, min.y, min.z),
-    ]);
-    group.add(new THREE.Line(yExt1Geom, yExtMaterial));
-    const yExt2Geom = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(min.x, max.y, min.z),
-      new THREE.Vector3(min.x - offset * 1.2, max.y, min.z),
-    ]);
-    group.add(new THREE.Line(yExt2Geom, yExtMaterial));
+    const yExtMat = new THREE.LineBasicMaterial({ color: colors.y, transparent: true, opacity: 0.3, depthTest: false });
+    for (const yVal of [min.y, max.y]) {
+      const extGeo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(min.x, yVal, min.z),
+        new THREE.Vector3(min.x - offset * 1.15, yVal, min.z),
+      ]);
+      const ext = new THREE.Line(extGeo, yExtMat);
+      ext.renderOrder = 989;
+      group.add(ext);
+    }
 
-    const zStart = new THREE.Vector3(min.x - offset, min.y, min.z);
-    const zEnd = new THREE.Vector3(min.x - offset, min.y, max.z);
-    group.add(createDimensionLine(zStart, zEnd, colors.z, `${dimensions.z} mm`));
+    // Z dimension (along bottom-left edge)
+    const zStart = new THREE.Vector3(min.x, min.y, min.z - offset);
+    const zEnd = new THREE.Vector3(min.x, min.y, max.z - offset);
+    group.add(createDimensionLine(zStart, zEnd, colors.z, colorLabels.z, `${dimensions.z.toFixed(2)} mm`, 'Z'));
 
-    const zExtMaterial = new THREE.LineBasicMaterial({ color: colors.z, transparent: true, opacity: 0.4 });
-    const zExt1Geom = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(min.x, min.y, min.z),
-      new THREE.Vector3(min.x - offset * 1.2, min.y, min.z),
-    ]);
-    group.add(new THREE.Line(zExt1Geom, zExtMaterial));
-    const zExt2Geom = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(min.x, min.y, max.z),
-      new THREE.Vector3(min.x - offset * 1.2, min.y, max.z),
-    ]);
-    group.add(new THREE.Line(zExt2Geom, zExtMaterial));
+    const zExtMat = new THREE.LineBasicMaterial({ color: colors.z, transparent: true, opacity: 0.3, depthTest: false });
+    for (const zVal of [min.z, max.z]) {
+      const extGeo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(min.x, min.y, zVal),
+        new THREE.Vector3(min.x, min.y, zVal - offset * 0.15),
+      ]);
+      const ext = new THREE.Line(extGeo, zExtMat);
+      ext.renderOrder = 989;
+      group.add(ext);
+    }
 
     sceneRef.current.add(group);
     dimensionLinesRef.current = group;
@@ -1751,74 +1784,6 @@ export function STEPViewer({
       <div className="flex-1 relative bg-surface">
         <div ref={containerRef} className="absolute inset-0" />
 
-        {showDimensions && dimensions && (
-          <div className="absolute top-3 right-3 z-10">
-            <div className="glass-card p-3 min-w-[180px]">
-              <div className="flex items-center gap-2 mb-2.5">
-                <Ruler className="h-4 w-4 text-primary" />
-                <span className="text-xs font-semibold text-foreground">
-                  {t('parts.cadViewer.boundingBox')}
-                </span>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between gap-3 group">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm flex items-center justify-center text-[8px] font-bold text-white bg-[hsl(var(--brand-primary-light))]">
-                      X
-                    </div>
-                    <span className="text-[11px] text-muted-foreground">
-                      {t('parts.cadViewer.length')}
-                    </span>
-                  </div>
-                  <span className="text-xs font-mono font-semibold text-foreground tabular-nums">
-                    {dimensions.x.toFixed(2)}
-                    <span className="text-muted-foreground ml-0.5">mm</span>
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between gap-3 group">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm flex items-center justify-center text-[8px] font-bold text-white bg-[hsl(var(--color-success))]">
-                      Y
-                    </div>
-                    <span className="text-[11px] text-muted-foreground">
-                      {t('parts.cadViewer.height')}
-                    </span>
-                  </div>
-                  <span className="text-xs font-mono font-semibold text-foreground tabular-nums">
-                    {dimensions.y.toFixed(2)}
-                    <span className="text-muted-foreground ml-0.5">mm</span>
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between gap-3 group">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm flex items-center justify-center text-[8px] font-bold text-black bg-[hsl(var(--color-warning))]">
-                      Z
-                    </div>
-                    <span className="text-[11px] text-muted-foreground">
-                      {t('parts.cadViewer.width')}
-                    </span>
-                  </div>
-                  <span className="text-xs font-mono font-semibold text-foreground tabular-nums">
-                    {dimensions.z.toFixed(2)}
-                    <span className="text-muted-foreground ml-0.5">mm</span>
-                  </span>
-                </div>
-              </div>
-
-              <div className="border-t border-border/50 my-2.5" />
-
-              <div className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                <span className="text-[10px] text-muted-foreground">
-                  {t('parts.cadViewer.measuredFromCad')}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
         {showFeatures && (
           <div className="absolute bottom-3 right-3 z-10">
             <div className="glass-card p-2.5 min-w-[160px]">
@@ -1847,7 +1812,7 @@ export function STEPViewer({
         )}
 
         {/* Measurement Panel */}
-        {measurements.length > 0 && !showDimensions && (
+        {measurements.length > 0 && (
           <MeasurementPanel
             results={measurements}
             onDelete={deleteMeasurement}
