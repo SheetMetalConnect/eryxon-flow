@@ -227,6 +227,29 @@
     --operator-gradient: linear-gradient(135deg, hsl(var(--neutral-700)) 0%, hsl(var(--brand-primary)) 100%);
 
     /* ========================================================================
+       3D VIEWER / CAD
+       ======================================================================== */
+    --viewer-scene-bg: #f5f5f5;
+    --viewer-model-color: #B8B8B0;              /* Neutral warm gray — CAD-standard */
+    --viewer-model-metalness: 0.2;
+    --viewer-model-roughness: 0.65;
+    --viewer-grid-major: #666666;
+    --viewer-grid-minor: #aaaaaa;
+    --viewer-grid-major-opacity: 0.45;
+    --viewer-grid-minor-opacity: 0.2;
+    --viewer-measurement-accent: #FF6B00;       /* High-contrast orange */
+    --viewer-measurement-line-pt: #4a9eff;      /* Blue — point-to-point */
+    --viewer-measurement-line-face: #34a853;    /* Green — face distance */
+    --viewer-measurement-line-angle: #fbbc05;   /* Yellow — angle */
+    --viewer-measurement-line-radius: #e040fb;  /* Purple — radius */
+    --viewer-measurement-marker: #FF6B00;       /* Orange markers */
+    --viewer-measurement-label-bg: rgba(0, 0, 0, 0.88);
+    --viewer-measurement-label-border: rgba(255, 107, 0, 0.4);
+    --viewer-snap-vertex: #FF6B00;
+    --viewer-snap-edge: #00bcd4;
+    --viewer-snap-face: #4caf50;
+
+    /* ========================================================================
        SIDEBAR
        ======================================================================== */
     --sidebar-background: 0 0% 8% / 0.7;            /* Semi-transparent for glass effect */
@@ -455,6 +478,16 @@
     /* Code Block Colors - Light mode */
     --code-background: 220 30% 96%;        /* Very light blue-gray */
     --code-foreground: 140 60% 35%;        /* Dark green text */
+
+    /* 3D Viewer / CAD - Light mode */
+    --viewer-scene-bg: #f0f0ee;
+    --viewer-model-color: #B8B8B0;
+    --viewer-grid-major: #999999;
+    --viewer-grid-minor: #cccccc;
+    --viewer-grid-major-opacity: 0.5;
+    --viewer-grid-minor-opacity: 0.25;
+    --viewer-measurement-label-bg: rgba(0, 0, 0, 0.85);
+    --viewer-measurement-label-border: rgba(255, 107, 0, 0.5);
 
     /* Sidebar - Light mode */
     --sidebar-background: 0 0% 100% / 0.85;

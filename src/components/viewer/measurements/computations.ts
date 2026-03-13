@@ -58,10 +58,23 @@ export function fitCircleToPoints(
 } | null {
   if (points3D.length < 6) return null;
 
+  // Check that normals actually vary (curved surface, not flat)
+  // If all normals point in the same direction, this is a flat surface — no radius
+  const avgNormal = new THREE.Vector3();
+  for (const n of normals3D) avgNormal.add(n);
+  avgNormal.normalize();
+
+  let normalVariance = 0;
+  for (const n of normals3D) {
+    normalVariance += 1 - Math.abs(n.dot(avgNormal));
+  }
+  normalVariance /= normals3D.length;
+
+  // If normals barely vary (< ~3° average deviation), this is a flat surface
+  if (normalVariance < 0.002) return null;
+
   // Estimate cylinder axis as average normal direction
-  const axis = new THREE.Vector3();
-  for (const n of normals3D) axis.add(n);
-  axis.normalize();
+  const axis = avgNormal.clone();
 
   // Build local 2D coordinate system perpendicular to axis
   const ref = Math.abs(axis.y) < 0.9
@@ -116,6 +129,18 @@ export function fitCircleToPoints(
     sumR += Math.sqrt(dx * dx + dy * dy);
   }
   const radius = sumR / n;
+
+  // Sanity check: radius should not be absurdly large relative to the point cloud extent
+  const bbox2D = { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity };
+  for (const p of points2D) {
+    bbox2D.minX = Math.min(bbox2D.minX, p.x);
+    bbox2D.maxX = Math.max(bbox2D.maxX, p.x);
+    bbox2D.minY = Math.min(bbox2D.minY, p.y);
+    bbox2D.maxY = Math.max(bbox2D.maxY, p.y);
+  }
+  const extent = Math.max(bbox2D.maxX - bbox2D.minX, bbox2D.maxY - bbox2D.minY);
+  // If radius > 10x the point cloud extent, this is likely a nearly-flat surface
+  if (radius > extent * 10) return null;
 
   // Confidence (average residual relative to radius)
   let sumResidual = 0;

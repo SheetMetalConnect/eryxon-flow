@@ -13,7 +13,9 @@ import {
   Hexagon,
   Ruler,
   Sparkles,
-  Crosshair
+  Crosshair,
+  Maximize,
+  Minimize,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
@@ -28,6 +30,7 @@ import type {
   MeshData,
 } from '@/hooks/useCADProcessing';
 import { decodeFloat32Array, decodeUint32Array } from '@/hooks/useCADProcessing';
+import { viewerColors } from '@/theme/theme';
 import { installBVH } from './viewer/measurements/setupBVH';
 import { useMeasurements } from './viewer/measurements/useMeasurements';
 import { MeasurementToolbar } from './viewer/measurements/MeasurementToolbar';
@@ -36,6 +39,69 @@ import type { ViewerRefs } from './viewer/measurements/types';
 
 // Install BVH acceleration for fast raycasting
 installBVH();
+
+// ── Two-level grid with edge fade (Onshape/Fusion 360 style) ──────────
+
+function createFadingGridMaterial(color: number, baseOpacity: number): THREE.ShaderMaterial {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uColor: { value: new THREE.Color(color) },
+      uOpacity: { value: baseOpacity },
+      uGridExtent: { value: 500 },
+    },
+    vertexShader: /* glsl */ `
+      varying vec3 vWorldPos;
+      void main() {
+        vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+        vWorldPos = worldPosition.xyz;
+        gl_Position = projectionMatrix * viewMatrix * worldPosition;
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uColor;
+      uniform float uOpacity;
+      uniform float uGridExtent;
+      varying vec3 vWorldPos;
+      void main() {
+        float dist = length(vWorldPos.xz);
+        float fadeStart = uGridExtent * 0.6;
+        float fadeEnd = uGridExtent;
+        float fade = 1.0 - smoothstep(fadeStart, fadeEnd, dist);
+        gl_FragColor = vec4(uColor, uOpacity * fade);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  });
+}
+
+function createTwoLevelGrid(size: number, majorDivisions: number): THREE.Group {
+  const group = new THREE.Group();
+  group.name = 'viewer_grid';
+
+  // Minor grid: 5x subdivisions
+  const minorDivisions = majorDivisions * 5;
+  const minorGrid = new THREE.GridHelper(size, minorDivisions);
+  minorGrid.material = createFadingGridMaterial(
+    viewerColors.gridMinor,
+    viewerColors.gridMinorOpacity
+  );
+  (minorGrid.material as THREE.ShaderMaterial).uniforms.uGridExtent.value = size / 2;
+  group.add(minorGrid);
+
+  // Major grid
+  const majorGrid = new THREE.GridHelper(size, majorDivisions);
+  majorGrid.material = createFadingGridMaterial(
+    viewerColors.gridMajor,
+    viewerColors.gridMajorOpacity
+  );
+  (majorGrid.material as THREE.ShaderMaterial).uniforms.uGridExtent.value = size / 2;
+  majorGrid.position.y = 0.01; // Slight offset to render on top of minor
+  group.add(majorGrid);
+
+  return group;
+}
 
 interface ModelDimensions {
   x: number;
@@ -87,6 +153,9 @@ export function STEPViewer({
   const [dimensions, setDimensions] = useState<ModelDimensions | null>(null);
 
   const [processingMode, setProcessingMode] = useState<'server' | 'browser' | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const fullscreenContainerRef = useRef<HTMLDivElement>(null);
 
   const [pmiFilter, setPmiFilter] = useState<'all' | 'dimensions' | 'tolerances' | 'datums' | 'surface' | 'welds' | 'notes' | 'graphical'>('all');
 
@@ -133,17 +202,15 @@ export function STEPViewer({
       geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
     }
 
-    const color = new THREE.Color(
-      meshData.color[0],
-      meshData.color[1],
-      meshData.color[2]
-    );
+    const color = meshData.color
+      ? new THREE.Color(meshData.color[0], meshData.color[1], meshData.color[2])
+      : new THREE.Color(viewerColors.modelDefault);
 
     const material = new THREE.MeshStandardMaterial({
       color,
       side: THREE.DoubleSide,
-      metalness: 0.3,
-      roughness: 0.6,
+      metalness: viewerColors.modelMetalness,
+      roughness: viewerColors.modelRoughness,
       flatShading: false,
     });
 
@@ -202,7 +269,7 @@ export function STEPViewer({
     const container = containerRef.current;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf5f5f5);
+    scene.background = new THREE.Color(viewerColors.sceneBackground);
     sceneRef.current = scene;
 
     const camera = new THREE.PerspectiveCamera(
@@ -237,11 +304,9 @@ export function STEPViewer({
     backLight.position.set(0, 5, -5);
     scene.add(backLight);
 
-    const grid = new THREE.GridHelper(1000, 50, 0x444444, 0x888888);
-    grid.material.transparent = true;
-    grid.material.opacity = 0.35;
-    scene.add(grid);
-    gridRef.current = grid;
+    const gridGroup = createTwoLevelGrid(1000, 50);
+    scene.add(gridGroup);
+    gridRef.current = gridGroup as unknown as THREE.GridHelper;
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -331,10 +396,10 @@ export function STEPViewer({
 
     const edgesGeometry = new THREE.EdgesGeometry(mesh.geometry, 30);
     const edgesMaterial = new THREE.LineBasicMaterial({
-      color: 0x000000,
-      linewidth: 1,
-      opacity: 0.8,
-      transparent: true,
+      color: 0x1a3a8a,
+      linewidth: 2,
+      opacity: 1.0,
+      transparent: false,
     });
     const edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
     edges.visible = edgesVisible;
@@ -402,21 +467,22 @@ export function STEPViewer({
     );
     const divisions = Math.max(10, Math.min(100, Math.round(gridSize / 100)));
 
-    sceneRef.current.remove(gridRef.current);
-    gridRef.current.geometry.dispose();
-    if (Array.isArray(gridRef.current.material)) {
-      gridRef.current.material.forEach((m: THREE.Material) => m.dispose());
-    } else {
-      gridRef.current.material.dispose();
-    }
+    // Dispose old grid group
+    const oldGroup = gridRef.current as unknown as THREE.Group;
+    sceneRef.current.remove(oldGroup);
+    oldGroup.traverse((child) => {
+      if ((child as THREE.Mesh).geometry) (child as THREE.Mesh).geometry.dispose();
+      if ((child as THREE.Mesh).material) {
+        const mat = (child as THREE.Mesh).material;
+        if (Array.isArray(mat)) mat.forEach((m: THREE.Material) => m.dispose());
+        else (mat as THREE.Material).dispose();
+      }
+    });
 
-    const newGrid = new THREE.GridHelper(gridSize, divisions, 0x444444, 0x888888);
-    newGrid.material.transparent = true;
-    newGrid.material.opacity = 0.35;
-    newGrid.visible = gridVisible;
-
-    sceneRef.current.add(newGrid);
-    gridRef.current = newGrid;
+    const newGridGroup = createTwoLevelGrid(gridSize, divisions);
+    newGridGroup.visible = gridVisible;
+    sceneRef.current.add(newGridGroup);
+    gridRef.current = newGridGroup as unknown as THREE.GridHelper;
   }, [gridVisible]);
 
   useEffect(() => {
@@ -530,13 +596,13 @@ export function STEPViewer({
               meshData.color[1],
               meshData.color[2]
             )
-            : new THREE.Color(0x4a90e2);
+            : new THREE.Color(viewerColors.modelDefault);
 
           const material = new THREE.MeshStandardMaterial({
             color,
             side: THREE.DoubleSide,
-            metalness: 0.3,
-            roughness: 0.6,
+            metalness: viewerColors.modelMetalness,
+            roughness: viewerColors.modelRoughness,
             flatShading: false,
           });
 
@@ -667,6 +733,38 @@ export function STEPViewer({
     setEdgesVisible(!edgesVisible);
   };
 
+  // ── Fullscreen toggle ──────────────────────────────────────────
+
+  const toggleFullscreen = useCallback(async () => {
+    const el = fullscreenContainerRef.current;
+    if (!el) return;
+
+    try {
+      if (!document.fullscreenElement) {
+        await el.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      logger.error('STEPViewer', 'Fullscreen toggle failed', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      const isFull = !!document.fullscreenElement;
+      setIsFullscreen(isFull);
+
+      // Trigger resize after transition so renderers pick up new dimensions
+      requestAnimationFrame(() => {
+        window.dispatchEvent(new Event('resize'));
+      });
+    };
+
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+  }, []);
+
 
   const createDimensionVisualization = useCallback(() => {
     if (!sceneRef.current || !dimensions) return;
@@ -682,6 +780,9 @@ export function STEPViewer({
             child.material.dispose();
           }
         }
+        if (child instanceof CSS2DObject) {
+          child.element.remove();
+        }
       });
     }
 
@@ -693,34 +794,45 @@ export function STEPViewer({
     const min = box.min;
     const max = box.max;
 
-    const offset = Math.max(dimensions.x, dimensions.y, dimensions.z) * 0.15;
+    const maxDim = Math.max(dimensions.x, dimensions.y, dimensions.z);
+    const offset = maxDim * 0.12;
 
     const colors = {
-      x: 0x4a9eff, // Blue - X axis
-      y: 0x34a853, // Green - Y axis
-      z: 0xfbbc05, // Yellow - Z axis
+      x: 0xEF4444, // Red - X axis
+      y: 0x22C55E, // Green - Y axis
+      z: 0x3B82F6, // Blue - Z axis
+    };
+
+    const colorLabels = {
+      x: '#EF4444',
+      y: '#22C55E',
+      z: '#3B82F6',
     };
 
     const createDimensionLine = (
       start: THREE.Vector3,
       end: THREE.Vector3,
       color: number,
-      label: string
+      colorLabel: string,
+      label: string,
+      axisName: string
     ) => {
       const lineGroup = new THREE.Group();
 
       const lineMaterial = new THREE.LineBasicMaterial({
         color,
-        linewidth: 2,
+        linewidth: 1,
         transparent: true,
-        opacity: 0.9,
+        opacity: 0.8,
+        depthTest: false,
       });
 
+      // Main dimension line
       const lineGeometry = new THREE.BufferGeometry().setFromPoints([start, end]);
       const line = new THREE.Line(lineGeometry, lineMaterial);
+      line.renderOrder = 990;
       lineGroup.add(line);
 
-      const capLength = offset * 0.3;
       const direction = new THREE.Vector3().subVectors(end, start).normalize();
       const perpendicular = new THREE.Vector3();
 
@@ -730,92 +842,111 @@ export function STEPViewer({
         perpendicular.crossVectors(direction, new THREE.Vector3(1, 0, 0)).normalize();
       }
 
-      const startCap1 = start.clone().add(perpendicular.clone().multiplyScalar(capLength / 2));
-      const startCap2 = start.clone().sub(perpendicular.clone().multiplyScalar(capLength / 2));
-      const startCapGeometry = new THREE.BufferGeometry().setFromPoints([startCap1, startCap2]);
-      const startCap = new THREE.Line(startCapGeometry, lineMaterial);
-      lineGroup.add(startCap);
+      // Small end caps (ticks)
+      const capLength = maxDim * 0.015;
+      for (const pt of [start, end]) {
+        const cap1 = pt.clone().add(perpendicular.clone().multiplyScalar(capLength));
+        const cap2 = pt.clone().sub(perpendicular.clone().multiplyScalar(capLength));
+        const capGeo = new THREE.BufferGeometry().setFromPoints([cap1, cap2]);
+        const cap = new THREE.Line(capGeo, lineMaterial);
+        cap.renderOrder = 990;
+        lineGroup.add(cap);
+      }
 
-      const endCap1 = end.clone().add(perpendicular.clone().multiplyScalar(capLength / 2));
-      const endCap2 = end.clone().sub(perpendicular.clone().multiplyScalar(capLength / 2));
-      const endCapGeometry = new THREE.BufferGeometry().setFromPoints([endCap1, endCap2]);
-      const endCap = new THREE.Line(endCapGeometry, lineMaterial);
-      lineGroup.add(endCap);
+      // Small filled arrowheads (CAD-style)
+      const arrowLen = maxDim * 0.02;
+      const arrowHalfW = maxDim * 0.005;
 
-      const arrowLength = offset * 0.2;
-      const arrowWidth = offset * 0.08;
+      for (const [origin, dir] of [[start, direction], [end, direction.clone().negate()]] as const) {
+        const tip = origin;
+        const back = origin.clone().add((dir as THREE.Vector3).clone().multiplyScalar(arrowLen));
+        const positions = new Float32Array([
+          tip.x, tip.y, tip.z,
+          back.x + perpendicular.x * arrowHalfW, back.y + perpendicular.y * arrowHalfW, back.z + perpendicular.z * arrowHalfW,
+          back.x - perpendicular.x * arrowHalfW, back.y - perpendicular.y * arrowHalfW, back.z - perpendicular.z * arrowHalfW,
+        ]);
+        const arrowGeo = new THREE.BufferGeometry();
+        arrowGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const arrowMat = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, depthTest: false, transparent: true, opacity: 0.8 });
+        const arrowMesh = new THREE.Mesh(arrowGeo, arrowMat);
+        arrowMesh.renderOrder = 991;
+        lineGroup.add(arrowMesh);
+      }
 
-      const arrowStartDir = direction.clone().negate();
-      const arrow1 = start.clone().add(direction.clone().multiplyScalar(arrowLength));
-      const arrowGeom1 = new THREE.BufferGeometry().setFromPoints([
-        start,
-        arrow1.clone().add(perpendicular.clone().multiplyScalar(arrowWidth)),
-        arrow1.clone().sub(perpendicular.clone().multiplyScalar(arrowWidth)),
-        start,
-      ]);
-      const arrowMesh1 = new THREE.Line(arrowGeom1, lineMaterial);
-      lineGroup.add(arrowMesh1);
-
-      const arrow2 = end.clone().sub(direction.clone().multiplyScalar(arrowLength));
-      const arrowGeom2 = new THREE.BufferGeometry().setFromPoints([
-        end,
-        arrow2.clone().add(perpendicular.clone().multiplyScalar(arrowWidth)),
-        arrow2.clone().sub(perpendicular.clone().multiplyScalar(arrowWidth)),
-        end,
-      ]);
-      const arrowMesh2 = new THREE.Line(arrowGeom2, lineMaterial);
-      lineGroup.add(arrowMesh2);
+      // CSS2D label at midpoint
+      const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+      const labelDiv = document.createElement('div');
+      labelDiv.style.cssText = [
+        `background: rgba(0, 0, 0, 0.75)`,
+        `color: ${colorLabel}`,
+        'padding: 2px 6px',
+        'border-radius: 3px',
+        'font-size: 11px',
+        'font-weight: 600',
+        "font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace",
+        'white-space: nowrap',
+        'pointer-events: none',
+        'user-select: none',
+        `border: 1px solid ${colorLabel}40`,
+        'backdrop-filter: blur(4px)',
+        'z-index: 5',
+      ].join(';');
+      labelDiv.textContent = `${axisName} ${label}`;
+      const css2dLabel = new CSS2DObject(labelDiv);
+      css2dLabel.position.copy(midpoint);
+      lineGroup.add(css2dLabel);
 
       return lineGroup;
     };
 
+    // X dimension (along bottom-front edge)
     const xStart = new THREE.Vector3(min.x, min.y, min.z - offset);
     const xEnd = new THREE.Vector3(max.x, min.y, min.z - offset);
-    group.add(createDimensionLine(xStart, xEnd, colors.x, `${dimensions.x} mm`));
+    group.add(createDimensionLine(xStart, xEnd, colors.x, colorLabels.x, `${dimensions.x.toFixed(2)} mm`, 'X'));
 
-    const xExtMaterial = new THREE.LineBasicMaterial({ color: colors.x, transparent: true, opacity: 0.4 });
-    const xExt1Geom = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(min.x, min.y, min.z),
-      new THREE.Vector3(min.x, min.y, min.z - offset * 1.2),
-    ]);
-    group.add(new THREE.Line(xExt1Geom, xExtMaterial));
-    const xExt2Geom = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(max.x, min.y, min.z),
-      new THREE.Vector3(max.x, min.y, min.z - offset * 1.2),
-    ]);
-    group.add(new THREE.Line(xExt2Geom, xExtMaterial));
+    // Extension lines for X
+    const xExtMat = new THREE.LineBasicMaterial({ color: colors.x, transparent: true, opacity: 0.3, depthTest: false });
+    for (const xVal of [min.x, max.x]) {
+      const extGeo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(xVal, min.y, min.z),
+        new THREE.Vector3(xVal, min.y, min.z - offset * 1.15),
+      ]);
+      const ext = new THREE.Line(extGeo, xExtMat);
+      ext.renderOrder = 989;
+      group.add(ext);
+    }
 
+    // Y dimension (along left edge)
     const yStart = new THREE.Vector3(min.x - offset, min.y, min.z);
     const yEnd = new THREE.Vector3(min.x - offset, max.y, min.z);
-    group.add(createDimensionLine(yStart, yEnd, colors.y, `${dimensions.y} mm`));
+    group.add(createDimensionLine(yStart, yEnd, colors.y, colorLabels.y, `${dimensions.y.toFixed(2)} mm`, 'Y'));
 
-    const yExtMaterial = new THREE.LineBasicMaterial({ color: colors.y, transparent: true, opacity: 0.4 });
-    const yExt1Geom = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(min.x, min.y, min.z),
-      new THREE.Vector3(min.x - offset * 1.2, min.y, min.z),
-    ]);
-    group.add(new THREE.Line(yExt1Geom, yExtMaterial));
-    const yExt2Geom = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(min.x, max.y, min.z),
-      new THREE.Vector3(min.x - offset * 1.2, max.y, min.z),
-    ]);
-    group.add(new THREE.Line(yExt2Geom, yExtMaterial));
+    const yExtMat = new THREE.LineBasicMaterial({ color: colors.y, transparent: true, opacity: 0.3, depthTest: false });
+    for (const yVal of [min.y, max.y]) {
+      const extGeo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(min.x, yVal, min.z),
+        new THREE.Vector3(min.x - offset * 1.15, yVal, min.z),
+      ]);
+      const ext = new THREE.Line(extGeo, yExtMat);
+      ext.renderOrder = 989;
+      group.add(ext);
+    }
 
-    const zStart = new THREE.Vector3(min.x - offset, min.y, min.z);
-    const zEnd = new THREE.Vector3(min.x - offset, min.y, max.z);
-    group.add(createDimensionLine(zStart, zEnd, colors.z, `${dimensions.z} mm`));
+    // Z dimension (along bottom-left edge)
+    const zStart = new THREE.Vector3(min.x, min.y, min.z - offset);
+    const zEnd = new THREE.Vector3(min.x, min.y, max.z - offset);
+    group.add(createDimensionLine(zStart, zEnd, colors.z, colorLabels.z, `${dimensions.z.toFixed(2)} mm`, 'Z'));
 
-    const zExtMaterial = new THREE.LineBasicMaterial({ color: colors.z, transparent: true, opacity: 0.4 });
-    const zExt1Geom = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(min.x, min.y, min.z),
-      new THREE.Vector3(min.x - offset * 1.2, min.y, min.z),
-    ]);
-    group.add(new THREE.Line(zExt1Geom, zExtMaterial));
-    const zExt2Geom = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(min.x, min.y, max.z),
-      new THREE.Vector3(min.x - offset * 1.2, min.y, max.z),
-    ]);
-    group.add(new THREE.Line(zExt2Geom, zExtMaterial));
+    const zExtMat = new THREE.LineBasicMaterial({ color: colors.z, transparent: true, opacity: 0.3, depthTest: false });
+    for (const zVal of [min.z, max.z]) {
+      const extGeo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(min.x, min.y, zVal),
+        new THREE.Vector3(min.x, min.y, zVal - offset * 0.15),
+      ]);
+      const ext = new THREE.Line(extGeo, zExtMat);
+      ext.renderOrder = 989;
+      group.add(ext);
+    }
 
     sceneRef.current.add(group);
     dimensionLinesRef.current = group;
@@ -1497,7 +1628,13 @@ export function STEPViewer({
   );
 
   return (
-    <div className="flex flex-col h-full w-full bg-background">
+    <div
+      ref={fullscreenContainerRef}
+      className={cn(
+        "flex flex-col h-full w-full bg-background",
+        isFullscreen && "fixed inset-0 z-[9999]"
+      )}
+    >
       <div className="glass-card m-2 mb-0 rounded-lg overflow-hidden">
         <div className="flex items-center justify-between px-3 py-2 bg-muted/30">
           <div className="flex items-center gap-1">
@@ -1627,79 +1764,25 @@ export function STEPViewer({
           disabled={stepLoading || meshesRef.current.length === 0}
         />
           </div>
+
+          {/* Right side — fullscreen toggle */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleFullscreen}
+            className="h-7 w-7 p-0 ml-auto"
+            title={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen'}
+          >
+            {isFullscreen
+              ? <Minimize className="h-3.5 w-3.5" />
+              : <Maximize className="h-3.5 w-3.5" />
+            }
+          </Button>
         </div>
       </div>
 
       <div className="flex-1 relative bg-surface">
         <div ref={containerRef} className="absolute inset-0" />
-
-        {showDimensions && dimensions && (
-          <div className="absolute top-3 right-3 z-10">
-            <div className="glass-card p-3 min-w-[180px]">
-              <div className="flex items-center gap-2 mb-2.5">
-                <Ruler className="h-4 w-4 text-primary" />
-                <span className="text-xs font-semibold text-foreground">
-                  {t('parts.cadViewer.boundingBox')}
-                </span>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between gap-3 group">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm flex items-center justify-center text-[8px] font-bold text-white bg-[hsl(var(--brand-primary-light))]">
-                      X
-                    </div>
-                    <span className="text-[11px] text-muted-foreground">
-                      {t('parts.cadViewer.length')}
-                    </span>
-                  </div>
-                  <span className="text-xs font-mono font-semibold text-foreground tabular-nums">
-                    {dimensions.x.toFixed(2)}
-                    <span className="text-muted-foreground ml-0.5">mm</span>
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between gap-3 group">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm flex items-center justify-center text-[8px] font-bold text-white bg-[hsl(var(--color-success))]">
-                      Y
-                    </div>
-                    <span className="text-[11px] text-muted-foreground">
-                      {t('parts.cadViewer.height')}
-                    </span>
-                  </div>
-                  <span className="text-xs font-mono font-semibold text-foreground tabular-nums">
-                    {dimensions.y.toFixed(2)}
-                    <span className="text-muted-foreground ml-0.5">mm</span>
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between gap-3 group">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm flex items-center justify-center text-[8px] font-bold text-black bg-[hsl(var(--color-warning))]">
-                      Z
-                    </div>
-                    <span className="text-[11px] text-muted-foreground">
-                      {t('parts.cadViewer.width')}
-                    </span>
-                  </div>
-                  <span className="text-xs font-mono font-semibold text-foreground tabular-nums">
-                    {dimensions.z.toFixed(2)}
-                    <span className="text-muted-foreground ml-0.5">mm</span>
-                  </span>
-                </div>
-              </div>
-
-              <div className="border-t border-border/50 my-2.5" />
-
-              <div className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                <span className="text-[10px] text-muted-foreground">
-                  {t('parts.cadViewer.measuredFromCad')}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
 
         {showFeatures && (
           <div className="absolute bottom-3 right-3 z-10">
@@ -1729,7 +1812,7 @@ export function STEPViewer({
         )}
 
         {/* Measurement Panel */}
-        {measurements.length > 0 && !showDimensions && (
+        {measurements.length > 0 && (
           <MeasurementPanel
             results={measurements}
             onDelete={deleteMeasurement}

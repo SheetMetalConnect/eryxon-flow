@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { viewerColors } from '@/theme/theme';
 import type { MeasurementResult } from './types';
 
 // ── Create annotation group for a measurement ────────────────────
@@ -31,14 +32,26 @@ export function createMeasurementAnnotation(
 
 // ── Point-to-Point ───────────────────────────────────────────────
 
+function computeMarkerSize(points: THREE.Vector3[]): number {
+  if (points.length < 2) return viewerColors.measurementMarkerMinSize;
+  let maxDist = 0;
+  for (let i = 0; i < points.length; i++) {
+    for (let j = i + 1; j < points.length; j++) {
+      maxDist = Math.max(maxDist, points[i].distanceTo(points[j]));
+    }
+  }
+  return Math.max(viewerColors.measurementMarkerMinSize, maxDist * viewerColors.measurementMarkerScale);
+}
+
 function addPointToPointAnnotation(
   group: THREE.Group,
   result: { pointA: THREE.Vector3; pointB: THREE.Vector3; distance: number; id: string },
   onDelete: (id: string) => void
 ) {
-  const markerGeo = new THREE.SphereGeometry(1.0, 12, 12);
+  const markerRadius = computeMarkerSize([result.pointA, result.pointB]);
+  const markerGeo = new THREE.SphereGeometry(markerRadius, 16, 16);
   const markerMat = new THREE.MeshBasicMaterial({
-    color: 0xff8c00,
+    color: viewerColors.measurementMarker,
     depthTest: false,
   });
 
@@ -57,10 +70,11 @@ function addPointToPointAnnotation(
     result.pointB,
   ]);
   const lineMat = new THREE.LineDashedMaterial({
-    color: 0x4a9eff,
+    color: viewerColors.linePointToPoint,
     dashSize: 3,
     gapSize: 2,
     depthTest: false,
+    linewidth: viewerColors.measurementLineWidth,
   });
   const line = new THREE.Line(lineGeo, lineMat);
   line.computeLineDistances();
@@ -99,18 +113,20 @@ function addFaceDistanceAnnotation(
     faceB.centroid,
   ]);
   const lineMat = new THREE.LineDashedMaterial({
-    color: 0x34a853,
+    color: viewerColors.lineFaceDistance,
     dashSize: 3,
     gapSize: 2,
     depthTest: false,
+    linewidth: viewerColors.measurementLineWidth,
   });
   const line = new THREE.Line(lineGeo, lineMat);
   line.computeLineDistances();
   line.renderOrder = 997;
   group.add(line);
 
-  group.add(createArrowhead(faceA.centroid, faceB.centroid, 0x34a853));
-  group.add(createArrowhead(faceB.centroid, faceA.centroid, 0x34a853));
+  const dimScale = faceA.centroid.distanceTo(faceB.centroid);
+  group.add(createArrowhead(faceA.centroid, faceB.centroid, viewerColors.lineFaceDistance, dimScale));
+  group.add(createArrowhead(faceB.centroid, faceA.centroid, viewerColors.lineFaceDistance, dimScale));
 
   const midpoint = new THREE.Vector3()
     .addVectors(faceA.centroid, faceB.centroid)
@@ -156,8 +172,9 @@ function addFaceAngleAnnotation(
     faceB.centroid.clone().add(faceB.normal.clone().multiplyScalar(normalLength)),
   ]);
   const normalMat = new THREE.LineBasicMaterial({
-    color: 0xfbbc05,
+    color: viewerColors.lineFaceAngle,
     depthTest: false,
+    linewidth: viewerColors.measurementLineWidth,
   });
 
   const lineA = new THREE.Line(normalLineA, normalMat);
@@ -187,8 +204,9 @@ function addFaceAngleAnnotation(
 
   const arcGeo = new THREE.BufferGeometry().setFromPoints(arcPoints);
   const arcMat = new THREE.LineBasicMaterial({
-    color: 0xfbbc05,
+    color: viewerColors.lineFaceAngle,
     depthTest: false,
+    linewidth: viewerColors.measurementLineWidth,
   });
   const arc = new THREE.Line(arcGeo, arcMat);
   arc.renderOrder = 997;
@@ -216,9 +234,10 @@ function addRadiusAnnotation(
   },
   onDelete: (id: string) => void
 ) {
-  const markerGeo = new THREE.SphereGeometry(1.0, 12, 12);
+  const markerRadius = Math.max(viewerColors.measurementMarkerMinSize, result.radius * 0.02);
+  const markerGeo = new THREE.SphereGeometry(markerRadius, 16, 16);
   const markerMat = new THREE.MeshBasicMaterial({
-    color: 0xe040fb,
+    color: viewerColors.lineRadius,
     depthTest: false,
   });
   const marker = new THREE.Mesh(markerGeo, markerMat);
@@ -242,11 +261,12 @@ function createMeasurementLabel(
 ): CSS2DObject {
   const div = document.createElement('div');
   div.style.cssText = [
-    'background: rgba(0, 0, 0, 0.85)',
+    `background: var(--viewer-measurement-label-bg, rgba(0, 0, 0, 0.88))`,
     'color: white',
-    'padding: 3px 10px',
-    'border-radius: 4px',
-    'font-size: 11px',
+    'padding: 4px 12px',
+    'border-radius: 6px',
+    'font-size: 12px',
+    'font-weight: 600',
     "font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace",
     'white-space: pre-line',
     'pointer-events: auto',
@@ -254,8 +274,11 @@ function createMeasurementLabel(
     'display: flex',
     'align-items: center',
     'gap: 6px',
-    'border: 1px solid rgba(74, 158, 255, 0.3)',
-    'backdrop-filter: blur(4px)',
+    `border: 1.5px solid var(--viewer-measurement-label-border, rgba(255, 107, 0, 0.4))`,
+    'backdrop-filter: blur(8px)',
+    'box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.2)',
+    'text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5)',
+    'z-index: 10',
   ].join(';');
 
   const textSpan = document.createElement('span');
@@ -285,11 +308,14 @@ function createMeasurementLabel(
 function createArrowhead(
   from: THREE.Vector3,
   to: THREE.Vector3,
-  color: number
+  color: number,
+  dimScale?: number
 ): THREE.Mesh {
   const direction = new THREE.Vector3().subVectors(to, from).normalize();
-  const length = 2.5;
-  const coneGeo = new THREE.ConeGeometry(0.8, length, 8);
+  const dist = dimScale ?? from.distanceTo(to);
+  const length = Math.max(1, dist * 0.04);
+  const radius = length * 0.3;
+  const coneGeo = new THREE.ConeGeometry(radius, length, 8);
   const coneMat = new THREE.MeshBasicMaterial({ color, depthTest: false });
   const cone = new THREE.Mesh(coneGeo, coneMat);
   cone.position.copy(to);
@@ -306,10 +332,11 @@ export function createPreviewLine(): THREE.Line {
     new THREE.Vector3(),
   ]);
   const mat = new THREE.LineBasicMaterial({
-    color: 0x4a9eff,
+    color: viewerColors.linePointToPoint,
     transparent: true,
-    opacity: 0.5,
+    opacity: 0.6,
     depthTest: false,
+    linewidth: viewerColors.measurementLineWidth,
   });
   const line = new THREE.Line(geo, mat);
   line.renderOrder = 996;
@@ -335,7 +362,7 @@ export function createFaceHighlight(
   geometry: THREE.BufferGeometry,
   faceIndices: number[],
   mesh: THREE.Mesh,
-  color: number = 0x4a9eff
+  color: number = viewerColors.linePointToPoint
 ): THREE.Mesh {
   const index = geometry.index!;
   const posAttr = geometry.attributes.position;

@@ -1,6 +1,7 @@
 import { useRef, useCallback, useEffect } from 'react';
 import * as THREE from 'three';
 import { getTriangleHitPointInfo } from 'three-mesh-bvh';
+import { viewerColors } from '@/theme/theme';
 import type { SnapTarget, SnapType, ViewerRefs } from './types';
 
 interface UseRaycastPickerOptions {
@@ -28,11 +29,16 @@ export function useRaycastPicker({
   const pointerDownRef = useRef<{ x: number; y: number; time: number } | null>(null);
   const snapIndicatorRef = useRef<THREE.Mesh | null>(null);
 
-  const createSnapIndicator = useCallback((scene: THREE.Scene) => {
+  const createSnapIndicator = useCallback((scene: THREE.Scene, meshes: THREE.Mesh[]) => {
     if (snapIndicatorRef.current) return;
-    const geo = new THREE.SphereGeometry(1.2, 16, 16);
+    // Compute snap indicator size from model bounding box
+    const box = new THREE.Box3();
+    for (const m of meshes) box.expandByObject(m);
+    const diag = box.getSize(new THREE.Vector3()).length();
+    const radius = Math.max(viewerColors.measurementMarkerMinSize, diag * viewerColors.measurementMarkerScale);
+    const geo = new THREE.SphereGeometry(radius, 16, 16);
     const mat = new THREE.MeshBasicMaterial({
-      color: 0xff8c00,
+      color: viewerColors.snapVertex,
       depthTest: false,
       transparent: true,
       opacity: 0.9,
@@ -119,7 +125,7 @@ export function useRaycastPicker({
     if (!active || !viewerRefs) return;
     const { container, scene } = viewerRefs;
 
-    createSnapIndicator(scene);
+    createSnapIndicator(scene, viewerRefs.meshes);
 
     const onPointerMove = (e: PointerEvent) => {
       const snap = castRay(e.clientX, e.clientY);
@@ -129,9 +135,9 @@ export function useRaycastPicker({
           snapIndicatorRef.current.visible = true;
           const mat = snapIndicatorRef.current.material as THREE.MeshBasicMaterial;
           mat.color.setHex(
-            snap.type === 'vertex' ? 0xff8c00 :
-            snap.type === 'edge'   ? 0x00bcd4 :
-                                     0x4caf50
+            snap.type === 'vertex' ? viewerColors.snapVertex :
+            snap.type === 'edge'   ? viewerColors.snapEdge :
+                                     viewerColors.snapFace
           );
         } else {
           snapIndicatorRef.current.visible = false;

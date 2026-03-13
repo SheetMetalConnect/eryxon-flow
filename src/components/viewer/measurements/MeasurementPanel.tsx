@@ -1,5 +1,5 @@
 import { Move, Layers, Triangle, Circle, X, ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { MeasurementResult } from './types';
@@ -68,12 +68,24 @@ function formatTypeLabel(r: MeasurementResult): string {
 export function MeasurementPanel({ results, onDelete }: MeasurementPanelProps) {
   const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
+  const prevCountRef = useRef(results.length);
+
+  // Auto-expand when a new measurement is added
+  useEffect(() => {
+    if (results.length > prevCountRef.current) {
+      setCollapsed(false);
+    }
+    prevCountRef.current = results.length;
+  }, [results.length]);
 
   if (results.length === 0) return null;
 
   return (
     <div className="absolute top-3 right-3 z-10">
-      <div className="glass-card overflow-hidden min-w-[220px] max-w-[280px]">
+      <div className={cn(
+        "glass-card overflow-hidden min-w-[220px] max-w-[280px] transition-opacity duration-200",
+        collapsed ? "opacity-80" : "opacity-95"
+      )}>
         {/* Header - clickable to collapse */}
         <button
           onClick={() => setCollapsed(!collapsed)}

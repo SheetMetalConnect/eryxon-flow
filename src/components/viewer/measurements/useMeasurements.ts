@@ -218,7 +218,7 @@ export function useMeasurements({ viewerRefs }: UseMeasurementsOptions) {
 
     // ── RADIUS ──
     if (currentMode === 'radius') {
-      const faceIndices = floodFillCoplanarFaces(snap.mesh.geometry, snap.faceIndex, 30);
+      const faceIndices = floodFillCoplanarFaces(snap.mesh.geometry, snap.faceIndex, 15);
       const { points, normals } = collectFaceGroupPoints(snap.mesh.geometry, faceIndices, snap.mesh);
       const fit = fitCircleToPoints(points, normals);
 
