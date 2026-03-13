@@ -1,6 +1,7 @@
 import { useRef, useCallback, useEffect } from 'react';
 import * as THREE from 'three';
 import { getTriangleHitPointInfo } from 'three-mesh-bvh';
+import { viewerColors } from '@/theme/theme';
 import type { SnapTarget, SnapType, ViewerRefs } from './types';
 
 interface UseRaycastPickerOptions {
@@ -30,9 +31,9 @@ export function useRaycastPicker({
 
   const createSnapIndicator = useCallback((scene: THREE.Scene) => {
     if (snapIndicatorRef.current) return;
-    const geo = new THREE.SphereGeometry(1.2, 16, 16);
+    const geo = new THREE.SphereGeometry(viewerColors.measurementMarkerSize, 16, 16);
     const mat = new THREE.MeshBasicMaterial({
-      color: 0xff8c00,
+      color: viewerColors.snapVertex,
       depthTest: false,
       transparent: true,
       opacity: 0.9,
@@ -129,9 +130,9 @@ export function useRaycastPicker({
           snapIndicatorRef.current.visible = true;
           const mat = snapIndicatorRef.current.material as THREE.MeshBasicMaterial;
           mat.color.setHex(
-            snap.type === 'vertex' ? 0xff8c00 :
-            snap.type === 'edge'   ? 0x00bcd4 :
-                                     0x4caf50
+            snap.type === 'vertex' ? viewerColors.snapVertex :
+            snap.type === 'edge'   ? viewerColors.snapEdge :
+                                     viewerColors.snapFace
           );
         } else {
           snapIndicatorRef.current.visible = false;
