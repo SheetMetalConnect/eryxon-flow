@@ -29,7 +29,6 @@ import { PDFViewer } from "@/components/PDFViewerLazy";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -480,15 +479,12 @@ export default function Parts() {
       )}
 
       <Dialog open={fileViewerOpen} onOpenChange={handleFileDialogClose}>
-        <DialogContent className="glass-card w-full h-[100dvh] sm:h-[90vh] sm:max-w-6xl flex flex-col p-0 rounded-none sm:rounded-lg inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
-          <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">
-            <DialogTitle className="text-sm sm:text-base pr-8 flex items-center gap-2">
-              {currentFileType === "step" && <Box className="h-4 w-4 text-primary" />}
-              {currentFileType === "pdf" && <FileText className="h-4 w-4 text-destructive" />}
-              <span className="truncate">{currentFileTitle}</span>
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 overflow-hidden min-h-0 rounded-lg border border-white/10 m-2 sm:m-4">
+        <DialogContent className="w-full h-[100dvh] sm:h-[90vh] sm:max-w-6xl flex flex-col p-0 gap-0 border-0 bg-transparent shadow-2xl rounded-none sm:rounded-xl overflow-hidden inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
+          <div className="relative flex-1 min-h-0 bg-background sm:rounded-xl overflow-hidden">
+            <div className="absolute top-2 left-3 z-10 max-w-[60%]">
+              <span className="text-[11px] text-muted-foreground/70 font-medium truncate block">{currentFileTitle}</span>
+            </div>
+            <DialogTitle className="sr-only">{currentFileTitle}</DialogTitle>
             {currentFileType === "step" && currentFileUrl && (
               <STEPViewer url={currentFileUrl} />
             )}

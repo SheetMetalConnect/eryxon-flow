@@ -432,37 +432,26 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
 
             {fullscreenViewer && createPortal(
                 <div
-                    className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-md flex flex-col"
+                    className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex flex-col"
                     onClick={() => setFullscreenViewer(null)}
                 >
                     <div
-                        className="flex items-center justify-between p-3 border-b border-border bg-card/80 backdrop-blur-sm"
+                        className="relative flex-1 min-h-0"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="flex items-center gap-2">
-                            {fullscreenViewer === '3d' ? (
-                                <Box className="w-4 h-4 text-primary" />
-                            ) : (
-                                <FileText className="w-4 h-4 text-primary" />
-                            )}
-                            <span className="font-medium text-foreground">{job.jobCode}</span>
-                            <span className="text-muted-foreground text-sm">- {fullscreenViewer === '3d' ? '3D Model' : 'Drawing'}</span>
+                        <div className="absolute top-3 left-4 z-10 flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground/70 font-medium">{job.jobCode}</span>
+                            <span className="text-[10px] text-muted-foreground/50">{fullscreenViewer === '3d' ? '3D' : 'PDF'}</span>
                         </div>
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => setFullscreenViewer(null)}
-                            className="h-8 w-8 p-0 hover:bg-accent"
+                            className="absolute top-2 right-3 z-10 h-8 w-8 p-0 hover:bg-accent/50 text-muted-foreground"
                         >
                             <X className="w-4 h-4" />
                         </Button>
-                    </div>
-
-                    <div
-                        className="flex-1 p-4 min-h-0"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="h-full rounded-lg overflow-hidden border border-border bg-background shadow-xl">
+                        <div className="h-full bg-background overflow-hidden">
                             {fullscreenViewer === '3d' && stepUrl && (
                                 <STEPViewer
                                     url={stepUrl}
@@ -476,10 +465,6 @@ export function DetailPanel({ job, onStart, onPause, onComplete, stepUrl, pdfUrl
                                 <PDFViewer url={pdfUrl} title={job.jobCode} />
                             )}
                         </div>
-                    </div>
-
-                    <div className="text-center pb-3 text-muted-foreground text-xs">
-                        Tap outside or press X to close
                     </div>
                 </div>,
                 document.body
