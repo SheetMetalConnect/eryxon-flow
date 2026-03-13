@@ -210,13 +210,14 @@ The repository ships with a ready-to-use `docker-compose.yml`. To use the pre-bu
 docker compose up -d
 ```
 
-To build a custom image with your credentials, edit `docker-compose.yml` and uncomment the `build` section:
+To build a custom image with your own Supabase credentials baked in, replace the `image` line in `docker-compose.yml` with a `build` block:
 
 ```yaml
 services:
   eryxon-flow:
-    # Comment out the image line and uncomment build:
-    # image: ghcr.io/sheetmetalconnect/eryxon-flow:latest
+    # Replace this:
+    #   image: ghcr.io/sheetmetalconnect/eryxon-flow:latest
+    # With this:
     build:
       context: .
       args:
@@ -233,6 +234,8 @@ services:
       timeout: 10s
       retries: 3
 ```
+
+Make sure the corresponding `VITE_SUPABASE_*` variables are set in your `.env` file (Docker Compose reads `.env` automatically).
 
 Then rebuild and start:
 ```bash
