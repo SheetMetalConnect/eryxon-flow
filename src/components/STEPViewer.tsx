@@ -30,7 +30,8 @@ import type {
   MeshData,
 } from '@/hooks/useCADProcessing';
 import { decodeFloat32Array, decodeUint32Array } from '@/hooks/useCADProcessing';
-import { viewerColors } from '@/theme/theme';
+import { viewerThemes } from '@/theme/theme';
+import { useThemeMode } from '@/theme/ThemeProvider';
 import { installBVH } from './viewer/measurements/setupBVH';
 import { useMeasurements } from './viewer/measurements/useMeasurements';
 import { MeasurementToolbar } from './viewer/measurements/MeasurementToolbar';
@@ -76,7 +77,11 @@ function createFadingGridMaterial(color: number, baseOpacity: number): THREE.Sha
   });
 }
 
-function createTwoLevelGrid(size: number, majorDivisions: number): THREE.Group {
+function createTwoLevelGrid(
+  size: number,
+  majorDivisions: number,
+  palette: typeof viewerThemes.light
+): THREE.Group {
   const group = new THREE.Group();
   group.name = 'viewer_grid';
 
@@ -84,8 +89,8 @@ function createTwoLevelGrid(size: number, majorDivisions: number): THREE.Group {
   const minorDivisions = majorDivisions * 5;
   const minorGrid = new THREE.GridHelper(size, minorDivisions);
   minorGrid.material = createFadingGridMaterial(
-    viewerColors.gridMinor,
-    viewerColors.gridMinorOpacity
+    palette.gridMinor,
+    palette.gridMinorOpacity
   );
   (minorGrid.material as THREE.ShaderMaterial).uniforms.uGridExtent.value = size / 2;
   group.add(minorGrid);
@@ -93,8 +98,8 @@ function createTwoLevelGrid(size: number, majorDivisions: number): THREE.Group {
   // Major grid
   const majorGrid = new THREE.GridHelper(size, majorDivisions);
   majorGrid.material = createFadingGridMaterial(
-    viewerColors.gridMajor,
-    viewerColors.gridMajorOpacity
+    palette.gridMajor,
+    palette.gridMajorOpacity
   );
   (majorGrid.material as THREE.ShaderMaterial).uniforms.uGridExtent.value = size / 2;
   majorGrid.position.y = 0.01; // Slight offset to render on top of minor
@@ -136,6 +141,8 @@ export function STEPViewer({
   preferServerGeometry = true
 }: STEPViewerProps) {
   const { t } = useTranslation();
+  const { resolvedTheme } = useThemeMode();
+  const palette = viewerThemes[resolvedTheme];
   const occtScriptUrl = getCADConfig().frontend.wasmUrl;
 
   const [stepLoading, setStepLoading] = useState(false);
@@ -168,6 +175,10 @@ export function STEPViewer({
   const edgesRef = useRef<THREE.LineSegments[]>([]);
   const gridRef = useRef<THREE.GridHelper | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const ambientLightRef = useRef<THREE.AmbientLight | null>(null);
+  const keyLightRef = useRef<THREE.DirectionalLight | null>(null);
+  const fillLightRef = useRef<THREE.DirectionalLight | null>(null);
+  const backLightRef = useRef<THREE.DirectionalLight | null>(null);
 
   const originalPositionsRef = useRef<THREE.Vector3[]>([]);
   const explosionDataRef = useRef({
@@ -204,18 +215,18 @@ export function STEPViewer({
 
     const color = meshData.color
       ? new THREE.Color(meshData.color[0], meshData.color[1], meshData.color[2])
-      : new THREE.Color(viewerColors.modelDefault);
+      : new THREE.Color(palette.modelDefault);
 
     const material = new THREE.MeshStandardMaterial({
       color,
       side: THREE.DoubleSide,
-      metalness: viewerColors.modelMetalness,
-      roughness: viewerColors.modelRoughness,
+      metalness: palette.modelMetalness,
+      roughness: palette.modelRoughness,
       flatShading: false,
     });
 
     return new THREE.Mesh(geometry, material);
-  }, []);
+  }, [palette]);
 
   useEffect(() => {
     if (serverGeometry && preferServerGeometry) {
@@ -269,7 +280,7 @@ export function STEPViewer({
     const container = containerRef.current;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(viewerColors.sceneBackground);
+    scene.background = new THREE.Color(palette.sceneBackground);
     sceneRef.current = scene;
 
     const camera = new THREE.PerspectiveCamera(
@@ -290,21 +301,26 @@ export function STEPViewer({
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    const ambient = new THREE.AmbientLight(0xffffff, palette.ambientIntensity);
+    scene.add(ambient);
+    ambientLightRef.current = ambient;
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    const keyLight = new THREE.DirectionalLight(0xffffff, palette.keyLightIntensity);
     keyLight.position.set(5, 5, 5);
     scene.add(keyLight);
+    keyLightRef.current = keyLight;
 
-    const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    const fillLight = new THREE.DirectionalLight(0xffffff, palette.fillLightIntensity);
     fillLight.position.set(-5, 0, -5);
     scene.add(fillLight);
+    fillLightRef.current = fillLight;
 
-    const backLight = new THREE.DirectionalLight(0xffffff, 0.3);
+    const backLight = new THREE.DirectionalLight(0xffffff, palette.backLightIntensity);
     backLight.position.set(0, 5, -5);
     scene.add(backLight);
+    backLightRef.current = backLight;
 
-    const gridGroup = createTwoLevelGrid(1000, 50);
+    const gridGroup = createTwoLevelGrid(1000, 50, palette);
     scene.add(gridGroup);
     gridRef.current = gridGroup as unknown as THREE.GridHelper;
 
@@ -396,17 +412,17 @@ export function STEPViewer({
 
     const edgesGeometry = new THREE.EdgesGeometry(mesh.geometry, 30);
     const edgesMaterial = new THREE.LineBasicMaterial({
-      color: 0x1a3a8a,
+      color: palette.edgeColor,
       linewidth: 2,
-      opacity: 1.0,
-      transparent: false,
+      opacity: palette.edgeOpacity,
+      transparent: palette.edgeOpacity < 1,
     });
     const edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
     edges.visible = edgesVisible;
 
     mesh.add(edges);
     edgesRef.current.push(edges);
-  }, [edgesVisible]);
+  }, [edgesVisible, palette]);
 
   const calculateDimensions = useCallback(() => {
     if (meshesRef.current.length === 0) return;
@@ -479,11 +495,11 @@ export function STEPViewer({
       }
     });
 
-    const newGridGroup = createTwoLevelGrid(gridSize, divisions);
+    const newGridGroup = createTwoLevelGrid(gridSize, divisions, palette);
     newGridGroup.visible = gridVisible;
     sceneRef.current.add(newGridGroup);
     gridRef.current = newGridGroup as unknown as THREE.GridHelper;
-  }, [gridVisible]);
+  }, [gridVisible, palette]);
 
   useEffect(() => {
     if (!librariesLoaded || !sceneRef.current) return;
@@ -596,13 +612,13 @@ export function STEPViewer({
               meshData.color[1],
               meshData.color[2]
             )
-            : new THREE.Color(viewerColors.modelDefault);
+            : new THREE.Color(palette.modelDefault);
 
           const material = new THREE.MeshStandardMaterial({
             color,
             side: THREE.DoubleSide,
-            metalness: viewerColors.modelMetalness,
-            roughness: viewerColors.modelRoughness,
+            metalness: palette.modelMetalness,
+            roughness: palette.modelRoughness,
             flatShading: false,
           });
 
@@ -764,6 +780,56 @@ export function STEPViewer({
     document.addEventListener('fullscreenchange', onFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
   }, []);
+
+  // ── Reactive theme sync — update scene when dark/light mode changes ──
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+
+    // Background
+    (scene.background as THREE.Color)?.set(palette.sceneBackground);
+
+    // Lighting intensities
+    if (ambientLightRef.current) ambientLightRef.current.intensity = palette.ambientIntensity;
+    if (keyLightRef.current) keyLightRef.current.intensity = palette.keyLightIntensity;
+    if (fillLightRef.current) fillLightRef.current.intensity = palette.fillLightIntensity;
+    if (backLightRef.current) backLightRef.current.intensity = palette.backLightIntensity;
+
+    // Edge / contour colors
+    edgesRef.current.forEach((edge) => {
+      const mat = edge.material as THREE.LineBasicMaterial;
+      mat.color.set(palette.edgeColor);
+      mat.opacity = palette.edgeOpacity;
+      mat.transparent = palette.edgeOpacity < 1;
+    });
+
+    // Rebuild grid with new palette colors
+    if (gridRef.current && meshesRef.current.length > 0) {
+      const oldGroup = gridRef.current as unknown as THREE.Group;
+      const wasVisible = oldGroup.visible;
+      scene.remove(oldGroup);
+      oldGroup.traverse((child) => {
+        if ((child as THREE.Mesh).geometry) (child as THREE.Mesh).geometry.dispose();
+        if ((child as THREE.Mesh).material) {
+          const mat = (child as THREE.Mesh).material;
+          if (Array.isArray(mat)) mat.forEach((m: THREE.Material) => m.dispose());
+          else (mat as THREE.Material).dispose();
+        }
+      });
+
+      const box = new THREE.Box3();
+      meshesRef.current.forEach((mesh) => box.expandByObject(mesh));
+      const size = box.getSize(new THREE.Vector3());
+      const maxDimension = Math.max(size.x, size.y, size.z);
+      const gridSize = Math.max(1000, Math.ceil((maxDimension * 3) / 100) * 100);
+      const divisions = Math.max(10, Math.min(100, Math.round(gridSize / 100)));
+
+      const newGrid = createTwoLevelGrid(gridSize, divisions, palette);
+      newGrid.visible = wasVisible;
+      scene.add(newGrid);
+      gridRef.current = newGrid as unknown as THREE.GridHelper;
+    }
+  }, [palette]);
 
 
   const createDimensionVisualization = useCallback(() => {
