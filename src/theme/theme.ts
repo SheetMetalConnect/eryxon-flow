@@ -29,23 +29,21 @@ export const brandColors = {
   },
 };
 
-/** 3D viewer / CAD color palette (Three.js hex values) */
-export const viewerColors = {
+/** Shared 3D viewer constants (theme-independent) */
+const viewerShared = {
   /** Neutral warm gray — matches Onshape/Fusion 360 defaults */
   modelDefault: 0xD0D0C8,
   modelMetalness: 0.2,
   modelRoughness: 0.65,
-  sceneBackground: 0xf5f5f5,
 
   /** Measurement accent & markers */
   measurementAccent: 0xFF6B00,
   measurementMarker: 0xFF6B00,
-  /** Marker size as fraction of model bounding-box diagonal (absolute fallback: 3) */
   measurementMarkerScale: 0.008,
   measurementMarkerMinSize: 3,
   measurementLineWidth: 2,
 
-  /** Per-type line colors — ALL high-contrast orange family for visibility */
+  /** Per-type line colors */
   linePointToPoint: 0xFF6B00,
   lineFaceDistance: 0x00E676,
   lineFaceAngle: 0xFFD600,
@@ -55,13 +53,46 @@ export const viewerColors = {
   snapVertex: 0xFF6B00,
   snapEdge: 0x00bcd4,
   snapFace: 0x4caf50,
-
-  /** Grid */
-  gridMajor: 0x666666,
-  gridMinor: 0xaaaaaa,
-  gridMajorOpacity: 0.45,
-  gridMinorOpacity: 0.2,
 };
+
+/** Theme-specific 3D viewer palettes */
+export const viewerThemes = {
+  light: {
+    ...viewerShared,
+    sceneBackground: 0xf5f5f5,
+    gridMajor: 0x666666,
+    gridMinor: 0xaaaaaa,
+    gridMajorOpacity: 0.45,
+    gridMinorOpacity: 0.2,
+    edgeColor: 0x1a3a8a,
+    edgeOpacity: 1.0,
+    /** Lighting intensities */
+    ambientIntensity: 0.5,
+    keyLightIntensity: 1.0,
+    fillLightIntensity: 0.5,
+    backLightIntensity: 0.3,
+  },
+  dark: {
+    ...viewerShared,
+    sceneBackground: 0x1a1a2e,
+    gridMajor: 0x888888,
+    gridMinor: 0x444455,
+    gridMajorOpacity: 0.35,
+    gridMinorOpacity: 0.15,
+    edgeColor: 0x6b9fff,
+    edgeOpacity: 0.85,
+    /** Lighting — boost ambient & fill so model stays visible on dark bg */
+    ambientIntensity: 0.7,
+    keyLightIntensity: 1.0,
+    fillLightIntensity: 0.6,
+    backLightIntensity: 0.4,
+  },
+} as const;
+
+export type ViewerThemePalette = typeof viewerThemes.light;
+
+/** @deprecated Use viewerThemes[resolvedTheme] instead — kept for back-compat */
+export const viewerColors = viewerThemes.light;
 
 export const statusColors = {
   active: 'hsl(var(--status-active))',
