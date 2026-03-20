@@ -99,7 +99,12 @@ export function DetailPanel({
 
   useEffect(() => {
     const fetchSubsteps = async () => {
-      if (!profile?.tenant_id || operations.length === 0) return;
+      if (!profile?.tenant_id || operations.length === 0) {
+        setSubstepsByOperation({});
+        return;
+      }
+
+      setSubstepsByOperation({});
 
       const operationIds = operations.map((operation) => operation.id);
       const { data, error } = await supabase
@@ -121,10 +126,21 @@ export function DetailPanel({
         }
         grouped[substep.operation_id].push(substep);
       });
-      setSubstepsByOperation(grouped);
+
+      return grouped;
     };
 
-    void fetchSubsteps();
+    let isActive = true;
+
+    void fetchSubsteps().then((grouped) => {
+      if (isActive && grouped) {
+        setSubstepsByOperation(grouped);
+      }
+    });
+
+    return () => {
+      isActive = false;
+    };
   }, [operations, profile?.tenant_id]);
 
   const toggleOperationExpand = (operationId: string) => {

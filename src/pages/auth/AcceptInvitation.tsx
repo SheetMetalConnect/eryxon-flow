@@ -35,6 +35,7 @@ export default function AcceptInvitation() {
 
   const loadInvitation = useCallback(async () => {
     if (!token) {
+      setInvitation(null);
       setError(t('invitation.invalidLink'));
       setLoading(false);
       return;
@@ -45,7 +46,9 @@ export default function AcceptInvitation() {
 
     if (data) {
       setInvitation(data);
+      setError(null);
     } else {
+      setInvitation(null);
       setError(t('invitation.notFoundOrExpired'));
     }
 
@@ -217,7 +220,7 @@ export default function AcceptInvitation() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={12}
                 placeholder="••••••••"
                 className="bg-input-background border-input"
               />
@@ -234,7 +237,7 @@ export default function AcceptInvitation() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={12}
                 placeholder="••••••••"
                 className="bg-input-background border-input"
               />

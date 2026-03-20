@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format, subDays } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -53,11 +53,29 @@ export default function MyActivity() {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [days] = useState(7);
+  const operatorIdRef = useRef<string | null>(operatorId || null);
+  const requestIdRef = useRef(0);
+
+  useEffect(() => {
+    operatorIdRef.current = operatorId || null;
+    requestIdRef.current += 1;
+    queueMicrotask(() => {
+      setEntries([]);
+      setLoading(Boolean(operatorId));
+    });
+  }, [operatorId]);
 
   const loadActivity = useCallback(async () => {
-    if (!operatorId) return;
+    if (!operatorId) {
+      setEntries([]);
+      setLoading(false);
+      return;
+    }
 
     const startDate = subDays(new Date(), days - 1);
+    const requestId = ++requestIdRef.current;
+    const requestedOperatorId = operatorId;
+    setLoading(true);
 
     const { data, error } = await supabase
       .from("time_entries")
@@ -73,9 +91,16 @@ export default function MyActivity() {
           cell:cells!inner(name, color)
         )
       `)
-      .eq("operator_id", operatorId)
+      .eq("operator_id", requestedOperatorId)
       .gte("start_time", startDate.toISOString())
       .order("start_time", { ascending: false });
+
+    if (
+      requestIdRef.current !== requestId ||
+      operatorIdRef.current !== requestedOperatorId
+    ) {
+      return;
+    }
 
     if (error) {
       logger.error("MyActivity", "Error loading activity", error);
@@ -87,13 +112,12 @@ export default function MyActivity() {
 
   useEffect(() => {
     if (!operatorId) return;
-    const loadTimeout = window.setTimeout(() => {
+    queueMicrotask(() => {
       void loadActivity();
-    }, 0);
-    return () => clearTimeout(loadTimeout);
+    });
   }, [loadActivity, operatorId]);
 
-  const groupByDate = (): DayGroup[] => {
+  const dayGroups = useMemo<DayGroup[]>(() => {
     const groups: Record<string, TimeEntry[]> = {};
 
     entries.forEach((entry) => {
@@ -124,7 +148,7 @@ export default function MyActivity() {
         completedCount: completedOperations.length,
       };
     });
-  };
+  }, [entries]);
 
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -135,7 +159,6 @@ export default function MyActivity() {
     return `${mins}m`;
   };
 
-  const dayGroups = groupByDate();
   const today = format(new Date(), "yyyy-MM-dd");
   const todayTotal = dayGroups.find((group) => group.date === today)?.totalMinutes || 0;
   const weekTotal = dayGroups.reduce((sum, group) => sum + group.totalMinutes, 0);

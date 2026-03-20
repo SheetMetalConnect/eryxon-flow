@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,9 +34,24 @@ export default function CurrentlyTimingWidget() {
   const [activeEntries, setActiveEntries] = useState<ActiveEntry[]>([]);
   const [, setTick] = useState(0);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const operatorIdRef = useRef<string | null>(operatorId || null);
+  const requestIdRef = useRef(0);
+
+  useEffect(() => {
+    operatorIdRef.current = operatorId || null;
+    queueMicrotask(() => {
+      setActiveEntries([]);
+    });
+  }, [operatorId]);
 
   const loadActiveEntries = useCallback(async () => {
-    if (!operatorId) return;
+    if (!operatorId) {
+      setActiveEntries([]);
+      return;
+    }
+
+    const requestId = ++requestIdRef.current;
+    const requestedOperatorId = operatorId;
 
     const { data, error } = await supabase
       .from("time_entries")
@@ -54,10 +69,15 @@ export default function CurrentlyTimingWidget() {
         )
       `,
       )
-      .eq("operator_id", operatorId)
+      .eq("operator_id", requestedOperatorId)
       .is("end_time", null);
 
-    if (!error && data) {
+    if (
+      !error &&
+      data &&
+      requestIdRef.current === requestId &&
+      operatorIdRef.current === requestedOperatorId
+    ) {
       setActiveEntries(data as ActiveEntry[]);
     }
   }, [operatorId]);
@@ -65,9 +85,9 @@ export default function CurrentlyTimingWidget() {
   useEffect(() => {
     if (!operatorId) return;
 
-    const loadTimeout = window.setTimeout(() => {
+    queueMicrotask(() => {
       void loadActiveEntries();
-    }, 0);
+    });
 
     const interval = window.setInterval(() => {
       setTick((prev) => prev + 1);
@@ -90,7 +110,6 @@ export default function CurrentlyTimingWidget() {
       .subscribe();
 
     return () => {
-      clearTimeout(loadTimeout);
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
@@ -99,8 +118,11 @@ export default function CurrentlyTimingWidget() {
   const handleStop = async (operationId: string) => {
     if (!operatorId) return;
 
+    const requestedOperatorId = operatorId;
+
     try {
-      await stopTimeTracking(operationId, operatorId);
+      await stopTimeTracking(operationId, requestedOperatorId);
+      if (operatorIdRef.current !== requestedOperatorId) return;
       toast.success(t("operations.timeTrackingStopped"));
       await loadActiveEntries();
     } catch (error: unknown) {

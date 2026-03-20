@@ -19,7 +19,6 @@ import {
   Building2,
   Gauge,
   Factory,
-  Search,
   RefreshCw,
   UserCheck,
 } from "lucide-react";
@@ -105,7 +104,7 @@ export const OperatorLayout = ({
                     </div>
                     <div className="min-w-0">
                       <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                        {t("navigation.terminalView", "Operator workspace")}
+                        {t("navigation.terminalView", "Terminal View")}
                       </div>
                       <div className="truncate text-base font-semibold">
                         {tenant?.company_name || tenant?.name || t("app.name")}
@@ -206,7 +205,7 @@ export const OperatorLayout = ({
                       <div className="text-xs text-muted-foreground">{item.hint}</div>
                     </div>
                   </div>
-                  <Search className="h-4 w-4 opacity-0" />
+                  <span aria-hidden="true" className="h-4 w-4" />
                 </button>
               ))}
             </div>

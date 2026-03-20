@@ -25,7 +25,9 @@ const operationClasses: Record<JobRowProps["variant"], string> = {
 
 export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
   const { t } = useTranslation();
-  const dueDate = new Date(job.dueDate);
+  const dueDate = job.dueDate ? new Date(job.dueDate) : null;
+  const hasValidDueDate =
+    dueDate !== null && Number.isFinite(dueDate.getTime());
 
   return (
     <button
@@ -74,9 +76,11 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
             {t("terminal.columns.dueDate")}
           </div>
           <div className="text-sm font-semibold text-foreground">
-            {dueDate.toLocaleDateString()}
+            {hasValidDueDate ? dueDate.toLocaleDateString() : "-"}
           </div>
-          <div className="text-xs text-muted-foreground">{job.hours}h remaining</div>
+          <div className="text-xs text-muted-foreground">
+            {job.hours}h {t("operator.remaining", "remaining")}
+          </div>
         </div>
       </div>
 

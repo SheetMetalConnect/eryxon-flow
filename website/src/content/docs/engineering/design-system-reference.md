@@ -113,6 +113,28 @@ The product is not an HMI. It is a human-first MES workspace for people making d
 - **Admin pages**: Antigravity-style glass cards, gradient headings, and richer depth cues are acceptable because the work is more exploratory and less time-critical.
 - **Auth/login flows**: Keep the more atmospheric presentation via the shared `AuthShell` pattern; it improves branding and first-run orientation without competing with production data.
 
+#### Shared Primitives vs Presentation
+
+- Shared primitives such as `AdminPageHeader`, `PageStatsRow`, `StatusBadge`, `OperatorStation`, and `AuthShell` are reusable across the app.
+- Antigravity presentation layers such as `.glass-card`, `.onboarding-card`, `.cta-button`, and the animated background are **not** shared defaults; use them only on admin or auth surfaces.
+- Operator pages should prefer neutral containers like `rounded-2xl border border-border/80 bg-card/95 shadow-sm` with compact metadata and fixed action bars.
+
+Operator example:
+
+```tsx
+<OperatorPanel className="space-y-4">
+  <OperatorPageHeader
+    eyebrow="Work Queue"
+    title="Laser cell packets"
+    description="Scan active work, due dates, and current operator context."
+  />
+
+  <div className="rounded-2xl border border-border/80 bg-card/95 p-4 shadow-sm">
+    <DataTable ... />
+  </div>
+</OperatorPanel>
+```
+
 ### Theme-Aware Design
 
 Both themes are optimized for manufacturing use:
@@ -425,9 +447,9 @@ Every interactive element ships from `shadcn/ui`. Never hand-roll components whe
    - Update `components.json` with our namespace (`@/components/ui`).
    - Map shadcn tokens to our CSS variables in `src/styles/design-system.css`.
 
-4. **Wrap with Glass**
-   - For elevated surfaces (card, dialog, sheet) use `.glass-card` or `.onboarding-card`.
-   - Buttons, badges, and inputs adopt Antigravity gradients through Tailwind classes (e.g., `className="cta-button"`).
+4. **Choose the Surface Language**
+   - Operator/shared production screens: start with neutral surfaces such as `bg-card`, `border border-border/80`, and `shadow-sm`.
+   - Admin/auth screens: use `.glass-card`, `.onboarding-card`, and Antigravity button treatments only when that visual depth helps orientation.
 
 5. **Keep Upgrades Centralized**
    - Only edit the components inside `components/ui/`.
@@ -482,9 +504,9 @@ module.exports = {
 - Use these Tailwind tokens inside shadcn components (`buttonVariants`, `badgeVariants`, etc.).
 - Keep variant logic inside the generated component files so we can reuse them across the app.
 
-### Antigravity Layout Primer
+### Antigravity Layout Primer (Admin/Auth Only)
 
-Use the same skeleton from the Antigravity onboarding preview whenever you build full-screen flows.
+Use the same skeleton from the Antigravity onboarding preview whenever you build full-screen admin or auth flows. Do not apply this hero treatment to operator execution screens.
 
 ```tsx
 <>
@@ -1157,7 +1179,7 @@ import { Input } from '@/components/ui/input';
 
 ### Dialogs & Sheets (shadcn/ui)
 
-Use shadcn's `Dialog` and `Sheet` primitives, then add glassmorphism to `DialogContent`/`SheetContent`.
+Use shadcn's `Dialog` and `Sheet` primitives first. Add glassmorphism to `DialogContent`/`SheetContent` only on admin or auth surfaces; operator dialogs should stay neutral and high-contrast.
 
 ```tsx
 import {
@@ -1188,7 +1210,8 @@ export function GlassDialog() {
 }
 ```
 
-- Always pass `className="glass-card"` (or `.onboarding-card` for larger sheets) into the generated shadcn component.
+- For admin/auth dialogs, pass `className="glass-card"` (or `.onboarding-card` for larger sheets) into the generated shadcn component.
+- For operator dialogs, prefer `className="border-border/80 bg-popover"` with minimal decorative treatment.
 - Use shadcn `Form` components for validation, layering `informational-text` capsules or workflow callouts where appropriate.
 
 ### Title Divider
@@ -1371,7 +1394,11 @@ import { PageStatsRow } from "@/components/admin/PageStatsRow";
    ```
    Use generated components everywhere; extend them with Antigravity classes rather than rewriting HTML.
 
-2. **Compose the Antigravity Stack**
+2. **Match the Surface Role**
+   - Operator surfaces: neutral panels, compact metadata, explicit status chips, and obvious action rails.
+   - Admin/auth surfaces: Antigravity layers are acceptable where the work benefits from orientation and brand expression.
+
+3. **Compose the Antigravity Stack (Admin/Auth Only)**
    ```tsx
    <>
      <AnimatedBackground variant="antigravity" />
@@ -1381,13 +1408,13 @@ import { PageStatsRow } from "@/components/admin/PageStatsRow";
    </>
    ```
 
-3. **Use Tokens Everywhere**
+4. **Use Tokens Everywhere**
    ```jsx
    <div className="bg-[hsl(var(--surface-card))] text-foreground rounded-2xl">
    ```
    No hex literals—reference `--surface-*`, `--brand-*`, and status tokens.
 
-4. **Keep the Hero Stack Intact**
+5. **Keep the Hero Stack Intact (Admin/Auth Only)**
    ```jsx
    <div className="icon-container" />
    <p className="welcome-text">Welcome to</p>
@@ -1397,14 +1424,13 @@ import { PageStatsRow } from "@/components/admin/PageStatsRow";
    </div>
    ```
 
-5. **Tell the Narrative**
+6. **Tell the Narrative (Admin/Auth Only)**
    - Informational capsule → workflow callout → use-case grid mirrors the Antigravity story.
    - Add tinted Lucide icons so each card reads instantly.
 
-6. **Leverage Micro-Interactions**
-   - Copy pill flips to `.copied`.
-   - CTA arrows nudge on hover.
-   - Cards fade in with `fadeInUp`.
+7. **Leverage Micro-Interactions Selectively**
+   - On admin/auth pages, copy pills, CTA arrows, and staggered reveals are appropriate.
+   - On operator pages, motion should support state change, not decoration.
 
 ### ❌ Don't
 
@@ -1412,23 +1438,23 @@ import { PageStatsRow } from "@/components/admin/PageStatsRow";
    - Never import another component library for buttons, cards, inputs, etc.
    - If you need a component, run `npx shadcn@latest add <component>` and style it.
 
-2. **No Flat Backgrounds**
+2. **Don't Put Operator Work on Decorative Backgrounds**
    ```css
-   body { background: #111927; } // Do this
-   body { background: #0a0a0a; } // Not acceptable
+   .operator-shell { background: hsl(var(--background)); } // Correct
+   .operator-shell { background: radial-gradient(...); } // Not acceptable
    ```
 
-3. **No Opaque Cards**
-   Glass cards must use blur + saturation. Avoid `bg-gray-900` or solid fills.
+3. **Don't Treat Glass as the Default**
+   Glass cards belong to admin/auth flows. Operator screens should default to solid, readable containers.
 
 4. **No Arbitrary Tailwind Values**
    Stick to `p-4`, `gap-3`, etc. Do not introduce `p-[23px]`.
 
-5. **No Untinted Icons**
-   Assign `.icon-blue`/`.icon-green` classes so icons match the pack.
+5. **No Unscoped Icon Treatment**
+   Use decorative icon tinting on admin/auth surfaces only. Operator icons should stay semantic and legible.
 
-6. **No Static Entrances**
-   Cards and pills should animate (`fadeInUp`, float, copy success) exactly like the reference.
+6. **No Decorative Motion on Execution Screens**
+   Operator cards, dialogs, and action bars should feel stable; reserve staged entrances for admin/auth storytelling surfaces.
 
 ### Accessibility
 
@@ -1551,12 +1577,12 @@ Standard pattern for all admin pages to create visual hierarchy and brand consis
 </div>
 ```
 
-### Glass Data Tables
+### Data Table Surface Treatment
 
-Wrap data tables in glass cards for depth and visual appeal.
+Operator data tables should use neutral containers. Admin and auth-adjacent tables may use glass cards when the surrounding page already uses Antigravity treatment.
 
 ```tsx
-<div className="glass-card p-6">
+<div className="rounded-2xl border border-border/80 bg-card/95 p-4 shadow-sm">
   <DataTable
     columns={columns}
     data={jobs || []}
@@ -1568,9 +1594,9 @@ Wrap data tables in glass cards for depth and visual appeal.
 </div>
 ```
 
-### Modal Dialogs with Glass Effect
+### Modal Dialog Treatment
 
-All dialogs should use glass morphism for consistency.
+Use glass dialogs only on admin/auth surfaces. Operator dialogs should favor quiet backgrounds, clear borders, and predictable spacing.
 
 ```tsx
 <Dialog open={isOpen} onOpenChange={setIsOpen}>

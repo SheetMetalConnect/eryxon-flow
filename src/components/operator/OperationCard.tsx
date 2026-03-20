@@ -42,7 +42,9 @@ export default function OperationCard({
   );
 
   const dueDate = operation.part.job.due_date_override || operation.part.job.due_date;
-  const remainingTime = (operation.estimated_time || 0) - (operation.actual_time || 0);
+  const actualHours = (operation.actual_time || 0) / 60;
+  const estimatedHours = (operation.estimated_time || 0) / 60;
+  const remainingTime = estimatedHours - actualHours;
   const isOvertime = remainingTime < 0;
   const isAssignedToMe =
     operation.assigned_operator_id === profile?.id || assignedToMe;
@@ -140,8 +142,7 @@ export default function OperationCard({
             </div>
             <div className="mt-1 flex items-center gap-2 text-foreground">
               <Clock3 className="h-4 w-4 text-primary" />
-              {(operation.actual_time || 0).toFixed(1)}h /{" "}
-              {(operation.estimated_time || 0).toFixed(1)}h
+              {actualHours.toFixed(1)}h / {estimatedHours.toFixed(1)}h
             </div>
           </div>
 

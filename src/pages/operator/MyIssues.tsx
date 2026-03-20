@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -50,11 +50,26 @@ export default function MyIssues() {
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [loading, setLoading] = useState(true);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const operatorIdRef = useRef<string | null>(operatorId || null);
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
+    operatorIdRef.current = operatorId || null;
+    requestIdRef.current += 1;
+    queueMicrotask(() => {
+      setIssues([]);
+      setSelectedIssue(null);
+      setLoading(Boolean(operatorId));
+    });
+  }, [operatorId]);
+
+  useEffect(() => {
+    let isActive = true;
+
     const loadImageUrls = async () => {
+      setImageUrls([]);
+
       if (!selectedIssue?.image_paths || selectedIssue.image_paths.length === 0) {
-        setImageUrls([]);
         return;
       }
 
@@ -67,14 +82,28 @@ export default function MyIssues() {
         }),
       );
 
-      setImageUrls(urls.filter(Boolean));
+      if (isActive) {
+        setImageUrls(urls.filter(Boolean));
+      }
     };
 
     void loadImageUrls();
+
+    return () => {
+      isActive = false;
+    };
   }, [selectedIssue?.id, selectedIssue?.image_paths]);
 
   const loadIssues = useCallback(async () => {
-    if (!operatorId) return;
+    if (!operatorId) {
+      setIssues([]);
+      setLoading(false);
+      return;
+    }
+
+    const requestId = ++requestIdRef.current;
+    const requestedOperatorId = operatorId;
+    setLoading(true);
 
     const { data, error } = await supabase
       .from("issues")
@@ -88,8 +117,15 @@ export default function MyIssues() {
           )
         )
       `)
-      .eq("created_by", operatorId)
+      .eq("created_by", requestedOperatorId)
       .order("created_at", { ascending: false });
+
+    if (
+      requestIdRef.current !== requestId ||
+      operatorIdRef.current !== requestedOperatorId
+    ) {
+      return;
+    }
 
     if (error) {
       logger.error("MyIssues", "Error loading issues", error);
@@ -123,12 +159,11 @@ export default function MyIssues() {
 
   useEffect(() => {
     if (!operatorId) return;
-    const loadTimeout = window.setTimeout(() => {
+    queueMicrotask(() => {
       void loadIssues();
-    }, 0);
+    });
     const cleanup = setupRealtime();
     return () => {
-      clearTimeout(loadTimeout);
       cleanup?.();
     };
   }, [loadIssues, operatorId, setupRealtime]);

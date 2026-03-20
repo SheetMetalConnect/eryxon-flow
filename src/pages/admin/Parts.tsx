@@ -201,15 +201,16 @@ export default function Parts() {
   };
 
   const getStatusBadge = useCallback((status: string) => {
-    const badgeStatus: Record<string, "pending" | "active" | "completed"> = {
+    const badgeStatus: Record<string, "pending" | "active" | "completed" | "on-hold"> = {
       not_started: "pending",
       in_progress: "active",
       completed: "completed",
+      on_hold: "on-hold",
     };
     return (
       <StatusBadge
         status={badgeStatus[status] || "pending"}
-        label={status.replace("_", " ")}
+        label={status.replaceAll("_", " ")}
       />
     );
   }, []);
@@ -388,6 +389,7 @@ export default function Parts() {
       options: [
         { label: t("parts.status.notStarted"), value: "not_started" },
         { label: t("parts.status.inProgress"), value: "in_progress" },
+        { label: t("parts.status.onHold", "On hold"), value: "on_hold" },
         { label: t("parts.status.completed"), value: "completed" },
       ],
     },

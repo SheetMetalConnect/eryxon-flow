@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { LucideIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface AdminPageHeaderProps {
   title: string;
@@ -27,6 +28,7 @@ export function AdminPageHeader({
   action,
   children,
 }: AdminPageHeaderProps) {
+  const { t } = useTranslation();
   const isActionObject = action && typeof action === 'object' && 'onClick' in action;
   const ActionIcon = isActionObject ? action.icon : undefined;
 
@@ -35,7 +37,7 @@ export function AdminPageHeader({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-1">
           <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            Workspace
+            {t("common.workspace", "Workspace")}
           </div>
           <h1 className="bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-2xl font-semibold tracking-tight text-transparent">
             {title}

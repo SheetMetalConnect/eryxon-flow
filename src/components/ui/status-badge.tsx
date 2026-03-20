@@ -28,7 +28,7 @@ export type StatusType =
   | 'critical';
 
 const statusBadgeVariants = cva(
-  'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold capitalize',
+  'inline-flex items-center gap-1.5 rounded-full border font-semibold capitalize',
   {
     variants: {
       status: {

@@ -65,9 +65,7 @@ const mockCells = [
 const createQueryBuilder = (data: unknown[]) => ({
   select: vi.fn().mockReturnThis(),
   eq: vi.fn().mockReturnThis(),
-  order: vi.fn().mockReturnThis(),
-  then: (resolve: (value: { data: unknown[]; error: null }) => unknown) =>
-    Promise.resolve(resolve({ data, error: null })),
+  order: vi.fn().mockResolvedValue({ data, error: null }),
 });
 
 vi.mock("@/integrations/supabase/client", () => ({

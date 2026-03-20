@@ -27,7 +27,7 @@ const NotFound = () => {
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground">
             {t("common.pageNotFound")}
           </h1>
-          <p className="mt-2 max-w-md text-sm text-muted-foreground">
+          <p className="mt-2 max-w-md break-words whitespace-normal text-sm text-muted-foreground">
             {location.pathname}
           </p>
           <Button asChild className="mt-6 min-h-11 rounded-xl px-4">

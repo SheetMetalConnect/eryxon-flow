@@ -61,7 +61,13 @@ export default function IssueQueue() {
   const [imageUrls, setImageUrls] = useState<string[]>([]);
 
   const loadIssues = useCallback(async () => {
-    if (!profile?.tenant_id) return;
+    if (!profile?.tenant_id) {
+      setIssues([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
 
     let query = supabase
       .from("issues")
@@ -122,8 +128,9 @@ export default function IssueQueue() {
 
   useEffect(() => {
     const loadImageUrls = async () => {
+      setImageUrls([]);
+
       if (!selectedIssue?.image_paths || selectedIssue.image_paths.length === 0) {
-        setImageUrls([]);
         return;
       }
 
@@ -136,13 +143,23 @@ export default function IssueQueue() {
         }),
       );
 
-      setImageUrls(urls.filter((url) => url !== ""));
+      return urls.filter((url) => url !== "");
     };
 
-    void loadImageUrls();
+    let isActive = true;
+
+    void loadImageUrls().then((urls) => {
+      if (isActive && urls) {
+        setImageUrls(urls);
+      }
+    });
+
+    return () => {
+      isActive = false;
+    };
   }, [selectedIssue?.id, selectedIssue?.image_paths]);
 
-  const handleReview = async (action: "approved" | "rejected" | "closed") => {
+  const handleReview = async (action: "approved" | "rejected") => {
     if (!selectedIssue || !profile?.id || !resolutionNotes.trim()) {
       toast.error(t("issues.pleaseProvideResolutionNotes"));
       return;
@@ -218,6 +235,7 @@ export default function IssueQueue() {
       cell: ({ row }) => (
         <span className="font-medium">{row.original.operation?.part?.job?.job_number || "-"}</span>
       ),
+      accessorFn: (row) => row.operation?.part?.job?.job_number || "",
     },
     {
       id: "part",
@@ -225,6 +243,7 @@ export default function IssueQueue() {
         <DataTableColumnHeader column={column} title={t("common.part", "Part")} />
       ),
       cell: ({ row }) => row.original.operation?.part?.part_number || "-",
+      accessorFn: (row) => row.operation?.part?.part_number || "",
     },
     {
       id: "operation",
@@ -232,6 +251,7 @@ export default function IssueQueue() {
         <DataTableColumnHeader column={column} title={t("common.operation", "Operation")} />
       ),
       cell: ({ row }) => row.original.operation?.operation_name || "-",
+      accessorFn: (row) => row.operation?.operation_name || "",
     },
     {
       accessorKey: "description",
@@ -250,6 +270,7 @@ export default function IssueQueue() {
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground">{row.original.creator?.full_name || "-"}</span>
       ),
+      accessorFn: (row) => row.creator?.full_name || "",
     },
     {
       accessorKey: "created_at",
@@ -342,6 +363,13 @@ export default function IssueQueue() {
           columns={columns}
           data={issues}
           filterableColumns={filterableColumns}
+          searchableColumns={[
+            { id: "job", title: t("common.job", "Job") },
+            { id: "part", title: t("common.part", "Part") },
+            { id: "operation", title: t("common.operation", "Operation") },
+            { id: "reporter", title: t("issues.reporter", "Reporter") },
+            { id: "description", title: t("issues.description", "Description") },
+          ]}
           searchPlaceholder={t("issues.searchPlaceholder", "Search issues...")}
           emptyMessage={t("issues.noIssuesFound", "No issues found")}
           loading={loading}

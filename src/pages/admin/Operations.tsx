@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
@@ -173,7 +173,7 @@ export const Operations: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = useCallback((status: string) => {
     const badgeStatus: Record<string, "pending" | "active" | "completed" | "on-hold"> = {
       not_started: "pending",
       in_progress: "active",
@@ -183,10 +183,10 @@ export const Operations: React.FC = () => {
     return (
       <StatusBadge
         status={badgeStatus[status] || "pending"}
-        label={status.replace("_", " ")}
+        label={status.replaceAll("_", " ")}
       />
     );
-  };
+  }, []);
 
   const columns: ColumnDef<Operation>[] = useMemo(() => [
     {
@@ -325,7 +325,7 @@ export const Operations: React.FC = () => {
         return value.includes(row.getValue(id));
       },
     },
-  ], [navigate, t]);
+  ], [getStatusBadge, navigate, t]);
 
   const uniqueCells = useMemo(() =>
     [...new Set(operations.map((op) => op.cell))],

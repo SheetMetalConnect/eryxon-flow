@@ -201,19 +201,24 @@ export default function WorkQueue() {
 
     let matchesDueDate = true;
     if (dueDateFilter !== "all") {
-      const dueDate = new Date(
-        operation.part.job.due_date_override || operation.part.job.due_date,
-      );
-      const today = startOfToday();
-      const endToday = endOfToday();
-      const weekFromNow = addDays(today, 7);
+      const dueDateValue =
+        operation.part.job.due_date_override || operation.part.job.due_date;
+      const dueDate = dueDateValue ? new Date(dueDateValue) : null;
+      const hasValidDueDate =
+        dueDate !== null && Number.isFinite(dueDate.getTime());
 
-      if (dueDateFilter === "overdue") {
-        matchesDueDate = isBefore(dueDate, today);
-      } else if (dueDateFilter === "today") {
-        matchesDueDate = isAfter(dueDate, today) && isBefore(dueDate, endToday);
-      } else if (dueDateFilter === "this_week") {
-        matchesDueDate = isAfter(dueDate, today) && isBefore(dueDate, weekFromNow);
+      if (hasValidDueDate) {
+        const today = startOfToday();
+        const endToday = endOfToday();
+        const weekFromNow = addDays(today, 7);
+
+        if (dueDateFilter === "overdue") {
+          matchesDueDate = isBefore(dueDate, today);
+        } else if (dueDateFilter === "today") {
+          matchesDueDate = isAfter(dueDate, today) && isBefore(dueDate, endToday);
+        } else if (dueDateFilter === "this_week") {
+          matchesDueDate = isAfter(dueDate, today) && isBefore(dueDate, weekFromNow);
+        }
       }
     }
 
@@ -233,9 +238,21 @@ export default function WorkQueue() {
       return a.sequence - b.sequence;
     }
     if (sortBy === "due_date") {
-      const dateA = new Date(a.part.job.due_date_override || a.part.job.due_date);
-      const dateB = new Date(b.part.job.due_date_override || b.part.job.due_date);
-      return dateA.getTime() - dateB.getTime();
+      const getDueTime = (operation: OperationWithDetails) => {
+        const dueDateValue =
+          operation.part.job.due_date_override || operation.part.job.due_date;
+
+        if (!dueDateValue) {
+          return Number.MAX_SAFE_INTEGER;
+        }
+
+        const dueDate = new Date(dueDateValue);
+        return Number.isFinite(dueDate.getTime())
+          ? dueDate.getTime()
+          : Number.MAX_SAFE_INTEGER;
+      };
+
+      return getDueTime(a) - getDueTime(b);
     }
     if (sortBy === "estimated_time") {
       return (a.estimated_time || 0) - (b.estimated_time || 0);
