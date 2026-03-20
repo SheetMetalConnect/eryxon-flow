@@ -123,9 +123,8 @@ describe('AdminPageHeader', () => {
     render(<AdminPageHeader title="Test Title" />);
 
     const heading = screen.getByRole('heading', { level: 1 });
-    expect(heading).toHaveClass('text-xl');
-    expect(heading).toHaveClass('font-bold');
-    expect(heading).toHaveClass('bg-gradient-to-r');
+    expect(heading).toHaveClass('text-2xl');
+    expect(heading).toHaveClass('font-semibold');
   });
 
   it('applies correct CSS classes to description', () => {
@@ -153,5 +152,6 @@ describe('AdminPageHeader', () => {
 
     const button = screen.getByRole('button', { name: /action/i });
     expect(button).toHaveClass('cta-button');
+    expect(button).toHaveClass('min-h-11');
   });
 });

@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Download, Wrench, PlayCircle, CheckCircle2, UserCheck, PlusCircle } from "lucide-react";
@@ -173,16 +174,17 @@ export const Operations: React.FC = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      not_started: "secondary",
-      in_progress: "default",
-      completed: "outline",
-      on_hold: "destructive",
+    const badgeStatus: Record<string, "pending" | "active" | "completed" | "on-hold"> = {
+      not_started: "pending",
+      in_progress: "active",
+      completed: "completed",
+      on_hold: "on-hold",
     };
     return (
-      <Badge variant={variants[status] || "default"}>
-        {status.replace("_", " ").toUpperCase()}
-      </Badge>
+      <StatusBadge
+        status={badgeStatus[status] || "pending"}
+        label={status.replace("_", " ")}
+      />
     );
   };
 

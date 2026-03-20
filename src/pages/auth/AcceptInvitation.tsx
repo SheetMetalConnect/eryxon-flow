@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,8 @@ import { useInvitations } from '@/hooks/useInvitations';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import AnimatedBackground from '@/components/AnimatedBackground';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { AuthCardHeader, AuthShell } from '@/components/auth/AuthShell';
 import { logger } from '@/lib/logger';
 
 export default function AcceptInvitation() {
@@ -32,11 +33,7 @@ export default function AcceptInvitation() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadInvitation();
-  }, [token]);
-
-  const loadInvitation = async () => {
+  const loadInvitation = useCallback(async () => {
     if (!token) {
       setError(t('invitation.invalidLink'));
       setLoading(false);
@@ -53,7 +50,11 @@ export default function AcceptInvitation() {
     }
 
     setLoading(false);
-  };
+  }, [getInvitationByToken, t, token]);
+
+  useEffect(() => {
+    void loadInvitation();
+  }, [loadInvitation]);
 
   const handleAccept = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,72 +117,56 @@ export default function AcceptInvitation() {
 
   if (loading) {
     return (
-      <>
-        <AnimatedBackground />
-        <div className="relative min-h-screen flex items-center justify-center">
+      <AuthShell
+        topRight={<LanguageSwitcher />}
+        containerClassName="items-center"
+        cardClassName="max-w-sm py-10"
+      >
+        <div className="flex flex-col items-center gap-4 py-4">
+          <Factory className="h-12 w-12 text-primary" strokeWidth={1.5} />
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      </>
+      </AuthShell>
     );
   }
 
   if (error && !invitation) {
     return (
-      <>
-        <AnimatedBackground />
-        <div className="relative min-h-screen flex items-start justify-center p-8 pt-20">
-          <div className="onboarding-card">
-            <div className="inline-flex items-center justify-center mb-4">
-              <Factory className="w-12 h-12 text-destructive" strokeWidth={1.5} />
-            </div>
+      <AuthShell topRight={<LanguageSwitcher />} cardClassName="max-w-[440px]">
+        <AuthCardHeader
+          icon={Factory}
+          appName={t('auth.appName')}
+          eyebrow={t('invitation.youreInvited')}
+          title={t('invitation.invalidTitle')}
+          description={error}
+          descriptionClassName="mt-2 text-center text-sm text-muted-foreground"
+          iconClassName="h-12 w-12"
+        />
 
-            <h1 className="text-2xl font-bold mb-2">{t('invitation.invalidTitle')}</h1>
-            <p className="text-sm text-muted-foreground mb-6">{error}</p>
-
-            <Button onClick={() => navigate('/auth')} className="w-full cta-button">
-              {t('invitation.goToLogin')}
-              <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />
-            </Button>
-          </div>
-        </div>
-      </>
+        <Button onClick={() => navigate('/auth')} className="w-full cta-button">
+          {t('invitation.goToLogin')}
+          <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />
+        </Button>
+      </AuthShell>
     );
   }
 
   return (
-    <>
-      <AnimatedBackground />
+    <AuthShell topRight={<LanguageSwitcher />} cardClassName="max-w-[540px]">
+      <AuthCardHeader
+        icon={Factory}
+        appName={t('auth.appName')}
+        eyebrow={t('invitation.youreInvited')}
+        title={t('invitation.joinYourTeam')}
+        description={t('invitation.welcomeToEryxon')}
+        descriptionClassName="mb-6 text-center text-base text-foreground/80"
+        iconClassName="h-12 w-12"
+      />
 
-      <div className="relative min-h-screen flex items-start justify-center p-8 pt-20">
-        {/* Main Invitation Card */}
-        <div className="onboarding-card">
-          {/* Icon/Logo */}
-          <div className="inline-flex items-center justify-center mb-4">
-            <Factory className="w-12 h-12 text-primary" strokeWidth={1.5} />
-          </div>
-
-          {/* Welcome Text */}
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">
-            {t('invitation.youreInvited')}
-          </p>
-
-          {/* Hero Title */}
-          <h1 className="hero-title">
-            {t('invitation.joinYourTeam')}
-          </h1>
-
-          {/* Tagline */}
-          <p className="text-base text-foreground/80 mb-6">
-            {t('invitation.welcomeToEryxon')}
-          </p>
-
-          {/* Divider */}
-          <hr className="title-divider" />
-
-          {invitation && (
-            <div className="space-y-6">
-              {/* Invitation Details */}
-              <div className="bg-muted/30 backdrop-blur-sm p-5 rounded-xl space-y-4 border border-border-subtle text-left">
+      {invitation && (
+        <div className="space-y-6">
+          <div className="glass-card rounded-2xl border border-border/80 p-5 text-left shadow-sm">
+            <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <UserCheck className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                   <div className="min-w-0 flex-1">
@@ -219,63 +204,62 @@ export default function AcceptInvitation() {
                 </div>
               </div>
 
-              {/* Signup Form */}
-              <form onSubmit={handleAccept} className="space-y-4 text-left">
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-medium">
-                    {t('invitation.createPassword')}
-                  </Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    placeholder="••••••••"
-                    className="bg-input-background border-input"
-                  />
-                  <p className="text-xs text-muted-foreground">{t('auth.passwordRequirements')}</p>
-                </div>
+          </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                    {t('invitation.confirmPassword')}
-                  </Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    placeholder="••••••••"
-                    className="bg-input-background border-input"
-                  />
-                </div>
-
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-
-                <div className="pt-2">
-                  <Button type="submit" className="w-full cta-button" disabled={submitting}>
-                    {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {t('invitation.acceptAndJoin')}
-                    <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />
-                  </Button>
-                </div>
-
-                <p className="text-xs text-center text-muted-foreground pt-4">
-                  {t('invitation.acceptTerms', { tenantName: invitation.tenant_name })}
-                </p>
-              </form>
+          <form onSubmit={handleAccept} className="space-y-4 text-left">
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-medium">
+                {t('invitation.createPassword')}
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                placeholder="••••••••"
+                className="bg-input-background border-input"
+              />
+              <p className="text-xs text-muted-foreground">{t('auth.passwordRequirements')}</p>
             </div>
-          )}
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                {t('invitation.confirmPassword')}
+              </Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
+                placeholder="••••••••"
+                className="bg-input-background border-input"
+              />
+            </div>
+
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="pt-2">
+              <Button type="submit" className="w-full cta-button" disabled={submitting}>
+                {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {t('invitation.acceptAndJoin')}
+                <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />
+              </Button>
+            </div>
+
+            <p className="pt-4 text-center text-xs text-muted-foreground">
+              {t('invitation.acceptTerms', { tenantName: invitation.tenant_name })}
+            </p>
+          </form>
         </div>
-      </div>
-    </>
+      )}
+    </AuthShell>
   );
 }

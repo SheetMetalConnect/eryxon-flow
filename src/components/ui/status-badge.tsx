@@ -20,20 +20,24 @@ export type StatusType =
   | 'completed'
   | 'on-hold'
   | 'cancelled'
+  | 'approved'
+  | 'rejected'
   | 'high'
   | 'medium'
   | 'low'
   | 'critical';
 
 const statusBadgeVariants = cva(
-  'inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold capitalize',
+  'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold capitalize',
   {
     variants: {
       status: {
         success: 'bg-green-500/10 text-green-600 dark:text-green-400',
         completed: 'bg-green-500/10 text-green-600 dark:text-green-400',
+        approved: 'bg-green-500/10 text-green-600 dark:text-green-400',
         error: 'bg-red-500/10 text-red-600 dark:text-red-400',
         critical: 'bg-red-500/15 text-red-600 dark:text-red-400',
+        rejected: 'bg-red-500/10 text-red-600 dark:text-red-400',
         warning: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400',
         high: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400',
         info: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
@@ -60,8 +64,10 @@ const statusBadgeVariants = cva(
 const statusIcons: Record<StatusType, React.ComponentType<{ className?: string }>> = {
   success: CheckCircle,
   completed: CheckCircle,
+  approved: CheckCircle,
   error: XCircle,
   critical: XCircle,
+  rejected: XCircle,
   warning: AlertTriangle,
   high: AlertTriangle,
   info: Info,
@@ -142,4 +148,4 @@ const SeverityBadge = React.forwardRef<HTMLSpanElement, SeverityBadgeProps>(
 );
 SeverityBadge.displayName = 'SeverityBadge';
 
-export { StatusBadge, PriorityBadge, SeverityBadge, statusBadgeVariants };
+export { StatusBadge, PriorityBadge, SeverityBadge };

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { ColumnDef } from "@tanstack/react-table";
@@ -9,6 +9,7 @@ import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
 import { logger } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { useNavigate } from "react-router-dom";
 import {
   Calendar,
@@ -148,7 +149,7 @@ export default function Jobs() {
 
   const { routings, loading: routingsLoading } = useMultipleJobsRouting(jobIds, profile?.tenant_id ?? null);
 
-  const handleSetOnHold = async (jobId: string) => {
+  const handleSetOnHold = useCallback(async (jobId: string) => {
     const { error } = await supabase.from("jobs").update({ status: "on_hold" }).eq("id", jobId);
     if (error) {
       toast.error(t("notifications.error"), { description: error.message });
@@ -156,9 +157,9 @@ export default function Jobs() {
     }
     refetch();
     toast.success(t("jobs.statusUpdated"), { description: t("jobs.jobOnHold") });
-  };
+  }, [refetch, t]);
 
-  const handleResume = async (jobId: string) => {
+  const handleResume = useCallback(async (jobId: string) => {
     const { error } = await supabase.from("jobs").update({ status: "in_progress" }).eq("id", jobId);
     if (error) {
       toast.error(t("notifications.error"), { description: error.message });
@@ -166,9 +167,9 @@ export default function Jobs() {
     }
     refetch();
     toast.success(t("jobs.statusUpdated"), { description: t("jobs.jobResumed") });
-  };
+  }, [refetch, t]);
 
-  const handleViewFile = async (filePath: string) => {
+  const handleViewFile = useCallback(async (filePath: string) => {
     try {
       const fileExt = filePath.split(".").pop()?.toLowerCase();
       const fileType =
@@ -207,7 +208,7 @@ export default function Jobs() {
       logger.error('Jobs', 'Error opening file', error);
       toast.error(t("notifications.error"), { description: t("notifications.failedToOpenFileViewer") });
     }
-  };
+  }, [t]);
 
   const handleFileDialogClose = () => {
     setFileViewerOpen(false);
@@ -219,12 +220,12 @@ export default function Jobs() {
     setCurrentFileTitle("");
   };
 
-  const getStatusBadge = (status: string) => {
-    const config: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; className: string }> = {
-      not_started: { variant: "secondary", className: "bg-muted/50" },
-      in_progress: { variant: "default", className: "bg-[hsl(var(--brand-primary))]/20 text-[hsl(var(--brand-primary))] border-[hsl(var(--brand-primary))]/30" },
-      completed: { variant: "outline", className: "bg-[hsl(var(--color-success))]/20 text-[hsl(var(--color-success))] border-[hsl(var(--color-success))]/30" },
-      on_hold: { variant: "destructive", className: "bg-[hsl(var(--color-warning))]/20 text-[hsl(var(--color-warning))] border-[hsl(var(--color-warning))]/30" },
+  const getStatusBadge = useCallback((status: string) => {
+    const badgeStatus: Record<string, "pending" | "active" | "completed" | "on-hold"> = {
+      not_started: "pending",
+      in_progress: "active",
+      completed: "completed",
+      on_hold: "on-hold",
     };
     const statusLabels: Record<string, string> = {
       not_started: t("operations.status.notStarted"),
@@ -232,13 +233,13 @@ export default function Jobs() {
       completed: t("operations.status.completed"),
       on_hold: t("operations.status.onHold"),
     };
-    const { variant, className } = config[status] || config.not_started;
     return (
-      <Badge variant={variant} className={cn("font-medium", className)}>
-        {statusLabels[status] || status}
-      </Badge>
+      <StatusBadge
+        status={badgeStatus[status] || "pending"}
+        label={statusLabels[status] || status}
+      />
     );
-  };
+  }, [t]);
 
   const getDueDateDisplay = (job: JobData) => {
     const dueDate = new Date(job.due_date_override || job.due_date);
@@ -451,7 +452,7 @@ export default function Jobs() {
       },
       size: 50,
     },
-  ], [t, routings, routingsLoading]);
+  ], [getStatusBadge, handleResume, handleSetOnHold, handleViewFile, routings, routingsLoading, t]);
 
   const filterableColumns: DataTableFilterableColumn[] = useMemo(() => [
     {

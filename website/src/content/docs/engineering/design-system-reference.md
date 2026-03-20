@@ -5,7 +5,7 @@ description: "Detailed design system reference for contributors extending the Er
 
 # Eryxon Flow Design System
 
-**Modern design system for manufacturing execution with dark/light/auto theme support**
+**Practical design system for operator-facing MES and manufacturing coordination**
 
 ---
 
@@ -27,15 +27,15 @@ description: "Detailed design system reference for contributors extending the Er
 
 ## Overview
 
-The Eryxon Flow design system is a **modern, multi-theme** UI framework built for manufacturing professionals. It supports **dark**, **light**, and **auto** (system preference) modes.
+The Eryxon Flow design system is a **multi-theme application framework** for small and mid-sized manufacturing teams. It is designed for people working with production data: operators on shared shop-floor tablets, leads checking live progress, and admins managing jobs, parts, routing, issues, and capacity.
 
 ### Core Features
 
-- **Multi-Theme Support**: Dark, light, and auto modes with seamless switching
-- **Glass Morphism Surfaces**: Blur + saturate cards with translucent borders (adapts to theme)
-- **Accent Palette**: Icon tints and pills in blue, green, yellow, and red
-- **System Typography**: Inter blended with the OS stack for crisp UI copy
-- **Touch-Optimized Layouts**: 44px+ targets for shop-floor tablets
+- **Multi-Theme Support**: Dark, light, and auto modes with stable contrast and clear status semantics
+- **Operator-First Layouts**: Shared patterns for packet selection, routing review, quantity reporting, issue reporting, and activity history
+- **Consistent Status Language**: Reusable badges, summary cards, and headers for jobs, parts, operations, and issues
+- **Touch-Optimized Controls**: 44-48px+ targets for shared terminals and tablets
+- **Layered Surface Strategy**: Operator workspaces stay restrained; admin and login surfaces can use Antigravity glass treatment where it improves orientation and perceived polish
 - **shadcn/ui Components**: Every primitive comes from shadcn/ui with theme-aware styling
 
 ### Technology Stack
@@ -89,46 +89,53 @@ All CSS tokens automatically adapt based on the root class. Use design tokens (n
 
 ## Design Philosophy
 
-### "The Simple MES You Love to Use"
+### "Clear Work, Clear Next Action"
 
-Our tagline drives every design decision and anchors the Antigravity styling pass:
+The product is not an HMI. It is a human-first MES workspace for people making decisions and recording production reality. That means the UI must prioritize:
 
-1. **Simple**: A single glass card centered on an ambient stage keeps the focus on the task.
-2. **Beautiful**: Animated gradients, neon pills, and microcopy echo the Antigravity Browser Control preview.
-3. **Functional**: Touch-optimized layouts (44px+ targets) remain practical for shop-floor tablets.
-4. **Professional**: Enterprise-grade typography, accessibility, and predictable motion keep trust high.
+1. **Immediate orientation**: Every page should answer where the user is, what they are looking at, and what status it is in.
+2. **Low-friction execution**: Core actions such as start, pause, complete, report quantity, and report issue must be obvious and reachable on tablets.
+3. **Consistent meaning**: Active, pending, blocked, completed, approved, and rejected should look the same everywhere in the app.
+4. **Production-context hierarchy**: Job number, part number, operation, cell, due date, and packet/document availability are higher priority than decorative treatment.
+5. **Durable readability**: Screens should hold up in bright shops, low-light offices, and long work sessions without depending on motion or gradients for meaning.
 
 ### Visual Aesthetic
 
-- **Ambient Field + Depth** — Backgrounds use radial gradients; floating orbs add parallax in dark mode.
-- **Glass Cards** — Hero surfaces use `backdrop-filter: blur(16px) saturate(180%)` with translucent borders.
-- **Layered Messaging** — Icon container, uppercase welcome text, gradient hero, preview pill, and divider.
-- **Narrative Sections** — Informational capsule, workflow callout, and use-case grid structure content.
-- **Status Icon Tints** — Blue, green, yellow, and red strokes for semantic meaning.
+- **Neutral Base, Semantic Accents** — Most surfaces stay quiet; color is reserved for states and priorities.
+- **Rounded Industrial SaaS Surfaces** — Cards and panels are modern, but not ornamental.
+- **Structured Header Rhythm** — Eyebrow, page title, supporting description, status chips, then actions.
+- **Packet-Centered Detail Views** — The current job packet or record stays visually dominant, with secondary metadata grouped below it.
+- **Action Rails and Summary Grids** — Pages expose the current slice of work with summary cards and obvious next-step actions.
+
+### Surface Split
+
+- **Operator pages**: Prefer neutral panels, strong borders, compact metadata, and obvious action bars.
+- **Admin pages**: Antigravity-style glass cards, gradient headings, and richer depth cues are acceptable because the work is more exploratory and less time-critical.
+- **Auth/login flows**: Keep the more atmospheric presentation via the shared `AuthShell` pattern; it improves branding and first-run orientation without competing with production data.
 
 ### Theme-Aware Design
 
-Both themes are optimized for manufacturing environments:
+Both themes are optimized for manufacturing use:
 
-**Dark Mode** (default for low-light facilities):
-- Deep backgrounds reduce glare on shop floor
-- Radial gradients add depth without distraction
-- Glass surfaces with blur/saturation effects
+**Dark Mode**:
+- Useful on the floor and in lower-light work areas
+- Keeps the background quiet and reduces visual fatigue
+- Uses restrained contrast so status colors can carry attention
 
-**Light Mode** (for well-lit offices):
-- Clean white backgrounds with subtle gradients
-- Improved WCAG AA contrast ratios
-- Glass surfaces adapt with appropriate opacity
+**Light Mode**:
+- Better for offices, engineering desks, and customer-facing review
+- Uses stronger borders and darker neutrals to preserve hierarchy
+- Avoids washed-out cards and low-contrast metadata
 
 ### Key Principles
 
 - **shadcn-first**: If a primitive exists in shadcn/ui, import it via the generator and style it; no bespoke HTML copies.
-- **Token-First Values**: Gradients, pills, and icons reference shared CSS variables (no hex literals).
-- **Layered Glass Depth**: Always stack content over the animated background with a glass card or capsule.
-- **Smooth Animations**: Background orbs use 20s float cycles; cards fade in with `fadeInUp`.
-- **Compact Roundings**: Use 4px, 6px, 8px, and 12px radii for a tighter, more data-dense feel.
-- **Compact Spacing**: Reduced padding and gaps (0.5rem, 0.75rem, 1rem) to maximize data visibility.
-- **Touch-Optimized Rhythm**: Maintain 44px minimum touch targets while reducing visual padding.
+- **Token-First Values**: Colors, borders, and semantic states use shared variables and reusable wrappers.
+- **Meaning Before Decoration**: Never rely on gradients, blur, or animation to communicate state.
+- **Shared Patterns First**: Prefer `AdminPageHeader`, `PageStatsRow`, `OperatorStation`, `AuthShell`, and `StatusBadge` over page-local inventions.
+- **Compact, Readable Density**: Use spacing intentionally so queue views and data tables stay scan-friendly.
+- **Touch-Optimized Rhythm**: Maintain 44px minimum touch targets and prefer 48px for primary actions on operator screens.
+- **Redundant State Encoding**: Use label + icon + color where status is important; color alone is not enough.
 
 ---
 
@@ -136,45 +143,39 @@ Both themes are optimized for manufacturing environments:
 
 ### Design Goals
 
-Core design goals with improved light mode contrast and compact admin layouts:
+1. **Tablet-first for operators**: Shared terminals and tablets need obvious actions, large targets, and stable layouts
+2. **Desktop-first for planners/admins**: Dense data views should still feel ordered and readable
+3. **Single-language status model**: The same concepts should survive across mobile, tablet, and desktop layouts
+4. **Data density with hierarchy**: More rows on screen is useful only if priority remains clear
+5. **Reduced surprise**: Panels may collapse on smaller screens, but primary actions and current context should stay easy to find
 
-1. **Tablet-First for Operators**: Operators primarily use tablets on the shop floor
-2. **PC-First for Admin**: Admin users work on desktop with multi-column layouts
-3. **Mobile Support**: Essential features accessible on mobile devices
-4. **Data Density**: Maximize visible data without sacrificing readability
-5. **Light Mode Contrast**: Improved WCAG AA compliance with darker grays and better border visibility
+### Shared Page Layout Standards
 
-### Admin Page Layout Standards
-
-Admin pages follow a consistent compact layout pattern:
+Admin and operator pages should follow the same high-level rhythm, with different density and action emphasis depending on role:
 
 ```tsx
 <div className="p-4 space-y-4">
-  {/* Header: 2xl title, sm description */}
-  <div>
-    <div className="flex justify-between items-center mb-1">
-      <h1 className="text-2xl font-bold bg-gradient-to-r ...">Title</h1>
-      <Button className="cta-button">Action</Button>
-    </div>
-    <p className="text-muted-foreground text-sm">Description</p>
-  </div>
+  <AdminPageHeader
+    title="Title"
+    description="What the page is for and what the user can do here."
+    action={{ label: "Primary action", onClick: () => {} }}
+  />
 
-  <hr className="title-divider" />
+  <PageStatsRow stats={stats} />
 
-  {/* Content in glass-card with p-4 */}
-  <div className="glass-card p-4">
+  <div className="rounded-2xl border border-border/80 bg-card/95 p-4 shadow-sm">
     <DataTable ... />
   </div>
 </div>
 ```
 
 Key spacing values:
-- **Page padding**: `p-4` (16px)
-- **Section gap**: `space-y-4` (16px)
-- **Card padding**: `p-4` (16px)
-- **Header margin**: `mb-1` (4px)
-- **Title size**: `text-2xl` (24px)
-- **Description size**: `text-sm` (14px)
+- **Page padding**: `p-4` to `p-6`
+- **Section gap**: `space-y-4`
+- **Panel padding**: `p-4` or `p-5`
+- **Title size**: `text-2xl`
+- **Description size**: `text-sm`
+- **Primary action height**: `min-h-11`
 
 ### Breakpoints
 

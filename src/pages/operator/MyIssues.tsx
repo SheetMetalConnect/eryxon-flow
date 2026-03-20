@@ -1,13 +1,25 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card } from "@/components/ui/card";
+import { useOperator } from "@/contexts/OperatorContext";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { format } from "date-fns";
-import { AlertCircle } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { AlertCircle, CheckCircle2, Clock3, ShieldAlert, PackageSearch } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
+import {
+  OperatorEmptyState,
+  OperatorPageHeader,
+  OperatorPanel,
+  OperatorStatCard,
+  OperatorStatusChip,
+} from "@/components/operator/OperatorStation";
 
 interface Issue {
   id: string;
@@ -32,6 +44,8 @@ interface Issue {
 export default function MyIssues() {
   const { t } = useTranslation();
   const { profile } = useAuth();
+  const { activeOperator } = useOperator();
+  const operatorId = activeOperator?.id || profile?.id;
   const [issues, setIssues] = useState<Issue[]>([]);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,19 +62,19 @@ export default function MyIssues() {
         selectedIssue.image_paths.map(async (path) => {
           const { data } = await supabase.storage
             .from("issues")
-            .createSignedUrl(path, 3600); // 1 hour expiry
+            .createSignedUrl(path, 3600);
           return data?.signedUrl || "";
-        })
+        }),
       );
 
-      setImageUrls(urls.filter(url => url !== ""));
+      setImageUrls(urls.filter(Boolean));
     };
 
-    loadImageUrls();
-  }, [selectedIssue?.id]);
+    void loadImageUrls();
+  }, [selectedIssue?.id, selectedIssue?.image_paths]);
 
-  const loadIssues = async () => {
-    if (!profile?.id) return;
+  const loadIssues = useCallback(async () => {
+    if (!operatorId) return;
 
     const { data, error } = await supabase
       .from("issues")
@@ -74,18 +88,20 @@ export default function MyIssues() {
           )
         )
       `)
-      .eq("created_by", profile.id)
+      .eq("created_by", operatorId)
       .order("created_at", { ascending: false });
 
     if (error) {
       logger.error("MyIssues", "Error loading issues", error);
     } else {
-      setIssues(data || []);
+      setIssues((data as Issue[]) || []);
     }
     setLoading(false);
-  };
+  }, [operatorId]);
 
-  const setupRealtime = () => {
+  const setupRealtime = useCallback(() => {
+    if (!operatorId) return;
+
     const channel = supabase
       .channel("my-issues")
       .on(
@@ -94,174 +110,262 @@ export default function MyIssues() {
           event: "*",
           schema: "public",
           table: "issues",
-          filter: `created_by=eq.${profile?.id}`,
+          filter: `created_by=eq.${operatorId}`,
         },
-        () => loadIssues()
+        () => void loadIssues(),
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  };
+  }, [loadIssues, operatorId]);
 
   useEffect(() => {
-    if (!profile?.id) return;
+    if (!operatorId) return;
     const loadTimeout = window.setTimeout(() => {
       void loadIssues();
     }, 0);
     const cleanup = setupRealtime();
     return () => {
       clearTimeout(loadTimeout);
-      cleanup();
+      cleanup?.();
     };
-  }, [profile?.id]);
+  }, [loadIssues, operatorId, setupRealtime]);
 
   const severityColors = {
-    low: "bg-severity-low",
-    medium: "bg-severity-medium",
-    high: "bg-severity-high",
-    critical: "bg-severity-critical",
+    low: "border-border bg-background/70 text-muted-foreground",
+    medium: "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    high: "border-orange-500/30 bg-orange-500/10 text-orange-600 dark:text-orange-400",
+    critical: "border-destructive/30 bg-destructive/10 text-destructive",
   };
 
   const statusColors = {
-    pending: "bg-issue-pending",
-    approved: "bg-issue-approved",
-    rejected: "bg-issue-rejected",
-    closed: "bg-issue-closed",
+    pending: "border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-400",
+    approved: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    rejected: "border-destructive/30 bg-destructive/10 text-destructive",
+    closed: "border-border bg-background/70 text-muted-foreground",
   };
+
+  const pendingCount = issues.filter((issue) => issue.status === "pending").length;
+  const resolvedCount = issues.filter(
+    (issue) => issue.status === "approved" || issue.status === "closed",
+  ).length;
+  const criticalCount = issues.filter(
+    (issue) => issue.severity === "critical" || issue.severity === "high",
+  ).length;
+
+  const latestIssueDate = useMemo(() => {
+    if (!issues.length) return null;
+    return format(new Date(issues[0].created_at), "MMM d, yyyy");
+  }, [issues]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
+      <OperatorPanel className="flex min-h-[420px] items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground">
+            {t("myIssues.loading", "Loading issues")}
+          </p>
+        </div>
+      </OperatorPanel>
     );
   }
 
   return (
     <>
-      <div className="p-6 space-y-8">
-        <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
-            {t("myIssues.title")}
-          </h1>
-          <p className="text-muted-foreground text-lg">{t("myIssues.description")}</p>
+      <div className="space-y-4">
+        <OperatorPageHeader
+          eyebrow={t("navigation.myIssues")}
+          title={t("myIssues.title")}
+          description={t(
+            "myIssues.description",
+            "Track operator-reported issues with clear severity, review status, and supporting photos without leaving the shop-floor flow.",
+          )}
+          meta={
+            activeOperator ? (
+              <OperatorStatusChip
+                tone="active"
+                label={`${activeOperator.full_name} • ${activeOperator.employee_id}`}
+              />
+            ) : undefined
+          }
+        />
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <OperatorStatCard
+            label={t("myIssues.openIssues", "Open issues")}
+            value={pendingCount}
+            icon={Clock3}
+            tone="warning"
+          />
+          <OperatorStatCard
+            label={t("myIssues.resolvedIssues", "Resolved")}
+            value={resolvedCount}
+            icon={CheckCircle2}
+            tone="success"
+          />
+          <OperatorStatCard
+            label={t("myIssues.highSeverity", "High severity")}
+            value={criticalCount}
+            icon={ShieldAlert}
+            tone="danger"
+          />
+          <OperatorStatCard
+            label={t("myIssues.lastReported", "Last reported")}
+            value={latestIssueDate || "-"}
+            icon={AlertCircle}
+          />
         </div>
 
-        <hr className="title-divider" />
-
         {issues.length === 0 ? (
-          <Card className="glass-card p-12 text-center">
-            <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-medium mb-2">{t("myIssues.noIssues")}</h3>
-            <p className="text-sm text-muted-foreground">
-              {t("myIssues.noIssuesDescription")}
-            </p>
-          </Card>
+          <OperatorEmptyState
+            icon={PackageSearch}
+            title={t("myIssues.noIssues")}
+            description={t("myIssues.noIssuesDescription")}
+          />
         ) : (
           <div className="grid gap-4">
             {issues.map((issue) => (
-              <Card
+              <OperatorPanel
                 key={issue.id}
-                className="glass-card p-4 cursor-pointer hover:shadow-xl hover:scale-105 transition-all hover:border-white/20"
+                className="cursor-pointer transition-colors hover:border-primary/30 hover:bg-muted/20"
                 onClick={() => setSelectedIssue(issue)}
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge className={severityColors[issue.severity as keyof typeof severityColors]}>
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="min-w-0 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className={`rounded-full ${severityColors[issue.severity as keyof typeof severityColors]}`}
+                      >
                         {issue.severity}
                       </Badge>
-                      <Badge variant="outline" className={statusColors[issue.status as keyof typeof statusColors]}>
+                      <Badge
+                        variant="outline"
+                        className={`rounded-full ${statusColors[issue.status as keyof typeof statusColors]}`}
+                      >
                         {issue.status}
                       </Badge>
                     </div>
-                    <div className="font-medium mb-1">
-                      {issue.operation.part.job.job_number} • {issue.operation.part.part_number} • {issue.operation.operation_name}
+                    <div className="text-base font-semibold text-foreground">
+                      {issue.operation.part.job.job_number} •{" "}
+                      {issue.operation.part.part_number}
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
+                    <div className="text-sm text-muted-foreground">
+                      {issue.operation.operation_name}
+                    </div>
+                    <p className="line-clamp-2 text-sm text-muted-foreground">
                       {issue.description}
                     </p>
                   </div>
-                  <div className="text-right text-sm text-muted-foreground shrink-0">
+                  <div className="rounded-xl border border-border bg-background/70 px-3 py-2 text-right text-sm text-muted-foreground">
                     {format(new Date(issue.created_at), "MMM d, yyyy")}
                   </div>
                 </div>
-              </Card>
-          ))}
-        </div>
-      )}
+              </OperatorPanel>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Issue Detail Modal */}
-      <Dialog open={!!selectedIssue} onOpenChange={() => setSelectedIssue(null)}>
-        <DialogContent className="glass-card max-w-2xl overflow-hidden flex flex-col">
-          <DialogHeader className="shrink-0">
+      <Dialog open={Boolean(selectedIssue)} onOpenChange={() => setSelectedIssue(null)}>
+        <DialogContent className="max-w-2xl border-border/80 bg-popover">
+          <DialogHeader>
             <DialogTitle>{t("myIssues.issueDetails")}</DialogTitle>
           </DialogHeader>
 
-          {selectedIssue && (
-            <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
-              <div className="flex items-center gap-2">
-                <Badge className={severityColors[selectedIssue.severity as keyof typeof severityColors]}>
+          {selectedIssue ? (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className={`rounded-full ${severityColors[selectedIssue.severity as keyof typeof severityColors]}`}
+                >
                   {selectedIssue.severity}
                 </Badge>
-                <Badge variant="outline" className={statusColors[selectedIssue.status as keyof typeof statusColors]}>
+                <Badge
+                  variant="outline"
+                  className={`rounded-full ${statusColors[selectedIssue.status as keyof typeof statusColors]}`}
+                >
                   {selectedIssue.status}
                 </Badge>
               </div>
 
-              <div>
-                <div className="text-sm text-muted-foreground mb-1">{t("myIssues.operation")}</div>
-                <div className="font-medium">
-                  {selectedIssue.operation.part.job.job_number} • {selectedIssue.operation.part.part_number} •{" "}
-                  {selectedIssue.operation.operation_name}
-                </div>
-              </div>
-
-              <div>
-                <div className="text-sm text-muted-foreground mb-1">{t("myIssues.description")}</div>
-                <div className="text-sm p-3 bg-muted rounded">{selectedIssue.description}</div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+              <OperatorPanel className="space-y-3 p-4">
                 <div>
-                  <div className="text-sm text-muted-foreground mb-1">{t("myIssues.created")}</div>
-                  <div className="text-sm">{format(new Date(selectedIssue.created_at), "PPp")}</div>
-                </div>
-                {selectedIssue.reviewed_at && (
-                  <div>
-                    <div className="text-sm text-muted-foreground mb-1">{t("myIssues.reviewed")}</div>
-                    <div className="text-sm">{format(new Date(selectedIssue.reviewed_at), "PPp")}</div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    {t("myIssues.operation")}
                   </div>
-                )}
-              </div>
-
-              {selectedIssue.resolution_notes && (
-                <div>
-                  <div className="text-sm text-muted-foreground mb-1">{t("myIssues.resolutionNotes")}</div>
-                  <div className="text-sm p-3 bg-muted rounded">{selectedIssue.resolution_notes}</div>
+                  <div className="mt-1 font-semibold text-foreground">
+                    {selectedIssue.operation.part.job.job_number} •{" "}
+                    {selectedIssue.operation.part.part_number} •{" "}
+                    {selectedIssue.operation.operation_name}
+                  </div>
                 </div>
-              )}
 
-              {imageUrls.length > 0 && (
                 <div>
-                  <div className="text-sm text-muted-foreground mb-2">{t("myIssues.attachedPhotos")}</div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    {t("myIssues.description")}
+                  </div>
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    {selectedIssue.description}
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      {t("myIssues.created")}
+                    </div>
+                    <div className="mt-1 text-sm text-foreground">
+                      {format(new Date(selectedIssue.created_at), "PPp")}
+                    </div>
+                  </div>
+                  {selectedIssue.reviewed_at ? (
+                    <div>
+                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                        {t("myIssues.reviewed")}
+                      </div>
+                      <div className="mt-1 text-sm text-foreground">
+                        {format(new Date(selectedIssue.reviewed_at), "PPp")}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+
+                {selectedIssue.resolution_notes ? (
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      {t("myIssues.resolutionNotes")}
+                    </div>
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      {selectedIssue.resolution_notes}
+                    </div>
+                  </div>
+                ) : null}
+              </OperatorPanel>
+
+              {imageUrls.length > 0 ? (
+                <div className="space-y-2">
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    {t("myIssues.attachedPhotos")}
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
                     {imageUrls.map((url, index) => (
                       <img
-                        key={index}
+                        key={url}
                         src={url}
                         alt={`${t("myIssues.issuePhoto")} ${index + 1}`}
-                        className="rounded border"
+                        className="rounded-2xl border border-border object-cover"
                       />
                     ))}
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
-          )}
+          ) : null}
         </DialogContent>
       </Dialog>
     </>

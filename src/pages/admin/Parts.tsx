@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
@@ -9,6 +9,7 @@ import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
 import { logger } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import PartDetailModal from "@/components/admin/PartDetailModal";
 import {
   Package,
@@ -148,7 +149,7 @@ export default function Parts() {
     },
   });
 
-  const handleViewFile = async (filePath: string) => {
+  const handleViewFile = useCallback(async (filePath: string) => {
     try {
       const fileExt = filePath.split(".").pop()?.toLowerCase();
       const fileType =
@@ -187,7 +188,7 @@ export default function Parts() {
       logger.error('Parts', 'Error opening file', error);
       toast.error(t("notifications.error"), { description: t("notifications.failedToOpenFileViewer") });
     }
-  };
+  }, [t]);
 
   const handleFileDialogClose = () => {
     setFileViewerOpen(false);
@@ -199,18 +200,19 @@ export default function Parts() {
     setCurrentFileTitle("");
   };
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      not_started: "secondary",
-      in_progress: "default",
-      completed: "outline",
+  const getStatusBadge = useCallback((status: string) => {
+    const badgeStatus: Record<string, "pending" | "active" | "completed"> = {
+      not_started: "pending",
+      in_progress: "active",
+      completed: "completed",
     };
     return (
-      <Badge variant={variants[status] || "default"}>
-        {status.replace("_", " ").toUpperCase()}
-      </Badge>
+      <StatusBadge
+        status={badgeStatus[status] || "pending"}
+        label={status.replace("_", " ")}
+      />
     );
-  };
+  }, []);
 
   const columns: ColumnDef<PartData>[] = useMemo(() => [
     {
@@ -377,7 +379,7 @@ export default function Parts() {
         );
       },
     },
-  ], [t]);
+  ], [getStatusBadge, handleViewFile, t]);
 
   const filterableColumns: DataTableFilterableColumn[] = useMemo(() => [
     {

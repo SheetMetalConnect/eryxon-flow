@@ -1,12 +1,19 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { format, subDays } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card } from "@/components/ui/card";
+import { useOperator } from "@/contexts/OperatorContext";
 import { Badge } from "@/components/ui/badge";
-import { format, subDays } from "date-fns";
-import { Clock, CheckCircle } from "lucide-react";
+import { Clock3, CheckCircle2, CalendarDays, PackageSearch } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
+import {
+  OperatorEmptyState,
+  OperatorPageHeader,
+  OperatorPanel,
+  OperatorStatCard,
+  OperatorStatusChip,
+} from "@/components/operator/OperatorStation";
 
 interface TimeEntry {
   id: string;
@@ -38,25 +45,17 @@ interface DayGroup {
   completedCount: number;
 }
 
-const getStageClass = (cellName: string) => {
-  const name = cellName.toLowerCase();
-  if (name.includes('cut')) return 'stage-cutting';
-  if (name.includes('bend')) return 'stage-bending';
-  if (name.includes('weld')) return 'stage-welding';
-  if (name.includes('assembl')) return 'stage-assembly';
-  if (name.includes('finish')) return 'stage-finishing';
-  return 'muted';
-};
-
 export default function MyActivity() {
   const { t } = useTranslation();
   const { profile } = useAuth();
+  const { activeOperator } = useOperator();
+  const operatorId = activeOperator?.id || profile?.id;
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [days] = useState(7);
 
-  const loadActivity = async () => {
-    if (!profile?.id) return;
+  const loadActivity = useCallback(async () => {
+    if (!operatorId) return;
 
     const startDate = subDays(new Date(), days - 1);
 
@@ -74,30 +73,28 @@ export default function MyActivity() {
           cell:cells!inner(name, color)
         )
       `)
-      .eq("operator_id", profile.id)
+      .eq("operator_id", operatorId)
       .gte("start_time", startDate.toISOString())
       .order("start_time", { ascending: false });
 
     if (error) {
       logger.error("MyActivity", "Error loading activity", error);
     } else {
-      setEntries(data || []);
+      setEntries((data as TimeEntry[]) || []);
     }
     setLoading(false);
-  };
+  }, [days, operatorId]);
 
   useEffect(() => {
-    if (profile?.id) {
-      const loadTimeout = window.setTimeout(() => {
-        void loadActivity();
-      }, 0);
-      return () => clearTimeout(loadTimeout);
-    }
-    return;
-  }, [profile?.id, days]);
+    if (!operatorId) return;
+    const loadTimeout = window.setTimeout(() => {
+      void loadActivity();
+    }, 0);
+    return () => clearTimeout(loadTimeout);
+  }, [loadActivity, operatorId]);
 
   const groupByDate = (): DayGroup[] => {
-    const groups: { [key: string]: TimeEntry[] } = {};
+    const groups: Record<string, TimeEntry[]> = {};
 
     entries.forEach((entry) => {
       const date = format(new Date(entry.start_time), "yyyy-MM-dd");
@@ -108,9 +105,16 @@ export default function MyActivity() {
     });
 
     return Object.entries(groups).map(([date, dayEntries]) => {
-      const totalMinutes = dayEntries.reduce((sum, e) => sum + (e.duration || 0), 0);
-      const uniqueOperations = new Set(dayEntries.map((e) => e.operation.operation_name));
-      const completedOperations = dayEntries.filter((e) => e.operation.status === "completed");
+      const totalMinutes = dayEntries.reduce(
+        (sum, entry) => sum + (entry.duration || 0),
+        0,
+      );
+      const uniqueOperations = new Set(
+        dayEntries.map((entry) => entry.operation.operation_name),
+      );
+      const completedOperations = dayEntries.filter(
+        (entry) => entry.operation.status === "completed",
+      );
 
       return {
         date,
@@ -132,147 +136,164 @@ export default function MyActivity() {
   };
 
   const dayGroups = groupByDate();
-
-  const todayTotal = dayGroups.find((g) => g.date === format(new Date(), "yyyy-MM-dd"))?.totalMinutes || 0;
-  const weekTotal = dayGroups.reduce((sum, g) => sum + g.totalMinutes, 0);
-  const todayCompleted = dayGroups.find((g) => g.date === format(new Date(), "yyyy-MM-dd"))?.completedCount || 0;
-  const weekCompleted = dayGroups.reduce((sum, g) => sum + g.completedCount, 0);
+  const today = format(new Date(), "yyyy-MM-dd");
+  const todayTotal = dayGroups.find((group) => group.date === today)?.totalMinutes || 0;
+  const weekTotal = dayGroups.reduce((sum, group) => sum + group.totalMinutes, 0);
+  const todayCompleted =
+    dayGroups.find((group) => group.date === today)?.completedCount || 0;
+  const weekCompleted = dayGroups.reduce(
+    (sum, group) => sum + group.completedCount,
+    0,
+  );
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <OperatorPanel className="flex min-h-[420px] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[hsl(var(--brand-primary))]" />
-          <p className="text-sm text-muted-foreground">Loading activity...</p>
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground">
+            {t("myActivity.loading", "Loading activity")}
+          </p>
         </div>
-      </div>
+      </OperatorPanel>
     );
   }
 
   return (
-    <>
-      <div className="p-6 space-y-8">
-        <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
-            {t("myActivity.title")}
-          </h1>
-          <p className="text-muted-foreground text-lg">{t("myActivity.description")}</p>
-        </div>
+    <div className="space-y-4">
+      <OperatorPageHeader
+        eyebrow={t("navigation.myActivity")}
+        title={t("myActivity.title")}
+        description={t(
+          "myActivity.description",
+          "Review the active operator's recent work by day, with completed operations and time captured in the same production workspace format as the queue.",
+        )}
+        meta={
+          activeOperator ? (
+            <OperatorStatusChip
+              tone="active"
+              label={`${activeOperator.full_name} • ${activeOperator.employee_id}`}
+            />
+          ) : undefined
+        }
+      />
 
-        <hr className="title-divider" />
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <OperatorStatCard
+          label={t("myActivity.todayTime")}
+          value={formatDuration(todayTotal)}
+          icon={Clock3}
+          tone="active"
+        />
+        <OperatorStatCard
+          label={t("myActivity.weekTime")}
+          value={formatDuration(weekTotal)}
+          icon={CalendarDays}
+        />
+        <OperatorStatCard
+          label={t("myActivity.todayCompleted")}
+          value={todayCompleted}
+          icon={CheckCircle2}
+          tone="success"
+        />
+        <OperatorStatCard
+          label={t("myActivity.weekCompleted")}
+          value={weekCompleted}
+          icon={CheckCircle2}
+          tone="success"
+        />
+      </div>
 
-        {/* Summary Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="glass-card p-6 transition-smooth hover:scale-[1.02]">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-[hsl(var(--brand-primary))]/10">
-                <Clock className="h-6 w-6 text-[hsl(var(--brand-primary))]" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{formatDuration(todayTotal)}</div>
-                <div className="text-sm text-muted-foreground">{t("myActivity.todayTime")}</div>
-              </div>
-            </div>
-          </Card>
-          <Card className="glass-card p-6 transition-smooth hover:scale-[1.02]">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-[hsl(var(--color-info))]/10">
-                <Clock className="h-6 w-6 text-[hsl(var(--color-info))]" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{formatDuration(weekTotal)}</div>
-                <div className="text-sm text-muted-foreground">{t("myActivity.weekTime")}</div>
-              </div>
-            </div>
-          </Card>
-          <Card className="glass-card p-6 transition-smooth hover:scale-[1.02]">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-[hsl(var(--color-success))]/10">
-                <CheckCircle className="h-6 w-6 text-[hsl(var(--color-success))]" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{todayCompleted}</div>
-                <div className="text-sm text-muted-foreground">{t("myActivity.todayCompleted")}</div>
-              </div>
-            </div>
-          </Card>
-          <Card className="glass-card p-6 transition-smooth hover:scale-[1.02]">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-[hsl(var(--color-warning))]/10">
-                <CheckCircle className="h-6 w-6 text-[hsl(var(--color-warning))]" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{weekCompleted}</div>
-                <div className="text-sm text-muted-foreground">{t("myActivity.weekCompleted")}</div>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* Activity List */}
-        {dayGroups.length === 0 ? (
-          <Card className="glass-card p-12 text-center">
-            <Clock className="h-12 w-12 mx-auto mb-4 text-[hsl(var(--foreground))]/40" />
-            <h3 className="text-lg font-medium mb-2">{t("myActivity.noActivity")}</h3>
-            <p className="text-sm text-muted-foreground">{t("myActivity.noActivityDescription")}</p>
-          </Card>
-        ) : (
-          <div className="space-y-6">
-            {dayGroups.map((group) => (
-              <div key={group.date}>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold">{format(new Date(group.date), "EEEE, MMMM d, yyyy")}</h2>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>{t("myActivity.total")}: {formatDuration(group.totalMinutes)}</span>
-                    <span>•</span>
-                    <span>{group.tasksCount} {t("myActivity.operations")}</span>
-                    <span>•</span>
-                    <span>{group.completedCount} {t("myActivity.completed")}</span>
-                  </div>
+      {dayGroups.length === 0 ? (
+        <OperatorEmptyState
+          icon={PackageSearch}
+          title={t("myActivity.noActivity")}
+          description={t("myActivity.noActivityDescription")}
+        />
+      ) : (
+        <div className="space-y-4">
+          {dayGroups.map((group) => (
+            <OperatorPanel key={group.date} className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">
+                    {format(new Date(group.date), "EEEE, MMMM d, yyyy")}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {group.tasksCount} {t("myActivity.operations")} •{" "}
+                    {group.completedCount} {t("myActivity.completed")}
+                  </p>
                 </div>
+                <OperatorStatusChip
+                  tone="info"
+                  label={`${t("myActivity.total")}: ${formatDuration(group.totalMinutes)}`}
+                />
+              </div>
 
-                <div className="grid gap-3">
-                  {group.entries.map((entry) => (
-                    <Card key={entry.id} className="glass-card p-4 transition-smooth hover:bg-[hsl(var(--surface-elevated))]">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge
-                              className="bg-[hsl(var(--stage-cutting))]/10 text-[hsl(var(--stage-cutting))] border-[hsl(var(--stage-cutting))]/20"
-                            >
-                              {entry.operation.cell.name}
+              <div className="grid gap-3">
+                {group.entries.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="rounded-2xl border border-border bg-background/70 p-4"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant="outline" className="rounded-full">
+                            <span
+                              className="mr-2 h-2.5 w-2.5 rounded-full"
+                              style={{
+                                backgroundColor:
+                                  entry.operation.cell.color || "currentColor",
+                              }}
+                            />
+                            {entry.operation.cell.name}
+                          </Badge>
+                          {entry.operation.status === "completed" ? (
+                            <Badge className="rounded-full bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/10 dark:text-emerald-400">
+                              <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
+                              {t("myActivity.completed")}
                             </Badge>
-                            {entry.operation.status === "completed" && (
-                              <CheckCircle className="h-4 w-4 text-[hsl(var(--status-completed))]" />
-                            )}
-                          </div>
-                          <div className="font-medium mb-1">{entry.operation.operation_name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {entry.operation.part.job.job_number} • {entry.operation.part.part_number}
-                          </div>
-                          {entry.notes && (
-                            <div className="text-sm text-muted-foreground mt-2 italic">{entry.notes}</div>
-                          )}
+                          ) : null}
                         </div>
-                        <div className="text-right shrink-0">
-                          <div className="text-sm font-medium flex items-center gap-1">
-                            <Clock className="h-3 w-3 text-[hsl(var(--brand-primary))]" />
-                            {entry.duration ? formatDuration(entry.duration) : t("myActivity.inProgress")}
+                        <div>
+                          <div className="text-base font-semibold text-foreground">
+                            {entry.operation.operation_name}
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {format(new Date(entry.start_time), "h:mm a")}
-                            {entry.end_time && ` - ${format(new Date(entry.end_time), "h:mm a")}`}
+                          <div className="text-sm text-muted-foreground">
+                            {entry.operation.part.job.job_number} •{" "}
+                            {entry.operation.part.part_number}
                           </div>
+                        </div>
+                        {entry.notes ? (
+                          <div className="text-sm text-muted-foreground">
+                            {entry.notes}
+                          </div>
+                        ) : null}
+                      </div>
+
+                      <div className="rounded-xl border border-border bg-muted/20 px-3 py-2 text-right">
+                        <div className="flex items-center justify-end gap-2 text-sm font-semibold text-foreground">
+                          <Clock3 className="h-4 w-4 text-primary" />
+                          {entry.duration
+                            ? formatDuration(entry.duration)
+                            : t("myActivity.inProgress")}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {format(new Date(entry.start_time), "h:mm a")}
+                          {entry.end_time
+                            ? ` - ${format(new Date(entry.end_time), "h:mm a")}`
+                            : ""}
                         </div>
                       </div>
-                    </Card>
-                  ))}
-                </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </>
+            </OperatorPanel>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

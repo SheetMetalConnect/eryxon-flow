@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-  useRef,
-} from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,7 +13,7 @@ import {
   startTimeTracking,
   stopTimeTracking,
   completeOperation,
-  OperationWithDetails,
+  type OperationWithDetails,
 } from "@/lib/database";
 import { JobRow } from "@/components/terminal/JobRow";
 import { DetailPanel } from "@/components/terminal/DetailPanel";
@@ -31,19 +25,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTranslation } from "react-i18next";
-import { ChevronLeft, ChevronRight, GripVertical } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import {
+  Clock3,
+  Boxes,
+  FileStack,
+  Gauge,
+  PackageSearch,
+  RefreshCw,
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
-
 import { TerminalJob } from "@/types/terminal";
+import {
+  OperatorEmptyState,
+  OperatorPageHeader,
+  OperatorPanel,
+  OperatorStatCard,
+  OperatorStatusChip,
+} from "@/components/operator/OperatorStation";
 
 interface Cell {
   id: string;
   name: string;
   color: string | null;
 }
+
+type QueueTab = "in_progress" | "in_buffer" | "expected";
 
 export default function OperatorView() {
   const { t } = useTranslation();
@@ -57,72 +66,18 @@ export default function OperatorView() {
   );
   const [loading, setLoading] = useState(true);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [queueTab, setQueueTab] = useState<QueueTab>("in_progress");
 
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [stepUrl, setStepUrl] = useState<string | null>(null);
-  const [signedStepUrl, setSignedStepUrl] = useState<string | null>(null);
   const [pmiData, setPmiData] = useState<PMIData | null>(null);
   const [geometryData, setGeometryData] = useState<GeometryData | null>(null);
 
-  const { processCAD, isProcessing: cadProcessing } = useCADProcessing();
+  const { processCAD } = useCADProcessing();
 
-  const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
-  const [leftPanelWidth, setLeftPanelWidth] = useState(70); // percentage
-  const [isDragging, setIsDragging] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      if (!isDragging || !containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const newWidth = ((e.clientX - rect.left) / rect.width) * 100;
-      setLeftPanelWidth(Math.min(Math.max(newWidth, 40), 85)); // Clamp between 40% and 85%
-    },
-    [isDragging],
-  );
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-  }, []);
-
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  const handleTouchMove = useCallback(
-    (e: TouchEvent) => {
-      if (!isDragging || !containerRef.current) return;
-      const touch = e.touches[0];
-      const rect = containerRef.current.getBoundingClientRect();
-      const newWidth = ((touch.clientX - rect.left) / rect.width) * 100;
-      setLeftPanelWidth(Math.min(Math.max(newWidth, 40), 85));
-    },
-    [isDragging],
-  );
-
-  useEffect(() => {
-    if (isDragging) {
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp);
-      window.addEventListener("touchmove", handleTouchMove);
-      window.addEventListener("touchend", handleMouseUp);
-    }
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", handleMouseUp);
-    };
-  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!profile?.tenant_id) return;
+
     try {
       setLoading(true);
 
@@ -144,10 +99,10 @@ export default function OperatorView() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [profile?.tenant_id, t]);
 
   useEffect(() => {
-    loadData();
+    void loadData();
 
     if (!profile?.tenant_id) return;
     const channel = supabase
@@ -160,7 +115,7 @@ export default function OperatorView() {
           table: "operations",
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
-        () => loadData(),
+        () => void loadData(),
       )
       .on(
         "postgres_changes",
@@ -170,46 +125,37 @@ export default function OperatorView() {
           table: "time_entries",
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
-        () => loadData(),
+        () => void loadData(),
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile?.tenant_id]);
+  }, [loadData, profile?.tenant_id]);
 
   const handleCellChange = (value: string) => {
     setSelectedCellId(value);
     localStorage.setItem("operator_selected_cell", value);
-    setSelectedJobId(null); // Clear selection when changing cells
+    setSelectedJobId(null);
   };
 
-  const mapOperationToJob = (op: OperationWithDetails): TerminalJob => {
-    if (op.part.file_paths && op.part.file_paths.length > 0) {
-      logger.debug(
-        "OperatorView",
-        "Mapping op with files",
-        { id: op.id, partNumber: op.part.part_number, filePaths: op.part.file_paths },
-      );
-    }
-
+  const mapOperationToJob = useCallback((op: OperationWithDetails): TerminalJob => {
     const hasPdf =
-      op.part.file_paths?.some((p) => p.toLowerCase().endsWith(".pdf")) ||
+      op.part.file_paths?.some((path) => path.toLowerCase().endsWith(".pdf")) ||
       false;
     const hasModel =
-      op.part.file_paths?.some(
-        (p) =>
-          p.toLowerCase().endsWith(".step") || p.toLowerCase().endsWith(".stp"),
-      ) || false;
+      op.part.file_paths?.some((path) => {
+        const lowerPath = path.toLowerCase();
+        return lowerPath.endsWith(".step") || lowerPath.endsWith(".stp");
+      }) || false;
 
     let status: TerminalJob["status"] = "expected";
     if (op.status === "in_progress") status = "in_progress";
     else if (op.status === "on_hold") status = "on_hold";
     else if (op.status === "not_started") status = "in_buffer";
-    else if (op.status === "completed") status = "expected"; // Will be filtered out
+    else if (op.status === "completed") status = "expected";
 
-    // If there's an active time entry, the operation should be considered in_progress
     if (op.active_time_entry) status = "in_progress";
 
     const estimated = op.estimated_time || 0;
@@ -217,19 +163,19 @@ export default function OperatorView() {
     const remaining = Math.max(0, estimated - actual);
 
     return {
-      id: op.id, // Use operation ID as the unique key
+      id: op.id,
       operationId: op.id,
       partId: op.part.id,
       jobId: op.part.job.id,
       jobCode: op.part.job.job_number,
-      description: op.part.part_number, // Or op.operation_name? Design showed Part Name as description
+      description: op.part.part_number,
       material: op.part.material,
       quantity: op.part.quantity,
       currentOp: op.operation_name,
-      totalOps: 0, // Placeholder
-      hours: Number(remaining.toFixed(1)), // Format to 1 decimal place
+      totalOps: 0,
+      hours: Number(remaining.toFixed(1)),
       dueDate: op.part.job.due_date || new Date().toISOString(),
-      status: status,
+      status,
       hasPdf,
       hasModel,
       filePaths: op.part.file_paths || [],
@@ -242,16 +188,15 @@ export default function OperatorView() {
       cellColor: op.cell.color || "#3b82f6",
       cellId: op.cell_id,
       currentSequence: op.sequence,
-      // New part fields
       drawingNo: op.part.drawing_no,
       cncProgramName: op.part.cnc_program_name,
       isBulletCard: op.part.is_bullet_card,
     };
-  };
+  }, [operatorId]);
 
   const allJobs = useMemo(
     () => operations.map(mapOperationToJob),
-    [operations, operatorId],
+    [mapOperationToJob, operations],
   );
 
   const filteredJobs = useMemo(() => {
@@ -259,20 +204,37 @@ export default function OperatorView() {
     return allJobs.filter((job) => job.cellId === selectedCellId);
   }, [allJobs, selectedCellId]);
 
-  const inProcessJobs = filteredJobs.filter((j) => j.status === "in_progress");
+  const inProcessJobs = filteredJobs.filter((job) => job.status === "in_progress");
 
-  // First 5 not-started operations go to Buffer, rest to Expected
   const notStartedJobs = filteredJobs.filter(
-    (j) => j.status === "in_buffer" || j.status === "expected",
+    (job) => job.status === "in_buffer" || job.status === "expected",
   );
   const inBufferJobs = notStartedJobs
     .slice(0, 5)
-    .map((j) => ({ ...j, status: "in_buffer" as const }));
+    .map((job) => ({ ...job, status: "in_buffer" as const }));
   const expectedJobs = notStartedJobs
     .slice(5)
-    .map((j) => ({ ...j, status: "expected" as const }));
+    .map((job) => ({ ...job, status: "expected" as const }));
 
-  const selectedJob = allJobs.find((j) => j.id === selectedJobId) || null;
+  const queueGroups = useMemo<Record<QueueTab, TerminalJob[]>>(
+    () => ({
+      in_progress: inProcessJobs,
+      in_buffer: inBufferJobs,
+      expected: expectedJobs,
+    }),
+    [expectedJobs, inBufferJobs, inProcessJobs],
+  );
+
+  useEffect(() => {
+    if (queueGroups[queueTab].length > 0) return;
+    const nextTab =
+      (Object.entries(queueGroups).find(([, jobs]) => jobs.length > 0)?.[0] as
+        | QueueTab
+        | undefined) || "in_progress";
+    if (nextTab !== queueTab) setQueueTab(nextTab);
+  }, [queueGroups, queueTab]);
+
+  const selectedJob = allJobs.find((job) => job.id === selectedJobId) || null;
 
   const selectedPartOperations = useMemo(() => {
     if (!selectedJob) return [];
@@ -281,22 +243,24 @@ export default function OperatorView() {
       .sort((a, b) => a.sequence - b.sequence);
   }, [selectedJob, operations]);
 
+  const selectedCellName =
+    selectedCellId === "all"
+      ? t("common.all", "All")
+      : cells.find((cell) => cell.id === selectedCellId)?.name ||
+        t("common.unknown", "Unknown");
+
+  const docsCount = filteredJobs.filter((job) => job.hasPdf || job.hasModel).length;
+  const activeCellCount = new Set(filteredJobs.map((job) => job.cellId)).size;
+
   useEffect(() => {
     const loadFiles = async () => {
       if (!selectedJob?.filePaths?.length) {
-        logger.debug("OperatorView", "No file paths for job", selectedJob?.jobCode);
         setPdfUrl(null);
         setStepUrl(null);
-        setSignedStepUrl(null);
         setPmiData(null);
+        setGeometryData(null);
         return;
       }
-
-      logger.debug(
-        "OperatorView",
-        "Loading files for job",
-        { jobCode: selectedJob.jobCode, filePaths: selectedJob.filePaths },
-      );
 
       try {
         let pdf: string | null = null;
@@ -305,24 +269,21 @@ export default function OperatorView() {
         let stepFileName: string | null = null;
 
         for (const path of selectedJob.filePaths) {
-          const ext = path.toLowerCase();
-          logger.debug("OperatorView", "Checking file", { path, ext });
+          const lowerPath = path.toLowerCase();
 
-          if (ext.endsWith(".pdf") && !pdf) {
+          if (lowerPath.endsWith(".pdf") && !pdf) {
             const { data } = await supabase.storage
               .from("parts-cad")
               .createSignedUrl(path, 3600);
             if (data?.signedUrl) pdf = data.signedUrl;
-          } else if ((ext.endsWith(".step") || ext.endsWith(".stp")) && !step) {
+          } else if (
+            (lowerPath.endsWith(".step") || lowerPath.endsWith(".stp")) &&
+            !step
+          ) {
             const { data } = await supabase.storage
               .from("parts-cad")
               .createSignedUrl(path, 3600);
             if (data?.signedUrl) {
-              logger.debug(
-                "OperatorView",
-                "Found STEP file, creating blob URL",
-                data.signedUrl,
-              );
               signedStep = data.signedUrl;
               stepFileName = path.split("/").pop() || "model.step";
               const response = await fetch(data.signedUrl);
@@ -331,43 +292,26 @@ export default function OperatorView() {
             }
           }
         }
+
         setPdfUrl(pdf);
         setStepUrl(step);
-        setSignedStepUrl(signedStep);
-
-        setSignedStepUrl(signedStep);
-        setStepUrl(step);
-
 
         if (signedStep && stepFileName && isCADServiceEnabled()) {
-          logger.debug("OperatorView", "Calling backend for PMI extraction", signedStep);
           try {
             const result = await processCAD(signedStep, stepFileName, {
-              includeGeometry: true, // Server handles geometry
+              includeGeometry: true,
               includePMI: true,
               generateThumbnail: false,
             });
             if (result.success) {
-              logger.debug("OperatorView", "CAD processing successful", result);
-              if (result.pmi) setPmiData(result.pmi);
-              if (result.geometry) setGeometryData(result.geometry);
-            } else if (result.error) {
-              logger.warn("OperatorView", "CAD processing failed", result.error);
-              if (
-                result.error.includes("invalid geometry") ||
-                result.error.includes("segfault")
-              ) {
-                toast.error(t("production.cadProcessingFailed"));
-              } else if (result.error.includes("Unsupported")) {
-                toast.error(t("production.unsupportedCadFormat"));
-              } else {
-                toast.error(t("production.cadProcessingFailed"));
-              }
+              setPmiData(result.pmi ?? null);
+              setGeometryData(result.geometry ?? null);
+            } else {
               setPmiData(null);
               setGeometryData(null);
             }
-          } catch (pmiError) {
-            logger.error("OperatorView", "Error during CAD processing", pmiError);
+          } catch (error) {
+            logger.error("OperatorView", "Error during CAD processing", error);
             toast.error(t("production.cadProcessingFailed"));
             setPmiData(null);
             setGeometryData(null);
@@ -376,13 +320,13 @@ export default function OperatorView() {
           setPmiData(null);
           setGeometryData(null);
         }
-      } catch (e) {
-        logger.error("OperatorView", "Error loading file URLs", e);
+      } catch (error) {
+        logger.error("OperatorView", "Error loading file URLs", error);
       }
     };
 
-    loadFiles();
-  }, [selectedJob, processCAD]);
+    void loadFiles();
+  }, [selectedJob, processCAD, t]);
 
   const handleStart = async () => {
     if (!selectedJob || !operatorId || !profile?.tenant_id) return;
@@ -394,7 +338,9 @@ export default function OperatorView() {
       );
       toast.success(t("notifications.success"));
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
+      toast.error(
+        error instanceof Error ? error.message : t("notifications.failed"),
+      );
     }
   };
 
@@ -404,7 +350,9 @@ export default function OperatorView() {
       await stopTimeTracking(selectedJob.operationId, operatorId);
       toast.success(t("production.operationPaused"));
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
+      toast.error(
+        error instanceof Error ? error.message : t("notifications.failed"),
+      );
     }
   };
 
@@ -417,47 +365,92 @@ export default function OperatorView() {
         operatorId,
       );
       toast.success(t("production.operationCompleted"));
-      setSelectedJobId(null); // Deselect
+      setSelectedJobId(null);
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
+      toast.error(
+        error instanceof Error ? error.message : t("notifications.failed"),
+      );
     }
   };
 
-  return (
-    <div
-      ref={containerRef}
-      className={cn(
-        "flex h-[calc(100vh-160px)] w-full bg-background text-foreground overflow-hidden font-sans relative",
-        isDragging && "select-none cursor-col-resize",
-      )}
-    >
-      {loading && (
-        <div className="absolute inset-0 bg-background/80 z-50 flex items-center justify-center backdrop-blur-sm">
+  const renderQueue = (
+    jobs: TerminalJob[],
+    variant: "process" | "buffer" | "expected",
+    emptyTitle: string,
+    emptyDescription: string,
+  ) => {
+    if (jobs.length === 0) {
+      return (
+        <OperatorEmptyState
+          icon={PackageSearch}
+          title={emptyTitle}
+          description={emptyDescription}
+          className="min-h-[260px]"
+        />
+      );
+    }
+
+    return (
+      <div className="grid gap-3">
+        {jobs.map((job) => (
+          <JobRow
+            key={job.id}
+            job={job}
+            isSelected={selectedJobId === job.id}
+            onClick={() => setSelectedJobId(job.id)}
+            variant={variant}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  if (loading && operations.length === 0) {
+    return (
+      <OperatorPanel className="flex min-h-[420px] items-center justify-center">
           <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-primary font-medium animate-pulse">
-              Loading Terminal Data...
-            </p>
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            <div className="text-sm font-medium text-muted-foreground">
+            {t("terminal.loading", "Loading operator workspace")}
+            </div>
           </div>
-        </div>
-      )}
-      {/* LEFT PANEL - Resizable */}
-      <div
-        className="flex flex-col border-r border-border transition-all duration-200"
-        style={{ width: rightPanelCollapsed ? "100%" : `${leftPanelWidth}%` }}
-      >
-        {/* HEADER / CELL SELECTOR */}
-        <div className="h-12 border-b border-border bg-card/80 backdrop-blur-sm flex items-center px-4 justify-between shrink-0">
-          <div className="flex items-center gap-4">
-            <span className="text-muted-foreground font-medium">
-              Terminal View:
-            </span>
+        </OperatorPanel>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <OperatorPageHeader
+        eyebrow={t("navigation.terminalView", "Terminal View")}
+        title={t("terminal.operatorStation", "Operator workspace")}
+        description={t(
+          "terminal.operatorStationDescription",
+          "Focus the queue on the active cell, select one work packet, and keep the next operator action obvious.",
+        )}
+        meta={
+          <>
+            <OperatorStatusChip
+              tone="info"
+              label={`${selectedCellName} • ${filteredJobs.length} ${t(
+                "terminal.jobsFound",
+              )}`}
+            />
+            {selectedJob ? (
+              <OperatorStatusChip
+                tone="active"
+                label={`${selectedJob.jobCode} • ${selectedJob.currentOp}`}
+              />
+            ) : null}
+          </>
+        }
+        actions={
+          <>
             <Select value={selectedCellId} onValueChange={handleCellChange}>
-              <SelectTrigger className="w-[200px] bg-card border-input text-foreground">
-                <SelectValue placeholder="Select Cell" />
+              <SelectTrigger className="min-h-11 w-[220px] rounded-xl border-border/80 bg-card">
+                <SelectValue placeholder={t("terminal.selectCell", "Select cell")} />
               </SelectTrigger>
-              <SelectContent className="bg-card border-border text-foreground">
-                <SelectItem value="all">All Cells</SelectItem>
+              <SelectContent>
+                <SelectItem value="all">{t("terminal.allCells", "All Cells")}</SelectItem>
                 {cells.map((cell) => (
                   <SelectItem key={cell.id} value={cell.id}>
                     {cell.name}
@@ -465,263 +458,180 @@ export default function OperatorView() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
-          <div className="text-xs text-muted-foreground">
-            {filteredJobs.length} {t("terminal.jobsFound")}
-          </div>
-        </div>
+            <Button
+              variant="outline"
+              onClick={() => void loadData()}
+              className="min-h-11 rounded-xl"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              {t("common.refresh", "Refresh")}
+            </Button>
+          </>
+        }
+      />
 
-        {/* 1. IN PROCESS */}
-        <div className="flex-1 flex flex-col min-h-0 border-b border-border bg-gradient-to-b from-status-active/5 to-transparent overflow-hidden">
-          <div className="px-3 py-1.5 bg-status-active/10 backdrop-blur-sm border-l-2 border-status-active flex items-center justify-between shrink-0">
-            <h2 className="text-sm font-semibold text-status-active">
-              {t("terminal.inProcess")} ({inProcessJobs.length})
-            </h2>
-          </div>
-          <div className="flex-1 overflow-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-muted/50 sticky top-0 z-10">
-                <tr className="border-b border-border">
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {t("terminal.columns.jobNumber")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {t("terminal.columns.partNumber")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {t("terminal.columns.operation")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {t("terminal.columns.cell")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {t("terminal.columns.material")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center">
-                    {t("terminal.columns.quantity")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-right">
-                    {t("terminal.columns.hours")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {t("terminal.columns.dueDate")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center">
-                    {t("terminal.columns.files")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {inProcessJobs.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={9}
-                      className="text-center py-8 text-muted-foreground italic"
-                    >
-                      {t("terminal.noActiveJobs")}
-                    </td>
-                  </tr>
-                ) : (
-                  inProcessJobs.map((job) => (
-                    <JobRow
-                      key={job.id}
-                      job={job}
-                      isSelected={selectedJobId === job.id}
-                      onClick={() => setSelectedJobId(job.id)}
-                      variant="process"
-                    />
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* 2. IN BUFFER */}
-        <div className="flex-1 flex flex-col min-h-0 border-b border-border bg-gradient-to-b from-info/5 to-transparent overflow-hidden">
-          <div className="px-3 py-1.5 bg-alert-info-bg/80 backdrop-blur-sm border-l-2 border-alert-info-border flex items-center justify-between shrink-0">
-            <h2 className="text-sm font-semibold text-info">
-              {t("terminal.inBuffer")} ({inBufferJobs.length})
-            </h2>
-          </div>
-          <div className="flex-1 overflow-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-muted/50 sticky top-0 z-10">
-                <tr className="border-b border-border">
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {t("terminal.columns.jobNumber")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {t("terminal.columns.partNumber")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {t("terminal.columns.operation")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {t("terminal.columns.cell")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {t("terminal.columns.material")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center">
-                    {t("terminal.columns.quantity")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-right">
-                    {t("terminal.columns.hours")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {t("terminal.columns.dueDate")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center">
-                    {t("terminal.columns.files")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {inBufferJobs.map((job) => (
-                  <JobRow
-                    key={job.id}
-                    job={job}
-                    isSelected={selectedJobId === job.id}
-                    onClick={() => setSelectedJobId(job.id)}
-                    variant="buffer"
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* 3. EXPECTED */}
-        <div className="flex-1 flex flex-col min-h-0 bg-gradient-to-b from-status-pending/5 to-transparent overflow-hidden">
-          <div className="px-3 py-1.5 bg-status-pending/10 backdrop-blur-sm border-l-2 border-status-pending flex items-center justify-between shrink-0">
-            <h2 className="text-sm font-semibold text-status-pending">
-              {t("terminal.expected")} ({expectedJobs.length})
-            </h2>
-          </div>
-          <div className="flex-1 overflow-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-muted/50 sticky top-0 z-10">
-                <tr className="border-b border-border">
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {t("terminal.columns.jobNumber")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {t("terminal.columns.partNumber")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {t("terminal.columns.operation")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {t("terminal.columns.cell")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {t("terminal.columns.material")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center">
-                    {t("terminal.columns.quantity")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-right">
-                    {t("terminal.columns.hours")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                    {t("terminal.columns.dueDate")}
-                  </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground text-center">
-                    {t("terminal.columns.files")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {expectedJobs.map((job) => (
-                  <JobRow
-                    key={job.id}
-                    job={job}
-                    isSelected={selectedJobId === job.id}
-                    onClick={() => setSelectedJobId(job.id)}
-                    variant="expected"
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <OperatorStatCard
+          label={t("terminal.inProcess")}
+          value={inProcessJobs.length}
+          caption={t("terminal.liveWork", "Operations currently in work")}
+          icon={Clock3}
+          tone="warning"
+        />
+        <OperatorStatCard
+          label={t("terminal.inBuffer")}
+          value={inBufferJobs.length}
+          caption={t("terminal.readyNext", "Ready to start next")}
+          icon={Boxes}
+          tone="info"
+        />
+        <OperatorStatCard
+          label={t("terminal.expected")}
+          value={expectedJobs.length}
+          caption={t("terminal.upcomingLoad", "Later queue in this view")}
+          icon={Gauge}
+        />
+        <OperatorStatCard
+          label={t("terminal.packet", "Work packets")}
+          value={docsCount}
+          caption={t(
+            "terminal.packetCaption",
+            `${activeCellCount} active cells with drawings or models`,
+          )}
+          icon={FileStack}
+          tone="active"
+        />
       </div>
 
-      {/* RESIZABLE DIVIDER */}
-      {!rightPanelCollapsed && (
-        <div
-          className={cn(
-            "w-1 bg-border hover:bg-primary/50 cursor-col-resize flex items-center justify-center group transition-colors relative z-20",
-            isDragging && "bg-primary/50",
-          )}
-          onMouseDown={handleMouseDown}
-          onTouchStart={handleTouchStart}
-        >
-          <div className="absolute inset-y-0 -left-1 -right-1" />{" "}
-          {/* Larger touch target */}
-          <GripVertical className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-        </div>
-      )}
-
-      {/* RIGHT PANEL - Resizable/Collapsible */}
-      <div
-        className={cn(
-          "bg-card flex flex-col border-l border-border shadow-2xl z-10 transition-all duration-200",
-          "backdrop-blur-md bg-card/95", // Glass morphism
-          rightPanelCollapsed ? "w-10" : "",
-        )}
-        style={{
-          width: rightPanelCollapsed ? "40px" : `${100 - leftPanelWidth}%`,
-        }}
-      >
-        {/* Collapse Toggle Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setRightPanelCollapsed(!rightPanelCollapsed)}
-          className="absolute top-2 -left-3 z-30 h-6 w-6 p-0 rounded-full bg-card border border-border shadow-md hover:bg-accent"
-          style={{ marginLeft: rightPanelCollapsed ? "7px" : "0" }}
-        >
-          {rightPanelCollapsed ? (
-            <ChevronLeft className="h-3 w-3" />
-          ) : (
-            <ChevronRight className="h-3 w-3" />
-          )}
-        </Button>
-
-        {rightPanelCollapsed ? (
-          <div className="flex-1 flex flex-col items-center justify-center py-4">
-            <span className="text-muted-foreground text-[10px] [writing-mode:vertical-lr] rotate-180">
-              Details Panel
-            </span>
-          </div>
-        ) : selectedJob ? (
-          <DetailPanel
-            job={selectedJob}
-            onStart={handleStart}
-            onPause={handlePause}
-            onComplete={handleComplete}
-            stepUrl={stepUrl}
-            pdfUrl={pdfUrl}
-            pmiData={pmiData}
-            serverGeometry={geometryData}
-            operations={selectedPartOperations}
-            onDataRefresh={loadData}
-          />
-        ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8 text-center">
-            <div className="w-16 h-16 rounded-full bg-accent/10 mb-4 flex items-center justify-center">
-              <span className="text-3xl">👈</span>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_460px]">
+        <OperatorPanel className="overflow-hidden p-0">
+          <Tabs
+            value={queueTab}
+            onValueChange={(value) => setQueueTab(value as QueueTab)}
+            className="w-full"
+          >
+            <div className="border-b border-border px-4 py-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-semibold text-foreground">
+                    {t("terminal.queueByStatus", "Queue by status")}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {t(
+                      "terminal.queueByStatusDescription",
+                      "Operators should see active work first, then what is ready next.",
+                    )}
+                  </div>
+                </div>
+                {loading ? (
+                  <div className="text-sm text-muted-foreground">
+                    {t("common.refreshing", "Refreshing")}
+                  </div>
+                ) : null}
+              </div>
+              <TabsList className="mt-4 grid h-auto w-full grid-cols-3 gap-2 rounded-2xl bg-muted/30 p-1">
+                <TabsTrigger
+                  value="in_progress"
+                  className="min-h-16 rounded-xl data-[state=active]:bg-background"
+                >
+                  <div className="flex flex-col items-start">
+                    <span className="text-sm font-semibold">
+                      {t("terminal.inProcess")}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {inProcessJobs.length} {t("terminal.jobsFound")}
+                    </span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="in_buffer"
+                  className="min-h-16 rounded-xl data-[state=active]:bg-background"
+                >
+                  <div className="flex flex-col items-start">
+                    <span className="text-sm font-semibold">{t("terminal.inBuffer")}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {inBufferJobs.length} {t("terminal.jobsFound")}
+                    </span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="expected"
+                  className="min-h-16 rounded-xl data-[state=active]:bg-background"
+                >
+                  <div className="flex flex-col items-start">
+                    <span className="text-sm font-semibold">{t("terminal.expected")}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {expectedJobs.length} {t("terminal.jobsFound")}
+                    </span>
+                  </div>
+                </TabsTrigger>
+              </TabsList>
             </div>
-            <h3 className="text-xl font-medium text-foreground mb-2">
-              No Job Selected
-            </h3>
-            <p className="text-sm">
-              Select a job from the list to view details and controls.
-            </p>
-          </div>
-        )}
+
+            <div className="p-4">
+              <TabsContent value="in_progress" className="m-0">
+                {renderQueue(
+                  inProcessJobs,
+                  "process",
+                  t("terminal.noActiveJobs"),
+                  t(
+                    "terminal.noActiveJobsDescription",
+                    "Nothing is currently clocked in for this cell selection.",
+                  ),
+                )}
+              </TabsContent>
+              <TabsContent value="in_buffer" className="m-0">
+                {renderQueue(
+                  inBufferJobs,
+                  "buffer",
+                  t("terminal.noBufferJobs", "No jobs ready next"),
+                  t(
+                    "terminal.noBufferJobsDescription",
+                    "The immediate buffer is clear. Expected work will appear here as routing advances.",
+                  ),
+                )}
+              </TabsContent>
+              <TabsContent value="expected" className="m-0">
+                {renderQueue(
+                  expectedJobs,
+                  "expected",
+                  t("terminal.noExpectedJobs", "No upcoming jobs"),
+                  t(
+                    "terminal.noExpectedJobsDescription",
+                    "There is no later queue for this cell selection right now.",
+                  ),
+                )}
+              </TabsContent>
+            </div>
+          </Tabs>
+        </OperatorPanel>
+
+        <OperatorPanel className="overflow-hidden p-0">
+          {selectedJob ? (
+            <DetailPanel
+              job={selectedJob}
+              onStart={handleStart}
+              onPause={handlePause}
+              onComplete={handleComplete}
+              stepUrl={stepUrl}
+              pdfUrl={pdfUrl}
+              pmiData={pmiData}
+              serverGeometry={geometryData}
+              operations={selectedPartOperations}
+              onDataRefresh={() => void loadData()}
+            />
+          ) : (
+            <OperatorEmptyState
+              icon={Gauge}
+              title={t("terminal.noJobSelected", "Select a work packet")}
+              description={t(
+                "terminal.noJobSelectedDescription",
+                "Choose a job from the queue to show drawings, routing, production actions, and issue reporting in one place.",
+              )}
+              className="min-h-[720px] rounded-none border-0"
+            />
+          )}
+        </OperatorPanel>
       </div>
     </div>
   );
