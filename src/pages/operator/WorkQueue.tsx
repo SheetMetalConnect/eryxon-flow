@@ -7,10 +7,15 @@ import {
   type OperationWithDetails,
 } from "@/lib/database";
 import OperationCard from "@/components/operator/OperationCard";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, Filter, ListFilter, Clock3, CheckCircle2, UserCheck, PackageSearch } from "lucide-react";
+import {
+  Loader2,
+  Search,
+  Filter,
+  PackageSearch,
+  AlertTriangle,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -30,13 +35,7 @@ import {
 } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
-import {
-  OperatorEmptyState,
-  OperatorPageHeader,
-  OperatorPanel,
-  OperatorStatCard,
-  OperatorStatusChip,
-} from "@/components/operator/OperatorStation";
+import { cn } from "@/lib/utils";
 
 interface PartAssignment {
   part_id: string;
@@ -55,15 +54,13 @@ export default function WorkQueue() {
   const { activeOperator } = useOperator();
   const [operations, setOperations] = useState<OperationWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedMaterial, setSelectedMaterial] = useState<string>("all");
-  const [selectedCell, setSelectedCell] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [cells, setCells] = useState<CellOption[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("active");
   const [assignedToMe, setAssignedToMe] = useState<boolean>(false);
   const [dueDateFilter, setDueDateFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("sequence");
-  const [showCompleted, setShowCompleted] = useState<boolean>(true);
+  const [showCompleted, setShowCompleted] = useState<boolean>(false);
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [myAssignments, setMyAssignments] = useState<PartAssignment[]>([]);
 
@@ -102,7 +99,9 @@ export default function WorkQueue() {
                 (assignment): assignment is {
                   part_id: string;
                   assigned_by_user: { full_name: string };
-                } => assignment.part_id !== null && assignment.assigned_by_user !== null,
+                } =>
+                  assignment.part_id !== null &&
+                  assignment.assigned_by_user !== null,
               )
               .map((assignment) => ({
                 part_id: assignment.part_id,
@@ -168,31 +167,32 @@ export default function WorkQueue() {
     return setupRealtimeSubscriptions();
   }, [loadData, profile?.tenant_id, setupRealtimeSubscriptions]);
 
-  const materials = Array.from(
-    new Set(operations.map((operation) => operation.part.material).filter(Boolean)),
-  ).sort();
-
   const assignedPartIds = useMemo(
     () => new Set(myAssignments.map((assignment) => assignment.part_id)),
     [myAssignments],
   );
 
   const filteredOperations = operations.filter((operation) => {
-    const matchesMaterial =
-      selectedMaterial === "all" || operation.part.material === selectedMaterial;
-
-    const matchesCell =
-      selectedCell === "all" || operation.cell_id === selectedCell;
-
     const matchesSearch =
       searchQuery === "" ||
-      operation.operation_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      operation.part.part_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      operation.part.job.job_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      operation.operation_name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      operation.part.part_number
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      operation.part.job.job_number
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
       (operation.part.job.customer &&
-        operation.part.job.customer.toLowerCase().includes(searchQuery.toLowerCase()));
+        operation.part.job.customer
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()));
 
-    const matchesStatus = statusFilter === "all" || operation.status === statusFilter;
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "active" && operation.status !== "completed") ||
+      operation.status === statusFilter;
     const matchesCompleted = showCompleted || operation.status !== "completed";
     const matchesAssigned =
       !assignedToMe ||
@@ -215,16 +215,16 @@ export default function WorkQueue() {
         if (dueDateFilter === "overdue") {
           matchesDueDate = isBefore(dueDate, today);
         } else if (dueDateFilter === "today") {
-          matchesDueDate = isAfter(dueDate, today) && isBefore(dueDate, endToday);
+          matchesDueDate =
+            isAfter(dueDate, today) && isBefore(dueDate, endToday);
         } else if (dueDateFilter === "this_week") {
-          matchesDueDate = isAfter(dueDate, today) && isBefore(dueDate, weekFromNow);
+          matchesDueDate =
+            isAfter(dueDate, today) && isBefore(dueDate, weekFromNow);
         }
       }
     }
 
     return (
-      matchesMaterial &&
-      matchesCell &&
       matchesSearch &&
       matchesStatus &&
       matchesCompleted &&
@@ -234,6 +234,16 @@ export default function WorkQueue() {
   });
 
   const sortedOperations = [...filteredOperations].sort((a, b) => {
+    // Always sort in_progress first within each group
+    const statusOrder = (status: string) => {
+      if (status === "in_progress") return 0;
+      if (status === "not_started") return 1;
+      if (status === "on_hold") return 2;
+      return 3;
+    };
+    const statusDiff = statusOrder(a.status) - statusOrder(b.status);
+    if (statusDiff !== 0) return statusDiff;
+
     if (sortBy === "sequence") {
       return a.sequence - b.sequence;
     }
@@ -241,17 +251,12 @@ export default function WorkQueue() {
       const getDueTime = (operation: OperationWithDetails) => {
         const dueDateValue =
           operation.part.job.due_date_override || operation.part.job.due_date;
-
-        if (!dueDateValue) {
-          return Number.MAX_SAFE_INTEGER;
-        }
-
+        if (!dueDateValue) return Number.MAX_SAFE_INTEGER;
         const dueDate = new Date(dueDateValue);
         return Number.isFinite(dueDate.getTime())
           ? dueDate.getTime()
           : Number.MAX_SAFE_INTEGER;
       };
-
       return getDueTime(a) - getDueTime(b);
     }
     if (sortBy === "estimated_time") {
@@ -262,202 +267,145 @@ export default function WorkQueue() {
 
   const assignmentsByPartId = useMemo(() => {
     const map = new Map<string, PartAssignment>();
-    myAssignments.forEach((assignment) => map.set(assignment.part_id, assignment));
+    myAssignments.forEach((assignment) =>
+      map.set(assignment.part_id, assignment),
+    );
     return map;
   }, [myAssignments]);
 
-  const operationsByCell = (selectedCell === "all"
-    ? cells
-    : cells.filter((cell) => cell.id === selectedCell)
-  ).map((cell) => ({
-    cell,
-    operations: sortedOperations.filter((operation) => operation.cell_id === cell.id),
-  }));
-
-  const totalOperations = filteredOperations.length;
-  const inProgressOperations = filteredOperations.filter(
-    (operation) => operation.status === "in_progress",
-  ).length;
-  const completedOperations = filteredOperations.filter(
-    (operation) => operation.status === "completed",
-  ).length;
-  const assignedOperations = filteredOperations.filter((operation) =>
-    assignedPartIds.has(operation.part.id),
-  ).length;
+  /* ── Kanban columns: one per cell ── */
+  const kanbanColumns = cells.map((cell) => {
+    const cellOps = sortedOperations.filter((op) => op.cell_id === cell.id);
+    const inProgress = cellOps.filter(
+      (op) => op.status === "in_progress",
+    ).length;
+    return { cell, operations: cellOps, inProgress };
+  });
 
   if (loading) {
     return (
-      <OperatorPanel className="flex min-h-[420px] items-center justify-center">
+      <div className="flex h-[calc(100vh-160px)] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground">
             {t("workQueue.loading", "Loading work queue")}
           </p>
         </div>
-      </OperatorPanel>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <OperatorPageHeader
-        eyebrow={t("navigation.workQueue")}
-        title={t("workQueue.title", "Work queue")}
-        description={t(
-          "workQueue.description",
-          "Use the queue to scan work by cell, narrow it to what matters now, and open a packet only when the operator needs deeper detail.",
-        )}
-        meta={
-          <>
-            <OperatorStatusChip
-              tone="info"
-              label={`${cells.length} ${t("workQueue.cells", "cells")}`}
-            />
-            {assignedOperations > 0 ? (
-              <OperatorStatusChip
-                icon={UserCheck}
-                tone="active"
-                label={`${assignedOperations} ${t("operations.assignedToYou", "assigned to you")}`}
-              />
-            ) : null}
-          </>
-        }
-        actions={
-          <Button
-            variant={showFilters ? "default" : "outline"}
-            onClick={() => setShowFilters((prev) => !prev)}
-            className="min-h-11 rounded-xl"
-          >
-            <Filter className="mr-2 h-4 w-4" />
-            {showFilters
-              ? t("common.hideFilters", "Hide filters")
-              : t("common.showFilters", "Show filters")}
-          </Button>
-        }
-      />
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <OperatorStatCard
-          label={t("workQueue.totalOperations", "Total operations")}
-          value={totalOperations}
-          caption={t("workQueue.visibleInCurrentView", "Visible in current view")}
-          icon={ListFilter}
-        />
-        <OperatorStatCard
-          label={t("workQueue.inProgress", "In progress")}
-          value={inProgressOperations}
-          caption={t("workQueue.clockedOrRunning", "Clocked or currently running")}
-          icon={Clock3}
-          tone="warning"
-        />
-        <OperatorStatCard
-          label={t("workQueue.completed", "Completed")}
-          value={completedOperations}
-          caption={t("workQueue.finishedInCurrentFilter", "Finished in current filter")}
-          icon={CheckCircle2}
-          tone="success"
-        />
-        <OperatorStatCard
-          label={t("workQueue.assigned", "Assigned")}
-          value={assignedOperations}
-          caption={t("workQueue.partsAssignedToOperator", "Parts assigned to the active operator")}
-          icon={UserCheck}
-          tone="active"
-        />
-      </div>
-
-      <OperatorPanel className="space-y-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+    <div className="flex h-[calc(100vh-160px)] flex-col overflow-hidden">
+      {/* ── Compact filter bar ── */}
+      <div className="shrink-0 border-b border-border bg-card/80 px-3 py-2 backdrop-blur-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Search */}
+          <div className="relative min-w-[200px] flex-1">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder={t(
                 "workQueue.searchPlaceholder",
-                "Search by job, part, operation, or customer",
+                "Search job, part, operation...",
               )}
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              className="min-h-11 rounded-xl border-border/80 pl-10"
+              className="h-8 rounded-md border-border/80 pl-8 text-sm"
             />
           </div>
+
+          {/* Sort */}
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="min-h-11 w-full rounded-xl border-border/80 bg-card lg:w-[220px]">
-              <SelectValue placeholder={t("workQueue.sortBy", "Sort by")} />
+            <SelectTrigger className="h-8 w-[150px] rounded-md border-border/80 text-xs">
+              <SelectValue
+                placeholder={t("workQueue.sortBy", "Sort by")}
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="sequence">{t("workQueue.sequence", "Sequence")}</SelectItem>
-              <SelectItem value="due_date">{t("workQueue.dueDate", "Due date")}</SelectItem>
+              <SelectItem value="sequence">
+                {t("workQueue.sequence", "Sequence")}
+              </SelectItem>
+              <SelectItem value="due_date">
+                {t("workQueue.dueDate", "Due date")}
+              </SelectItem>
               <SelectItem value="estimated_time">
-                {t("workQueue.estimatedTime", "Estimated time")}
+                {t("workQueue.estimatedTime", "Est. time")}
               </SelectItem>
             </SelectContent>
           </Select>
+
+          {/* Status filter */}
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-8 w-[130px] rounded-md border-border/80 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="active">
+                {t("workQueue.activeOnly", "Active only")}
+              </SelectItem>
+              <SelectItem value="all">
+                {t("workQueue.allStatuses", "All statuses")}
+              </SelectItem>
+              <SelectItem value="not_started">
+                {t("workQueue.notStarted", "Not started")}
+              </SelectItem>
+              <SelectItem value="in_progress">
+                {t("workQueue.inProgress", "In progress")}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Filter toggle */}
+          <Button
+            variant={showFilters ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowFilters((prev) => !prev)}
+            className="h-8 rounded-md text-xs"
+          >
+            <Filter className="mr-1.5 h-3.5 w-3.5" />
+            {t("common.filters", "Filters")}
+          </Button>
+
+          {/* Summary */}
+          <div className="hidden text-xs text-muted-foreground lg:block">
+            {filteredOperations.length}{" "}
+            {t("workQueue.operations", "operations")}
+          </div>
         </div>
 
-        <Tabs value={selectedMaterial} onValueChange={setSelectedMaterial}>
-          <TabsList className="flex h-auto w-full flex-wrap justify-start gap-2 rounded-2xl bg-muted/30 p-1">
-            <TabsTrigger value="all" className="min-h-11 rounded-xl">
-              {t("workQueue.allMaterials", "All materials")}
-            </TabsTrigger>
-            {materials.map((material) => (
-              <TabsTrigger key={material} value={material} className="min-h-11 rounded-xl">
-                {material}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-
-        <Tabs value={selectedCell} onValueChange={setSelectedCell}>
-          <TabsList className="flex h-auto w-full flex-wrap justify-start gap-2 rounded-2xl bg-muted/30 p-1">
-            <TabsTrigger value="all" className="min-h-11 rounded-xl">
-              {t("workQueue.allCells", "All cells")}
-            </TabsTrigger>
-            {cells.map((cell) => (
-              <TabsTrigger key={cell.id} value={cell.id} className="min-h-11 rounded-xl">
-                <span
-                  className="mr-2 h-2.5 w-2.5 rounded-full"
-                  style={{ backgroundColor: cell.color || "currentColor" }}
-                />
-                {cell.name}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-
+        {/* Expanded filters */}
         {showFilters ? (
-          <div className="grid gap-4 rounded-2xl border border-border bg-muted/20 p-4 md:grid-cols-2 xl:grid-cols-4">
-            <div className="space-y-2">
-              <Label htmlFor="status-filter">{t("workQueue.status", "Status")}</Label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger id="status-filter" className="min-h-11 rounded-xl">
-                  <SelectValue placeholder={t("workQueue.allStatuses", "All statuses")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("workQueue.allStatuses", "All statuses")}</SelectItem>
-                  <SelectItem value="not_started">{t("workQueue.notStarted", "Not started")}</SelectItem>
-                  <SelectItem value="in_progress">{t("workQueue.inProgress", "In progress")}</SelectItem>
-                  <SelectItem value="completed">{t("workQueue.completed", "Completed")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="due-date-filter">{t("workQueue.dueDate", "Due date")}</Label>
+          <div className="mt-2 flex flex-wrap items-center gap-3 border-t border-border pt-2">
+            <div className="space-y-1">
+              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                {t("workQueue.dueDate", "Due date")}
+              </Label>
               <Select value={dueDateFilter} onValueChange={setDueDateFilter}>
-                <SelectTrigger id="due-date-filter" className="min-h-11 rounded-xl">
-                  <SelectValue placeholder={t("workQueue.allDates", "All dates")} />
+                <SelectTrigger className="h-8 w-[130px] rounded-md text-xs">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("workQueue.allDates", "All dates")}</SelectItem>
-                  <SelectItem value="overdue">{t("workQueue.overdue", "Overdue")}</SelectItem>
-                  <SelectItem value="today">{t("workQueue.dueToday", "Due today")}</SelectItem>
-                  <SelectItem value="this_week">{t("workQueue.thisWeek", "This week")}</SelectItem>
+                  <SelectItem value="all">
+                    {t("workQueue.allDates", "All dates")}
+                  </SelectItem>
+                  <SelectItem value="overdue">
+                    {t("workQueue.overdue", "Overdue")}
+                  </SelectItem>
+                  <SelectItem value="today">
+                    {t("workQueue.dueToday", "Due today")}
+                  </SelectItem>
+                  <SelectItem value="this_week">
+                    {t("workQueue.thisWeek", "This week")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="flex items-center justify-between rounded-xl border border-border bg-background/70 px-4 py-3">
-              <Label htmlFor="assigned-to-me" className="text-sm font-medium">
+            <div className="flex items-center gap-2 rounded-md border border-border bg-background/70 px-3 py-1.5">
+              <Label
+                htmlFor="assigned-to-me"
+                className="text-xs font-medium"
+              >
                 {t("workQueue.assignedToMe", "Assigned to me")}
               </Label>
               <Switch
@@ -467,8 +415,11 @@ export default function WorkQueue() {
               />
             </div>
 
-            <div className="flex items-center justify-between rounded-xl border border-border bg-background/70 px-4 py-3">
-              <Label htmlFor="show-completed" className="text-sm font-medium">
+            <div className="flex items-center gap-2 rounded-md border border-border bg-background/70 px-3 py-1.5">
+              <Label
+                htmlFor="show-completed"
+                className="text-xs font-medium"
+              >
                 {t("workQueue.showCompleted", "Show completed")}
               </Label>
               <Switch
@@ -479,67 +430,91 @@ export default function WorkQueue() {
             </div>
           </div>
         ) : null}
-      </OperatorPanel>
+      </div>
 
-      {sortedOperations.length === 0 ? (
-        <OperatorEmptyState
-          icon={PackageSearch}
-          title={t("workQueue.noOperations", "No operations match this view")}
-          description={t(
-            "workQueue.noOperationsDescription",
-            "Adjust the cell, material, or date filters to widen the queue.",
-          )}
-        />
-      ) : (
-        <div className="space-y-4">
-          {operationsByCell.map(({ cell, operations: cellOperations }) => (
-            <OperatorPanel key={cell.id} className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
+      {/* ── Kanban board — horizontal scroll of columns ── */}
+      <div className="flex min-h-0 flex-1 overflow-x-auto">
+        {kanbanColumns.length === 0 ? (
+          <div className="flex flex-1 items-center justify-center">
+            <div className="flex flex-col items-center gap-3 text-center">
+              <PackageSearch className="h-10 w-10 text-muted-foreground/50" />
+              <div className="text-sm font-medium text-foreground">
+                {t("workQueue.noCells", "No cells configured")}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {t(
+                  "workQueue.noCellsDescription",
+                  "Add manufacturing cells in admin settings to see the kanban board.",
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          kanbanColumns.map(({ cell, operations: cellOps, inProgress }) => (
+            <div
+              key={cell.id}
+              className="flex h-full w-[320px] shrink-0 flex-col border-r border-border last:border-r-0"
+            >
+              {/* Column header */}
+              <div className="flex shrink-0 items-center justify-between border-b border-border bg-muted/30 px-3 py-2">
+                <div className="flex items-center gap-2 min-w-0">
                   <span
-                    className="h-3 w-3 rounded-full"
-                    style={{ backgroundColor: cell.color || "currentColor" }}
+                    className="h-3 w-3 shrink-0 rounded-full"
+                    style={{
+                      backgroundColor: cell.color || "currentColor",
+                    }}
                   />
-                  <div>
-                    <h2 className="text-lg font-semibold text-foreground">{cell.name}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      {cellOperations.length}{" "}
-                      {cellOperations.length === 1
-                        ? t("workQueue.operation", "operation")
-                        : t("workQueue.operations", "operations")}
-                    </p>
-                  </div>
+                  <span className="truncate text-sm font-semibold text-foreground">
+                    {cell.name}
+                  </span>
                 </div>
-                <OperatorStatusChip
-                  tone="neutral"
-                  label={`${cellOperations.filter((operation) => operation.status === "in_progress").length} ${t("workQueue.inProgress", "in progress")}`}
-                />
+                <div className="flex shrink-0 items-center gap-1.5">
+                  {inProgress > 0 ? (
+                    <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                      {inProgress} {t("workQueue.active", "active")}
+                    </span>
+                  ) : null}
+                  <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                    {cellOps.length}
+                  </span>
+                </div>
               </div>
 
-              {cellOperations.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                  {t("workQueue.noOperationsInCell", "No operations in this cell for the current filters.")}
-                </div>
-              ) : (
-                <div className="grid gap-3 lg:grid-cols-2 2xl:grid-cols-3">
-                  {cellOperations.map((operation) => {
-                    const assignment = assignmentsByPartId.get(operation.part.id);
-                    return (
-                      <OperationCard
-                        key={operation.id}
-                        operation={operation}
-                        onUpdate={() => void loadData()}
-                        assignedToMe={Boolean(assignment)}
-                        assignedByName={assignment?.assigned_by_name}
-                      />
-                    );
-                  })}
-                </div>
-              )}
-            </OperatorPanel>
-          ))}
-        </div>
-      )}
+              {/* Column body — scrollable cards */}
+              <div className="flex-1 overflow-y-auto p-2">
+                {cellOps.length === 0 ? (
+                  <div className="flex h-full items-center justify-center p-4">
+                    <div className="text-center text-xs text-muted-foreground">
+                      {t(
+                        "workQueue.emptyColumn",
+                        "No operations",
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {cellOps.map((operation) => {
+                      const assignment = assignmentsByPartId.get(
+                        operation.part.id,
+                      );
+                      return (
+                        <OperationCard
+                          key={operation.id}
+                          operation={operation}
+                          onUpdate={() => void loadData()}
+                          compact
+                          assignedToMe={Boolean(assignment)}
+                          assignedByName={assignment?.assigned_by_name}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
