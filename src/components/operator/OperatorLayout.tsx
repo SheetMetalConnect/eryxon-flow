@@ -34,7 +34,6 @@ import { cn } from "@/lib/utils";
 import { GlobalSearch, SearchTriggerButton } from "@/components/GlobalSearch";
 import { TrialStatusBanner } from "@/components/admin/TrialStatusBanner";
 import { ROUTES } from "@/routes";
-import { OperatorStatusChip } from "./OperatorStation";
 
 interface OperatorLayoutProps {
   children: React.ReactNode;
@@ -53,30 +52,10 @@ export const OperatorLayout = ({
   const [searchOpen, setSearchOpen] = useState(false);
 
   const navItems = [
-    {
-      path: "/operator/work-queue",
-      label: t("navigation.workQueue"),
-      icon: ListChecks,
-      hint: t("navigation.workQueue", "Work queue"),
-    },
-    {
-      path: "/operator/view",
-      label: t("navigation.terminalView", "Terminal View"),
-      icon: Gauge,
-      hint: t("navigation.terminalView", "Terminal"),
-    },
-    {
-      path: "/operator/my-activity",
-      label: t("navigation.myActivity"),
-      icon: Clock,
-      hint: t("navigation.myActivity", "Activity"),
-    },
-    {
-      path: "/operator/my-issues",
-      label: t("navigation.myIssues"),
-      icon: Flag,
-      hint: t("navigation.myIssues", "Issues"),
-    },
+    { path: "/operator/work-queue", label: t("navigation.workQueue"), icon: ListChecks },
+    { path: "/operator/view", label: t("navigation.terminalView", "Terminal View"), icon: Gauge },
+    { path: "/operator/my-activity", label: t("navigation.myActivity"), icon: Clock },
+    { path: "/operator/my-issues", label: t("navigation.myIssues"), icon: Flag },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -84,167 +63,161 @@ export const OperatorLayout = ({
   return (
     <>
       <div className="relative flex min-h-screen flex-col bg-background text-foreground">
-        <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
-          <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-3 px-3 py-3 sm:px-4 lg:px-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex min-w-0 items-center gap-3">
-                {showBackToAdmin ? (
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate("/admin/dashboard")}
-                    className="min-h-11 gap-2 rounded-xl border-border/80 bg-card px-3"
-                  >
-                    <Factory className="h-4 w-4" />
-                    <span>{t("navigation.backToAdmin", "Back to Admin")}</span>
-                  </Button>
-                ) : (
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-muted/30">
-                      <Building2 className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                        {t("navigation.terminalView", "Terminal View")}
-                      </div>
-                      <div className="truncate text-base font-semibold">
-                        {tenant?.company_name || tenant?.name || t("app.name")}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex flex-wrap items-center justify-end gap-2">
-                {activeOperator ? (
-                  <OperatorStatusChip
-                    icon={UserCheck}
-                    tone="success"
-                    label={`${activeOperator.full_name} • ${activeOperator.employee_id}`}
-                    className="max-w-full sm:max-w-[360px]"
-                  />
-                ) : (
-                  <OperatorSwitcher variant="button" className="min-h-11 rounded-xl" />
-                )}
-
-                <SearchTriggerButton onClick={() => setSearchOpen(true)} compact />
-                <ThemeToggle variant="dropdown" />
-                <LanguageSwitcher />
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-11 rounded-full border-border/80 bg-card px-1.5"
-                    >
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-primary/10 text-primary">
-                          {profile?.full_name?.charAt(0).toUpperCase() || "O"}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-64 border-border/80 bg-popover" align="end">
-                    <div className="px-3 py-2">
-                      <div className="text-sm font-semibold">{profile?.full_name}</div>
-                      <div className="text-xs text-muted-foreground">{profile?.email}</div>
-                    </div>
-                    <DropdownMenuSeparator />
-                    {activeOperator ? (
-                      <>
-                        <div className="px-3 py-2 text-xs text-muted-foreground">
-                          {t("operator.switchOperator")}
-                          <div className="mt-1 font-medium text-foreground">
-                            {activeOperator.full_name} • {activeOperator.employee_id}
-                          </div>
-                        </div>
-                        <DropdownMenuSeparator />
-                      </>
-                    ) : null}
-                    <DropdownMenuItem
-                      onClick={() => navigate(ROUTES.OPERATOR.LOGIN)}
-                      className="min-h-11 gap-2"
-                    >
-                      <RefreshCw className="h-4 w-4" />
-                      {t("operator.switchOperator")}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="min-h-11 gap-2">
-                      <a href={DOCS_GUIDES_URL} target="_blank" rel="noopener noreferrer">
-                        <HelpCircle className="h-4 w-4" />
-                        {t("common.helpAndDocs")}
-                      </a>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={signOut}
-                      className="min-h-11 gap-2 text-destructive focus:text-destructive"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      {t("auth.signOut")}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+        {/* Compact Header */}
+        <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-md">
+          <div className="flex h-12 items-center justify-between px-3 sm:px-4">
+            {/* Left: Back to Admin or Tenant Name */}
+            <div className="flex min-w-0 items-center gap-2">
+              {showBackToAdmin ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/admin/dashboard")}
+                  className="h-8 gap-1.5 text-xs"
+                >
+                  <Factory className="h-4 w-4" />
+                  <span className="hidden sm:inline">
+                    {t("navigation.backToAdmin", "Back to Admin")}
+                  </span>
+                </Button>
+              ) : (
+                <>
+                  <Building2 className="h-5 w-5 shrink-0 text-primary" />
+                  <span className="max-w-[120px] truncate text-sm font-bold sm:max-w-[200px]">
+                    {tenant?.company_name || tenant?.name || t("app.name")}
+                  </span>
+                </>
+              )}
             </div>
 
-            <div className="hidden gap-2 lg:grid lg:grid-cols-4">
-              {navItems.map((item) => (
-                <button
-                  key={item.path}
-                  onClick={() => navigate(item.path)}
-                  className={cn(
-                    "flex min-h-12 items-center justify-between rounded-2xl border px-4 text-left transition-colors",
-                    isActive(item.path)
-                      ? "border-primary/40 bg-primary/10 text-foreground"
-                      : "border-border/80 bg-card text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <item.icon className="h-5 w-5" />
-                    <div>
-                      <div className="text-sm font-semibold">{item.label}</div>
-                      <div className="text-xs text-muted-foreground">{item.hint}</div>
-                    </div>
+            {/* Center: Active Operator */}
+            <div className="flex items-center gap-2">
+              {activeOperator ? (
+                <div className="flex items-center gap-2 rounded-full border border-green-500/30 bg-green-500/10 px-2 py-1 sm:px-3">
+                  <div className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-green-500" />
+                  <UserCheck className="hidden h-3.5 w-3.5 shrink-0 text-green-500 sm:block" />
+                  <span className="max-w-[80px] truncate text-xs font-bold text-green-500 sm:max-w-[120px]">
+                    {activeOperator.full_name}
+                  </span>
+                  <span className="hidden font-mono text-[10px] text-green-500/70 sm:block">
+                    {activeOperator.employee_id}
+                  </span>
+                </div>
+              ) : (
+                <OperatorSwitcher variant="button" className="h-8" />
+              )}
+            </div>
+
+            {/* Right: Actions */}
+            <div className="flex items-center gap-1.5">
+              <SearchTriggerButton onClick={() => setSearchOpen(true)} compact />
+              <ThemeToggle variant="dropdown" />
+              <LanguageSwitcher />
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0">
+                    <Avatar className="h-7 w-7 border border-primary/20">
+                      <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
+                        {profile?.full_name?.charAt(0).toUpperCase() || "O"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 border-border/80 bg-popover" align="end">
+                  <div className="px-2 py-1.5">
+                    <div className="text-xs font-semibold">{profile?.full_name}</div>
+                    <div className="text-[10px] text-muted-foreground">{profile?.email}</div>
                   </div>
-                  <span aria-hidden="true" className="h-4 w-4" />
-                </button>
-              ))}
+                  <DropdownMenuSeparator />
+                  {activeOperator ? (
+                    <>
+                      <div className="border-b border-green-500/20 bg-green-500/5 px-2 py-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <UserCheck className="h-3.5 w-3.5 text-green-500" />
+                          <div>
+                            <span className="block text-xs font-bold text-green-500">
+                              {activeOperator.full_name}
+                            </span>
+                            <span className="font-mono text-[10px] text-green-500/70">
+                              {activeOperator.employee_id}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <DropdownMenuSeparator />
+                    </>
+                  ) : null}
+                  <DropdownMenuItem
+                    onClick={() => navigate(ROUTES.OPERATOR.LOGIN)}
+                    className="gap-1.5 text-xs"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    {t("operator.switchOperator")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="gap-1.5 text-xs">
+                    <a href={DOCS_GUIDES_URL} target="_blank" rel="noopener noreferrer">
+                      <HelpCircle className="h-3.5 w-3.5" />
+                      {t("common.helpAndDocs")}
+                    </a>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={signOut}
+                    className="gap-1.5 text-xs text-destructive focus:text-destructive"
+                  >
+                    <LogOut className="h-3.5 w-3.5" />
+                    {t("auth.signOut")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>
 
         <TrialStatusBanner />
 
-        <div className="sticky top-[102px] z-40 border-b border-border bg-background/95 backdrop-blur-md lg:top-[154px]">
-          <div className="mx-auto w-full max-w-screen-2xl px-3 py-2 sm:px-4 lg:px-6">
+        {/* Currently Timing Widget */}
+        <div className="sticky top-12 z-40 border-b border-border bg-background/95 backdrop-blur-md">
+          <div className="px-3 py-2 sm:px-4">
             <CurrentlyTimingWidget />
           </div>
         </div>
 
-        <main className="mx-auto flex w-full max-w-screen-2xl flex-1 px-3 py-4 pb-24 sm:px-4 lg:px-6">
-          <div className="w-full">{children}</div>
+        {/* Main Content */}
+        <main className="flex-1 px-3 py-3 pb-20 sm:px-4 sm:py-4">
+          {children}
         </main>
 
+        {/* Bottom Navigation — single nav, compact */}
         <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/98 backdrop-blur-md">
-          <div className="mx-auto grid h-16 max-w-screen-2xl grid-cols-4 px-2">
+          <div className="mx-auto grid h-14 max-w-lg grid-cols-4">
             {navItems.map((item) => (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
                 className={cn(
-                  "flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl transition-colors",
+                  "flex flex-col items-center justify-center gap-0.5 transition-colors",
                   isActive(item.path)
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <item.icon className="h-5 w-5" />
-                <span className="text-[11px] font-semibold sm:text-xs">{item.label}</span>
+                <span
+                  className={cn(
+                    "text-[10px] sm:text-xs",
+                    isActive(item.path) ? "font-semibold" : "font-medium",
+                  )}
+                >
+                  {item.label}
+                </span>
               </button>
             ))}
           </div>
         </nav>
 
-        {profile && (profile as { tour_completed?: boolean }).tour_completed === false ? (
+        {profile &&
+        (profile as { tour_completed?: boolean }).tour_completed === false ? (
           <AppTour userRole="operator" />
         ) : null}
       </div>

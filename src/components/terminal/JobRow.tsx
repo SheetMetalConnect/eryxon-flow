@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { FileText, Box, AlertTriangle, Clock3, User, Zap, Layers3 } from "lucide-react";
+import { FileText, Box, AlertTriangle, Clock, User, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { TerminalJob } from "@/types/terminal";
@@ -11,130 +11,137 @@ interface JobRowProps {
   variant: "process" | "buffer" | "expected";
 }
 
-const variantClasses: Record<JobRowProps["variant"], string> = {
-  process: "border-amber-500/30 bg-amber-500/10",
-  buffer: "border-sky-500/30 bg-sky-500/10",
-  expected: "border-border bg-card",
-};
-
-const operationClasses: Record<JobRowProps["variant"], string> = {
-  process: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  buffer: "bg-sky-500/15 text-sky-600 dark:text-sky-400",
-  expected: "bg-muted text-foreground",
+const getOperationBadgeColor = (opName: string) => {
+  const name = opName.toLowerCase();
+  if (name.includes("frezen") || name.includes("mill")) return "bg-operation-milling";
+  if (name.includes("afbramen") || name.includes("deburr")) return "bg-status-completed";
+  if (name.includes("assemblage") || name.includes("assembly")) return "bg-status-on-hold";
+  if (name.includes("lassen") || name.includes("weld")) return "bg-operation-welding";
+  if (name.includes("autorisatie") || name.includes("auth")) return "bg-operation-default";
+  return "bg-operation-default";
 };
 
 export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
   const { t } = useTranslation();
   const dueDate = job.dueDate ? new Date(job.dueDate) : null;
-  const hasValidDueDate =
-    dueDate !== null && Number.isFinite(dueDate.getTime());
+  const hasValidDueDate = dueDate !== null && Number.isFinite(dueDate.getTime());
 
   return (
-    <button
+    <tr
       onClick={onClick}
       className={cn(
-        "w-full rounded-2xl border p-4 text-left transition-all hover:border-primary/30 hover:bg-muted/20",
-        variantClasses[variant],
-        isSelected && "border-primary bg-primary/10 shadow-[0_0_0_1px_hsl(var(--primary)/0.3)]",
-        job.isCurrentUserClocked && "border-primary/50 bg-primary/10",
+        "cursor-pointer border-b border-border transition-colors hover:bg-accent/30",
+        isSelected && "bg-accent/50 ring-1 ring-primary",
+        variant === "process" && "bg-status-active/5",
+        job.isCurrentUserClocked && "bg-primary/10 ring-1 ring-primary/50",
+        job.isBulletCard && "border-l-2 border-l-destructive bg-destructive/5",
       )}
     >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="font-mono text-base font-semibold text-foreground">
-              {job.jobCode}
-            </div>
-            {job.isBulletCard ? (
-              <Badge variant="destructive" className="gap-1 rounded-full">
-                <Zap className="h-3.5 w-3.5" />
-                {t("terminal.bulletCard")}
-              </Badge>
-            ) : null}
-            {job.isCurrentUserClocked ? (
-              <Badge className="gap-1 rounded-full bg-primary text-primary-foreground">
-                <Clock3 className="h-3.5 w-3.5" />
-                {t("terminal.you")}
-              </Badge>
-            ) : null}
-            {job.activeTimeEntryId && !job.isCurrentUserClocked ? (
-              <Badge variant="outline" className="gap-1 rounded-full">
-                <User className="h-3.5 w-3.5" />
-                {job.activeOperatorName?.split(" ")[0] || t("terminal.other")}
-              </Badge>
-            ) : null}
-          </div>
-
-          <div>
-            <div className="text-sm font-semibold text-foreground">{job.description}</div>
-            <div className="text-sm text-muted-foreground">{job.currentOp}</div>
-          </div>
-        </div>
-
-        <div className="space-y-1 text-right">
-          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            {t("terminal.columns.dueDate")}
-          </div>
-          <div className="text-sm font-semibold text-foreground">
-            {hasValidDueDate ? dueDate.toLocaleDateString() : "-"}
-          </div>
-          <div className="text-xs text-muted-foreground">
-            {job.hours}h {t("operator.remaining", "remaining")}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-xl border border-border/80 bg-background/70 px-3 py-2">
-          <div className="text-[11px] uppercase tracking-[0.18em]">
-            {t("terminal.columns.cell")}
-          </div>
-          <div className="mt-1 flex items-center gap-2 font-medium text-foreground">
-            <span
-              className="h-2.5 w-2.5 rounded-full"
-              style={{ backgroundColor: job.cellColor || "currentColor" }}
-            />
-            {job.cellName || "-"}
-          </div>
-        </div>
-        <div className="rounded-xl border border-border/80 bg-background/70 px-3 py-2">
-          <div className="text-[11px] uppercase tracking-[0.18em]">
-            {t("terminal.columns.material")}
-          </div>
-          <div className="mt-1 font-medium text-foreground">{job.material || "-"}</div>
-        </div>
-        <div className="rounded-xl border border-border/80 bg-background/70 px-3 py-2">
-          <div className="text-[11px] uppercase tracking-[0.18em]">
-            {t("terminal.columns.quantity")}
-          </div>
-          <div className="mt-1 font-medium text-foreground">{job.quantity}</div>
-        </div>
-        <div className="rounded-xl border border-border/80 bg-background/70 px-3 py-2">
-          <div className="text-[11px] uppercase tracking-[0.18em]">
-            {t("terminal.packet", "Packet")}
-          </div>
-          <div className="mt-1 flex flex-wrap items-center gap-2">
-            <span
-              className={cn(
-                "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold",
-                operationClasses[variant],
-              )}
+      {/* Job Number */}
+      <td className="whitespace-nowrap px-2 py-1.5 text-sm font-medium text-foreground">
+        <div className="flex items-center gap-2">
+          {job.isBulletCard ? (
+            <Zap className="h-3.5 w-3.5 shrink-0 text-destructive" />
+          ) : null}
+          {job.isCurrentUserClocked ? (
+            <Badge
+              className="animate-pulse bg-primary px-1.5 py-0 text-[10px] font-bold text-primary-foreground"
+              title={t("terminal.youAreClockedOn")}
             >
-              <Layers3 className="h-3.5 w-3.5" />
-              {job.currentOp}
-            </span>
-            {job.hasPdf ? <FileText className="h-4 w-4 text-primary" /> : null}
-            {job.hasModel ? <Box className="h-4 w-4 text-sky-500" /> : null}
-            {job.warnings?.length ? (
-              <AlertTriangle className="h-4 w-4 text-amber-500" />
-            ) : null}
-          </div>
+              <Clock className="mr-0.5 h-2.5 w-2.5" />
+              {t("terminal.you")}
+            </Badge>
+          ) : null}
+          {job.activeTimeEntryId && !job.isCurrentUserClocked ? (
+            <Badge
+              variant="outline"
+              className="border-muted-foreground/50 px-1.5 py-0 text-[10px]"
+              title={job.activeOperatorName}
+            >
+              <User className="mr-0.5 h-2.5 w-2.5" />
+              {job.activeOperatorName?.split(" ")[0] || t("terminal.other")}
+            </Badge>
+          ) : null}
+          {job.jobCode}
         </div>
-      </div>
+      </td>
 
-      {job.notes ? (
-        <div className="mt-3 line-clamp-2 text-sm text-muted-foreground">{job.notes}</div>
-      ) : null}
-    </button>
+      {/* Part Number */}
+      <td className="whitespace-nowrap px-2 py-1.5 text-sm text-foreground">
+        {job.description}
+      </td>
+
+      {/* Operation */}
+      <td className="px-2 py-1.5">
+        <Badge
+          className={cn(
+            "whitespace-nowrap px-2 py-0.5 text-xs font-semibold text-primary-foreground",
+            getOperationBadgeColor(job.currentOp),
+          )}
+        >
+          {job.currentOp}
+        </Badge>
+      </td>
+
+      {/* Cell */}
+      <td className="whitespace-nowrap px-2 py-1.5 text-sm text-foreground">
+        <span
+          className="inline-block rounded px-2 py-0.5 text-xs font-medium"
+          style={{
+            backgroundColor: job.cellColor ? `${job.cellColor}20` : "transparent",
+            color: job.cellColor || "inherit",
+          }}
+        >
+          {job.cellName || "-"}
+        </span>
+      </td>
+
+      {/* Material */}
+      <td className="whitespace-nowrap px-2 py-1.5 text-sm text-foreground">
+        {job.material || "-"}
+      </td>
+
+      {/* Quantity */}
+      <td className="whitespace-nowrap px-2 py-1.5 text-center text-sm text-foreground">
+        {job.quantity}
+      </td>
+
+      {/* Remaining Hours */}
+      <td className="whitespace-nowrap px-2 py-1.5 text-right font-mono text-sm text-foreground">
+        {job.hours}h
+      </td>
+
+      {/* Due Date */}
+      <td className="whitespace-nowrap px-2 py-1.5 text-sm text-foreground">
+        {hasValidDueDate
+          ? dueDate.toLocaleDateString("nl-NL", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            })
+          : "-"}
+      </td>
+
+      {/* Files */}
+      <td className="px-2 py-1.5">
+        <div className="flex items-center justify-center gap-1.5">
+          {job.hasPdf ? (
+            <div title="PDF Available">
+              <FileText className="h-3.5 w-3.5 text-primary" />
+            </div>
+          ) : null}
+          {job.hasModel ? (
+            <div title="3D Model">
+              <Box className="h-3.5 w-3.5 text-sky-500" />
+            </div>
+          ) : null}
+          {job.warnings && job.warnings.length > 0 ? (
+            <div title={job.warnings.join(", ")}>
+              <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+            </div>
+          ) : null}
+        </div>
+      </td>
+    </tr>
   );
 }
