@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { TerminalJob } from "@/types/terminal";
+import { getDueUrgency, dueUrgencyTextClass } from "@/lib/due-date";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -406,7 +407,12 @@ export function DetailPanel({
             <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               {t("terminal.columns.dueDate")}
             </div>
-            <div className="text-sm font-semibold text-foreground">
+            <div
+              className={cn(
+                "text-sm font-semibold",
+                dueUrgencyTextClass[getDueUrgency(job.dueDate)],
+              )}
+            >
               {new Date(job.dueDate).toLocaleDateString()}
             </div>
             <div className="text-[10px] text-muted-foreground">

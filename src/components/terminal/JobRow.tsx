@@ -3,6 +3,7 @@ import { FileText, Box, AlertTriangle, Clock, User, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { TerminalJob } from "@/types/terminal";
+import { getDueUrgency, dueUrgencyTextClass } from "@/lib/due-date";
 
 interface JobRowProps {
   job: TerminalJob;
@@ -21,10 +22,17 @@ const getOperationBadgeColor = (opName: string) => {
   return "bg-operation-default";
 };
 
+const urgencyLabel: Record<string, string> = {
+  overdue: "!",
+  today: "⏰",
+  soon: "⚡",
+};
+
 export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
   const { t } = useTranslation();
   const dueDate = job.dueDate ? new Date(job.dueDate) : null;
   const hasValidDueDate = dueDate !== null && Number.isFinite(dueDate.getTime());
+  const dueUrgency = getDueUrgency(job.dueDate);
 
   return (
     <tr
@@ -112,7 +120,15 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
       </td>
 
       {/* Due Date */}
-      <td className="whitespace-nowrap px-2 py-1.5 text-sm text-foreground">
+      <td
+        className={cn(
+          "whitespace-nowrap px-2 py-1.5 text-sm font-medium",
+          dueUrgencyTextClass[dueUrgency],
+        )}
+      >
+        {urgencyLabel[dueUrgency] ? (
+          <span className="mr-1">{urgencyLabel[dueUrgency]}</span>
+        ) : null}
         {hasValidDueDate
           ? dueDate.toLocaleDateString("nl-NL", {
               day: "2-digit",

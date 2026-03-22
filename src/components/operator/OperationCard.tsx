@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { format, isPast } from "date-fns";
+import { format } from "date-fns";
 import {
   Clock3,
   User,
@@ -8,7 +8,6 @@ import {
   UserCheck,
   FileText,
   Box,
-  Wrench,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOperationIssues } from "@/hooks/useOperationIssues";
@@ -16,6 +15,11 @@ import OperationDetailModal from "./OperationDetailModal";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { OperationWithDetails } from "@/lib/database";
+import {
+  getDueUrgency,
+  dueUrgencyTextClass,
+  dueUrgencyBorderClass,
+} from "@/lib/due-date";
 
 interface OperationCardProps {
   operation: OperationWithDetails;
@@ -33,12 +37,18 @@ const statusStripe: Record<string, string> = {
   on_hold: "bg-orange-500",
 };
 
+/** Urgency label shown next to date for overdue/today/soon */
+const urgencyLabel: Record<string, string> = {
+  overdue: "OVERDUE",
+  today: "TODAY",
+  soon: "SOON",
+};
+
 export default function OperationCard({
   operation,
   onUpdate,
   compact = false,
   assignedToMe = false,
-  assignedByName,
 }: OperationCardProps) {
   const { t } = useTranslation();
   const [showDetail, setShowDetail] = useState(false);
@@ -51,8 +61,7 @@ export default function OperationCard({
   const dueDate =
     operation.part.job.due_date_override || operation.part.job.due_date;
   const dueDateObj = dueDate ? new Date(dueDate) : null;
-  const isOverdue =
-    dueDateObj && Number.isFinite(dueDateObj.getTime()) && isPast(dueDateObj);
+  const dueUrgency = getDueUrgency(dueDate);
   const estimatedHours = (operation.estimated_time || 0) / 60;
   const actualHours = (operation.actual_time || 0) / 60;
   const remainingTime = estimatedHours - actualHours;
@@ -75,9 +84,10 @@ export default function OperationCard({
         onClick={() => setShowDetail(true)}
         className={cn(
           "group relative flex w-full overflow-hidden rounded-md border text-left transition-all",
-          "border-border/60 bg-card hover:border-primary/40 hover:shadow-sm",
-          isActive && "border-primary/40 bg-primary/[0.03]",
-          isOverdue && !isActive && "border-red-400/40",
+          "bg-card hover:border-primary/40 hover:shadow-sm",
+          isActive
+            ? "border-primary/40 bg-primary/[0.03]"
+            : dueUrgencyBorderClass[dueUrgency],
         )}
       >
         {/* Status stripe */}
@@ -89,7 +99,12 @@ export default function OperationCard({
           )}
         />
 
-        <div className={cn("min-w-0 flex-1", compact ? "px-2.5 py-2" : "px-3 py-2.5")}>
+        <div
+          className={cn(
+            "min-w-0 flex-1",
+            compact ? "px-2.5 py-2" : "px-3 py-2.5",
+          )}
+        >
           {/* Row 1: Job number + due date */}
           <div className="flex items-center justify-between gap-2">
             <span className="truncate font-mono text-[11px] text-muted-foreground">
@@ -97,12 +112,25 @@ export default function OperationCard({
             </span>
             <span
               className={cn(
-                "shrink-0 text-[10px] font-medium",
-                isOverdue
-                  ? "text-red-600 dark:text-red-400"
-                  : "text-muted-foreground",
+                "flex shrink-0 items-center gap-1 text-[10px] font-medium",
+                dueUrgencyTextClass[dueUrgency],
               )}
             >
+              {urgencyLabel[dueUrgency] ? (
+                <span
+                  className={cn(
+                    "rounded px-1 py-px text-[8px] font-bold uppercase tracking-wider",
+                    dueUrgency === "overdue" &&
+                      "bg-red-500/15 text-red-600 dark:text-red-400",
+                    dueUrgency === "today" &&
+                      "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+                    dueUrgency === "soon" &&
+                      "bg-orange-500/15 text-orange-600 dark:text-orange-400",
+                  )}
+                >
+                  {urgencyLabel[dueUrgency]}
+                </span>
+              ) : null}
               {dueDateObj && Number.isFinite(dueDateObj.getTime())
                 ? format(dueDateObj, "dd MMM")
                 : ""}
@@ -128,7 +156,6 @@ export default function OperationCard({
           {/* Row 4: Meta line — time, icons, indicators */}
           <div className="mt-1.5 flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-              {/* Remaining time */}
               <span
                 className={cn(
                   "flex items-center gap-0.5 font-medium",
@@ -141,50 +168,40 @@ export default function OperationCard({
                 {isOvertime ? "+" : ""}
                 {Math.abs(remainingTime).toFixed(1)}h
               </span>
-
-              {/* Quantity */}
               <span className="text-border">·</span>
               <span>{operation.part.quantity} pcs</span>
             </div>
 
-            {/* Right-side icons */}
             <div className="flex items-center gap-1">
-              {/* Active operator */}
               {isActive ? (
                 <span
                   className="flex items-center gap-0.5 rounded bg-primary/10 px-1 py-0.5 text-[9px] font-semibold text-primary"
                   title={operation.active_time_entry?.operator.full_name}
                 >
                   <User className="h-2.5 w-2.5" />
-                  {operation.active_time_entry?.operator.full_name
-                    ?.split(" ")[0]}
+                  {operation.active_time_entry?.operator.full_name?.split(
+                    " ",
+                  )[0]}
                 </span>
               ) : null}
-
-              {/* Assigned to me */}
               {isAssignedToMe && !isActive ? (
                 <UserCheck className="h-3 w-3 text-primary" />
               ) : null}
-
-              {/* Assembly */}
               {operation.part.parent_part_id ? (
                 <Package className="h-3 w-3 text-muted-foreground/60" />
               ) : null}
-
-              {/* Files */}
               {hasPdf ? (
                 <FileText className="h-3 w-3 text-muted-foreground/60" />
               ) : null}
               {hasModel ? (
                 <Box className="h-3 w-3 text-muted-foreground/60" />
               ) : null}
-
-              {/* Issues */}
               {pendingCount > 0 ? (
                 <span
                   className={cn(
                     "flex items-center gap-0.5 text-[9px] font-semibold",
-                    highestSeverity === "critical" || highestSeverity === "high"
+                    highestSeverity === "critical" ||
+                      highestSeverity === "high"
                       ? "text-red-600 dark:text-red-400"
                       : "text-amber-600 dark:text-amber-400",
                   )}
