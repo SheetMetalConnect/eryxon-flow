@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { LucideIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface AdminPageHeaderProps {
   title: string;
@@ -27,35 +28,37 @@ export function AdminPageHeader({
   action,
   children,
 }: AdminPageHeaderProps) {
-  // Check if action is a React node or an object
+  const { t } = useTranslation();
   const isActionObject = action && typeof action === 'object' && 'onClick' in action;
   const ActionIcon = isActionObject ? action.icon : undefined;
 
   return (
-    <div className="space-y-3 sm:space-y-4">
-      <div>
-        {/* Header row - stacks on mobile, inline on larger screens */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4 mb-1">
-          <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+    <div className="space-y-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="space-y-1">
+          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            {t("common.workspace", "Workspace")}
+          </div>
+          <h1 className="bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-2xl font-semibold tracking-tight text-transparent">
             {title}
           </h1>
-          <div className="flex items-center gap-2 flex-wrap">
-            {children}
-            {action && isActionObject && (
-              <Button
-                onClick={action.onClick}
-                className="cta-button w-full sm:w-auto justify-center"
-              >
-                {ActionIcon && <ActionIcon className="mr-2 h-4 w-4" />}
-                {action.label}
-              </Button>
-            )}
-            {action && !isActionObject && (action as ReactNode)}
-          </div>
+          {description && (
+            <p className="max-w-3xl text-sm text-muted-foreground">{description}</p>
+          )}
         </div>
-        {description && (
-          <p className="text-muted-foreground text-xs sm:text-sm">{description}</p>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {children}
+          {action && isActionObject && (
+            <Button
+              onClick={action.onClick}
+              className="cta-button min-h-11 rounded-xl px-4"
+            >
+              {ActionIcon && <ActionIcon className="mr-2 h-4 w-4" />}
+              {action.label}
+            </Button>
+          )}
+          {action && !isActionObject && (action as ReactNode)}
+        </div>
       </div>
       <hr className="title-divider" />
     </div>

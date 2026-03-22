@@ -1,22 +1,28 @@
-import { OperationWithDetails } from "@/lib/database";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Clock, User, Package, AlertTriangle, UserCheck } from "lucide-react";
-import { format } from "date-fns";
 import { useState } from "react";
+import { format } from "date-fns";
+import {
+  Clock3,
+  User,
+  Package,
+  AlertTriangle,
+  UserCheck,
+  ArrowRight,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOperationIssues } from "@/hooks/useOperationIssues";
 import OperationDetailModal from "./OperationDetailModal";
 import { useTranslation } from "react-i18next";
 import { ResourceCountBadge } from "@/components/ui/ResourceUsageDisplay";
 
+import { OperationWithDetails } from "@/lib/database";
+
 interface OperationCardProps {
   operation: OperationWithDetails;
   onUpdate: () => void;
   compact?: boolean;
-  /** Whether this operation's part is assigned to the active shop floor operator */
   assignedToMe?: boolean;
-  /** Name of the admin who made the assignment */
   assignedByName?: string;
 }
 
@@ -30,175 +36,141 @@ export default function OperationCard({
   const { t } = useTranslation();
   const [showDetail, setShowDetail] = useState(false);
   const { profile } = useAuth();
-  const { pendingCount, highestSeverity } = useOperationIssues(operation.id, profile?.tenant_id);
+  const { pendingCount, highestSeverity } = useOperationIssues(
+    operation.id,
+    profile?.tenant_id,
+  );
 
   const dueDate = operation.part.job.due_date_override || operation.part.job.due_date;
-  const remainingTime = operation.estimated_time - (operation.actual_time || 0);
+  const actualHours = (operation.actual_time || 0) / 60;
+  const estimatedHours = (operation.estimated_time || 0) / 60;
+  const remainingTime = estimatedHours - actualHours;
   const isOvertime = remainingTime < 0;
-  // Check both profile-based assignment AND shop floor operator assignment
-  const isAssignedToMe = operation.assigned_operator_id === profile?.id || assignedToMe;
+  const isAssignedToMe =
+    operation.assigned_operator_id === profile?.id || assignedToMe;
 
-  const statusColors = {
-    not_started: "bg-status-pending",
-    in_progress: "bg-status-active",
-    completed: "bg-status-completed",
-    on_hold: "bg-status-on-hold",
+  const statusTone = {
+    not_started: "border-border bg-background/70 text-foreground",
+    in_progress:
+      "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    completed:
+      "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    on_hold:
+      "border-orange-500/30 bg-orange-500/10 text-orange-600 dark:text-orange-400",
   };
 
-  const severityColors = {
-    low: { border: 'border-severity-low', text: 'text-severity-low' },
-    medium: { border: 'border-severity-medium', text: 'text-severity-medium' },
-    high: { border: 'border-severity-high', text: 'text-severity-high' },
-    critical: { border: 'border-severity-critical', text: 'text-severity-critical' },
+  const severityTone = {
+    low: "border-border text-muted-foreground",
+    medium: "border-amber-500/30 text-amber-600 dark:text-amber-400",
+    high: "border-orange-500/30 text-orange-600 dark:text-orange-400",
+    critical: "border-destructive/30 text-destructive",
   };
 
-  if (compact) {
-    return (
-      <>
-        <Card
-          className={`p-3 cursor-pointer transition-all hover:shadow-md ${operation.active_time_entry ? "ring-2 ring-status-active" : ""
-            }`}
-          onClick={() => setShowDetail(true)}
-        >
-          {/* Status Bar */}
-          <div className={`h-1 -mx-3 -mt-3 mb-2 rounded-t ${statusColors[operation.status]}`} />
-
-          {/* Compact Header */}
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <div className="flex-1 min-w-0">
-              <div className="font-medium text-sm truncate">{operation.operation_name}</div>
-              <div className="text-xs text-muted-foreground truncate">
-                {operation.part.job.job_number} / {operation.part.part_number}
-              </div>
-            </div>
-            <div className="flex gap-1 shrink-0">
-              {operation.part.parent_part_id && (
-                <Badge variant="outline" className="text-xs p-1">
-                  <Package className="h-3 w-3" />
-                </Badge>
-              )}
-              {pendingCount > 0 && (
-                <Badge variant="outline" className="text-xs p-1">
-                  <AlertTriangle className="h-3 w-3" />
-                </Badge>
-              )}
-              <ResourceCountBadge operationId={operation.id} />
-            </div>
-          </div>
-
-          {/* Compact Info */}
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Clock className="h-3 w-3" />
-              <span>{operation.actual_time || 0}/{operation.estimated_time}m</span>
-            </div>
-            {operation.active_time_entry && (
-              <div className="flex items-center gap-1">
-                <div className="h-2 w-2 rounded-full bg-status-active animate-pulse" />
-                <span className="text-xs font-medium truncate max-w-20">
-                  {operation.active_time_entry.operator.full_name.split(' ')[0]}
-                </span>
-              </div>
-            )}
-          </div>
-        </Card>
-
-        <OperationDetailModal
-          operation={operation}
-          open={showDetail}
-          onOpenChange={setShowDetail}
-          onUpdate={onUpdate}
-        />
-      </>
-    );
-  }
+  const cardPadding = compact ? "p-3" : "p-4";
 
   return (
     <>
       <Card
-        className={`p-4 cursor-pointer transition-all hover:shadow-md ${operation.active_time_entry ? "ring-2 ring-status-active" : ""
-          }`}
+        className={`cursor-pointer rounded-2xl border-border/80 bg-card/95 ${cardPadding} shadow-sm transition-colors hover:border-primary/30 hover:bg-muted/20 ${
+          operation.active_time_entry ? "border-primary/40 bg-primary/5" : ""
+        }`}
         onClick={() => setShowDetail(true)}
       >
-        {/* Status Bar */}
-        <div className={`h-1 -mx-4 -mt-4 mb-3 rounded-t ${statusColors[operation.status]}`} />
-
-        {/* Header */}
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <div className="flex-1 min-w-0">
-            <div className="font-semibold text-sm truncate">
-              {t("operations.job")} {operation.part.job.job_number}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {operation.part.part_number}
-            </div>
-          </div>
-          <div className="flex gap-1 shrink-0">
-            {operation.part.parent_part_id && (
-              <Badge variant="outline" className="text-xs">
-                <Package className="h-3 w-3 mr-1" />
-                {t("parts.assy")}
-              </Badge>
-            )}
-            {pendingCount > 0 && highestSeverity && (
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Badge
                 variant="outline"
-                className={`text-xs ${severityColors[highestSeverity as keyof typeof severityColors]?.border} ${severityColors[highestSeverity as keyof typeof severityColors]?.text}`}
+                className={`rounded-full ${statusTone[operation.status]}`}
               >
-                <AlertTriangle className="h-3 w-3 mr-1" />
-                {pendingCount}
+                {operation.status.replace("_", " ")}
               </Badge>
-            )}
-            <ResourceCountBadge operationId={operation.id} />
+              {operation.part.parent_part_id ? (
+                <Badge variant="outline" className="rounded-full">
+                  <Package className="mr-1 h-3.5 w-3.5" />
+                  {t("parts.assy")}
+                </Badge>
+              ) : null}
+              {pendingCount > 0 && highestSeverity ? (
+                <Badge
+                  variant="outline"
+                  className={`rounded-full ${severityTone[highestSeverity as keyof typeof severityTone]}`}
+                >
+                  <AlertTriangle className="mr-1 h-3.5 w-3.5" />
+                  {pendingCount}
+                </Badge>
+              ) : null}
+              <ResourceCountBadge operationId={operation.id} />
+            </div>
+
+            <div>
+              <div className="font-mono text-sm font-semibold text-foreground">
+                {operation.part.job.job_number}
+              </div>
+              <div className="text-base font-semibold text-foreground">
+                {operation.operation_name}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {operation.part.part_number}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border bg-background/70 px-3 py-2 text-right">
+            <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              {t("operations.due")}
+            </div>
+            <div className="text-sm font-semibold text-foreground">
+              {dueDate ? format(new Date(dueDate), "MMM d, yyyy") : "-"}
+            </div>
           </div>
         </div>
 
-        {/* Operation Name */}
-        <h4 className="font-medium mb-2">{operation.operation_name}</h4>
-
-        {/* Assignment Badge */}
-        {isAssignedToMe && (
-          <Badge variant="secondary" className="text-xs mb-2 flex items-center gap-1 w-fit bg-primary/10 text-primary border-primary/20">
-            <UserCheck className="h-3 w-3" />
+        {isAssignedToMe ? (
+          <Badge className="mt-3 rounded-full bg-primary/10 text-primary hover:bg-primary/10">
+            <UserCheck className="mr-1 h-3.5 w-3.5" />
             {assignedByName
               ? t("operations.assignedByAdmin", { name: assignedByName })
               : t("operations.assignedToYou")}
           </Badge>
-        )}
+        ) : null}
 
-        {/* Time Info */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
-          <div className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            <span>
-              {operation.actual_time || 0}/{operation.estimated_time}m
-            </span>
+        <div className="mt-4 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+          <div className="rounded-xl border border-border bg-background/70 px-3 py-2">
+            <div className="text-[11px] uppercase tracking-[0.18em]">
+              {t("operations.time", "Time")}
+            </div>
+            <div className="mt-1 flex items-center gap-2 text-foreground">
+              <Clock3 className="h-4 w-4 text-primary" />
+              {actualHours.toFixed(1)}h / {estimatedHours.toFixed(1)}h
+            </div>
           </div>
-          {remainingTime !== 0 && (
-            <span className={isOvertime ? "text-destructive font-medium" : ""}>
+
+          <div className="rounded-xl border border-border bg-background/70 px-3 py-2">
+            <div className="text-[11px] uppercase tracking-[0.18em]">
+              {t("operations.remaining", "Remaining")}
+            </div>
+            <div
+              className={`mt-1 flex items-center gap-2 ${
+                isOvertime ? "text-destructive" : "text-foreground"
+              }`}
+            >
+              <ArrowRight className="h-4 w-4" />
               {isOvertime ? "+" : ""}
-              {Math.abs(remainingTime)}m
-            </span>
-          )}
+              {Math.abs(remainingTime).toFixed(1)}h
+            </div>
+          </div>
         </div>
 
-        {/* Due Date */}
-        {dueDate && (
-          <div className="text-xs text-muted-foreground mb-2">
-            {t("operations.due")}: {format(new Date(dueDate), "MMM d, yyyy")}
-          </div>
-        )}
-
-        {/* Active Operator */}
-        {operation.active_time_entry && (
-          <div className="flex items-center gap-2 mt-3 pt-3 border-t">
-            <div className="h-2 w-2 rounded-full bg-status-active animate-pulse" />
-            <User className="h-3 w-3 text-muted-foreground" />
-            <span className="text-xs font-medium">
+        {operation.active_time_entry ? (
+          <div className="mt-4 flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-sm">
+            <div className="h-2.5 w-2.5 rounded-full bg-primary" />
+            <User className="h-4 w-4 text-primary" />
+            <span className="font-medium text-foreground">
               {operation.active_time_entry.operator.full_name}
             </span>
           </div>
-        )}
+        ) : null}
       </Card>
 
       <OperationDetailModal

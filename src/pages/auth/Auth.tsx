@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, ArrowRight, Factory, CheckCircle2, Info, Monitor } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import AnimatedBackground from "@/components/AnimatedBackground";
+import { AuthCardHeader, AuthShell } from "@/components/auth/AuthShell";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/routes";
 
@@ -126,138 +126,112 @@ export default function Auth() {
   };
 
   return (
-    <>
-      <AnimatedBackground />
+    <AuthShell topRight={<LanguageSwitcher />}>
+      <AuthCardHeader
+        icon={Factory}
+        appName={t("auth.appName")}
+        badge={t("auth.subtitle")}
+        title={isLogin ? t("auth.signIn") : t("auth.signUp")}
+      />
 
-      <div className="landing-container">
-        {/* Language Switcher - Top Right */}
-        <div className="absolute top-4 right-4 z-10">
-          <LanguageSwitcher />
+      {success && (
+        <Alert className="mb-4 border-green-500/50 bg-green-500/10">
+          <CheckCircle2 className="h-4 w-4 text-green-500" />
+          <AlertDescription className="text-green-200">
+            {success}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4 text-left">
+        {!isLogin && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="fullName" className="text-sm font-medium">
+                {t("auth.fullName")} <span className="text-red-400">*</span>
+              </Label>
+              <Input
+                id="fullName"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+                placeholder={t("auth.fullNamePlaceholder")}
+                className="bg-input-background border-input"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="companyName" className="text-sm font-medium">
+                {t("auth.companyNameLabel")} <span className="text-red-400">*</span>
+              </Label>
+              <Input
+                id="companyName"
+                type="text"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                required
+                placeholder={t("auth.companyNamePlaceholder")}
+                className="bg-input-background border-input"
+              />
+            </div>
+          </>
+        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-sm font-medium">
+            {t("auth.email")} <span className="text-red-400">*</span>
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            placeholder={t("auth.emailPlaceholder")}
+            className="bg-input-background border-input"
+          />
         </div>
 
-        {/* Main Auth Card */}
-        <div className="onboarding-card">
-          {/* Icon/Logo */}
-          <div className="icon-container">
-            <Factory className="w-20 h-20 text-primary browser-icon" strokeWidth={1.5} />
-          </div>
-
-          {/* Title Container with Preview Pill */}
-          <div className="title-container">
-            <h1 className="main-title">{t("auth.appName")}</h1>
-            <p className="preview-pill">{t("auth.subtitle")}</p>
-          </div>
-
-          {/* Divider */}
-          <hr className="title-divider" />
-
-          {/* Hero Section Title */}
-          <h2 className="hero-title">
-            {isLogin ? t("auth.signIn") : t("auth.signUp")}
-          </h2>
-
-          {/* Success Message */}
-          {success && (
-            <Alert className="mb-4 border-green-500/50 bg-green-500/10">
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
-              <AlertDescription className="text-green-200">
-                {success}
-              </AlertDescription>
-            </Alert>
+        <div className="space-y-2">
+          <Label htmlFor="password" className="text-sm font-medium">
+            {t("auth.password")} <span className="text-red-400">*</span>
+          </Label>
+          <Input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+            placeholder={t("auth.passwordPlaceholder")}
+            className="bg-input-background border-input"
+          />
+          {isLogin && (
+            <div className="text-right">
+              <Link
+                to={ROUTES.FORGOT_PASSWORD}
+                className="text-xs text-primary hover:underline"
+              >
+                {t("auth.forgotPassword")}
+              </Link>
+            </div>
           )}
+        </div>
 
-          {/* Auth Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 text-left">
-            {!isLogin && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="fullName" className="text-sm font-medium">
-                    {t("auth.fullName")} <span className="text-red-400">*</span>
-                  </Label>
-                  <Input
-                    id="fullName"
-                    type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                    placeholder={t("auth.fullNamePlaceholder")}
-                    className="bg-input-background border-input"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="companyName" className="text-sm font-medium">
-                    {t("auth.companyNameLabel")} <span className="text-red-400">*</span>
-                  </Label>
-                  <Input
-                    id="companyName"
-                    type="text"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    required
-                    placeholder={t("auth.companyNamePlaceholder")}
-                    className="bg-input-background border-input"
-                  />
-                </div>
-              </>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">
-                {t("auth.email")} <span className="text-red-400">*</span>
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder={t("auth.emailPlaceholder")}
-                className="bg-input-background border-input"
+        {!isLogin && (
+          <div className="space-y-4 pt-2">
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="termsAgreed"
+                checked={termsAgreed}
+                onCheckedChange={(checked) => setTermsAgreed(checked === true)}
+                className="mt-1"
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium">
-                {t("auth.password")} <span className="text-red-400">*</span>
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                placeholder={t("auth.passwordPlaceholder")}
-                className="bg-input-background border-input"
-              />
-              {isLogin && (
-                <div className="text-right">
-                  <Link
-                    to={ROUTES.FORGOT_PASSWORD}
-                    className="text-xs text-primary hover:underline"
-                  >
-                    {t("auth.forgotPassword")}
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            {/* GDPR Checkboxes - Only show on Sign Up */}
-            {!isLogin && (
-              <div className="space-y-4 pt-2">
-                {/* Terms and Privacy Policy Agreement */}
-                <div className="flex items-start gap-3">
-                  <Checkbox
-                    id="termsAgreed"
-                    checked={termsAgreed}
-                    onCheckedChange={(checked) => setTermsAgreed(checked === true)}
-                    className="mt-1"
-                  />
-                  <Label
-                    htmlFor="termsAgreed"
-                    className="text-sm text-muted-foreground leading-relaxed cursor-pointer"
-                  >
+              <Label
+                htmlFor="termsAgreed"
+                className="text-sm text-muted-foreground leading-relaxed cursor-pointer"
+              >
                     {t("auth.agreeToTerms")}{" "}
                     <Link
                       to={ROUTES.COMMON.PRIVACY_POLICY}
@@ -276,90 +250,86 @@ export default function Auth() {
                     </Link>
                     {t("auth.emailConsent")}
                     <span className="text-red-400"> *</span>
-                  </Label>
-                </div>
-
-                {/* GDPR Notice */}
-                <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                  <Info className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {t("auth.gdprNotice")}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            {TURNSTILE_ENABLED && LazyTurnstile && (
-              <Suspense fallback={<div className="flex justify-center py-2"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}>
-                <div className="flex justify-center">
-                  <LazyTurnstile
-                    ref={turnstileRef}
-                    siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY!}
-                    onSuccess={(token: string) => setCaptchaToken(token)}
-                    onError={() => {
-                      setError(t("auth.captchaError"));
-                      setCaptchaToken(null);
-                    }}
-                    onExpire={() => {
-                      setCaptchaToken(null);
-                      turnstileRef.current?.reset();
-                    }}
-                    options={{
-                      theme: "dark",
-                      size: "normal",
-                    }}
-                  />
-                </div>
-              </Suspense>
-            )}
-
-            <div className="pt-2">
-              <Button
-                type="submit"
-                className="w-full cta-button"
-                disabled={loading || (!isLogin && !termsAgreed) || (TURNSTILE_ENABLED && !captchaToken)}
-              >
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isLogin ? t("auth.signIn") : t("auth.signUp")}
-                <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />
-              </Button>
+              </Label>
             </div>
 
-            <div className="text-center pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setError(null);
-                  setSuccess(null);
-                }}
-                className="text-sm text-primary hover:underline"
-              >
-                {isLogin ? t("auth.noAccount") : t("auth.haveAccount")}
-              </button>
-            </div>
-          </form>
-
-          {/* Shop Floor Terminal Info */}
-          {isLogin && (
-            <div className="mt-4 pt-4 border-t border-white/10">
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <Monitor className="h-4 w-4" />
-                <span>{t("auth.shopFloorTerminal")}</span>
-              </div>
-              <p className="text-xs text-muted-foreground/60 text-center mt-2 leading-relaxed">
-                {t("auth.shopFloorTerminalHint")}
+            <div className="flex items-start gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 p-3">
+              <Info className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-400" />
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                {t("auth.gdprNotice")}
               </p>
             </div>
-          )}
+          </div>
+        )}
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {TURNSTILE_ENABLED && LazyTurnstile && (
+          <Suspense fallback={<div className="flex justify-center py-2"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}>
+            <div className="flex justify-center">
+              <LazyTurnstile
+                ref={turnstileRef}
+                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY!}
+                onSuccess={(token: string) => setCaptchaToken(token)}
+                onError={() => {
+                  setError(t("auth.captchaError"));
+                  setCaptchaToken(null);
+                }}
+                onExpire={() => {
+                  setCaptchaToken(null);
+                  turnstileRef.current?.reset();
+                }}
+                options={{
+                  theme: "dark",
+                  size: "normal",
+                }}
+              />
+            </div>
+          </Suspense>
+        )}
+
+        <div className="pt-2">
+          <Button
+            type="submit"
+            className="w-full cta-button"
+            disabled={loading || (!isLogin && !termsAgreed) || (TURNSTILE_ENABLED && !captchaToken)}
+          >
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isLogin ? t("auth.signIn") : t("auth.signUp")}
+            <ArrowRight className="ml-2 h-4 w-4 arrow-icon" />
+          </Button>
         </div>
-      </div>
-    </>
+
+        <div className="pt-2 text-center">
+          <button
+            type="button"
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setError(null);
+              setSuccess(null);
+            }}
+            className="text-sm text-primary hover:underline"
+          >
+            {isLogin ? t("auth.noAccount") : t("auth.haveAccount")}
+          </button>
+        </div>
+      </form>
+
+      {isLogin && (
+        <div className="mt-4 border-t border-white/10 pt-4">
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Monitor className="h-4 w-4" />
+            <span>{t("auth.shopFloorTerminal")}</span>
+          </div>
+          <p className="mt-2 text-center text-xs leading-relaxed text-muted-foreground/60">
+            {t("auth.shopFloorTerminalHint")}
+          </p>
+        </div>
+      )}
+    </AuthShell>
   );
 }

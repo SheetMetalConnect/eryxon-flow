@@ -55,8 +55,7 @@ const colorClasses = {
 export function PageStatsRow({ stats, className }: PageStatsRowProps) {
   return (
     <div className={cn(
-      "grid gap-2 sm:gap-3",
-      // Responsive grid: 2 cols on mobile, up to 4 on larger screens
+      "grid gap-3",
       "grid-cols-2 md:grid-cols-4",
       className
     )}>
@@ -64,26 +63,51 @@ export function PageStatsRow({ stats, className }: PageStatsRowProps) {
         const colors = colorClasses[stat.color || "muted"];
         const Icon = stat.icon;
 
-        return (
-          <div
-            key={index}
-            className={cn(
-              "glass-card p-2 sm:p-3 flex items-center gap-2 sm:gap-3 transition-all",
-              stat.onClick && "cursor-pointer hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
-            )}
-            onClick={stat.onClick}
-          >
-            <div className={cn("p-1.5 sm:p-2 rounded-lg shrink-0", colors.bg)}>
-              <Icon className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4", colors.text)} />
+        const content = (
+          <>
+            <div
+              className={cn(
+                "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border",
+                colors.bg,
+              )}
+            >
+              <Icon className={cn("h-4 w-4", colors.text)} />
             </div>
             <div className="min-w-0 flex-1">
-              <div className={cn("text-base sm:text-lg font-bold leading-none", colors.value)}>
+              <div
+                className={cn(
+                  "text-xl font-semibold leading-none tracking-tight",
+                  colors.value,
+                )}
+              >
                 {stat.value}
               </div>
-              <div className="text-[10px] sm:text-xs text-muted-foreground truncate mt-0.5">
+              <div className="mt-1 truncate text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 {stat.label}
               </div>
             </div>
+          </>
+        );
+
+        if (stat.onClick) {
+          return (
+            <button
+              key={index}
+              type="button"
+              className="glass-card flex min-h-[96px] w-full items-center gap-3 rounded-2xl border border-border/80 p-4 text-left shadow-sm transition-colors hover:border-primary/30 hover:bg-muted/20"
+              onClick={stat.onClick}
+            >
+              {content}
+            </button>
+          );
+        }
+
+        return (
+          <div
+            key={index}
+            className="glass-card flex min-h-[96px] w-full items-center gap-3 rounded-2xl border border-border/80 p-4 text-left shadow-sm"
+          >
+            {content}
           </div>
         );
       })}

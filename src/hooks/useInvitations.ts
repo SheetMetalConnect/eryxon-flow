@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -25,8 +25,13 @@ export function useInvitations() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadInvitations = async () => {
-    if (!profile?.tenant_id) return;
+  const loadInvitations = useCallback(async () => {
+    if (!profile?.tenant_id) {
+      setInvitations([]);
+      setLoading(false);
+      setError(null);
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -47,9 +52,9 @@ export function useInvitations() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [profile?.tenant_id]);
 
-  const createInvitation = async (email: string, role: 'operator' | 'admin' = 'operator') => {
+  const createInvitation = useCallback(async (email: string, role: 'operator' | 'admin' = 'operator') => {
     if (!profile?.tenant_id) {
       toast.error(t('notifications.noTenantFound'));
       return null;
@@ -100,9 +105,9 @@ export function useInvitations() {
       logger.error('useInvitations', 'Error creating invitation', err);
       return null;
     }
-  };
+  }, [loadInvitations, profile?.tenant_id, t]);
 
-  const cancelInvitation = async (invitationId: string): Promise<void> => {
+  const cancelInvitation = useCallback(async (invitationId: string): Promise<void> => {
     try {
       const { data, error: rpcError } = await supabase.rpc('cancel_invitation', {
         p_invitation_id: invitationId,
@@ -119,9 +124,9 @@ export function useInvitations() {
       toast.error(message);
       logger.error('useInvitations', 'Error cancelling invitation', err);
     }
-  };
+  }, [loadInvitations, t]);
 
-  const getInvitationByToken = async (token: string) => {
+  const getInvitationByToken = useCallback(async (token: string) => {
     try {
       const { data, error: rpcError } = await supabase.rpc('get_invitation_by_token', {
         p_token: token,
@@ -140,9 +145,9 @@ export function useInvitations() {
       logger.error('useInvitations', 'Error getting invitation', err);
       return null;
     }
-  };
+  }, [t]);
 
-  const acceptInvitation = async (token: string, userId: string) => {
+  const acceptInvitation = useCallback(async (token: string, userId: string) => {
     try {
       const { data, error: rpcError } = await supabase.rpc('accept_invitation', {
         p_token: token,
@@ -158,13 +163,11 @@ export function useInvitations() {
       logger.error('useInvitations', 'Error accepting invitation', err);
       return null;
     }
-  };
+  }, [t]);
 
   useEffect(() => {
-    if (profile?.tenant_id) {
-      loadInvitations();
-    }
-  }, [profile?.tenant_id]);
+    void loadInvitations();
+  }, [loadInvitations]);
 
   return {
     invitations,

@@ -1,15 +1,15 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Square, ChevronDown, ChevronUp } from "lucide-react";
+import { Clock3, Square, ChevronDown, ChevronUp, TimerReset } from "lucide-react";
 import { stopTimeTracking } from "@/lib/database";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { OperatorPanel, OperatorStatusChip } from "./OperatorStation";
 
 interface ActiveEntry {
   id: string;
@@ -34,9 +34,24 @@ export default function CurrentlyTimingWidget() {
   const [activeEntries, setActiveEntries] = useState<ActiveEntry[]>([]);
   const [, setTick] = useState(0);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const operatorIdRef = useRef<string | null>(operatorId || null);
+  const requestIdRef = useRef(0);
+
+  useEffect(() => {
+    operatorIdRef.current = operatorId || null;
+    queueMicrotask(() => {
+      setActiveEntries([]);
+    });
+  }, [operatorId]);
 
   const loadActiveEntries = useCallback(async () => {
-    if (!operatorId) return;
+    if (!operatorId) {
+      setActiveEntries([]);
+      return;
+    }
+
+    const requestId = ++requestIdRef.current;
+    const requestedOperatorId = operatorId;
 
     const { data, error } = await supabase
       .from("time_entries")
@@ -52,29 +67,32 @@ export default function CurrentlyTimingWidget() {
             job:jobs(job_number)
           )
         )
-      `
+      `,
       )
-      .eq("operator_id", operatorId)
+      .eq("operator_id", requestedOperatorId)
       .is("end_time", null);
 
-    if (!error && data) {
-      setActiveEntries(data as any);
+    if (
+      !error &&
+      data &&
+      requestIdRef.current === requestId &&
+      operatorIdRef.current === requestedOperatorId
+    ) {
+      setActiveEntries(data as ActiveEntry[]);
     }
   }, [operatorId]);
 
   useEffect(() => {
     if (!operatorId) return;
 
-    const loadTimeout = window.setTimeout(() => {
+    queueMicrotask(() => {
       void loadActiveEntries();
-    }, 0);
+    });
 
-    // Update every second for elapsed time
-    const interval = setInterval(() => {
+    const interval = window.setInterval(() => {
       setTick((prev) => prev + 1);
     }, 1000);
 
-    // Subscribe to time entries changes
     const channel = supabase
       .channel("my-time-entries")
       .on(
@@ -86,13 +104,12 @@ export default function CurrentlyTimingWidget() {
           filter: `operator_id=eq.${operatorId}`,
         },
         () => {
-          loadActiveEntries();
-        }
+          void loadActiveEntries();
+        },
       )
       .subscribe();
 
     return () => {
-      clearTimeout(loadTimeout);
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
@@ -101,38 +118,54 @@ export default function CurrentlyTimingWidget() {
   const handleStop = async (operationId: string) => {
     if (!operatorId) return;
 
+    const requestedOperatorId = operatorId;
+
     try {
-      await stopTimeTracking(operationId, operatorId);
+      await stopTimeTracking(operationId, requestedOperatorId);
+      if (operatorIdRef.current !== requestedOperatorId) return;
       toast.success(t("operations.timeTrackingStopped"));
-      loadActiveEntries();
+      await loadActiveEntries();
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : t("operations.failedToStopTimeTracking"));
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t("operations.failedToStopTimeTracking"),
+      );
     }
   };
 
   if (activeEntries.length === 0) return null;
 
   return (
-    <Card className="bg-active-work/5 border-active-work/30 overflow-hidden">
-      {/* Header - always visible, clickable to toggle */}
+    <OperatorPanel className="overflow-hidden p-0">
       <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className="w-full flex items-center justify-between p-3 hover:bg-active-work/10 transition-colors"
+        onClick={() => setIsCollapsed((prev) => !prev)}
+        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-muted/20"
       >
-        <div className="flex items-center gap-2">
-          <Clock className="h-4 w-4 text-active-work animate-pulse" />
-          <span className="font-semibold text-sm">{t("operations.currentlyTiming")}</span>
-          <span className="text-xs text-active-work bg-active-work/20 px-1.5 py-0.5 rounded-full">
-            {activeEntries.length}
-          </span>
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-500">
+            <TimerReset className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              {t("operations.currentlyTiming")}
+            </div>
+            <div className="truncate text-sm font-semibold text-foreground">
+              {activeEntries.length === 1
+                ? activeEntries[0].operation.operation_name
+                : t("operations.currentlyTiming")}{" "}
+              {activeEntries.length > 1 ? `(${activeEntries.length})` : ""}
+            </div>
+          </div>
         </div>
+
         <div className="flex items-center gap-2">
-          {/* Show first entry summary when collapsed */}
-          {isCollapsed && activeEntries[0] && (
-            <span className="text-xs text-muted-foreground truncate max-w-[200px]">
-              {activeEntries[0].operation.operation_name}
-            </span>
-          )}
+          <OperatorStatusChip
+            icon={Clock3}
+            tone="warning"
+            label={`${activeEntries.length} ${t("common.active", "active")}`}
+            className="hidden sm:inline-flex"
+          />
           {isCollapsed ? (
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
           ) : (
@@ -141,44 +174,52 @@ export default function CurrentlyTimingWidget() {
         </div>
       </button>
 
-      {/* Content - collapsible */}
       <div
         className={cn(
-          "transition-all duration-200 ease-in-out overflow-hidden",
-          isCollapsed ? "max-h-0 opacity-0" : "max-h-[500px] opacity-100"
+          "overflow-hidden transition-all duration-200",
+          isCollapsed ? "max-h-0 opacity-0" : "max-h-[420px] opacity-100",
         )}
       >
-        <div className="px-3 pb-3 space-y-2">
-          {activeEntries.map((entry) => (
-            <div
-              key={entry.id}
-              className="flex items-center justify-between p-3 bg-background rounded-lg border"
-            >
-              <div className="flex-1 min-w-0">
-                <div className="font-medium truncate text-sm">{entry.operation.operation_name}</div>
-                <div className="text-xs text-muted-foreground">
-                  {t("operations.job")} {entry.operation.part.job.job_number} • {entry.operation.part.part_number}
-                </div>
-                <div className="text-[10px] text-muted-foreground mt-1">
-                  {t("operations.started")} {formatDistanceToNow(new Date(entry.start_time), { addSuffix: true })}
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleStop(entry.operation_id);
-                }}
-                className="gap-1.5 ml-3 h-8 text-xs"
+        <div className="border-t border-border px-4 py-3">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {activeEntries.map((entry) => (
+              <div
+                key={entry.id}
+                className="rounded-2xl border border-border bg-muted/20 p-3"
               >
-                <Square className="h-3 w-3" />
-                {t("operations.stop")}
-              </Button>
-            </div>
-          ))}
+                <div className="space-y-1">
+                  <div className="text-sm font-semibold text-foreground">
+                    {entry.operation.operation_name}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {t("operations.job")} {entry.operation.part.job.job_number} •{" "}
+                    {entry.operation.part.part_number}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {t("operations.started")}{" "}
+                    {formatDistanceToNow(new Date(entry.start_time), {
+                      addSuffix: true,
+                    })}
+                  </div>
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    void handleStop(entry.operation_id);
+                  }}
+                  className="mt-3 min-h-11 w-full gap-2 rounded-xl"
+                >
+                  <Square className="h-4 w-4" />
+                  {t("operations.stop")}
+                </Button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </Card>
+    </OperatorPanel>
   );
 }

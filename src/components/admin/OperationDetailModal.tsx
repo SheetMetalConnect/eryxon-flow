@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -250,11 +251,11 @@ export default function OperationDetailModal({
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      not_started: "secondary",
-      in_progress: "default",
-      completed: "outline",
-      on_hold: "destructive",
+    const badgeStatus: Record<string, "pending" | "active" | "completed" | "on-hold"> = {
+      not_started: "pending",
+      in_progress: "active",
+      completed: "completed",
+      on_hold: "on-hold",
     };
     const labels: Record<string, string> = {
       not_started: t("operations.status.notStarted"),
@@ -262,7 +263,12 @@ export default function OperationDetailModal({
       completed: t("operations.status.completed"),
       on_hold: t("operations.status.onHold"),
     };
-    return <Badge variant={variants[status] || "default"}>{labels[status] || status}</Badge>;
+    return (
+      <StatusBadge
+        status={badgeStatus[status] || "pending"}
+        label={labels[status] || status}
+      />
+    );
   };
 
   const stepFiles =

@@ -63,8 +63,7 @@ describe('PageStatsRow', () => {
 
     render(<PageStatsRow stats={stats} />);
 
-    const clickableStat = screen.getByText('Clickable').closest('.glass-card');
-    fireEvent.click(clickableStat!);
+    fireEvent.click(screen.getByRole('button', { name: /clickable/i }));
 
     expect(onClick).toHaveBeenCalledTimes(1);
   });
@@ -77,11 +76,8 @@ describe('PageStatsRow', () => {
 
     render(<PageStatsRow stats={stats} />);
 
-    const clickableStat = screen.getByText('Clickable').closest('.glass-card');
-    const nonClickableStat = screen.getByText('Non-clickable').closest('.glass-card');
-
-    expect(clickableStat).toHaveClass('cursor-pointer');
-    expect(nonClickableStat).not.toHaveClass('cursor-pointer');
+    expect(screen.getByRole('button', { name: /clickable/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /non-clickable/i })).not.toBeInTheDocument();
   });
 
   it('applies correct color classes for primary', () => {
@@ -140,10 +136,10 @@ describe('PageStatsRow', () => {
     expect(container.firstChild).toHaveClass('md:grid-cols-4');
   });
 
-  it('applies glass-card class to stat items', () => {
+  it('applies shared panel classes to stat items', () => {
     render(<PageStatsRow stats={mockStats} />);
 
-    const cards = document.querySelectorAll('.glass-card');
+    const cards = document.querySelectorAll('.rounded-2xl.border');
     expect(cards.length).toBe(mockStats.length);
   });
 

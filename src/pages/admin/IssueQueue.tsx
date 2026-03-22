@@ -1,8 +1,8 @@
-import { useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Badge } from "@/components/ui/badge";
+import { SeverityBadge, StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,13 +19,10 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  AlertTriangle,
   AlertOctagon,
-  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { PageStatsRow } from "@/components/admin/PageStatsRow";
 import { DataTable } from "@/components/ui/data-table/DataTable";
@@ -63,45 +60,14 @@ export default function IssueQueue() {
   const [actionLoading, setActionLoading] = useState(false);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
 
-  const [statusFilter, setStatusFilter] = useState<
-    "approved" | "closed" | "pending" | "rejected" | "all"
-  >("pending");
-  const [severityFilter, setSeverityFilter] = useState<
-    "critical" | "high" | "low" | "medium" | "all"
-  >("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const loadIssues = useCallback(async () => {
+    if (!profile?.tenant_id) {
+      setIssues([]);
+      setLoading(false);
+      return;
+    }
 
-  useEffect(() => {
-    if (!profile?.tenant_id) return;
-    loadIssues();
-    return setupRealtime();
-  }, [profile?.tenant_id, statusFilter, severityFilter, searchQuery]);
-
-  // Load signed URLs for issue images
-  useEffect(() => {
-    const loadImageUrls = async () => {
-      if (!selectedIssue?.image_paths || selectedIssue.image_paths.length === 0) {
-        setImageUrls([]);
-        return;
-      }
-
-      const urls = await Promise.all(
-        selectedIssue.image_paths.map(async (path) => {
-          const { data } = await supabase.storage
-            .from("issues")
-            .createSignedUrl(path, 3600); // 1 hour expiry
-          return data?.signedUrl || "";
-        })
-      );
-
-      setImageUrls(urls.filter(url => url !== ""));
-    };
-
-    loadImageUrls();
-  }, [selectedIssue?.id]);
-
-  const loadIssues = async () => {
-    if (!profile?.tenant_id) return;
+    setLoading(true);
 
     let query = supabase
       .from("issues")
@@ -120,20 +86,6 @@ export default function IssueQueue() {
       )
       .eq("tenant_id", profile.tenant_id);
 
-    if (statusFilter !== "all") {
-      query = query.eq("status", statusFilter);
-    }
-
-    if (severityFilter !== "all") {
-      query = query.eq("severity", severityFilter);
-    }
-
-    if (searchQuery) {
-      query = query.or(
-        `operation.part.job.job_number.ilike.%${searchQuery}%,operation.part.part_number.ilike.%${searchQuery}%,operation.operation_name.ilike.%${searchQuery}%`,
-      );
-    }
-
     query = query
       .order("severity", { ascending: false })
       .order("created_at", { ascending: true });
@@ -146,9 +98,9 @@ export default function IssueQueue() {
       setIssues(data || []);
     }
     setLoading(false);
-  };
+  }, [profile?.tenant_id]);
 
-  const setupRealtime = () => {
+  const setupRealtime = useCallback(() => {
     const channel = supabase
       .channel("issue-queue")
       .on(
@@ -166,9 +118,48 @@ export default function IssueQueue() {
     return () => {
       supabase.removeChannel(channel);
     };
-  };
+  }, [loadIssues, profile?.tenant_id]);
 
-  const handleReview = async (action: "approved" | "rejected" | "closed") => {
+  useEffect(() => {
+    if (!profile?.tenant_id) return;
+    void loadIssues();
+    return setupRealtime();
+  }, [loadIssues, profile?.tenant_id, setupRealtime]);
+
+  useEffect(() => {
+    const loadImageUrls = async () => {
+      setImageUrls([]);
+
+      if (!selectedIssue?.image_paths || selectedIssue.image_paths.length === 0) {
+        return;
+      }
+
+      const urls = await Promise.all(
+        selectedIssue.image_paths.map(async (path) => {
+          const { data } = await supabase.storage
+            .from("issues")
+            .createSignedUrl(path, 3600);
+          return data?.signedUrl || "";
+        }),
+      );
+
+      return urls.filter((url) => url !== "");
+    };
+
+    let isActive = true;
+
+    void loadImageUrls().then((urls) => {
+      if (isActive && urls) {
+        setImageUrls(urls);
+      }
+    });
+
+    return () => {
+      isActive = false;
+    };
+  }, [selectedIssue?.id, selectedIssue?.image_paths]);
+
+  const handleReview = async (action: "approved" | "rejected") => {
     if (!selectedIssue || !profile?.id || !resolutionNotes.trim()) {
       toast.error(t("issues.pleaseProvideResolutionNotes"));
       return;
@@ -193,7 +184,7 @@ export default function IssueQueue() {
       );
       setSelectedIssue(null);
       setResolutionNotes("");
-      loadIssues();
+      await loadIssues();
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : t("issues.failedToUpdateIssue"));
     } finally {
@@ -201,32 +192,31 @@ export default function IssueQueue() {
     }
   };
 
-  const severityColors: Record<string, string> = {
-    low: "bg-severity-low",
-    medium: "bg-severity-medium",
-    high: "bg-severity-high",
-    critical: "bg-severity-critical",
-  };
+  const getSeverityBadge = useCallback((severity: string) => (
+    <SeverityBadge
+      severity={
+        (["critical", "high", "medium", "low"].includes(severity)
+          ? severity
+          : "low") as "critical" | "high" | "medium" | "low"
+      }
+      label={t(`issues.severity.${severity}`, severity)}
+    />
+  ), [t]);
 
-  const getSeverityBadge = (severity: string) => (
-    <Badge className={cn("text-xs", severityColors[severity] || "bg-muted")}>
-      {t(`issues.severity.${severity}`, severity)}
-    </Badge>
-  );
-
-  const getStatusBadge = (status: string) => {
-    const statusStyles: Record<string, string> = {
-      pending: "bg-[hsl(var(--color-warning))]/20 text-[hsl(var(--color-warning))]",
-      approved: "bg-[hsl(var(--color-success))]/20 text-[hsl(var(--color-success))]",
-      rejected: "bg-[hsl(var(--color-error))]/20 text-[hsl(var(--color-error))]",
-      closed: "bg-muted text-muted-foreground",
+  const getStatusBadge = useCallback((status: string) => {
+    const badgeStatus: Record<string, "pending" | "approved" | "rejected" | "cancelled"> = {
+      pending: "pending",
+      approved: "approved",
+      rejected: "rejected",
+      closed: "cancelled",
     };
     return (
-      <Badge className={cn("text-xs", statusStyles[status] || "bg-muted")}>
-        {t(`issues.status.${status}`, status)}
-      </Badge>
+      <StatusBadge
+        status={badgeStatus[status] || "pending"}
+        label={t(`issues.status.${status}`, status)}
+      />
     );
-  };
+  }, [t]);
 
   const columns: ColumnDef<Issue>[] = useMemo(() => [
     {
@@ -245,6 +235,7 @@ export default function IssueQueue() {
       cell: ({ row }) => (
         <span className="font-medium">{row.original.operation?.part?.job?.job_number || "-"}</span>
       ),
+      accessorFn: (row) => row.operation?.part?.job?.job_number || "",
     },
     {
       id: "part",
@@ -252,6 +243,7 @@ export default function IssueQueue() {
         <DataTableColumnHeader column={column} title={t("common.part", "Part")} />
       ),
       cell: ({ row }) => row.original.operation?.part?.part_number || "-",
+      accessorFn: (row) => row.operation?.part?.part_number || "",
     },
     {
       id: "operation",
@@ -259,6 +251,7 @@ export default function IssueQueue() {
         <DataTableColumnHeader column={column} title={t("common.operation", "Operation")} />
       ),
       cell: ({ row }) => row.original.operation?.operation_name || "-",
+      accessorFn: (row) => row.operation?.operation_name || "",
     },
     {
       accessorKey: "description",
@@ -277,6 +270,7 @@ export default function IssueQueue() {
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground">{row.original.creator?.full_name || "-"}</span>
       ),
+      accessorFn: (row) => row.creator?.full_name || "",
     },
     {
       accessorKey: "created_at",
@@ -297,7 +291,7 @@ export default function IssueQueue() {
       cell: ({ row }) => getStatusBadge(row.getValue("status")),
       filterFn: (row, id, value) => value.includes(row.getValue(id)),
     },
-  ], [t]);
+  ], [getSeverityBadge, getStatusBadge, t]);
 
   const filterableColumns: DataTableFilterableColumn[] = useMemo(() => [
     {
@@ -322,62 +316,23 @@ export default function IssueQueue() {
     },
   ], [t]);
 
-  const [allIssues, setAllIssues] = useState<Issue[]>([]);
-
-  useEffect(() => {
-    const loadAllIssues = async () => {
-      if (!profile?.tenant_id) return;
-      const { data } = await supabase
-        .from("issues")
-        .select(`
-          id,
-          severity,
-          status,
-          created_at
-        `)
-        .eq("tenant_id", profile.tenant_id);
-      setAllIssues((data as Issue[]) || []);
-    };
-    loadAllIssues();
-  }, [profile?.tenant_id]);
-
   const analytics = useMemo(() => {
-    const total = allIssues.length;
+    const total = issues.length;
     const byStatus = {
-      pending: allIssues.filter((i) => i.status === "pending").length,
-      approved: allIssues.filter((i) => i.status === "approved").length,
-      rejected: allIssues.filter((i) => i.status === "rejected").length,
-      closed: allIssues.filter((i) => i.status === "closed").length,
+      pending: issues.filter((i) => i.status === "pending").length,
+      approved: issues.filter((i) => i.status === "approved").length,
+      rejected: issues.filter((i) => i.status === "rejected").length,
+      closed: issues.filter((i) => i.status === "closed").length,
     };
-    const bySeverity = {
-      critical: allIssues.filter((i) => i.severity === "critical").length,
-      high: allIssues.filter((i) => i.severity === "high").length,
-      medium: allIssues.filter((i) => i.severity === "medium").length,
-      low: allIssues.filter((i) => i.severity === "low").length,
-    };
-
-    // Calculate resolution rate
-    const resolved = byStatus.approved + byStatus.rejected + byStatus.closed;
-    const resolutionRate = total > 0 ? (resolved / total) * 100 : 0;
-
-    // Calculate average time to resolution (for resolved issues)
-    const resolvedIssues = allIssues.filter(
-      (i) => i.status === "approved" || i.status === "rejected" || i.status === "closed"
-    );
 
     return {
       total,
       byStatus,
-      bySeverity,
-      resolutionRate,
-      criticalPending: allIssues.filter(
+      criticalPending: issues.filter(
         (i) => i.severity === "critical" && i.status === "pending"
       ).length,
-      highPending: allIssues.filter(
-        (i) => i.severity === "high" && i.status === "pending"
-      ).length,
     };
-  }, [allIssues]);
+  }, [issues]);
 
   if (loading) {
     return (
@@ -408,6 +363,13 @@ export default function IssueQueue() {
           columns={columns}
           data={issues}
           filterableColumns={filterableColumns}
+          searchableColumns={[
+            { id: "job", title: t("common.job", "Job") },
+            { id: "part", title: t("common.part", "Part") },
+            { id: "operation", title: t("common.operation", "Operation") },
+            { id: "reporter", title: t("issues.reporter", "Reporter") },
+            { id: "description", title: t("issues.description", "Description") },
+          ]}
           searchPlaceholder={t("issues.searchPlaceholder", "Search issues...")}
           emptyMessage={t("issues.noIssuesFound", "No issues found")}
           loading={loading}
@@ -432,16 +394,9 @@ export default function IssueQueue() {
 
           {selectedIssue && (
             <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
-              <div className="flex items-center gap-2">
-                <Badge
-                  className={
-                    severityColors[
-                    selectedIssue.severity as keyof typeof severityColors
-                    ]
-                  }
-                >
-                  {t(`issues.severity.${selectedIssue.severity}`)}
-                </Badge>
+              <div className="flex flex-wrap items-center gap-2">
+                {getSeverityBadge(selectedIssue.severity)}
+                {getStatusBadge(selectedIssue.status)}
               </div>
 
               <div>

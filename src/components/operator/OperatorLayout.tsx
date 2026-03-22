@@ -1,17 +1,15 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { DOCS_GUIDES_URL } from '@/lib/config';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { DOCS_GUIDES_URL } from "@/lib/config";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   ListChecks,
   Clock,
@@ -21,30 +19,32 @@ import {
   Building2,
   Gauge,
   Factory,
-  Search,
   RefreshCw,
   UserCheck,
-} from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { useOperator } from '@/contexts/OperatorContext';
-import CurrentlyTimingWidget from './CurrentlyTimingWidget';
-import { OperatorSwitcher, ActiveOperatorBadge } from './OperatorSwitcher';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { AppTour } from '@/components/onboarding';
-import AnimatedBackground from '@/components/AnimatedBackground';
-import { cn } from '@/lib/utils';
-import { GlobalSearch, SearchTriggerButton } from '@/components/GlobalSearch';
-import { TrialStatusBanner } from '@/components/admin/TrialStatusBanner';
-import { ROUTES } from '@/routes';
+} from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useOperator } from "@/contexts/OperatorContext";
+import CurrentlyTimingWidget from "./CurrentlyTimingWidget";
+import { OperatorSwitcher } from "./OperatorSwitcher";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { AppTour } from "@/components/onboarding";
+import { cn } from "@/lib/utils";
+import { GlobalSearch, SearchTriggerButton } from "@/components/GlobalSearch";
+import { TrialStatusBanner } from "@/components/admin/TrialStatusBanner";
+import { ROUTES } from "@/routes";
+import { OperatorStatusChip } from "./OperatorStation";
 
 interface OperatorLayoutProps {
   children: React.ReactNode;
   showBackToAdmin?: boolean;
 }
 
-export const OperatorLayout = ({ children, showBackToAdmin = false }: OperatorLayoutProps) => {
+export const OperatorLayout = ({
+  children,
+  showBackToAdmin = false,
+}: OperatorLayoutProps) => {
   const { t } = useTranslation();
   const { profile, tenant, signOut } = useAuth();
   const { activeOperator } = useOperator();
@@ -53,206 +53,202 @@ export const OperatorLayout = ({ children, showBackToAdmin = false }: OperatorLa
   const [searchOpen, setSearchOpen] = useState(false);
 
   const navItems = [
-    { path: '/operator/work-queue', label: t('navigation.workQueue'), icon: ListChecks },
-    { path: '/operator/view', label: t('navigation.terminalView', 'Terminal View'), icon: Gauge },
-    { path: '/operator/my-activity', label: t('navigation.myActivity'), icon: Clock },
-    { path: '/operator/my-issues', label: t('navigation.myIssues'), icon: Flag },
+    {
+      path: "/operator/work-queue",
+      label: t("navigation.workQueue"),
+      icon: ListChecks,
+      hint: t("navigation.workQueue", "Work queue"),
+    },
+    {
+      path: "/operator/view",
+      label: t("navigation.terminalView", "Terminal View"),
+      icon: Gauge,
+      hint: t("navigation.terminalView", "Terminal"),
+    },
+    {
+      path: "/operator/my-activity",
+      label: t("navigation.myActivity"),
+      icon: Clock,
+      hint: t("navigation.myActivity", "Activity"),
+    },
+    {
+      path: "/operator/my-issues",
+      label: t("navigation.myIssues"),
+      icon: Flag,
+      hint: t("navigation.myIssues", "Issues"),
+    },
   ];
 
   const isActive = (path: string) => location.pathname === path;
 
   return (
     <>
-      <AnimatedBackground />
-      <div className="relative flex flex-col min-h-screen bg-background">
-        {/* Top Header - Glass Morphism - Compact */}
-        <header className="sticky top-0 z-50 w-full glass-card border-b border-border-subtle">
-          <div className="flex items-center justify-between h-12 px-3 sm:px-4">
-            {/* Left: Back to Admin or Tenant/Company Name */}
-            <div className="flex items-center gap-2 min-w-0">
-              {showBackToAdmin ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate('/admin/dashboard')}
-                  className="gap-1.5 text-xs h-8"
-                >
-                  <Factory className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t('navigation.backToAdmin', 'Back to Admin')}</span>
-                </Button>
-              ) : (
-                <>
-                  <Building2 className="h-5 w-5 text-primary shrink-0" />
-                  <span className="text-sm font-bold truncate max-w-[120px] sm:max-w-[200px]">
-                    {tenant?.company_name || tenant?.name || t('app.name')}
-                  </span>
-                </>
-              )}
-            </div>
-
-            {/* Center: Active Operator - Always visible and prominent */}
-            <div className="flex items-center gap-2">
-              {activeOperator ? (
-                <div className="flex items-center gap-2 px-2 sm:px-3 py-1 rounded-full bg-green-500/10 border border-green-500/30">
-                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0" />
-                  <UserCheck className="h-3.5 w-3.5 text-green-500 shrink-0 hidden sm:block" />
-                  <span className="text-xs font-bold text-green-500 truncate max-w-[80px] sm:max-w-[120px]">
-                    {activeOperator.full_name}
-                  </span>
-                  <span className="text-[10px] text-green-500/70 font-mono hidden sm:block">
-                    {activeOperator.employee_id}
-                  </span>
-                </div>
-              ) : (
-                <OperatorSwitcher variant="button" className="h-8" />
-              )}
-            </div>
-
-            {/* Right Side Actions */}
-            <div className="flex items-center gap-1.5">
-              {/* Search Button */}
-              <SearchTriggerButton onClick={() => setSearchOpen(true)} compact />
-
-              {/* Theme & Language Switchers */}
-              <ThemeToggle variant="dropdown" />
-              <LanguageSwitcher />
-
-              {/* User Menu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0">
-                    <Avatar className="h-7 w-7 border border-primary/20">
-                      <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-primary-foreground font-semibold text-xs">
-                        {profile?.full_name?.charAt(0).toUpperCase() || 'O'}
-                      </AvatarFallback>
-                    </Avatar>
+      <div className="relative flex min-h-screen flex-col bg-background text-foreground">
+        <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
+          <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-3 px-3 py-3 sm:px-4 lg:px-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-3">
+                {showBackToAdmin ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate("/admin/dashboard")}
+                    className="min-h-11 gap-2 rounded-xl border-border/80 bg-card px-3"
+                  >
+                    <Factory className="h-4 w-4" />
+                    <span>{t("navigation.backToAdmin", "Back to Admin")}</span>
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 glass-card" align="end">
-                  {/* Tenant Info - Compact */}
-                  {tenant && (
-                    <>
-                      <div className="px-2 py-1.5 bg-primary/5 border-b border-border-subtle">
-                        <div className="flex items-center gap-1.5">
-                          <Building2 className="h-3.5 w-3.5 text-primary" />
-                          <span className="text-xs font-bold text-primary truncate">
-                            {tenant.company_name || tenant.name}
-                          </span>
-                        </div>
+                ) : (
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-muted/30">
+                      <Building2 className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                        {t("navigation.terminalView", "Terminal View")}
                       </div>
-                      <DropdownMenuSeparator className="bg-border-subtle" />
-                    </>
-                  )}
-
-                  {/* Active Operator Info */}
-                  {activeOperator && (
-                    <>
-                      <div className="px-2 py-1.5 bg-green-500/5 border-b border-green-500/20">
-                        <div className="flex items-center gap-1.5">
-                          <UserCheck className="h-3.5 w-3.5 text-green-500" />
-                          <div>
-                            <span className="text-xs font-bold text-green-500 block">
-                              {activeOperator.full_name}
-                            </span>
-                            <span className="text-[10px] text-green-500/70 font-mono">
-                              {activeOperator.employee_id}
-                            </span>
-                          </div>
-                        </div>
+                      <div className="truncate text-base font-semibold">
+                        {tenant?.company_name || tenant?.name || t("app.name")}
                       </div>
-                      <DropdownMenuSeparator className="bg-border-subtle" />
-                    </>
-                  )}
-
-                  {/* User Info - Compact */}
-                  <div className="px-2 py-1.5">
-                    <div className="text-xs font-semibold">{profile?.full_name}</div>
-                    <div className="text-[10px] text-muted-foreground">{profile?.email}</div>
-                    <div className="inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase bg-gradient-to-r from-primary to-primary/60 text-primary-foreground">
-                      {t('app.operator')}
                     </div>
                   </div>
+                )}
+              </div>
 
-                  <DropdownMenuSeparator className="bg-border-subtle" />
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                {activeOperator ? (
+                  <OperatorStatusChip
+                    icon={UserCheck}
+                    tone="success"
+                    label={`${activeOperator.full_name} • ${activeOperator.employee_id}`}
+                    className="max-w-full sm:max-w-[360px]"
+                  />
+                ) : (
+                  <OperatorSwitcher variant="button" className="min-h-11 rounded-xl" />
+                )}
 
-                  {/* Quick Switch Operator */}
-                  <DropdownMenuItem
-                    onClick={() => navigate(ROUTES.OPERATOR.LOGIN)}
-                    className="gap-1.5 cursor-pointer focus:bg-white/5 text-xs"
-                  >
-                    <RefreshCw className="h-3.5 w-3.5" />
-                    {t('operator.switchOperator')}
-                  </DropdownMenuItem>
+                <SearchTriggerButton onClick={() => setSearchOpen(true)} compact />
+                <ThemeToggle variant="dropdown" />
+                <LanguageSwitcher />
 
-                  <DropdownMenuItem
-                    asChild
-                    className="gap-1.5 cursor-pointer focus:bg-white/5 text-xs"
-                  >
-                    <a href={DOCS_GUIDES_URL} target="_blank" rel="noopener noreferrer">
-                      <HelpCircle className="h-3.5 w-3.5" />
-                      {t('common.helpAndDocs')}
-                    </a>
-                  </DropdownMenuItem>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-11 rounded-full border-border/80 bg-card px-1.5"
+                    >
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-primary/10 text-primary">
+                          {profile?.full_name?.charAt(0).toUpperCase() || "O"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-64 border-border/80 bg-popover" align="end">
+                    <div className="px-3 py-2">
+                      <div className="text-sm font-semibold">{profile?.full_name}</div>
+                      <div className="text-xs text-muted-foreground">{profile?.email}</div>
+                    </div>
+                    <DropdownMenuSeparator />
+                    {activeOperator ? (
+                      <>
+                        <div className="px-3 py-2 text-xs text-muted-foreground">
+                          {t("operator.switchOperator")}
+                          <div className="mt-1 font-medium text-foreground">
+                            {activeOperator.full_name} • {activeOperator.employee_id}
+                          </div>
+                        </div>
+                        <DropdownMenuSeparator />
+                      </>
+                    ) : null}
+                    <DropdownMenuItem
+                      onClick={() => navigate(ROUTES.OPERATOR.LOGIN)}
+                      className="min-h-11 gap-2"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      {t("operator.switchOperator")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="min-h-11 gap-2">
+                      <a href={DOCS_GUIDES_URL} target="_blank" rel="noopener noreferrer">
+                        <HelpCircle className="h-4 w-4" />
+                        {t("common.helpAndDocs")}
+                      </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={signOut}
+                      className="min-h-11 gap-2 text-destructive focus:text-destructive"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      {t("auth.signOut")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
 
-                  <DropdownMenuItem
-                    onClick={signOut}
-                    className="gap-1.5 cursor-pointer focus:bg-white/5 text-destructive focus:text-destructive text-xs"
-                  >
-                    <LogOut className="h-3.5 w-3.5" />
-                    {t('auth.signOut')}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            <div className="hidden gap-2 lg:grid lg:grid-cols-4">
+              {navItems.map((item) => (
+                <button
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  className={cn(
+                    "flex min-h-12 items-center justify-between rounded-2xl border px-4 text-left transition-colors",
+                    isActive(item.path)
+                      ? "border-primary/40 bg-primary/10 text-foreground"
+                      : "border-border/80 bg-card text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <item.icon className="h-5 w-5" />
+                    <div>
+                      <div className="text-sm font-semibold">{item.label}</div>
+                      <div className="text-xs text-muted-foreground">{item.hint}</div>
+                    </div>
+                  </div>
+                  <span aria-hidden="true" className="h-4 w-4" />
+                </button>
+              ))}
             </div>
           </div>
         </header>
 
-        {/* Trial Status Banner */}
         <TrialStatusBanner />
 
-        {/* Currently Timing Widget - Sticky - Compact */}
-        <div className="sticky top-12 z-40 border-b border-border-subtle glass-card">
-          <div className="px-3 sm:px-4 py-2">
+        <div className="sticky top-[102px] z-40 border-b border-border bg-background/95 backdrop-blur-md lg:top-[154px]">
+          <div className="mx-auto w-full max-w-screen-2xl px-3 py-2 sm:px-4 lg:px-6">
             <CurrentlyTimingWidget />
           </div>
         </div>
 
-        {/* Main Content */}
-        <main className="flex-1 px-3 sm:px-4 py-3 sm:py-4 pb-20">
-          {children}
+        <main className="mx-auto flex w-full max-w-screen-2xl flex-1 px-3 py-4 pb-24 sm:px-4 lg:px-6">
+          <div className="w-full">{children}</div>
         </main>
 
-        {/* Bottom Navigation - Fixed for all screen sizes */}
-        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border-subtle glass-card">
-          <div className="grid grid-cols-4 h-14 max-w-lg mx-auto">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/98 backdrop-blur-md">
+          <div className="mx-auto grid h-16 max-w-screen-2xl grid-cols-4 px-2">
             {navItems.map((item) => (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 transition-base",
+                  "flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl transition-colors",
                   isActive(item.path)
                     ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <item.icon className={cn("h-5 w-5", isActive(item.path) && "text-primary")} />
-                <span className={cn(
-                  "text-[10px] sm:text-xs",
-                  isActive(item.path) ? "font-semibold" : "font-medium"
-                )}>
-                  {item.label}
-                </span>
+                <item.icon className="h-5 w-5" />
+                <span className="text-[11px] font-semibold sm:text-xs">{item.label}</span>
               </button>
             ))}
           </div>
         </nav>
 
-        {/* Onboarding Tour - only show if not completed and tour_completed is explicitly false */}
-        {profile && (profile as any).tour_completed === false && <AppTour userRole="operator" />}
+        {profile && (profile as { tour_completed?: boolean }).tour_completed === false ? (
+          <AppTour userRole="operator" />
+        ) : null}
       </div>
 
-      {/* Global Search Modal */}
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
