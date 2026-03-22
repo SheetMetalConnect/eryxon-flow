@@ -2,6 +2,22 @@
 
 This file provides context and instructions for Google Gemini agents when working on this repository.
 
+## Superpowers Setup
+
+Install the Superpowers extension once on the local machine:
+
+```bash
+gemini extensions install https://github.com/obra/superpowers
+```
+
+Verify it is enabled:
+
+```bash
+gemini extensions list
+```
+
+This project-level `GEMINI.md` complements the globally installed extension with repository-specific context.
+
 ## Project Overview
 
 Eryxon Flow is a Manufacturing Execution System (MES) for job shops and make-to-order manufacturers. It is a React + TypeScript frontend with a Supabase backend.

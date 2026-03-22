@@ -65,6 +65,16 @@ npm install
 npm run dev
 ```
 
+## AI Agents
+
+This repository carries agent setup notes for the three CLI agents currently in use:
+
+- **Claude Code**: install the `superpowers` plugin and use the repo-local guide in [.claude/INSTALL.md](.claude/INSTALL.md). The project enables it through [.claude/settings.json](.claude/settings.json).
+- **Codex**: install Superpowers once at the machine level and follow [.codex/INSTALL.md](.codex/INSTALL.md). Codex discovers the shared skills from `~/.agents/skills/` at startup.
+- **Gemini CLI**: install the `superpowers` extension and use the project guidance in [GEMINI.md](GEMINI.md).
+
+The repository documents the setup, while the actual Claude/Codex/Gemini installs remain machine-level.
+
 ## Environment Variables
 
 ```

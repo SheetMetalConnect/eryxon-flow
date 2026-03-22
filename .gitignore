@@ -65,6 +65,7 @@ credentials/
 # IDE settings (may contain sensitive paths)
 .vscode/settings.json
 .idea/workspace.xml
+.claude/settings.local.json
 
 # Backup files
 *.bak
