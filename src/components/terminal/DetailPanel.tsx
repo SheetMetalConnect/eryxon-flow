@@ -359,84 +359,35 @@ export function DetailPanel({
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-card text-card-foreground">
-      {/* ── Compact header: job info + due date ── */}
-      <div className="shrink-0 border-b border-border px-3 py-3">
-        {job.isBulletCard ? (
-          <div className="mb-2 flex items-center gap-1.5 rounded-md border border-destructive/30 bg-destructive/10 px-2 py-1 text-xs font-semibold text-destructive">
-            <Zap className="h-3.5 w-3.5" />
-            {t("terminal.bulletCard")}
-          </div>
-        ) : null}
-
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="font-mono text-base font-semibold text-foreground">
-                {job.jobCode}
-              </h2>
-              <Badge
-                variant="outline"
-                className={cn("rounded-full text-[10px]", statusBadge.className)}
-              >
-                {statusBadge.label}
-              </Badge>
-            </div>
-            <div className="text-sm font-medium text-foreground">
-              {job.description}
-            </div>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
-              <span>{job.currentOp}</span>
-              <span>•</span>
-              <span>{job.cellName || "-"}</span>
-              <span>•</span>
-              <span>{job.material || "-"}</span>
-              <span>•</span>
-              <span>{job.quantity} pcs</span>
-              {job.drawingNo ? (
-                <>
-                  <span>•</span>
-                  <span>
-                    {t("parts.drawingNo")}: {job.drawingNo}
-                  </span>
-                </>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="shrink-0 text-right">
-            {job.plannedStart ? (
-              <>
-                <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  {t("terminal.columns.plannedStart", "Start")}
-                </div>
-                <div className="text-sm font-semibold text-foreground">
-                  {new Date(job.plannedStart).toLocaleDateString()}
-                </div>
-              </>
-            ) : null}
-            <div className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {t("terminal.columns.dueDate")}
-            </div>
-            <div
-              className={cn(
-                "text-sm font-semibold",
-                dueUrgencyTextClass[getDueUrgency(job.dueDate)],
-              )}
-            >
-              {new Date(job.dueDate).toLocaleDateString()}
-            </div>
-            <div className="text-[10px] text-muted-foreground">
-              {job.hours}h {t("operator.remaining", "remaining")}
-            </div>
-          </div>
+      {/* ── Minimal header: just identity + status (table already shows the rest) ── */}
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-3 py-2">
+        <div className="flex min-w-0 items-center gap-2">
+          {job.isBulletCard ? (
+            <Zap className="h-4 w-4 shrink-0 text-destructive" />
+          ) : null}
+          <h2 className="truncate font-mono text-sm font-semibold text-foreground">
+            {job.jobCode}
+          </h2>
+          <span className="truncate text-sm text-muted-foreground">
+            {job.description}
+          </span>
         </div>
+        <Badge
+          variant="outline"
+          className={cn("shrink-0 rounded-full text-[10px]", statusBadge.className)}
+        >
+          {statusBadge.label}
+        </Badge>
+      </div>
 
-        {job.notes ? (
-          <div className="mt-2 rounded-md border border-border bg-muted/20 px-2 py-1.5 text-xs text-muted-foreground">
+      {/* Notes (only extra info not in the table) */}
+      {job.notes ? (
+        <div className="shrink-0 border-b border-border px-3 py-1.5">
+          <div className="rounded-md bg-muted/20 px-2 py-1 text-xs text-muted-foreground">
             {job.notes}
           </div>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
 
       {/* ── Routing progress (compact) ── */}
       {job.jobId ? (
