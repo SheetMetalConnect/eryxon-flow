@@ -21,7 +21,6 @@ import {
   PackageCheck,
   Zap,
   Layers3,
-  MapPinned,
 } from "lucide-react";
 import { CncProgramQrCode } from "./CncProgramQrCode";
 import { STEPViewer } from "@/components/STEPViewerLazy";
@@ -158,7 +157,9 @@ export function DetailPanel({
   const nextOperation = useMemo(() => {
     if (!job.currentSequence) return null;
     const sorted = [...operations].sort((a, b) => a.sequence - b.sequence);
-    const currentIndex = sorted.findIndex((operation) => operation.id === job.operationId);
+    const currentIndex = sorted.findIndex(
+      (operation) => operation.id === job.operationId,
+    );
     if (currentIndex === -1 || currentIndex === sorted.length - 1) return null;
     return sorted[currentIndex + 1];
   }, [operations, job.currentSequence, job.operationId]);
@@ -180,7 +181,8 @@ export function DetailPanel({
     if (job.isCurrentUserClocked) {
       return {
         label: t("terminal.inProcess"),
-        className: "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+        className:
+          "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
       };
     }
 
@@ -188,17 +190,20 @@ export function DetailPanel({
       case "in_progress":
         return {
           label: t("terminal.inProcess"),
-          className: "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+          className:
+            "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
         };
       case "in_buffer":
         return {
           label: t("terminal.inBuffer"),
-          className: "border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-400",
+          className:
+            "border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-400",
         };
       case "on_hold":
         return {
           label: t("terminal.onHold", "On hold"),
-          className: "border-orange-500/30 bg-orange-500/10 text-orange-600 dark:text-orange-400",
+          className:
+            "border-orange-500/30 bg-orange-500/10 text-orange-600 dark:text-orange-400",
         };
       default:
         return {
@@ -208,7 +213,8 @@ export function DetailPanel({
     }
   }, [job.isCurrentUserClocked, job.status, t]);
 
-  const showCompleteAction = job.status === "in_progress" || job.isCurrentUserClocked;
+  const showCompleteAction =
+    job.status === "in_progress" || job.isCurrentUserClocked;
   const completeDisabled =
     Boolean(job.activeTimeEntryId) || isBlockedByCapacity;
   const completeTitle = job.activeTimeEntryId
@@ -226,14 +232,17 @@ export function DetailPanel({
   const renderOperations = () => {
     if (operations.length === 0) {
       return (
-        <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          {t("terminal.noOperationsFound", "No routing steps found for this part.")}
+        <div className="rounded-lg border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+          {t(
+            "terminal.noOperationsFound",
+            "No routing steps found for this part.",
+          )}
         </div>
       );
     }
 
     return (
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {operations.map((operation) => {
           const operationSubsteps = substepsByOperation[operation.id] || [];
           const hasSubsteps = operationSubsteps.length > 0;
@@ -246,31 +255,32 @@ export function DetailPanel({
             <div
               key={operation.id}
               className={cn(
-                "rounded-2xl border border-border bg-background/80",
-                operation.id === job.operationId && "border-primary/40 bg-primary/5",
+                "rounded-lg border border-border bg-background/80",
+                operation.id === job.operationId &&
+                  "border-primary/40 bg-primary/5",
               )}
             >
               <button
                 type="button"
                 onClick={() => hasSubsteps && toggleOperationExpand(operation.id)}
                 className={cn(
-                  "flex w-full items-center justify-between gap-3 px-4 py-3 text-left",
+                  "flex w-full items-center justify-between gap-2 px-3 py-2 text-left",
                   !hasSubsteps && "cursor-default",
                 )}
               >
-                <div className="min-w-0 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs text-muted-foreground">
+                <div className="min-w-0 space-y-0.5">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-[10px] text-muted-foreground">
                       {operation.sequence}.
                     </span>
-                    <span className="truncate text-sm font-semibold text-foreground">
+                    <span className="truncate text-xs font-semibold text-foreground">
                       {operation.operation_name}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-[10px] text-muted-foreground">
                       {operation.cell?.name || "?"}
                     </span>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                     <span>{operation.estimated_time}h est.</span>
                     {hasSubsteps ? (
                       <span>
@@ -280,50 +290,50 @@ export function DetailPanel({
                     ) : null}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   {operation.status === "completed" ? (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
                   ) : null}
                   {operation.status === "in_progress" ? (
-                    <Clock3 className="h-4 w-4 text-primary" />
+                    <Clock3 className="h-3.5 w-3.5 text-primary" />
                   ) : null}
                   {operation.status === "not_started" ? (
-                    <Circle className="h-4 w-4 text-muted-foreground/60" />
+                    <Circle className="h-3.5 w-3.5 text-muted-foreground/60" />
                   ) : null}
                   {operation.status === "on_hold" ? (
-                    <AlertTriangle className="h-4 w-4 text-amber-500" />
+                    <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
                   ) : null}
                   {hasSubsteps ? (
                     isExpanded ? (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                     ) : (
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                     )
                   ) : null}
                 </div>
               </button>
 
               {hasSubsteps && isExpanded ? (
-                <div className="border-t border-border px-4 py-3">
-                  <div className="space-y-2">
+                <div className="border-t border-border px-3 py-2">
+                  <div className="space-y-1">
                     {operationSubsteps.map((substep) => (
                       <div
                         key={substep.id}
-                        className="flex items-center gap-2 text-sm text-muted-foreground"
+                        className="flex items-center gap-1.5 text-xs text-muted-foreground"
                       >
                         {substep.status === "completed" ? (
-                          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                          <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-500" />
                         ) : substep.status === "in_progress" ? (
-                          <Clock3 className="h-4 w-4 shrink-0 text-primary" />
+                          <Clock3 className="h-3 w-3 shrink-0 text-primary" />
                         ) : substep.status === "blocked" ? (
-                          <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
+                          <AlertTriangle className="h-3 w-3 shrink-0 text-destructive" />
                         ) : (
-                          <Circle className="h-4 w-4 shrink-0 text-muted-foreground/60" />
+                          <Circle className="h-3 w-3 shrink-0 text-muted-foreground/60" />
                         )}
                         {substep.icon_name ? (
                           <IconDisplay
                             iconName={substep.icon_name}
-                            className="h-4 w-4 shrink-0 text-muted-foreground"
+                            className="h-3 w-3 shrink-0 text-muted-foreground"
                           />
                         ) : null}
                         <span
@@ -347,103 +357,74 @@ export function DetailPanel({
   };
 
   return (
-    <div className="flex h-full min-h-[720px] flex-col bg-card text-card-foreground">
-      <div className="border-b border-border px-4 py-4 sm:px-5">
+    <div className="flex h-full flex-col overflow-hidden bg-card text-card-foreground">
+      {/* ── Compact header: job info + due date ── */}
+      <div className="shrink-0 border-b border-border px-3 py-3">
         {job.isBulletCard ? (
-          <div className="mb-4 flex items-center gap-2 rounded-2xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">
-            <Zap className="h-4 w-4" />
+          <div className="mb-2 flex items-center gap-1.5 rounded-md border border-destructive/30 bg-destructive/10 px-2 py-1 text-xs font-semibold text-destructive">
+            <Zap className="h-3.5 w-3.5" />
             {t("terminal.bulletCard")}
           </div>
         ) : null}
 
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="space-y-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="font-mono text-xl font-semibold text-foreground">
+              <h2 className="font-mono text-base font-semibold text-foreground">
                 {job.jobCode}
               </h2>
-              <Badge variant="outline" className={cn("rounded-full", statusBadge.className)}>
+              <Badge
+                variant="outline"
+                className={cn("rounded-full text-[10px]", statusBadge.className)}
+              >
                 {statusBadge.label}
               </Badge>
             </div>
-            <div className="text-base font-semibold text-foreground">{job.description}</div>
-            <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+            <div className="text-sm font-medium text-foreground">
+              {job.description}
+            </div>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
               <span>{job.currentOp}</span>
+              <span>•</span>
+              <span>{job.cellName || "-"}</span>
               <span>•</span>
               <span>{job.material || "-"}</span>
               <span>•</span>
               <span>{job.quantity} pcs</span>
+              {job.drawingNo ? (
+                <>
+                  <span>•</span>
+                  <span>
+                    {t("parts.drawingNo")}: {job.drawingNo}
+                  </span>
+                </>
+              ) : null}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-background/70 px-4 py-3 text-right">
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="shrink-0 text-right">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               {t("terminal.columns.dueDate")}
             </div>
-            <div className="mt-1 text-base font-semibold text-foreground">
+            <div className="text-sm font-semibold text-foreground">
               {new Date(job.dueDate).toLocaleDateString()}
             </div>
-            <div className="text-sm text-muted-foreground">{job.hours}h remaining</div>
-          </div>
-        </div>
-
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <div className="rounded-2xl border border-border bg-background/70 px-4 py-3">
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              {t("terminal.currentPacket", "Current packet")}
-            </div>
-            <div className="mt-1 flex items-center gap-2 text-sm font-semibold text-foreground">
-              <Layers3 className="h-4 w-4 text-primary" />
-              {job.currentOp}
-            </div>
-            {job.drawingNo ? (
-              <div className="mt-1 text-xs text-muted-foreground">
-                {t("parts.drawingNo")}: {job.drawingNo}
-              </div>
-            ) : null}
-          </div>
-
-          <div className="rounded-2xl border border-border bg-background/70 px-4 py-3">
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              {t("terminal.columns.cell")}
-            </div>
-            <div className="mt-1 flex items-center gap-2 text-sm font-semibold text-foreground">
-              <MapPinned className="h-4 w-4 text-primary" />
-              {job.cellName || "-"}
-            </div>
-            {nextOperation?.cell?.name ? (
-              <div className="mt-1 text-xs text-muted-foreground">
-                {t("terminal.nextCell", "Next cell")}: {nextOperation.cell.name}
-              </div>
-            ) : null}
-          </div>
-
-          <div className="rounded-2xl border border-border bg-background/70 px-4 py-3">
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              {t("terminal.packet", "Packet contents")}
-            </div>
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-foreground">
-              {job.hasModel ? <Badge variant="outline">3D</Badge> : null}
-              {job.hasPdf ? <Badge variant="outline">PDF</Badge> : null}
-              {job.cncProgramName ? <Badge variant="outline">CNC</Badge> : null}
-              {!job.hasModel && !job.hasPdf && !job.cncProgramName ? (
-                <span className="text-muted-foreground">
-                  {t("terminal.noFiles", "No attached files")}
-                </span>
-              ) : null}
+            <div className="text-[10px] text-muted-foreground">
+              {job.hours}h {t("operator.remaining", "remaining")}
             </div>
           </div>
         </div>
 
         {job.notes ? (
-          <div className="mt-4 rounded-2xl border border-border bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+          <div className="mt-2 rounded-md border border-border bg-muted/20 px-2 py-1.5 text-xs text-muted-foreground">
             {job.notes}
           </div>
         ) : null}
       </div>
 
+      {/* ── Routing progress (compact) ── */}
       {job.jobId ? (
-        <div className="border-b border-border px-4 py-4 sm:px-5">
+        <div className="shrink-0 border-b border-border px-3 py-2">
           <JobFlowProgress
             jobId={job.jobId}
             currentCellId={job.cellId}
@@ -453,28 +434,26 @@ export function DetailPanel({
         </div>
       ) : null}
 
-      <div className="border-b border-border px-4 py-4 sm:px-5">
-        <div className="grid gap-3 lg:grid-cols-2">
-          <div className="rounded-2xl border border-border bg-background/70 px-4 py-3">
-            <OperationResources operationId={job.operationId} />
-          </div>
-          <div className="rounded-2xl border border-border bg-background/70 px-4 py-3">
-            <AssemblyDependencies partId={job.partId} />
-          </div>
+      {/* ── Resources + Dependencies (inline, compact) ── */}
+      <div className="shrink-0 border-b border-border px-3 py-2">
+        <div className="grid gap-2 lg:grid-cols-2">
+          <OperationResources operationId={job.operationId} />
+          <AssemblyDependencies partId={job.partId} />
         </div>
       </div>
 
+      {/* ── CNC Program QR (compact inline) ── */}
       {job.cncProgramName ? (
-        <div className="border-b border-border px-4 py-4 sm:px-5">
-          <div className="flex items-center gap-3 rounded-2xl border border-border bg-background/70 px-4 py-3">
-            <div className="rounded-xl border border-border bg-white p-2">
-              <CncProgramQrCode programName={job.cncProgramName} size={64} />
+        <div className="shrink-0 border-b border-border px-3 py-2">
+          <div className="flex items-center gap-2">
+            <div className="rounded border border-border bg-white p-1">
+              <CncProgramQrCode programName={job.cncProgramName} size={40} />
             </div>
             <div className="min-w-0">
-              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 {t("parts.cncProgramName")}
               </div>
-              <div className="font-mono text-base font-semibold text-foreground">
+              <div className="truncate font-mono text-sm font-semibold text-foreground">
                 {job.cncProgramName}
               </div>
             </div>
@@ -482,45 +461,46 @@ export function DetailPanel({
         </div>
       ) : null}
 
-      <div className="flex-1 overflow-hidden">
+      {/* ── 3D / PDF / Routing viewer — takes all remaining space ── */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <Tabs
           key={`${job.id}-${defaultTab}`}
           defaultValue={defaultTab}
           className="flex h-full flex-col"
         >
-          <div className="border-b border-border px-4 py-3 sm:px-5">
-            <TabsList className="grid h-auto w-full grid-cols-3 gap-2 rounded-2xl bg-muted/30 p-1">
+          <div className="shrink-0 border-b border-border px-3 py-2">
+            <TabsList className="grid h-auto w-full grid-cols-3 gap-1 rounded-lg bg-muted/30 p-0.5">
               <TabsTrigger
                 value="3d"
                 disabled={!job.hasModel}
-                className="min-h-12 rounded-xl data-[state=active]:bg-background"
+                className="min-h-8 rounded-md text-xs data-[state=active]:bg-background"
               >
-                <Box className="mr-2 h-4 w-4" />
+                <Box className="mr-1.5 h-3.5 w-3.5" />
                 3D
               </TabsTrigger>
               <TabsTrigger
                 value="pdf"
                 disabled={!job.hasPdf}
-                className="min-h-12 rounded-xl data-[state=active]:bg-background"
+                className="min-h-8 rounded-md text-xs data-[state=active]:bg-background"
               >
-                <FileText className="mr-2 h-4 w-4" />
+                <FileText className="mr-1.5 h-3.5 w-3.5" />
                 PDF
               </TabsTrigger>
               <TabsTrigger
                 value="ops"
-                className="min-h-12 rounded-xl data-[state=active]:bg-background"
+                className="min-h-8 rounded-md text-xs data-[state=active]:bg-background"
               >
-                <Layers3 className="mr-2 h-4 w-4" />
+                <Layers3 className="mr-1.5 h-3.5 w-3.5" />
                 {t("terminal.routing", "Routing")}
               </TabsTrigger>
             </TabsList>
           </div>
 
-          <div className="flex-1 overflow-hidden p-4 sm:px-5 sm:pb-5">
+          <div className="min-h-0 flex-1 overflow-hidden p-3">
             {job.hasModel ? (
               <TabsContent
                 value="3d"
-                className="relative h-full overflow-hidden rounded-2xl border border-border bg-background m-0"
+                className="relative m-0 h-full overflow-hidden rounded-lg border border-border bg-background"
               >
                 <STEPViewer
                   url={stepUrl || ""}
@@ -533,9 +513,9 @@ export function DetailPanel({
                   variant="secondary"
                   size="sm"
                   onClick={() => setFullscreenViewer("3d")}
-                  className="absolute right-3 top-3 h-10 rounded-xl bg-background/90 px-3"
+                  className="absolute right-2 top-2 h-7 rounded-md bg-background/90 px-2 text-xs"
                 >
-                  <Maximize2 className="mr-2 h-4 w-4" />
+                  <Maximize2 className="mr-1 h-3 w-3" />
                   {t("common.expand", "Expand")}
                 </Button>
               </TabsContent>
@@ -544,54 +524,56 @@ export function DetailPanel({
             {job.hasPdf ? (
               <TabsContent
                 value="pdf"
-                className="relative h-full overflow-hidden rounded-2xl border border-border bg-background m-0"
+                className="relative m-0 h-full overflow-hidden rounded-lg border border-border bg-background"
               >
                 <PDFViewer url={pdfUrl || ""} title={job.jobCode} />
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={() => setFullscreenViewer("pdf")}
-                  className="absolute right-3 top-3 h-10 rounded-xl bg-background/90 px-3"
+                  className="absolute right-2 top-2 h-7 rounded-md bg-background/90 px-2 text-xs"
                 >
-                  <Maximize2 className="mr-2 h-4 w-4" />
+                  <Maximize2 className="mr-1 h-3 w-3" />
                   {t("common.expand", "Expand")}
                 </Button>
               </TabsContent>
             ) : null}
 
-            <TabsContent value="ops" className="h-full overflow-auto m-0">
+            <TabsContent value="ops" className="m-0 h-full overflow-auto">
               {renderOperations()}
             </TabsContent>
           </div>
         </Tabs>
       </div>
 
+      {/* ── Warnings ── */}
       {job.warnings?.length ? (
-        <div className="border-t border-border bg-amber-500/10 px-4 py-3 text-sm text-amber-600 dark:text-amber-400 sm:px-5">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4" />
+        <div className="shrink-0 border-t border-border bg-amber-500/10 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-1.5">
+            <AlertTriangle className="h-3.5 w-3.5" />
             {job.warnings.join(", ")}
           </div>
         </div>
       ) : null}
 
-      <div className="sticky bottom-0 border-t border-border bg-background/95 px-4 py-3 backdrop-blur-md sm:px-5">
-        <div className="grid gap-2 sm:grid-cols-2">
+      {/* ── Action buttons — compact, sticky bottom ── */}
+      <div className="shrink-0 border-t border-border bg-background/95 px-3 py-2 backdrop-blur-md">
+        <div className="grid gap-1.5 sm:grid-cols-2">
           {!job.isCurrentUserClocked ? (
             <Button
               onClick={onStart}
-              className="min-h-12 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700"
+              className="min-h-10 rounded-lg bg-emerald-600 text-sm text-white hover:bg-emerald-700"
             >
-              <Play className="mr-2 h-4 w-4" />
+              <Play className="mr-1.5 h-4 w-4" />
               {t("operations.start", "Start")}
             </Button>
           ) : (
             <Button
               onClick={onPause}
               variant="outline"
-              className="min-h-12 rounded-xl"
+              className="min-h-10 rounded-lg text-sm"
             >
-              <Pause className="mr-2 h-4 w-4" />
+              <Pause className="mr-1.5 h-4 w-4" />
               {t("operations.pause", "Pause")}
             </Button>
           )}
@@ -599,9 +581,9 @@ export function DetailPanel({
           <Button
             onClick={() => setIsQuantityModalOpen(true)}
             variant="outline"
-            className="min-h-12 rounded-xl border-primary/30 text-primary hover:bg-primary/10"
+            className="min-h-10 rounded-lg border-primary/30 text-sm text-primary hover:bg-primary/10"
           >
-            <PackageCheck className="mr-2 h-4 w-4" />
+            <PackageCheck className="mr-1.5 h-4 w-4" />
             {t("production.reportTitle", "Record output")}
           </Button>
 
@@ -609,11 +591,11 @@ export function DetailPanel({
             <Button
               onClick={onComplete}
               variant="outline"
-              className="min-h-12 rounded-xl"
+              className="min-h-10 rounded-lg text-sm"
               disabled={completeDisabled}
               title={completeTitle}
             >
-              <Square className="mr-2 h-4 w-4" />
+              <Square className="mr-1.5 h-4 w-4" />
               {t("production.complete", "Complete")}
             </Button>
           ) : null}
@@ -624,14 +606,15 @@ export function DetailPanel({
               setIssuePrefilledData(null);
               setIsIssueModalOpen(true);
             }}
-            className="min-h-12 rounded-xl border-amber-500/30 text-amber-600 hover:bg-amber-500/10 dark:text-amber-400"
+            className="min-h-10 rounded-lg border-amber-500/30 text-sm text-amber-600 hover:bg-amber-500/10 dark:text-amber-400"
           >
-            <AlertTriangle className="mr-2 h-4 w-4" />
+            <AlertTriangle className="mr-1.5 h-4 w-4" />
             {t("issues.reportIssue", "Report issue")}
           </Button>
         </div>
       </div>
 
+      {/* ── Modals ── */}
       <IssueForm
         operationId={job.operationId}
         open={isIssueModalOpen}
@@ -666,6 +649,7 @@ export function DetailPanel({
         }}
       />
 
+      {/* ── Fullscreen viewer portal ── */}
       {fullscreenViewer
         ? createPortal(
             <div
@@ -676,9 +660,9 @@ export function DetailPanel({
                 className="relative flex h-full flex-col overflow-hidden"
                 onClick={(event) => event.stopPropagation()}
               >
-                <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-white">
+                <div className="flex items-center justify-between border-b border-white/10 px-4 py-2 text-white">
                   <div>
-                    <div className="text-xs uppercase tracking-[0.18em] text-white/60">
+                    <div className="text-[10px] uppercase tracking-wider text-white/60">
                       {job.jobCode}
                     </div>
                     <div className="text-sm font-semibold">
@@ -689,7 +673,7 @@ export function DetailPanel({
                     variant="ghost"
                     size="sm"
                     onClick={() => setFullscreenViewer(null)}
-                    className="h-10 w-10 rounded-full p-0 text-white hover:bg-white/10"
+                    className="h-8 w-8 rounded-full p-0 text-white hover:bg-white/10"
                   >
                     <X className="h-4 w-4" />
                   </Button>

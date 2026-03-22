@@ -618,20 +618,21 @@ export default function OperatorView() {
           width: rightPanelCollapsed ? "40px" : `${100 - leftPanelWidth}%`,
         }}
       >
-        {/* Collapse toggle */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setRightPanelCollapsed(!rightPanelCollapsed)}
-          className="absolute -left-3 top-2 z-30 h-6 w-6 rounded-full border border-border bg-card p-0 shadow-md hover:bg-accent"
-          style={{ marginLeft: rightPanelCollapsed ? "7px" : "0" }}
-        >
-          {rightPanelCollapsed ? (
-            <ChevronLeft className="h-3 w-3" />
-          ) : (
-            <ChevronRight className="h-3 w-3" />
-          )}
-        </Button>
+        {/* Collapse toggle — positioned relative to panel, not absolute */}
+        <div className="flex shrink-0 items-center justify-center border-b border-border py-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setRightPanelCollapsed(!rightPanelCollapsed)}
+            className="h-6 w-6 rounded-full border border-border bg-card p-0 shadow-sm hover:bg-accent"
+          >
+            {rightPanelCollapsed ? (
+              <ChevronLeft className="h-3 w-3" />
+            ) : (
+              <ChevronRight className="h-3 w-3" />
+            )}
+          </Button>
+        </div>
 
         {rightPanelCollapsed ? (
           <div className="flex flex-1 flex-col items-center justify-center py-4">

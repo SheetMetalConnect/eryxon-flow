@@ -149,21 +149,24 @@ export function OperationResources({ operationId, className }: OperationResource
         ))}
       </div>
 
-      {resources.some(r => r.notes) && (
-        <div className="mt-1.5 space-y-1">
-          {resources.filter(r => r.notes).map(r => (
-            <div
-              key={`note-${r.id}`}
-              className="flex items-start gap-1.5 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded text-[10px]"
-            >
-              <AlertCircle className="w-3 h-3 text-amber-500 shrink-0 mt-0.5" />
-              <span className="text-amber-700 dark:text-amber-300">
-                {r.notes}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
+      {resources.some(r => r.notes) && (() => {
+        const uniqueNotes = [...new Set(resources.filter(r => r.notes).map(r => r.notes!))];
+        return (
+          <div className="mt-1.5 space-y-1">
+            {uniqueNotes.map((note) => (
+              <div
+                key={note}
+                className="flex items-start gap-1.5 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded text-[10px]"
+              >
+                <AlertCircle className="w-3 h-3 text-amber-500 shrink-0 mt-0.5" />
+                <span className="text-amber-700 dark:text-amber-300">
+                  {note}
+                </span>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 }
