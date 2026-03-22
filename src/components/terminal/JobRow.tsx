@@ -119,6 +119,16 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
         {job.hours}h
       </td>
 
+      {/* Planned Start */}
+      <td className="whitespace-nowrap px-2 py-1.5 text-sm text-muted-foreground">
+        {job.plannedStart
+          ? new Date(job.plannedStart).toLocaleDateString("nl-NL", {
+              day: "2-digit",
+              month: "2-digit",
+            })
+          : "-"}
+      </td>
+
       {/* Due Date */}
       <td
         className={cn(

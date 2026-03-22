@@ -67,6 +67,7 @@ export interface OperationWithDetails {
   notes: string | null;
   assigned_operator_id: string | null;
   cell_id: string;
+  planned_start: string | null;
   part: {
     id: string;
     part_number: string;

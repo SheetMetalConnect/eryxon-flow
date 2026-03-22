@@ -62,6 +62,11 @@ export default function OperationCard({
     operation.part.job.due_date_override || operation.part.job.due_date;
   const dueDateObj = dueDate ? new Date(dueDate) : null;
   const dueUrgency = getDueUrgency(dueDate);
+  const plannedStartObj = operation.planned_start
+    ? new Date(operation.planned_start)
+    : null;
+  const hasPlannedStart =
+    plannedStartObj !== null && Number.isFinite(plannedStartObj.getTime());
   const estimatedHours = (operation.estimated_time || 0) / 60;
   const actualHours = (operation.actual_time || 0) / 60;
   const remainingTime = estimatedHours - actualHours;
@@ -105,11 +110,18 @@ export default function OperationCard({
             compact ? "px-2.5 py-2" : "px-3 py-2.5",
           )}
         >
-          {/* Row 1: Job number + due date */}
+          {/* Row 1: Job number + scheduled start → due date */}
           <div className="flex items-center justify-between gap-2">
-            <span className="truncate font-mono text-[11px] text-muted-foreground">
-              {operation.part.job.job_number}
-            </span>
+            <div className="flex min-w-0 items-center gap-1.5">
+              <span className="truncate font-mono text-[11px] text-muted-foreground">
+                {operation.part.job.job_number}
+              </span>
+              {hasPlannedStart ? (
+                <span className="shrink-0 text-[9px] text-muted-foreground/70">
+                  ▶ {format(plannedStartObj, "dd MMM")}
+                </span>
+              ) : null}
+            </div>
             <span
               className={cn(
                 "flex shrink-0 items-center gap-1 text-[10px] font-medium",

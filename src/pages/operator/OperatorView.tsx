@@ -234,6 +234,7 @@ export default function OperatorView() {
         drawingNo: op.part.drawing_no,
         cncProgramName: op.part.cnc_program_name,
         isBulletCard: op.part.is_bullet_card,
+        plannedStart: op.planned_start,
       };
     },
     [operatorId],
@@ -420,6 +421,9 @@ export default function OperatorView() {
           {t("terminal.columns.hours")}
         </th>
         <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+          {t("terminal.columns.plannedStart", "Start")}
+        </th>
+        <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
           {t("terminal.columns.dueDate")}
         </th>
         <th className="px-2 py-1.5 text-center text-xs font-semibold text-muted-foreground">
@@ -498,7 +502,7 @@ export default function OperatorView() {
                 {inProcessJobs.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={9}
+                      colSpan={10}
                       className="py-8 text-center italic text-muted-foreground"
                     >
                       {t("terminal.noActiveJobs")}
@@ -534,7 +538,7 @@ export default function OperatorView() {
                 {inBufferJobs.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={9}
+                      colSpan={10}
                       className="py-8 text-center italic text-muted-foreground"
                     >
                       {t("terminal.noBufferJobs", "No jobs in buffer")}
@@ -570,7 +574,7 @@ export default function OperatorView() {
                 {expectedJobs.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={9}
+                      colSpan={10}
                       className="py-8 text-center italic text-muted-foreground"
                     >
                       {t("terminal.noExpectedJobs", "No expected jobs")}

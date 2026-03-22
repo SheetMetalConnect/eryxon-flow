@@ -404,7 +404,17 @@ export function DetailPanel({
           </div>
 
           <div className="shrink-0 text-right">
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            {job.plannedStart ? (
+              <>
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("terminal.columns.plannedStart", "Start")}
+                </div>
+                <div className="text-sm font-semibold text-foreground">
+                  {new Date(job.plannedStart).toLocaleDateString()}
+                </div>
+              </>
+            ) : null}
+            <div className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               {t("terminal.columns.dueDate")}
             </div>
             <div

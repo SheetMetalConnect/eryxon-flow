@@ -31,4 +31,5 @@ export interface TerminalJob {
     drawingNo?: string | null;
     cncProgramName?: string | null;
     isBulletCard?: boolean | null; // QRM: Rush/priority order flag
+    plannedStart?: string | null; // Scheduled start date of operation
 }
