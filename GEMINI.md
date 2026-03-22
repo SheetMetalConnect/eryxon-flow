@@ -75,6 +75,14 @@ When working as a Gemini agent on this repo:
 5. **i18n** — UI text must use translation keys, not hardcoded strings
 6. **Small PRs** — Prefer focused, single-purpose pull requests
 
+## Specialized Agents
+
+This project includes specialized agents in `.agents/` (symlinked into `.gemini/agents/`):
+
+- **`supabase-db`** — Database work: migrations, RLS policies, Edge Functions, schema changes
+- **`tech-stack`** — Tech stack questions, dependency management, build config, architecture decisions
+- **`repo-ops`** — Repository operations: issues, PRs, branches, releases, project organization
+
 ## Architecture Notes
 
 - The app uses Supabase Auth with Turnstile captcha protection

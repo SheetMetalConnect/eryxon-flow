@@ -63,6 +63,16 @@ Claude Code has access to the **Superpowers** plugin which provides structured w
 
 Use these skills via the `/skill` command to maintain quality and consistency.
 
+## Specialized Agents
+
+This project includes specialized agents in `.agents/` (symlinked into `.claude/agents/`) for focused tasks:
+
+- **`supabase-db`** — Database work: migrations, RLS policies, Edge Functions, schema changes
+- **`tech-stack`** — Tech stack questions, dependency management, build config, architecture decisions
+- **`repo-ops`** — Repository operations: issues, PRs, branches, releases, project organization
+
+These agents are automatically available via the Agent tool when their description matches the task at hand.
+
 ## Important Notes
 
 - Never commit `.env` files or secrets

@@ -59,6 +59,14 @@ When working as a Codex agent on this repo:
 5. **i18n** — UI text must use translation keys, not hardcoded strings
 6. **Small changes** — Prefer focused, minimal diffs
 
+## Specialized Agents
+
+This project includes specialized agents in `.agents/` (symlinked into `.codex/agents/`):
+
+- **`supabase-db`** — Database work: migrations, RLS policies, Edge Functions, schema changes
+- **`tech-stack`** — Tech stack questions, dependency management, build config, architecture decisions
+- **`repo-ops`** — Repository operations: issues, PRs, branches, releases, project organization
+
 ## Codex-Specific Setup
 
 Codex can use the **Superpowers** skill system. See `.codex/INSTALL.md` for setup instructions:
