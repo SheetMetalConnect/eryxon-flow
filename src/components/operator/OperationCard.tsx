@@ -1,21 +1,20 @@
 import { useState } from "react";
-import { format } from "date-fns";
+import { format, isPast } from "date-fns";
 import {
   Clock3,
   User,
   Package,
   AlertTriangle,
   UserCheck,
-  ArrowRight,
+  FileText,
+  Box,
+  Wrench,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOperationIssues } from "@/hooks/useOperationIssues";
 import OperationDetailModal from "./OperationDetailModal";
 import { useTranslation } from "react-i18next";
-import { ResourceCountBadge } from "@/components/ui/ResourceUsageDisplay";
-
+import { cn } from "@/lib/utils";
 import { OperationWithDetails } from "@/lib/database";
 
 interface OperationCardProps {
@@ -25,6 +24,14 @@ interface OperationCardProps {
   assignedToMe?: boolean;
   assignedByName?: string;
 }
+
+/** Left-edge color stripe by status */
+const statusStripe: Record<string, string> = {
+  in_progress: "bg-amber-500",
+  not_started: "bg-slate-300 dark:bg-slate-600",
+  completed: "bg-emerald-500",
+  on_hold: "bg-orange-500",
+};
 
 export default function OperationCard({
   operation,
@@ -41,137 +48,155 @@ export default function OperationCard({
     profile?.tenant_id,
   );
 
-  const dueDate = operation.part.job.due_date_override || operation.part.job.due_date;
-  const actualHours = (operation.actual_time || 0) / 60;
+  const dueDate =
+    operation.part.job.due_date_override || operation.part.job.due_date;
+  const dueDateObj = dueDate ? new Date(dueDate) : null;
+  const isOverdue =
+    dueDateObj && Number.isFinite(dueDateObj.getTime()) && isPast(dueDateObj);
   const estimatedHours = (operation.estimated_time || 0) / 60;
+  const actualHours = (operation.actual_time || 0) / 60;
   const remainingTime = estimatedHours - actualHours;
   const isOvertime = remainingTime < 0;
   const isAssignedToMe =
     operation.assigned_operator_id === profile?.id || assignedToMe;
-
-  const statusTone = {
-    not_started: "border-border bg-background/70 text-foreground",
-    in_progress:
-      "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
-    completed:
-      "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-    on_hold:
-      "border-orange-500/30 bg-orange-500/10 text-orange-600 dark:text-orange-400",
-  };
-
-  const severityTone = {
-    low: "border-border text-muted-foreground",
-    medium: "border-amber-500/30 text-amber-600 dark:text-amber-400",
-    high: "border-orange-500/30 text-orange-600 dark:text-orange-400",
-    critical: "border-destructive/30 text-destructive",
-  };
-
-  const cardPadding = compact ? "p-3" : "p-4";
+  const isActive = Boolean(operation.active_time_entry);
+  const hasPdf = operation.part.file_paths?.some((p) =>
+    p.toLowerCase().endsWith(".pdf"),
+  );
+  const hasModel = operation.part.file_paths?.some((p) => {
+    const lp = p.toLowerCase();
+    return lp.endsWith(".step") || lp.endsWith(".stp");
+  });
 
   return (
     <>
-      <Card
-        className={`cursor-pointer rounded-2xl border-border/80 bg-card/95 ${cardPadding} shadow-sm transition-colors hover:border-primary/30 hover:bg-muted/20 ${
-          operation.active_time_entry ? "border-primary/40 bg-primary/5" : ""
-        }`}
+      <button
+        type="button"
         onClick={() => setShowDetail(true)}
+        className={cn(
+          "group relative flex w-full overflow-hidden rounded-md border text-left transition-all",
+          "border-border/60 bg-card hover:border-primary/40 hover:shadow-sm",
+          isActive && "border-primary/40 bg-primary/[0.03]",
+          isOverdue && !isActive && "border-red-400/40",
+        )}
       >
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge
-                variant="outline"
-                className={`rounded-full ${statusTone[operation.status]}`}
-              >
-                {operation.status.replace("_", " ")}
-              </Badge>
-              {operation.part.parent_part_id ? (
-                <Badge variant="outline" className="rounded-full">
-                  <Package className="mr-1 h-3.5 w-3.5" />
-                  {t("parts.assy")}
-                </Badge>
-              ) : null}
-              {pendingCount > 0 && highestSeverity ? (
-                <Badge
-                  variant="outline"
-                  className={`rounded-full ${severityTone[highestSeverity as keyof typeof severityTone]}`}
-                >
-                  <AlertTriangle className="mr-1 h-3.5 w-3.5" />
-                  {pendingCount}
-                </Badge>
-              ) : null}
-              <ResourceCountBadge operationId={operation.id} />
-            </div>
+        {/* Status stripe */}
+        <div
+          className={cn(
+            "w-1 shrink-0",
+            statusStripe[operation.status] || "bg-slate-300",
+            isActive && "animate-pulse",
+          )}
+        />
 
-            <div>
-              <div className="font-mono text-sm font-semibold text-foreground">
-                {operation.part.job.job_number}
-              </div>
-              <div className="text-base font-semibold text-foreground">
-                {operation.operation_name}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {operation.part.part_number}
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-border bg-background/70 px-3 py-2 text-right">
-            <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-              {t("operations.due")}
-            </div>
-            <div className="text-sm font-semibold text-foreground">
-              {dueDate ? format(new Date(dueDate), "MMM d, yyyy") : "-"}
-            </div>
-          </div>
-        </div>
-
-        {isAssignedToMe ? (
-          <Badge className="mt-3 rounded-full bg-primary/10 text-primary hover:bg-primary/10">
-            <UserCheck className="mr-1 h-3.5 w-3.5" />
-            {assignedByName
-              ? t("operations.assignedByAdmin", { name: assignedByName })
-              : t("operations.assignedToYou")}
-          </Badge>
-        ) : null}
-
-        <div className="mt-4 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
-          <div className="rounded-xl border border-border bg-background/70 px-3 py-2">
-            <div className="text-[11px] uppercase tracking-[0.18em]">
-              {t("operations.time", "Time")}
-            </div>
-            <div className="mt-1 flex items-center gap-2 text-foreground">
-              <Clock3 className="h-4 w-4 text-primary" />
-              {actualHours.toFixed(1)}h / {estimatedHours.toFixed(1)}h
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-border bg-background/70 px-3 py-2">
-            <div className="text-[11px] uppercase tracking-[0.18em]">
-              {t("operations.remaining", "Remaining")}
-            </div>
-            <div
-              className={`mt-1 flex items-center gap-2 ${
-                isOvertime ? "text-destructive" : "text-foreground"
-              }`}
+        <div className={cn("min-w-0 flex-1", compact ? "px-2.5 py-2" : "px-3 py-2.5")}>
+          {/* Row 1: Job number + due date */}
+          <div className="flex items-center justify-between gap-2">
+            <span className="truncate font-mono text-[11px] text-muted-foreground">
+              {operation.part.job.job_number}
+            </span>
+            <span
+              className={cn(
+                "shrink-0 text-[10px] font-medium",
+                isOverdue
+                  ? "text-red-600 dark:text-red-400"
+                  : "text-muted-foreground",
+              )}
             >
-              <ArrowRight className="h-4 w-4" />
-              {isOvertime ? "+" : ""}
-              {Math.abs(remainingTime).toFixed(1)}h
-            </div>
-          </div>
-        </div>
-
-        {operation.active_time_entry ? (
-          <div className="mt-4 flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-sm">
-            <div className="h-2.5 w-2.5 rounded-full bg-primary" />
-            <User className="h-4 w-4 text-primary" />
-            <span className="font-medium text-foreground">
-              {operation.active_time_entry.operator.full_name}
+              {dueDateObj && Number.isFinite(dueDateObj.getTime())
+                ? format(dueDateObj, "dd MMM")
+                : ""}
             </span>
           </div>
-        ) : null}
-      </Card>
+
+          {/* Row 2: Operation name (primary info) */}
+          <div className="mt-0.5 truncate text-sm font-semibold text-foreground">
+            {operation.operation_name}
+          </div>
+
+          {/* Row 3: Part number + material */}
+          <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <span className="truncate">{operation.part.part_number}</span>
+            {operation.part.material ? (
+              <>
+                <span className="text-border">·</span>
+                <span className="truncate">{operation.part.material}</span>
+              </>
+            ) : null}
+          </div>
+
+          {/* Row 4: Meta line — time, icons, indicators */}
+          <div className="mt-1.5 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              {/* Remaining time */}
+              <span
+                className={cn(
+                  "flex items-center gap-0.5 font-medium",
+                  isOvertime
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-muted-foreground",
+                )}
+              >
+                <Clock3 className="h-3 w-3" />
+                {isOvertime ? "+" : ""}
+                {Math.abs(remainingTime).toFixed(1)}h
+              </span>
+
+              {/* Quantity */}
+              <span className="text-border">·</span>
+              <span>{operation.part.quantity} pcs</span>
+            </div>
+
+            {/* Right-side icons */}
+            <div className="flex items-center gap-1">
+              {/* Active operator */}
+              {isActive ? (
+                <span
+                  className="flex items-center gap-0.5 rounded bg-primary/10 px-1 py-0.5 text-[9px] font-semibold text-primary"
+                  title={operation.active_time_entry?.operator.full_name}
+                >
+                  <User className="h-2.5 w-2.5" />
+                  {operation.active_time_entry?.operator.full_name
+                    ?.split(" ")[0]}
+                </span>
+              ) : null}
+
+              {/* Assigned to me */}
+              {isAssignedToMe && !isActive ? (
+                <UserCheck className="h-3 w-3 text-primary" />
+              ) : null}
+
+              {/* Assembly */}
+              {operation.part.parent_part_id ? (
+                <Package className="h-3 w-3 text-muted-foreground/60" />
+              ) : null}
+
+              {/* Files */}
+              {hasPdf ? (
+                <FileText className="h-3 w-3 text-muted-foreground/60" />
+              ) : null}
+              {hasModel ? (
+                <Box className="h-3 w-3 text-muted-foreground/60" />
+              ) : null}
+
+              {/* Issues */}
+              {pendingCount > 0 ? (
+                <span
+                  className={cn(
+                    "flex items-center gap-0.5 text-[9px] font-semibold",
+                    highestSeverity === "critical" || highestSeverity === "high"
+                      ? "text-red-600 dark:text-red-400"
+                      : "text-amber-600 dark:text-amber-400",
+                  )}
+                >
+                  <AlertTriangle className="h-2.5 w-2.5" />
+                  {pendingCount}
+                </span>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </button>
 
       <OperationDetailModal
         operation={operation}
