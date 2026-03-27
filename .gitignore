@@ -36,7 +36,7 @@
 .DS_Store
 .Python
 .claude/settings.local.json
-.cursorrules
+# .cursorrules — tracked (symlink to .agents/)
 .eggs/
 .env
 .env.*.local
@@ -45,9 +45,9 @@
 .idea/workspace.xml
 .vscode/*
 .vscode/settings.json
-AGENTS.md
-CLAUDE.md
-GEMINI.md
+# AGENTS.md — tracked (symlink to .agents/README.md)
+# CLAUDE.md — tracked (project instructions)
+# GEMINI.md — not used yet
 __pycache__/
 coverage/
 credentials/

@@ -1,0 +1,10 @@
+# Cursor Rules
+
+All agent instructions are in `.agents/README.md`. Read that file first.
+
+See also:
+- `docs/ARCHITECTURE.md` — System architecture with Mermaid graphs
+- `docs/decisions/` — Architecture Decision Records (ADRs)
+- `docs/CONVENTIONS.md` — Code patterns and naming conventions
+- `docs/DATABASE_DIAGRAM.dbml` — Full database schema
+- `docs/dependency-graph.json` — Frontend import dependency map (madge)

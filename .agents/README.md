@@ -62,6 +62,16 @@ All API endpoints live in `supabase/functions/api-*/`. Shared code in `_shared/`
 - Test edge function deploys with curl
 - Multi-tenant — always consider tenant isolation
 
+## Documentation Index
+
+| Document | Purpose |
+|----------|---------|
+| [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md) | System architecture with Mermaid dependency graphs |
+| [`docs/CONVENTIONS.md`](../docs/CONVENTIONS.md) | Code patterns, naming, templates for new files |
+| [`docs/decisions/`](../docs/decisions/) | Architecture Decision Records (ADRs) — why things are the way they are |
+| [`docs/DATABASE_DIAGRAM.dbml`](../docs/DATABASE_DIAGRAM.dbml) | Full database schema (dbdiagram.io compatible) |
+| [`docs/dependency-graph.json`](../docs/dependency-graph.json) | Frontend import map (regenerate: `npm run deps:graph`) |
+
 ## Sub-Agents
 
 - [supabase-db.md](supabase-db.md) — Migrations, RLS, Edge Functions, schema
