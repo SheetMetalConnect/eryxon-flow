@@ -1,16 +1,14 @@
 <p align="center">
-  <img src="https://eryxon.eu/logo-dark.svg" alt="Eryxon Flow" width="200" />
-</p>
-
-<h1 align="center">Eryxon Flow</h1>
-
-<p align="center">
-  <strong>Open-source MES for job shops and make-to-order manufacturers</strong>
+  <img src="public/logo-banner-dark.svg" alt="Eryxon Flow" width="400" />
 </p>
 
 <p align="center">
-  <a href="https://app.eryxon.eu"><strong>Live Demo</strong></a> &nbsp;&middot;&nbsp;
-  <a href="https://eryxon.eu">Docs</a> &nbsp;&middot;&nbsp;
+  <strong>Manufacturing Execution System for Job Shops</strong>
+</p>
+
+<p align="center">
+  <a href="https://app.eryxon.eu"><strong>Live Demo</strong></a> &middot;
+  <a href="https://eryxon.eu">Docs</a> &middot;
   <a href="https://github.com/SheetMetalConnect/eryxon-flow/issues">Issues</a>
 </p>
 
@@ -39,7 +37,7 @@ Built for **high-mix, low-volume** production: sheet metal, machine shops, custo
 **Management**
 - Job and part tracking with full production visibility
 - 3D STEP viewer — browser-based CAD, no software install
-- Dashboard stats, OEE metrics, production analytics
+- Dashboard stats and production analytics
 - Issue tracking and quality management (NCR)
 
 **Integration**
@@ -90,7 +88,7 @@ PostgreSQL + Auth + RLS + Realtime + Storage
 
 ## Self-Hosting
 
-Full self-hosting guide: [docs/guides/self-hosting.md](website/src/content/docs/guides/self-hosting.md)
+Full self-hosting guide: [eryxon.eu/guides/self-hosting](https://eryxon.eu/guides/self-hosting/)
 
 ```bash
 docker compose up -d
@@ -112,7 +110,23 @@ curl -X POST https://your-project.supabase.co/functions/v1/api-jobs \
   -d '{"job_number":"WO-001","customer":"Acme","parts":[...]}'
 ```
 
-Full API reference: [docs/api/rest-api-reference.md](website/src/content/docs/api/rest-api-reference.md)
+Full API reference: [eryxon.eu/api/rest-api-reference](https://eryxon.eu/api/rest-api-reference/)
+
+## Documentation
+
+Full docs at **[eryxon.eu](https://eryxon.eu)** — run locally with `cd website && npm run dev`.
+
+| Section | Link |
+|---------|------|
+| Introduction | [eryxon.eu/introduction](https://eryxon.eu/introduction/) |
+| Quick Start | [eryxon.eu/guides/quick-start](https://eryxon.eu/guides/quick-start/) |
+| Architecture | [eryxon.eu/architecture/app-architecture](https://eryxon.eu/architecture/app-architecture/) |
+| REST API Reference | [eryxon.eu/api/rest-api-reference](https://eryxon.eu/api/rest-api-reference/) |
+| MCP Server | [eryxon.eu/api/mcp-server-reference](https://eryxon.eu/api/mcp-server-reference/) |
+| Deployment | [eryxon.eu/guides/deployment](https://eryxon.eu/guides/deployment/) |
+| Self Hosting | [eryxon.eu/guides/self-hosting](https://eryxon.eu/guides/self-hosting/) |
+| Operator Manual | [eryxon.eu/guides/operator-manual](https://eryxon.eu/guides/operator-manual/) |
+| Changelog | [eryxon.eu/guides/changelog](https://eryxon.eu/guides/changelog/) |
 
 ## AI Agent Support
 
@@ -128,15 +142,7 @@ This repo is optimized for AI coding assistants:
 
 Specialized sub-agents in [.agents/](.agents/) for database, tech stack, and repo operations.
 
-## Documentation
-
-- [Deployment Guide](website/src/content/docs/guides/deployment.md)
-- [Self-Hosting Guide](website/src/content/docs/guides/self-hosting.md)
-- [REST API Reference](website/src/content/docs/api/rest-api-reference.md)
-- [API Payload Examples](website/src/content/docs/api/payload-reference.md)
-- [Architecture Overview](website/src/content/docs/architecture/app-architecture.md)
-- [Security Audit](website/src/content/docs/operations/security-audit-baseline.md)
-- [Changelog](website/src/content/docs/guides/changelog.md)
+**Developer docs** (in `docs/`): [Architecture](docs/ARCHITECTURE.md) | [API Catalog](docs/API_CATALOG.md) | [Routes](docs/ROUTE_MAP.md) | [Hooks](docs/HOOK_MAP.md) | [Conventions](docs/CONVENTIONS.md) | [Glossary](docs/GLOSSARY.md) | [Troubleshooting](docs/TROUBLESHOOTING.md) | [ADRs](docs/decisions/) | [MCP Setup](docs/AI_AGENT_SETUP.md)
 
 ## License
 
@@ -147,16 +153,16 @@ Specialized sub-agents in [.agents/](.agents/) for database, tech stack, and rep
 - Cannot offer as a competing hosted service
 - Converts to **Apache 2.0** on 2029-01-01
 
-See [LICENSE](LICENSE) for full terms. [Why BSL?](https://mariadb.com/bsl-faq-adopting/)
+See [LICENSE](LICENSE) for full terms.
 
 ## Support
 
 - Issues: [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues)
 - Docs: [eryxon.eu](https://eryxon.eu)
-- Commercial: office@sheetmetalconnect.com
+- Professional services: [vanenkhuizen.com](https://www.vanenkhuizen.com/)
 
 ---
 
 <p align="center">
-  Built by <a href="https://vanenkhuizen.com">Van Enkhuizen</a> &nbsp;&middot;&nbsp; <a href="https://sheetmetalconnect.com">Sheet Metal Connect</a>
+  Made in Europe by <a href="https://vanenkhuizen.com">Van Enkhuizen</a> &middot; <a href="https://sheetmetalconnect.com">Sheet Metal Connect</a>
 </p>
