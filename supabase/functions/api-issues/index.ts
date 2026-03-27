@@ -3,7 +3,7 @@ import { createCrudHandler } from "@shared/crud-builder.ts";
 import { IssueValidator } from "@shared/validation/validators/IssueValidator.ts";
 
 // Configure CRUD handler for issues
-export default serveApi(
+serveApi(
   createCrudHandler({
     table: 'issues',
     selectFields: `
@@ -12,42 +12,36 @@ export default serveApi(
       description,
       severity,
       status,
-      reported_by,
-      assigned_to,
-      resolved_at,
+      issue_type,
+      ncr_category,
+      disposition,
+      affected_quantity,
+      reported_by_id,
+      created_by,
+      root_cause,
+      corrective_action,
+      preventive_action,
       resolution_notes,
+      verification_required,
+      reviewed_at,
+      reviewed_by,
+      image_paths,
       created_at,
       updated_at,
-      job_id,
-      part_id,
       operation_id,
-      job:jobs (
-        id,
-        job_number,
-        customer
-      ),
-      part:parts (
-        id,
-        part_number
-      ),
       operation:operations (
         id,
         operation_name
       ),
-      reporter:profiles!issues_reported_by_fkey (
-        id,
-        full_name,
-        username
-      ),
-      assignee:profiles!issues_assigned_to_fkey (
+      reporter:profiles!reported_by_id (
         id,
         full_name,
         username
       )
     `,
     searchFields: ['title', 'description'],
-    allowedFilters: ['severity', 'status', 'reported_by', 'assigned_to', 'job_id', 'part_id', 'operation_id'],
-    sortableFields: ['created_at', 'severity', 'status', 'resolved_at'],
+    allowedFilters: ['severity', 'status', 'issue_type', 'ncr_category', 'reported_by_id', 'operation_id'],
+    sortableFields: ['created_at', 'severity', 'status', 'updated_at'],
     defaultSort: { field: 'created_at', direction: 'desc' },
     softDelete: false,
     validator: IssueValidator,

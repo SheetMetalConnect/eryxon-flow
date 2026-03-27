@@ -1,29 +1,29 @@
+// v1774629042
 import { serveApi } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
 
 // Configure CRUD handler for webhook logs (read-only)
-export default serveApi(
+serveApi(
   createCrudHandler({
     table: 'webhook_logs',
     selectFields: `
       id,
       webhook_id,
       event_type,
-      status,
-      request_body,
-      response_status,
-      response_body,
+      payload,
+      status_code,
       error_message,
       created_at,
       webhook:webhooks (
         id,
         url,
-        event_type
+        events
       )
     `,
     searchFields: [],
-    allowedFilters: ['webhook_id', 'status', 'event_type'],
-    sortableFields: ['created_at', 'status'],
+    allowedFilters: ['webhook_id', 'status_code', 'event_type'],
+    sortableFields: ['created_at', 'status_code'],
+    skipTenantFilter: true, // webhook_logs has no tenant_id — filtered via queryModifier
     defaultSort: { field: 'created_at', direction: 'desc' },
     softDelete: false,
     queryModifier: async (query, ctx) => {

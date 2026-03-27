@@ -142,7 +142,7 @@ async function handleCreateWithLimits(req: Request, ctx: HandlerContext): Promis
 }
 
 // Configure CRUD handler for jobs with validation and sync
-export default serveApi(
+serveApi(
   createCrudHandler({
     table: 'jobs',
     selectFields: `
@@ -152,7 +152,6 @@ export default serveApi(
       due_date,
       due_date_override,
       status,
-      priority,
       notes,
       metadata,
       created_at,
@@ -166,9 +165,9 @@ export default serveApi(
       )
     `,
     searchFields: ['job_number', 'customer'],
-    allowedFilters: ['status', 'customer', 'priority', 'job_number'],
+    allowedFilters: ['status', 'customer', 'job_number'],
     fuzzyFilters: ['customer', 'job_number'],
-    sortableFields: ['job_number', 'customer', 'due_date', 'created_at', 'status', 'priority'],
+    sortableFields: ['job_number', 'customer', 'due_date', 'created_at', 'status'],
     defaultSort: { field: 'created_at', direction: 'desc' },
     softDelete: true,
     validator: JobValidator,

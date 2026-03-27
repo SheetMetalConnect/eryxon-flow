@@ -22,4 +22,4 @@ async function handleGetMaterials(req: Request, ctx: HandlerContext): Promise<Re
 }
 
 // Materials endpoint - read-only aggregation from parts table
-export default serveApi(handleGetMaterials);
+serveApi(handleGetMaterials);

@@ -2,7 +2,7 @@ import { serveApi } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
 
 // Configure CRUD handler for time entries
-export default serveApi(
+serveApi(
   createCrudHandler({
     table: 'time_entries',
     selectFields: `
@@ -10,11 +10,11 @@ export default serveApi(
       start_time,
       end_time,
       duration,
+      is_paused,
       notes,
       time_type,
       created_at,
-      updated_at,
-      operation:operations (
+      operation:operations!operation_id (
         id,
         operation_name,
         part:parts (
@@ -26,7 +26,7 @@ export default serveApi(
           )
         )
       ),
-      operator:profiles (
+      operator:profiles!operator_id (
         id,
         username,
         full_name

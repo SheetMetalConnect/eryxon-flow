@@ -1,13 +1,29 @@
+// v1774628752
 import { serveApi } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
 
 // Configure CRUD handler for operation quantities
-export default serveApi(
+serveApi(
   createCrudHandler({
     table: 'operation_quantities',
     selectFields: `
-      *,
-      operation:operations (
+      id,
+      operation_id,
+      quantity_produced,
+      quantity_good,
+      quantity_scrap,
+      quantity_rework,
+      scrap_reason_id,
+      material_lot,
+      material_supplier,
+      material_cert_number,
+      notes,
+      metadata,
+      recorded_at,
+      recorded_by,
+      created_at,
+      updated_at,
+      operation:operations!operation_id (
         id,
         operation_name,
         part:parts (

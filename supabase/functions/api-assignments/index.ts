@@ -1,45 +1,48 @@
+// v1774629040
 import { serveApi } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
 
 // Configure CRUD handler with joined data
-export default serveApi(
+serveApi(
   createCrudHandler({
     table: 'assignments',
     selectFields: `
       id,
-      assigned_at,
+      job_id,
+      part_id,
+      operator_id,
+      shop_floor_operator_id,
+      assigned_by,
       status,
-      notes,
       created_at,
       updated_at,
-      operation:operations (
+      job:jobs!job_id (
         id,
-        operation_name,
-        status,
-        part:parts (
-          id,
-          part_number,
-          job:jobs (
-            id,
-            job_number
-          )
-        )
+        job_number
       ),
-      operator:profiles (
+      part:parts!part_id (
+        id,
+        part_number
+      ),
+      operator:profiles!operator_id (
         id,
         username,
         full_name
       ),
-      assigned_by:profiles!assignments_assigned_by_id_fkey (
+      shop_floor_operator:operators!shop_floor_operator_id (
+        id,
+        full_name
+      ),
+      assigned_by_user:profiles!assigned_by (
         id,
         username,
         full_name
       )
     `,
     searchFields: [],
-    allowedFilters: ['operation_id', 'operator_id', 'status'],
-    sortableFields: ['assigned_at', 'created_at', 'status'],
-    defaultSort: { field: 'assigned_at', direction: 'desc' },
+    allowedFilters: ['job_id', 'part_id', 'operator_id', 'shop_floor_operator_id', 'status'],
+    sortableFields: ['created_at', 'status'],
+    defaultSort: { field: 'created_at', direction: 'desc' },
     softDelete: false,
   })
 );

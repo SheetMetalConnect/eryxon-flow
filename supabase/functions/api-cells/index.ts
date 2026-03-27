@@ -2,7 +2,7 @@ import { serveApi } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
 
 // Configure CRUD handler with sync support
-export default serveApi(
+serveApi(
   createCrudHandler({
     table: 'cells',
     selectFields: 'id, name, color, sequence, active, created_at, updated_at',

@@ -64,7 +64,7 @@ interface DiffResponse {
 // Main Handler
 // ============================================================================
 
-export default serveApi(async (req: Request, ctx: HandlerContext) => {
+serveApi(async (req: Request, ctx: HandlerContext) => {
   const { supabase, tenantId, url } = ctx;
 
   // Parse URL path to determine action

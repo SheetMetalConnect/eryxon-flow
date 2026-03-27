@@ -1,3 +1,4 @@
+// v1774628758
 import { serveApi } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
 import { OperationValidator } from "@shared/validation/validators/OperationValidator.ts";
@@ -382,7 +383,7 @@ async function handleUpdateWithCompletion(req: Request, ctx: HandlerContext): Pr
 }
 
 // Configure CRUD handler for operations with validation and sync
-export default serveApi(
+serveApi(
   createCrudHandler({
     table: 'operations',
     selectFields: `

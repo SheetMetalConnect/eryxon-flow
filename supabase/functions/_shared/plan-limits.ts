@@ -41,7 +41,7 @@ export async function getTenantLimits(
 ): Promise<PlanLimits | null> {
   const { data, error } = await supabase
     .from('tenants')
-    .select('plan, max_jobs, max_parts_per_month, max_storage_gb, current_jobs, current_month_parts, current_storage_mb')
+    .select('plan, max_jobs, max_parts_per_month, max_storage_gb, current_jobs, current_parts_this_month, current_storage_gb')
     .eq('id', tenantId)
     .single();
 
@@ -50,7 +50,16 @@ export async function getTenantLimits(
     return null;
   }
 
-  return data as PlanLimits;
+  // Map actual column names to interface
+  return {
+    plan: data.plan,
+    max_jobs: data.max_jobs,
+    max_parts_per_month: data.max_parts_per_month,
+    max_storage_gb: data.max_storage_gb,
+    current_jobs: data.current_jobs ?? 0,
+    current_month_parts: data.current_parts_this_month ?? 0,
+    current_storage_mb: (parseFloat(data.current_storage_gb) || 0) * 1024,
+  } as PlanLimits;
 }
 
 /**

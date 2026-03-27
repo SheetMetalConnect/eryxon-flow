@@ -2,7 +2,7 @@ import { serveApi } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
 
 // Configure CRUD handler for resources with sync support
-export default serveApi(
+serveApi(
   createCrudHandler({
     table: 'resources',
     selectFields: '*',

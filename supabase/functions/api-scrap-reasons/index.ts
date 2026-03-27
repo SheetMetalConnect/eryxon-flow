@@ -1,3 +1,4 @@
+// v1774628746
 import { serveApi } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
 import type { HandlerContext } from "@shared/handler.ts";
@@ -50,7 +51,7 @@ async function handleCustomDelete(
 }
 
 // Configure CRUD handler
-export default serveApi(
+serveApi(
   createCrudHandler({
     table: 'scrap_reasons',
     selectFields: '*',

@@ -1,3 +1,4 @@
+// v1774628756
 import { serveApi } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
 import { canCreateParts } from "@shared/plan-limits.ts";
@@ -271,7 +272,7 @@ async function handleGetPartsWithFilters(req: Request, ctx: HandlerContext): Pro
 }
 
 // Configure CRUD handler for parts with validation and sync
-export default serveApi(
+serveApi(
   createCrudHandler({
     table: 'parts',
     selectFields: `

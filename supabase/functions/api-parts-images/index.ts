@@ -21,7 +21,7 @@ const ALLOWED_IMAGE_TYPES = [
 // Max file size: 10MB
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-export default serveApi(async (req: Request, ctx: HandlerContext) => {
+serveApi(async (req: Request, ctx: HandlerContext) => {
   const { supabase, tenantId, url } = ctx;
 
   const pathParts = url.pathname.split("/").filter((p) => p);

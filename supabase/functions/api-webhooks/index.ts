@@ -2,13 +2,13 @@ import { serveApi } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
 
 // Configure CRUD handler for webhooks
-export default serveApi(
+serveApi(
   createCrudHandler({
     table: 'webhooks',
-    selectFields: 'id, url, event_type, active, secret_key, created_at, updated_at',
+    selectFields: 'id, url, events, active, secret_key, created_at',
     searchFields: ['url'],
-    allowedFilters: ['event_type', 'active'],
-    sortableFields: ['created_at', 'event_type', 'url'],
+    allowedFilters: ['events', 'active'],
+    sortableFields: ['created_at', 'events', 'url'],
     defaultSort: { field: 'created_at', direction: 'desc' },
     softDelete: false,
   })

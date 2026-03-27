@@ -82,11 +82,19 @@ export function validateContentType(contentType: string): { valid: boolean; erro
     'image/png',
     'image/gif',
     'image/webp',
-    // 'image/svg+xml' removed: SVGs can contain embedded JavaScript (stored XSS vector)
     'application/pdf',
     'text/plain',
     'text/csv',
     'application/json',
+    // CAD/manufacturing file types
+    'application/step',
+    'application/stp',
+    'model/step',
+    'application/octet-stream',
+    'application/dxf',
+    'image/vnd.dxf',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   ];
 
   if (!allowedTypes.includes(contentType)) {

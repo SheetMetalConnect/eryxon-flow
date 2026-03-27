@@ -19,7 +19,6 @@
  * ```
  */
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { authenticateAndSetContext, AuthResult } from "./auth.ts";
 import { handleOptions, handleError } from "./validation/errorHandler.ts";
@@ -139,13 +138,14 @@ export function createApiHandler(
 }
 
 /**
- * Convenience wrapper for serve() + createApiHandler()
+ * Start an API handler using Deno.serve.
+ * Usage: export default serveApi(handler, options);
  */
 export function serveApi(
   handler: HandlerFn,
   options: HandlerOptions = {}
 ): void {
-  serve(createApiHandler(handler, options));
+  Deno.serve(createApiHandler(handler, options));
 }
 
 /**

@@ -72,3 +72,8 @@ credentials/
 *.backup
 *~
 ~
+
+# Test/planning files (private)
+test.env
+plan.md
+agents.md

@@ -6,7 +6,7 @@
  * Includes plan-based rate limiting.
  */
 
-import { encode as hexEncode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
+// Use built-in hex encoding (no external dependency)
 import { cacheOrFetch, invalidateCache } from "./cache-utils.ts";
 import { CacheKeys, CacheTTL } from "./cache.ts";
 import { checkRateLimit, RateLimitResult } from "./rate-limiter.ts";
@@ -50,10 +50,11 @@ export interface AuthResult {
  * Compatible with Supabase Edge Functions
  */
 async function hashApiKey(apiKey: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(apiKey);
+  const data = new TextEncoder().encode(apiKey);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  return new TextDecoder().decode(hexEncode(new Uint8Array(hashBuffer)));
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
 /**
@@ -82,10 +83,10 @@ export async function authenticateApiKey(
   // Extract key prefix for efficient lookup (first 12 chars match generation)
   const keyPrefix = extractKeyPrefix(apiKey);
 
-  // Try to find key by prefix with tenant plan (much more efficient than fetching all)
+  // Step 1: Find candidate keys by prefix
   const { data: candidateKeys, error: fetchError } = await supabase
     .from("api_keys")
-    .select("id, key_hash, tenant_id, key_prefix, tenants!inner(plan)")
+    .select("id, key_hash, tenant_id, key_prefix")
     .eq("active", true)
     .eq("key_prefix", keyPrefix);
 
@@ -109,8 +110,14 @@ export async function authenticateApiKey(
         console.error("[Auth] Failed to update last_used_at:", err);
       });
 
-      // Extract plan from joined tenant data
-      const plan = (key as any).tenants?.plan || 'free';
+      // Step 2: Fetch tenant plan separately (no FK needed)
+      let plan: string = 'free';
+      const { data: tenant } = await supabase
+        .from("tenants")
+        .select("plan")
+        .eq("id", key.tenant_id)
+        .single();
+      if (tenant?.plan) plan = tenant.plan;
 
       return {
         tenantId: key.tenant_id,
@@ -191,8 +198,8 @@ export async function authenticateAndSetContext(
       p_tenant_id: authResult.tenantId,
       p_api_key_id: authResult.apiKeyId,
     })
-    .catch((err: Error) => {
-      console.error("[Auth] Failed to log API usage:", err);
+    .then(({ error }: { error: any }) => {
+      if (error) console.error("[Auth] Failed to log API usage:", error);
     });
 
   return authResult;

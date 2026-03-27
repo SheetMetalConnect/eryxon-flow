@@ -68,6 +68,9 @@ export interface CrudConfig {
   /** Custom query modifications for GET requests */
   queryModifier?: (query: any, ctx: HandlerContext) => any;
 
+  /** Skip automatic tenant_id filter (for tables without tenant_id column, e.g. webhook_logs) */
+  skipTenantFilter?: boolean;
+
   /** Enable sync endpoints (PUT /sync, POST /bulk-sync) */
   enableSync?: boolean;
 
@@ -94,6 +97,7 @@ export function createCrudHandler(config: CrudConfig) {
     validator,
     customHandlers = {},
     queryModifier,
+    skipTenantFilter = false,
     enableSync = false,
     syncIdField = 'external_id',
     entityKey,
@@ -131,6 +135,7 @@ export function createCrudHandler(config: CrudConfig) {
           defaultSort,
           softDelete,
           queryModifier,
+          skipTenantFilter,
         });
 
       case 'POST':
@@ -174,6 +179,7 @@ async function handleGet(
     defaultSort: { field: string; direction: 'asc' | 'desc' };
     softDelete: boolean;
     queryModifier?: (query: any, ctx: HandlerContext) => any;
+    skipTenantFilter?: boolean;
   }
 ): Promise<Response> {
   const { supabase, tenantId, url } = ctx;
@@ -187,6 +193,7 @@ async function handleGet(
     defaultSort,
     softDelete,
     queryModifier,
+    skipTenantFilter = false,
   } = config;
 
   // Get single item by ID
@@ -195,15 +202,18 @@ async function handleGet(
     let query = supabase
       .from(table)
       .select(selectFields)
-      .eq('id', id)
-      .eq('tenant_id', tenantId);
+      .eq('id', id);
+
+    if (!skipTenantFilter) {
+      query = query.eq('tenant_id', tenantId);
+    }
 
     if (softDelete) {
       query = query.is('deleted_at', null);
     }
 
     if (queryModifier) {
-      query = queryModifier(query, ctx);
+      query = await queryModifier(query, ctx);
     }
 
     const { data, error } = await query.maybeSingle();
@@ -222,8 +232,11 @@ async function handleGet(
   // List items with pagination and filters
   let query = supabase
     .from(table)
-    .select(selectFields, { count: 'exact' })
-    .eq('tenant_id', tenantId);
+    .select(selectFields, { count: 'exact' });
+
+  if (!skipTenantFilter) {
+    query = query.eq('tenant_id', tenantId);
+  }
 
   if (softDelete) {
     query = query.is('deleted_at', null);
@@ -263,7 +276,7 @@ async function handleGet(
 
   // Apply custom query modifications
   if (queryModifier) {
-    query = queryModifier(query, ctx);
+    query = await queryModifier(query, ctx);
   }
 
   // Pagination
@@ -273,7 +286,13 @@ async function handleGet(
 
   const offset = parseInt(url.searchParams.get('offset') || '0');
 
-  query = query.range(offset, offset + limit - 1);
+  // Apply pagination — ensure query is resolved if it's a Promise
+  if (query && typeof query.then === 'function' && typeof query.range !== 'function') {
+    query = await query;
+  }
+  if (typeof query.range === 'function') {
+    query = query.range(offset, offset + limit - 1);
+  }
 
   const { data, error, count } = await query;
 
