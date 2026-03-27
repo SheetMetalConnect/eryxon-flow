@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.venv/
+website/
+public/
+*.min.js
+*.map
+*.lock
+package-lock.json
