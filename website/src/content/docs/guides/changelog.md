@@ -14,12 +14,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changes merged after `0.3.3` should be added here until the next tagged release.
 
-### Fixed
+### Fixed — Edge Functions (critical, 2026-03-27)
+
+Complete overhaul of the Supabase Edge Function runtime layer after comprehensive API deep dive testing revealed all 15+ API endpoints were returning 502 errors.
+
+- **Runtime migration**: Replaced legacy `serve()` from `deno.land/std@0.168.0` with `Deno.serve()` across all functions — the old pattern is broken on the current Supabase Edge Runtime
+- **Auth module rewrite**: Replaced deprecated `hexEncode`, fixed missing FK join for tenant plan lookup, fixed `supabase.rpc().catch()` incompatibility with supabase-js v2
+- **Schema alignment**: Fixed 10+ edge functions referencing non-existent columns (`priority`, `updated_at`, `event_type`, `name`, etc.) — all `selectFields` now match actual database schema
+- **CRUD builder fixes**: Added `skipTenantFilter` for tables without `tenant_id`, fixed Promise-wrapped `queryModifier`, added `.range()` fallback for pagination
+- **Plan limits**: Fixed column name mismatch (`current_month_parts` vs actual `current_parts_this_month`)
+- **Validators**: Fixed `IssueValidator` enum values to match database (`pending/approved/rejected/closed`)
+- **Parts/Operations**: Rewrote with inline validation — the heavy `fkValidator`/`PartValidator` import chain crashed the Deno runtime silently
+- **Upload whitelist**: Added STEP, DXF, Excel content types to `security.ts`
+- **Per-function `deno.json`**: Added import map to every function directory for proper `@shared/` resolution
+- **Database migrations**: Added lifecycle columns (`started_at`, `paused_at`, `completed_at`, `resumed_at`, `actual_duration`) to `jobs` and `operations`, added missing FK constraints (`substeps→operations`, `api_keys→tenants`), added `expired` enum value to `subscription_status`
+
+### Added — AI-Native Repo Indexing (2026-03-27)
+
+Complete overhaul of repository documentation and tooling for AI agent effectiveness.
+
+- **Architecture documentation**: `docs/ARCHITECTURE.md` with 6 Mermaid dependency graphs (system, frontend, backend, data flow, multi-tenant, domain model)
+- **API catalog**: `docs/API_CATALOG.md` — all 22 endpoints with CRUD configs, methods, filters
+- **Route map**: `docs/ROUTE_MAP.md` — all 41 routes with guards and lazy-loading
+- **Hook map**: `docs/HOOK_MAP.md` — hook→table→queryKey dependency map + real-time subscriptions
+- **Code conventions**: `docs/CONVENTIONS.md` — naming, templates for new files
+- **Domain glossary**: `docs/GLOSSARY.md` — MES vocabulary for AI agents
+- **Troubleshooting**: `docs/TROUBLESHOOTING.md` — common agent pitfalls
+- **ADRs**: 5 Architecture Decision Records in `docs/decisions/` + template
+- **Dependency graph**: `docs/dependency-graph.json` via madge (`npm run deps:graph`)
+- **MCP servers**: CodeGraphContext (graph DB), RepoMapper (structural maps), Repomix (context packing) — `docs/AI_AGENT_SETUP.md`
+- **Agent discovery**: `AGENTS.md` symlink, `.cursorrules`, `.github/copilot-instructions.md`
+- **Repo tooling**: `Makefile`, `.editorconfig`, `.github/CODEOWNERS`, issue/PR templates
+
+### Added
+
+- **Automated API test suite** (`scripts/test-api-automated.sh`): 54 tests covering auth (4), GET endpoints (15), search/filter (3), POST create (13), PATCH update (4), DELETE (2), job lifecycle (4), operation lifecycle (4), ERP sync (1), file upload (1), validation (3)
+- **Flow column**: Fixed `useMultipleJobsRouting` — PostgREST `.in()` on joined tables silently fails; rewrote with two-step query (parts → operations)
+- **File enrichment**: All 20 parts in the demo tenant now have PDF + STEP files uploaded to `parts-cad` storage bucket with correct path format
+- **Agent instructions**: Consolidated into `.agents/README.md` as single source of truth for all AI coding tools (Claude, Codex, Gemini, Cursor, Copilot)
+- **README redesign**: Added badges, architecture diagram, API examples, and AI agent support table
+
+### Changed
+
+- Removed `CLAUDE.md`, `GEMINI.md`, `CODEX.md` from repository — agent instructions now live exclusively in `.agents/`
+- Cleaned up 12 stale local branches
+- Expired 28 non-paying trial tenants in production database
+
+### Fixed (other)
 
 - Made consolidated post-schema migration (`20260127230000`) fully idempotent so it can be re-run safely against existing databases
-  - Wrapped `parent_batch_id` foreign-key constraint in an existence check to avoid `duplicate_object` errors
-  - Wrapped all `batch_requirements` RLS policies in `EXCEPTION WHEN duplicate_object` handlers
-  - Storage-bucket policies and other sections already used this pattern; this brings the remaining sections into alignment
+- React error #185: Added defensive type guards at DB→React boundary for Supabase `SELECT *` columns leaking JSON objects into JSX
+- CSP: Added `fonts.googleapis.com` to `style-src`, switched PDF worker from `unpkg.com` to `cdn.jsdelivr.net`
 
 ## [0.3.3] - 2026-03-09
 

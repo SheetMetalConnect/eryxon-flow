@@ -33,7 +33,10 @@ All API endpoints live in `supabase/functions/api-*/`. Shared code in `_shared/`
 3. **Each function needs `deno.json`** with `@shared/` import map
 4. **Verify column names** against actual DB before writing queries — hallucinated columns cause 502s
 5. **FK hints required** (`!column_name`) for tables with multiple FKs to same target
-6. **Deploy**: `supabase functions deploy <name> --project-ref <ref> --no-verify-jwt`
+6. **No heavy validator imports** in function index files — `fkValidator.ts` and `PartValidator.ts` crash the Deno runtime silently (use inline validation instead)
+7. **PostgREST `.in()` on joined tables silently fails** — always query the join table first, then filter by IDs
+8. **Deploy**: `supabase functions deploy <name> --project-ref <ref> --no-verify-jwt`
+9. **Test**: `./scripts/test-api-automated.sh` — 54 tests, must all pass
 
 ## Shared Modules (`supabase/functions/_shared/`)
 
