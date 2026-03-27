@@ -170,18 +170,187 @@ assert_success "POST upload-url (PDF)" "$BASE_URL/api-upload-url" -X POST --head
 assert_success "POST upload-url (STEP)" "$BASE_URL/api-upload-url" -X POST --header "$AUTH" -H "Content-Type: application/json" \
   -d '{"filename":"auto-test.stp","content_type":"application/octet-stream"}'
 
-# ── 5. Lifecycle ──────────────────────────────────────────────────────────────
+# ── 5. POST Create (remaining endpoints) ─────────────────────────────────────
+echo ""
+echo -e "${B}── POST Create (remaining) ──${N}"
+
+# Get an operation ID for issue/substep/time-entry/assignment creation
+OP_ID=$(_curl "$BASE_URL/api-operations?limit=1" --header "$AUTH" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['operations'][0]['id'])" 2>/dev/null || echo "")
+PART_ID=$(_curl "$BASE_URL/api-parts?limit=1" --header "$AUTH" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['parts'][0]['id'])" 2>/dev/null || echo "")
+
+# Get a profile ID for created_by fields
+PROFILE_ID=$(_curl "$BASE_URL/api-assignments?limit=1" --header "$AUTH" | python3 -c "
+import sys,json
+try:
+  d=json.load(sys.stdin)
+  # Try to get any profile from assignments or use Luke's ID
+  print('96d587a6-995a-454f-ba71-773176012775')
+except: print('96d587a6-995a-454f-ba71-773176012775')
+" 2>/dev/null)
+
+if [ -n "$OP_ID" ]; then
+  # Create issue (status: pending/approved/rejected/closed, severity: low/medium/high/critical)
+  assert_success "POST issue" "$BASE_URL/api-issues" -X POST --header "$AUTH" -H "Content-Type: application/json" \
+    -d "{\"title\":\"Auto test issue $TS\",\"severity\":\"low\",\"status\":\"pending\",\"description\":\"Automated test\",\"operation_id\":\"$OP_ID\",\"created_by\":\"$PROFILE_ID\"}"
+
+  # Create substep
+  assert_success "POST substep" "$BASE_URL/api-substeps" -X POST --header "$AUTH" -H "Content-Type: application/json" \
+    -d "{\"operation_id\":\"$OP_ID\",\"name\":\"Auto check $TS\",\"sequence\":99,\"status\":\"not_started\"}"
+
+  # Create time entry (time_type: setup/run/rework/wait/breakdown)
+  assert_success "POST time-entry" "$BASE_URL/api-time-entries" -X POST --header "$AUTH" -H "Content-Type: application/json" \
+    -d "{\"operation_id\":\"$OP_ID\",\"operator_id\":\"$PROFILE_ID\",\"start_time\":\"$(date -u '+%Y-%m-%dT%H:%M:%SZ')\",\"time_type\":\"setup\"}"
+
+  # Create scrap reason (category: material/process/equipment/operator/design/other)
+  assert_success "POST scrap-reason" "$BASE_URL/api-scrap-reasons" -X POST --header "$AUTH" -H "Content-Type: application/json" \
+    -d "{\"code\":\"AUTO-$TS\",\"description\":\"Auto test scrap\",\"category\":\"process\",\"active\":true}"
+
+  # Create resource (type/status from resources table)
+  assert_success "POST resource" "$BASE_URL/api-resources" -X POST --header "$AUTH" -H "Content-Type: application/json" \
+    -d "{\"name\":\"Auto Fixture $TS\",\"type\":\"fixture\",\"status\":\"available\"}"
+
+  # Create template
+  assert_success "POST template" "$BASE_URL/api-templates" -X POST --header "$AUTH" -H "Content-Type: application/json" \
+    -d "{\"name\":\"Auto Template $TS\",\"description\":\"Automated test\",\"operation_type\":\"laser\"}"
+
+  # Upload URL (DXF)
+  assert_success "POST upload-url (DXF)" "$BASE_URL/api-upload-url" -X POST --header "$AUTH" -H "Content-Type: application/json" \
+    -d '{"filename":"auto-test.dxf","content_type":"application/dxf"}'
+
+  # Upload URL (Excel)
+  assert_success "POST upload-url (XLSX)" "$BASE_URL/api-upload-url" -X POST --header "$AUTH" -H "Content-Type: application/json" \
+    -d '{"filename":"auto-test.xlsx","content_type":"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}'
+else
+  echo -e "  ${Y}SKIP${N}  No operation ID available"
+  SKIP=$((SKIP + 8))
+fi
+
+# ── 6. PATCH Update ──────────────────────────────────────────────────────────
+echo ""
+echo -e "${B}── PATCH Update ──${N}"
+
+# Get IDs for patching
+CELL_ID=$(_curl "$BASE_URL/api-cells?search=AUTO-TEST&limit=1" --header "$AUTH" | python3 -c "import sys,json; c=json.load(sys.stdin)['data']['cells']; print(c[0]['id'] if c else '')" 2>/dev/null || echo "")
+
+if [ -n "$CELL_ID" ]; then
+  assert_success "PATCH cell" "$BASE_URL/api-cells?id=$CELL_ID" -X PATCH --header "$AUTH" -H "Content-Type: application/json" \
+    -d '{"color":"#00ff00"}'
+fi
+
+if [ -n "$JOB_ID" ]; then
+  # Fetch a fresh not_started job for patching (the lifecycle one is completed)
+  PATCH_JOB=$(_curl "$BASE_URL/api-jobs?status=not_started&limit=1" --header "$AUTH" | python3 -c "import sys,json; j=json.load(sys.stdin)['data']['jobs']; print(j[0]['id'] if j else '')" 2>/dev/null || echo "")
+  if [ -n "$PATCH_JOB" ]; then
+    assert_success "PATCH job" "$BASE_URL/api-jobs?id=$PATCH_JOB" -X PATCH --header "$AUTH" -H "Content-Type: application/json" \
+      -d '{"notes":"Updated by automated test"}'
+  fi
+fi
+
+if [ -n "$PART_ID" ]; then
+  assert_success "PATCH part" "$BASE_URL/api-parts?id=$PART_ID" -X PATCH --header "$AUTH" -H "Content-Type: application/json" \
+    -d '{"notes":"Auto test note"}'
+fi
+
+if [ -n "$OP_ID" ]; then
+  assert_success "PATCH operation" "$BASE_URL/api-operations?id=$OP_ID" -X PATCH --header "$AUTH" -H "Content-Type: application/json" \
+    -d '{"notes":"Auto test note"}'
+fi
+
+# ── 7. DELETE ─────────────────────────────────────────────────────────────────
+echo ""
+echo -e "${B}── DELETE ──${N}"
+
+# Delete the test cell we created
+if [ -n "$CELL_ID" ]; then
+  assert_success "DELETE cell" "$BASE_URL/api-cells?id=$CELL_ID" -X DELETE --header "$AUTH"
+fi
+
+# Delete the test webhook
+WH_ID=$(_curl "$BASE_URL/api-webhooks?limit=100" --header "$AUTH" | python3 -c "
+import sys,json
+whs=json.load(sys.stdin)['data']['webhooks']
+for w in whs:
+  if 'httpbin' in w.get('url',''):
+    print(w['id']); break
+" 2>/dev/null || echo "")
+if [ -n "$WH_ID" ]; then
+  assert_success "DELETE webhook" "$BASE_URL/api-webhooks?id=$WH_ID" -X DELETE --header "$AUTH"
+fi
+
+# ── 8. Job Lifecycle (full cycle) ────────────────────────────────────────────
 echo ""
 echo -e "${B}── Job Lifecycle ──${N}"
 
 if [ -n "$JOB_ID" ]; then
   for action in start stop resume complete; do
-    assert_success "LIFECYCLE $action" "$BASE_URL/api-job-lifecycle/$action?id=$JOB_ID" -X POST --header "$AUTH" -H "Content-Type: application/json"
+    assert_success "LIFECYCLE job/$action" "$BASE_URL/api-job-lifecycle/$action?id=$JOB_ID" -X POST --header "$AUTH" -H "Content-Type: application/json"
   done
 else
-  echo -e "  ${Y}SKIP${N}  Lifecycle (no job ID)"
+  echo -e "  ${Y}SKIP${N}  Job lifecycle (no job ID)"
   SKIP=$((SKIP + 4))
 fi
+
+# ── 9. Operation Lifecycle ───────────────────────────────────────────────────
+echo ""
+echo -e "${B}── Operation Lifecycle ──${N}"
+
+# Get a not_started operation
+OP_LC=$(_curl "$BASE_URL/api-operations?status=not_started&limit=1" --header "$AUTH" | python3 -c "import sys,json; ops=json.load(sys.stdin)['data']['operations']; print(ops[0]['id'] if ops else '')" 2>/dev/null || echo "")
+if [ -n "$OP_LC" ]; then
+  for action in start pause resume complete; do
+    assert_success "LIFECYCLE op/$action" "$BASE_URL/api-operation-lifecycle/$action?id=$OP_LC" -X POST --header "$AUTH" -H "Content-Type: application/json"
+  done
+else
+  echo -e "  ${Y}SKIP${N}  Operation lifecycle (no operation)"
+  SKIP=$((SKIP + 4))
+fi
+
+# ── 10. ERP Sync ─────────────────────────────────────────────────────────────
+echo ""
+echo -e "${B}── ERP Sync ──${N}"
+
+# ERP sync diff (dry-run)
+assert_success "ERP sync diff" "$BASE_URL/api-erp-sync/diff" -X POST --header "$AUTH" -H "Content-Type: application/json" \
+  -d '{"jobs":[{"external_id":"erp-test-001","job_number":"ERP-TEST-001","customer":"ERP Test"}]}'
+
+# ── 11. File Upload (actual PUT) ─────────────────────────────────────────────
+echo ""
+echo -e "${B}── File Upload (actual) ──${N}"
+
+UPLOAD_RESP=$(_curl "$BASE_URL/api-upload-url" -X POST --header "$AUTH" -H "Content-Type: application/json" \
+  -d "{\"filename\":\"upload-test-$TS.txt\",\"content_type\":\"text/plain\"}")
+UPLOAD_URL=$(echo "$UPLOAD_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['upload_url'])" 2>/dev/null || echo "")
+
+if [ -n "$UPLOAD_URL" ]; then
+  UPLOAD_HTTP=$(curl -s -w "%{http_code}" -o /dev/null --max-time 30 "$UPLOAD_URL" -X PUT -H "Content-Type: text/plain" -d "Automated test file content - $TS")
+  TOTAL=$((TOTAL + 1))
+  if [ "$UPLOAD_HTTP" = "200" ]; then
+    echo -e "  ${G}PASS${N}  PUT file to signed URL (HTTP $UPLOAD_HTTP)"
+    PASS=$((PASS + 1))
+  else
+    echo -e "  ${R}FAIL${N}  PUT file to signed URL (HTTP $UPLOAD_HTTP)"
+    FAIL=$((FAIL + 1)); FAILURES="$FAILURES\n  PUT file upload: HTTP $UPLOAD_HTTP"
+  fi
+else
+  echo -e "  ${Y}SKIP${N}  File upload (no signed URL)"
+  SKIP=$((SKIP + 1))
+fi
+
+# ── 12. Rejected content types ───────────────────────────────────────────────
+echo ""
+echo -e "${B}── Validation ──${N}"
+
+R=$(_curl "$BASE_URL/api-upload-url" -X POST --header "$AUTH" -H "Content-Type: application/json" \
+  -d '{"filename":"evil.exe","content_type":"application/x-msdownload"}')
+assert_rejected "Upload .exe rejected" "$R" "not allowed"
+
+R=$(_curl "$BASE_URL/api-upload-url" -X POST --header "$AUTH" -H "Content-Type: application/json" \
+  -d '{"filename":"../../../etc/passwd","content_type":"text/plain"}')
+assert_rejected "Path traversal rejected" "$R" "invalid characters"
+
+R=$(_curl "$BASE_URL/api-jobs" -X POST --header "$AUTH" -H "Content-Type: application/json" \
+  -d '{}')
+assert_rejected "Job without job_number rejected" "$R" "validation\|job_number\|required"
 
 # ── Results ───────────────────────────────────────────────────────────────────
 echo ""

@@ -7,7 +7,7 @@ import { BaseValidator } from "../BaseValidator.ts";
 import { ValidationContext, ValidationError } from "../types.ts";
 
 const ISSUE_TYPES = ["general", "ncr"];
-const ISSUE_STATUSES = ["open", "in_progress", "resolved", "closed"];
+const ISSUE_STATUSES = ["pending", "approved", "rejected", "closed"];
 const ISSUE_SEVERITIES = ["low", "medium", "high", "critical"];
 const NCR_CATEGORIES = [
   "material",
