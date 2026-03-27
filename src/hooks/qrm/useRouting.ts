@@ -329,6 +329,26 @@ export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null
     setError(null);
 
     try {
+      // Fetch parts for these jobs first, then get their operations
+      const { data: parts, error: partsError } = await supabase
+        .from("parts")
+        .select("id, job_id")
+        .eq("tenant_id", tenantId)
+        .in("job_id", jobIds);
+
+      if (partsError) throw partsError;
+
+      const partIds = (parts || []).map((p: { id: string }) => p.id);
+      const partJobMap = Object.fromEntries(
+        (parts || []).map((p: { id: string; job_id: string }) => [p.id, p.job_id])
+      );
+
+      if (partIds.length === 0) {
+        setRoutings({});
+        setLoading(false);
+        return;
+      }
+
       const { data, error: queryError } = await supabase
         .from("operations")
         .select(
@@ -337,20 +357,17 @@ export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null
           status,
           sequence,
           cell_id,
+          part_id,
           cells:cell_id (
             id,
             name,
             color,
             sequence
-          ),
-          parts!inner (
-            id,
-            job_id
           )
         `
         )
         .eq("tenant_id", tenantId)
-        .in("parts.job_id", jobIds);
+        .in("part_id", partIds);
 
       if (queryError) throw queryError;
 
@@ -366,17 +383,17 @@ export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null
           status: string;
           sequence: number;
           cell_id: string;
+          part_id: string;
           cells: {
             id: string;
             name: string;
             color: string | null;
             sequence: number;
           } | null;
-          parts: { id: string; job_id: string };
         }) => {
-          if (!op.cells || !op.parts) return;
+          if (!op.cells || !op.part_id) return;
 
-          const jobId = op.parts.job_id;
+          const jobId = partJobMap[op.part_id];
           const cellId = op.cell_id;
           const cellMap = jobRoutingsMap[jobId];
 
