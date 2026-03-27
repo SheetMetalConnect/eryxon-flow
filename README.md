@@ -1,129 +1,162 @@
-# Eryxon Flow
+<p align="center">
+  <img src="https://eryxon.eu/logo-dark.svg" alt="Eryxon Flow" width="200" />
+</p>
 
-Manufacturing Execution System (MES) for job shops and make-to-order manufacturers. Track jobs through production, give operators tablet-friendly work queues, and integrate with your ERP.
+<h1 align="center">Eryxon Flow</h1>
 
-**[Live Demo](https://app.eryxon.eu)** · [Documentation](https://eryxon.eu) · [GitHub](https://github.com/SheetMetalConnect/eryxon-flow)
+<p align="center">
+  <strong>Open-source MES for job shops and make-to-order manufacturers</strong>
+</p>
 
-**Current Release:** `0.3.3`
+<p align="center">
+  <a href="https://app.eryxon.eu"><strong>Live Demo</strong></a> &nbsp;&middot;&nbsp;
+  <a href="https://eryxon.eu">Docs</a> &nbsp;&middot;&nbsp;
+  <a href="https://github.com/SheetMetalConnect/eryxon-flow/issues">Issues</a>
+</p>
 
-## Who It's For
+<p align="center">
+  <img src="https://img.shields.io/badge/version-0.3.3-blue" alt="Version" />
+  <img src="https://img.shields.io/badge/license-BSL--1.1-green" alt="License" />
+  <img src="https://img.shields.io/badge/react-18-61DAFB?logo=react" alt="React" />
+  <img src="https://img.shields.io/badge/supabase-backend-3FCF8E?logo=supabase" alt="Supabase" />
+  <img src="https://img.shields.io/badge/typescript-strict-3178C6?logo=typescript" alt="TypeScript" />
+</p>
 
-**Job shops** running high-mix, low-volume production — sheet metal, machine shops, custom fabrication. If you're tracking thousands of unique parts through multiple operations, this is built for you.
+---
+
+Track jobs through production, give operators tablet-friendly work queues, view 3D CAD models in the browser, and integrate with your ERP — all from one platform.
+
+Built for **high-mix, low-volume** production: sheet metal, machine shops, custom fabrication. If you're tracking thousands of unique parts through cutting, bending, welding, and assembly, this is for you.
 
 ## Features
 
-### Shop Floor
-- **Operator terminals** — Touch-friendly tablets for starting/stopping jobs, viewing drawings, and logging time
-- **Work queues** — Visual job lists organized by stage (cutting, bending, welding, etc.)
-- **Real-time tracking** — Live status updates via WebSockets to dashboards and managers
+**Shop Floor**
+- Touch-friendly operator terminals (tablets, kiosks)
+- Kanban work queues organized by production cell
+- Real-time tracking via WebSockets
+- Time tracking with one-tap clock in/out
 
-### Management
-- **Job & part tracking** — Follow orders through production with full visibility
-- **Dashboard stats** — Active jobs, operator activity, and production metrics at a glance
-- **3D STEP viewer** — Browser-based CAD viewer for operators (no software install)
+**Management**
+- Job and part tracking with full production visibility
+- 3D STEP viewer — browser-based CAD, no software install
+- Dashboard stats, OEE metrics, production analytics
+- Issue tracking and quality management (NCR)
 
-### Integration
-- **REST API** — Full CRUD for jobs, parts, operations with webhook notifications
-- **CSV import/export** — Bulk data operations for ERP sync
-- **Multi-tenant SaaS** — Row-level security for hosted deployments
+**Integration**
+- REST API with 30+ endpoints (jobs, parts, operations, time entries, webhooks)
+- ERP sync with incremental change detection
+- Webhook notifications for lifecycle events
+- MCP server for AI assistant integration
 
-### Built for Teams
-- **Multi-language** — English, Dutch, German
-- **Self-hostable** — Run on your own infrastructure
-- **API-first** — Build custom integrations and own your data
+**Platform**
+- Multi-language (English, Dutch, German)
+- Multi-tenant SaaS with row-level security
+- Self-hostable via Docker Compose
+- BSL 1.1 license (free for your business, converts to Apache 2.0 in 2029)
 
-## Quick Deploy
-
-See **[website/src/content/docs/guides/deployment.md](website/src/content/docs/guides/deployment.md)** for deployment instructions and **[website/src/content/docs/guides/self-hosting.md](website/src/content/docs/guides/self-hosting.md)** for the full self-hosting walkthrough.
-
-## Releases
-
-Eryxon Flow uses a simple SemVer-based release model:
-
-- `MAJOR` for breaking API, database, or deployment changes
-- `MINOR` for backward-compatible features and meaningful platform expansions
-- `PATCH` for fixes, security hardening, docs, and release stabilization
-
-Work in progress should land in the release notes and changelog pages under `website/src/content/docs/guides/` until tagged.
-
-## Prerequisites
-
-- [Supabase](https://supabase.com) account
-- [Cloudflare](https://cloudflare.com) account
-- Node.js 20+
-
-## Local Development
+## Quick Start
 
 ```bash
 git clone https://github.com/SheetMetalConnect/eryxon-flow.git
 cd eryxon-flow
-
-cp .env.example .env
-# Edit .env with your Supabase credentials
-
+cp .env.example .env    # Add your Supabase credentials
 npm install
-npm run dev
+npm run dev             # http://localhost:5173
 ```
 
-## AI Agents
-
-This repository carries agent setup notes for the three CLI agents currently in use:
-
-- **Claude Code**: install the `superpowers` plugin and use the repo-local guide in [.claude/INSTALL.md](.claude/INSTALL.md). The project enables it through [.claude/settings.json](.claude/settings.json).
-- **Codex**: install Superpowers once at the machine level and follow [.codex/INSTALL.md](.codex/INSTALL.md). Codex discovers the shared skills from `~/.agents/skills/` at startup.
-- **Gemini CLI**: install the `superpowers` extension and use the project guidance in [GEMINI.md](GEMINI.md).
-
-The repository documents the setup, while the actual Claude/Codex/Gemini installs remain machine-level.
-
-## Environment Variables
-
-```
-VITE_SUPABASE_URL
-VITE_SUPABASE_PUBLISHABLE_KEY
-VITE_SUPABASE_PROJECT_ID
-```
-
-See `.env.example` for complete list.
+Requires: Node.js 20+, [Supabase](https://supabase.com) project
 
 ## Architecture
 
-**Frontend**: React + TypeScript + Vite
-**UI**: shadcn/ui + Tailwind CSS + Custom Design System
-**Backend**: Supabase (PostgreSQL + Edge Functions + Realtime)
-**Deployment**: Cloudflare Pages, Docker, or self-hosted reverse proxy setups
-**Database**: Multi-tenant schema with RLS and versioned migrations under `supabase/migrations/`
-**API**: Supabase Edge Functions with shared auth, validation, and webhook helpers
-**3D Rendering**: Three.js with browser STEP parsing and optional backend-assisted CAD processing
+```
+React 18 + Vite + Tailwind + shadcn/ui
+         |
+    Supabase Client
+         |
+PostgreSQL + Auth + RLS + Realtime + Storage
+         |
+    Edge Functions (Deno) ── 30+ REST API endpoints
+         |
+    Webhooks + MQTT + MCP Server
+```
+
+| Layer | Tech |
+|-------|------|
+| Frontend | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui |
+| Backend | Supabase (PostgreSQL 17, Edge Functions, Realtime) |
+| 3D Viewer | Three.js with browser-side STEP parsing |
+| Deployment | Vercel (frontend), Supabase (backend), Docker (self-hosted) |
+| API | REST with API key auth, rate limiting, webhook dispatch |
+
+## Self-Hosting
+
+Full self-hosting guide: [docs/guides/self-hosting.md](website/src/content/docs/guides/self-hosting.md)
+
+```bash
+docker compose up -d
+```
+
+## API
+
+30+ REST endpoints with filtering, pagination, search, and webhook notifications.
+
+```bash
+# List jobs
+curl https://your-project.supabase.co/functions/v1/api-jobs \
+  -H "Authorization: Bearer ery_live_your_api_key"
+
+# Create a job with nested parts and operations
+curl -X POST https://your-project.supabase.co/functions/v1/api-jobs \
+  -H "Authorization: Bearer ery_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{"job_number":"WO-001","customer":"Acme","parts":[...]}'
+```
+
+Full API reference: [docs/api/rest-api-reference.md](website/src/content/docs/api/rest-api-reference.md)
+
+## AI Agent Support
+
+This repo is optimized for AI coding assistants:
+
+| Tool | Config File |
+|------|-------------|
+| Claude Code | [CLAUDE.md](CLAUDE.md) |
+| GitHub Copilot | [.github/copilot-instructions.md](.github/copilot-instructions.md) |
+| Cursor | [.cursorrules](.cursorrules) |
+| Gemini | [GEMINI.md](GEMINI.md) |
+| Codex / Windsurf / Cline | [AGENTS.md](AGENTS.md) |
+
+Specialized sub-agents in [.agents/](.agents/) for database, tech stack, and repo operations.
 
 ## Documentation
 
-- [website/src/content/docs/](website/src/content/docs/) - Canonical documentation source
-- [website/src/content/docs/guides/changelog.md](website/src/content/docs/guides/changelog.md) - Full release history
-- [website/src/content/docs/guides/releases.md](website/src/content/docs/guides/releases.md) - Versioning policy and current release summary
-- [website/src/content/docs/guides/deployment.md](website/src/content/docs/guides/deployment.md) - Deployment guide
-- [website/src/content/docs/operations/security-audit-baseline.md](website/src/content/docs/operations/security-audit-baseline.md) - Security audit baseline and remediation tracking
-- [website/src/content/docs/api/rest-api-reference.md](website/src/content/docs/api/rest-api-reference.md) - Backend API reference
-- [website/src/content/docs/api/payload-reference.md](website/src/content/docs/api/payload-reference.md) - API payload shapes and examples
-- [website/src/content/docs/guides/self-hosting.md](website/src/content/docs/guides/self-hosting.md) - Canonical self-hosting guide
-- [website/src/content/docs/architecture/app-architecture.md](website/src/content/docs/architecture/app-architecture.md) - Architecture overview
+- [Deployment Guide](website/src/content/docs/guides/deployment.md)
+- [Self-Hosting Guide](website/src/content/docs/guides/self-hosting.md)
+- [REST API Reference](website/src/content/docs/api/rest-api-reference.md)
+- [API Payload Examples](website/src/content/docs/api/payload-reference.md)
+- [Architecture Overview](website/src/content/docs/architecture/app-architecture.md)
+- [Security Audit](website/src/content/docs/operations/security-audit-baseline.md)
+- [Changelog](website/src/content/docs/guides/changelog.md)
 
 ## License
 
 **Business Source License 1.1**
 
 - Free to use for your own manufacturing business
-- Source available for modification and improvement
-- Self-host unlimited instances
-- Cannot offer as competing hosted service
+- Source available for modification and self-hosting
+- Cannot offer as a competing hosted service
+- Converts to **Apache 2.0** on 2029-01-01
 
-See [LICENSE](LICENSE) for full terms.
-
-**Change Date**: 2029-01-01 (converts to Apache 2.0)
-
-**Why BSL?** Free for your business, prevents competitors from reselling our hosted service. Converts to Apache 2.0 on 2029-01-01. [Learn more about BSL](https://mariadb.com/bsl-faq-adopting/).
+See [LICENSE](LICENSE) for full terms. [Why BSL?](https://mariadb.com/bsl-faq-adopting/)
 
 ## Support
 
-- Documentation: [website/src/content/docs/](website/src/content/docs/)
 - Issues: [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues)
-- Commercial support: office@sheetmetalconnect.com
+- Docs: [eryxon.eu](https://eryxon.eu)
+- Commercial: office@sheetmetalconnect.com
+
+---
+
+<p align="center">
+  Built by <a href="https://vanenkhuizen.com">Van Enkhuizen</a> &nbsp;&middot;&nbsp; <a href="https://sheetmetalconnect.com">Sheet Metal Connect</a>
+</p>
