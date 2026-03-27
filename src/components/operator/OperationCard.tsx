@@ -58,13 +58,14 @@ export default function OperationCard({
     profile?.tenant_id,
   );
 
-  const dueDate =
+  const rawDueDate =
     operation.part.job.due_date_override || operation.part.job.due_date;
+  const dueDate = typeof rawDueDate === "string" ? rawDueDate : null;
   const dueDateObj = dueDate ? new Date(dueDate) : null;
   const dueUrgency = getDueUrgency(dueDate);
-  const plannedStartObj = operation.planned_start
-    ? new Date(operation.planned_start)
-    : null;
+  const rawPlannedStart = operation.planned_start;
+  const plannedStartObj =
+    typeof rawPlannedStart === "string" ? new Date(rawPlannedStart) : null;
   const hasPlannedStart =
     plannedStartObj !== null && Number.isFinite(plannedStartObj.getTime());
   const estimatedHours = (operation.estimated_time || 0) / 60;
@@ -116,7 +117,7 @@ export default function OperationCard({
               <span className="truncate font-mono text-[11px] text-muted-foreground">
                 {operation.part.job.job_number}
               </span>
-              {hasPlannedStart ? (
+              {hasPlannedStart && plannedStartObj ? (
                 <span className="shrink-0 text-[9px] text-muted-foreground/70">
                   ▶ {format(plannedStartObj, "dd MMM")}
                 </span>
@@ -151,16 +152,16 @@ export default function OperationCard({
 
           {/* Row 2: Operation name (primary info) */}
           <div className="mt-0.5 truncate text-sm font-semibold text-foreground">
-            {operation.operation_name}
+            {String(operation.operation_name ?? "")}
           </div>
 
           {/* Row 3: Part number + material */}
           <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-            <span className="truncate">{operation.part.part_number}</span>
+            <span className="truncate">{String(operation.part.part_number ?? "")}</span>
             {operation.part.material ? (
               <>
                 <span className="text-border">·</span>
-                <span className="truncate">{operation.part.material}</span>
+                <span className="truncate">{String(operation.part.material)}</span>
               </>
             ) : null}
           </div>

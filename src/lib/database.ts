@@ -165,10 +165,22 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
     throw entriesError;
   }
 
-  return operations.map((operation) => ({
-    ...operation,
-    active_time_entry: activeEntries?.find((entry) => entry.operation_id === operation.id),
-  }));
+  return operations.map((operation) => {
+    const entry = activeEntries?.find((e) => e.operation_id === operation.id);
+    // Ensure the nested operator join is an object with full_name, not an array.
+    // PostgREST may return arrays for ambiguous FK relationships.
+    const safeEntry = entry
+      ? {
+          id: entry.id,
+          operator_id: entry.operator_id,
+          start_time: entry.start_time,
+          operator: Array.isArray(entry.operator)
+            ? (entry.operator[0] as { full_name: string })
+            : (entry.operator as { full_name: string }),
+        }
+      : undefined;
+    return { ...operation, active_time_entry: safeEntry };
+  });
 }
 
 export async function startTimeTracking(
