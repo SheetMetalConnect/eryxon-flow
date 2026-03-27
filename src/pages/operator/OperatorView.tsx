@@ -205,36 +205,43 @@ export default function OperatorView() {
       const actual = op.actual_time || 0;
       const remaining = Math.max(0, estimated - actual);
 
+      // Defensively coerce database values to expected primitives.
+      // Supabase SELECT * can include JSON/unknown columns that would
+      // crash React if accidentally rendered as JSX children (error #185).
       return {
         id: op.id,
         operationId: op.id,
         partId: op.part.id,
         jobId: op.part.job.id,
-        jobCode: op.part.job.job_number,
-        description: op.part.part_number,
-        material: op.part.material,
-        quantity: op.part.quantity,
-        currentOp: op.operation_name,
+        jobCode: String(op.part.job.job_number ?? ""),
+        description: String(op.part.part_number ?? ""),
+        material: typeof op.part.material === "string" ? op.part.material : "",
+        quantity: Number(op.part.quantity) || 0,
+        currentOp: String(op.operation_name ?? ""),
         totalOps: 0,
         hours: Number(remaining.toFixed(1)),
-        dueDate: op.part.job.due_date || new Date().toISOString(),
+        dueDate: typeof op.part.job.due_date === "string"
+          ? op.part.job.due_date
+          : new Date().toISOString(),
         status,
         hasPdf,
         hasModel,
-        filePaths: op.part.file_paths || [],
+        filePaths: Array.isArray(op.part.file_paths) ? op.part.file_paths : [],
         activeTimeEntryId: op.active_time_entry?.id,
         activeOperatorId: op.active_time_entry?.operator_id,
-        activeOperatorName: op.active_time_entry?.operator?.full_name,
+        activeOperatorName: typeof op.active_time_entry?.operator?.full_name === "string"
+          ? op.active_time_entry.operator.full_name
+          : undefined,
         isCurrentUserClocked: op.active_time_entry?.operator_id === operatorId,
-        notes: op.notes,
-        cellName: op.cell.name,
-        cellColor: op.cell.color || "#3b82f6",
+        notes: typeof op.notes === "string" ? op.notes : null,
+        cellName: String(op.cell.name ?? ""),
+        cellColor: typeof op.cell.color === "string" ? op.cell.color : "#3b82f6",
         cellId: op.cell_id,
         currentSequence: op.sequence,
-        drawingNo: op.part.drawing_no,
-        cncProgramName: op.part.cnc_program_name,
-        isBulletCard: op.part.is_bullet_card,
-        plannedStart: op.planned_start,
+        drawingNo: typeof op.part.drawing_no === "string" ? op.part.drawing_no : null,
+        cncProgramName: typeof op.part.cnc_program_name === "string" ? op.part.cnc_program_name : null,
+        isBulletCard: Boolean(op.part.is_bullet_card),
+        plannedStart: typeof op.planned_start === "string" ? op.planned_start : null,
       };
     },
     [operatorId],

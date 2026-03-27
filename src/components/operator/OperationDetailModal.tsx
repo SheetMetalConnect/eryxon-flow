@@ -334,7 +334,7 @@ export default function OperationDetailModal({
               </div>
             </div>
 
-            {operation.part.job.customer && (
+            {typeof operation.part.job.customer === "string" && operation.part.job.customer && (
               <div className="text-xs text-muted-foreground bg-muted/30 rounded-md px-3 py-2">
                 {operation.part.job.customer}
               </div>
@@ -366,7 +366,7 @@ export default function OperationDetailModal({
               </div>
             )}
 
-            {operation.notes && (
+            {typeof operation.notes === "string" && operation.notes && (
               <div className="bg-muted/30 rounded-md p-3">
                 <div className="text-xs text-muted-foreground mb-1">{t("operations.notes")}</div>
                 <div className="text-sm">{operation.notes}</div>

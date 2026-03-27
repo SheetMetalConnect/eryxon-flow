@@ -17,8 +17,8 @@ import {
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 
-// Configure PDF.js worker from CDN
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// Configure PDF.js worker from CDN (jsdelivr is allowed by our CSP)
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface PDFViewerProps {
   url: string;

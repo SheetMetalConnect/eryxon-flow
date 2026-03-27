@@ -30,9 +30,10 @@ const urgencyLabel: Record<string, string> = {
 
 export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
   const { t } = useTranslation();
-  const dueDate = job.dueDate ? new Date(job.dueDate) : null;
+  const rawDueDate = typeof job.dueDate === "string" ? job.dueDate : null;
+  const dueDate = rawDueDate ? new Date(rawDueDate) : null;
   const hasValidDueDate = dueDate !== null && Number.isFinite(dueDate.getTime());
-  const dueUrgency = getDueUrgency(job.dueDate);
+  const dueUrgency = getDueUrgency(rawDueDate);
 
   return (
     <tr
@@ -70,13 +71,13 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
               {job.activeOperatorName?.split(" ")[0] || t("terminal.other")}
             </Badge>
           ) : null}
-          {job.jobCode}
+          {String(job.jobCode ?? "")}
         </div>
       </td>
 
       {/* Part Number */}
       <td className="whitespace-nowrap px-2 py-1.5 text-sm text-foreground">
-        {job.description}
+        {String(job.description ?? "")}
       </td>
 
       {/* Operation */}
@@ -100,13 +101,13 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
             color: job.cellColor || "inherit",
           }}
         >
-          {job.cellName || "-"}
+          {String(job.cellName || "-")}
         </span>
       </td>
 
       {/* Material */}
       <td className="whitespace-nowrap px-2 py-1.5 text-sm text-foreground">
-        {job.material || "-"}
+        {String(job.material || "-")}
       </td>
 
       {/* Quantity */}
@@ -121,7 +122,7 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
 
       {/* Planned Start */}
       <td className="whitespace-nowrap px-2 py-1.5 text-sm text-muted-foreground">
-        {job.plannedStart
+        {typeof job.plannedStart === "string"
           ? new Date(job.plannedStart).toLocaleDateString("nl-NL", {
               day: "2-digit",
               month: "2-digit",

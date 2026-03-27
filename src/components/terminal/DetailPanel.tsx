@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { TerminalJob } from "@/types/terminal";
-import { getDueUrgency, dueUrgencyTextClass } from "@/lib/due-date";
+// getDueUrgency/dueUrgencyTextClass available if needed for future due-date display
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -275,10 +275,10 @@ export function DetailPanel({
                       {operation.sequence}.
                     </span>
                     <span className="truncate text-xs font-semibold text-foreground">
-                      {operation.operation_name}
+                      {String(operation.operation_name ?? "")}
                     </span>
                     <span className="text-[10px] text-muted-foreground">
-                      {operation.cell?.name || "?"}
+                      {String(operation.cell?.name || "?")}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
@@ -366,10 +366,10 @@ export function DetailPanel({
             <Zap className="h-4 w-4 shrink-0 text-destructive" />
           ) : null}
           <h2 className="truncate font-mono text-sm font-semibold text-foreground">
-            {job.jobCode}
+            {String(job.jobCode ?? "")}
           </h2>
           <span className="truncate text-sm text-muted-foreground">
-            {job.description}
+            {String(job.description ?? "")}
           </span>
         </div>
         <Badge
@@ -384,7 +384,7 @@ export function DetailPanel({
       {job.notes ? (
         <div className="shrink-0 border-b border-border px-3 py-1.5">
           <div className="rounded-md bg-muted/20 px-2 py-1 text-xs text-muted-foreground">
-            {job.notes}
+            {String(job.notes)}
           </div>
         </div>
       ) : null}

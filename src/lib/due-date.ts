@@ -13,7 +13,7 @@ export type DueUrgency = "overdue" | "today" | "soon" | "normal" | "none";
 export function getDueUrgency(
   dateValue: string | null | undefined,
 ): DueUrgency {
-  if (!dateValue) return "none";
+  if (!dateValue || typeof dateValue !== "string") return "none";
   const date = new Date(dateValue);
   if (!Number.isFinite(date.getTime())) return "none";
 
