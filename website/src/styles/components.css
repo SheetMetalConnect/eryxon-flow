@@ -29,6 +29,7 @@
   font-size: 1.125rem;
   line-height: 1.75rem;
   letter-spacing: -0.2px;
+  color: color-mix(in srgb, var(--sl-color-white) 55%, transparent);
 }
 @media (max-width: 1040px) {
   .section-title {

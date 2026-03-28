@@ -59,6 +59,11 @@ const { title, imageIcon, icon, number, image } = Astro.props;
       display: flex;
       flex-direction: column;
       height: 100%;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .list-card:hover {
+      border-color: color-mix(in srgb, var(--color-primary) 30%, var(--sl-color-gray-6));
+      box-shadow: 0 8px 32px -8px rgba(30, 144, 255, 0.06);
     }
     .list-card-header {
       background-color: color-mix(

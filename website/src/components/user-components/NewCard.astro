@@ -52,14 +52,16 @@ const { icon, title, iconColor, size = "large" } = Astro.props;
   @layer starlight.components {
     .card {
       display: flex;
-      /* padding: clamp(1rem, calc(0.125rem + 3vw), 2.5rem); */
-      /* padding: 48px 40px; */
       flex-direction: column;
-      /* gap: clamp(0.5rem, calc(0.125rem + 1vw), 1rem); */
       border-radius: 1rem;
       position: relative;
-      transition: all 0.5s ease;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       border: 1px solid var(--sl-color-gray-6);
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px -8px rgba(30, 144, 255, 0.08);
     }
    
     .card::before {
