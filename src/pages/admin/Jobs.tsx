@@ -141,6 +141,12 @@ export default function Jobs() {
           hasPDF: pdfFiles.length > 0,
           hasBullet: job.parts?.some((part: any) => part.is_bullet_card) || false,
         };
+      })
+      // Rush jobs first, then by due date
+      .sort((a: any, b: any) => {
+        if (a.hasBullet && !b.hasBullet) return -1;
+        if (!a.hasBullet && b.hasBullet) return 1;
+        return 0;
       });
     },
   });
@@ -532,6 +538,7 @@ export default function Jobs() {
           emptyMessage={t("jobs.noJobsFound") || "No jobs found."}
           searchDebounce={200}
           onRowClick={(row) => setSelectedJobId(row.id)}
+          rowClassName={(row: any) => row.hasBullet ? "ring-1 ring-red-500/30 bg-red-500/5 animate-[pulse_3s_ease-in-out_1]" : ""}
           compact={true}
           columnVisibility={{ ...columnVisibility, rush: false }}
           maxHeight={isMobile ? "calc(100vh - 320px)" : "calc(100vh - 280px)"}

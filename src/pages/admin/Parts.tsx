@@ -146,6 +146,12 @@ export default function Parts() {
           hasSTEP: stepFiles.length > 0,
           hasPDF: pdfFiles.length > 0,
         };
+      })
+      // Rush parts first
+      .sort((a: any, b: any) => {
+        if (a.is_bullet_card && !b.is_bullet_card) return -1;
+        if (!a.is_bullet_card && b.is_bullet_card) return 1;
+        return 0;
       });
     },
   });
@@ -482,6 +488,7 @@ export default function Parts() {
           searchDebounce={200}
           columnVisibility={columnVisibility}
           onRowClick={(row) => setSelectedPartId(row.id)}
+          rowClassName={(row: any) => row.is_bullet_card ? "ring-1 ring-red-500/30 bg-red-500/5 animate-[pulse_3s_ease-in-out_1]" : ""}
           maxHeight={isMobile ? "calc(100vh - 320px)" : "calc(100vh - 280px)"}
         />
       </div>
