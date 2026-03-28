@@ -20,11 +20,23 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useNavigate } from "react-router-dom";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Square } from "lucide-react";
 import { ROUTES } from "@/routes";
-import CurrentlyTimingWidget from "./CurrentlyTimingWidget";
+import { stopTimeTracking } from "@/lib/database";
+import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
 
 type OperatorState = "idle" | "active" | "rush" | "stale";
+
+interface ActiveEntry {
+  id: string;
+  operationId: string;
+  startTime: string;
+  operationName: string;
+  jobNumber: string;
+  partNumber: string;
+  isRush: boolean;
+}
 
 interface StatusData {
   state: OperatorState;
@@ -32,6 +44,7 @@ interface StatusData {
   startTime: string | null;
   operationName: string | null;
   jobNumber: string | null;
+  entries: ActiveEntry[];
 }
 
 /** Diagonal stripe CSS pattern */
@@ -99,6 +112,7 @@ export function OperatorStatusBar() {
     startTime: null,
     operationName: null,
     jobNumber: null,
+    entries: [],
   });
   const [elapsed, setElapsed] = useState("");
 
@@ -113,11 +127,11 @@ export function OperatorStatusBar() {
       const { data } = await supabase
         .from("time_entries")
         .select(`
-          id, start_time,
+          id, start_time, operation_id,
           operation:operations(
-            operation_name,
+            id, operation_name,
             part:parts(
-              is_bullet_card,
+              part_number, is_bullet_card,
               job:jobs(job_number)
             )
           )
@@ -126,18 +140,28 @@ export function OperatorStatusBar() {
         .is("end_time", null);
 
       if (!data || data.length === 0) {
-        setStatusData({ state: "idle", count: 0, startTime: null, operationName: null, jobNumber: null });
+        setStatusData({ state: "idle", count: 0, startTime: null, operationName: null, jobNumber: null, entries: [] });
         return;
       }
 
       const entry = data[0] as any;
-      const isRush = data.some((e: any) => e.operation?.part?.is_bullet_card);
+      const hasRush = data.some((e: any) => e.operation?.part?.is_bullet_card);
       const startTime = entry.start_time;
       const hoursSinceStart = (Date.now() - new Date(startTime).getTime()) / (1000 * 60 * 60);
 
       let state: OperatorState = "active";
-      if (isRush) state = "rush";
+      if (hasRush) state = "rush";
       else if (hoursSinceStart > 2) state = "stale";
+
+      const entries: ActiveEntry[] = data.map((e: any) => ({
+        id: e.id,
+        operationId: e.operation?.id || e.operation_id,
+        startTime: e.start_time,
+        operationName: e.operation?.operation_name || "?",
+        jobNumber: e.operation?.part?.job?.job_number || "?",
+        partNumber: e.operation?.part?.part_number || "",
+        isRush: Boolean(e.operation?.part?.is_bullet_card),
+      }));
 
       setStatusData({
         state,
@@ -145,6 +169,7 @@ export function OperatorStatusBar() {
         startTime,
         operationName: entry.operation?.operation_name || null,
         jobNumber: entry.operation?.part?.job?.job_number || null,
+        entries,
       });
     };
 
@@ -179,6 +204,16 @@ export function OperatorStatusBar() {
   }, [statusData.startTime]);
 
   const styles = STATE_STYLES[statusData.state];
+
+  const handleStop = async (operationId: string) => {
+    if (!operatorId) return;
+    try {
+      await stopTimeTracking(operationId, operatorId);
+      toast.success(t("operations.timeTrackingStopped"));
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : t("operations.failedToStopTimeTracking"));
+    }
+  };
 
   // If no operator selected, don't show the status bar
   if (!activeOperator) return null;
@@ -269,8 +304,33 @@ export function OperatorStatusBar() {
                   )}
                 </button>
               </PopoverTrigger>
-              <PopoverContent side="bottom" align="end" className="w-[380px] border-border bg-card p-0">
-                <CurrentlyTimingWidget />
+              <PopoverContent side="bottom" align="end" className="w-[300px] border-border bg-card p-1.5">
+                <div className="space-y-1">
+                  {statusData.entries.map((entry) => (
+                    <div key={entry.id} className="flex items-center justify-between gap-2 rounded px-2 py-1.5 hover:bg-muted/30">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-semibold text-foreground truncate">
+                            {entry.operationName}
+                          </span>
+                          {entry.isRush && (
+                            <span className="rounded bg-red-500/20 px-1 text-[9px] font-bold text-red-400">R</span>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">
+                          {entry.jobNumber} · {entry.partNumber} · {formatDistanceToNow(new Date(entry.startTime), { addSuffix: true })}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => void handleStop(entry.operationId)}
+                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-border text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-colors"
+                        title={t("operations.stop")}
+                      >
+                        <Square className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </PopoverContent>
             </Popover>
           )}
