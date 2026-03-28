@@ -316,9 +316,11 @@ export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  // Stable reference for jobIds to prevent infinite re-renders
+  const jobIdsKey = jobIds.join(",");
+
   const fetchRoutings = useCallback(async () => {
     if (jobIds.length === 0 || !tenantId) {
-      // Only update state if routings is not already empty to prevent re-render loops
       setRoutings(prev => Object.keys(prev).length === 0 ? prev : {});
       return;
     }
@@ -327,106 +329,59 @@ export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null
     setError(null);
 
     try {
-      // Fetch parts for these jobs first, then get their operations
-      const { data: parts, error: partsError } = await supabase
-        .from("parts")
-        .select("id, job_id")
-        .eq("tenant_id", tenantId)
-        .in("job_id", jobIds);
-
-      if (partsError) {
-        console.error('[useMultipleJobsRouting] parts query failed:', partsError);
-        throw partsError;
-      }
-
-      console.debug('[useMultipleJobsRouting]', {
-        jobIds: jobIds.length,
-        partsFound: parts?.length ?? 0,
-        tenantId,
-      });
-
-      const partIds = (parts || []).map((p: { id: string }) => p.id);
-      const partJobMap = Object.fromEntries(
-        (parts || []).map((p: { id: string; job_id: string }) => [p.id, p.job_id])
-      );
-
-      if (partIds.length === 0) {
-        console.warn('[useMultipleJobsRouting] No parts found for jobs — Flow will be empty');
-        setRoutings({});
-        setLoading(false);
-        return;
-      }
-
+      // Single query: operations with inner-joined parts (filtered by job_id) + cells
       const { data, error: queryError } = await supabase
         .from("operations")
-        .select(
-          `
+        .select(`
           id,
           status,
           sequence,
           cell_id,
           part_id,
-          cells:cell_id (
-            id,
-            name,
-            color,
-            sequence
-          )
-        `
-        )
+          cell:cells!operations_cell_id_fkey(id, name, color, sequence),
+          part:parts!inner(id, job_id)
+        `)
         .eq("tenant_id", tenantId)
-        .in("part_id", partIds);
+        .in("part.job_id", jobIds);
 
       if (queryError) {
-        console.error('[useMultipleJobsRouting] operations query failed:', queryError);
-        throw queryError;
+        // Fallback: if the inner join filter fails, try the two-query approach
+        console.warn('[useMultipleJobsRouting] single query failed, trying fallback:', queryError.message);
+        await fetchRoutingsFallback();
+        return;
       }
 
-      console.debug('[useMultipleJobsRouting] operations found:', data?.length ?? 0,
-        'sample cells type:', data?.[0]?.cells ? (Array.isArray(data[0].cells) ? 'ARRAY' : 'object') : 'null');
-
       const jobRoutingsMap: Record<string, Map<string, CellRoutingData>> = {};
+      jobIds.forEach((jobId) => { jobRoutingsMap[jobId] = new Map(); });
 
-      jobIds.forEach((jobId) => {
-        jobRoutingsMap[jobId] = new Map();
-      });
+      (data || []).forEach((rawOp: any) => {
+        const cell = unwrap(rawOp.cell);
+        const part = unwrap(rawOp.part);
+        if (!cell || !part) return;
 
-      (data || []).forEach(
-        (rawOp: any) => {
-          const op = { ...rawOp, cells: unwrap(rawOp.cells) };
-          if (!op.cells || !op.part_id) return;
+        const jobId = part.job_id;
+        const cellMap = jobRoutingsMap[jobId];
+        if (!cellMap) return;
 
-          const jobId = partJobMap[op.part_id];
-          const cellId = op.cell_id;
-          const cellMap = jobRoutingsMap[jobId];
-
-          if (!cellMap) return;
-
-          const existing = cellMap.get(cellId);
-
-          if (existing) {
-            existing.operation_count++;
-            if (op.status === "completed") {
-              existing.completed_operations++;
-            }
-          } else {
-            cellMap.set(cellId, {
-              cell_id: cellId,
-              cell_name: op.cells.name,
-              cell_color: op.cells.color,
-              sequence: op.cells.sequence,
-              operation_count: 1,
-              completed_operations: op.status === "completed" ? 1 : 0,
-            });
-          }
+        const existing = cellMap.get(rawOp.cell_id);
+        if (existing) {
+          existing.operation_count++;
+          if (rawOp.status === "completed") existing.completed_operations++;
+        } else {
+          cellMap.set(rawOp.cell_id, {
+            cell_id: rawOp.cell_id,
+            cell_name: cell.name,
+            cell_color: cell.color,
+            sequence: cell.sequence,
+            operation_count: 1,
+            completed_operations: rawOp.status === "completed" ? 1 : 0,
+          });
         }
-      );
+      });
 
       const result: Record<string, JobRouting> = {};
       Object.entries(jobRoutingsMap).forEach(([jobId, cellMap]) => {
-        result[jobId] = Array.from(cellMap.values()).sort(
-          (a, b) => a.sequence - b.sequence
-        );
+        result[jobId] = Array.from(cellMap.values()).sort((a, b) => a.sequence - b.sequence);
       });
 
       setRoutings(result);
@@ -441,11 +396,78 @@ export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null
     } finally {
       setLoading(false);
     }
-  }, [JSON.stringify(jobIds), tenantId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobIdsKey, tenantId]);
+
+  // Fallback two-query approach if single query with .in on joined table fails
+  const fetchRoutingsFallback = useCallback(async () => {
+    if (!tenantId) return;
+
+    const { data: parts } = await supabase
+      .from("parts")
+      .select("id, job_id")
+      .eq("tenant_id", tenantId)
+      .in("job_id", jobIds);
+
+    if (!parts || parts.length === 0) {
+      setRoutings({});
+      setLoading(false);
+      return;
+    }
+
+    const partIds = parts.map((p: any) => p.id);
+    const partJobMap = Object.fromEntries(parts.map((p: any) => [p.id, p.job_id]));
+
+    const { data, error: queryError } = await supabase
+      .from("operations")
+      .select(`
+        id, status, sequence, cell_id, part_id,
+        cell:cells!operations_cell_id_fkey(id, name, color, sequence)
+      `)
+      .eq("tenant_id", tenantId)
+      .in("part_id", partIds);
+
+    if (queryError) throw queryError;
+
+    const jobRoutingsMap: Record<string, Map<string, CellRoutingData>> = {};
+    jobIds.forEach((jobId) => { jobRoutingsMap[jobId] = new Map(); });
+
+    (data || []).forEach((rawOp: any) => {
+      const cell = unwrap(rawOp.cell);
+      if (!cell || !rawOp.part_id) return;
+
+      const jobId = partJobMap[rawOp.part_id];
+      const cellMap = jobRoutingsMap[jobId];
+      if (!cellMap) return;
+
+      const existing = cellMap.get(rawOp.cell_id);
+      if (existing) {
+        existing.operation_count++;
+        if (rawOp.status === "completed") existing.completed_operations++;
+      } else {
+        cellMap.set(rawOp.cell_id, {
+          cell_id: rawOp.cell_id,
+          cell_name: cell.name,
+          cell_color: cell.color,
+          sequence: cell.sequence,
+          operation_count: 1,
+          completed_operations: rawOp.status === "completed" ? 1 : 0,
+        });
+      }
+    });
+
+    const result: Record<string, JobRouting> = {};
+    Object.entries(jobRoutingsMap).forEach(([jobId, cellMap]) => {
+      result[jobId] = Array.from(cellMap.values()).sort((a, b) => a.sequence - b.sequence);
+    });
+
+    setRoutings(result);
+    setLoading(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobIdsKey, tenantId]);
 
   useEffect(() => {
     fetchRoutings();
-    // No realtime subscription for bulk queries to prevent excessive updates
   }, [fetchRoutings]);
 
   return { routings, loading, error, refetch: fetchRoutings };
