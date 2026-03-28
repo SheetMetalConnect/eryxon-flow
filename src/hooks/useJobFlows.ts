@@ -83,14 +83,15 @@ export function useJobFlows(jobIds: string[], tenantId: string | null) {
     staleTime: 30 * 1000,
   });
 
-  // Debug: log query results
-  if (typeof window !== "undefined") {
-    console.debug("[useJobFlows]", {
+  // Debug: log query results (console.warn to ensure visibility)
+  if (typeof window !== "undefined" && enabled) {
+    console.warn("[useJobFlows] pipeline:", {
       jobIds: jobIds.length,
       cells: cells?.length ?? "loading",
       parts: parts?.length ?? "loading",
       partIds: partIds.length,
       operations: operations?.length ?? "loading",
+      tenantId,
     });
   }
 
