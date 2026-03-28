@@ -184,7 +184,6 @@ export const OperatorLayout = ({
 
             {/* Right: Actions */}
             <div className="flex items-center gap-1.5">
-              <TimingHeaderIndicator />
               <SearchTriggerButton onClick={() => setSearchOpen(true)} compact />
               <ThemeToggle variant="dropdown" />
               <LanguageSwitcher />
