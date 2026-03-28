@@ -420,6 +420,22 @@ export default function BatchCreate() {
     );
   }
 
+  // Debug: log all Select values to trace React #185
+  if (typeof window !== 'undefined') {
+    console.debug('[BatchCreate] Select values:', {
+      cellId, batchType, material, parentBatchId,
+      cellsCount: cells?.length,
+      materialsCount: materials?.length,
+      parentBatchesCount: parentBatches?.length,
+      opsCount: filteredOperations?.length,
+      // Check for objects in data
+      cellsSample: cells?.[0],
+      matsSample: materials?.[0],
+      parentSample: parentBatches?.[0],
+      opsSample: filteredOperations?.[0],
+    });
+  }
+
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div>
