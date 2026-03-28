@@ -347,6 +347,7 @@ serveApi(
     fuzzyFilters: ["batch_number", "material"],
     sortableFields: ["batch_number", "created_at", "status", "batch_type"],
     defaultSort: { field: "created_at", direction: "desc" },
+    softDelete: false,
     customHandlers: {
       post: handleCreateBatch,
     },

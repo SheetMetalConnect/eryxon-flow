@@ -1,1 +1,1 @@
-{ "imports": { "@shared/": "../_shared/" } }
+{ "imports": { "@shared/": "../_shared/", "@supabase/supabase-js": "npm:@supabase/supabase-js@2.93.1" } }

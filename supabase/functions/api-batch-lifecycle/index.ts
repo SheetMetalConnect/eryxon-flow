@@ -88,7 +88,10 @@ Deno.serve(async (req) => {
 
       const opIds = batchOps.map((bo: any) => bo.operation_id);
       const now = new Date().toISOString();
-      const operatorId = body.operator_id || null;
+      const operatorId = body.operator_id;
+      if (!operatorId) {
+        return errorResponse("VALIDATION_ERROR", "operator_id is required in request body");
+      }
 
       // Create time entries for all operations
       const timeEntries = opIds.map((opId: string) => ({
