@@ -216,16 +216,8 @@ export function useJobRouting(jobId: string | null, tenantId: string | null) {
           status,
           sequence,
           cell_id,
-          cells:cell_id (
-            id,
-            name,
-            color,
-            sequence
-          ),
-          parts!inner (
-            id,
-            job_id
-          )
+          cell:cells!tasks_stage_id_fkey(id, name, color, sequence),
+          parts!inner(id, job_id)
         `
         )
         .eq("tenant_id", tenantId)
@@ -235,13 +227,13 @@ export function useJobRouting(jobId: string | null, tenantId: string | null) {
 
       const routingData = groupOperationsByCell(
         (data || [])
-          .map((op: any) => ({ ...op, cells: unwrap(op.cells) }))
-          .filter((op: any) => op.cells)
+          .map((op: any) => ({ ...op, cell: unwrap(op.cell) }))
+          .filter((op: any) => op.cell)
           .map((op: any) => ({
             cell_id: op.cell_id,
-            cell_name: op.cells.name,
-            cell_color: op.cells.color,
-            sequence: op.cells.sequence,
+            cell_name: op.cell.name,
+            cell_color: op.cell.color,
+            sequence: op.cell.sequence,
             status: op.status,
           }))
       );
@@ -338,7 +330,7 @@ export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null
           sequence,
           cell_id,
           part_id,
-          cell:cells!operations_cell_id_fkey(id, name, color, sequence),
+          cell:cells!tasks_stage_id_fkey(id, name, color, sequence),
           part:parts!inner(id, job_id)
         `)
         .eq("tenant_id", tenantId)
@@ -422,7 +414,7 @@ export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null
       .from("operations")
       .select(`
         id, status, sequence, cell_id, part_id,
-        cell:cells!operations_cell_id_fkey(id, name, color, sequence)
+        cell:cells!tasks_stage_id_fkey(id, name, color, sequence)
       `)
       .eq("tenant_id", tenantId)
       .in("part_id", partIds);
