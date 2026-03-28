@@ -56,21 +56,20 @@
         radial-gradient(at 82% 65%, hsl(218, 39%, 11%) 0, transparent 55%);
 }
 
-/* Redefine what was "Light Mode" to be optional or removed, 
-   but importantly, do NOT let it override the default if user system is light.
-   Ideally, we just effectively disable the light theme or map it to dark too 
-   unless we really want to support it. 
-   For now, we keep it but ensure :root (default) is dark. */
+/* Light mode colors — uses lightmode- prefixed vars from theme.json */
 :root[data-theme="light"] {
-    /* ... existing light mode definitions if we wanted them ... */
-    /* For now, let's just make it same as dark or leave it controllable via toggle */
-    /* If the user wants STRICT dark mode only: */
-    --sl-color-accent-low: color-mix(in srgb, var(--color-primary), #000 90%);
-    --sl-color-accent: var(--color-primary);
-    --sl-color-accent-high: color-mix(in srgb, var(--color-primary), #fff 70%);
-    --sl-color-white: var(--color-light);
-    --sl-color-black: var(--color-dark);
-    /* ... map others to dark ... */
+    --sl-color-accent-low: color-mix(in srgb, var(--color-lightmode-primary), #fff 70%);
+    --sl-color-accent: var(--color-lightmode-primary);
+    --sl-color-accent-high: color-mix(in srgb, var(--color-lightmode-primary), #000 90%);
+    --sl-color-white: var(--color-lightmode-light);
+    --sl-color-gray-1: color-mix(in srgb, var(--color-lightmode-dark) 15%, var(--color-lightmode-light) 85%);
+    --sl-color-gray-2: color-mix(in srgb, var(--color-lightmode-dark) 22%, var(--color-lightmode-light) 78%);
+    --sl-color-gray-3: color-mix(in srgb, var(--color-lightmode-dark) 35%, var(--color-lightmode-light) 65%);
+    --sl-color-gray-4: color-mix(in srgb, var(--color-lightmode-dark) 55%, var(--color-lightmode-light) 45%);
+    --sl-color-gray-5: color-mix(in srgb, var(--color-lightmode-dark) 76%, var(--color-lightmode-light) 24%);
+    --sl-color-gray-6: color-mix(in srgb, var(--color-lightmode-dark) 94%, var(--color-lightmode-light) 6%);
+    --sl-color-gray-7: color-mix(in srgb, var(--color-lightmode-dark) 96%, var(--color-lightmode-light) 4%);
+    --sl-color-black: var(--color-lightmode-dark);
 }
 
 @theme {
