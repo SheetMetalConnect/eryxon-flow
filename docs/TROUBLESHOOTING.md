@@ -83,3 +83,4 @@ npx shadcn-ui@latest add <component-name>
 ```bash
 supabase gen types typescript --project-id <ref> > src/integrations/supabase/types/database.ts
 ```
+wh
