@@ -1,14 +1,29 @@
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useResizablePanel } from "@/hooks/useResizablePanel";
 import { useOperatorTerminal } from "@/hooks/useOperatorTerminal";
-import { OperatorViewHeader } from "@/components/operator/OperatorViewHeader";
 import { OperatorWorkQueue } from "@/components/operator/OperatorWorkQueue";
 import { OperatorDetailSidebar } from "@/components/operator/OperatorDetailSidebar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function OperatorView() {
   const { t } = useTranslation();
+  const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const el = document.getElementById("terminal-header-slot");
+    if (el) setHeaderSlot(el);
+    return () => setHeaderSlot(null);
+  }, []);
 
   const {
     containerRef,
@@ -51,6 +66,33 @@ export default function OperatorView() {
         isDragging && "cursor-col-resize select-none",
       )}
     >
+      {/* Portal cell selector into the top header bar */}
+      {headerSlot
+        ? createPortal(
+            <div className="flex items-center gap-2">
+              <Select value={selectedCellId} onValueChange={handleCellChange}>
+                <SelectTrigger className="h-8 w-[180px] border-input bg-card text-sm text-foreground">
+                  <SelectValue placeholder={t("terminal.selectCell", "Select Cell")} />
+                </SelectTrigger>
+                <SelectContent className="border-border bg-card text-foreground">
+                  <SelectItem value="all">
+                    {t("terminal.allCells", "All Cells")}
+                  </SelectItem>
+                  {cells.map((cell) => (
+                    <SelectItem key={cell.id} value={cell.id}>
+                      {cell.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className="text-xs text-muted-foreground">
+                {filteredJobs.length} {t("terminal.jobsFound")}
+              </span>
+            </div>,
+            headerSlot,
+          )
+        : null}
+
       {/* Loading overlay */}
       {loading ? (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
@@ -68,12 +110,6 @@ export default function OperatorView() {
         className="flex flex-col border-r border-border transition-all duration-200"
         style={{ width: collapsed ? "100%" : `${leftPanelWidth}%` }}
       >
-        <OperatorViewHeader
-          cells={cells}
-          selectedCellId={selectedCellId}
-          onCellChange={handleCellChange}
-          jobCount={filteredJobs.length}
-        />
         <OperatorWorkQueue
           inProcessJobs={inProcessJobs}
           inBufferJobs={inBufferJobs}

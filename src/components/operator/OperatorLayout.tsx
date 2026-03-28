@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useProfile } from "@/hooks/useProfile";
 import { useTranslation } from "react-i18next";
 import { DOCS_GUIDES_URL } from "@/lib/config";
 import { Button } from "@/components/ui/button";
@@ -10,6 +12,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   ListChecks,
   Clock,
@@ -34,6 +41,82 @@ import { cn } from "@/lib/utils";
 import { GlobalSearch, SearchTriggerButton } from "@/components/GlobalSearch";
 import { TrialStatusBanner } from "@/components/admin/TrialStatusBanner";
 import { ROUTES } from "@/routes";
+
+/** Compact timing indicator for the top bar — opens popover with full details */
+function TimingHeaderIndicator() {
+  const { t } = useTranslation();
+  const profile = useProfile();
+  const { activeOperator } = useOperator();
+  const operatorId = activeOperator?.id || profile?.id;
+  const [count, setCount] = useState(0);
+  const [elapsed, setElapsed] = useState("");
+  const [startTime, setStartTime] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!operatorId) {
+      setCount(0);
+      return;
+    }
+
+    const load = async () => {
+      const { data } = await supabase
+        .from("time_entries")
+        .select("id, start_time")
+        .eq("operator_id", operatorId)
+        .is("end_time", null);
+      setCount(data?.length ?? 0);
+      if (data && data.length > 0) {
+        setStartTime(data[0].start_time);
+      } else {
+        setStartTime(null);
+      }
+    };
+
+    void load();
+
+    const channel = supabase
+      .channel("timing-header-indicator")
+      .on("postgres_changes", { event: "*", schema: "public", table: "time_entries", filter: `operator_id=eq.${operatorId}` }, () => void load())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [operatorId]);
+
+  // Tick elapsed time
+  useEffect(() => {
+    if (!startTime) { setElapsed(""); return; }
+    const update = () => {
+      const seconds = Math.floor((Date.now() - new Date(startTime).getTime()) / 1000);
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+      setElapsed(h > 0 ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${m}:${String(s).padStart(2, "0")}`);
+    };
+    update();
+    const iv = setInterval(update, 1000);
+    return () => clearInterval(iv);
+  }, [startTime]);
+
+  if (count === 0) return null;
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button className="flex h-8 items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 text-amber-500 transition-colors hover:bg-amber-500/20">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
+          </span>
+          <span className="font-mono text-xs font-bold">{elapsed}</span>
+          {count > 1 && <span className="text-[10px] font-medium">×{count}</span>}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent side="bottom" align="end" className="w-[380px] border-border bg-card p-0">
+        <CurrentlyTimingWidget />
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 interface OperatorLayoutProps {
   children: React.ReactNode;
@@ -90,7 +173,10 @@ export const OperatorLayout = ({
               )}
             </div>
 
-            {/* Center: Active Operator */}
+            {/* Center: Terminal cell selector slot + Active Operator */}
+            <div className="flex items-center gap-3">
+              <div id="terminal-header-slot" />
+            </div>
             <div className="flex items-center gap-2">
               {activeOperator ? (
                 <div className="flex items-center gap-2 rounded-full border border-green-500/30 bg-green-500/10 px-2 py-1 sm:px-3">
@@ -108,8 +194,9 @@ export const OperatorLayout = ({
               )}
             </div>
 
-            {/* Right: Actions */}
+            {/* Right: Timing + Actions */}
             <div className="flex items-center gap-1.5">
+              <TimingHeaderIndicator />
               <SearchTriggerButton onClick={() => setSearchOpen(true)} compact />
               <ThemeToggle variant="dropdown" />
               <LanguageSwitcher />
@@ -175,13 +262,6 @@ export const OperatorLayout = ({
         </header>
 
         <TrialStatusBanner />
-
-        {/* Currently Timing Widget */}
-        <div className="sticky top-12 z-40 border-b border-border bg-background/95 backdrop-blur-md">
-          <div className="px-3 py-2 sm:px-4">
-            <CurrentlyTimingWidget />
-          </div>
-        </div>
 
         {/* Main Content */}
         <main className="flex-1 px-3 py-3 pb-20 sm:px-4 sm:py-4">
