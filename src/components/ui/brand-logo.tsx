@@ -76,19 +76,12 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           className={cn(config.logo, "rounded-lg object-contain")}
         />
       ) : (
-        // Default logo badge with initials
-        <div
-          className={cn(
-            config.logo,
-            "rounded-lg flex items-center justify-center",
-            !customPrimaryColor && defaultGradient,
-            "text-white font-bold",
-            config.fontSize
-          )}
-          style={customBgStyle}
-        >
-          SM
-        </div>
+        // Default Eryxon logo
+        <img
+          src="/favicon.svg"
+          alt={displayName}
+          className={cn(config.logo, "rounded-lg")}
+        />
       )}
 
       {/* Brand Name */}
