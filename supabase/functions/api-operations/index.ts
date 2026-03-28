@@ -16,5 +16,6 @@ serveApi(
     sortableFields: ['sequence', 'operation_name', 'created_at', 'status'],
     defaultSort: { field: 'sequence', direction: 'asc' },
     softDelete: true,
+    enableSync: true,
   })
 );

@@ -59,6 +59,7 @@ serveApi(
     sortableFields: ['part_number', 'created_at', 'status'],
     defaultSort: { field: 'created_at', direction: 'desc' },
     softDelete: true,
+    enableSync: true,
     customHandlers: {
       post: handleCreate,
     },
