@@ -47,7 +47,7 @@ Use this sparingly. If everything is rush, nothing is.
 
 ### Putting operations on hold
 
-You can place any operation on hold from the job detail screen. A held operation disappears from the operator's work queue and will not be scheduled. Resume it when the block is cleared — it returns to the queue at its original priority.
+You can place any operation on hold from the operation detail panel. A held operation stays visible in the work queue but is marked with a hold badge so operators know not to start it. Resume it when the block is cleared.
 
 ## Production Cells (Stages)
 
@@ -55,7 +55,7 @@ Cells represent your physical workstations or departments — laser cutting, pre
 
 ### Configuring a cell
 
-Go to **Settings > Stages/Cells**. For each cell, you can set:
+Go to **Stages & Cells** in the admin sidebar. For each cell, you can set:
 
 - **Name** — what operators see on the terminal (e.g., "Laser 1", "Kantbank").
 - **Color** — used throughout the interface for visual identification.
@@ -96,7 +96,7 @@ Use this to spot bottlenecks before they hit the shop floor. If a cell shows red
 
 ### Due date overrides
 
-When a customer changes their deadline, update the due date on the job. The scheduler picks up the change on its next run. You can also override at the part level if only specific items shifted.
+When a customer changes their deadline, update the due date on the job. The scheduler picks up the change on its next run.
 
 ### Factory calendar
 
@@ -144,9 +144,9 @@ Operators report issues directly from the terminal — wrong material, damaged p
 
 Respond to issues quickly. Unresolved issues block operators and slow production.
 
-### Quality metrics
+### Scrap reasons
 
-The quality dashboard aggregates issue data over time — issues per cell, resolution time, recurring problems. Use this to identify patterns and drive improvement.
+Configure scrap reason codes in **Scrap Reasons** settings. Each reason has a code, description, and category (Material, Process, Equipment, Operator, Design). The page shows usage statistics so you can see which problems occur most often.
 
 ## Data and Integration
 
@@ -168,6 +168,6 @@ Configure webhooks in **Settings > Webhooks** to push events to external systems
 
 ### Data export
 
-Go to **Settings > Data Export** (admin only). You can export all records as JSON or CSV. CSV is typically faster for large datasets. Exports include all database records and metadata but exclude file attachments (only paths) and API secrets (only prefixes).
+Go to **Data Export** in the admin sidebar. You can export all records as JSON or CSV. CSV is typically faster for large datasets. Exports include all database records and metadata but exclude file attachments (only paths) and API secrets (only prefixes).
 
 Large exports can take 30-60 seconds. Run them during quiet hours if possible.

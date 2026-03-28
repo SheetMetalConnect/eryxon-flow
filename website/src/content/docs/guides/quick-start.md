@@ -124,8 +124,8 @@ Open **http://localhost:8080**
 
 Want to see the app with sample data?
 
-1. Go to **Settings** → **Organization**
-2. Click **Load Demo Data**
+1. Go to **Settings** in the admin sidebar
+2. Click **Create Demo Data**
 3. Explore sample jobs, parts, and operations
 
 ### Quick Tour

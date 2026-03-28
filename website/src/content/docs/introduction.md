@@ -25,7 +25,7 @@ Everything needed, nothing extra.
 
 ### For Admins
 See who's working on what in real-time. 
-- Drag and drop to assign specific work to specific people. 
+- Assign specific work to specific people.
 - Review and approve issues. 
 - Override dates when needed. 
 - Configure stages, materials, and templates. 
@@ -41,7 +41,7 @@ Work is displayed **kanban-style** with visual columns per stage. Operators see 
 - Visual indicators show when too many jobs or parts are in the same stage. 
 - Limit work in progress per stage to maintain flow. 
 - Track progress by stage completion, not just individual operation times. 
-- Manual time entry shows what's remaining, not just what's done. 
+- Time tracking shows what's remaining, not just what's done.
 - **Real-time updates**—changes appear immediately on all screens.
 
 ### Flexible Data
@@ -55,7 +55,7 @@ Jobs, parts, and tasks support **custom JSON metadata**—machine settings, bend
 See their work queue, start/stop time tracking, mark tasks complete, view files, and report quality issues.
 
 ### Admins
-Do everything operators can, plus: assign specific work to specific people, manage issues, override dates, and configure stages/materials/templates. Daily drag-and-drop assignment puts the right work with the right people. Because people matter.
+Do everything operators can, plus: assign specific work to specific people, manage issues, override dates, and configure stages/materials/templates.
 
 > **Note:** Operator accounts can be flagged as machines for autonomous processes.
 
