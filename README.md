@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.4.0-blue" alt="Version" />
+  <img src="https://img.shields.io/badge/version-0.4.1-blue" alt="Version" />
   <img src="https://img.shields.io/badge/license-BSL--1.1-green" alt="License" />
   <img src="https://img.shields.io/badge/react-18-61DAFB?logo=react" alt="React" />
   <img src="https://img.shields.io/badge/supabase-backend-3FCF8E?logo=supabase" alt="Supabase" />
