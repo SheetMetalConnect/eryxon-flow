@@ -401,7 +401,7 @@ The MCP server is **NOT part of the deployment stack**. It's an optional local t
 
 **What it does:**
 - Allows Claude Desktop to interact with your database using natural language
-- Provides 55 tools for managing jobs, parts, operations via AI
+- Provides 50 tools for managing jobs, parts, operations via AI
 
 **Quick start:**
 ```bash

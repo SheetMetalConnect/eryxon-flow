@@ -202,7 +202,7 @@ https://your-mcp-server.fly.dev
 
 #### Option C: Docker
 
-**Dockerfile** (already included in `mcp-server/`):
+**Dockerfile** example:
 
 ```dockerfile
 FROM node:18-alpine
@@ -236,7 +236,7 @@ The server automatically detects which mode to use:
 
 ## Available Tools
 
-The MCP server provides **55 tools across 9 modules**:
+The MCP server provides **50 tools across 9 modules**:
 
 ### 1. Jobs (7 tools)
 - `fetch_jobs` - Query jobs with filters and pagination
@@ -318,7 +318,7 @@ Local mode:
 npm start
 # Should output:
 # Eryxon Flow MCP Server
-# Loaded 55 tools from 9 modules
+# Loaded 50 tools from 9 modules
 # Eryxon Flow MCP Server running on stdio
 ```
 
@@ -344,7 +344,7 @@ Ask Claude:
 "What tools do you have available from Eryxon Flow?"
 ```
 
-Claude should list all 55 tools.
+Claude should list all 50 tools.
 
 ---
 

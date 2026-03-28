@@ -48,10 +48,10 @@ Navigate to **Admin → Data Import** in the web UI.
 | ERP Concept | Eryxon Entity | Sync Endpoint |
 |-------------|---------------|---------------|
 | Sales Order | Job | `/api-jobs/sync` |
-| Work Order / Line Item | Part | `/api-parts/sync` |
-| Routing Step | Operation | `/api-operations/sync` |
 | Work Center | Cell | `/api-cells/sync` |
 | Equipment / Tooling | Resource | `/api-resources/sync` |
+
+Parts and operations are synced via the unified `/api-erp-sync` endpoint or created nested within jobs.
 
 ## Key Fields
 
@@ -81,20 +81,19 @@ Timestamp of the last successful sync, useful for incremental updates.
 
 - [CSV Import](./csv-import.md) - Step-by-step CSV import instructions
 - [REST API Overview](/architecture/connectivity-rest-api/) - Endpoints and auth
-- Swagger/OpenAPI - Available in the app at `/api-docs`
+- [REST API Reference](/api/rest-api-reference/) - Full endpoint documentation
 
 ## Database Schema
 
 The sync infrastructure adds these columns to core tables:
 
 ```sql
--- Added to jobs, parts, operations, resources, cells
+-- Added to jobs, parts, cells, resources
 external_id TEXT,              -- ERP identifier
 external_source TEXT,          -- Source system name
 synced_at TIMESTAMPTZ,         -- Last sync timestamp
-sync_hash TEXT,                -- Payload hash for change detection
 
--- Soft delete support
+-- Soft delete support (jobs, cells)
 deleted_at TIMESTAMPTZ,        -- NULL = active
 deleted_by UUID                -- User who deleted
 ```

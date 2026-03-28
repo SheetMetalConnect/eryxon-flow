@@ -10,12 +10,12 @@ description: "Operational reference for the Eryxon Flow MCP server."
 ## Features
 
 - Auto-detects direct Supabase or REST API connection
-- **55 tools across 9 modules** for jobs, parts, operations, quality, shipping, analytics
+- **50 tools across 9 modules** for jobs, parts, operations, quality, shipping, analytics
 - **Production-grade validation** with Zod runtime type checking
 - **Tool factory pattern** reducing code duplication by 60%
 - Multi-tenant safe via API keys or RLS
 - Deploy to Railway, Fly.io, or run locally
-- **90-test suite** with 100% pass rate
+- Multi-tenant safe with Zod runtime type checking
 
 ## Quick Start
 

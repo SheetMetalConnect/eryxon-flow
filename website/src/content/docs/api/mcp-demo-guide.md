@@ -41,7 +41,7 @@ npm run dev
 You should see:
 ```
 Eryxon Flow MCP Server
-Loaded 55 tools from 9 modules
+Loaded 50 tools from 9 modules
 Eryxon Flow MCP Server running on stdio
 ```
 
@@ -54,7 +54,7 @@ Eryxon Flow MCP Server running on stdio
 - Substeps (5 tools) - Operation substeps
 - Dashboard (3 tools) - Production metrics
 - Scrap (7 tools) - Scrap tracking and analytics
-- Agent Batch (16 tools) - Batch operations for AI agents
+- Agent Batch (11 tools) - Batch operations for AI agents
 
 ### Configure Claude Desktop
 
@@ -195,34 +195,7 @@ For complete setup instructions including cloud deployment options, see the [MCP
 
 ---
 
-### Scenario 5: ERP Integration 
-**Objective**: Show bidirectional sync with external ERP systems.
-
-1. **Check Sync Differences**
-   ```
-   "Compare our current jobs with this ERP data and show me the differences:
-   [
-     { external_id: 'SAP-123', external_source: 'SAP', job_number: 'JOB-001', customer: 'Acme' },
-     { external_id: 'SAP-124', external_source: 'SAP', job_number: 'JOB-002', customer: 'Beta Corp' }
-   ]"
-   ```
-   Uses `erp_sync_diff`.
-
-2. **Lookup External ID**
-   ```
-   "Find the local job for SAP external ID 'SAP-123'"
-   ```
-   Uses `erp_lookup_external_id`.
-
-3. **Execute Sync**
-   ```
-   "Sync this ERP data with our system, skipping unchanged records"
-   ```
-   Uses `erp_sync_execute`.
-
----
-
-### Scenario 6: Operations Management 
+### Scenario 5: Operations Management
 **Objective**: Show granular operation control.
 
 1. **Fetch Operations**

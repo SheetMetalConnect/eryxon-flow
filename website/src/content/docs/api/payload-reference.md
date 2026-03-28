@@ -553,7 +553,7 @@ GET /functions/v1/api-substeps?operation_id=<uuid>&completed=false
 ```json
 {
   "url": "https://your-erp.com/webhooks/eryxon",
-  "event_type": "job.completed",
+  "events": ["operation.started", "operation.completed"],
   "active": true
 }
 ```
@@ -561,20 +561,18 @@ GET /functions/v1/api-substeps?operation_id=<uuid>&completed=false
 | Field | Type | Required | Constraints |
 |-------|------|----------|-------------|
 | `url` | string | **Yes** | Valid URL |
-| `event_type` | string | **Yes** | See webhook events list |
+| `events` | string[] | **Yes** | Array of event types |
 | `active` | boolean | No | default `true` |
 
 **Available event types:**
 `job.created`, `job.started`, `job.stopped`, `job.resumed`, `job.completed`, `job.updated`,
-`part.created`, `part.updated`, `part.started`, `part.completed`,
 `operation.started`, `operation.paused`, `operation.resumed`, `operation.completed`,
-`issue.created`, `ncr.created`, `ncr.verified`,
-`step.added`, `step.completed`
+`issue.created`
 
 ### GET - List Webhooks
 
 ```
-GET /functions/v1/api-webhooks?event_type=job.completed&active=true
+GET /functions/v1/api-webhooks?active=true
 ```
 
 ### PATCH - Update Webhook
@@ -788,11 +786,7 @@ not_started ──start──> in_progress ──pause──> on_hold
 Every request must include an API key:
 
 ```bash
-# Method 1: Bearer token (recommended)
 curl -H "Authorization: Bearer ery_live_xxxxxxxxxx" ...
-
-# Method 2: X-API-Key header
-curl -H "X-API-Key: ery_live_xxxxxxxxxx" ...
 ```
 
 ### Pagination

@@ -257,7 +257,7 @@ src/
 │       └── MetadataDisplay.tsx        # Legacy generic display (still used)
 ├── pages/
 │   └── admin/
-│       └── ConfigResources.tsx        # Resource management with metadata support
+│       └── config/Resources.tsx        # Resource management with metadata support
 ├── components/
 │   └── operator/
 │       └── OperationDetailModal.tsx   # Operator task view with enhanced metadata
@@ -474,7 +474,3 @@ For questions or issues with the metadata system:
 - Review example implementations in the codebase
 - Consult the TypeScript type definitions in `src/types/metadata.ts`
 
----
-
-**Last Updated:** 2025-11-17
-**Version:** 1.0.0

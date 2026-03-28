@@ -52,7 +52,7 @@ The important behavior is:
 
 ## AI Integration (MCP)
 
-The **[Model Context Protocol (MCP)](/guides/mcp-setup)** enables AI agents to interact with Eryxon Flow programmatically through 55 specialized tools across 9 modules.
+The **[Model Context Protocol (MCP)](/guides/mcp-setup)** enables AI agents to interact with Eryxon Flow programmatically through 50 specialized tools across 9 modules.
 
 **AI agents can:**
 - Fetch and update jobs/parts
