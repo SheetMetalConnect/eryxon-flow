@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { TerminalJob } from "@/types/terminal";
 import { getDueUrgency, dueUrgencyTextClass } from "@/lib/due-date";
+import { TerminalCellInfo } from "./TerminalCellInfo";
 
 interface JobRowProps {
   job: TerminalJob;
@@ -92,17 +93,17 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
         </Badge>
       </td>
 
-      {/* Cell */}
-      <td className="whitespace-nowrap px-2 py-1.5 text-sm text-foreground">
-        <span
-          className="inline-block rounded px-2 py-0.5 text-xs font-medium"
-          style={{
-            backgroundColor: job.cellColor ? `${job.cellColor}20` : "transparent",
-            color: job.cellColor || "inherit",
-          }}
-        >
-          {String(job.cellName || "-")}
-        </span>
+      {/* Cell — POLCA signal: current → next cell with GO/PAUSE */}
+      <td className="whitespace-nowrap px-2 py-1.5">
+        <TerminalCellInfo
+          operationId={job.operationId}
+          partId={job.partId}
+          currentCellId={job.cellId}
+          currentCellName={String(job.cellName || "-")}
+          currentCellColor={job.cellColor || "#3b82f6"}
+          currentSequence={job.currentSequence}
+          variant={variant}
+        />
       </td>
 
       {/* Material */}
@@ -168,6 +169,24 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
             </div>
           ) : null}
         </div>
+      </td>
+
+      {/* Backlog Status */}
+      <td className="whitespace-nowrap px-2 py-1.5">
+        {dueUrgency === "overdue" ? (
+          <span className="inline-flex items-center gap-1 rounded bg-red-500/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-500">
+            {t("terminal.backlog.overdue", "Te laat")}
+            <span className="text-red-400">▶</span>
+          </span>
+        ) : dueUrgency === "today" ? (
+          <span className="inline-flex items-center gap-1 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-500">
+            {t("terminal.backlog.today", "Vandaag")}
+          </span>
+        ) : dueUrgency === "soon" ? (
+          <span className="text-[10px] font-medium text-orange-400">
+            {t("terminal.backlog.soon", "Binnenkort")}
+          </span>
+        ) : null}
       </td>
     </tr>
   );
