@@ -57,7 +57,7 @@ chore: maintenance tasks
 
 ## Release Process
 
-Releases follow semantic versioning. Current version: **0.3.3**
+Releases follow semantic versioning. Current version: **0.4.0**
 
 1. Collect merged PRs since last release
 2. Update version in `package.json`
