@@ -34,6 +34,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useOperator } from "@/contexts/OperatorContext";
 import CurrentlyTimingWidget from "./CurrentlyTimingWidget";
 import { OperatorSwitcher } from "./OperatorSwitcher";
+import { OperatorStatusBar } from "./OperatorStatusBar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { AppTour } from "@/components/onboarding";
@@ -173,30 +174,15 @@ export const OperatorLayout = ({
               )}
             </div>
 
-            {/* Center: Terminal cell selector slot + Active Operator */}
-            <div className="flex items-center gap-3">
-              <div id="terminal-header-slot" />
-            </div>
+            {/* Center: empty — operator info moved to status bar */}
             <div className="flex items-center gap-2">
-              {activeOperator ? (
-                <div className="flex items-center gap-2 rounded-full border border-green-500/30 bg-green-500/10 px-2 py-1 sm:px-3">
-                  <div className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-green-500" />
-                  <UserCheck className="hidden h-3.5 w-3.5 shrink-0 text-green-500 sm:block" />
-                  <span className="max-w-[80px] truncate text-xs font-bold text-green-500 sm:max-w-[120px]">
-                    {activeOperator.full_name}
-                  </span>
-                  <span className="hidden font-mono text-[10px] text-green-500/70 sm:block">
-                    {activeOperator.employee_id}
-                  </span>
-                </div>
-              ) : (
+              {!activeOperator && (
                 <OperatorSwitcher variant="button" className="h-8" />
               )}
             </div>
 
-            {/* Right: Timing + Actions */}
+            {/* Right: Actions */}
             <div className="flex items-center gap-1.5">
-              <TimingHeaderIndicator />
               <SearchTriggerButton onClick={() => setSearchOpen(true)} compact />
               <ThemeToggle variant="dropdown" />
               <LanguageSwitcher />
@@ -260,6 +246,8 @@ export const OperatorLayout = ({
             </div>
           </div>
         </header>
+
+        <OperatorStatusBar />
 
         <TrialStatusBanner />
 

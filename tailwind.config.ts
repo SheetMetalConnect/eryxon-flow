@@ -253,6 +253,14 @@ export default {
             opacity: "0.5",
           },
         },
+        "stripe-scroll": {
+          from: {
+            backgroundPosition: "0 0",
+          },
+          to: {
+            backgroundPosition: "34px 34px",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -260,6 +268,8 @@ export default {
         "fade-in-up": "fadeInUp 0.8s ease-out",
         float: "float 20s infinite ease-in-out",
         pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "stripe-scroll": "stripe-scroll 8s linear infinite",
+        "stripe-scroll-fast": "stripe-scroll 4s linear infinite",
       },
       transitionDuration: {
         base: "150ms",
