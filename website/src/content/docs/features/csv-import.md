@@ -1,73 +1,92 @@
 ---
-title: "CSV Import"
-description: "Import your existing data into Eryxon Flow using CSV files."
+title: CSV Import
+description: Import your existing data into Eryxon Flow using CSV files.
 ---
-
-
 
 Eryxon Flow includes a CSV import wizard for batch data import from spreadsheets or ERP exports.
 
-## Accessing the Import Wizard
+## Import Order
 
-1. Navigate to **Admin → Data Import**
-2. Or directly visit `/admin/data-import`
+Import in this order to satisfy dependencies:
 
-## Import Process
+1. **Cells** — production cells and work centers
+2. **Resources** — machines, tooling, fixtures
+3. **Jobs** — customer orders and work orders
+4. **Parts** — parts within jobs (references jobs via `job_external_id`)
+5. **Operations** — routing steps (references parts via `part_external_id`, cells via `cell_name`)
 
-### Step 1: Select Entity
+## How To Import
 
-Choose the type of data you want to import:
+1. Navigate to **Data Import** in the admin sidebar
+2. Select the entity type (Jobs, Parts, Operations, Cells, or Resources)
+3. Upload your CSV file — drag and drop or click to browse
+4. Map CSV columns to Eryxon fields — auto-mapping matches by column name
+5. Preview and validate — fix any errors before importing
+6. Import — records are processed in batches with real-time progress
+7. Review results — see created, updated, and error counts
 
-| Entity | Description |
-|--------|-------------|
-| **Jobs** | Sales orders and manufacturing jobs |
-| **Parts** | Parts, components, and assemblies |
-| **Operations** | Manufacturing operations and routing steps |
-| **Cells** | Manufacturing cells and work centers |
-| **Resources** | Tools, fixtures, molds, and equipment |
+## Templates
 
-### Step 2: Upload CSV File
+Ready-to-use CSV templates are included in the repository. Download, fill in your own data, and import.
 
-- Drag and drop your CSV file or click to browse
-- Download a template if you need the correct column format
-- File must be in CSV format (comma-separated values)
+| Template | Download |
+|----------|----------|
+| Cells | [cells.csv](https://raw.githubusercontent.com/SheetMetalConnect/eryxon-flow/main/templates/csv/cells.csv) |
+| Jobs | [jobs.csv](https://raw.githubusercontent.com/SheetMetalConnect/eryxon-flow/main/templates/csv/jobs.csv) |
+| Parts | [parts.csv](https://raw.githubusercontent.com/SheetMetalConnect/eryxon-flow/main/templates/csv/parts.csv) |
+| Operations | [operations.csv](https://raw.githubusercontent.com/SheetMetalConnect/eryxon-flow/main/templates/csv/operations.csv) |
+| Resources | [resources.csv](https://raw.githubusercontent.com/SheetMetalConnect/eryxon-flow/main/templates/csv/resources.csv) |
 
-### Step 3: Map Fields
+### cells.csv
 
-Match your CSV columns to Eryxon fields:
+```csv
+external_id,external_source,name,sequence,color,capacity_hours_per_day,wip_limit
+CELL-LASER,ERP,Lasersnijden,1,#ef4444,8,15
+CELL-KANT,ERP,CNC Kantbank,2,#f59e0b,8,10
+CELL-LAS,ERP,Lassen,3,#3b82f6,8,8
+CELL-MONT,ERP,Montage,4,#8b5cf6,8,6
+CELL-AFW,ERP,Afwerking,5,#10b981,8,12
+```
 
-- Required fields are marked with an asterisk (*)
-- Columns can be mapped to "-- Ignore --" to skip them
-- Auto-mapping attempts to match columns by name
+### jobs.csv
 
-### Step 4: Preview & Validate
+```csv
+external_id,external_source,job_number,customer,due_date,status,notes
+JOB-2026-001,ERP,WO-2026-0501,Hygienisch Staal BV,2026-05-15,not_started,Foodgrade RVS constructie
+JOB-2026-002,ERP,WO-2026-0502,Metaalbewerking NL,2026-04-30,not_started,Chassis onderdelen
+JOB-2026-003,ERP,WO-2026-0503,Constructiewerk Van Dam,2026-06-01,not_started,Staalconstructie hal 3
+```
 
-Review validation results before importing:
+### parts.csv
 
-- **Valid Records** - Ready to import
-- **Invalid Records** - Have errors that need fixing
+```csv
+external_id,external_source,part_number,job_external_id,material,quantity,notes
+PART-001,ERP,PLAAT-S235-001,JOB-2026-001,S235,4,Bodemplaat 1200x800x6
+PART-002,ERP,RVS-304-DEKSEL,JOB-2026-001,RVS 304,8,Deksel met uitsparing
+PART-003,ERP,RVS-316L-FRAME,JOB-2026-001,RVS 316L,2,Draagframe foodgrade
+PART-004,ERP,S355-CHASSIS-L,JOB-2026-002,S355J2,4,Langsligger 3000mm
+```
 
-Common validation errors:
-- Missing required fields
-- Invalid date formats (use YYYY-MM-DD)
-- Reference not found (e.g., job_external_id doesn't exist)
+### operations.csv
 
-### Step 5: Import
+```csv
+external_id,external_source,operation_name,part_external_id,cell_name,sequence,estimated_time_minutes,notes
+OP-001,ERP,Lasersnijden,PART-001,Lasersnijden,1,120,6mm S235 N2
+OP-002,ERP,Kanten,PART-001,CNC Kantbank,2,90,4x 90deg
+OP-003,ERP,Lasersnijden,PART-002,Lasersnijden,1,60,3mm RVS 304 N2
+OP-004,ERP,Kanten,PART-002,CNC Kantbank,2,45,2x 90deg + 1x 135deg
+OP-005,ERP,Lassen,PART-002,Lassen,3,180,TIG RVS
+```
 
-Click "Start Import" to process your data.
+### resources.csv
 
-- Records are processed in batches of 100
-- Progress is shown in real-time
-- Each record shows created/updated/error status
-
-### Step 6: Review Results
-
-See a summary of your import:
-
-- Total records processed
-- Created count
-- Updated count
-- Error count with details
+```csv
+external_id,external_source,name,type,identifier,location,notes
+RES-001,ERP,Trumpf TruLaser 3030,machine,TL-3030-01,Hal 1,6kW fiberlaser
+RES-002,ERP,Trumpf TruBend 5130,machine,TB-5130-01,Hal 1,130 ton kantpers
+RES-003,ERP,Fronius TPS 500i,machine,FR-500i-01,Hal 2,TIG/MIG lasapparaat
+RES-004,ERP,Matrijs V16-88,tooling,V16-88,Gereedschapskast A3,Kantpers matrijs
+```
 
 ## Field Reference
 
@@ -78,10 +97,10 @@ See a summary of your import:
 | `job_number` | Yes | Unique job identifier |
 | `customer` | No | Customer name |
 | `due_date` | No | Due date (YYYY-MM-DD) |
-| `priority` | No | Priority (0-10) |
+| `status` | No | `not_started`, `in_progress`, `completed` |
 | `notes` | No | Additional notes |
-| `external_id` | No | ERP identifier for sync |
-| `external_source` | No | Source system name |
+| `external_id` | Yes | ERP identifier for upsert |
+| `external_source` | Yes | Source system name |
 
 ### Parts
 
@@ -89,112 +108,54 @@ See a summary of your import:
 |-------|----------|-------------|
 | `part_number` | Yes | Part number |
 | `job_external_id` | Yes | External ID of parent job |
-| `material` | No | Material type |
+| `material` | No | Material type (e.g. S235, RVS 304) |
 | `quantity` | No | Quantity to produce |
-| `notes` | No | Additional notes |
-| `external_id` | No | ERP identifier for sync |
-| `external_source` | No | Source system name |
+| `external_id` | Yes | ERP identifier for upsert |
+| `external_source` | Yes | Source system name |
 
 ### Operations
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `operation_name` | Yes | Operation name |
+| `operation_name` | Yes | Operation name (e.g. Lasersnijden, Kanten) |
 | `part_external_id` | Yes | External ID of parent part |
-| `cell_name` | Yes | Name of the cell/work center |
-| `sequence` | No | Order in routing |
-| `estimated_time_minutes` | No | Estimated time |
-| `notes` | No | Instructions or notes |
-| `external_id` | No | ERP identifier for sync |
-| `external_source` | No | Source system name |
+| `cell_name` | Yes | Name of the cell (must match exactly) |
+| `sequence` | No | Order in routing (1, 2, 3...) |
+| `estimated_time_minutes` | No | Estimated time in minutes |
+| `external_id` | Yes | ERP identifier for upsert |
+| `external_source` | Yes | Source system name |
 
 ### Cells
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `name` | Yes | Cell/work center name |
-| `color` | No | Hex color (e.g., #3b82f6) |
+| `name` | Yes | Cell name |
 | `sequence` | No | Display order |
-| `active` | No | true/false |
-| `external_id` | No | ERP identifier for sync |
-| `external_source` | No | Source system name |
+| `color` | No | Hex color (e.g. #ef4444) |
+| `capacity_hours_per_day` | No | Daily capacity in hours |
+| `wip_limit` | No | Max concurrent operations |
+| `external_id` | Yes | ERP identifier for upsert |
+| `external_source` | Yes | Source system name |
 
 ### Resources
 
 | Field | Required | Description |
 |-------|----------|-------------|
 | `name` | Yes | Resource name |
-| `type` | Yes | tooling, fixture, mold, material, equipment |
-| `description` | No | Description |
-| `identifier` | No | Asset tag or identifier |
+| `type` | Yes | `machine`, `tooling`, `fixture`, `mold`, `material`, `equipment` |
+| `identifier` | No | Asset tag or serial number |
 | `location` | No | Physical location |
-| `status` | No | available, in_use, maintenance |
-| `external_id` | No | ERP identifier for sync |
-| `external_source` | No | Source system name |
-
-## Sample CSV Templates
-
-### Jobs Template
-
-```csv
-job_number,customer,due_date,priority,notes,external_id,external_source
-JOB-2024-001,Acme Corp,2024-12-31,5,Rush order,SO-12345,SAP
-JOB-2024-002,TechCo,2025-01-15,3,,SO-12346,SAP
-```
-
-### Parts Template
-
-```csv
-part_number,job_external_id,material,quantity,notes,external_id,external_source
-BRACKET-A,SO-12345,Steel 304,25,,SO-12345-10,SAP
-PLATE-B,SO-12345,Aluminum 6061,50,,SO-12345-20,SAP
-```
-
-### Operations Template
-
-```csv
-operation_name,part_external_id,cell_name,sequence,estimated_time_minutes,notes,external_id,external_source
-Laser Cut,SO-12345-10,Cutting,1,30,Use 1000W laser,SO-12345-10-010,SAP
-Bend 90°,SO-12345-10,Bending,2,15,,SO-12345-10-020,SAP
-```
-
-## Import Order
-
-For a complete data migration, import in this order:
-
-1. **Cells** - Must exist before operations reference them
-2. **Resources** - No dependencies
-3. **Jobs** - No dependencies
-4. **Parts** - Requires jobs to exist (via job_external_id)
-5. **Operations** - Requires parts and cells to exist
+| `external_id` | Yes | ERP identifier for upsert |
+| `external_source` | Yes | Source system name |
 
 ## Upsert Behavior
 
-When `external_id` is provided:
-
-- **New record**: If external_id doesn't exist, creates new record
-- **Existing record**: If external_id exists, updates the record
-
-This allows re-running imports without creating duplicates.
+Records are matched by `external_id` + `external_source` within your tenant. Importing the same file twice updates existing records instead of creating duplicates.
 
 ## Troubleshooting
 
-### "Reference not found" Error
+**"Reference not found"** — The parent record does not exist yet. Import cells before operations, jobs before parts.
 
-The parent record doesn't exist yet. Check:
-- For Parts: job_external_id must match an existing job's external_id
-- For Operations: part_external_id and cell_name must exist
+**"Invalid date format"** — Use `YYYY-MM-DD` (e.g. 2026-05-15).
 
-### "Invalid date format" Error
-
-Use ISO date format: `YYYY-MM-DD` (e.g., 2024-12-31)
-
-### "Required field missing" Error
-
-Ensure all required fields have values. Empty cells for required fields will fail validation.
-
-## Related Documentation
-
-- [ERP Integration Overview](./erp-integration.md)
-- [REST API Overview](/architecture/connectivity-rest-api/)
-- Swagger/OpenAPI - Available in the app at `/api-docs`
+**"Required field missing"** — Every record needs `external_id` and `external_source` for the sync to work.
