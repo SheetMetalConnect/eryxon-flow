@@ -334,7 +334,16 @@ export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null
         .eq("tenant_id", tenantId)
         .in("job_id", jobIds);
 
-      if (partsError) throw partsError;
+      if (partsError) {
+        console.error('[useMultipleJobsRouting] parts query failed:', partsError);
+        throw partsError;
+      }
+
+      console.debug('[useMultipleJobsRouting]', {
+        jobIds: jobIds.length,
+        partsFound: parts?.length ?? 0,
+        tenantId,
+      });
 
       const partIds = (parts || []).map((p: { id: string }) => p.id);
       const partJobMap = Object.fromEntries(
@@ -342,6 +351,7 @@ export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null
       );
 
       if (partIds.length === 0) {
+        console.warn('[useMultipleJobsRouting] No parts found for jobs — Flow will be empty');
         setRoutings({});
         setLoading(false);
         return;
@@ -367,7 +377,13 @@ export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null
         .eq("tenant_id", tenantId)
         .in("part_id", partIds);
 
-      if (queryError) throw queryError;
+      if (queryError) {
+        console.error('[useMultipleJobsRouting] operations query failed:', queryError);
+        throw queryError;
+      }
+
+      console.debug('[useMultipleJobsRouting] operations found:', data?.length ?? 0,
+        'sample cells type:', data?.[0]?.cells ? (Array.isArray(data[0].cells) ? 'ARRAY' : 'object') : 'null');
 
       const jobRoutingsMap: Record<string, Map<string, CellRoutingData>> = {};
 
