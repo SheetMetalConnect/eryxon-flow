@@ -39,7 +39,6 @@ import {
   Activity,
   Flag,
   Info,
-  Factory,
   CalendarClock,
   Radio,
   Truck,
@@ -296,11 +295,26 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     <div className="flex h-full flex-col">
       <div className="flex h-12 items-center border-b border-border-subtle px-3">
         <div className="flex items-center gap-2">
-          <Factory className="h-6 w-6 text-foreground/80" strokeWidth={1.5} />
+          <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+            <rect width="32" height="32" rx="7" fill="url(#lg1)"/>
+            <rect x="2.5" y="2.5" width="27" height="27" rx="5" fill="currentColor" className="text-background"/>
+            <rect x="7" y="7.5" width="18" height="3" rx="1.5" fill="url(#lg2)"/>
+            <rect x="7" y="14.5" width="13" height="3" rx="1.5" fill="url(#lg2)" opacity="0.65"/>
+            <rect x="7" y="21.5" width="18" height="3" rx="1.5" fill="url(#lg2)"/>
+            <defs>
+              <linearGradient id="lg1" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#2563eb"/><stop offset="1" stopColor="#06b6d4"/>
+              </linearGradient>
+              <linearGradient id="lg2" x1="7" y1="7" x2="25" y2="25" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#60a5fa"/><stop offset="1" stopColor="#22d3ee"/>
+              </linearGradient>
+            </defs>
+          </svg>
           {!collapsed && (
-            <span className="text-sm font-bold text-foreground">
-              Eryxon Flow
-            </span>
+            <div className="flex flex-col leading-none">
+              <span className="text-xs font-extrabold tracking-widest text-foreground">ERYX.ON</span>
+              <span className="text-[9px] font-normal tracking-[0.2em] text-muted-foreground">FLOW</span>
+            </div>
           )}
         </div>
       </div>
