@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useOperator } from "@/contexts/OperatorContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,7 @@ type NcrCategory = "material_defect" | "dimensional" | "surface_finish" | "proce
 
 export default function IssueForm({ operationId, open, onOpenChange, onSuccess, prefilledData }: IssueFormProps) {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { activeOperator } = useOperator();
   const operatorId = activeOperator?.id || profile?.id;
   const operatorName = activeOperator?.full_name || profile?.full_name || 'Unknown';

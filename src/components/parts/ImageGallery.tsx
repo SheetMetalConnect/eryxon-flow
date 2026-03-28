@@ -21,7 +21,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { cn } from "@/lib/utils";
 import { logger } from '@/lib/logger';
 
@@ -49,7 +49,7 @@ export function ImageGallery({
   className,
 }: ImageGalleryProps) {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const [images, setImages] = useState<ImageInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);

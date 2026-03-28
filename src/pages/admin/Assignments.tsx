@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { logger } from "@/lib/logger";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -87,7 +87,7 @@ interface Assignment {
 
 export default function Assignments() {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const [parts, setParts] = useState<Part[]>([]);
   const [operators, setOperators] = useState<Operator[]>([]);
   const [shopFloorOperators, setShopFloorOperators] = useState<ShopFloorOperator[]>([]);

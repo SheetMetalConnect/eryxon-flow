@@ -1,4 +1,4 @@
-import { useAuth } from '@/contexts/AuthContext';
+import { useTenant } from '@/hooks/useTenant';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { QueryKeys } from '@/lib/queryClient';
@@ -121,7 +121,7 @@ export const FEATURE_FLAG_METADATA: FeatureFlagMeta[] = [
  */
 export function useFeatureFlags() {
   const { t } = useTranslation();
-  const { tenant } = useAuth();
+  const { tenant } = useTenant();
   const queryClient = useQueryClient();
 
   const { data: flags, isLoading, error } = useQuery({

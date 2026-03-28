@@ -20,7 +20,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
 import { STEPViewer } from "@/components/STEPViewerLazy";
 import { PDFViewer } from "@/components/PDFViewerLazy";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { UploadProgress } from "@/components/UploadProgress";
 import { usePMI, isPMIServiceEnabled } from "@/hooks/usePMI";
@@ -48,7 +48,7 @@ interface PartDetailModalProps {
 }
 
 export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetailModalProps) {
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { routing, loading: routingLoading } = usePartRouting(partId, profile?.tenant_id || null);

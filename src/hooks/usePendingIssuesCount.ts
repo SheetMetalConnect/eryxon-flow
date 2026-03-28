@@ -2,11 +2,11 @@ import React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { QueryKeys } from '@/lib/queryClient';
-import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
 
 export function usePendingIssuesCount() {
   const queryClient = useQueryClient();
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   const tenantId = profile?.tenant_id;
 

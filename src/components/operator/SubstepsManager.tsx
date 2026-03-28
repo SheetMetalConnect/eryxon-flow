@@ -32,7 +32,7 @@ import {
   Ban,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { IconPicker, IconDisplay } from "@/components/ui/icon-picker";
@@ -225,7 +225,7 @@ function SortableSubstepItem({ substep, onStatusChange, onDelete, onNotesChange 
 
 export default function SubstepsManager({ operationId, operationName, onUpdate }: SubstepsManagerProps) {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const [substeps, setSubsteps] = useState<Substep[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(false);

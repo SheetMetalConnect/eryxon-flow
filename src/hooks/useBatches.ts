@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { QueryKeys } from "@/lib/queryClient";
@@ -100,7 +100,7 @@ export function useBatches(filters?: {
   batch_type?: BatchType;
   cell_id?: string;
 }) {
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   return useQuery({
     queryKey: QueryKeys.batches.all(profile?.tenant_id ?? "", filters as Record<string, unknown>),
@@ -135,7 +135,7 @@ export function useBatches(filters?: {
 }
 
 export function useBatch(batchId: string | undefined) {
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   return useQuery({
     queryKey: QueryKeys.batches.detail(batchId ?? ""),
@@ -163,7 +163,7 @@ export function useBatch(batchId: string | undefined) {
 }
 
 export function useSubBatches(batchId: string | undefined) {
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   return useQuery({
     queryKey: QueryKeys.batches.subBatches(batchId ?? "", profile?.tenant_id ?? ""),
@@ -186,7 +186,7 @@ export function useSubBatches(batchId: string | undefined) {
 }
 
 export function useBatchOperations(batchId: string | undefined) {
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   return useQuery({
     queryKey: QueryKeys.batches.operations(batchId ?? ""),
@@ -221,7 +221,7 @@ export function useBatchOperations(batchId: string | undefined) {
 }
 
 export function useBatchRequirements(batchId: string | undefined) {
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   return useQuery({
     queryKey: QueryKeys.batches.requirements(batchId ?? ""),
@@ -244,7 +244,7 @@ export function useBatchRequirements(batchId: string | undefined) {
 
 export function useCreateBatch() {
   const queryClient = useQueryClient();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { t } = useTranslation();
 
   return useMutation({
@@ -304,7 +304,7 @@ export function useCreateBatch() {
 
 export function useUpdateBatch() {
   const queryClient = useQueryClient();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { t } = useTranslation();
 
   return useMutation({
@@ -335,7 +335,7 @@ export function useUpdateBatch() {
 
 export function useUpdateBatchStatus() {
   const queryClient = useQueryClient();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { t } = useTranslation();
 
   return useMutation({
@@ -384,7 +384,7 @@ export function useUpdateBatchStatus() {
 
 export function useAddOperationsToBatch() {
   const queryClient = useQueryClient();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { t } = useTranslation();
 
   return useMutation({
@@ -428,7 +428,7 @@ export function useAddOperationsToBatch() {
 
 export function useRemoveOperationFromBatch() {
   const queryClient = useQueryClient();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { t } = useTranslation();
 
   return useMutation({
@@ -452,7 +452,7 @@ export function useRemoveOperationFromBatch() {
 
 export function useDeleteBatch() {
   const queryClient = useQueryClient();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { t } = useTranslation();
 
   return useMutation({
@@ -485,7 +485,7 @@ export function useDeleteBatch() {
 
 export function useCreateBatchRequirement() {
   const queryClient = useQueryClient();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { t } = useTranslation();
 
   return useMutation({

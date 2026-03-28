@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useTenant } from "@/hooks/useTenant";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,7 @@ interface McpServerLog {
 
 export default function McpServerSettings() {
   const { t } = useTranslation();
-  const { tenant } = useAuth();
+  const { tenant } = useTenant();
   const [config, setConfig] = useState<McpConfig | null>(null);
   const [health, setHealth] = useState<McpServerHealth | null>(null);
   const [logs, setLogs] = useState<McpServerLog[]>([]);

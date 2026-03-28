@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ interface ActiveEntry {
 
 export default function CurrentlyTimingWidget() {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { activeOperator } = useOperator();
   const operatorId = activeOperator?.id || profile?.id;
   const [activeEntries, setActiveEntries] = useState<ActiveEntry[]>([]);

@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { logger } from "@/lib/logger";
 import {
   Upload,
@@ -123,7 +123,7 @@ interface ImportResult {
 
 export default function DataImport() {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [currentStep, setCurrentStep] = useState<ImportStep>('select');

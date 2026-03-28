@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
+import { useTenant } from "@/hooks/useTenant";
 
 interface BrandLogoProps {
   /** Size variant */
@@ -39,7 +39,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   variant = "default",
 }) => {
   const { t } = useTranslation();
-  const { tenant } = useAuth();
+  const { tenant } = useTenant();
 
   const config = sizeConfig[size];
 

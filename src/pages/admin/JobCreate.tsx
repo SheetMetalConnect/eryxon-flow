@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { QueryKeys } from "@/lib/queryClient";
@@ -54,7 +54,7 @@ type Operation = {
 
 export default function JobCreate() {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { t } = useTranslation();
   const [step, setStep] = useState(1);
 

@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { QueryKeys } from "@/lib/queryClient";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
 import { logger } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
@@ -68,7 +68,7 @@ interface PartRow {
 export default function Parts() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
 
   const [fileViewerOpen, setFileViewerOpen] = useState(false);

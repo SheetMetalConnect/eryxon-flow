@@ -9,7 +9,7 @@
  */
 
 import { useState, useCallback, useMemo } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { logger } from '@/lib/logger';
 import {
   searchConfigs,
@@ -33,7 +33,7 @@ export type { SearchResult, SearchResultType, SearchFilters };
 export function useGlobalSearch() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   const searchFunctions = useMemo(
     () => createSearchFunctions(searchConfigs),

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useOperator } from "@/contexts/OperatorContext";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -43,7 +43,7 @@ interface Issue {
 
 export default function MyIssues() {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { activeOperator } = useOperator();
   const operatorId = activeOperator?.id || profile?.id;
   const [issues, setIssues] = useState<Issue[]>([]);

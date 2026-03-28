@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { Download, Archive, FileJson, FileSpreadsheet, Loader2 } from "lucide-react";
 import Papa from "papaparse";
 import JSZip from "jszip";
@@ -33,7 +33,7 @@ const EXPORTABLE_ENTITIES = [
 
 export default function DataExport() {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const [selectedEntities, setSelectedEntities] = useState<string[]>([]);
   const [isExporting, setIsExporting] = useState(false);
   const [exportFormat, setExportFormat] = useState<'json' | 'csv'>('csv');

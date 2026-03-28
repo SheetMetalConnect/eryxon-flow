@@ -35,7 +35,7 @@ import IssueForm from "@/components/operator/IssueForm";
 import ProductionQuantityModal from "@/components/operator/ProductionQuantityModal";
 import { JobFlowProgress } from "./JobFlowProgress";
 import { useCellQRMMetrics } from "@/hooks/useQRMMetrics";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { IconDisplay } from "@/components/ui/icon-picker";
 import { useTranslation } from "react-i18next";
@@ -94,7 +94,7 @@ export function DetailPanel({
   const [expandedOperations, setExpandedOperations] = useState<Set<string>>(
     new Set(),
   );
-  const { profile } = useAuth();
+  const profile = useProfile();
   const defaultTab: ViewerTab = job.hasModel ? "3d" : job.hasPdf ? "pdf" : "ops";
 
   useEffect(() => {

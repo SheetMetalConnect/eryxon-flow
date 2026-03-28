@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useTenant } from "@/hooks/useTenant";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import {
@@ -20,7 +20,7 @@ interface McpStatus {
 }
 
 export function McpServerStatus() {
-  const { tenant } = useAuth();
+  const { tenant } = useTenant();
   const navigate = useNavigate();
   const [status, setStatus] = useState<McpStatus>({
     status: "not_configured",

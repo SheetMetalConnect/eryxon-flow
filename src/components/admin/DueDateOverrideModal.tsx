@@ -16,7 +16,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 
 interface DueDateOverrideModalProps {
   jobId: string;
@@ -30,7 +30,7 @@ export default function DueDateOverrideModal({
   onUpdate,
 }: DueDateOverrideModalProps) {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const [overrideDate, setOverrideDate] = useState<Date | undefined>(undefined);
 
   const { data: job, isLoading } = useQuery({

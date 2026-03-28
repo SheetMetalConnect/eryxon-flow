@@ -4,15 +4,13 @@ import OperatorView from "./OperatorView";
 
 const mockFetchOperationsWithDetails = vi.fn();
 
-vi.mock("@/contexts/AuthContext", () => ({
-  useAuth: () => ({
-    profile: {
-      id: "profile-1",
-      tenant_id: "tenant-1",
-      role: "operator",
-      full_name: "Shared Terminal",
-      email: "terminal@example.com",
-    },
+vi.mock("@/hooks/useProfile", () => ({
+  useProfile: () => ({
+    id: "profile-1",
+    tenant_id: "tenant-1",
+    role: "operator",
+    full_name: "Shared Terminal",
+    email: "terminal@example.com",
   }),
 }));
 

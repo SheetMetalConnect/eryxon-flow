@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
 import { Database } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -21,7 +21,7 @@ export const useNotifications = (filters?: NotificationFilters) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   const fetchNotifications = useCallback(async () => {
     if (!profile) {

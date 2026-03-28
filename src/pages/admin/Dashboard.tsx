@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ColumnDef } from "@tanstack/react-table";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -104,7 +104,7 @@ function StatCard({
 
 export default function Dashboard() {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const navigate = useNavigate();
   const [activeWork, setActiveWork] = useState<ActiveWork[]>([]);
   const [stats, setStats] = useState({

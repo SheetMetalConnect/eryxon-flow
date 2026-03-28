@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/contexts/AuthContext";
+import { useTenant } from "@/hooks/useTenant";
 import { AlertTriangle, Clock, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { DOCS_SELF_HOSTING_URL } from "@/lib/config";
@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 export function TrialStatusBanner() {
   const { t } = useTranslation();
-  const { tenant } = useAuth();
+  const { tenant } = useTenant();
 
   if (!tenant) return null;
 

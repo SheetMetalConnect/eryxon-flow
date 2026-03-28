@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import Joyride, { CallBackProps, STATUS, Step, ACTIONS, EVENTS } from 'react-joyride';
-import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +12,7 @@ interface AppTourProps {
 }
 
 export function AppTour({ userRole, onComplete }: AppTourProps) {
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { t } = useTranslation();
   const [run, setRun] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
@@ -287,7 +287,7 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
 }
 
 export function useRestartTour() {
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { t } = useTranslation();
 
   const restartTour = useCallback(async () => {

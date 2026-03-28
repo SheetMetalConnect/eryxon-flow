@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '@/integrations/supabase/client'
-import { useAuth } from '@/contexts/AuthContext'
+import { useProfile } from '@/hooks/useProfile'
 import { QueryKeys } from '@/lib/queryClient'
 import { toast } from 'sonner'
 import type { ExceptionStatus, ExceptionWithExpectation } from '@/integrations/supabase/types/tables/expectations'
@@ -24,7 +24,7 @@ interface UseExceptionsOptions {
 export function useExceptions(options: UseExceptionsOptions = {}) {
   const { status = 'all', limit = 50 } = options
   const { t } = useTranslation(['admin', 'common'])
-  const { profile } = useAuth()
+  const profile = useProfile()
   const queryClient = useQueryClient()
 
   const {
@@ -177,7 +177,7 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
 }
 
 export function useException(exceptionId: string | undefined) {
-  const { profile } = useAuth()
+  const profile = useProfile()
 
   return useQuery({
     queryKey: QueryKeys.exceptions.detail(exceptionId ?? ''),

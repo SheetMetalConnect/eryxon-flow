@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { AlertTriangle, CheckCircle2, Layers, Circle, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 
@@ -23,7 +23,7 @@ interface AssemblyDependenciesProps {
  */
 export function AssemblyDependencies({ partId, className }: AssemblyDependenciesProps) {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const [childParts, setChildParts] = useState<ChildPart[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasChildren, setHasChildren] = useState(false);

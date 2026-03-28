@@ -23,7 +23,7 @@ import { Plus, Edit2, Save, X, CheckCircle2, Clock, Circle, Truck, MapPin, Packa
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { PartIssueBadge } from "@/components/issues/PartIssueBadge";
 import { IssuesSummarySection } from "@/components/issues/IssuesSummarySection";
 import { OperationsFlowVisualization } from "@/components/qrm/OperationsFlowVisualization";
@@ -78,7 +78,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [editedJob, setEditedJob] = useState<Record<string, any> | null>(null);
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { routing, loading: routingLoading } = useJobRouting(jobId, profile?.tenant_id ?? null);
 
   const { data: job, isLoading, error } = useQuery({

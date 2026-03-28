@@ -25,11 +25,8 @@ vi.mock('sonner', () => ({
   }),
 }));
 
-vi.mock('@/contexts/AuthContext', () => ({
-  useAuth: () => ({
-    profile: { id: 'user-1', tenant_id: 'tenant-1' },
-    session: { user: { id: 'user-1' } },
-  }),
+vi.mock('@/hooks/useProfile', () => ({
+  useProfile: () => ({ id: 'user-1', tenant_id: 'tenant-1' }),
 }));
 
 vi.mock('@/lib/upload-with-progress', () => ({

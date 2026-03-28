@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { Check, Minus, Plus, AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
@@ -31,7 +31,7 @@ export default function ProductionQuantityModal({
   onFileIssue,
 }: ProductionQuantityModalProps) {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   const [quantityGood, setQuantityGood] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);

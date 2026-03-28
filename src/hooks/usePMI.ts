@@ -11,7 +11,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSession } from '@/hooks/useSession';
 import { QueryKeys } from '@/lib/queryClient';
 import { logger } from '@/lib/logger';
 
@@ -158,7 +158,7 @@ export function isPMIServiceEnabled(): boolean {
 }
 
 export function usePMI(partId: string | undefined) {
-  const { session } = useAuth();
+  const { session } = useSession();
   const queryClient = useQueryClient();
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractionError, setExtractionError] = useState<string | null>(null);

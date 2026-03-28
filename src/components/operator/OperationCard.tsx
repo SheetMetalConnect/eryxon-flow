@@ -9,7 +9,7 @@ import {
   FileText,
   Box,
 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useOperationIssues } from "@/hooks/useOperationIssues";
 import OperationDetailModal from "./OperationDetailModal";
 import { useTranslation } from "react-i18next";
@@ -52,7 +52,7 @@ export default function OperationCard({
 }: OperationCardProps) {
   const { t } = useTranslation();
   const [showDetail, setShowDetail] = useState(false);
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { pendingCount, highestSeverity } = useOperationIssues(
     operation.id,
     profile?.tenant_id,

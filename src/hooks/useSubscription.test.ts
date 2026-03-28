@@ -3,7 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
-// Mock the auth context
+// Mock the profile hook
 const mockProfile = {
   id: 'user-1',
   tenant_id: 'tenant-1',
@@ -16,10 +16,8 @@ const mockProfile = {
   is_root_admin: false,
 };
 
-vi.mock('../contexts/AuthContext', () => ({
-  useAuth: vi.fn(() => ({
-    profile: mockProfile,
-  })),
+vi.mock('../hooks/useProfile', () => ({
+  useProfile: vi.fn(() => mockProfile),
 }));
 
 // Mock supabase

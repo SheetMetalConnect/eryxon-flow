@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { QueryKeys } from "@/lib/queryClient";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
 import { logger } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
@@ -89,7 +89,7 @@ interface JobData {
 export default function Jobs() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [overrideJobId, setOverrideJobId] = useState<string | null>(null);
 

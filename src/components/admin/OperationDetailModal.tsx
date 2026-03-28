@@ -38,7 +38,7 @@ import {
 import { toast } from "sonner";
 import { STEPViewer } from "@/components/STEPViewerLazy";
 import { PDFViewer } from "@/components/PDFViewerLazy";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { logger } from '@/lib/logger';
@@ -55,7 +55,7 @@ export default function OperationDetailModal({
   onUpdate,
 }: OperationDetailModalProps) {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const queryClient = useQueryClient();
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
   const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(null);

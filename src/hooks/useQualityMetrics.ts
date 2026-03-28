@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { QueryKeys } from "@/lib/queryClient";
 
 export interface QualityMetrics {
@@ -54,7 +54,7 @@ export interface ScrapReasonUsage {
 }
 
 export function useQualityMetrics() {
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   return useQuery({
     queryKey: QueryKeys.quality.metrics(profile?.tenant_id ?? ''),
@@ -187,7 +187,7 @@ export function useQualityMetrics() {
 }
 
 export function useScrapReasonUsage() {
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   return useQuery({
     queryKey: QueryKeys.quality.scrapUsage(profile?.tenant_id ?? ''),
@@ -241,7 +241,7 @@ export function useScrapReasonUsage() {
 }
 
 export function useJobQualityMetrics(jobId: string | undefined) {
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   return useQuery({
     queryKey: QueryKeys.quality.byJob(jobId ?? ''),
@@ -323,7 +323,7 @@ export function useJobQualityMetrics(jobId: string | undefined) {
 }
 
 export function usePartQualityMetrics(partId: string | undefined) {
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   return useQuery({
     queryKey: QueryKeys.quality.byPart(partId ?? ''),

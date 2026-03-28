@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
 import { Database } from '@/integrations/supabase/types';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Pin } from 'lucide-react';
@@ -13,7 +13,7 @@ type Notification = Database['public']['Tables']['notifications']['Row'];
  * for new notifications that arrive while the user is active in the app.
  */
 export const NotificationToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { togglePin } = useNotifications();
   const lastNotificationIdRef = useRef<string | null>(null);
 

@@ -28,8 +28,8 @@ vi.mock('@/integrations/supabase/client', () => ({
   },
 }));
 
-vi.mock('@/contexts/AuthContext', () => ({
-  useAuth: () => mockFns.mockUseAuth(),
+vi.mock('@/hooks/useProfile', () => ({
+  useProfile: () => mockFns.mockUseAuth()?.profile ?? null,
 }));
 
 // Create wrapper with QueryClient

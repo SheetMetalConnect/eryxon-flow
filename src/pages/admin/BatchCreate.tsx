@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { QueryKeys } from "@/lib/queryClient";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -73,7 +73,7 @@ export default function BatchCreate() {
   const { id } = useParams<{ id: string }>(); // Check for ID to determine if editing
   const isEditing = !!id;
 
-  const { profile } = useAuth();
+  const profile = useProfile();
   const createBatch = useCreateBatch();
   const updateBatch = useUpdateBatch();
   const { data: existingBatch, isLoading: batchLoading } = useBatch(id);

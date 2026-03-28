@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, CalendarOff } from "lucide-react";
 import { AutoScheduleButton } from "@/components/scheduler/AutoScheduleButton";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/contexts/AuthContext";
+import { useTenant } from "@/hooks/useTenant";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import {
     Tooltip,
@@ -154,7 +154,7 @@ const CapacityCell = memo(function CapacityCell({
 
 export default function CapacityMatrix() {
     const { t } = useTranslation();
-    const { tenant } = useAuth();
+    const { tenant } = useTenant();
     const [startDate, setStartDate] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
     const [selectedCell, setSelectedCell] = useState<any>(null);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);

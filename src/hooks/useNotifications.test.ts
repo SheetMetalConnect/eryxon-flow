@@ -34,8 +34,8 @@ vi.mock('@/integrations/supabase/client', () => ({
   },
 }));
 
-vi.mock('@/contexts/AuthContext', () => ({
-  useAuth: () => mockAuthState,
+vi.mock('@/hooks/useProfile', () => ({
+  useProfile: () => mockAuthState.profile,
 }));
 
 vi.mock('sonner', () => ({

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -40,7 +40,7 @@ interface Cell {
 
 export default function OperatorView() {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { activeOperator } = useOperator();
   const operatorId = activeOperator?.id || profile?.id;
   const [operations, setOperations] = useState<OperationWithDetails[]>([]);

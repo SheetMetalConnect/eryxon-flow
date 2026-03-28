@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -50,7 +50,7 @@ interface CellOption {
 
 export default function WorkQueue() {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { activeOperator } = useOperator();
   const [operations, setOperations] = useState<OperationWithDetails[]>([]);
   const [loading, setLoading] = useState(true);

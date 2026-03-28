@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { QueryKeys } from "@/lib/queryClient";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +29,7 @@ interface StuckTimeEntry {
 export default function StuckTimeEntries() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   const { data: stuckEntries, isLoading } = useQuery({
     queryKey: QueryKeys.timeEntries.stuck(profile?.tenant_id ?? ''),

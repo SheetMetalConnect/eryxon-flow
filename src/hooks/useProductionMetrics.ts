@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { QueryKeys } from "@/lib/queryClient";
 import { logger } from '@/lib/logger';
 
@@ -53,7 +53,7 @@ export interface OperationProductionSummary {
  * Hook for fetching production metrics for a specific operation
  */
 export function useOperationProductionMetrics(operationId: string | undefined) {
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   return useQuery({
     queryKey: QueryKeys.operations.production(operationId ?? ''),
@@ -156,7 +156,7 @@ export function useOperationProductionMetrics(operationId: string | undefined) {
  * Hook for fetching production metrics for a job (all operations)
  */
 export function useJobProductionMetrics(jobId: string | undefined) {
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   return useQuery({
     queryKey: QueryKeys.production.byJob(jobId ?? ''),
@@ -276,7 +276,7 @@ export function useJobProductionMetrics(jobId: string | undefined) {
  * Hook to record production quantity with optional scrap reasons
  */
 export function useRecordProduction() {
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   const recordQuantity = async (data: {
     operationId: string;

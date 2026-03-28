@@ -1,4 +1,4 @@
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useAllCellsQRMMetrics } from "@/hooks/useQRMMetrics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ChevronDown, ChevronRight } from "lucide-react";
@@ -34,7 +34,7 @@ interface Operation {
  * QRM Dashboard - Shows WIP metrics and operations by cell
  */
 export function QRMDashboard() {
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { cellsMetrics, loading } = useAllCellsQRMMetrics(profile?.tenant_id || null);

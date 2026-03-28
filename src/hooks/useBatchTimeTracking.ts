@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { startBatchTimeTracking, stopBatchTimeTracking } from "@/lib/database";
@@ -24,7 +24,7 @@ function resolveErrorMessage(t: (key: string) => string, message: string): strin
  * Check if a batch currently has active time entries (is being timed)
  */
 export function useBatchActiveTimer(batchId: string | undefined) {
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   return useQuery({
     queryKey: QueryKeys.batches.activeTimer(batchId ?? ""),
@@ -67,7 +67,7 @@ export function useBatchActiveTimer(batchId: string | undefined) {
  */
 export function useStartBatchTimer() {
   const queryClient = useQueryClient();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { t } = useTranslation();
 
   return useMutation({
@@ -92,7 +92,7 @@ export function useStartBatchTimer() {
  */
 export function useStopBatchTimer() {
   const queryClient = useQueryClient();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { t } = useTranslation();
 
   return useMutation({

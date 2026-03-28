@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../integrations/supabase/client';
-import { useAuth } from '../contexts/AuthContext';
+import { useProfile } from '../hooks/useProfile';
 import { logger } from '@/lib/logger';
 
 export type SubscriptionPlan = 'free' | 'pro' | 'premium' | 'enterprise' | 'self_hosted';
@@ -36,7 +36,7 @@ export interface ApiUsageStats {
 }
 
 export const useSubscription = () => {
-  const { profile } = useAuth();
+  const profile = useProfile();
   const [subscription, setSubscription] = useState<TenantSubscription | null>(null);
   const [usageStats, setUsageStats] = useState<TenantUsageStats | null>(null);
   const [apiUsageStats, setApiUsageStats] = useState<ApiUsageStats | null>(null);

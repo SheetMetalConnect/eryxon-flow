@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { PlanSelection, PlanType } from './PlanSelection';
 import { MockDataImport } from './MockDataImport';
 import { TeamSetup } from './TeamSetup';
-import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -17,7 +17,7 @@ const STEP_ICONS = [Users, CreditCard, Database, Rocket];
 
 export function OnboardingWizard() {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { subscription } = useSubscription();
   const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(1);

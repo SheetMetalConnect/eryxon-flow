@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { QueryKeys } from "@/lib/queryClient";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -62,7 +62,7 @@ export const Operations: React.FC = () => {
   const { t } = useTranslation();
   const [selectedOperationId, setSelectedOperationId] = useState<string | null>(null);
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
-  const { profile } = useAuth();
+  const profile = useProfile();
   const navigate = useNavigate();
 
   const { data: operations = [], isLoading, refetch } = useQuery({

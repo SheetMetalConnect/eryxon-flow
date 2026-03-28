@@ -11,7 +11,7 @@
 
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
 import { toast } from 'sonner';
 import { uploadFileWithProgress } from '@/lib/upload-with-progress';
 import { useTranslation } from 'react-i18next';
@@ -48,7 +48,7 @@ export interface UploadResult {
 
 export function useFileUpload() {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const [progress, setProgress] = useState<UploadProgress[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [storageQuota, setStorageQuota] = useState<StorageQuota | null>(null);

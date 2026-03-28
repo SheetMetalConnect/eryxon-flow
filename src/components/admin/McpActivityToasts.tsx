@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Zap, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
@@ -9,7 +9,7 @@ import { Zap, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
  * Displays toasts when MCP tools are executed
  */
 export function McpActivityToasts(): null {
-  const { profile } = useAuth();
+  const profile = useProfile();
 
   useEffect(() => {
     if (!profile?.tenant_id) return;

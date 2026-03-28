@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { generateMockData, clearMockData } from '@/lib/mockDataGenerator';
 import type { MockDataProgressStep } from '@/lib/mockDataGenerator';
-import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
@@ -48,7 +48,7 @@ const PROGRESS_STEP_ICONS: Record<string, React.ElementType> = {
 };
 
 export function MockDataImport({ onComplete, onSkip }: MockDataImportProps) {
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { t } = useTranslation();
   const [isImporting, setIsImporting] = useState(false);
   const [importComplete, setImportComplete] = useState(false);

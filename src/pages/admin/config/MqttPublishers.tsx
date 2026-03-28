@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { Plus, Trash2, RefreshCw, Radio, Wifi, WifiOff, Info } from "lucide-react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -66,7 +66,7 @@ const TOPIC_VARIABLES = [
 
 export default function ConfigMqttPublishers() {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const [publishers, setPublishers] = useState<MqttPublisher[]>([]);
   const [mqttLogs, setMqttLogs] = useState<MqttLog[]>([]);
   const [loading, setLoading] = useState(true);

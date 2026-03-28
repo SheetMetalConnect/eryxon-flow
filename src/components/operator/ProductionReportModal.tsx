@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { Check, Minus, Plus, AlertTriangle, Trash2, PlusCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useRecordProduction } from "@/hooks/useProductionMetrics";
@@ -49,7 +49,7 @@ export default function ProductionReportModal({
   onFileIssue,
 }: ProductionReportModalProps) {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { recordQuantity } = useRecordProduction();
 
   const [quantityGood, setQuantityGood] = useState<number>(0);

@@ -5,7 +5,7 @@ import {
   stopTimeTracking,
   completeOperation,
 } from "@/lib/database";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useOperator } from "@/contexts/OperatorContext";
 import {
   Sheet,
@@ -69,7 +69,7 @@ export default function OperationDetailModal({
   onUpdate,
 }: OperationDetailModalProps) {
   const { t } = useTranslation();
-  const { profile } = useAuth();
+  const profile = useProfile();
   const { activeOperator } = useOperator();
   const operatorId = activeOperator?.id || profile?.id;
   const [loading, setLoading] = useState(false);
