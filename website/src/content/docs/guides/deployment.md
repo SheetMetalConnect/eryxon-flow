@@ -9,7 +9,7 @@ description: "Application deployment guide for Eryxon Flow."
 
 ## Quick Start (Automated)
 
-The fastest way to deploy Eryxon MES:
+The fastest way to deploy Eryxon Flow:
 
 ```bash
 chmod +x scripts/setup.sh

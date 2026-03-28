@@ -564,7 +564,7 @@
     "selfHostedDescription": "Alle functies, onbeperkt gebruik op uw infrastructuur",
     "goSelfHosted": "Ga Zelf Hosten",
     "unlimitedWithSelfHost": "Onbeperkt met Zelf Hosten",
-    "selfHostBenefits": "Host Eryxon MES zelf voor onbeperkt gebruik en volledige controle over uw gegevens.",
+    "selfHostBenefits": "Host Eryxon Flow zelf voor onbeperkt gebruik en volledige controle over uw gegevens.",
     "benefit": {
       "unlimitedJobs": "Onbeperkte opdrachten",
       "unlimitedParts": "Onbeperkte onderdelen",
@@ -573,7 +573,7 @@
     },
     "viewGuide": "Bekijk Self-Hosting Handleiding",
     "needHelp": "Hulp Nodig?",
-    "helpDescription": "Sheet Metal Connect e.U. kan u helpen bij het opzetten en aanpassen van Eryxon MES voor uw activiteiten.",
+    "helpDescription": "Sheet Metal Connect e.U. kan u helpen bij het opzetten en aanpassen van Eryxon Flow voor uw activiteiten.",
     "usageThisMonth": "Gebruik deze maand",
     "users": "Gebruikers",
     "apiRequests": "API Verzoeken",
@@ -587,11 +587,11 @@
   "trialBanner": {
     "title": "U gebruikt de gratis proefversie",
     "titleWithDate": "Uw gratis proefperiode eindigt op {{date}}",
-    "description": "Bestanden en gegevens worden niet bewaard na de proefperiode. Host Eryxon MES zelf voor onbeperkt gebruik en volledig eigenaarschap van uw gegevens.",
+    "description": "Bestanden en gegevens worden niet bewaard na de proefperiode. Host Eryxon Flow zelf voor onbeperkt gebruik en volledig eigenaarschap van uw gegevens.",
     "daysRemaining": "{{count}} dag resterend",
     "daysRemaining_plural": "{{count}} dagen resterend",
     "expired": "Uw proefperiode is verlopen",
-    "expiredDescription": "Uw proefperiode is beëindigd. Host Eryxon MES zelf om uw gegevens te behouden en alle functies te blijven gebruiken.",
+    "expiredDescription": "Uw proefperiode is beëindigd. Host Eryxon Flow zelf om uw gegevens te behouden en alle functies te blijven gebruiken.",
     "upgradeCta": "Bekijk Self-Hosting Handleiding",
     "viewPlan": "Bekijk Plan"
   },

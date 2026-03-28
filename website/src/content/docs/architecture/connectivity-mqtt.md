@@ -5,7 +5,7 @@ description: "Outbound integrations for industrial automation and external notif
 
 
 
-Eryxon MES can push real-time production events to your external systems via Webhooks (HTTP) or MQTT (Industrial Messaging).
+Eryxon Flow can push real-time production events to your external systems via Webhooks (HTTP) or MQTT (Industrial Messaging).
 
 ---
 

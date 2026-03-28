@@ -1,6 +1,6 @@
 ---
 title: Roadmap
-description: Feature considerations and future direction for Eryxon MES
+description: Feature considerations and future direction for Eryxon Flow
 ---
 
 Features we're **considering** — nothing planned, promised, or guaranteed.

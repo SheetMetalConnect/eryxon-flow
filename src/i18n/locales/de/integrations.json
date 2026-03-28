@@ -54,7 +54,7 @@
   },
   "erpSync": {
     "title": "ERP-Synchronisation",
-    "description": "Synchronisieren Sie Daten zwischen Eryxon MES und Ihrem externen ERP-System",
+    "description": "Synchronisieren Sie Daten zwischen Eryxon Flow und Ihrem externen ERP-System",
     "unifiedEndpoint": "Einheitliche ERP-Synchronisation",
     "unifiedEndpointDesc": "Optimierte Massensynchronisation mit Änderungserkennung",
     "previewChanges": "Änderungen anzeigen",

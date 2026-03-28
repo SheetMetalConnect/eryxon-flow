@@ -1,6 +1,6 @@
 # Coding Patterns & Technical Reference
 
-Technical patterns and code examples for Eryxon MES development.
+Technical patterns and code examples for Eryxon Flow development.
 
 ---
 

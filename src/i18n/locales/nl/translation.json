@@ -71,13 +71,13 @@
   },
   "help": {
     "title": "Hulp",
-    "subtitle": "Hoe Eryxon MES te gebruiken",
+    "subtitle": "Hoe Eryxon Flow te gebruiken",
     "apiDocs": "API-documentatie",
     "apiDocsDescription": "Volledige API-referentie",
     "github": "GitHub",
     "githubDescription": "Broncode en documentatie",
     "about": "Over",
-    "aboutDescription": "Over Eryxon MES",
+    "aboutDescription": "Over Eryxon Flow",
     "gettingStarted": "Aan de slag",
     "operatorGuide": "Operatorhandleiding",
     "adminGuide": "Beheerdersgids",
@@ -111,7 +111,7 @@
     "admin": "Beheerder"
   },
   "auth": {
-    "title": "Eryxon MES",
+    "title": "Eryxon Flow",
     "welcomeTo": "Welkom bij",
     "appName": "Eryxon Flow",
     "subtitle": "Manufacturing Execution System",
@@ -591,7 +591,7 @@
     "shortfallPrompt": "{{count}} onder doel. Probleem melden?"
   },
   "onboarding": {
-    "welcome": "Welkom bij Eryxon MES",
+    "welcome": "Welkom bij Eryxon Flow",
     "subtitle": "Het eenvoudige, elegante productiebeheersysteem voor metaalbewerking",
     "choosePlan": "Kies uw abonnement",
     "planDescription": "Begin met ons gratis abonnement en upgrade op elk moment",
@@ -602,7 +602,7 @@
     "freePrice": "€ 0",
     "proPrice": "€ 49",
     "perMonth": "/maand",
-    "freePlanDescription": "Perfect om te beginnen met Eryxon MES",
+    "freePlanDescription": "Perfect om te beginnen met Eryxon Flow",
     "proPlanDescription": "Geavanceerde functies voor groeiende metaalbedrijven",
     "continue": "Doorgaan",
     "continueWithPlan": "Doorgaan met {{plan}}-abonnement",
@@ -610,7 +610,7 @@
     "cancelAnytime": "Op elk moment opzegbaar",
     "moneyBackGuarantee": "30 dagen geld-terug-garantie",
     "sampleData": "Voorbeeldgegevens importeren",
-    "sampleDataDescription": "Verken Eryxon MES met realistische metaalbewerking-gegevens",
+    "sampleDataDescription": "Verken Eryxon Flow met realistische metaalbewerking-gegevens",
     "sampleDataExplanation": "We maken voorbeeldopdrachten, onderdelen en bewerkingen die een typische plaatbewerking-workflow vertegenwoordigen.",
     "manufacturingCells": "Productiecellen",
     "sampleJobs": "Voorbeeldopdrachten",
@@ -629,7 +629,7 @@
     "resetting": "Resetten...",
     "sampleDataNote": "U kunt deze voorbeeldgegevens later verwijderen in de beheerinstellingen of op elk moment opnieuw importeren.",
     "tourComplete": "Rondleiding voltooid! U kunt deze op elk moment opnieuw starten vanuit instellingen.",
-    "onboardingComplete": "Onboarding voltooid! Welkom bij Eryxon MES 🎉"
+    "onboardingComplete": "Onboarding voltooid! Welkom bij Eryxon Flow 🎉"
   },
   "jobs": {
     "title": "Opdrachtbeheer",

@@ -1,4 +1,4 @@
-This document describes the error handling and logging patterns used in the Eryxon MES application.
+This document describes the error handling and logging patterns used in the Eryxon Flow application.
 
 
 ## Error Handling Utilities

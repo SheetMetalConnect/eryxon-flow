@@ -22,7 +22,7 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
       target: 'body',
       content: (
         <div className="space-y-2">
-          <h3 className="text-lg font-bold">Welcome to Eryxon MES! 👋</h3>
+          <h3 className="text-lg font-bold">Welcome to Eryxon Flow! 👋</h3>
           <p>
             This is your <strong>Admin Dashboard</strong> for managing your metal fabrication shop.
             Let's take a quick tour of the key features.
@@ -100,7 +100,7 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
         <div className="space-y-2">
           <h3 className="text-lg font-bold">You're All Set! 🎉</h3>
           <p>
-            Eryxon MES organizes work by <strong>manufacturing stages</strong> (cutting, bending,
+            Eryxon Flow organizes work by <strong>manufacturing stages</strong> (cutting, bending,
             welding, etc.) using <strong>Quick Response Manufacturing (QRM)</strong> principles.
           </p>
           <p className="mt-2">
@@ -121,7 +121,7 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
       target: 'body',
       content: (
         <div className="space-y-2">
-          <h3 className="text-lg font-bold">Welcome to Eryxon MES! 👋</h3>
+          <h3 className="text-lg font-bold">Welcome to Eryxon Flow! 👋</h3>
           <p>
             This is your <strong>Work Queue</strong> - your mobile-first interface for tracking
             manufacturing tasks. Let's show you around!

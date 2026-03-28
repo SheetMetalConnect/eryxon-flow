@@ -10,7 +10,7 @@ export default function About() {
 
       <Card className="glass-card mb-6">
         <CardContent className="p-6">
-          <h2 className="text-lg font-semibold mb-2">Eryxon MES</h2>
+          <h2 className="text-lg font-semibold mb-2">Eryxon Flow</h2>
           <p className="text-muted-foreground mb-4">
             Manufacturing execution system for metals fabrication. Track jobs, parts, and operations through production.
           </p>

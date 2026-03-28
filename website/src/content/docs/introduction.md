@@ -1,5 +1,5 @@
 ---
-title: Welcome to Eryxon MES
+title: Welcome to Eryxon Flow
 description: Manufacturing execution system for metals fabrication shops.
 ---
 

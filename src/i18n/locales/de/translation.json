@@ -97,7 +97,7 @@
     "admin": "Administrator"
   },
   "auth": {
-    "title": "Eryxon MES",
+    "title": "Eryxon Flow",
     "welcomeTo": "Willkommen bei",
     "appName": "Eryxon Flow",
     "subtitle": "Fertigungsleitsystem",
@@ -324,7 +324,7 @@
     "shortfallPrompt": "{{count}} unter Ziel. Problem melden?"
   },
   "onboarding": {
-    "welcome": "Willkommen bei Eryxon MES",
+    "welcome": "Willkommen bei Eryxon Flow",
     "subtitle": "Das einfache, elegante Fertigungsleitsystem für Metallbearbeitung",
     "choosePlan": "Wählen Sie Ihren Plan",
     "planDescription": "Beginnen Sie mit unserem kostenlosen Plan und führen Sie jederzeit ein Upgrade durch",
@@ -335,7 +335,7 @@
     "freePrice": "0 €",
     "proPrice": "49 €",
     "perMonth": "/Monat",
-    "freePlanDescription": "Perfekt für den Einstieg in Eryxon MES",
+    "freePlanDescription": "Perfekt für den Einstieg in Eryxon Flow",
     "proPlanDescription": "Erweiterte Funktionen für wachsende Metallbaubetriebe",
     "continue": "Fortfahren",
     "continueWithPlan": "Mit {{plan}}-Plan fortfahren",
@@ -343,7 +343,7 @@
     "cancelAnytime": "Jederzeit kündbar",
     "moneyBackGuarantee": "30 Tage Geld-zurück-Garantie",
     "sampleData": "Beispieldaten importieren",
-    "sampleDataDescription": "Erkunden Sie Eryxon MES mit realistischen Metallbau-Daten",
+    "sampleDataDescription": "Erkunden Sie Eryxon Flow mit realistischen Metallbau-Daten",
     "sampleDataExplanation": "Wir erstellen Beispielaufträge, Teile und Arbeitsgänge, die einen typischen Blechbearbeitungs-Workflow darstellen.",
     "manufacturingCells": "Fertigungszellen",
     "sampleJobs": "Beispielaufträge",
@@ -362,7 +362,7 @@
     "resetting": "Wird zurückgesetzt...",
     "sampleDataNote": "Sie können diese Beispieldaten später in den Admin-Einstellungen löschen oder jederzeit neu importieren.",
     "tourComplete": "Tour abgeschlossen! Sie können sie jederzeit in den Einstellungen neu starten.",
-    "onboardingComplete": "Einrichtung abgeschlossen! Willkommen bei Eryxon MES 🎉"
+    "onboardingComplete": "Einrichtung abgeschlossen! Willkommen bei Eryxon Flow 🎉"
   },
   "jobs": {
     "title": "Auftragsverwaltung",

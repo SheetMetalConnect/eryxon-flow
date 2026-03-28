@@ -3,7 +3,7 @@ title: "Scheduling & Capacity"
 description: "Auto-schedule operations across production cells with capacity-aware planning."
 ---
 
-Eryxon MES includes a simple capacity-based scheduler for planning operations across your production cells. It allocates work based on cell capacity and your factory calendar—not a full APS optimizer, but enough to get a clear capacity overview and planned dates on every operation.
+Eryxon Flow includes a simple capacity-based scheduler for planning operations across your production cells. It allocates work based on cell capacity and your factory calendar—not a full APS optimizer, but enough to get a clear capacity overview and planned dates on every operation.
 
 ## How It Works
 

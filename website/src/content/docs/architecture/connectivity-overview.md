@@ -5,11 +5,11 @@ description: "Integration architecture, authentication, and real-time connectivi
 
 
 
-Eryxon MES provides multiple connectivity options for integrating with external systems, industrial automation, and AI agents.
+Eryxon Flow provides multiple connectivity options for integrating with external systems, industrial automation, and AI agents.
 
 ## Integration Architecture
 
-Eryxon MES uses a **Unified Event Dispatcher** to coordinate communication across different protocols.
+Eryxon Flow uses a **Unified Event Dispatcher** to coordinate communication across different protocols.
 
 - **Inbound**: [REST API](/architecture/connectivity-rest-api), Real-time WebSockets, [MCP (AI)](/guides/mcp-setup).
 - **Outbound**: [Webhooks](/architecture/connectivity-mqtt) (HTTP POST), [MQTT](/architecture/connectivity-mqtt) (industrial messaging).
@@ -52,7 +52,7 @@ The important behavior is:
 
 ## AI Integration (MCP)
 
-The **[Model Context Protocol (MCP)](/guides/mcp-setup)** enables AI agents to interact with Eryxon MES programmatically through 55 specialized tools across 9 modules.
+The **[Model Context Protocol (MCP)](/guides/mcp-setup)** enables AI agents to interact with Eryxon Flow programmatically through 55 specialized tools across 9 modules.
 
 **AI agents can:**
 - Fetch and update jobs/parts

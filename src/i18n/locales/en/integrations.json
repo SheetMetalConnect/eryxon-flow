@@ -54,7 +54,7 @@
   },
   "erpSync": {
     "title": "ERP Sync",
-    "description": "Sync data between Eryxon MES and your external ERP system",
+    "description": "Sync data between Eryxon Flow and your external ERP system",
     "unifiedEndpoint": "Unified ERP Sync",
     "unifiedEndpointDesc": "Optimized bulk sync with change detection",
     "previewChanges": "Preview Changes",

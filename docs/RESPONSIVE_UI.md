@@ -1,4 +1,4 @@
-This document describes the responsive design patterns and SaaS-style UI conventions used throughout Eryxon MES.
+This document describes the responsive design patterns and SaaS-style UI conventions used throughout Eryxon Flow.
 
 The app is designed to work **equally well on all screen sizes** - desktop, tablet, and mobile. It is not mobile-first or desktop-first, but rather **responsive and adaptive** to provide the best experience on each device.
 

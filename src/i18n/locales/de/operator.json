@@ -148,7 +148,7 @@
     "adminLogin": "Admin-Login",
     "adminDashboard": "Admin-Dashboard",
     "helpText": "Brauchen Sie Hilfe? Wenden Sie sich an Ihren Vorgesetzten oder die IT-Abteilung.",
-    "footerText": "Eryxon MES - Fertigungsmanagementsystem",
+    "footerText": "Eryxon Flow - Fertigungsmanagementsystem",
     "authRequired": "Authentifizierung erforderlich",
     "authRequiredDesc": "Melden Sie sich mit Ihrem Terminal-Konto an, um Zugang zur Werkhalle zu erhalten.",
     "goToLogin": "Zur Anmeldung",

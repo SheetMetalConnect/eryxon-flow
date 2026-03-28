@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { logger } from '@/lib/logger';
 
 /**
- * Feature flag definitions for Eryxon MES
+ * Feature flag definitions for Eryxon Flow
  * Each flag controls visibility of a major module or feature group
  *
  * Note: Some features require external services (marked below).

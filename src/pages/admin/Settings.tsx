@@ -208,7 +208,7 @@ export const Settings: React.FC = () => {
               Appearance
             </CardTitle>
             <CardDescription>
-              Eryxon MES uses a beautiful dark mode interface optimized for
+              Eryxon Flow uses a beautiful dark mode interface optimized for
               operators and admins
             </CardDescription>
           </CardHeader>

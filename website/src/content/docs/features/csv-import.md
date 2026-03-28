@@ -5,7 +5,7 @@ description: "Import your existing data into Eryxon Flow using CSV files."
 
 
 
-Eryxon MES includes a CSV import wizard for batch data import from spreadsheets or ERP exports.
+Eryxon Flow includes a CSV import wizard for batch data import from spreadsheets or ERP exports.
 
 ## Accessing the Import Wizard
 
