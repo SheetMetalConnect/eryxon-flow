@@ -225,7 +225,7 @@ export default function CapacityMatrix() {
                     *,
                     cell:cells(name),
                     part:parts(
-                        name,
+                        part_number,
                         job:jobs(job_number, customer)
                     )
                 `)
