@@ -1,0 +1,7 @@
+external_id,external_source,name,type,identifier,location,notes
+RES-001,ERP,Trumpf TruLaser 3030,machine,TL-3030-01,Hal 1,6kW fiberlaser
+RES-002,ERP,Trumpf TruBend 5130,machine,TB-5130-01,Hal 1,130 ton kantpers
+RES-003,ERP,Fronius TPS 500i,machine,FR-500i-01,Hal 2,TIG/MIG lasapparaat
+RES-004,ERP,Matrijs V16-88,tooling,V16-88,Gereedschapskast A3,Kantpers matrijs
+RES-005,ERP,Stempel R1-90,tooling,R1-90,Gereedschapskast A3,Kantpers stempel
+RES-006,ERP,Lasspanmal Frame-001,fixture,SPAN-F001,Hal 2 rek B,Spanmal voor draagframes
