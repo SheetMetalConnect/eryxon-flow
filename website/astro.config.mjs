@@ -4,7 +4,7 @@ import starlight from "@astrojs/starlight";
 import { viewTransitions } from "astro-vtbot/starlight-view-transitions";
 
 import tailwindcss from "@tailwindcss/vite";
-import config from "./src/config/config.json" assert { type: "json" };
+import config from "./src/config/config.json";
 import social from "./src/config/social.json";
 import locals from "./src/config/locals.json";
 import sidebar from "./src/config/sidebar.json";
@@ -12,30 +12,25 @@ import sidebar from "./src/config/sidebar.json";
 import { fileURLToPath } from "url";
 
 const { site } = config;
-const { title, logo, logo_darkmode, url } = site;
+const { title, logo, logo_darkmode } = site;
 
 export const locales = locals
 
 
 // https://astro.build/config
 export default defineConfig({
-  site: url,
+  site: site.url,
   image: {
     service: { entrypoint: "astro/assets/services/noop" },
   },
   integrations: [
     starlight({
       title,
-
-      ...(logo && logo_darkmode
-        ? {
-          logo: {
-            light: logo,
-            dark: logo_darkmode,
-            alt: "Eryxon Flow Logo",
-          },
-        }
-        : {}),
+      logo: {
+        light: logo,
+        dark: logo_darkmode,
+        alt: "Eryxon Flow Logo",
+      },
       // @ts-ignore
       social: social.main || [],
       locales,
@@ -53,11 +48,10 @@ export default defineConfig({
         Sidebar: "./src/components/override-components/Sidebar.astro",
         Footer: "./src/components/override-components/Footer.astro",
       },
-
     }),
   ],
   vite: {
-    plugins: [tailwindcss(), viewTransitions()],
+    plugins: /** @type {any} */ ([tailwindcss(), viewTransitions()]),
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url)),

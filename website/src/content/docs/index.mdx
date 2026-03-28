@@ -38,7 +38,7 @@ import LinkButton from "~/components/LinkButton.astro";
     Track jobs, parts, and operations through production. Visual work queues organized by configurable stages.
   </Card>
   <Card title="Self-Hostable" icon="seti:lock" iconColor="#34d399">
-    Your production data stays yours. Run on your own infrastructure with BSL 1.1 (free for internal use).
+    Your production data stays yours. Run on your own infrastructure with no usage limits. BSL 1.1 (free for internal use).
   </Card>
   <Card title="ERP Integration" icon="seti:db" iconColor="#fb923c">
     Sync jobs and parts from your ERP via REST API and webhooks. CSV import/export included.
@@ -59,22 +59,25 @@ import LinkButton from "~/components/LinkButton.astro";
 >
   <HeroTabs>
     <HeroTabsItem
-      title="Create or Sync Jobs"
-      subtitle="Import orders from your ERP or create them manually in Eryxon Flow."
+      title="Track Production"
+      subtitle="Live dashboard shows active workers, pending issues, WIP per cell, and due dates at a glance."
       number={1}
-      imageAlt="Job creation screenshot"
+      image="/src/assets/step-1.png"
+      imageAlt="Eryxon Flow dashboard with production stats and QRM capacity overview"
     />
     <HeroTabsItem
-      title="Operators Log Work"
-      subtitle="Shop floor staff use tablets to start/stop operations and view files."
+      title="Operators Pull Work"
+      subtitle="Kanban work queue on tablets. Operators see their operations per stage, log time, and report issues."
       number={2}
-      imageAlt="Operator tablet screenshot"
+      image="/src/assets/step-2.png"
+      imageAlt="Eryxon Flow kanban work queue with columns per production stage"
     />
     <HeroTabsItem
-      title="Track Progress"
-      subtitle="Managers see live status and prevent bottlenecks before they happen."
+      title="View Parts in 3D"
+      subtitle="Open STEP files directly in the browser. Measure distances, angles, and thicknesses on the shop floor."
       number={3}
-      imageAlt="Dashboard screenshot"
+      image="/src/assets/step-3.png"
+      imageAlt="Eryxon Flow operator terminal with 3D STEP viewer and part details"
     />
   </HeroTabs>
 </Section>
@@ -101,44 +104,11 @@ import ListCard from "~/components/user-components/ListCard.astro";
 
 <Section title="Quick <span class='text-primary'>Navigation</span>" description="Jump straight to the docs you need.">
   <Grid columns={3}>
-    <ListCard title="Getting Started" icon="rocket" number="3">
+    <ListCard title="Getting Started" icon="rocket" number="4">
       - [Quick Start](/guides/quick-start/)
       - [Deployment](/guides/deployment/)
       - [Self-Hosting](/guides/self-hosting/)
-    </ListCard>
-
-    <ListCard title="User Guides" icon="open-book" number="4">
-      - [Operator Manual](/guides/operator-manual/)
-      - [Admin Manual](/guides/admin-manual/)
-      - [Release Notes](/guides/releases/)
-      - [Changelog](/guides/changelog/)
-    </ListCard>
-
-    <ListCard title="Operations" icon="shield" number="2">
-      - [Security Audit](/operations/security-audit-baseline/)
-      - [Monthly Reset Cron](/operations/monthly-reset-cron/)
-    </ListCard>
-
-    <ListCard title="Architecture" icon="puzzle" number="4">
-      - [App Architecture](/architecture/app-architecture/)
-      - [Security Architecture](/architecture/security-architecture/)
-      - [Database Schema](/architecture/database/)
-      - [Validation System](/engineering/validation-system/)
-    </ListCard>
-  </Grid>
-  <Grid columns={3}>
-    <ListCard title="API" icon="seti:json" number="4">
-      - [REST API Overview](/architecture/connectivity-rest-api/)
-      - [REST API Reference](/api/rest-api-reference/)
-      - [Payload Reference](/api/payload-reference/)
-      - [MCP Server Reference](/api/mcp-server-reference/)
-    </ListCard>
-
-    <ListCard title="Engineering" icon="seti:code" number="4">
-      - [Coding Patterns](/engineering/coding-patterns/)
-      - [Design System](/engineering/design-system-reference/)
-      - [Agent Guidelines](/engineering/agent-guidelines/)
-      - [3D Viewer Plan](/engineering/3d-viewer-measurements-plan/)
+      - [Roadmap](/roadmap/)
     </ListCard>
 
     <ListCard title="User Guides" icon="open-book" number="3">
@@ -146,10 +116,34 @@ import ListCard from "~/components/user-components/ListCard.astro";
       - [Admin Manual](/guides/admin-manual/)
       - [Quality Management](/guides/quality-management/)
     </ListCard>
+
+    <ListCard title="Features" icon="star" number="4">
+      - [3D Viewer](/features/3d-viewer/)
+      - [ERP Integration](/features/erp-integration/)
+      - [Scheduling](/features/scheduling/)
+      - [Batch Management](/features/batch-management/)
+    </ListCard>
+  </Grid>
+  <Grid columns={3}>
+    <ListCard title="API & Integration" icon="seti:json" number="4">
+      - [REST API Overview](/architecture/connectivity-rest-api/)
+      - [REST API Reference](/api/rest-api-reference/)
+      - [Payload Reference](/api/payload-reference/)
+      - [MCP Server](/api/mcp-server-reference/)
+    </ListCard>
+
+    <ListCard title="Architecture" icon="puzzle" number="3">
+      - [App Architecture](/architecture/app-architecture/)
+      - [Connectivity](/architecture/connectivity-overview/)
+      - [Security](/architecture/security-architecture/)
+    </ListCard>
+
+    <ListCard title="Help" icon="support" number="2">
+      - [FAQ](/guides/faq/)
+      - [Troubleshooting](/guides/troubleshooting/)
+    </ListCard>
   </Grid>
 </Section>
-
-
 
 <Section title="License & <span class='text-primary'>Terms</span>">
   <div class="bg-dark/50 p-8 rounded-2xl border border-white/5">
@@ -157,20 +151,24 @@ import ListCard from "~/components/user-components/ListCard.astro";
       <div>
         <h3 class="text-2xl font-bold mb-4">Business Source License 1.1</h3>
         <p class="text-gray-400 mb-6">
-          Eryxon Flow is source-available and free to use for your own manufacturing operations. 
-          We believe in keeping the core platform open for shops to customize and own.
+          Eryxon Flow is source-available and free to use for your own manufacturing operations.
+          Self-hosted installations have no usage limits.
         </p>
         <div class="space-y-3">
           <div class="flex items-center gap-3">
-            <div class="text-primary font-bold">✓</div>
+            <div class="text-primary font-bold">&#10003;</div>
             <span>Free for internal business use</span>
           </div>
           <div class="flex items-center gap-3">
-            <div class="text-primary font-bold">✓</div>
+            <div class="text-primary font-bold">&#10003;</div>
             <span>Modify, fork, and self-host</span>
           </div>
+          <div class="flex items-center gap-3">
+            <div class="text-primary font-bold">&#10003;</div>
+            <span>No usage limits when self-hosted</span>
+          </div>
           <div class="flex items-center gap-3 text-red-400">
-            <div class="font-bold">✕</div>
+            <div class="font-bold">&#10007;</div>
             <span>No commercial resale or competitive SaaS</span>
           </div>
         </div>

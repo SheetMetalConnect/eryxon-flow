@@ -4,31 +4,23 @@
       "label": "Getting Started",
       "items": [
         {
-          "label": "Introduction",
+          "label": "[rocket] Introduction",
           "slug": "introduction"
         },
         {
-          "label": "Quick Start",
+          "label": "[seti:vite] Quick Start",
           "slug": "guides/quick-start"
         },
         {
-          "label": "Deployment",
+          "label": "[seti:lock] Deployment",
           "slug": "guides/deployment"
         },
         {
-          "label": "Self Hosting",
+          "label": "[seti:home] Self Hosting",
           "slug": "guides/self-hosting"
         },
         {
-          "label": "Release Notes",
-          "slug": "guides/releases"
-        },
-        {
-          "label": "Changelog",
-          "slug": "guides/changelog"
-        },
-        {
-          "label": "Roadmap",
+          "label": "[seti:plan] Roadmap",
           "slug": "roadmap"
         }
       ]
@@ -72,6 +64,10 @@
         {
           "label": "Flexible Metadata",
           "slug": "features/flexible-metadata"
+        },
+        {
+          "label": "Batch Management",
+          "slug": "features/batch-management"
         }
       ]
     },
@@ -83,44 +79,12 @@
           "slug": "architecture/app-architecture"
         },
         {
-          "label": "Database Schema",
-          "slug": "architecture/database"
-        },
-        {
           "label": "Connectivity Overview",
           "slug": "architecture/connectivity-overview"
         },
         {
-          "label": "Security Architecture",
+          "label": "Security",
           "slug": "architecture/security-architecture"
-        },
-        {
-          "label": "Caching",
-          "slug": "architecture/caching"
-        },
-        {
-          "label": "Error Handling",
-          "slug": "architecture/error-handling"
-        },
-        {
-          "label": "Validation System",
-          "slug": "engineering/validation-system"
-        },
-        {
-          "label": "Database Migrations",
-          "slug": "engineering/database-migrations"
-        },
-        {
-          "label": "Notifications",
-          "slug": "architecture/notifications-system"
-        },
-        {
-          "label": "Workflow Engine",
-          "slug": "architecture/workflow-engine"
-        },
-        {
-          "label": "3D Engine",
-          "slug": "architecture/3d-engine"
         }
       ]
     },
@@ -136,59 +100,8 @@
           "slug": "architecture/design-tokens"
         },
         {
-          "label": "Design Components",
+          "label": "Visual Components",
           "slug": "architecture/design-components"
-        },
-        {
-          "label": "Responsive UI",
-          "slug": "architecture/responsive-ui-patterns"
-        }
-      ]
-    },
-    {
-      "label": "Engineering",
-      "items": [
-        {
-          "label": "Coding Patterns",
-          "slug": "engineering/coding-patterns"
-        },
-        {
-          "label": "Design System Reference",
-          "slug": "engineering/design-system-reference"
-        },
-        {
-          "label": "3D Viewer Measurements Plan",
-          "slug": "engineering/3d-viewer-measurements-plan"
-        },
-        {
-          "label": "Agent Guidelines",
-          "slug": "engineering/agent-guidelines"
-        }
-      ]
-    },
-    {
-      "label": "Operations",
-      "items": [
-        {
-          "label": "Security Audit Baseline",
-          "slug": "operations/security-audit-baseline"
-        },
-        {
-          "label": "Monthly Reset Cron",
-          "slug": "operations/monthly-reset-cron"
-        }
-      ]
-    },
-    {
-      "label": "Help",
-      "items": [
-        {
-          "label": "FAQ",
-          "slug": "guides/faq"
-        },
-        {
-          "label": "Troubleshooting",
-          "slug": "guides/troubleshooting"
         }
       ]
     },
@@ -196,7 +109,7 @@
       "label": "API & Integration",
       "items": [
         {
-          "label": "REST API",
+          "label": "REST API Overview",
           "slug": "architecture/connectivity-rest-api"
         },
         {
@@ -204,7 +117,7 @@
           "slug": "api/rest-api-reference"
         },
         {
-          "label": "API Payload Reference",
+          "label": "Payload Reference",
           "slug": "api/payload-reference"
         },
         {
@@ -222,6 +135,19 @@
         {
           "label": "MQTT & Webhooks",
           "slug": "architecture/connectivity-mqtt"
+        }
+      ]
+    },
+    {
+      "label": "Help",
+      "items": [
+        {
+          "label": "[support] FAQ",
+          "slug": "guides/faq"
+        },
+        {
+          "label": "[setting] Troubleshooting",
+          "slug": "guides/troubleshooting"
         }
       ]
     }

@@ -1,8 +1,3 @@
----
-title: "Validation System"
-description: "Data validation architecture and usage patterns inside Eryxon Flow."
----
-
 # Data Validation System
 
 A comprehensive, modular validation system for MES data with rich logging, HTTP status codes, and user-friendly messages.

@@ -1,21 +1,5 @@
----
-title: "Error Handling and Logging Guide"
-description: "Documentation for Error Handling and Logging Guide"
----
-
-
-
 This document describes the error handling and logging patterns used in the Eryxon MES application.
 
-## Table of Contents
-
-- [Error Handling Utilities](#error-handling-utilities)
-- [Logging System](#logging-system)
-- [Error Boundary](#error-boundary)
-- [Best Practices](#best-practices)
-- [Migration Guide](#migration-guide)
-
----
 
 ## Error Handling Utilities
 
@@ -411,4 +395,3 @@ try {
 
 - [Coding Patterns](/engineering/coding-patterns/) - General coding patterns
 - [Caching](/architecture/caching/) - Query caching patterns
-- [Agent Guidelines](/engineering/agent-guidelines/) - Contributor workflow guidance

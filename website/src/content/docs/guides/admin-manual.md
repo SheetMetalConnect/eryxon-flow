@@ -53,10 +53,10 @@ Go to **Settings** menu:
 
 ## Best Practices
 
-✅ **Set up workflow cells first** before creating jobs.
-✅ **Create materials catalog** before adding jobs.
-✅ **Review dashboard daily** to catch issues early.
-✅ **Respond to issues quickly** to keep production moving.
-✅ **Use due date overrides** when customer dates change.
-✅ **Run Auto Schedule** after adding new jobs to update the [Capacity Matrix](/features/scheduling/).
-✅ **Export data regularly** for backups (monthly recommended).
+- **Set up workflow cells first** before creating jobs.
+- **Create materials catalog** before adding jobs.
+- **Review dashboard daily** to catch issues early.
+- **Respond to issues quickly** to keep production moving.
+- **Use due date overrides** when customer dates change.
+- **Run Auto Schedule** after adding new jobs to update the [Capacity Matrix](/features/scheduling/).
+- **Export data regularly** for backups (monthly recommended).

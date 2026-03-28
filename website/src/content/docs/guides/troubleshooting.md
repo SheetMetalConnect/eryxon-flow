@@ -34,7 +34,7 @@ description: "Common issues and solutions for Eryxon Flow."
 
 The `on_auth_user_created` trigger must exist on `auth.users`. Without it, new signups won't get profiles/tenants. The consolidated migration `20260127230000_post_schema_setup.sql` ensures this.
 
-Release `0.3.3` expects the signup notification path to be configured as a **Database Webhook**, not a hardcoded SQL URL. That keeps hosted and self-hosted deployments aligned.
+The signup notification path must be configured as a **Database Webhook**, not a hardcoded SQL URL.
 
 ### Admin Signup Notifications Duplicated or Missing
 
@@ -156,8 +156,8 @@ This consolidated migration applies:
 Always run migrations in order. Never skip migrations.
 
 ### SQL Syntax Notes
-- ✅ Use `IF EXISTS ... THEN ... END IF` blocks
-- ❌ Don't use `PERFORM ... WHERE EXISTS` (invalid syntax)
+- Use `IF EXISTS ... THEN ... END IF` blocks
+- Don't use `PERFORM ... WHERE EXISTS` (invalid syntax)
 
 ### Performance Tips
 

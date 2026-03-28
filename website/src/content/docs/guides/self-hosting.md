@@ -5,7 +5,6 @@ description: "Production-ready self-hosting guide for Eryxon Flow MES"
 
 Deploy Eryxon Flow on your own infrastructure with full control.
 
-> Current documented release: `0.3.3`
 
 ## Quick Start (Recommended)
 
@@ -144,7 +143,7 @@ supabase secrets set \
 
 ### 7. Configure signup notification webhook
 
-Release `0.3.3` keeps the signup notification path free of hardcoded project-specific SQL webhook URLs. Configure this in Supabase Dashboard so the setup stays portable across environments:
+The signup notification uses a Supabase Database Webhook instead of hardcoded SQL URLs. Configure this in Supabase Dashboard:
 
 1. Open **Database -> Webhooks**
 2. Create a webhook named `notify-new-signup`
@@ -432,12 +431,12 @@ bash scripts/verify-setup.sh
 ```
 
 Checks:
-- ✅ Environment variables
-- ✅ Supabase connectivity
-- ✅ Database tables
-- ✅ Storage buckets (see note below)
-- ✅ Dependencies
-- ✅ Production build
+- Environment variables
+- Supabase connectivity
+- Database tables
+- Storage buckets (see note below)
+- Dependencies
+- Production build
 
 > **Note:** Storage bucket check may report FAIL (HTTP 400) even when buckets exist. This is expected because the buckets are private (`public: false`) and the verification script uses the Anon Key, which cannot list private buckets. Verify manually via SQL:
 > ```sql

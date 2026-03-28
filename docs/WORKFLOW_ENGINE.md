@@ -1,10 +1,3 @@
----
-title: "Workflow Engine"
-description: "Core manufacturing workflows and production execution logic."
----
-
-
-
 ## Manufacturing Job Lifecycle
 
 ### Phase 1: Job Creation

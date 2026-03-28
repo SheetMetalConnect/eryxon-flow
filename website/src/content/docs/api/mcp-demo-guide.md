@@ -40,7 +40,7 @@ npm run dev
 
 You should see:
 ```
-Eryxon Flow MCP Server v2.5.0
+Eryxon Flow MCP Server
 Loaded 55 tools from 9 modules
 Eryxon Flow MCP Server running on stdio
 ```
@@ -94,19 +94,19 @@ For complete setup instructions including cloud deployment options, see the [MCP
 
 2. **Create a New Job**
    ```
-   "Create a new job for customer 'Acme Corp' with job number 'JOB-2024-0042' due next Friday"
+   "Create a new job for customer 'Acme Corp' with job number 'JOB-2026-0042' due next Friday"
    ```
    Uses `create_job` tool.
 
 3. **Update Job Priority**
    ```
-   "Change job JOB-2024-0042 to high priority"
+   "Change job JOB-2026-0042 to high priority"
    ```
    Uses `update_job` tool.
 
 4. **Start the Job**
    ```
-   "Start job JOB-2024-0042"
+   "Start job JOB-2026-0042"
    ```
    Uses `start_job` tool.
 
@@ -170,7 +170,7 @@ For complete setup instructions including cloud deployment options, see the [MCP
 1. **Prioritize a Rush Job**
    ```
    "We have a rush order from customer 'Premium Parts Inc'.
-   Prioritize job JOB-2024-0035, mark all parts as bullet cards,
+   Prioritize job JOB-2026-0035, mark all parts as bullet cards,
    and add a note about the customer's deadline."
    ```
    Uses `prioritize_job`.
@@ -227,7 +227,7 @@ For complete setup instructions including cloud deployment options, see the [MCP
 
 1. **Fetch Operations**
    ```
-   "Show me all operations for job JOB-2024-0035"
+   "Show me all operations for job JOB-2026-0035"
    ```
    Uses `fetch_operations`.
 
@@ -383,4 +383,3 @@ supabase.from('jobs').select('count').single().then(console.log);
 
 **Architecture:**
 - [App Architecture](/architecture/app-architecture) - System design overview
-- [Database Schema](/architecture/database) - Data model reference

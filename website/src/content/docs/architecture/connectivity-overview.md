@@ -5,7 +5,7 @@ description: "Integration architecture, authentication, and real-time connectivi
 
 
 
-Eryxon MES provides a comprehensive set of connectivity options for integrating with external systems, industrial automation, and AI agents.
+Eryxon MES provides multiple connectivity options for integrating with external systems, industrial automation, and AI agents.
 
 ## Integration Architecture
 
@@ -90,7 +90,10 @@ All major actions (job created, operation started, issue reported) trigger event
 - `429 Too Many Requests`: Rate limit exceeded.
 
 ### Rate Limits
-Limits are enforced per tenant plan in the edge-function auth layer. In the current implementation these are conservative daily limits rather than RPM-based examples:
+
+**Self-hosted:** No rate limits. You control the infrastructure.
+
+**Cloud (eryxon.eu):** Limits are enforced per tenant plan:
 
 - Free: 100 requests/day
 - Pro: 1,000 requests/day

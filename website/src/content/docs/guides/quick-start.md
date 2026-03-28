@@ -73,7 +73,7 @@ Go to **Settings** → **API** and copy the **service_role** key, then:
 supabase secrets set SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY
 ```
 
-For hosted and self-hosted environments on release `0.3.3`, configure the `notify-new-signup` Database Webhook explicitly after migrations are applied.
+Configure the `notify-new-signup` Database Webhook after migrations are applied (see [Self-Hosting Guide](/guides/self-hosting/)).
 
 > **Prefer automation?** Run `bash scripts/setup.sh` instead — it walks through all of the above interactively.
 
@@ -158,7 +158,6 @@ Want to see the app with sample data?
 
 **Architecture & Help:**
 - [App Architecture](/architecture/app-architecture/) - System design overview
-- [Database Schema](/architecture/database/) - Data model reference
 - [FAQ](/guides/faq) - Frequently asked questions
 
 ---

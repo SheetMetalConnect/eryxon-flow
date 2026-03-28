@@ -3,24 +3,9 @@ title: "API Payload Reference"
 description: "Payload schemas, field constraints, and copy-paste examples for Eryxon Flow APIs."
 ---
 
-# Eryxon Flow - API Payload Reference
+# API Payload Reference
 
 This document provides exact payload schemas, field constraints, and copy-paste examples for every API endpoint. Use this as a quick reference when integrating with the Eryxon API.
-
----
-
-## Table of Contents
-
-1. [Jobs API](#jobs-api)
-2. [Parts API](#parts-api)
-3. [Operations API](#operations-api)
-4. [Issues / NCR API](#issues--ncr-api)
-5. [Substeps API](#substeps-api)
-6. [Webhooks API](#webhooks-api)
-7. [Job Lifecycle API](#job-lifecycle-api)
-8. [Operation Lifecycle API](#operation-lifecycle-api)
-9. [Other APIs](#other-apis)
-10. [Common Patterns](#common-patterns)
 
 ---
 
@@ -34,9 +19,9 @@ This is the primary endpoint for ERP integration. Creates a job with all parts a
 
 ```json
 {
-  "job_number": "JOB-2024-001",
+  "job_number": "JOB-2026-001",
   "customer": "ACME Corp",
-  "due_date": "2024-12-31",
+  "due_date": "2026-12-31",
   "priority": 1,
   "notes": "Rush order - customer priority",
   "metadata": {
@@ -88,7 +73,7 @@ This is the primary endpoint for ERP integration. Creates a job with all parts a
 |-------|------|----------|-------------|-------|
 | `job_number` | string | **Yes** | 1-255 chars, unique per tenant | Primary identifier |
 | `customer` | string | No | max 255 chars | Customer name |
-| `due_date` | string | No | ISO 8601 date | e.g. `"2024-12-31"` |
+| `due_date` | string | No | ISO 8601 date | e.g. `"2026-12-31"` |
 | `priority` | integer | No | >= 0 | Higher = more urgent |
 | `notes` | string | No | - | Free text |
 | `status` | string | No | enum | `not_started` (default), `in_progress`, `on_hold`, `completed` |
@@ -131,7 +116,7 @@ This is the primary endpoint for ERP integration. Creates a job with all parts a
   "data": {
     "job": {
       "id": "550e8400-e29b-41d4-a716-446655440000",
-      "job_number": "JOB-2024-001",
+      "job_number": "JOB-2026-001",
       "customer": "ACME Corp",
       "status": "not_started",
       "parts": [
@@ -206,7 +191,7 @@ PUT /functions/v1/api-jobs/sync
 {
   "external_id": "SAP-JOB-001",
   "external_source": "sap",
-  "job_number": "JOB-2024-001",
+  "job_number": "JOB-2026-001",
   "customer": "ACME Corp",
   "parts": [...]
 }
@@ -226,13 +211,13 @@ POST /functions/v1/api-jobs/bulk-sync
     {
       "external_id": "SAP-JOB-001",
       "external_source": "sap",
-      "job_number": "JOB-2024-001",
+      "job_number": "JOB-2026-001",
       "customer": "ACME"
     },
     {
       "external_id": "SAP-JOB-002",
       "external_source": "sap",
-      "job_number": "JOB-2024-002",
+      "job_number": "JOB-2026-002",
       "customer": "Widgets Inc"
     }
   ]
@@ -257,7 +242,7 @@ POST /functions/v1/api-jobs/bulk-sync
   "drawing_no": "DWG-003",
   "cnc_program_name": "BRACKET_V1",
   "is_bullet_card": false,
-  "material_lot": "LOT-2024-A1",
+  "material_lot": "LOT-2026-A1",
   "material_supplier": "MetalCo",
   "material_cert_number": "CERT-12345",
   "notes": "Heat treat required",
@@ -930,7 +915,7 @@ Rate limit errors include retry information:
     "statusCode": 429,
     "rateLimitInfo": {
       "remaining": 0,
-      "resetAt": "2024-01-15T10:05:00Z",
+      "resetAt": "2026-01-15T10:05:00Z",
       "retryAfter": 60
     }
   }

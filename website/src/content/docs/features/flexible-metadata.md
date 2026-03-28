@@ -294,20 +294,20 @@ supabase/
 
 ### 2. Add Operation-Specific Instructions
 When linking resources to operations, use the `notes` field to provide context:
-- ✅ "Use with 45° angle adapter"
-- ✅ "Requires calibration check before use"
-- ✅ "Handle with care - fragile tooling"
+- "Use with 45° angle adapter"
+- "Requires calibration check before use"
+- "Handle with care - fragile tooling"
 
 ### 3. Keep Part Metadata Focused
 Part metadata should describe the part itself, not the processes:
-- ✅ Material, dimensions, weight, finish, tolerances
-- ❌ Don't put machine settings in part metadata (use operation metadata)
+- Material, dimensions, weight, finish, tolerances
+- Don't put machine settings in part metadata (use operation metadata)
 
 ### 4. Use Process Metadata for Operation Settings
 Operation metadata should contain process-specific settings:
-- ✅ Welding parameters, bend sequences, machine programs
-- ✅ Setup instructions, quality checkpoints
-- ❌ Don't duplicate part specifications
+- Welding parameters, bend sequences, machine programs
+- Setup instructions, quality checkpoints
+- Don't duplicate part specifications
 
 ### 5. Maintain Resource Metadata
 Keep resource metadata up to date:

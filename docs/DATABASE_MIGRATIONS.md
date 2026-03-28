@@ -1,8 +1,3 @@
----
-title: "Database Migrations"
-description: "Migration structure and application guidance for Eryxon Flow."
----
-
 # Database Migrations
 
 ## Applying Migrations

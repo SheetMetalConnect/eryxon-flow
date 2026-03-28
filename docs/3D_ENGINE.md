@@ -1,7 +1,3 @@
----
-title: "3D CAD Engine"
-description: "Overview of Eryxon Flow's 3D rendering architecture, measurement support, and PMI strategy."
----
  
 > Current documented release: `0.3.3`
 

@@ -39,13 +39,13 @@ The system supports three theme modes:
 
 ## Best Practices
 
-### ✅ Do
+### Do
 - **Start with shadcn/ui**: Use generated components and extend them with design system classes.
 - **Use Tokens Everywhere**: Reference shared CSS variables for all colors, spacing, and radii.
 - **Layered Glass Depth**: Stack content over the animated background with glass cards.
 - **Micro-Interactions**: Use smooth transitions, hover effects, and entrance animations.
 
-### ❌ Don't
+### Don't
 - **No Flat Backgrounds**: Avoid solid black or gray backgrounds; use the ambient navy with gradients.
 - **No Opaque Cards**: Every card should have a blur effect for depth.
 - **No Arbitrary Spacing**: Stick to the spacing scale defined in Design Tokens.

@@ -76,7 +76,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) o
 
 5. **Restart Claude Desktop**
 
-You should see "Eryxon Flow MCP Server v2.5.0" with 55 tools available.
+You should see "Eryxon Flow MCP Server" with the available tools listed.
 
 ---
 
@@ -317,7 +317,7 @@ Local mode:
 ```bash
 npm start
 # Should output:
-# Eryxon Flow MCP Server v2.5.0
+# Eryxon Flow MCP Server
 # Loaded 55 tools from 9 modules
 # Eryxon Flow MCP Server running on stdio
 ```
@@ -470,36 +470,3 @@ The server includes:
 - **Soft-delete filtering** - Automatically excludes deleted records
 - **Timeout protection** - 30-second query timeout (configurable)
 
----
-
-## Migration from v2.3 to v2.5
-
-**Breaking changes:** None (100% backward compatible)
-
-**New features:**
-- ✅ Zod runtime validation (catches invalid inputs early)
-- ✅ Tool factory pattern (60% less code duplication)
-- ✅ Enhanced error messages with context
-- ✅ Pagination metadata (`has_more`, `total` count)
-- ✅ Race condition prevention in state transitions
-
-**To upgrade:**
-```bash
-cd mcp-server
-npm ci
-npm run build
-# Restart Claude Desktop or redeploy
-```
-
----
-
-## Support
-
-- **Documentation:** [Website Docs](https://eryxon.com/docs)
-- **Demo Guide:** [MCP Demo Guide](/api/mcp-demo-guide)
-- **API Reference:** [REST API Docs](/architecture/connectivity-rest-api)
-- **Self-Hosting:** [Self-Hosting Guide](/guides/self-hosting)
-
----
-
-**Need help?** The MCP server is fully open source. Check the source code in `mcp-server/src/` for implementation details.

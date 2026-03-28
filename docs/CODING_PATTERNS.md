@@ -1,11 +1,6 @@
----
-title: "Coding Patterns"
-description: "Technical patterns and implementation reference for contributors working on Eryxon Flow."
----
-
 # Coding Patterns & Technical Reference
 
-Technical patterns and code examples for Eryxon MES development. For contributor workflow guidance, see [Agent Guidelines](/engineering/agent-guidelines/).
+Technical patterns and code examples for Eryxon MES development.
 
 ---
 

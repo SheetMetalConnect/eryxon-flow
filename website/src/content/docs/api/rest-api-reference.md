@@ -3,42 +3,9 @@ title: "REST API Reference"
 description: "Complete API and integration reference for Eryxon Flow."
 ---
 
-# Eryxon Flow - Complete API & Integration Documentation
-
 ## Overview
 
 Eryxon Flow is a **100% API-driven** manufacturing execution system. Your ERP system pushes jobs, parts, and tasks via REST API. Eryxon sends completion events back via webhooks. The MCP server enables AI/automation integration.
-
-## Table of Contents
-
-1. [REST Standards & Best Practices](#rest-standards--best-practices)
-2. [HTTP Status Codes](#http-status-codes)
-3. [Response Formats](#response-formats)
-4. [Error Handling](#error-handling-reference)
-5. [Validation Rules](#validation-rules)
-6. [Authentication](#authentication)
-7. [Core REST APIs](#core-rest-apis)
-8. [Job Lifecycle APIs](#job-lifecycle-apis)
-9. [Operation Lifecycle APIs](#operation-lifecycle-apis)
-10. [NCR (Non-Conformance Report) APIs](#ncr-apis)
-11. [Webhook Events](#webhook-events)
-12. [MCP Server Integration](#mcp-server-integration)
-13. [Database Indexing](#database-indexing)
-
----
-
-## REST Standards & Best Practices
-
-Eryxon Flow API follows REST best practices with comprehensive validation, clear error messages, and proper HTTP semantics.
-
-### Key Principles
-
-✅ **Proper HTTP Status Codes** - Meaningful status codes for every response
-✅ **Standardized Responses** - Consistent success/error formats
-✅ **Comprehensive Validation** - Field-level validation before database operations
-✅ **Batch Operations** - Efficient foreign key validation
-✅ **Clear Error Messages** - Actionable error details
-✅ **Type Safety** - Schema validation for all requests
 
 ---
 
@@ -72,24 +39,6 @@ All API endpoints use proper REST status codes:
 | Code | Meaning | Usage |
 |------|---------|-------|
 | **500 Internal Server Error** | Server error | Unexpected errors, database failures |
-
-### Status Code Decision Tree
-
-```
-Request received
-├─ Malformed JSON/query params? → 400 Bad Request
-├─ Invalid/missing API key? → 401 Unauthorized
-├─ Quota exceeded? → 402 Payment Required
-├─ Wrong tenant? → 403 Forbidden
-├─ Resource not found? → 404 Not Found
-├─ Duplicate/conflict? → 409 Conflict
-├─ Validation failed? → 422 Unprocessable Entity
-├─ Rate limit hit? → 429 Too Many Requests
-├─ Server error? → 500 Internal Server Error
-└─ Success
-   ├─ Created resource? → 201 Created
-   └─ Otherwise → 200 OK
-```
 
 ---
 
@@ -364,11 +313,11 @@ GET /api-jobs?status=in_progress&customer=ACME&limit=100&offset=0
     "jobs": [
       {
         "id": "uuid",
-        "job_number": "JOB-2024-001",
+        "job_number": "JOB-2026-001",
         "customer": "ACME Corp",
         "status": "in_progress",
-        "due_date": "2024-12-31",
-        "started_at": "2024-01-15T10:00:00Z",
+        "due_date": "2026-12-31",
+        "started_at": "2026-01-15T10:00:00Z",
         "notes": "Rush order",
         "parts": [...]
       }
@@ -388,9 +337,9 @@ POST /api-jobs
 Content-Type: application/json
 
 {
-  "job_number": "JOB-2024-001",
+  "job_number": "JOB-2026-001",
   "customer": "ACME Corp",
-  "due_date": "2024-12-31",
+  "due_date": "2026-12-31",
   "notes": "Rush order",
   "metadata": {"po_number": "PO-12345"},
   "parts": [
@@ -419,7 +368,7 @@ Content-Type: application/json
   "success": true,
   "data": {
     "job_id": "uuid",
-    "job_number": "JOB-2024-001",
+    "job_number": "JOB-2026-001",
     "parts": [
       {
         "part_id": "uuid",
@@ -577,9 +526,9 @@ POST /api-job-lifecycle/resume?id=<job-id>
   "data": {
     "job": {
       "id": "uuid",
-      "job_number": "JOB-2024-001",
+      "job_number": "JOB-2026-001",
       "status": "in_progress",
-      "started_at": "2024-01-15T10:00:00Z",
+      "started_at": "2026-01-15T10:00:00Z",
       "completed_at": null
     },
     "operation": "start",
@@ -657,7 +606,7 @@ POST /api-operation-lifecycle/complete?id=<operation-id>
       "part": {
         "part_number": "PART-001",
         "job": {
-          "job_number": "JOB-2024-001"
+          "job_number": "JOB-2026-001"
         }
       }
     },
@@ -702,14 +651,14 @@ Content-Type: application/json
   "data": {
     "issue": {
       "id": "uuid",
-      "ncr_number": "NCR-2024-0001",
+      "ncr_number": "NCR-2026-0001",
       "title": "Dimensional Out of Tolerance",
       "severity": "high",
       "status": "open",
       "issue_type": "ncr",
       "ncr_category": "process",
       "disposition": "rework",
-      "created_at": "2024-01-15T14:30:00Z"
+      "created_at": "2026-01-15T14:30:00Z"
     }
   }
 }
@@ -834,16 +783,16 @@ Eryxon automatically sends webhooks to registered endpoints for the following ev
 ```json
 {
   "event_type": "job.completed",
-  "timestamp": "2024-01-15T16:30:00Z",
+  "timestamp": "2026-01-15T16:30:00Z",
   "tenant_id": "uuid",
   "data": {
     "job_id": "uuid",
-    "job_number": "JOB-2024-001",
+    "job_number": "JOB-2026-001",
     "customer": "ACME Corp",
     "previous_status": "in_progress",
     "new_status": "completed",
-    "started_at": "2024-01-15T10:00:00Z",
-    "completed_at": "2024-01-15T16:30:00Z",
+    "started_at": "2026-01-15T10:00:00Z",
+    "completed_at": "2026-01-15T16:30:00Z",
     "actual_duration": 390
   }
 }
@@ -966,7 +915,7 @@ npm start
   "content": [
     {
       "type": "text",
-      "text": "Job started successfully:\n{\n  \"id\": \"uuid\",\n  \"status\": \"in_progress\",\n  \"started_at\": \"2024-01-15T10:00:00Z\"\n}"
+      "text": "Job started successfully:\n{\n  \"id\": \"uuid\",\n  \"status\": \"in_progress\",\n  \"started_at\": \"2026-01-15T10:00:00Z\"\n}"
     }
   ]
 }
@@ -974,121 +923,17 @@ npm start
 
 ---
 
-## Database Indexing
+## Rate Limits
 
-All critical queries are optimized with database indexes:
+**Self-hosted:** No usage limits. You control the infrastructure.
 
-### Performance Indexes
+**Cloud (eryxon.eu):** API requests are rate-limited per day based on your plan:
 
-**Jobs:**
-- `(tenant_id, status)` - Status filtering
-- `(tenant_id, created_at DESC)` - Recent jobs
-- `(tenant_id, due_date)` - Upcoming due dates
-- `(tenant_id, customer)` - Customer filtering
-- Full-text search on job_number, customer, notes
+| Plan | Requests per day |
+|------|-----------------|
+| free | 100 |
+| pro | 1,000 |
+| premium | 10,000 |
+| enterprise | unlimited |
 
-**Parts:**
-- `(tenant_id, status)` - Status filtering
-- `(tenant_id, job_id)` - Parts by job
-- `(tenant_id, material)` - Material filtering
-- `(parent_part_id)` - Sub-assemblies
-- Full-text search on part_number, material, notes
-
-**Operations:**
-- `(tenant_id, status)` - Status filtering
-- `(tenant_id, part_id)` - Operations by part
-- `(tenant_id, cell_id)` - Operations by cell
-- `(part_id, sequence)` - Operation sequence
-- `(assigned_operator_id)` - Operator assignments
-- Full-text search on operation_name, notes
-
-**Issues/NCRs:**
-- `(tenant_id, status)` - Status filtering
-- `(tenant_id, severity)` - Severity filtering
-- `(tenant_id, issue_type)` - NCR filtering
-- `(tenant_id, ncr_number)` - Unique NCR number
-- `(operation_id)` - Issues by operation
-- Full-text search on description, resolution_notes
-
-**Time Entries:**
-- `(operation_id)` - Entries by operation
-- `(user_id)` - Entries by user
-- `(operation_id, end_time)` - Active entries
-
-**Webhooks:**
-- `(tenant_id, active)` - Active webhooks
-- `(webhook_id, created_at DESC)` - Webhook logs
-- `(event_type, created_at DESC)` - Event filtering
-
----
-
-## Error Handling
-
-All API endpoints return consistent error responses:
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Job ID is required in query string (?id=xxx)"
-  }
-}
-```
-
-**Common Error Codes:**
-- `UNAUTHORIZED` - Invalid or missing API key
-- `VALIDATION_ERROR` - Missing or invalid request parameters
-- `NOT_FOUND` - Resource not found
-- `INVALID_STATE_TRANSITION` - Illegal status change (e.g., completing a not-started job)
-- `CONFLICT` - Resource conflict (e.g., duplicate job number)
-- `INTERNAL_ERROR` - Server error
-
----
-
-## Rate Limits & Quotas
-
-API access is governed by your subscription plan:
-
-**Free Plan:**
-- 1,000 API calls/month
-- 10 jobs/month
-- 100 parts/month
-
-**Starter Plan:**
-- 10,000 API calls/month
-- 50 jobs/month
-- 500 parts/month
-
-**Professional Plan:**
-- 100,000 API calls/month
-- 500 jobs/month
-- 5,000 parts/month
-
-**Enterprise Plan:**
-- Unlimited API calls
-- Unlimited jobs
-- Unlimited parts
-
----
-
-## Support
-
-For API support:
-- Documentation: https://docs.eryxon.eu
-- Email: api-support@eryxon.eu
-- Status Page: https://status.eryxon.eu
-
----
-
-## Changelog
-
-### 2024-01-15 - Major API Enhancement
-- ✅ Added job lifecycle endpoints (start/stop/complete/resume)
-- ✅ Added operation lifecycle endpoints (start/pause/resume/complete)
-- ✅ Enhanced NCR reporting with comprehensive fields
-- ✅ Added 15+ new webhook events
-- ✅ Enhanced MCP server with 18 total tools
-- ✅ Added performance indexes for all major queries
-- ✅ Added automatic time tracking for operations
-- ✅ Added NCR number auto-generation (format: NCR-YYYY-0001)
+When you exceed your rate limit, the API returns `429 Too Many Requests`.

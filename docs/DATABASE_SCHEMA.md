@@ -1,27 +1,7 @@
----
-title: "Eryxon MES Database Schema"
-description: "Documentation for Eryxon MES Database Schema"
----
-
-
-
 This document provides a comprehensive overview of the database schema for AI agents working with the Eryxon Manufacturing Execution System.
 
 ---
 
-## Table of Contents
-
-- [Core Concepts](#core-concepts)
-- [Entity Relationship Diagram](#entity-relationship-diagram)
-- [Core Tables](#core-tables)
-- [ERP Sync Fields](#erp-sync-fields)
-- [Status Enums](#status-enums)
-- [Key Functions](#key-functions)
-- [Integration Tables](#integration-tables)
-- [Useful Queries](#useful-queries)
-- [MCP Tool Interactions](#mcp-tool-interactions)
-
----
 
 ## Core Concepts
 

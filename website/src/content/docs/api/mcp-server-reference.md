@@ -3,7 +3,7 @@ title: "MCP Server Reference"
 description: "Operational reference for the Eryxon Flow MCP server."
 ---
 
-# Eryxon Flow MCP Server v2.5.0
+# Eryxon Flow MCP Server
 
 **Universal MCP server for Eryxon Flow MES** - Works in both self-hosted and cloud SaaS deployments.
 

@@ -1,29 +1,9 @@
----
-title: "Design System Reference"
-description: "Detailed design system reference for contributors extending the Eryxon Flow UI."
----
-
 # Eryxon Flow Design System
 
 **Practical design system for operator-facing MES and manufacturing coordination**
 
 ---
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Theme Modes](#theme-modes)
-- [Design Philosophy](#design-philosophy)
-- [Responsive & Compact Design](#responsive--compact-design)
-- [Getting Started](#getting-started)
-- [Typography](#typography)
-- [Color Palette](#color-palette)
-- [Components](#components)
-- [Animations](#animations)
-- [Best Practices](#best-practices)
-- [Manufacturing Patterns](#manufacturing-specific-patterns)
-
----
 
 ## Overview
 

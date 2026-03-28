@@ -4,7 +4,7 @@ description: "Production batch nesting and material requirement management"
 ---
 
 
-Eryxon MES includes a comprehensive batch management system for grouping operations, handling nesting, and managing material requirements.
+Eryxon MES includes a full batch management system for grouping operations, handling nesting, and managing material requirements.
 
 ## Key Features
 
@@ -30,7 +30,7 @@ Eryxon MES includes a comprehensive batch management system for grouping operati
 ## Managing Batches
 
 ### Detail View
-The Batch Detail page (`/admin/batches/:id`) provides a comprehensive view:
+The Batch Detail page (`/admin/batches/:id`) provides a full view:
 - **Status Workflow**: Track progress from Draft -> Ready -> In Progress -> Completed.
 - **Sub-Batches**: View and navigate to nested batches.
 - **Material Requirements**: Add and track material needs.

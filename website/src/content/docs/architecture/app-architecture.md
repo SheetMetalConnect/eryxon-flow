@@ -3,9 +3,7 @@ title: "App Architecture"
 description: "Technical and functional architecture overview of Eryxon Flow."
 ---
 
-> Current documented release: `0.3.3`
-
-**Eryxon Flow** is a comprehensive manufacturing execution system (MES) designed specifically for sheet metal fabrication operations. It provides end-to-end tracking from job creation through production completion, with real-time visibility, time tracking, issue management, and integration capabilities.
+**Eryxon Flow** is a manufacturing execution system (MES) for sheet metal fabrication. It tracks jobs from creation through completion with real-time visibility, time tracking, issue management, and integrations.
 
 ### What Does Eryxon Flow Do?
 
@@ -252,4 +250,3 @@ The REST API currently authenticates through the `Authorization` header rather t
 
 - [Security Architecture](/architecture/security-architecture/)
 - [Connectivity Overview](/architecture/connectivity-overview/)
-- [3D CAD Engine](/architecture/3d-engine/)

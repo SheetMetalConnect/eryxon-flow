@@ -80,8 +80,8 @@ The terminal uses default **QRM (Quick Response Manufacturing)** logic:
 
 ## Best Practices
 
-✅ **Always start timing** before you begin work.
-✅ **Pause timer** during breaks or interruptions.
-✅ **Report issues immediately** when they occur.
-✅ **Take photos** of issues for documentation.
-✅ **Mark operations complete** as soon as finished (unless blocked by QRM).
+- **Always start timing** before you begin work.
+- **Pause timer** during breaks or interruptions.
+- **Report issues immediately** when they occur.
+- **Take photos** of issues for documentation.
+- **Mark operations complete** as soon as finished (unless blocked by QRM).
