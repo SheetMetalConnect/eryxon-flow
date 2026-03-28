@@ -5,47 +5,20 @@ description: Feature considerations and future direction for Eryxon Flow
 
 Features we're **considering** — nothing planned, promised, or guaranteed.
 
-- Items listed are considerations, not commitments
-- Features may be built, modified, or dropped
-- To influence direction: [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues)
+Track progress and vote on features via [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues).
 
 ---
 
 ## Under Consideration
 
-### Cycle Time from Multiple Measurements
-
-Calculate cycle time per piece from multiple samples, not just total time divided by quantity. Simple averages are skewed by setup time — shops want accurate per-piece times for quoting.
-
----
-
-### Work Order Remarks
-
-Dedicated remarks field for operators to leave notes for shift handoff. Quick notes that don't fit formal issue reporting — think "werkbon" style annotations.
-
----
-
-### DNC Connection
-
-Transfer NC files directly from Eryxon to CNC machines. Eliminate manual file transfers via USB or network shares.
-
----
-
-### Job Progress Dashboard
-
-Aggregated view showing job progress, completion percentages, and bottlenecks. The Activity Monitor shows individual events — this would add a rolled-up job-level view.
-
----
-
-### Standard ERP Connectors
-
-Pre-built connectors for common manufacturing ERP systems (Exact, SAP, AFAS). The API already supports sync via `external_id` — connectors would lower the barrier for shops without development resources.
-
----
-
-### Production-Ready Real-time Connectors
-
-Harden MQTT, webhooks, and MCP connectors for production use. The code exists but needs testing and reliability improvements for industrial environments.
+| Feature | Why | Issue |
+|---------|-----|-------|
+| **Cycle time from multiple measurements** | Simple averages are skewed by setup time. Shops need accurate per-piece times for quoting. | [#497](https://github.com/SheetMetalConnect/eryxon-flow/issues/497) |
+| **Work order remarks** | Operators need a quick note field for shift handoff — "werkbon" style annotations. | [#498](https://github.com/SheetMetalConnect/eryxon-flow/issues/498) |
+| **DNC connection** | Transfer NC files directly to CNC machines. Eliminate USB and network share workflows. | [#499](https://github.com/SheetMetalConnect/eryxon-flow/issues/499) |
+| **Job progress dashboard** | Rolled-up view of job completion percentages and bottlenecks for production managers. | [#500](https://github.com/SheetMetalConnect/eryxon-flow/issues/500) |
+| **Standard ERP connectors** | Pre-built sync for Exact, SAP, AFAS. Lower the barrier for shops without developers. | [#501](https://github.com/SheetMetalConnect/eryxon-flow/issues/501) |
+| **Production-ready connectors** | Harden MQTT, webhooks, and MCP for industrial reliability. | [#502](https://github.com/SheetMetalConnect/eryxon-flow/issues/502) |
 
 ---
 
@@ -62,6 +35,8 @@ See [Introduction](/introduction/) for what Eryxon explicitly does not do:
 ---
 
 ## Feedback
+
+Want something else? Open an issue or join the discussion:
 
 - [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues)
 - [GitHub Discussions](https://github.com/SheetMetalConnect/eryxon-flow/discussions)
