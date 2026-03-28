@@ -5,13 +5,7 @@ description: Feature considerations and future direction for Eryxon Flow
 
 Features we're **considering** — nothing planned, promised, or guaranteed.
 
-**We're considering moving this to GitHub** for better community interaction.
-
----
-
-## How This Works
-
-- Items listed are **considerations only** — not commitments
+- Items listed are considerations, not commitments
 - Features may be built, modified, or dropped
 - To influence direction: [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues)
 
@@ -21,61 +15,37 @@ Features we're **considering** — nothing planned, promised, or guaranteed.
 
 ### Cycle Time from Multiple Measurements
 
-Calculate cycle time per piece from multiple samples, not just total time / quantity.
-
-**Why:** Simple averages are skewed by setup time. Shops want accurate per-piece times for quoting.
-
-**Current:** Basic calculation exists (`actualTime / totalGood`). No multi-sample averaging.
+Calculate cycle time per piece from multiple samples, not just total time divided by quantity. Simple averages are skewed by setup time — shops want accurate per-piece times for quoting.
 
 ---
 
 ### Work Order Remarks
 
-Dedicated remarks field for operators to leave notes for shift handoff.
-
-**Why:** Quick notes that don't fit formal issue reporting.
-
-**Current:** Notes exist on various entities. No dedicated "werkbon" remarks field.
+Dedicated remarks field for operators to leave notes for shift handoff. Quick notes that don't fit formal issue reporting — think "werkbon" style annotations.
 
 ---
 
 ### DNC Connection
 
-Transfer NC files directly from Eryxon to CNC machines.
-
-**Why:** Eliminate manual file transfers (USB, network shares).
-
-**Current:** Not implemented. Requires protocol support and significant effort.
+Transfer NC files directly from Eryxon to CNC machines. Eliminate manual file transfers via USB or network shares.
 
 ---
 
 ### Job Progress Dashboard
 
-Real-time dashboard showing job progress, completion percentages, bottlenecks.
-
-**Why:** Managers want to monitor production without walking the floor.
-
-**Current:** Activity Monitor shows events. No aggregated job progress view.
+Aggregated view showing job progress, completion percentages, and bottlenecks. The Activity Monitor shows individual events — this would add a rolled-up job-level view.
 
 ---
 
 ### Standard ERP Connectors
 
-Pre-built connectors for common manufacturing ERP systems.
-
-**Why:** Lower barrier for shops without development resources.
-
-**Current:** API supports sync with `external_id`. No out-of-the-box connectors.
+Pre-built connectors for common manufacturing ERP systems (Exact, SAP, AFAS). The API already supports sync via `external_id` — connectors would lower the barrier for shops without development resources.
 
 ---
 
 ### Production-Ready Real-time Connectors
 
-Make MQTT, webhooks, and MCP connectors production-ready. Then expand features.
-
-**Why:** Industrial environments expect reliable real-time data flow.
-
-**Current:** Code exists but is **untested and experimental** — not production-ready.
+Harden MQTT, webhooks, and MCP connectors for production use. The code exists but needs testing and reliability improvements for industrial environments.
 
 ---
 
@@ -84,9 +54,9 @@ Make MQTT, webhooks, and MCP connectors production-ready. Then expand features.
 See [Introduction](/introduction/) for what Eryxon explicitly does not do:
 
 - Financial tracking
-- Purchasing/PO management
+- Purchasing / PO management
 - Multi-level BOM management
-- Scheduling optimization
+- APS scheduling optimization
 - Built-in historical reports
 
 ---
