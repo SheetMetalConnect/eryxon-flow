@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { PartFlowCell } from "@/components/PartFlowCell";
 import { PageStatsRow } from "@/components/admin/PageStatsRow";
 import { STEPViewer } from "@/components/STEPViewerLazy";
 import { PDFViewer } from "@/components/PDFViewerLazy";
@@ -308,6 +309,12 @@ export default function Parts() {
           <span className="text-muted-foreground text-sm">{t("parts.notStarted")}</span>
         );
       },
+    },
+    {
+      id: "route",
+      header: t("qrm.flow", "Route"),
+      cell: ({ row }) => <PartFlowCell partId={row.original.id} />,
+      size: 140,
     },
     {
       accessorKey: "operations_count",

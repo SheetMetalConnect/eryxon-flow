@@ -48,8 +48,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { JobIssueBadge } from "@/components/issues/JobIssueBadge";
-import { CompactOperationsFlow } from "@/components/qrm/OperationsFlowVisualization";
-import { useJobFlows } from "@/hooks/useJobFlows";
+import { FlowCell } from "@/components/FlowCell";
 import { DataTable } from "@/components/ui/data-table/DataTable";
 import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
 import type { DataTableFilterableColumn } from "@/components/ui/data-table/DataTable";
@@ -107,7 +106,7 @@ export default function Jobs() {
     queryFn: async () => {
       let query = supabase.from("jobs").select(`
           *,
-          parts(id, file_paths, operations(id))
+          parts(id, file_paths, is_bullet_card, operations(id))
         `);
 
       if (profile?.tenant_id) {
@@ -140,14 +139,13 @@ export default function Jobs() {
           pdfFiles,
           hasSTEP: stepFiles.length > 0,
           hasPDF: pdfFiles.length > 0,
+          hasBullet: job.parts?.some((part: any) => part.is_bullet_card) || false,
         };
       });
     },
   });
 
-  const jobIds = useMemo(() => jobs?.map((job: JobData) => job.id) || [], [jobs]);
-
-  const { flows: routings, loading: routingsLoading } = useJobFlows(jobIds, profile?.tenant_id ?? null);
+  // FlowCell handles its own data fetching per-row — no bulk hook needed
 
   const handleSetOnHold = useCallback(async (jobId: string) => {
     const { error } = await supabase.from("jobs").update({ status: "on_hold" }).eq("id", jobId);
@@ -272,7 +270,12 @@ export default function Jobs() {
       ),
       cell: ({ row }) => (
         <div className="flex flex-col">
-          <span className="font-semibold text-foreground">{row.getValue("job_number")}</span>
+          <div className="flex items-center gap-1.5">
+            <span className="font-semibold text-foreground">{row.getValue("job_number")}</span>
+            {row.original.hasBullet && (
+              <span className="inline-flex items-center rounded bg-red-500/15 px-1.5 py-0.5 text-[10px] font-bold text-red-500 uppercase tracking-wide">Rush</span>
+            )}
+          </div>
           <span className="text-xs text-muted-foreground truncate max-w-[120px]">
             {row.original.customer || "-"}
           </span>
@@ -307,17 +310,7 @@ export default function Jobs() {
     {
       id: "flow",
       header: t("qrm.flow", "Flow"),
-      cell: ({ row }) => {
-        const job = row.original;
-        return (
-          <div className="min-w-[100px]">
-            <CompactOperationsFlow
-              routing={routings[job.id] || []}
-              loading={routingsLoading}
-            />
-          </div>
-        );
-      },
+      cell: ({ row }) => <FlowCell jobId={row.original.id} />,
       size: 140,
     },
     {
@@ -452,7 +445,7 @@ export default function Jobs() {
       },
       size: 50,
     },
-  ], [getStatusBadge, handleResume, handleSetOnHold, handleViewFile, routings, routingsLoading, t]);
+  ], [getStatusBadge, handleResume, handleSetOnHold, handleViewFile, t]);
 
   const filterableColumns: DataTableFilterableColumn[] = useMemo(() => [
     {
