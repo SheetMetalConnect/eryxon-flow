@@ -129,3 +129,15 @@ import { useJobIssues } from "@/hooks/useJobIssues";
 ## Commit Messages
 
 Conventional commits: `feat:`, `fix:`, `deps:`, `docs:`, `chore:`, `refactor:`
+
+## Module Boundaries
+
+| Rule | Limit |
+|------|-------|
+| Max lines per component | 400 |
+| Max lines per hook | 200 |
+| Max lines per utility module | 300 |
+| Max functions per class | 10 |
+| Max imports of a single hook | 30 (split if exceeded) |
+
+When a file exceeds these limits, decompose it before adding new functionality.

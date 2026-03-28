@@ -65,6 +65,14 @@ All API endpoints live in `supabase/functions/api-*/`. Shared code in `_shared/`
 - Test edge function deploys with curl
 - Multi-tenant — always consider tenant isolation
 
+## Refactoring Rules
+
+- **Before adding to a large file:** Check line count. If over the limit (see `docs/CONVENTIONS.md` Module Boundaries), extract first.
+- **Before changing a shared hook:** Check import count with grep. If >30 importers, add a focused selector hook instead of modifying the original.
+- **Prefer composition over modification:** Extract new sub-components rather than adding more logic to existing ones.
+- **Test before and after:** Run `npm run test:run` before starting and after every commit.
+- **Use focused hooks:** Import `useProfile`, `useTenant`, `useSession` instead of `useAuth` for new code. Only use `useAuth` when you need multiple concerns (e.g., both profile and tenant).
+
 ## Knowledge Graph (OpenTrace)
 
 This codebase is indexed into a queryable knowledge graph via [OpenTrace](https://github.com/opentrace/opentrace). The graph maps 886 functions, 40 classes, 816 files, 130 directories, 113 packages, and 3,859 relationships (CALLS, IMPORTS, DEFINED_IN, DEPENDS_ON).
