@@ -65,6 +65,33 @@ All API endpoints live in `supabase/functions/api-*/`. Shared code in `_shared/`
 - Test edge function deploys with curl
 - Multi-tenant — always consider tenant isolation
 
+## Knowledge Graph (OpenTrace)
+
+This codebase is indexed into a queryable knowledge graph via [OpenTrace](https://github.com/opentrace/opentrace). The graph maps 886 functions, 40 classes, 816 files, 130 directories, 113 packages, and 3,859 relationships (CALLS, IMPORTS, DEFINED_IN, DEPENDS_ON).
+
+**Re-index after structural changes:**
+```bash
+opentraceai index .    # ~3 seconds, writes to .opentrace/index.db
+```
+
+**How agents should use it:**
+- Prefer graph queries over `Glob`/`Grep` for structural and relationship questions
+- Always trace 2nd and 3rd order effects before answering "is it safe to change X?"
+- Use `traverse_graph` with incoming direction to map blast radius of any change
+- The MCP server exposes 5 tools: `get_stats`, `search_graph`, `list_nodes`, `get_node`, `traverse_graph`
+
+**Claude Code commands:**
+- `/explore <name>` — quick exploration of any component
+- `/graph-status` — overview of what's indexed
+- `/interrogate <question>` — read-only codebase Q&A
+
+**Claude Code agents:**
+- `@opentrace` — general-purpose (default catch-all)
+- `@code-explorer` — browse files, directories, structure
+- `@dependency-analyzer` — blast radius and impact analysis
+- `@find-usages` — caller/reference lookups
+- `@explain-service` — top-down service walkthroughs
+
 ## Documentation Index
 
 | Document | Purpose |

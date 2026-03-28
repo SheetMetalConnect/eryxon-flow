@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "opentrace-oss": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "opentraceai",
+        "mcp"
+      ],
+      "description": "OpenTrace knowledge graph tools (queries the local indexed codebase)."
+    }
+  }
+}

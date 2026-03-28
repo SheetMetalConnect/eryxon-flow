@@ -142,6 +142,18 @@ This repo is optimized for AI coding assistants:
 
 Specialized sub-agents in [.agents/](.agents/) for database, tech stack, and repo operations.
 
+### Knowledge Graph (OpenTrace)
+
+The codebase is indexed into a queryable knowledge graph via [OpenTrace](https://github.com/opentrace/opentrace) — 886 functions, 40 classes, 816 files, and 3,859 relationships mapped for AI-assisted development.
+
+```bash
+pip install opentraceai          # One-time install
+opentraceai index .              # Index the codebase (~3s)
+opentraceai stats                # View what's indexed
+```
+
+Claude Code commands: `/explore <name>`, `/graph-status`, `/interrogate <question>`. Agents: `@opentrace`, `@code-explorer`, `@dependency-analyzer`, `@find-usages`, `@explain-service`.
+
 **Developer docs** (in `docs/`): [Architecture](docs/ARCHITECTURE.md) | [API Catalog](docs/API_CATALOG.md) | [Routes](docs/ROUTE_MAP.md) | [Hooks](docs/HOOK_MAP.md) | [Conventions](docs/CONVENTIONS.md) | [Glossary](docs/GLOSSARY.md) | [Troubleshooting](docs/TROUBLESHOOTING.md) | [ADRs](docs/decisions/) | [MCP Setup](docs/AI_AGENT_SETUP.md)
 
 ## License
