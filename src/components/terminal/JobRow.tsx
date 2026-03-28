@@ -40,7 +40,7 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
     <tr
       onClick={onClick}
       className={cn(
-        "cursor-pointer border-b border-border transition-colors hover:bg-accent/30",
+        "h-10 cursor-pointer border-b border-border transition-colors hover:bg-accent/30",
         isSelected && "bg-accent/50 ring-1 ring-primary",
         variant === "process" && "bg-status-active/5",
         job.isCurrentUserClocked && "bg-primary/10 ring-1 ring-primary/50",

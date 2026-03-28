@@ -78,7 +78,8 @@ const STATE_STYLES: Record<OperatorState, {
     border: "border-emerald-500/30",
     text: "text-emerald-400",
     dot: "bg-emerald-500",
-    stripe: stripePattern("rgba(16,185,129,0.06)", "transparent", 6),
+    stripe: stripePattern("rgba(16,185,129,0.08)", "transparent", 6),
+    animate: "animate-stripe-scroll",
   },
   rush: {
     bg: "bg-gradient-to-r from-red-500/10 via-red-500/5 to-emerald-500/10",
