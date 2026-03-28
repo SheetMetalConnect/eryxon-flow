@@ -129,9 +129,24 @@ export function useJobFlows(jobIds: string[], tenantId: string | null) {
     });
 
     const flows: JobFlowMap = {};
+    let totalSteps = 0;
     Object.entries(result).forEach(([jobId, cellMap]) => {
       const steps = Array.from(cellMap.values()).sort((a, b) => a.sequence - b.sequence);
-      if (steps.length > 0) flows[jobId] = steps;
+      if (steps.length > 0) {
+        flows[jobId] = steps;
+        totalSteps += steps.length;
+      }
+    });
+
+    console.warn("[useJobFlows] built flows:", {
+      jobsWithFlow: Object.keys(flows).length,
+      totalSteps,
+      opsProcessed: operations.length,
+      opsWithCell: operations.filter(op => cellMap[op.cell_id]).length,
+      opsWithJob: operations.filter(op => partJobMap[op.part_id]).length,
+      sampleOp: operations[0],
+      samplePartJob: operations[0] ? partJobMap[operations[0].part_id] : "none",
+      sampleCell: operations[0] ? cellMap[operations[0].cell_id] : "none",
     });
 
     return flows;
