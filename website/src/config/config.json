@@ -17,7 +17,7 @@
       "enable": true,
       "action": "#"
     },
-    "copyright": "App by <a class=\"text-primary hover:underline no-underline\" href=\"https://www.sheetmetalconnect.com/\" target=\"_blank\" rel=\"noopener\" aria-label=\"Sheet Metal Connect\">Sheet Metal Connect e.U.</a> | Docs Design by <a class=\"text-primary hover:underline no-underline\" href=\"https://themefisher.com/\" target=\"_blank\" rel=\"noopener\">Themefisher</a> Copyright &copy; 2026."
+    "copyright": "<a class=\"text-primary hover:underline no-underline\" href=\"https://www.sheetmetalconnect.com/\" target=\"_blank\" rel=\"noopener\">Sheet Metal Connect e.U.</a> &copy; 2026 | Released under <a class=\"underline hover:text-primary\" href=\"https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE\" target=\"_blank\">BSL 1.1</a> | Docs theme by <a class=\"underline hover:text-primary\" href=\"https://themefisher.com/\" target=\"_blank\" rel=\"noopener\">Themefisher</a>"
   },
   "navigation_button": {
     "enable": true,

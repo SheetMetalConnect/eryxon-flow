@@ -1,69 +1,73 @@
 {
-    "main": [
-        {
-            "name": "Home",
-            "url": "/"
-        },
-        {
-            "name": "Documentatie",
-            "url": "/nl/introduction/"
-        },
-        {
-            "name": "Live Demo",
-            "url": "https://app.eryxon.eu"
-        }
-    ],
-    "footer": {
-        "community": {
-            "title": "Community",
-            "links": [
-                {
-                    "name": "GitHub",
-                    "url": "https://github.com/SheetMetalConnect/eryxon-flow"
-                },
-                {
-                    "name": "Discussies",
-                    "url": "https://github.com/SheetMetalConnect/eryxon-flow/discussions"
-                },
-                {
-                    "name": "Issues",
-                    "url": "https://github.com/SheetMetalConnect/eryxon-flow/issues"
-                }
-            ]
-        },
-        "help_links": {
-            "title": "Bronnen",
-            "links": [
-                {
-                    "name": "Live Demo",
-                    "url": "https://app.eryxon.eu"
-                },
-                {
-                    "name": "Documentatie",
-                    "url": "/nl/introduction/"
-                },
-                {
-                    "name": "Zelf hosten",
-                    "url": "/nl/guides/self-hosting/"
-                },
-                {
-                    "name": "FAQ",
-                    "url": "/nl/guides/faq/"
-                }
-            ]
-        },
-        "company": {
-            "title": "Bedrijf",
-            "links": [
-                {
-                    "name": "Sheet Metal Connect",
-                    "url": "https://www.sheetmetalconnect.com/"
-                },
-                {
-                    "name": "Contact",
-                    "url": "https://www.sheetmetalconnect.com/contact"
-                }
-            ]
-        }
+  "main": [
+    {
+      "name": "Home",
+      "url": "/nl/"
+    },
+    {
+      "name": "Documentatie",
+      "url": "/nl/introduction/"
+    },
+    {
+      "name": "Live Demo",
+      "url": "https://app.eryxon.eu"
     }
+  ],
+  "footer": {
+    "community": {
+      "title": "Open Source",
+      "links": [
+        {
+          "name": "GitHub Repository",
+          "url": "https://github.com/SheetMetalConnect/eryxon-flow"
+        },
+        {
+          "name": "Discussies",
+          "url": "https://github.com/SheetMetalConnect/eryxon-flow/discussions"
+        },
+        {
+          "name": "Bug Melden",
+          "url": "https://github.com/SheetMetalConnect/eryxon-flow/issues"
+        }
+      ]
+    },
+    "help_links": {
+      "title": "Bronnen",
+      "links": [
+        {
+          "name": "Hosted Versie",
+          "url": "https://app.eryxon.eu"
+        },
+        {
+          "name": "Documentatie",
+          "url": "/nl/introduction/"
+        },
+        {
+          "name": "Zelf Hosten",
+          "url": "/nl/guides/self-hosting/"
+        },
+        {
+          "name": "REST API Referentie",
+          "url": "/nl/architecture/connectivity-rest-api/"
+        }
+      ]
+    },
+    "company": {
+      "title": "Contact",
+      "links": [
+        {
+          "name": "office@vanenkhuizen.com",
+          "url": "mailto:office@vanenkhuizen.com"
+        },
+        {
+          "name": "LinkedIn",
+          "url": "https://www.linkedin.com/in/lukevanenkhuizen/"
+        },
+        {
+          "name": "vanenkhuizen.com",
+          "url": "https://www.vanenkhuizen.com/"
+        }
+      ]
+    }
+  }
 }

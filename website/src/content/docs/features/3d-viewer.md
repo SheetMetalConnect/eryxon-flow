@@ -24,9 +24,10 @@ The 3D STEP viewer lets you view CAD models directly in the browser. Upload a ST
 
 ## Supported file formats
 
-| Format | Extensions |
-|--------|------------|
-| STEP | `.step`, `.stp` |
+| Format | Extensions | Viewer |
+|--------|------------|--------|
+| STEP | `.step`, `.stp` | 3D interactive viewer with measurements |
+| PDF | `.pdf` | Built-in PDF viewer for drawings and documents |
 
 ## How to use it
 
@@ -95,3 +96,9 @@ Click the **Fit View** button in the toolbar.
 - Verify the file opens correctly in desktop CAD software
 - Try re-exporting as STEP AP214
 - If the file is very large, try splitting the assembly
+
+## Advanced CAD integration
+
+The built-in viewer handles geometry visualization and measurements for most shop floor use cases. For advanced requirements like PMI (GD&T annotations from the model), server-side tessellation, or CAD format conversion, Eryxon Flow supports an optional CAD backend service.
+
+Partners like [Sheet Metal Connect](https://www.vanenkhuizen.com/) can help set up advanced CAD processing pipelines. [Get in touch](mailto:office@vanenkhuizen.com) to discuss your requirements.

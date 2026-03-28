@@ -4,6 +4,11 @@
       "icon": "github",
       "label": "GitHub",
       "href": "https://github.com/SheetMetalConnect/eryxon-flow"
+    },
+    {
+      "icon": "linkedin",
+      "label": "LinkedIn",
+      "href": "https://www.linkedin.com/in/lukevanenkhuizen/"
     }
   ]
 }
