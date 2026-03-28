@@ -83,6 +83,17 @@ export function useJobFlows(jobIds: string[], tenantId: string | null) {
     staleTime: 30 * 1000,
   });
 
+  // Debug: log query results
+  if (typeof window !== "undefined") {
+    console.debug("[useJobFlows]", {
+      jobIds: jobIds.length,
+      cells: cells?.length ?? "loading",
+      parts: parts?.length ?? "loading",
+      partIds: partIds.length,
+      operations: operations?.length ?? "loading",
+    });
+  }
+
   // Build the flow map: jobId → FlowStep[]
   const flows = useMemo<JobFlowMap>(() => {
     if (!operations || !cells || operations.length === 0) return {};
