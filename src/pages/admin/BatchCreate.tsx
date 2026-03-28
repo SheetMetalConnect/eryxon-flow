@@ -410,7 +410,7 @@ export default function BatchCreate() {
                     <SelectItem value="__none__">{t("batches.noParent")}</SelectItem>
                     {parentBatches?.map((b) => (
                       <SelectItem key={b.id} value={b.id}>
-                        {b.batch_number} ({t(`batches.types.${b.batch_type === "laser_nesting" ? "laserNesting" :
+                        {String(b.batch_number ?? "")} ({t(`batches.types.${b.batch_type === "laser_nesting" ? "laserNesting" :
                             b.batch_type === "tube_batch" ? "tubeBatch" : "general"
                           }`)})
                       </SelectItem>
@@ -447,7 +447,7 @@ export default function BatchCreate() {
                   <SelectContent>
                     {cells?.map((cell) => (
                       <SelectItem key={cell.id} value={cell.id}>
-                        {cell.name}
+                        {String(cell.name ?? "")}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -467,8 +467,8 @@ export default function BatchCreate() {
                     <SelectContent>
                       <SelectItem value="__none__">{t("parts.none")}</SelectItem>
                       {materials?.map((mat) => (
-                        <SelectItem key={mat.id} value={mat.name}>
-                          {mat.name}
+                        <SelectItem key={mat.id} value={mat.name ?? mat.id}>
+                          {String(mat.name ?? "")}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -604,16 +604,16 @@ export default function BatchCreate() {
                           onClick={(e) => e.stopPropagation()}
                         />
                         <div className="text-left flex-1 min-w-0">
-                          <div className="font-medium">{op.operation_name}</div>
+                          <div className="font-medium">{String(op.operation_name ?? "")}</div>
                           <div className="text-sm text-muted-foreground">
-                            {op.part?.job?.job_number} - {op.part?.part_number}
+                            {String(op.part?.job?.job_number ?? "")} - {String(op.part?.part_number ?? "")}
                           </div>
                           <div className="flex gap-2 mt-1">
                             <Badge variant="outline" className="text-xs">
-                              {op.part?.material}
+                              {String(op.part?.material ?? "-")}
                             </Badge>
                             <Badge variant="outline" className="text-xs">
-                              {t("parts.qty")}: {op.part?.quantity}
+                              {t("parts.qty")}: {op.part?.quantity ?? 0}
                             </Badge>
                           </div>
                         </div>
