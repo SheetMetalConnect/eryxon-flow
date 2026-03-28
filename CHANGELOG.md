@@ -4,8 +4,31 @@ All notable changes to Eryxon Flow are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- **Batch API** — `api-batches` (CRUD) and `api-batch-lifecycle` (start/stop/add-operations) edge functions
+- Weighted time distribution: batch stop divides time by estimated_time ratios when available
+- Webhook events: `batch.started`, `batch.completed`
+- Focused auth hooks: `useProfile`, `useTenant`, `useSession`, `useAuthActions` (split from god-hook `useAuth`)
+- 98 new unit tests (519 → 617 total), 12 new test files
+- Agent safety guardrails: module size limits and refactoring rules in docs
+
+### Changed
+
+- **Architecture refactoring** — decomposed 6 hotspots for agent-safe development:
+  - `AuthContext` (94 importers) → 4 focused selector hooks, 70 consumers migrated
+  - `SchedulerService` (425 lines) → calendar, capacity, allocator modules
+  - `STEPViewer` (1976 lines) → scene, controls, grid, pmi-overlay modules
+  - `BatchDetail` (684 lines) → 9 focused sub-components (~90 line shell)
+  - `OperatorView` (686 lines) → 5 focused sub-components (~120 line shell)
+- API endpoint count: 22 → 24
+
 ### Fixed
 
+- **BatchCreate React #185 crash** — PostgREST returns arrays for ambiguous FK joins; added `unwrapRelation()` helper
+- **CapacityMatrix 400 error** — `customer_name` → `customer`, `parts(name)` → `parts(part_number)` (non-existent columns)
+- Operations now editable after batch creation (was disabled in edit mode)
+- OperatorView test updated to match refactored component structure
 - Runtime migration from legacy `serve()` to `Deno.serve()` across all edge functions
 - Auth module rewrite: fixed deprecated `hexEncode`, missing FK join for tenant plan lookup
 - Schema alignment: fixed 10+ edge functions referencing non-existent columns
