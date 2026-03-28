@@ -41,8 +41,3 @@ Configure scrap reason codes in **Settings > Scrap Reasons**. Each reason has:
 
 When operators report scrap, they select from these configured reasons. The scrap reasons page shows usage statistics so you can see which problems occur most often.
 
-## What Exists vs What's Planned
-
-The data layer for yield rates, scrap breakdowns, and rework tracking is built. Scrap reasons are configurable and tracked. The issue workflow is fully functional.
-
-**Coming next:** Quality dashboards on the Jobs and Parts pages showing yield percentages, scrap breakdown by category, and top scrap reasons per job. The data is already collected — the visualization is in progress.
