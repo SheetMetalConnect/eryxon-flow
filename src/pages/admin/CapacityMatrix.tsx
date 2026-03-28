@@ -226,7 +226,7 @@ export default function CapacityMatrix() {
                     cell:cells(name),
                     part:parts(
                         name,
-                        job:jobs(job_number, customer_name)
+                        job:jobs(job_number, customer)
                     )
                 `)
                 .neq("status", "completed")

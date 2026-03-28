@@ -163,8 +163,11 @@ describe("OperatorView", () => {
       expect(screen.getByText("JOB-1")).toBeInTheDocument();
     });
 
-    const queueTabs = screen.getAllByRole("tab");
-    expect(queueTabs[1]).toHaveTextContent("5");
-    expect(queueTabs[2]).toHaveTextContent("1");
+    // Section headings show format: "terminal.inBuffer (5)"
+    const headings = screen.getAllByRole("heading", { level: 2 });
+    const bufferHeading = headings.find(h => h.textContent?.includes("inBuffer"));
+    const expectedHeading = headings.find(h => h.textContent?.includes("expected"));
+    expect(bufferHeading).toHaveTextContent("5");
+    expect(expectedHeading).toHaveTextContent("1");
   });
 });
