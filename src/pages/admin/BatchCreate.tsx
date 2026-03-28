@@ -29,11 +29,14 @@ import {
   Upload,
   Image as ImageIcon,
   FileCode,
-  Save
+  Save,
+  Loader2
 } from "lucide-react";
 import {
   useCreateBatch,
   useUpdateBatch,
+  useAddOperationsToBatch,
+  useRemoveOperationFromBatch,
   useBatch,
   useBatchOperations,
   type BatchType,
@@ -41,6 +44,18 @@ import {
 } from "@/hooks/useBatches";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+
+/**
+ * Safely unwrap a PostgREST embedded resource that may be returned as
+ * an array (when the FK hint is ambiguous) or as a single object.
+ * Returns the first element if it's an array, the object itself otherwise,
+ * or undefined if null/undefined.
+ */
+function unwrapRelation<T>(value: T | T[] | null | undefined): T | undefined {
+  if (value == null) return undefined;
+  if (Array.isArray(value)) return value[0] ?? undefined;
+  return value;
+}
 
 const BATCH_TYPES: { value: BatchType; labelKey: string }[] = [
   { value: "laser_nesting", labelKey: "batches.types.laserNesting" },
@@ -76,12 +91,14 @@ export default function BatchCreate() {
   const profile = useProfile();
   const createBatch = useCreateBatch();
   const updateBatch = useUpdateBatch();
+  const addOperationsToBatch = useAddOperationsToBatch();
+  const removeOperationFromBatch = useRemoveOperationFromBatch();
   const { data: existingBatch, isLoading: batchLoading } = useBatch(id);
   const { data: existingOperations, isLoading: opsLoading } = useBatchOperations(id);
 
   const [batchNumber, setBatchNumber] = useState("");
   const [batchType, setBatchType] = useState<BatchType>("laser_nesting");
-  const [cellId, setCellId] = useState("");
+  const [cellId, setCellId] = useState("__none__");
   const [material, setMaterial] = useState("");
   const [thickness, setThickness] = useState<number | undefined>();
   const [notes, setNotes] = useState("");
@@ -99,7 +116,7 @@ export default function BatchCreate() {
     if (isEditing && existingBatch && existingOperations) {
       setBatchNumber(existingBatch.batch_number);
       setBatchType(existingBatch.batch_type);
-      setCellId(existingBatch.cell_id);
+      setCellId(existingBatch.cell_id || "__none__");
       setMaterial(existingBatch.material || "");
       setThickness(existingBatch.thickness_mm || undefined);
       setNotes(existingBatch.notes || "");
@@ -178,8 +195,10 @@ export default function BatchCreate() {
   });
 
 
-  const { data: availableOperations } = useQuery({
-    queryKey: QueryKeys.operations.forBatch(cellId || ''),
+  const activeCellId = cellId === "__none__" ? "" : cellId;
+
+  const { data: availableOperations, isLoading: opsAvailableLoading } = useQuery({
+    queryKey: QueryKeys.operations.forBatch(activeCellId || ''),
     queryFn: async () => {
       let query = supabase
         .from("operations")
@@ -198,8 +217,8 @@ export default function BatchCreate() {
         .eq("tenant_id", profile!.tenant_id)
         .in("status", ["not_started", "in_progress"]);
 
-      if (cellId) {
-        query = query.eq("cell_id", cellId);
+      if (activeCellId) {
+        query = query.eq("cell_id", activeCellId);
       }
 
       const { data, error } = await query.limit(100);
@@ -217,8 +236,30 @@ export default function BatchCreate() {
           .map(bo => bo.operation_id) || []
       );
 
-      return (data as unknown as OperationForSelection[]).filter(
-        op => !batchedIds.has(op.id)
+      // Unwrap PostgREST embedded resources that may come back as arrays
+      const normalized = (data ?? []).map((row: Record<string, unknown>) => {
+        const part = unwrapRelation(row.part as OperationForSelection["part"] | OperationForSelection["part"][] | null);
+        const job = part ? unwrapRelation((part as Record<string, unknown>).job as OperationForSelection["part"]["job"] | OperationForSelection["part"]["job"][] | null) : undefined;
+        return {
+          id: String(row.id ?? ""),
+          operation_name: String(row.operation_name ?? ""),
+          status: String(row.status ?? ""),
+          part: part ? {
+            id: String(part.id ?? ""),
+            part_number: String(part.part_number ?? ""),
+            material: String(part.material ?? ""),
+            quantity: Number(part.quantity ?? 0),
+            job: job ? {
+              id: String(job.id ?? ""),
+              job_number: String(job.job_number ?? ""),
+              customer: String(job.customer ?? ""),
+            } : { id: "", job_number: "", customer: "" },
+          } : { id: "", part_number: "", material: "", quantity: 0, job: { id: "", job_number: "", customer: "" } },
+        } satisfies OperationForSelection;
+      });
+
+      return normalized.filter(
+        (op: OperationForSelection) => !batchedIds.has(op.id)
       );
     },
     enabled: !!profile?.tenant_id,
@@ -288,7 +329,7 @@ export default function BatchCreate() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!batchNumber || !cellId) {
+    if (!batchNumber || cellId === "__none__") {
       return;
     }
 
@@ -314,21 +355,32 @@ export default function BatchCreate() {
     };
 
     if (isEditing && id) {
-      // Operations update logic is tricky. 
-      // useUpdateBatch currently only updates fields on the batch, not the relationship.
-      // We might need to manually handle operation association changes if useUpdateBatch doesn't support it.
-      // Looking at useBatches.ts, useUpdateBatch only calls .update().
-      // So for operations, we need separate logic to add/remove if the list changed.
-      // For now, let's assume useUpdateBatch ONLY updates fields. 
-      // Realistically, updating operations in batch edit is complex (add/remove). 
-      // I'll skip operation updates in edit mode for now to keep it simple, or just implement it properly.
-
-      // Let's just update the batch fields for now.
+      // Update batch fields
       updateBatch.mutate({
         id: id,
         updates: batchData
       }, {
-        onSuccess: () => {
+        onSuccess: async () => {
+          // Sync operations: add new ones, remove deselected ones
+          const existingOpIds = new Set(existingOperations?.map(bo => bo.operation_id) ?? []);
+          const selectedSet = new Set(selectedOperations);
+
+          // Operations to add (selected but not yet in batch)
+          const toAdd = selectedOperations.filter(opId => !existingOpIds.has(opId));
+          // Operations to remove (in batch but no longer selected)
+          const toRemove = existingOperations?.filter(bo => !selectedSet.has(bo.operation_id)) ?? [];
+
+          try {
+            if (toAdd.length > 0) {
+              await addOperationsToBatch.mutateAsync({ batchId: id, operationIds: toAdd });
+            }
+            for (const bo of toRemove) {
+              await removeOperationFromBatch.mutateAsync({ batchOperationId: bo.id });
+            }
+          } catch {
+            // Toast errors are handled by the mutation hooks
+          }
+
           navigate(`/admin/batches/${id}`);
         }
       });
@@ -360,7 +412,12 @@ export default function BatchCreate() {
   };
 
   if (isEditing && (batchLoading || opsLoading)) {
-    return <div className="p-8 text-center">{t("batches.loadingDetails")}</div>;
+    return (
+      <div className="p-8 flex items-center justify-center gap-2 text-muted-foreground">
+        <Loader2 className="h-5 w-5 animate-spin" />
+        {t("batches.loadingDetails")}
+      </div>
+    );
   }
 
   return (
@@ -445,8 +502,9 @@ export default function BatchCreate() {
                     <SelectValue placeholder={t("batches.selectCell")} />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="__none__">{t("batches.selectCell")}</SelectItem>
                     {cells?.map((cell) => (
-                      <SelectItem key={cell.id} value={cell.id}>
+                      <SelectItem key={cell.id} value={String(cell.id)}>
                         {String(cell.name ?? "")}
                       </SelectItem>
                     ))}
@@ -578,9 +636,14 @@ export default function BatchCreate() {
               </div>
 
               <ScrollArea className="h-[400px] border rounded-md p-2">
-                {!cellId ? (
+                {cellId === "__none__" ? (
                   <div className="text-center text-muted-foreground py-8">
                     {t("batches.selectCellFirst")}
+                  </div>
+                ) : opsAvailableLoading ? (
+                  <div className="flex items-center justify-center py-8 gap-2 text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t("common.loading")}
                   </div>
                 ) : filteredOperations?.length === 0 ? (
                   <div className="text-center text-muted-foreground py-8">
@@ -595,12 +658,11 @@ export default function BatchCreate() {
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-primary/50"
                           }`}
-                        onClick={() => !isEditing && toggleOperation(op.id)} // Disable toggling in edit mode for now as I'm not handling op updates
+                        onClick={() => toggleOperation(op.id)}
                       >
                         <Checkbox
                           checked={selectedOperations.includes(op.id)}
-                          onCheckedChange={() => !isEditing && toggleOperation(op.id)}
-                          disabled={isEditing}
+                          onCheckedChange={() => toggleOperation(op.id)}
                           onClick={(e) => e.stopPropagation()}
                         />
                         <div className="text-left flex-1 min-w-0">
@@ -623,13 +685,7 @@ export default function BatchCreate() {
                 )}
               </ScrollArea>
 
-              {isEditing && (
-                <div className="p-3 bg-muted/50 text-xs text-muted-foreground rounded-md border text-center">
-                  {t("batches.editOperationsHint")}
-                </div>
-              )}
-
-              {selectedOperations.length > 0 && !isEditing && (
+              {selectedOperations.length > 0 && (
                 <div className="flex justify-between items-center pt-2 border-t">
                   <span className="text-sm text-muted-foreground">
                     {t("batches.operationsSelected", { count: selectedOperations.length })}
@@ -653,7 +709,7 @@ export default function BatchCreate() {
           <Button type="button" variant="outline" onClick={() => navigate("/admin/batches")}>
             {t("common.cancel")}
           </Button>
-          <Button type="submit" disabled={createBatch.isPending || updateBatch.isPending || !batchNumber || !cellId || uploadingImage}>
+          <Button type="submit" disabled={createBatch.isPending || updateBatch.isPending || !batchNumber || cellId === "__none__" || uploadingImage}>
             {isEditing ? <Save className="mr-2 h-4 w-4" /> : <Plus className="mr-2 h-4 w-4" />}
             {isEditing
               ? (updateBatch.isPending ? t("batches.updating") : t("batches.updateBatch"))
