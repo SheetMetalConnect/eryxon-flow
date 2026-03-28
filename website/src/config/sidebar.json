@@ -46,6 +46,26 @@
       "label": "Features",
       "items": [
         {
+          "label": "QRM & Flow Control",
+          "slug": "features/qrm-flow"
+        },
+        {
+          "label": "Operator Terminal",
+          "slug": "features/operator-terminal"
+        },
+        {
+          "label": "Batch & Nesting",
+          "slug": "features/batch-management"
+        },
+        {
+          "label": "Scheduling & Capacity",
+          "slug": "features/scheduling"
+        },
+        {
+          "label": "3D Viewer",
+          "slug": "features/3d-viewer"
+        },
+        {
           "label": "ERP Integration",
           "slug": "features/erp-integration"
         },
@@ -54,20 +74,8 @@
           "slug": "features/csv-import"
         },
         {
-          "label": "3D Viewer",
-          "slug": "features/3d-viewer"
-        },
-        {
-          "label": "Scheduling & Capacity",
-          "slug": "features/scheduling"
-        },
-        {
           "label": "Flexible Metadata",
           "slug": "features/flexible-metadata"
-        },
-        {
-          "label": "Batch Management",
-          "slug": "features/batch-management"
         }
       ]
     },
@@ -109,11 +117,7 @@
       "label": "API & Integration",
       "items": [
         {
-          "label": "REST API Overview",
-          "slug": "architecture/connectivity-rest-api"
-        },
-        {
-          "label": "REST API Reference",
+          "label": "REST API",
           "slug": "api/rest-api-reference"
         },
         {
@@ -121,20 +125,12 @@
           "slug": "api/payload-reference"
         },
         {
-          "label": "MCP Server Setup",
-          "slug": "guides/mcp-setup"
-        },
-        {
-          "label": "MCP Server Reference",
-          "slug": "api/mcp-server-reference"
-        },
-        {
-          "label": "MCP Demo Guide",
-          "slug": "api/mcp-demo-guide"
-        },
-        {
           "label": "MQTT & Webhooks",
           "slug": "architecture/connectivity-mqtt"
+        },
+        {
+          "label": "MCP Server",
+          "slug": "guides/mcp-setup"
         }
       ]
     },
