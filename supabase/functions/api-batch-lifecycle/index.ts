@@ -75,12 +75,11 @@ Deno.serve(async (req) => {
         return errorResponse("INVALID_STATE", `Cannot start batch in '${batch.status}' status`);
       }
 
-      // Get batch operations
+      // Get batch operations (batch already tenant-verified above)
       const { data: batchOps } = await supabase
         .from("batch_operations")
         .select("operation_id")
-        .eq("batch_id", batchId)
-        .eq("tenant_id", tenantId);
+        .eq("batch_id", batchId);
 
       if (!batchOps || batchOps.length === 0) {
         return errorResponse("VALIDATION_ERROR", "Cannot start batch with no operations");
@@ -88,21 +87,22 @@ Deno.serve(async (req) => {
 
       const opIds = batchOps.map((bo: any) => bo.operation_id);
       const now = new Date().toISOString();
-      const operatorId = body.operator_id;
-      if (!operatorId) {
-        return errorResponse("VALIDATION_ERROR", "operator_id is required in request body");
+      // operator_id — required for manual starts, optional for machine-reported
+      const operatorId = body.operator_id || null;
+
+      // Create time entries only if an operator is specified
+      // Machine-reported starts skip time tracking (CAD/CAM integration)
+      if (operatorId) {
+        const timeEntries = opIds.map((opId: string) => ({
+          tenant_id: tenantId,
+          operation_id: opId,
+          operator_id: operatorId,
+          start_time: now,
+        }));
+
+        const { error: timeErr } = await supabase.from("time_entries").insert(timeEntries);
+        if (timeErr) return errorResponse("INSERT_ERROR", `Time entries: ${timeErr.message}`, 500);
       }
-
-      // Create time entries for all operations
-      const timeEntries = opIds.map((opId: string) => ({
-        tenant_id: tenantId,
-        operation_id: opId,
-        operator_id: operatorId,
-        start_time: now,
-      }));
-
-      const { error: timeErr } = await supabase.from("time_entries").insert(timeEntries);
-      if (timeErr) return errorResponse("INSERT_ERROR", `Time entries: ${timeErr.message}`, 500);
 
       // Update operations to in_progress
       await supabase
@@ -140,8 +140,7 @@ Deno.serve(async (req) => {
       const { data: batchOps } = await supabase
         .from("batch_operations")
         .select("operation_id, operation:operations(id, estimated_time)")
-        .eq("batch_id", batchId)
-        .eq("tenant_id", tenantId);
+        .eq("batch_id", batchId);
 
       if (!batchOps || batchOps.length === 0) {
         return errorResponse("VALIDATION_ERROR", "No operations in batch");
@@ -157,62 +156,75 @@ Deno.serve(async (req) => {
         .eq("tenant_id", tenantId)
         .is("end_time", null);
 
-      if (!activeEntries || activeEntries.length === 0) {
-        return errorResponse("VALIDATION_ERROR", "No active timers for batch operations");
-      }
+      // Machine-reported stops may have no time entries (CAD/CAM integration)
+      const hasTimeEntries = activeEntries && activeEntries.length > 0;
 
       const now = new Date();
       const nowStr = now.toISOString();
-      const earliest = Math.min(...activeEntries.map((e: any) => new Date(e.start_time).getTime()));
-      const totalMinutes = Math.round((now.getTime() - earliest) / 60000);
-
-      // Weighted distribution by estimated_time (fallback: equal)
-      const ops = batchOps.map((bo: any) => ({
-        id: bo.operation_id,
-        est: bo.operation?.estimated_time ?? 0,
-      }));
-      const totalEst = ops.reduce((s: number, o: any) => s + (o.est || 0), 0);
-      const useWeighted = totalEst > 0 && ops.every((o: any) => o.est > 0);
-
+      let totalMinutes = 0;
+      let distributionMethod = "none";
       const dist: { id: string; minutes: number }[] = [];
-      if (useWeighted) {
-        let allocated = 0;
-        ops.forEach((op: any, i: number) => {
-          const share = i === ops.length - 1
-            ? totalMinutes - allocated
-            : Math.round((op.est / totalEst) * totalMinutes);
-          dist.push({ id: op.id, minutes: share });
-          allocated += share;
-        });
-      } else {
-        const base = Math.floor(totalMinutes / ops.length);
-        const rem = totalMinutes - base * ops.length;
-        ops.forEach((op: any, i: number) => {
-          dist.push({ id: op.id, minutes: base + (i < rem ? 1 : 0) });
-        });
+
+      if (hasTimeEntries) {
+        const earliest = Math.min(...activeEntries!.map((e: any) => new Date(e.start_time).getTime()));
+        totalMinutes = Math.round((now.getTime() - earliest) / 60000);
+
+        // Weighted distribution by estimated_time (fallback: equal)
+        const ops = batchOps.map((bo: any) => ({
+          id: bo.operation_id,
+          est: bo.operation?.estimated_time ?? 0,
+        }));
+        const totalEst = ops.reduce((s: number, o: any) => s + (o.est || 0), 0);
+        const useWeighted = totalEst > 0 && ops.every((o: any) => o.est > 0);
+        distributionMethod = useWeighted ? "weighted" : "equal";
+
+        if (useWeighted) {
+          let allocated = 0;
+          ops.forEach((op: any, i: number) => {
+            const share = i === ops.length - 1
+              ? totalMinutes - allocated
+              : Math.round((op.est / totalEst) * totalMinutes);
+            dist.push({ id: op.id, minutes: share });
+            allocated += share;
+          });
+        } else {
+          const base = Math.floor(totalMinutes / ops.length);
+          const rem = totalMinutes - base * ops.length;
+          ops.forEach((op: any, i: number) => {
+            dist.push({ id: op.id, minutes: base + (i < rem ? 1 : 0) });
+          });
+        }
+
+        // Close time entries
+        for (const entry of activeEntries!) {
+          const alloc = dist.find((d) => d.id === entry.operation_id);
+          await supabase
+            .from("time_entries")
+            .update({ end_time: nowStr, duration_minutes: alloc?.minutes ?? 0 })
+            .eq("id", entry.id);
+        }
+
+        // Update operation actual_time
+        for (const alloc of dist) {
+          const { data: op } = await supabase
+            .from("operations")
+            .select("actual_time")
+            .eq("id", alloc.id)
+            .single();
+          await supabase
+            .from("operations")
+            .update({ actual_time: (op?.actual_time ?? 0) + alloc.minutes })
+            .eq("id", alloc.id);
+        }
       }
 
-      // Close time entries
-      for (const entry of activeEntries) {
-        const alloc = dist.find((d) => d.id === entry.operation_id);
-        await supabase
-          .from("time_entries")
-          .update({ end_time: nowStr, duration_minutes: alloc?.minutes ?? 0 })
-          .eq("id", entry.id);
-      }
-
-      // Update operation actual_time
-      for (const alloc of dist) {
-        const { data: op } = await supabase
-          .from("operations")
-          .select("actual_time")
-          .eq("id", alloc.id)
-          .single();
-        await supabase
-          .from("operations")
-          .update({ actual_time: (op?.actual_time ?? 0) + alloc.minutes })
-          .eq("id", alloc.id);
-      }
+      // Mark operations as completed regardless of time tracking
+      const opIds2 = batchOps.map((bo: any) => bo.operation_id);
+      await supabase
+        .from("operations")
+        .update({ status: "completed", completed_at: nowStr })
+        .in("id", opIds2)
+        .eq("tenant_id", tenantId);
 
       // Complete batch
       const operatorId = body.operator_id || null;
@@ -234,7 +246,7 @@ Deno.serve(async (req) => {
           batch_id: batchId,
           status: "completed",
           total_minutes: totalMinutes,
-          distribution_method: useWeighted ? "weighted" : "equal",
+          distribution_method: distributionMethod,
           operations: dist,
         },
       });
@@ -254,7 +266,6 @@ Deno.serve(async (req) => {
         .from("batch_operations")
         .select("sequence_in_batch")
         .eq("batch_id", batchId)
-        .eq("tenant_id", tenantId)
         .order("sequence_in_batch", { ascending: false })
         .limit(1);
 
