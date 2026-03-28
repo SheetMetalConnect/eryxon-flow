@@ -445,6 +445,14 @@ export default function Jobs() {
       },
       size: 50,
     },
+    {
+      id: "rush",
+      accessorFn: (row: any) => row.hasBullet ? "rush" : "normal",
+      header: () => null,
+      cell: () => null,
+      filterFn: (row: any, _id: string, value: string[]) => value.includes(row.getValue("rush")),
+      enableHiding: true,
+    },
   ], [getStatusBadge, handleResume, handleSetOnHold, handleViewFile, t]);
 
   const filterableColumns: DataTableFilterableColumn[] = useMemo(() => [
@@ -456,6 +464,14 @@ export default function Jobs() {
         { label: t("operations.status.inProgress"), value: "in_progress" },
         { label: t("operations.status.completed"), value: "completed" },
         { label: t("operations.status.onHold"), value: "on_hold" },
+      ],
+    },
+    {
+      id: "rush",
+      title: "Rush",
+      options: [
+        { label: "Rush / Bullet Card", value: "rush" },
+        { label: "Normal", value: "normal" },
       ],
     },
   ], [t]);
@@ -517,7 +533,7 @@ export default function Jobs() {
           searchDebounce={200}
           onRowClick={(row) => setSelectedJobId(row.id)}
           compact={true}
-          columnVisibility={columnVisibility}
+          columnVisibility={{ ...columnVisibility, rush: false }}
           maxHeight={isMobile ? "calc(100vh - 320px)" : "calc(100vh - 280px)"}
         />
       </div>

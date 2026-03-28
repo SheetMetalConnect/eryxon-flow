@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, ArrowRight, Factory, CheckCircle2, Info, Monitor } from "lucide-react";
+import { Loader2, ArrowRight, CheckCircle2, Info, Monitor } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { AuthCardHeader, AuthShell } from "@/components/auth/AuthShell";
 import { Link } from "react-router-dom";
@@ -128,7 +128,7 @@ export default function Auth() {
   return (
     <AuthShell topRight={<LanguageSwitcher />}>
       <AuthCardHeader
-        icon={Factory}
+        logoSrc="/favicon.svg"
         appName={t("auth.appName")}
         badge={t("auth.subtitle")}
         title={isLogin ? t("auth.signIn") : t("auth.signUp")}

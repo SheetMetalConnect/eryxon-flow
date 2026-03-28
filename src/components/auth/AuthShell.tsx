@@ -11,7 +11,8 @@ interface AuthShellProps {
 }
 
 interface AuthCardHeaderProps {
-  icon: LucideIcon;
+  icon?: LucideIcon;
+  logoSrc?: string;
   title: string;
   appName?: string;
   badge?: string;
@@ -40,6 +41,7 @@ export function AuthShell({
 
 export function AuthCardHeader({
   icon: Icon,
+  logoSrc,
   title,
   appName,
   badge,
@@ -51,10 +53,14 @@ export function AuthCardHeader({
   return (
     <>
       <div className="icon-container">
-        <Icon
-          className={cn("browser-icon text-primary", iconClassName)}
-          strokeWidth={1.5}
-        />
+        {logoSrc ? (
+          <img src={logoSrc} alt="" className={cn("browser-icon", iconClassName)} />
+        ) : Icon ? (
+          <Icon
+            className={cn("browser-icon text-primary", iconClassName)}
+            strokeWidth={1.5}
+          />
+        ) : null}
       </div>
 
       {eyebrow && <p className="welcome-text">{eyebrow}</p>}

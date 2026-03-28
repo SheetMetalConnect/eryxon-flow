@@ -223,7 +223,12 @@ export default function Parts() {
         <DataTableColumnHeader column={column} title={t("parts.partNumber")} />
       ),
       cell: ({ row }) => (
-        <span className="font-medium">{row.getValue("part_number")}</span>
+        <div className="flex items-center gap-1.5">
+          <span className="font-medium">{row.getValue("part_number")}</span>
+          {row.original.is_bullet_card && (
+            <span className="inline-flex items-center rounded bg-red-500/15 px-1.5 py-0.5 text-[10px] font-bold text-red-500 uppercase tracking-wide">Rush</span>
+          )}
+        </div>
       ),
     },
     {
