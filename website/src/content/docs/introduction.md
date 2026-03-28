@@ -7,6 +7,8 @@ description: Manufacturing execution system for metals fabrication shops.
 
 > **Try it now:** Explore the [live demo at app.eryxon.eu](https://app.eryxon.eu) — no installation required.
 
+![Eryxon Flow admin dashboard](/src/assets/step-1.png)
+
 ## What It Does
 
 Eryxon tracks jobs, parts, and tasks through production with a mobile and tablet-first interface. Data comes from your ERP via API.
@@ -32,6 +34,8 @@ Real visibility into shopfloor activity without walking the floor.
 
 ### Work Organization
 Work is displayed **kanban-style** with visual columns per stage. Operators see what's available and pull work when ready—not pushed by a schedule. Stages represent manufacturing zones (cutting, bending, welding, assembly).
+
+![Kanban work queue organized by production stage](/src/assets/step-2.png)
 
 **Quick Response Manufacturing (QRM)** principles are built in: 
 - Visual indicators show when too many jobs or parts are in the same stage. 
@@ -60,6 +64,8 @@ Do everything operators can, plus: assign specific work to specific people, mana
 ## Real-Time Visibility
 
 Track who's on-site and what they're working on in real-time. No guessing, no delays. Changes appear immediately across all screens via **WebSocket updates**.
+
+![Capacity Matrix showing cell workload per day](/src/assets/overview.png)
 
 ---
 

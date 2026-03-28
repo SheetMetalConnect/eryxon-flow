@@ -27,6 +27,8 @@ import Grid from "~/components/user-components/Grid.astro";
 import HeroTabs from "~/components/HeroTabs.astro";
 import HeroTabsItem from "~/components/HeroTabsItem.astro";
 import LinkButton from "~/components/LinkButton.astro";
+import ListCard from "~/components/user-components/ListCard.astro";
+import ThemeDemo from "~/components/ThemeDemo.astro";
 
 <Section title="Built for <span class='text-primary'>Production</span>" description="Real-time operator terminals, multi-tenant workflows, and ERP integration out of the box.">
 
@@ -49,7 +51,6 @@ import LinkButton from "~/components/LinkButton.astro";
   <Card title="Dashboard & Analytics" icon="seti:chart" iconColor="#facc15">
     Live production stats, active jobs, and operator activity at a glance.
   </Card>
-
 </Grid>
 </Section>
 
@@ -82,6 +83,55 @@ import LinkButton from "~/components/LinkButton.astro";
   </HeroTabs>
 </Section>
 
+<Section title="Key <span class='text-primary'>Capabilities</span>" description="What sets Eryxon Flow apart from generic MES tools.">
+<Grid columns={3}>
+
+<ListCard title="Capacity Planning" icon="seti:plan" number="3" image="/src/assets/overview.png">
+- Visual cell workload per day
+- Auto-schedule with one click
+- Drag to reschedule operations
+
+<LinkButton href="/features/scheduling/" variant="text" className="mt-6 mb-8 ml-4">Learn more</LinkButton>
+</ListCard>
+
+<ListCard title="3D STEP Viewer" icon="seti:image" number="3">
+- Browser-based, no plugins
+- Measure distances and angles
+- Exploded view for assemblies
+
+<LinkButton href="/features/3d-viewer/" variant="text" className="mt-6 mb-8 ml-4">Learn more</LinkButton>
+</ListCard>
+</Grid>
+
+<Grid columns={3}>
+<ListCard title="Quality & NCR" icon="seti:lock" number="3" image="/src/assets/darkmode-demo.png">
+- Full activity audit trail
+- Non-conformance reports
+- Issue tracking per operation
+
+<LinkButton href="/guides/quality-management/" variant="text" className="mt-6 mb-8 ml-4">Learn more</LinkButton>
+</ListCard>
+
+<ListCard title="Time Tracking" icon="seti:clock" number="3">
+- Start/stop per operation
+- Weekly activity overview
+- Automatic time calculations
+
+<LinkButton href="/guides/operator-manual/" variant="text" className="mt-6 mb-8 ml-4">Operator guide</LinkButton>
+</ListCard>
+</Grid>
+</Section>
+
+<Section
+  title="Admin & <span class='text-primary'>Operator</span> views"
+  description="One app, two interfaces. Switch between admin oversight and operator work view."
+>
+<ThemeDemo
+  darkImage="/src/assets/darkmode-demo.png"
+  lightImage="/src/assets/lightmode-demo.png"
+/>
+</Section>
+
 <Section title="Why <span class='text-primary'>Eryxon Flow?</span>">
 <Grid columns={2}>
 <Card title="For Job Shops" icon="seti:home" iconColor="#38bdf8">
@@ -97,10 +147,7 @@ import LinkButton from "~/components/LinkButton.astro";
     <LinkButton href="/guides/quick-start/" variant="minimal">Start Quick Guide</LinkButton>
     <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow" variant="minimal">Star on GitHub</LinkButton>
 </div>
-
 </Section>
-
-import ListCard from "~/components/user-components/ListCard.astro";
 
 <Section title="Quick <span class='text-primary'>Navigation</span>" description="Jump straight to the docs you need.">
   <Grid columns={3}>
@@ -200,5 +247,4 @@ import ListCard from "~/components/user-components/ListCard.astro";
       <a href="https://www.vanenkhuizen.com/" target="_blank" class="text-primary font-semibold hover:underline">vanenkhuizen.com</a> offers consulting for manufacturing digitalization.
     </Card>
   </Grid>
-
 </Section>

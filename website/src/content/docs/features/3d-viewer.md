@@ -7,6 +7,8 @@ description: "Documentation for 3D STEP Viewer"
 
 The 3D STEP viewer lets you view CAD models directly in the browser. Upload a STEP file to a part, click "View 3D", and inspect the model from every angle — no desktop CAD software needed.
 
+![3D STEP Viewer with measurements](/src/assets/viewer-3d.png)
+
 ## Features
 
 - View `.step` and `.stp` files in the browser
@@ -40,6 +42,8 @@ The 3D STEP viewer lets you view CAD models directly in the browser. Upload a ST
 
 1. Click the **View 3D** button next to any uploaded file
 2. The viewer opens full-screen
+
+![Operator terminal with 3D viewer and part details](/src/assets/step-3.png)
 
 ### Controls
 
