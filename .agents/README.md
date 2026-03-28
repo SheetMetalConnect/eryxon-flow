@@ -9,7 +9,7 @@ Manufacturing Execution System (MES) for job shops. Tracks jobs, parts, operatio
 ## Commands
 
 ```bash
-npm install && npm run dev   # Dev server at localhost:5173
+npm install && npm run dev   # Dev server at localhost:8080
 npm run build                # MUST pass before any commit
 npm run test:run             # Vitest test suite
 ```

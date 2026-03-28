@@ -265,7 +265,7 @@ Added sections:
 import { STEPViewer } from '@/components/STEPViewer';
 
 <STEPViewer
-  url="blob:http://localhost:5173/abc123"  // Blob URL to STEP file
+  url="blob:http://localhost:8080/abc123"  // Blob URL to STEP file
   title="Bracket Assembly"                 // Optional display title
 />
 ```

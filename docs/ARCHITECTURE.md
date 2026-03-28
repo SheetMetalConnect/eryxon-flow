@@ -73,7 +73,7 @@ graph LR
 
     subgraph Routing
         ProtectedRoute
-        AdminRoutes["AdminRoutes<br/>21 pages"]
+        AdminRoutes["AdminRoutes<br/>32 pages"]
         OperatorRoutes["OperatorRoutes<br/>work queue, time tracking"]
         CommonRoutes["CommonRoutes<br/>shared pages"]
     end

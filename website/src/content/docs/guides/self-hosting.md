@@ -50,7 +50,7 @@ The script will automatically:
 
 ```bash
 npm run dev
-# Open http://localhost:5173
+# Open http://localhost:8080
 ```
 
 ### First User Setup

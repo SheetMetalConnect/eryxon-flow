@@ -6,7 +6,7 @@
 
 1. Read `.agents/README.md` — universal instructions for all AI tools
 2. Read `docs/ARCHITECTURE.md` — system overview with Mermaid graphs
-3. Run `npm install && npm run dev` — dev server at localhost:5173
+3. Run `npm install && npm run dev` — dev server at localhost:8080
 
 ## MCP Servers (Optional, Recommended)
 

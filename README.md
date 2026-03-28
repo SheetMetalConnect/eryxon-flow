@@ -59,7 +59,7 @@ git clone https://github.com/SheetMetalConnect/eryxon-flow.git
 cd eryxon-flow
 cp .env.example .env    # Add your Supabase credentials
 npm install
-npm run dev             # http://localhost:5173
+npm run dev             # http://localhost:8080
 ```
 
 Requires: Node.js 20+, [Supabase](https://supabase.com) project

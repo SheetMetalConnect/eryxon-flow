@@ -13,7 +13,7 @@ Get Eryxon Flow up and running.
 
 ## Prerequisites
 
-- Node.js 18+ ([download](https://nodejs.org))
+- Node.js 20+ ([download](https://nodejs.org))
 - A Supabase account (free tier works) - [sign up](https://supabase.com)
 
 ---
@@ -40,10 +40,42 @@ Use the Supabase CLI against your target project:
 ```bash
 supabase link --project-ref YOUR_PROJECT_REF
 supabase db push
+```
+
+### 1.4 Apply Seed Data
+
+The seed file sets up storage policies, RLS defaults, and cron jobs:
+
+```bash
+supabase db execute --file supabase/seed.sql
+```
+
+### 1.5 Create Storage Buckets
+
+```bash
+supabase storage create parts-images
+supabase storage create issues
+supabase storage create parts-cad
+supabase storage create batch-images
+```
+
+### 1.6 Deploy Edge Functions
+
+```bash
 supabase functions deploy
 ```
 
+### 1.7 Set Edge Function Secrets
+
+Go to **Settings** → **API** and copy the **service_role** key, then:
+
+```bash
+supabase secrets set SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY
+```
+
 For hosted and self-hosted environments on release `0.3.3`, configure the `notify-new-signup` Database Webhook explicitly after migrations are applied.
+
+> **Prefer automation?** Run `bash scripts/setup.sh` instead — it walks through all of the above interactively.
 
 ---
 
@@ -104,7 +136,7 @@ Want to see the app with sample data?
 | `/admin/jobs` | Manage manufacturing jobs |
 | `/admin/jobs/new` | Create new job |
 | `/operator/work-queue` | Operator task list |
-| `/operator/terminal` | Shop floor interface |
+| `/operator/login` | Shop floor terminal login |
 | `/admin/config/stages` | Configure workflow stages |
 
 ---
@@ -122,7 +154,7 @@ Want to see the app with sample data?
 - [API Payload Reference](/api/payload-reference/) - Copy-paste payload examples
 - [MCP Demo Guide](/api/mcp-demo-guide/) - AI assistant usage examples
 - [Webhooks & MQTT](/architecture/connectivity-mqtt/) - Event-driven integration
-- **Swagger/OpenAPI** - Available in the app at `/api-docs`
+- **Swagger/OpenAPI** - Available in the app at `/admin/api-docs` (requires login)
 
 **Architecture & Help:**
 - [App Architecture](/architecture/app-architecture/) - System design overview

@@ -76,7 +76,7 @@ npx shadcn-ui@latest add <component>
 ```bash
 npm run build    # Production build (catches TypeScript errors)
 npm run lint     # ESLint checks
-npm run dev      # Dev server at localhost:5173
+npm run dev      # Dev server at localhost:8080
 ```
 
 ## Architecture Principles

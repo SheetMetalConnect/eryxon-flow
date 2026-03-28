@@ -1,6 +1,6 @@
 # Route Map — Eryxon Flow
 
-> All 41 frontend routes with guards and lazy-loading status.
+> All 46 frontend routes with guards and lazy-loading status.
 
 ## Auth Routes (public)
 

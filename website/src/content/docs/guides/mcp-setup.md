@@ -31,7 +31,7 @@ Your Data
 Best for: Single-tenant self-hosted deployments, development
 
 **Requirements:**
-- Node.js 18+
+- Node.js 20+
 - Direct access to Supabase database
 - Service role key
 
