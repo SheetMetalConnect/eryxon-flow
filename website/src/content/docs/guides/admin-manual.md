@@ -1,62 +1,173 @@
 ---
-title: "Admin Manual"
-description: "Guide for administrators on configuring and managing Eryxon Flow."
+title: Admin Manual
+description: How to manage production in Eryxon Flow — jobs, cells, scheduling, quality.
 ---
 
-## Key Tasks
+This guide covers everything a production manager or planner needs to run day-to-day operations in Eryxon Flow. It assumes your account has admin access.
 
-### Creating Jobs
+## Dashboard
 
-1. Navigate to **Jobs → Create New Job**.
-2. Enter Job details (Number, Customer, Due Date).
-3. Add **Parts** (Number, Material, Quantity).
-4. Add **Operations** to each part (Name, Cell, Est. Time, Sequence).
-- *Tip:* Use `Cmd/Ctrl + N` for Quick Create menu.
+The dashboard is your starting screen. It shows:
 
-### Assigning Work
+- **Active operators** — who is logged in and working right now.
+- **Pending issues** — quality problems reported from the shop floor, waiting for your review.
+- **WIP per cell** — how many operations are active in each production cell, against the cell's WIP limit.
+- **Due dates** — upcoming deadlines across all active jobs, sorted by urgency.
 
-1. Go to **Assignments** page.
-2. Select part from dropdown.
-3. Select operator.
-4. Click "Assign".
-- The operator will see this in their `/work-queue` immediately.
+All data updates in real time. When an operator scans a start or finish on the terminal, the dashboard reflects it within seconds.
 
-### Managing Issues
+## Managing Jobs
 
-1. Go to **Issues** page.
-2. Review pending issues.
-3. **Approve** (valid issue), **Reject** (not an issue), or **Close** (resolved).
-4. Add resolution notes.
+### Job hierarchy
 
-### Data Export
+Every job follows the same structure: **Job > Parts > Operations**.
 
-> **Access:** `/admin/data-export` (Admin only)
+- A **job** represents a customer order or internal project. It holds the customer name, job number, and due date.
+- A **part** is a physical item to produce. Each part has a material, quantity, and drawing reference.
+- An **operation** is a single production step on a part — cutting, bending, welding, painting, etc. Operations are linked to a production cell and have an estimated time.
 
-Large datasets can take 30-60 seconds.
-- **Included:** All database records, metadata, tenant info.
-- **Not Included:** File attachments (only paths), API secrets (only prefixes).
-- **Format:** JSON or CSV. CSV is typically faster.
+### Creating a job
 
-## System Configuration
+1. Go to **Jobs** and click **Create New Job**.
+2. Fill in the job number, customer, and due date.
+3. Add one or more parts. For each part, set the part number, material, and quantity.
+4. Add operations to each part. For each operation, select the cell, set the estimated time, and define the sequence order.
 
-Go to **Settings** menu:
+You can also use `Cmd/Ctrl + N` from anywhere to open the quick-create menu.
 
-- **Stages/Cells**: Define workflow stages (Cutting, Bending, etc.).
-  - **QRM Settings**:
-    - `WIP Limit`: Max jobs allowed.
-    - `Enforce Limit`: Blocks previous op from completing if full.
-- **Materials**: Create material catalog.
-- **Resources**: Track tools, fixtures, molds.
-- **Users**: Manage operator and admin accounts.
-- **API Keys**: Generate keys for integrations.
-- **Webhooks**: Configure `operation.started`, `operation.completed`, etc.
+### Rush orders (bullet card)
 
-## Best Practices
+When a part needs to jump the queue, mark it as a **bullet card** (rush). This does three things globally:
 
-- **Set up workflow cells first** before creating jobs.
-- **Create materials catalog** before adding jobs.
-- **Review dashboard daily** to catch issues early.
-- **Respond to issues quickly** to keep production moving.
-- **Use due date overrides** when customer dates change.
-- **Run Auto Schedule** after adding new jobs to update the [Capacity Matrix](/features/scheduling/).
-- **Export data regularly** for backups (monthly recommended).
+- The part moves to the top of every table and work queue, across all cells.
+- Operators see a clear rush indicator on their terminal.
+- The part stays prioritized until you remove the rush flag.
+
+Use this sparingly. If everything is rush, nothing is.
+
+### Putting operations on hold
+
+You can place any operation on hold from the job detail screen. A held operation disappears from the operator's work queue and will not be scheduled. Resume it when the block is cleared — it returns to the queue at its original priority.
+
+## Production Cells (Stages)
+
+Cells represent your physical workstations or departments — laser cutting, press brake, welding, assembly, shipping.
+
+### Configuring a cell
+
+Go to **Settings > Stages/Cells**. For each cell, you can set:
+
+- **Name** — what operators see on the terminal (e.g., "Laser 1", "Kantbank").
+- **Color** — used throughout the interface for visual identification.
+- **Icon** — appears on the terminal and in the capacity matrix.
+- **Sequence** — the default order cells appear in views and scheduling.
+
+### WIP limits
+
+Each cell has a WIP (Work In Progress) limit. This controls how many operations can be active simultaneously.
+
+- **Warning threshold** — the interface highlights the cell when it approaches the limit.
+- **Enforce limit** — when enabled, the system blocks the previous operation from completing if the next cell is at capacity. This prevents work from piling up at a bottleneck.
+
+Set WIP limits based on your actual station capacity. Start conservative and adjust based on what you observe.
+
+### Capacity hours
+
+Define how many production hours each cell has per day. The scheduler uses this to calculate load and flag overcommitted days.
+
+## Scheduling and Capacity
+
+### Auto-scheduler
+
+The auto-scheduler allocates operations to time slots based on:
+
+- Operation sequence within each part.
+- Estimated hours per operation.
+- Cell capacity per day.
+- Job due dates.
+
+Run the scheduler after adding new jobs or when priorities change. It recalculates the full schedule and updates the capacity matrix.
+
+### Capacity matrix
+
+The capacity matrix gives you a bird's eye view of load per cell per day. Each cell shows as a row, each day as a column. Color coding indicates available, loaded, and overcommitted states.
+
+Use this to spot bottlenecks before they hit the shop floor. If a cell shows red three days out, you know to act now — move work, add a shift, or adjust due dates.
+
+### Due date overrides
+
+When a customer changes their deadline, update the due date on the job. The scheduler picks up the change on its next run. You can also override at the part level if only specific items shifted.
+
+### Factory calendar
+
+The factory calendar defines working days and holidays. The scheduler skips non-working days automatically. Configure this in **Settings** before running your first schedule.
+
+## Batch Management
+
+Batches group operations for nesting or combined processing — common in laser cutting where multiple parts share the same sheet.
+
+### Working with batches
+
+1. Create a batch and give it a name or number.
+2. Assign operations from different parts to the batch.
+3. Track material allocation for the batch.
+
+When an operator processes a batch, all included operations progress together.
+
+## Assignments and Users
+
+### Assigning work
+
+Go to the **Assignments** page to assign specific operations to operators. Select the part, choose the operator, and confirm. The assignment appears in the operator's work queue immediately.
+
+You can also let operators self-assign from available work in their cell.
+
+### Roles
+
+- **Admin** — full access to all settings, jobs, scheduling, data, and user management.
+- **Operator** — access to their work queue, the terminal, and issue reporting. Operators cannot modify jobs, change schedules, or access settings.
+
+Manage users in **Settings > Users**.
+
+## Quality and Issues
+
+Operators report issues directly from the terminal — wrong material, damaged parts, missing drawings, machine problems.
+
+### Reviewing issues
+
+1. Go to the **Issues** page.
+2. Each issue shows the part, operation, operator, and description.
+3. Choose an action:
+   - **Approve** — confirms it is a valid issue. Logs it for quality tracking.
+   - **Reject** — not actually an issue. Add a note explaining why.
+   - **Close** — the issue has been resolved. Add resolution notes.
+
+Respond to issues quickly. Unresolved issues block operators and slow production.
+
+### Quality metrics
+
+The quality dashboard aggregates issue data over time — issues per cell, resolution time, recurring problems. Use this to identify patterns and drive improvement.
+
+## Data and Integration
+
+### CSV import
+
+Import jobs, parts, and operations from CSV files. This is useful for migrating from spreadsheets or receiving structured data from your ERP. The import screen validates data before committing.
+
+### API keys
+
+Generate API keys in **Settings > API Keys** for external system integration. Each key is scoped to your tenant and can be revoked at any time.
+
+### Webhooks
+
+Configure webhooks in **Settings > Webhooks** to push events to external systems. Available events include:
+
+- `operation.started` — an operator began work.
+- `operation.completed` — an operator finished work.
+- `issue.created` — a quality issue was reported.
+
+### Data export
+
+Go to **Settings > Data Export** (admin only). You can export all records as JSON or CSV. CSV is typically faster for large datasets. Exports include all database records and metadata but exclude file attachments (only paths) and API secrets (only prefixes).
+
+Large exports can take 30-60 seconds. Run them during quiet hours if possible.
