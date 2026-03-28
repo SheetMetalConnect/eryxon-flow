@@ -22,7 +22,7 @@ graph TB
         SBAuth[Supabase Auth]
         SBRealtime[Realtime WebSocket]
         SBStorage[Storage]
-        EdgeFns[Edge Functions<br/>22 API endpoints]
+        EdgeFns[Edge Functions<br/>24 API endpoints]
         DB[(PostgreSQL + RLS)]
     end
 
@@ -112,7 +112,7 @@ graph TB
         validation["validation/<br/>Error handling, input validation"]
     end
 
-    subgraph Endpoints["API Endpoints (22)"]
+    subgraph Endpoints["API Endpoints (24)"]
         direction LR
         jobs[api-jobs]
         parts[api-parts]
@@ -121,7 +121,8 @@ graph TB
         time[api-time-entries]
         materials[api-materials]
         resources[api-resources]
-        lifecycle["api-job-lifecycle<br/>api-operation-lifecycle"]
+        lifecycle["api-job-lifecycle<br/>api-operation-lifecycle<br/>api-batch-lifecycle"]
+        batches[api-batches]
         sync[api-erp-sync]
         webhooks[api-webhooks]
         other["api-cells, api-assignments,<br/>api-templates, api-substeps,<br/>api-export, api-scrap-reasons,<br/>api-key-generate, api-upload-url,<br/>api-parts-images, api-webhook-logs,<br/>api-operation-quantities"]
@@ -131,7 +132,7 @@ graph TB
     handler --> auth --> rateLimit --> plans
     auth -->|"tenantId + plan"| crud
     handler --> crud
-    crud --> jobs & parts & ops & issues & time & materials & resources & other
+    crud --> jobs & parts & ops & issues & time & materials & resources & batches & other
     lifecycle --> handler
     sync --> handler
     webhooks --> handler
@@ -283,7 +284,7 @@ eryxon-flow/
 ├── supabase/
 │   ├── functions/
 │   │   ├── _shared/         # handler, crud-builder, auth, plan-limits, security
-│   │   └── api-*/           # 22 REST API endpoints (Deno)
+│   │   └── api-*/           # 24 REST API endpoints (Deno)
 │   └── migrations/          # PostgreSQL schema (timestamped SQL)
 ├── mcp-server/              # MCP server for AI tool integration
 ├── website/                 # Astro documentation site

@@ -20,7 +20,7 @@ npm run test:run             # Vitest test suite
 React 18 + Vite + Tailwind + shadcn/ui
     → Supabase Client
     → PostgreSQL + Auth + RLS + Realtime + Storage
-    → Edge Functions (Deno) — 30+ REST API endpoints
+    → Edge Functions (Deno) — 30+ REST API endpoints (incl. api-batches, api-batch-lifecycle)
     → Webhooks + MQTT + MCP Server
 ```
 
@@ -105,7 +105,7 @@ opentraceai index .    # ~3 seconds, writes to .opentrace/index.db
 | Document | Purpose |
 |----------|---------|
 | [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md) | System architecture with Mermaid dependency graphs |
-| [`docs/API_CATALOG.md`](../docs/API_CATALOG.md) | All 22 API endpoints — tables, methods, CRUD config |
+| [`docs/API_CATALOG.md`](../docs/API_CATALOG.md) | All 24 API endpoints — tables, methods, CRUD config |
 | [`docs/ROUTE_MAP.md`](../docs/ROUTE_MAP.md) | All 41 frontend routes with guards and lazy-loading |
 | [`docs/HOOK_MAP.md`](../docs/HOOK_MAP.md) | Hook → table → queryKey dependency map |
 | [`docs/CONVENTIONS.md`](../docs/CONVENTIONS.md) | Code patterns, naming, templates for new files |

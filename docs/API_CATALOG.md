@@ -28,6 +28,8 @@
 | 20 | api-upload-url | storage | Custom | POST | N/A | no |
 | 21 | api-webhook-logs | webhook_logs | CRUD (read-only) | GET | no | no |
 | 22 | api-webhooks | webhooks | CRUD | GET POST PATCH DELETE | no | no |
+| 23 | api-batches | operation_batches | CRUD + custom POST | GET POST PATCH DELETE | no | no |
+| 24 | api-batch-lifecycle | operation_batches | Custom | POST | N/A | no |
 
 ## CRUD Builder Configs
 
@@ -46,6 +48,7 @@ api-templates:      table=substep_templates, search=[name, description], filters
 api-time-entries:   table=time_entries, search=[notes], filters=[operation_id, operator_id, time_type] + queryModifier(date range)
 api-webhook-logs:   table=webhook_logs, filters=[webhook_id, status_code, event_type] (read-only)
 api-webhooks:       table=webhooks, search=[url], filters=[events, active]
+api-batches:        table=operation_batches, search=[batch_number, material], filters=[status, batch_type, cell_id, material], sort=[batch_number, created_at, status, batch_type], no soft delete
 ```
 
 ### Custom endpoints
@@ -61,6 +64,11 @@ api-operation-lifecycle:  POST /start, /pause, /resume, /complete (time entry ma
 api-parts:                Custom POST with plan limits + nested operations
 api-parts-images:         GET (list), GET ?signed=true (signed URL), POST (upload), DELETE
 api-upload-url:           POST (generate pre-signed upload URL)
+api-batches:              Custom POST creates batch + assigns operations in one call
+api-batch-lifecycle:      POST /start?id=xxx (creates time entries, sets in_progress, requires operator_id),
+                          POST /stop?id=xxx (distributes time weighted by estimated_time, sets completed),
+                          POST /add-operations?id=xxx (add operations to existing batch)
+                          Webhook events: batch.started, batch.completed
 ```
 
 ## Authentication
