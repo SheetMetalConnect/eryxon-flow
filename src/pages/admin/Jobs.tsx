@@ -49,7 +49,7 @@ import {
 import { toast } from "sonner";
 import { JobIssueBadge } from "@/components/issues/JobIssueBadge";
 import { CompactOperationsFlow } from "@/components/qrm/OperationsFlowVisualization";
-import { useMultipleJobsRouting } from "@/hooks/useQRMMetrics";
+import { useJobFlows } from "@/hooks/useJobFlows";
 import { DataTable } from "@/components/ui/data-table/DataTable";
 import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
 import type { DataTableFilterableColumn } from "@/components/ui/data-table/DataTable";
@@ -147,7 +147,7 @@ export default function Jobs() {
 
   const jobIds = useMemo(() => jobs?.map((job: JobData) => job.id) || [], [jobs]);
 
-  const { routings, loading: routingsLoading } = useMultipleJobsRouting(jobIds, profile?.tenant_id ?? null);
+  const { flows: routings, loading: routingsLoading } = useJobFlows(jobIds, profile?.tenant_id ?? null);
 
   const handleSetOnHold = useCallback(async (jobId: string) => {
     const { error } = await supabase.from("jobs").update({ status: "on_hold" }).eq("id", jobId);
