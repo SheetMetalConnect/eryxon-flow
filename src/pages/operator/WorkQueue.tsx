@@ -276,10 +276,12 @@ export default function WorkQueue() {
   /* ── Kanban columns: one per cell ── */
   const kanbanColumns = cells.map((cell) => {
     const cellOps = sortedOperations.filter((op) => op.cell_id === cell.id);
-    const inProgress = cellOps.filter(
-      (op) => op.status === "in_progress",
-    ).length;
-    return { cell, operations: cellOps, inProgress };
+    const inProgress = cellOps.filter((op) => op.status === "in_progress").length;
+    const onHold = cellOps.filter((op) => op.status === "on_hold").length;
+    const rushCount = cellOps.filter((op) => op.part?.is_bullet_card).length;
+    const totalHours = cellOps.reduce((sum, op) => sum + Math.max(0, (op.estimated_time || 0) - (op.actual_time || 0)), 0);
+    const totalPcs = cellOps.reduce((sum, op) => sum + (Number(op.part?.quantity) || 0), 0);
+    return { cell, operations: cellOps, inProgress, onHold, rushCount, totalHours, totalPcs };
   });
 
   if (loading) {
@@ -450,33 +452,48 @@ export default function WorkQueue() {
             </div>
           </div>
         ) : (
-          kanbanColumns.map(({ cell, operations: cellOps, inProgress }) => (
+          kanbanColumns.map(({ cell, operations: cellOps, inProgress, onHold, rushCount, totalHours, totalPcs }) => (
             <div
               key={cell.id}
               className="flex h-full w-[320px] shrink-0 flex-col border-r border-border last:border-r-0"
             >
               {/* Column header */}
-              <div className="flex shrink-0 items-center justify-between border-b border-border bg-muted/30 px-3 py-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span
-                    className="h-3 w-3 shrink-0 rounded-full"
-                    style={{
-                      backgroundColor: cell.color || "currentColor",
-                    }}
-                  />
-                  <span className="truncate text-sm font-semibold text-foreground">
-                    {cell.name}
-                  </span>
-                </div>
-                <div className="flex shrink-0 items-center gap-1.5">
-                  {inProgress > 0 ? (
-                    <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
-                      {inProgress} {t("workQueue.active", "active")}
+              <div className="shrink-0 border-b border-border bg-muted/30 px-3 py-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span
+                      className="h-3 w-3 shrink-0 rounded-full"
+                      style={{ backgroundColor: cell.color || "currentColor" }}
+                    />
+                    <span className="truncate text-sm font-semibold text-foreground">
+                      {cell.name}
                     </span>
-                  ) : null}
-                  <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                    {cellOps.length}
-                  </span>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    {rushCount > 0 ? (
+                      <span className="rounded-full bg-red-500/15 px-1.5 py-0.5 text-[10px] font-bold text-red-500">
+                        {rushCount} rush
+                      </span>
+                    ) : null}
+                    {inProgress > 0 ? (
+                      <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                        {inProgress} {t("workQueue.active", "active")}
+                      </span>
+                    ) : null}
+                    {onHold > 0 ? (
+                      <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                        {onHold} hold
+                      </span>
+                    ) : null}
+                    <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                      {cellOps.length}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-1 flex items-center gap-2 text-[10px] font-mono text-muted-foreground">
+                  <span>{totalHours.toFixed(1)}h</span>
+                  <span>·</span>
+                  <span>{totalPcs} pcs</span>
                 </div>
               </div>
 

@@ -44,10 +44,12 @@ import {
   Wrench,
   X,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { EnhancedMetadataDisplay } from "@/components/ui/EnhancedMetadataDisplay";
+import { FlowCell } from "@/components/FlowCell";
 import IssueForm from "./IssueForm";
 import { STEPViewer } from "@/components/STEPViewerLazy";
 import { PDFViewer } from "@/components/PDFViewerLazy";
@@ -334,11 +336,55 @@ export default function OperationDetailModal({
               </div>
             </div>
 
+            {/* Quick controls: Rush + Hold */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={async () => {
+                  const newVal = !operation.part.is_bullet_card;
+                  await supabase.from("parts").update({ is_bullet_card: newVal }).eq("id", operation.part.id);
+                  toast.success(newVal ? t("operations.rushEnabled", "Rush ingeschakeld") : t("operations.rushDisabled", "Rush uitgeschakeld"));
+                  onUpdate();
+                }}
+                className={cn(
+                  "flex h-8 flex-1 items-center justify-center gap-1.5 rounded-md border text-xs font-semibold transition-colors",
+                  operation.part.is_bullet_card
+                    ? "border-red-500/40 bg-red-500/10 text-red-500"
+                    : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50",
+                )}
+              >
+                ⚡ Rush
+              </button>
+              <button
+                onClick={async () => {
+                  const newStatus = operation.status === "on_hold" ? "not_started" : "on_hold";
+                  await supabase.from("operations").update({ status: newStatus }).eq("id", operation.id);
+                  toast.success(newStatus === "on_hold" ? t("operations.onHold", "On hold gezet") : t("operations.resumed", "Hervat"));
+                  onUpdate();
+                }}
+                className={cn(
+                  "flex h-8 flex-1 items-center justify-center gap-1.5 rounded-md border text-xs font-semibold transition-colors",
+                  operation.status === "on_hold"
+                    ? "border-amber-500/40 bg-amber-500/10 text-amber-500"
+                    : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50",
+                )}
+              >
+                {operation.status === "on_hold" ? "▶ Hervatten" : "⏸ On Hold"}
+              </button>
+            </div>
+
             {typeof operation.part.job.customer === "string" && operation.part.job.customer && (
               <div className="text-xs text-muted-foreground bg-muted/30 rounded-md px-3 py-2">
                 {operation.part.job.customer}
               </div>
             )}
+
+            {/* Routing visualization */}
+            <div className="rounded-md border border-border bg-muted/20 p-3">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                {t("operations.routing", "Route")}
+              </div>
+              <FlowCell jobId={operation.part.job.id} />
+            </div>
 
             {operation.part.parent_part_id && (
               <div className="flex items-start gap-2 p-2.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-md">
