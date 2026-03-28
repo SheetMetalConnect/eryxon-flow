@@ -215,8 +215,8 @@ export function OperatorStatusBar() {
     }
   };
 
-  // If no operator selected, don't show the status bar
-  if (!activeOperator) return null;
+  // Show status bar if operator is selected OR if there are active time entries
+  if (!activeOperator && statusData.count === 0) return null;
 
   return (
     <div
@@ -335,8 +335,7 @@ export function OperatorStatusBar() {
             </Popover>
           )}
 
-          {/* Terminal header slot */}
-          <div id="terminal-header-slot" />
+          {/* Cell selector slot removed — now in main header */}
         </div>
       </div>
     </div>

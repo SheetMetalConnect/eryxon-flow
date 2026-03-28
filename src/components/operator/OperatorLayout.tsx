@@ -174,8 +174,9 @@ export const OperatorLayout = ({
               )}
             </div>
 
-            {/* Center: empty — operator info moved to status bar */}
-            <div className="flex items-center gap-2">
+            {/* Center: Cell selector slot + operator switcher */}
+            <div className="flex items-center gap-3">
+              <div id="terminal-header-slot" />
               {!activeOperator && (
                 <OperatorSwitcher variant="button" className="h-8" />
               )}
@@ -183,6 +184,7 @@ export const OperatorLayout = ({
 
             {/* Right: Actions */}
             <div className="flex items-center gap-1.5">
+              <TimingHeaderIndicator />
               <SearchTriggerButton onClick={() => setSearchOpen(true)} compact />
               <ThemeToggle variant="dropdown" />
               <LanguageSwitcher />
