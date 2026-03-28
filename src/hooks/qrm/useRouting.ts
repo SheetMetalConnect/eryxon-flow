@@ -14,6 +14,13 @@ import { useDebouncedCallback } from "@/hooks/useDebounce";
 import type { PartRouting, JobRouting } from "@/types/qrm";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
+/** Safely unwrap a PostgREST embedded resource (may be array or object) */
+function unwrap<T>(value: T | T[] | null | undefined): T | null {
+  if (value == null) return null;
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value;
+}
+
 /**
  * Shared type for cell routing data
  * cell_name is nullable to let UI/localization layer render translated fallback
@@ -228,24 +235,15 @@ export function useJobRouting(jobId: string | null, tenantId: string | null) {
 
       const routingData = groupOperationsByCell(
         (data || [])
-          .filter(
-            (op: {
-              cells: { name: string; color: string | null; sequence: number } | null;
-            }) => op.cells
-          )
-          .map(
-            (op: {
-              cell_id: string;
-              status: string;
-              cells: { name: string; color: string | null; sequence: number };
-            }) => ({
-              cell_id: op.cell_id,
-              cell_name: op.cells.name,
-              cell_color: op.cells.color,
-              sequence: op.cells.sequence,
-              status: op.status,
-            })
-          )
+          .map((op: any) => ({ ...op, cells: unwrap(op.cells) }))
+          .filter((op: any) => op.cells)
+          .map((op: any) => ({
+            cell_id: op.cell_id,
+            cell_name: op.cells.name,
+            cell_color: op.cells.color,
+            sequence: op.cells.sequence,
+            status: op.status,
+          }))
       );
 
       setRouting(routingData);
@@ -378,19 +376,8 @@ export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null
       });
 
       (data || []).forEach(
-        (op: {
-          id: string;
-          status: string;
-          sequence: number;
-          cell_id: string;
-          part_id: string;
-          cells: {
-            id: string;
-            name: string;
-            color: string | null;
-            sequence: number;
-          } | null;
-        }) => {
+        (rawOp: any) => {
+          const op = { ...rawOp, cells: unwrap(rawOp.cells) };
           if (!op.cells || !op.part_id) return;
 
           const jobId = partJobMap[op.part_id];

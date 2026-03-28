@@ -219,7 +219,7 @@ export function CompactOperationsFlow({
                     color: isCompleted || isInProgress ? '#FFFFFF' : cellColor,
                   }}
                 >
-                  {step.cell_name.slice(0, 3).toUpperCase()}
+                  {(step.cell_name ?? "?").slice(0, 3).toUpperCase()}
                 </div>
               </TooltipTrigger>
               <TooltipContent side="top" className="text-xs">
