@@ -81,13 +81,20 @@ const MemoizedRow = React.memo(
     </TableRow>
   ),
   (prevProps, nextProps) => {
-    return (
-      prevProps.row.id === nextProps.row.id &&
-      prevProps.row.getIsSelected() === nextProps.row.getIsSelected() &&
-      prevProps.index === nextProps.index &&
-      prevProps.compact === nextProps.compact &&
-      prevProps.striped === nextProps.striped
-    );
+    // Check basic row identity
+    if (prevProps.row.id !== nextProps.row.id) return false;
+    if (prevProps.row.getIsSelected() !== nextProps.row.getIsSelected()) return false;
+    if (prevProps.index !== nextProps.index) return false;
+    if (prevProps.compact !== nextProps.compact) return false;
+    if (prevProps.striped !== nextProps.striped) return false;
+    // Re-render when column definitions change (e.g. async data in cell closures)
+    const prevCells = prevProps.row.getVisibleCells();
+    const nextCells = nextProps.row.getVisibleCells();
+    if (prevCells.length !== nextCells.length) return false;
+    for (let i = 0; i < prevCells.length; i++) {
+      if (prevCells[i].column.columnDef.cell !== nextCells[i].column.columnDef.cell) return false;
+    }
+    return true;
   }
 ) as <TData>(props: MemoizedRowProps<TData>) => React.ReactElement;
 
