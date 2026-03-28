@@ -1,29 +1,48 @@
 ---
-title: "Quality Management"
-description: "Understanding quality dashboards and scrap tracking in Eryxon Flow."
+title: Quality Management
+description: Issue reporting, scrap tracking, and quality workflow in Eryxon Flow.
 ---
 
-## Overview
+Quality management in Eryxon Flow centers on **issue reporting from the shop floor** and **scrap reason tracking**. Operators flag problems as they happen, admins review and resolve them.
 
-Quality dashboards are integrated throughout the admin interface to provide real-time visibility into production quality metrics.
+## Issue Reporting
 
-## Dashboards
+Operators report issues directly from the operation detail panel — on the work queue or terminal. Every issue includes:
 
-### Jobs Page
-- **Yield Rate**: Percentage of good parts vs total (Green >95%, Yellow >85%, Red <85%).
-- **Production Stats**: Total produced, good parts, scrap logs.
-- **Top Scrap Reasons**: Most frequently cited scrap codes for this job.
+- **Severity** — low, medium, high, or critical
+- **Description** — what went wrong
+- **Photos** — attach images of the problem (recommended)
+- **Operation context** — which job, part, and operation the issue relates to
 
-### Parts Page
-- **Scrap Breakdown**: Visual breakdown by category (Material, Process, Equipment, Operator, Design).
-- **Rework Quantities**: Track items that needed correction but weren't scrapped.
+Issues appear instantly in the admin Issue Queue.
 
-### Issue Queue
-- **Resolution Rate**: Percentage of issues resolved.
-- **Severity Breakdown**: Critical vs High vs Low.
+## Issue Queue (Admin)
 
-## Scrap Configuration
+Navigate to **Issues** in the admin sidebar. The queue shows all reported issues with:
 
-Admins can configure Scrap Reasons in **Settings**:
-- **Usage Statistics**: See which codes are used most.
-- **Scrap by Category**: Breakdown of why scrap happens.
+- Status: pending, approved, rejected, closed
+- Severity badges with color coding
+- Reporter name and timestamp
+- Linked job and operation
+
+**Workflow:**
+1. Operator reports an issue from the shop floor
+2. Admin reviews the issue in the queue
+3. Admin either **approves** (valid problem), **rejects** (not an issue), or **closes** (already resolved)
+4. Resolution notes are added for traceability
+
+## Scrap Reasons
+
+Configure scrap reason codes in **Settings > Scrap Reasons**. Each reason has:
+
+- **Code** — short identifier (e.g. MAT-01, PROC-03)
+- **Description** — what happened
+- **Category** — Material, Process, Equipment, Operator, or Design
+
+When operators report scrap, they select from these configured reasons. The scrap reasons page shows usage statistics so you can see which problems occur most often.
+
+## What Exists vs What's Planned
+
+The data layer for yield rates, scrap breakdowns, and rework tracking is built. Scrap reasons are configurable and tracked. The issue workflow is fully functional.
+
+**Coming next:** Quality dashboards on the Jobs and Parts pages showing yield percentages, scrap breakdown by category, and top scrap reasons per job. The data is already collected — the visualization is in progress.
