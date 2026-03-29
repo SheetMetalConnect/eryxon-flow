@@ -1,9 +1,9 @@
 ---
 title: Willkommen bei Eryxon Flow
-description: Das einfache, elegante und leistungsstarke Manufacturing Execution System, mit dem Ihre Mitarbeiter gerne arbeiten. Entwickelt für die Blechbearbeitung.
+description: Das einfache, elegante und leistungsstarke Manufacturing Execution System, mit dem Ihre Mitarbeiter gerne arbeiten. Entwickelt für die Metallverarbeitung.
 ---
 
-**Das einfache, elegante und leistungsstarke Manufacturing Execution System, mit dem Ihre Mitarbeiter gerne arbeiten. Entwickelt für die Blechbearbeitung.**
+**Das einfache, elegante und leistungsstarke Manufacturing Execution System, mit dem Ihre Mitarbeiter gerne arbeiten. Entwickelt für die Metallverarbeitung.**
 
 > **Jetzt ausprobieren:** Erkunden Sie die [Live-Demo auf app.eryxon.eu](https://app.eryxon.eu) — keine Installation erforderlich.
 
