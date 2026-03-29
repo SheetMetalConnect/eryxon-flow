@@ -1,0 +1,73 @@
+{
+  "main": [
+    {
+      "name": "Startseite",
+      "url": "/de/"
+    },
+    {
+      "name": "Dokumentation",
+      "url": "/de/introduction/"
+    },
+    {
+      "name": "Live-Demo",
+      "url": "https://app.eryxon.eu"
+    }
+  ],
+  "footer": {
+    "community": {
+      "title": "Open Source",
+      "links": [
+        {
+          "name": "GitHub Repository",
+          "url": "https://github.com/SheetMetalConnect/eryxon-flow"
+        },
+        {
+          "name": "Diskussionen",
+          "url": "https://github.com/SheetMetalConnect/eryxon-flow/discussions"
+        },
+        {
+          "name": "Fehler Melden",
+          "url": "https://github.com/SheetMetalConnect/eryxon-flow/issues"
+        }
+      ]
+    },
+    "help_links": {
+      "title": "Ressourcen",
+      "links": [
+        {
+          "name": "Gehostete Version",
+          "url": "https://app.eryxon.eu"
+        },
+        {
+          "name": "Dokumentation",
+          "url": "/de/introduction/"
+        },
+        {
+          "name": "Self-Hosting",
+          "url": "/de/guides/self-hosting/"
+        },
+        {
+          "name": "REST API Referenz",
+          "url": "/de/api/rest-api-reference/"
+        }
+      ]
+    },
+    "company": {
+      "title": "Kontakt",
+      "links": [
+        {
+          "name": "office@vanenkhuizen.com",
+          "url": "mailto:office@vanenkhuizen.com"
+        },
+        {
+          "name": "LinkedIn",
+          "url": "https://www.linkedin.com/in/lvanenkhuizen/"
+        },
+        {
+          "name": "vanenkhuizen.com",
+          "url": "https://www.vanenkhuizen.com/"
+        }
+      ]
+    }
+  }
+}
