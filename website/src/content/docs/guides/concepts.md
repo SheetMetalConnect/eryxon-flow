@@ -7,16 +7,26 @@ Eryxon Flow tracks work through a simple hierarchy: **Job > Parts > Operations**
 
 ## Job
 
-A job is a customer order or internal project. It is the top-level container.
+A job is the top-level container. Every part must belong to a job — this is a hard requirement in the data model.
 
-| Field | Example |
-|-------|---------|
-| Job number | WO-2026-0142 |
-| Customer | Hygienisch Staal BV |
-| Due date | 2026-05-15 |
-| Status | not_started, in_progress, completed |
+A job does not have to be a customer order. It can be anything that groups parts together:
 
-A job has one or more parts. The job tracks the overall deadline and customer context. Rush priority is set at the part level, not the job level.
+- A customer order (most common in job shops)
+- An internal production run
+- A stock replenishment batch
+- A prototype or R&D project
+- A maintenance or rework order
+
+The `customer` field is optional. The only required field is `job_number`.
+
+| Field | Required | Example |
+|-------|----------|---------|
+| Job number | yes | WO-2026-0142 |
+| Customer | no | Hygienisch Staal BV |
+| Due date | no | 2026-05-15 |
+| Status | auto | not_started, in_progress, completed |
+
+A job has one or more parts. Rush priority is set at the part level, not the job level.
 
 ## Part
 
@@ -138,85 +148,44 @@ On hold does not cascade. Putting one operation on hold does not affect other op
 
 Toggle on hold from the operation detail panel.
 
-## How They Connect
+## Example: Welded Assembly with Nesting
 
-```
-Job: WO-2026-0142 (Hygienisch Staal BV, due 15 mei)
-├── Part: FRAME-RVS-316L (RVS 316L, qty 4, RUSH)
-│   ├── Op 1: Lasersnijden → Laser 1 (est. 90 min)     ← in Batch NEST-0301
-│   ├── Op 2: Kanten → CNC Kantbank (est. 120 min)
-│   ├── Op 3: Lassen TIG → Lascel 2 (est. 240 min)
-│   └── Op 4: Beitsen → Afwerking (est. 60 min)
-├── Part: DEKSEL-304 (RVS 304, qty 8)
-│   ├── Op 1: Lasersnijden → Laser 1 (est. 45 min)      ← in Batch NEST-0301
-│   └── Op 2: Kanten → CNC Kantbank (est. 30 min)
-└── Part: BODEMPLAAT-S235 (S235, qty 4)
-    ├── Op 1: Lasersnijden → Laser 1 (est. 60 min)       ← in Batch NEST-0301
-    └── Op 2: Kanten → CNC Kantbank (est. 45 min)
-```
+A stainless steel food-grade cabinet. Two levels of sub-assemblies, with laser-cut parts nested across shared sheets.
 
-Three parts, three different materials, but the laser operations are grouped into one nesting batch. The operator cuts all three in one run, and time is distributed back to each operation.
+**Job** — WO-2026-0142, customer: Precision Steel Ltd, due: 2026-05-15
 
-## Assembly Example
+**Parts and routing:**
 
-A welded stainless steel food-grade cabinet with two levels of sub-assemblies:
+| Part | Material | Qty | Parent | Operations |
+|------|----------|-----|--------|------------|
+| CABINET-ASSY | — | 1 | — | Assembly (180 min), QC (30 min) |
+| FRAME-ASSY | — | 1 | CABINET-ASSY | TIG Weld (240 min), Pickling (90 min) |
+| UPRIGHT-L | SS 316L 3mm | 2 | FRAME-ASSY | Laser cut (30 min), Bend (45 min) |
+| UPRIGHT-R | SS 316L 3mm | 2 | FRAME-ASSY | Laser cut (30 min), Bend (45 min) |
+| CROSS-BEAM | SS 316L 3mm | 4 | FRAME-ASSY | Laser cut (20 min), Bend (25 min) |
+| LID | SS 304 2mm | 1 | CABINET-ASSY | Laser cut (15 min), Bend (20 min), Grind (30 min) |
+| BASE-PLATE | S235 6mm | 1 | CABINET-ASSY | Laser cut (10 min) |
 
-```
-Job: WO-2026-0142 — RVS Cabinet Hygienisch Staal BV
-│
-├── Part: CABINET-ASSY (Assembly — qty 1)
-│   ├── Op 1: Assemblage → Montage (est. 180 min)
-│   └── Op 2: Kwaliteitscontrole → Kwaliteit (est. 30 min)
-│
-│   ┌── Child: FRAME-ASSY (Sub-assembly — qty 1, parent: CABINET-ASSY)
-│   │   ├── Op 1: Lassen TIG → Lascel (est. 240 min)
-│   │   └── Op 2: Beitsen/passiveren → Afwerking (est. 90 min)
-│   │
-│   │   ┌── Child: STAANDER-L (Part — qty 2, parent: FRAME-ASSY)
-│   │   │   ├── Op 1: Lasersnijden → Laser (est. 30 min)
-│   │   │   └── Op 2: Kanten → Kantbank (est. 45 min)
-│   │   │
-│   │   ├── Child: STAANDER-R (Part — qty 2, parent: FRAME-ASSY)
-│   │   │   ├── Op 1: Lasersnijden → Laser (est. 30 min)
-│   │   │   └── Op 2: Kanten → Kantbank (est. 45 min)
-│   │   │
-│   │   └── Child: TRAVERSE (Part — qty 4, parent: FRAME-ASSY)
-│   │       ├── Op 1: Lasersnijden → Laser (est. 20 min)
-│   │       └── Op 2: Kanten → Kantbank (est. 25 min)
-│   │
-│   ├── Child: DEKSEL (Part — qty 1, parent: CABINET-ASSY)
-│   │   ├── Op 1: Lasersnijden → Laser (est. 15 min)
-│   │   ├── Op 2: Kanten → Kantbank (est. 20 min)
-│   │   └── Op 3: Slijpen → Afwerking (est. 30 min)
-│   │
-│   └── Child: BODEMPLAAT (Part — qty 1, parent: CABINET-ASSY)
-│       └── Op 1: Lasersnijden → Laser (est. 10 min)
-```
+**Nesting batch** — NEST-0301: all seven laser cut operations grouped on two sheets (1500x3000, 87% utilization). One cut run, time distributed back to each operation.
 
-**How this works in practice:**
+**Assembly flow:**
 
-1. All laser operations across all parts go into one or two nesting batches. The programmer nests STAANDER-L, STAANDER-R, TRAVERSE, DEKSEL, and BODEMPLAAT on S235/RVS sheets.
+1. Laser cuts all parts in one batch. Parts sorted after cutting.
+2. Uprights and cross-beams go to bending, then to welding where FRAME-ASSY is built.
+3. Operator starts FRAME-ASSY weld — system warns if child parts are incomplete. Operator can override.
+4. After FRAME-ASSY, LID, and BASE-PLATE are done, CABINET-ASSY assembly starts. Same dependency check.
+5. Quality inspection completes the job.
 
-2. After cutting, parts flow to the kantbank for bending, then to welding where FRAME-ASSY is assembled from its child parts.
+**Files:** STEP model and PDF drawing on each part. Assembly drawings on CABINET-ASSY and FRAME-ASSY.
 
-3. When the operator starts the FRAME-ASSY welding operation, the system checks if child parts (STAANDER-L, STAANDER-R, TRAVERSE) are complete. If not, a warning appears — but the operator can override it.
+**Metadata on operations:**
 
-4. After FRAME-ASSY and DEKSEL are finished, CABINET-ASSY assembly can start. Same dependency check.
-
-5. Final quality inspection completes the job.
-
-**Files at each level:**
-
-- CABINET-ASSY: assembly drawing (PDF), 3D model (STEP)
-- FRAME-ASSY: welding drawing with weld symbols (PDF), weld jig reference (metadata)
-- Individual parts: flat pattern (PDF), 3D model (STEP), bend data (metadata: angles, radii, sequence)
-
-**Metadata examples:**
-
-- Laser operation: `{"power": 4000, "speed": 12000, "gas": "N2", "program": "NEST-0301"}`
-- Bend operation: `{"bends": [90, 90, 135], "tool": "V16-88", "backgauge": [120, 80, 45]}`
-- Weld operation: `{"process": "TIG", "wire": "316L 1.0mm", "gas": "Argon", "cert_required": true}`
-- Assembly: `{"torque_specs": {"M8": 25, "M10": 45}, "sealant": "Loctite 243"}`
+| Operation | Metadata |
+|-----------|----------|
+| Laser cut | `{"power": 4000, "speed": 12000, "gas": "N2", "program": "NEST-0301"}` |
+| Bend | `{"bends": [90, 90, 135], "tool": "V16-88"}` |
+| TIG Weld | `{"process": "TIG", "wire": "316L 1.0mm", "gas": "Argon", "cert_required": true}` |
+| Assembly | `{"torque_specs": {"M8": 25, "M10": 45}}` |
 
 ## Querying via API
 
