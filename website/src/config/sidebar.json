@@ -121,6 +121,10 @@
       "label": "API & Integration",
       "items": [
         {
+          "label": "API Examples",
+          "slug": "guides/api-examples"
+        },
+        {
           "label": "REST API",
           "slug": "api/rest-api-reference"
         },
