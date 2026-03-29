@@ -1,6 +1,8 @@
 ---
 import { AstroFont } from "astro-font";
 import theme from "@/config/theme.json";
+import config from "@/config/config.json";
+import locales from "@/config/locals.json";
 const { head } = Astro.locals.starlightRoute;
 
 // font families
@@ -22,9 +24,55 @@ if (theme.fonts.font_family.secondary) {
     .replace(/:[ital,]*[ital@]*[wght@]*[0-9,;.]+/gi, "");
 }
 
+// SEO: Build hreflang alternate links for all locales
+const siteUrl = config.site.url.replace(/\/$/, "");
+const currentLocale = Astro.currentLocale || "en";
+const pathname = Astro.url.pathname;
+
+// Strip current locale prefix to get the base path
+function stripLocalePrefix(path: string, locale: string): string {
+  if (locale === "en") return path; // root locale has no prefix
+  const prefix = `/${locale}`;
+  if (path === prefix || path === `${prefix}/`) return "/";
+  if (path.startsWith(`${prefix}/`)) return path.slice(prefix.length);
+  return path;
+}
+
+const basePath = stripLocalePrefix(pathname, currentLocale);
+
+// Build alternate URLs for each locale
+const localeEntries = Object.entries(locales) as [string, { lang: string; label: string }][];
+const alternates = localeEntries.map(([key, val]) => {
+  const lang = val.lang;
+  const localePath = key === "root" ? basePath : `/${lang}${basePath === "/" ? "/" : basePath}`;
+  return { lang, href: `${siteUrl}${localePath}` };
+});
+
+// Serialized locale map for client-side auto-detect script
+const supportedLangs = localeEntries.map(([key, val]) => ({
+  key,
+  lang: val.lang,
+  label: val.label,
+}));
+
 ---
 
 {head.map(({ tag: Tag, attrs, content }) => <Tag {...attrs} set:html={content} />)}
+
+<!-- SEO: canonical URL for this locale -->
+<link rel="canonical" href={`${siteUrl}${pathname}`} />
+
+<!-- SEO: hreflang alternate links for all locales -->
+{alternates.map(({ lang, href }) => (
+  <link rel="alternate" hreflang={lang} href={href} />
+))}
+<link rel="alternate" hreflang="x-default" href={`${siteUrl}${basePath}`} />
+
+<!-- SEO: Open Graph locale tags -->
+<meta property="og:locale" content={currentLocale} />
+{alternates.filter(a => a.lang !== currentLocale).map(({ lang }) => (
+  <meta property="og:locale:alternate" content={lang} />
+))}
 
 <!-- google font css -->
     <AstroFont
@@ -49,4 +97,67 @@ if (theme.fonts.font_family.secondary) {
         },
       ]}
     />
+
+<!-- Browser language auto-detect: offer to switch locale -->
+<script is:inline define:vars={{ supportedLangs, currentLocale }}>
+(function () {
+  const STORAGE_KEY = "eryxon-locale-dismissed";
+  // Only run on first visit or if user hasn't dismissed for this language
+  if (typeof navigator === "undefined") return;
+  const dismissed = sessionStorage.getItem(STORAGE_KEY);
+  if (dismissed) return;
+
+  const browserLangs = navigator.languages || [navigator.language];
+  // Find best matching supported locale
+  let match = null;
+  for (const bl of browserLangs) {
+    const code = bl.toLowerCase().split("-")[0]; // "nl-BE" -> "nl"
+    const found = supportedLangs.find(function (s) { return s.lang === code; });
+    if (found) {
+      match = found;
+      break;
+    }
+  }
+
+  // No match or already on the right locale
+  if (!match || match.lang === currentLocale) return;
+
+  // Build the redirect URL — swap locale prefix in current path
+  var path = window.location.pathname;
+  // Strip current locale prefix
+  var basePath = path;
+  if (currentLocale !== "en") {
+    var prefix = "/" + currentLocale;
+    if (path === prefix || path === prefix + "/") basePath = "/";
+    else if (path.indexOf(prefix + "/") === 0) basePath = path.slice(prefix.length);
+  }
+  var targetPath = match.key === "root" ? basePath : "/" + match.lang + (basePath === "/" ? "/" : basePath);
+
+  // Build banner labels per language
+  var msgs = {
+    nl: { text: "Deze pagina is ook beschikbaar in het Nederlands.", btn: "Ga naar Nederlands", dismiss: "Sluiten" },
+    de: { text: "Diese Seite ist auch auf Deutsch verfügbar.", btn: "Zu Deutsch wechseln", dismiss: "Schließen" },
+    en: { text: "This page is also available in English.", btn: "Switch to English", dismiss: "Close" }
+  };
+  var msg = msgs[match.lang] || { text: "This page is available in " + match.label + ".", btn: match.label, dismiss: "Close" };
+
+  // Create banner
+  var banner = document.createElement("div");
+  banner.id = "locale-banner";
+  banner.setAttribute("role", "status");
+  banner.setAttribute("aria-live", "polite");
+  banner.innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 16px;background:var(--sl-color-gray-6,#1e293b);color:var(--sl-color-text,#e2e8f0);font-size:14px;text-align:center;flex-wrap:wrap;">' +
+      '<span>' + msg.text + '</span>' +
+      '<a href="' + targetPath + '" style="background:var(--color-primary,#3b82f6);color:#fff;padding:4px 14px;border-radius:6px;text-decoration:none;font-weight:500;font-size:13px;">' + msg.btn + '</a>' +
+      '<button id="locale-dismiss" style="background:none;border:none;color:var(--sl-color-text,#94a3b8);cursor:pointer;font-size:13px;padding:4px 8px;" aria-label="' + msg.dismiss + '">' + msg.dismiss + '</button>' +
+    '</div>';
+  document.body.prepend(banner);
+
+  document.getElementById("locale-dismiss").addEventListener("click", function () {
+    banner.remove();
+    sessionStorage.setItem(STORAGE_KEY, "1");
+  });
+})();
+</script>
 
