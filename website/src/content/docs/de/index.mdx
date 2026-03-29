@@ -1,0 +1,246 @@
+---
+title: Eryxon Flow - MES für Lohnfertiger
+description: Manufacturing Execution System für Lohnfertiger. Self-hostbar, API-first, und für die Werkstatt gebaut.
+template: splash
+hero:
+  title: |
+    MES für <span class="text-primary">Lohnfertiger</span>
+  tagline: Die Werkstatt-App, die Ihre Werker tatsächlich nutzen. Echtzeit-Auftragsverfolgung, tabletfreundliche Terminals und ERP-Integration für die Einzelfertigung.
+  actions:
+    - text: Gehostete Version Öffnen
+      link: https://app.eryxon.eu
+      icon: external
+      variant: primary
+    - text: Dokumentation Lesen
+      link: /de/introduction/
+      icon: right-arrow
+      variant: minimal
+---
+
+import Section from "~/components/Section.astro";
+import Card from "~/components/user-components/NewCard.astro";
+import Grid from "~/components/user-components/Grid.astro";
+import HeroTabs from "~/components/HeroTabs.astro";
+import HeroTabsItem from "~/components/HeroTabsItem.astro";
+import LinkButton from "~/components/LinkButton.astro";
+import ListCard from "~/components/user-components/ListCard.astro";
+import ThemeDemo from "~/components/ThemeDemo.astro";
+
+<Section title="Gebaut für die <span class='text-primary'>Produktion</span>" description="Echtzeit-Werkerterminals, Kapazitätsplanung und ERP-Integration ab Werk.">
+
+<Grid columns={3}>
+  <Card title="Echtzeit-Tracking" icon="seti:clock" iconColor="#38bdf8">
+    Werker erfassen Zeit und Status auf Touch-Tablets. Live-Einblick in jeden Auftrag über WebSockets.
+  </Card>
+  <Card title="Auftragsverwaltung" icon="seti:plan" iconColor="#a78bfa">
+    Verfolgen Sie Aufträge, Teile und Arbeitsgänge durch die Produktion. Visuelle Arbeitswarteschlangen nach konfigurierbaren Stufen.
+  </Card>
+  <Card title="Self-Hostbar" icon="seti:lock" iconColor="#34d399">
+    Ihre Produktionsdaten bleiben Ihre. Betreiben Sie es auf Ihrer eigenen Infrastruktur ohne Nutzungslimits. BSL 1.1 (frei für interne Nutzung).
+  </Card>
+  <Card title="ERP-Integration" icon="seti:db" iconColor="#fb923c">
+    Synchronisieren Sie Aufträge und Teile aus Ihrem ERP über REST-API und Webhooks. CSV-Import/Export inklusive.
+  </Card>
+  <Card title="Papierlose Werkstatt" icon="seti:image" iconColor="#f472b6">
+    Zeichnungen (PDF), 3D-STEP-Dateien und Arbeitsanweisungen anhängen. Eingebauter 3D-Viewer mit Messungen und PDF-Viewer.
+  </Card>
+  <Card title="Dashboard & Analysen" icon="seti:chart" iconColor="#facc15">
+    Live-Produktionsstatistiken, aktive Aufträge und Werkeraktivität auf einen Blick.
+  </Card>
+</Grid>
+</Section>
+
+<Section
+  title="So <span class='text-primary'>funktioniert's</span>"
+  description="Einfacher Workflow von Auftrag bis Lieferung."
+>
+  <HeroTabs>
+    <HeroTabsItem
+      title="Produktion Verfolgen"
+      subtitle="Live-Dashboard zeigt aktive Werker, offene Problemmeldungen, UB pro Zelle und Fristen auf einen Blick."
+      number={1}
+      image="/src/assets/step-1.png"
+      imageAlt="Eryxon Flow Dashboard mit Produktionsstatistiken und QRM-Kapazitätsübersicht"
+    />
+    <HeroTabsItem
+      title="Werker Ziehen Arbeit"
+      subtitle="Kanban-Arbeitswarteschlange auf Tablets. Werker sehen ihre Arbeitsgänge pro Stufe, erfassen Zeit und melden Probleme."
+      number={2}
+      image="/src/assets/step-2.png"
+      imageAlt="Eryxon Flow Kanban-Arbeitswarteschlange mit Spalten pro Produktionsstufe"
+    />
+    <HeroTabsItem
+      title="Teile in 3D Betrachten"
+      subtitle="STEP-Dateien direkt im Browser öffnen. Abstände, Winkel und Dicken in der Werkstatt messen."
+      number={3}
+      image="/src/assets/step-3.png"
+      imageAlt="Eryxon Flow Werkerterminal mit 3D-STEP-Viewer und Teiledetails"
+    />
+  </HeroTabs>
+</Section>
+
+<Section title="Wichtige <span class='text-primary'>Funktionen</span>" description="Was Eryxon Flow von generischen MES-Tools unterscheidet.">
+<Grid columns={3}>
+
+<ListCard title="Kapazitätsplanung" icon="seti:plan" image="/src/assets/overview.png">
+- Visuelle Zellenauslastung pro Tag
+- Auto-Planung mit einem Klick
+- Drag & Drop zum Umplanen
+
+<LinkButton href="/de/features/scheduling/" variant="text" className="mt-6 mb-8 ml-4">Mehr erfahren</LinkButton>
+</ListCard>
+
+<ListCard title="3D-STEP-Viewer" icon="seti:image">
+- Browserbasiert, keine Plugins
+- Abstände und Winkel messen
+- Explosionsansicht für Baugruppen
+
+<LinkButton href="/de/features/3d-viewer/" variant="text" className="mt-6 mb-8 ml-4">Mehr erfahren</LinkButton>
+</ListCard>
+</Grid>
+
+<Grid columns={3}>
+<ListCard title="Qualität & NCR" icon="seti:lock" image="/src/assets/darkmode-demo.png">
+- Vollständiger Aktivitäts-Audit-Trail
+- Non-Conformance-Berichte
+- Problemverfolgung pro Arbeitsgang
+
+<LinkButton href="/de/guides/quality-management/" variant="text" className="mt-6 mb-8 ml-4">Mehr erfahren</LinkButton>
+</ListCard>
+
+<ListCard title="Zeiterfassung" icon="seti:clock">
+- Start/Stopp pro Arbeitsgang
+- Wöchentliche Aktivitätsübersicht
+- Automatische Zeitberechnungen
+
+<LinkButton href="/de/guides/operator-manual/" variant="text" className="mt-6 mb-8 ml-4">Werkerhandbuch</LinkButton>
+</ListCard>
+</Grid>
+</Section>
+
+<Section
+  title="Admin- & <span class='text-primary'>Werker</span>-Ansichten"
+  description="Eine App, zwei Oberflächen. Wechseln Sie zwischen Admin-Übersicht und Werker-Arbeitsansicht."
+>
+<ThemeDemo
+  darkImage="/src/assets/darkmode-demo.png"
+  lightImage="/src/assets/lightmode-demo.png"
+/>
+</Section>
+
+<Section title="Warum <span class='text-primary'>Eryxon Flow?</span>">
+<Grid columns={2}>
+<Card title="Für Lohnfertiger" icon="seti:home" iconColor="#38bdf8">
+  High Mix, Low Volume. Tausende einzigartige Teile pro Jahr? Genau dafür haben wir das gebaut.
+</Card>
+<Card title="Entwicklerfreundlich" icon="seti:code" iconColor="#34d399">
+  API-first mit 22 REST-Endpunkten, Webhooks, MQTT und MCP-Server. Bauen Sie Integrationen nach Ihren Wünschen.
+</Card>
+</Grid>
+
+<div class="flex flex-wrap justify-center gap-4 mt-12 pb-12">
+    <LinkButton href="https://app.eryxon.eu" variant="primary">Live-Demo Testen</LinkButton>
+    <LinkButton href="/de/guides/quick-start/" variant="minimal">Schnellstart-Anleitung</LinkButton>
+    <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow" variant="minimal">Auf GitHub Starren</LinkButton>
+</div>
+</Section>
+
+<Section title="Schnelle <span class='text-primary'>Navigation</span>" description="Direkt zur benötigten Dokumentation springen.">
+  <Grid columns={3}>
+    <ListCard title="Erste Schritte" icon="rocket" number="4">
+      - [Schnellstart](/de/guides/quick-start/)
+      - [Deployment](/de/guides/deployment/)
+      - [Self-Hosting](/de/guides/self-hosting/)
+      - [Roadmap](/de/roadmap/)
+    </ListCard>
+
+    <ListCard title="Benutzerhandbücher" icon="open-book" number="3">
+      - [Werkerhandbuch](/de/guides/operator-manual/)
+      - [Adminhandbuch](/de/guides/admin-manual/)
+      - [Qualitätsmanagement](/de/guides/quality-management/)
+    </ListCard>
+
+    <ListCard title="Funktionen" icon="star" number="4">
+      - [3D-Viewer](/de/features/3d-viewer/)
+      - [ERP-Integration](/de/features/erp-integration/)
+      - [Kapazitätsplanung](/de/features/scheduling/)
+      - [Chargenverwaltung](/de/features/batch-management/)
+    </ListCard>
+  </Grid>
+  <Grid columns={3}>
+    <ListCard title="API & Integration" icon="seti:json" number="4">
+      - [REST API Übersicht](/de/architecture/connectivity-rest-api/)
+      - [REST API Referenz](/de/api/rest-api-reference/)
+      - [Payload-Referenz](/de/api/payload-reference/)
+      - [MCP Server](/de/api/mcp-server-reference/)
+    </ListCard>
+
+    <ListCard title="Architektur" icon="puzzle" number="3">
+      - [App-Architektur](/de/architecture/app-architecture/)
+      - [Konnektivität](/de/architecture/connectivity-overview/)
+      - [Sicherheit](/de/architecture/security-architecture/)
+    </ListCard>
+
+    <ListCard title="Hilfe" icon="support" number="2">
+      - [FAQ](/de/guides/faq/)
+      - [Fehlerbehebung](/de/guides/troubleshooting/)
+    </ListCard>
+  </Grid>
+</Section>
+
+<Section title="Lizenz & <span class='text-primary'>Bedingungen</span>">
+  <div class="bg-dark/50 p-8 rounded-2xl border border-white/5">
+    <div class="grid md:grid-cols-2 gap-8 items-center">
+      <div>
+        <h3 class="text-2xl font-bold mb-4">Business Source License 1.1</h3>
+        <p class="text-gray-400 mb-6">
+          Eryxon Flow ist source-available und kostenlos für Ihre eigenen Fertigungsaktivitäten nutzbar.
+          Self-hosted-Installationen haben keine Nutzungslimits.
+        </p>
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <div class="text-primary font-bold">&#10003;</div>
+            <span>Kostenlos für internen Geschäftsgebrauch</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="text-primary font-bold">&#10003;</div>
+            <span>Anpassen, forken und selbst hosten</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="text-primary font-bold">&#10003;</div>
+            <span>Keine Nutzungslimits beim Self-Hosting</span>
+          </div>
+          <div class="flex items-center gap-3 text-red-400">
+            <div class="font-bold">&#10007;</div>
+            <span>Kein kommerzieller Weiterverkauf oder konkurrierendes SaaS</span>
+          </div>
+        </div>
+      </div>
+      <div class="text-center">
+        <p class="mb-6 text-sm italic text-gray-500">
+          „Nutzen Sie es, passen Sie es an, machen Sie es zu Ihrem. Hosten Sie es nur nicht, um anderen gegen Bezahlung Zugang zu gewähren."
+        </p>
+        <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" variant="minimal">
+          Vollständige Lizenzbedingungen auf GitHub lesen
+        </LinkButton>
+      </div>
+    </div>
+  </div>
+</Section>
+
+<Section title="Support & <span class='text-primary'>Dienstleistungen</span>">
+  <Grid columns={2}>
+    <Card title="Community-Support" icon="seti:github" iconColor="#a78bfa">
+      Self-Hosting wird von der Community über GitHub unterstützt.
+      <br/><br/>
+      <strong>Issues:</strong> Fehlermeldungen und Feature-Wünsche<br/>
+      <strong>Dokumentation:</strong> <a href="/de/guides/quick-start/" class="text-primary hover:underline">Hier starten</a>
+    </Card>
+
+    <Card title="Professionelle Dienstleistungen" icon="seti:notebook" iconColor="#fb923c">
+      Hilfe bei ERP-Integration oder komplexen Deployments benötigt?
+      <br/><br/>
+      <a href="https://www.vanenkhuizen.com/" target="_blank" class="text-primary font-semibold hover:underline">vanenkhuizen.com</a> bietet Beratung für die Digitalisierung der Fertigung.
+    </Card>
+  </Grid>
+</Section>

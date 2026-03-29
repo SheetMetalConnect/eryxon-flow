@@ -23,6 +23,8 @@ import Grid from "~/components/user-components/Grid.astro";
 import HeroTabs from "~/components/HeroTabs.astro";
 import HeroTabsItem from "~/components/HeroTabsItem.astro";
 import LinkButton from "~/components/LinkButton.astro";
+import ListCard from "~/components/user-components/ListCard.astro";
+import ThemeDemo from "~/components/ThemeDemo.astro";
 
 <Section title="Gebouwd voor <span class='text-primary'>Productie</span>" description="Real-time operator terminals, capaciteitsplanning en ERP-integratie.">
 
@@ -78,42 +80,112 @@ import LinkButton from "~/components/LinkButton.astro";
   </HeroTabs>
 </Section>
 
+<Section title="Belangrijkste <span class='text-primary'>Mogelijkheden</span>" description="Wat Eryxon Flow onderscheidt van generieke MES-tools.">
+<Grid columns={3}>
+
+<ListCard title="Capaciteitsplanning" icon="seti:plan" image="/src/assets/overview.png">
+- Visuele celbelasting per dag
+- Auto-planning met een klik
+- Drag & drop om bewerkingen te herplannen
+
+<LinkButton href="/nl/features/scheduling/" variant="text" className="mt-6 mb-8 ml-4">Meer informatie</LinkButton>
+</ListCard>
+
+<ListCard title="3D STEP Viewer" icon="seti:image">
+- Browsergebaseerd, geen plugins
+- Afstanden en hoeken meten
+- Explosieweergave voor assemblages
+
+<LinkButton href="/nl/features/3d-viewer/" variant="text" className="mt-6 mb-8 ml-4">Meer informatie</LinkButton>
+</ListCard>
+</Grid>
+
+<Grid columns={3}>
+<ListCard title="Kwaliteit & NCR" icon="seti:lock" image="/src/assets/darkmode-demo.png">
+- Volledig activiteiten-auditspoor
+- Non-conformance rapporten
+- Issue-tracking per bewerking
+
+<LinkButton href="/nl/guides/quality-management/" variant="text" className="mt-6 mb-8 ml-4">Meer informatie</LinkButton>
+</ListCard>
+
+<ListCard title="Tijdregistratie" icon="seti:clock">
+- Start/stop per bewerking
+- Wekelijks activiteitenoverzicht
+- Automatische tijdberekeningen
+
+<LinkButton href="/nl/guides/operator-manual/" variant="text" className="mt-6 mb-8 ml-4">Handleiding Operator</LinkButton>
+</ListCard>
+</Grid>
+</Section>
+
+<Section
+  title="Admin- & <span class='text-primary'>Operator</span>weergaven"
+  description="Een app, twee interfaces. Wissel tussen admin-overzicht en operator-werkweergave."
+>
+<ThemeDemo
+  darkImage="/src/assets/darkmode-demo.png"
+  lightImage="/src/assets/lightmode-demo.png"
+/>
+</Section>
+
 <Section title="Waarom <span class='text-primary'>Eryxon Flow?</span>">
 <Grid columns={2}>
 <Card title="Voor Job Shops" icon="seti:home" iconColor="#38bdf8">
   High mix, low volume. Beheert u duizenden unieke onderdelen? Daarvoor hebben we Eryxon gebouwd.
 </Card>
 <Card title="Ontwikkelaar Vriendelijk" icon="seti:code" iconColor="#34d399">
-  API-first ontwerp. Breid functionaliteit uit, bouw eigen integraties en blijf eigenaar van uw data.
+  API-first met 22 REST-endpoints, webhooks, MQTT en MCP-server. Bouw integraties op uw manier.
 </Card>
 </Grid>
 
 <div class="flex flex-wrap justify-center gap-4 mt-12 pb-12">
-    <LinkButton href="/nl/guides/quick-start/" variant="primary">Start Introductie</LinkButton>
+    <LinkButton href="https://app.eryxon.eu" variant="primary">Live Demo Proberen</LinkButton>
+    <LinkButton href="/nl/guides/quick-start/" variant="minimal">Start Introductie</LinkButton>
     <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow" variant="minimal">Star op GitHub</LinkButton>
 </div>
 
 </Section>
 
-import ListCard from "~/components/user-components/ListCard.astro";
-
 <Section title="Snelle <span class='text-primary'>Navigatie</span>" description="Ga direct naar de documentatie die u nodig heeft.">
   <Grid columns={3}>
-    <ListCard title="Aan de slag" icon="rocket" number="3">
-      - [Snel starten](/nl/guides/quick-start/)
-      - [Installatie](/nl/guides/deployment/)
-      - [Zelf hosten](/nl/guides/self-hosting/)
+    <ListCard title="Aan de Slag" icon="rocket" number="4">
+      - [Snel Starten](/nl/guides/quick-start/)
+      - [Deployment](/nl/guides/deployment/)
+      - [Zelf Hosten](/nl/guides/self-hosting/)
+      - [Roadmap](/nl/roadmap/)
     </ListCard>
 
     <ListCard title="Handleidingen" icon="open-book" number="3">
-      - [Operator Handleiding](/nl/guides/operator-manual/)
-      - [Admin Handleiding](/nl/guides/admin-manual/)
+      - [Handleiding Operator](/nl/guides/operator-manual/)
+      - [Handleiding Admin](/nl/guides/admin-manual/)
       - [Kwaliteitsbeheer](/nl/guides/quality-management/)
     </ListCard>
 
-    <ListCard title="API" icon="seti:json" number="2">
-      - [REST API](/nl/architecture/connectivity-rest-api/)
-      - [MQTT & Webhooks](/nl/architecture/connectivity-mqtt/)
+    <ListCard title="Functies" icon="star" number="4">
+      - [3D Viewer](/nl/features/3d-viewer/)
+      - [ERP-Integratie](/nl/features/erp-integration/)
+      - [Planning & Capaciteit](/nl/features/scheduling/)
+      - [Batchbeheer](/nl/features/batch-management/)
+    </ListCard>
+  </Grid>
+  <Grid columns={3}>
+    <ListCard title="API & Integratie" icon="seti:json" number="4">
+      - [REST API Overzicht](/nl/architecture/connectivity-rest-api/)
+      - [REST API Referentie](/nl/api/rest-api-reference/)
+      - [Payload Referentie](/nl/api/payload-reference/)
+      - [MCP Server](/nl/api/mcp-server-reference/)
+    </ListCard>
+
+    <ListCard title="Architectuur" icon="puzzle" number="3">
+      - [App-Architectuur](/nl/architecture/app-architecture/)
+      - [Connectiviteit](/nl/architecture/connectivity-overview/)
+      - [Beveiliging](/nl/architecture/security-architecture/)
+    </ListCard>
+
+    <ListCard title="Hulp" icon="support" number="2">
+      - [FAQ](/nl/guides/faq/)
+      - [Probleemoplossing](/nl/guides/troubleshooting/)
     </ListCard>
   </Grid>
 </Section>
