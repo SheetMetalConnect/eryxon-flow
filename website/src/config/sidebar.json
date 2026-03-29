@@ -29,6 +29,10 @@
       "label": "User Guides",
       "items": [
         {
+          "label": "Core Concepts",
+          "slug": "guides/concepts"
+        },
+        {
           "label": "Operator Manual",
           "slug": "guides/operator-manual"
         },
