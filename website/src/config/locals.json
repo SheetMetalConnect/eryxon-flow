@@ -6,5 +6,9 @@
   "nl": {
     "label": "Nederlands",
     "lang": "nl"
+  },
+  "de": {
+    "label": "Deutsch",
+    "lang": "de"
   }
 }
