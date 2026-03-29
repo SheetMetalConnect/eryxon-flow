@@ -106,7 +106,37 @@ Batches can have:
 
 Files (STEP models, PDF drawings) attach to **parts**, not jobs or operations. An operation inherits its files from the parent part. The 3D viewer and PDF viewer in the terminal show the files from the part the operation belongs to.
 
-Rush priority is set on the **part**. When any part in a job is marked rush, the entire job shows as rush across all views.
+## Rush and On Hold
+
+These are the two priority controls available to foremen and planners.
+
+### Rush (bullet card)
+
+Rush is set on a **part**. It propagates upward and outward:
+
+- The part sorts first in every table and queue
+- All operations on that part inherit the rush indicator
+- If any part in a job is rush, the entire job shows as rush in the Jobs table
+- The operator terminal highlights rush rows with a red border
+- The operator status bar switches to a red-to-green stripe pattern when an operator is clocked on a rush operation
+- Work queue kanban columns show a rush count badge
+
+Toggle rush from the operation detail panel (the button sets it on the parent part) or from the Parts admin table.
+
+Rush is a visual and sorting signal. It does not block or change scheduling logic — it tells humans "do this first."
+
+### On Hold
+
+On hold is set on an **operation**. It affects only that specific operation:
+
+- The operation stays visible in queues but shows a hold badge
+- Operators know not to start work on it
+- The operation can still be edited and updated while on hold
+- Resume the operation to return it to `not_started` status
+
+On hold does not cascade. Putting one operation on hold does not affect other operations on the same part or job. Other operations continue normally.
+
+Toggle on hold from the operation detail panel.
 
 ## How They Connect
 
