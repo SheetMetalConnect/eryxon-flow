@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Building2, CheckCircle, X } from "lucide-react";
+import { Building2, CheckCircle, Search, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { logger } from "@/lib/logger";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
@@ -41,9 +42,32 @@ export const TenantSwitcher: React.FC<TenantSwitcherProps> = ({
   const [tenants, setTenants] = React.useState<Tenant[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [switching, setSwitching] = React.useState(false);
+  const [search, setSearch] = React.useState("");
+
+  const STATUS_ORDER: Record<string, number> = {
+    active: 0,
+    trial: 1,
+    suspended: 2,
+    cancelled: 3,
+    expired: 3,
+  };
+
+  const filteredTenants = React.useMemo(() => {
+    const q = search.toLowerCase();
+    return tenants
+      .filter((t) => {
+        if (!q) return true;
+        return (
+          (t.company_name || "").toLowerCase().includes(q) ||
+          t.name.toLowerCase().includes(q)
+        );
+      })
+      .sort((a, b) => (STATUS_ORDER[a.status] ?? 9) - (STATUS_ORDER[b.status] ?? 9));
+  }, [tenants, search]);
 
   React.useEffect(() => {
     if (open && profile?.is_root_admin) {
+      setSearch("");
       loadTenants();
     }
   }, [open, profile?.is_root_admin]);
@@ -129,6 +153,15 @@ export const TenantSwitcher: React.FC<TenantSwitcherProps> = ({
         </DialogHeader>
 
         <div className="px-4 pb-4">
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search tenants..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 bg-white/5 border-white/10"
+            />
+          </div>
           {loading ? (
             <div className="flex justify-center items-center py-12">
               <Spinner size="lg" />
@@ -136,7 +169,7 @@ export const TenantSwitcher: React.FC<TenantSwitcherProps> = ({
           ) : (
             <ScrollArea className="max-h-[400px]">
               <div className="space-y-2">
-                {tenants.map((t) => {
+                {filteredTenants.map((t) => {
                   const isActive = t.id === tenant?.id;
                   return (
                     <button
