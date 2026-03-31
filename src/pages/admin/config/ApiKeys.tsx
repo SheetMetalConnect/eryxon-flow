@@ -70,7 +70,7 @@ export default function ConfigApiKeys() {
       if (!session) throw new Error('Not authenticated');
 
       const response = await fetch(
-        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/api-key-generate`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/api-key-generate`,
         {
           method: 'POST',
           headers: {
@@ -361,7 +361,7 @@ export default function ConfigApiKeys() {
                 <div className="flex-1">
                   <p className="text-sm font-medium">Base URL</p>
                   <code className="text-xs bg-muted px-2 py-1 rounded block break-all">
-                    {`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID || 'your-project-id'}.supabase.co/functions/v1`}
+                    {`${import.meta.env.VITE_SUPABASE_URL}/functions/v1`}
                   </code>
                 </div>
               </div>
