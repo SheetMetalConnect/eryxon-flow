@@ -88,7 +88,7 @@ Self-hosted Supabase has no Cloudflare Turnstile. Do **not** set `VITE_TURNSTILE
 
 When manually inserting into `auth.users`, set all token/change columns to empty strings (not NULL):
 
-```
+```sql
 email_change='', email_change_token_new='', email_change_token_current='',
 phone_change='', phone_change_token='', reauthentication_token='', recovery_token=''
 ```
@@ -124,7 +124,7 @@ WHERE name = 'parts-cad';
 
 Paths should be relative to the bucket root, **without** the bucket name prefix:
 
-```
+```sql
 -- Correct:
 ARRAY['MyPart/drawing.stp', 'MyPart/drawing.pdf']
 
