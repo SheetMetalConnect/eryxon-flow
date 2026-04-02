@@ -6,12 +6,35 @@ All notable changes to Eryxon Flow are documented here.
 
 ### Added
 
+- Localized landing pages for DE, complete NL landing page parity
+- German localization: landing page, guides, glossary, and language switcher
+- Dutch localization: concepts, guides, glossary
+- Language switcher in footer, browser auto-detect banner, and SEO hreflang tags
+- Search and status sorting to tenant switcher
+- Docs: Core Concepts guide, API query examples, capability comparison table
+
+### Fixed
+
+- Root admin tenant switching no longer violates unique constraint
+- Removed unrecognized `browsing-topics` from Permissions-Policy header
+
+## [0.4.1] - 2026-03-29
+
+### Added
+
 - **Batch API** — `api-batches` (CRUD) and `api-batch-lifecycle` (start/stop/add-operations) edge functions
 - Weighted time distribution: batch stop divides time by estimated_time ratios when available
 - Webhook events: `batch.started`, `batch.completed`
 - Focused auth hooks: `useProfile`, `useTenant`, `useSession`, `useAuthActions` (split from god-hook `useAuth`)
 - 98 new unit tests (519 → 617 total), 12 new test files
 - Agent safety guardrails: module size limits and refactoring rules in docs
+- Automated API test suite (54 tests)
+- Architecture documentation with Mermaid graphs
+- API catalog, route map, hook map, conventions, glossary, troubleshooting docs
+- ADRs (5 Architecture Decision Records)
+- Dependency graph via madge
+- MCP server support (CodeGraphContext, RepoMapper, Repomix)
+- Agent discovery via `.agents/` directory convention
 
 ### Changed
 
@@ -39,16 +62,6 @@ All notable changes to Eryxon Flow are documented here.
 - Upload whitelist: added STEP, DXF, Excel content types
 - Per-function `deno.json` for proper `@shared/` resolution
 - Database migrations: added lifecycle columns, missing FK constraints, `expired` enum value
-
-### Added
-
-- Automated API test suite (54 tests)
-- Architecture documentation with Mermaid graphs
-- API catalog, route map, hook map, conventions, glossary, troubleshooting docs
-- ADRs (5 Architecture Decision Records)
-- Dependency graph via madge
-- MCP server support (CodeGraphContext, RepoMapper, Repomix)
-- Agent discovery via `.agents/` directory convention
 
 ## [0.3.3] - 2026-03-09
 
