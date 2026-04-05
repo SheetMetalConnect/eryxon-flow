@@ -1,7 +1,6 @@
-import { useState, useRef, lazy, Suspense } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import type { TurnstileInstance } from "@marsidev/react-turnstile";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,15 +12,6 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { AuthCardHeader, AuthShell } from "@/components/auth/AuthShell";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/routes";
-
-// Lazy-load Turnstile — only fetched when VITE_TURNSTILE_SITE_KEY is set.
-// Self-hosted deployments without Turnstile pay zero bundle cost.
-const TURNSTILE_ENABLED = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY);
-const LazyTurnstile = TURNSTILE_ENABLED
-  ? lazy(() =>
-      import("@marsidev/react-turnstile").then((m) => ({ default: m.Turnstile }))
-    )
-  : null;
 
 export default function Auth() {
   const { t } = useTranslation();
@@ -35,9 +25,6 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const turnstileRef = useRef<TurnstileInstance | null>(null);
-  const captchaResolveRef = useRef<((token: string) => void) | null>(null);
   const { signIn, signUp, profile } = useAuth();
   const navigate = useNavigate();
 
@@ -50,26 +37,6 @@ export default function Auth() {
     return null;
   }
 
-  // Reset the widget and wait for a fresh token so we never send an expired one.
-  // In render mode, reset() automatically triggers a new challenge.
-  const getFreshCaptchaToken = (): Promise<string | undefined> => {
-    if (!TURNSTILE_ENABLED) return Promise.resolve(undefined);
-    // If we already have a token that's less than 250 s old, use it as-is.
-    // Turnstile tokens are valid for 300 s — this avoids needless resets.
-    if (captchaToken) return Promise.resolve(captchaToken);
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        captchaResolveRef.current = null;
-        reject(new Error("Captcha verification timed out"));
-      }, 30_000);
-      captchaResolveRef.current = (token: string) => {
-        clearTimeout(timeout);
-        resolve(token);
-      };
-      turnstileRef.current?.reset();
-    });
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -78,18 +45,7 @@ export default function Auth() {
 
     try {
       if (isLogin) {
-        let freshToken: string | undefined;
-        try {
-          freshToken = await getFreshCaptchaToken();
-        } catch {
-          setError(t("auth.captchaError"));
-          setLoading(false);
-          return;
-        }
-
-        const { error } = await signIn(email, password, freshToken);
-        // Token is single-use; clear it so the next attempt gets a fresh one.
-        setCaptchaToken(null);
+        const { error } = await signIn(email, password);
         if (error) {
           setError(error.message);
         }
@@ -112,24 +68,14 @@ export default function Auth() {
           return;
         }
 
-        let freshToken: string | undefined;
-        try {
-          freshToken = await getFreshCaptchaToken();
-        } catch {
-          setError(t("auth.captchaError"));
-          setLoading(false);
-          return;
-        }
-
         const { error } = await signUp(email, password, {
           full_name: fullName,
           company_name: companyName,
           role: "admin"
-        }, freshToken);
+        });
 
         if (error) {
           setError(error.message);
-          setCaptchaToken(null);
         } else {
           setSuccess(t("auth.pendingApprovalMessage"));
           setEmail("");
@@ -138,12 +84,10 @@ export default function Auth() {
           setCompanyName("");
           setTermsAgreed(false);
           setEmailConsent(false);
-          setCaptchaToken(null);
         }
       }
     } catch (err) {
       setError(t("auth.unexpectedError"));
-      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -290,35 +234,6 @@ export default function Auth() {
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
-        )}
-
-        {TURNSTILE_ENABLED && LazyTurnstile && (
-          <Suspense fallback={<div className="flex justify-center py-2"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}>
-            <div className="flex justify-center">
-              <LazyTurnstile
-                ref={turnstileRef}
-                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY!}
-                onSuccess={(token: string) => {
-                  setCaptchaToken(token);
-                  if (captchaResolveRef.current) {
-                    captchaResolveRef.current(token);
-                    captchaResolveRef.current = null;
-                  }
-                }}
-                onError={() => {
-                  setError(t("auth.captchaError"));
-                  setCaptchaToken(null);
-                }}
-                onExpire={() => {
-                  setCaptchaToken(null);
-                }}
-                options={{
-                  theme: "dark",
-                  size: "normal",
-                }}
-              />
-            </div>
-          </Suspense>
         )}
 
         <div className="pt-2">

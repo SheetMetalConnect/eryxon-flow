@@ -42,8 +42,8 @@ interface AuthContextType {
   profile: Profile | null;
   tenant: TenantInfo | null;
   loading: boolean;
-  signIn: (email: string, password: string, captchaToken?: string | null) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, userData: Partial<Profile> & { company_name?: string }, captchaToken?: string | null) => Promise<{ error: Error | null; data?: unknown }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, userData: Partial<Profile> & { company_name?: string }) => Promise<{ error: Error | null; data?: unknown }>;
   signOut: () => Promise<void>;
   switchTenant: (tenantId: string) => Promise<void>;
   refreshTenant: () => Promise<void>;
@@ -197,14 +197,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await fetchTenant();
   };
 
-  const signIn = async (email: string, password: string, captchaToken?: string | null) => {
+  const signIn = async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
-        options: {
-          captchaToken: captchaToken || undefined,
-        },
       });
       return { error };
     } catch (error) {
@@ -216,7 +213,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     email: string,
     password: string,
     userData: Partial<Profile> & { company_name?: string },
-    captchaToken?: string | null
   ) => {
     try {
       const username = email.split('@')[0];
@@ -226,7 +222,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
-          captchaToken: captchaToken || undefined,
           data: {
             username,
             full_name: userData.full_name,

@@ -1,7 +1,6 @@
-import { useState, useRef, lazy, Suspense } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import type { TurnstileInstance } from "@marsidev/react-turnstile";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,41 +12,12 @@ import { AuthCardHeader, AuthShell } from "@/components/auth/AuthShell";
 import { ROUTES } from "@/routes";
 import { logger } from "@/lib/logger";
 
-const TURNSTILE_ENABLED = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY);
-const LazyTurnstile = TURNSTILE_ENABLED
-  ? lazy(() =>
-      import("@marsidev/react-turnstile").then((m) => ({
-        default: m.Turnstile,
-      })),
-    )
-  : null;
-
 export default function ForgotPassword() {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const turnstileRef = useRef<TurnstileInstance | null>(null);
-  const captchaResolveRef = useRef<((token: string) => void) | null>(null);
-
-  // Reset the widget and wait for a fresh token so we never send an expired one.
-  const getFreshCaptchaToken = (): Promise<string | undefined> => {
-    if (!TURNSTILE_ENABLED) return Promise.resolve(undefined);
-    if (captchaToken) return Promise.resolve(captchaToken);
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        captchaResolveRef.current = null;
-        reject(new Error("Captcha verification timed out"));
-      }, 30_000);
-      captchaResolveRef.current = (token: string) => {
-        clearTimeout(timeout);
-        resolve(token);
-      };
-      turnstileRef.current?.reset();
-    });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,30 +25,18 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
-      let freshToken: string | undefined;
-      try {
-        freshToken = await getFreshCaptchaToken();
-      } catch {
-        setError(t("auth.captchaError"));
-        setLoading(false);
-        return;
-      }
-
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}${ROUTES.RESET_PASSWORD}`,
-        captchaToken: freshToken,
       });
 
       if (error) {
         logger.error('ForgotPassword', 'Password reset error', error.message);
-        setCaptchaToken(null);
         setError(t("auth.unexpectedError"));
       } else {
         setSuccess(true);
       }
     } catch (err) {
       logger.error('ForgotPassword', 'Password reset error', err);
-      setCaptchaToken(null);
       setError(t("auth.unexpectedError"));
     } finally {
       setLoading(false);
@@ -138,41 +96,6 @@ export default function ForgotPassword() {
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
-          )}
-
-          {TURNSTILE_ENABLED && LazyTurnstile && (
-            <Suspense
-              fallback={
-                <div className="flex justify-center py-2">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                </div>
-              }
-            >
-              <div className="flex justify-center">
-                <LazyTurnstile
-                  ref={turnstileRef}
-                  siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY!}
-                  onSuccess={(token: string) => {
-                    setCaptchaToken(token);
-                    if (captchaResolveRef.current) {
-                      captchaResolveRef.current(token);
-                      captchaResolveRef.current = null;
-                    }
-                  }}
-                  onError={() => {
-                    setError(t("auth.captchaError"));
-                    setCaptchaToken(null);
-                  }}
-                  onExpire={() => {
-                    setCaptchaToken(null);
-                  }}
-                  options={{
-                    theme: "dark",
-                    size: "normal",
-                  }}
-                />
-              </div>
-            </Suspense>
           )}
 
           <div className="pt-2">
