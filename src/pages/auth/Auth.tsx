@@ -37,7 +37,6 @@ export default function Auth() {
   const [success, setSuccess] = useState<string | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileInstance | null>(null);
-  const captchaResolveRef = useRef<((token: string) => void) | null>(null);
   const { signIn, signUp, profile } = useAuth();
   const navigate = useNavigate();
 
@@ -50,26 +49,6 @@ export default function Auth() {
     return null;
   }
 
-  // Reset the widget and wait for a fresh token so we never send an expired one.
-  // In render mode, reset() automatically triggers a new challenge.
-  const getFreshCaptchaToken = (): Promise<string | undefined> => {
-    if (!TURNSTILE_ENABLED) return Promise.resolve(undefined);
-    // If we already have a token that's less than 250 s old, use it as-is.
-    // Turnstile tokens are valid for 300 s — this avoids needless resets.
-    if (captchaToken) return Promise.resolve(captchaToken);
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        captchaResolveRef.current = null;
-        reject(new Error("Captcha verification timed out"));
-      }, 30_000);
-      captchaResolveRef.current = (token: string) => {
-        clearTimeout(timeout);
-        resolve(token);
-      };
-      turnstileRef.current?.reset();
-    });
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -77,19 +56,14 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      if (isLogin) {
-        let freshToken: string | undefined;
-        try {
-          freshToken = await getFreshCaptchaToken();
-        } catch {
-          setError(t("auth.captchaError"));
-          setLoading(false);
-          return;
-        }
+      if (TURNSTILE_ENABLED && !captchaToken) {
+        setError(t("auth.captchaRequired"));
+        setLoading(false);
+        return;
+      }
 
-        const { error } = await signIn(email, password, freshToken);
-        // Token is single-use; clear it so the next attempt gets a fresh one.
-        setCaptchaToken(null);
+      if (isLogin) {
+        const { error } = await signIn(email, password, captchaToken);
         if (error) {
           setError(error.message);
         }
@@ -112,24 +86,14 @@ export default function Auth() {
           return;
         }
 
-        let freshToken: string | undefined;
-        try {
-          freshToken = await getFreshCaptchaToken();
-        } catch {
-          setError(t("auth.captchaError"));
-          setLoading(false);
-          return;
-        }
-
         const { error } = await signUp(email, password, {
           full_name: fullName,
           company_name: companyName,
           role: "admin"
-        }, freshToken);
+        }, captchaToken);
 
         if (error) {
           setError(error.message);
-          setCaptchaToken(null);
         } else {
           setSuccess(t("auth.pendingApprovalMessage"));
           setEmail("");
@@ -138,13 +102,15 @@ export default function Auth() {
           setCompanyName("");
           setTermsAgreed(false);
           setEmailConsent(false);
-          setCaptchaToken(null);
         }
       }
     } catch (err) {
       setError(t("auth.unexpectedError"));
-      setCaptchaToken(null);
     } finally {
+      // Tokens are single-use — always reset the widget after every
+      // submission so a fresh token is generated for the next attempt.
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
       setLoading(false);
     }
   };
@@ -298,19 +264,14 @@ export default function Auth() {
               <LazyTurnstile
                 ref={turnstileRef}
                 siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY!}
-                onSuccess={(token: string) => {
-                  setCaptchaToken(token);
-                  if (captchaResolveRef.current) {
-                    captchaResolveRef.current(token);
-                    captchaResolveRef.current = null;
-                  }
-                }}
+                onSuccess={(token: string) => setCaptchaToken(token)}
                 onError={() => {
                   setError(t("auth.captchaError"));
                   setCaptchaToken(null);
                 }}
                 onExpire={() => {
                   setCaptchaToken(null);
+                  turnstileRef.current?.reset();
                 }}
                 options={{
                   theme: "dark",
@@ -325,7 +286,7 @@ export default function Auth() {
           <Button
             type="submit"
             className="w-full cta-button"
-            disabled={loading || (!isLogin && !termsAgreed)}
+            disabled={loading || (!isLogin && !termsAgreed) || (TURNSTILE_ENABLED && !captchaToken)}
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isLogin ? t("auth.signIn") : t("auth.signUp")}
