@@ -61,6 +61,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        // When a token refresh fails, session is null — purge the stale
+        // refresh token from localStorage so the user can log in fresh.
+        if (event === 'TOKEN_REFRESHED' && !session) {
+          logger.warn('AuthContext', 'Token refresh failed, signing out');
+          supabase.auth.signOut();
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setTenant(null);
+          setLoading(false);
+          return;
+        }
+
         setSession(session);
         setUser(session?.user ?? null);
 
@@ -76,10 +89,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        logger.error('AuthContext', 'Failed to recover session, signing out', error);
+        supabase.auth.signOut();
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setTenant(null);
+        setLoading(false);
+        return;
+      }
+
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
         fetchProfile(session.user.id);
       } else {
