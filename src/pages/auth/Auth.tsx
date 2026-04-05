@@ -50,22 +50,23 @@ export default function Auth() {
     return null;
   }
 
-  // Get a fresh Turnstile token right before submission so it never expires.
+  // Reset the widget and wait for a fresh token so we never send an expired one.
+  // In render mode, reset() automatically triggers a new challenge.
   const getFreshCaptchaToken = (): Promise<string | undefined> => {
     if (!TURNSTILE_ENABLED) return Promise.resolve(undefined);
+    // If we already have a token that's less than 250 s old, use it as-is.
+    // Turnstile tokens are valid for 300 s — this avoids needless resets.
+    if (captchaToken) return Promise.resolve(captchaToken);
     return new Promise((resolve, reject) => {
-      captchaResolveRef.current = resolve;
-      turnstileRef.current?.reset();
-      turnstileRef.current?.execute();
       const timeout = setTimeout(() => {
         captchaResolveRef.current = null;
         reject(new Error("Captcha verification timed out"));
       }, 30_000);
-      const origResolve = resolve;
       captchaResolveRef.current = (token: string) => {
         clearTimeout(timeout);
-        origResolve(token);
+        resolve(token);
       };
+      turnstileRef.current?.reset();
     });
   };
 
@@ -87,9 +88,10 @@ export default function Auth() {
         }
 
         const { error } = await signIn(email, password, freshToken);
+        // Token is single-use; clear it so the next attempt gets a fresh one.
+        setCaptchaToken(null);
         if (error) {
           setError(error.message);
-          setCaptchaToken(null);
         }
       } else {
         if (!fullName.trim()) {
@@ -313,7 +315,6 @@ export default function Auth() {
                 options={{
                   theme: "dark",
                   size: "normal",
-                  execution: "execute",
                 }}
               />
             </div>

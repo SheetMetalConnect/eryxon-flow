@@ -32,22 +32,20 @@ export default function ForgotPassword() {
   const turnstileRef = useRef<TurnstileInstance | null>(null);
   const captchaResolveRef = useRef<((token: string) => void) | null>(null);
 
-  // Get a fresh Turnstile token right before submission so it never expires.
+  // Reset the widget and wait for a fresh token so we never send an expired one.
   const getFreshCaptchaToken = (): Promise<string | undefined> => {
     if (!TURNSTILE_ENABLED) return Promise.resolve(undefined);
+    if (captchaToken) return Promise.resolve(captchaToken);
     return new Promise((resolve, reject) => {
-      captchaResolveRef.current = resolve;
-      turnstileRef.current?.reset();
-      turnstileRef.current?.execute();
       const timeout = setTimeout(() => {
         captchaResolveRef.current = null;
         reject(new Error("Captcha verification timed out"));
       }, 30_000);
-      const origResolve = resolve;
       captchaResolveRef.current = (token: string) => {
         clearTimeout(timeout);
-        origResolve(token);
+        resolve(token);
       };
+      turnstileRef.current?.reset();
     });
   };
 
@@ -171,7 +169,6 @@ export default function ForgotPassword() {
                   options={{
                     theme: "dark",
                     size: "normal",
-                    execution: "execute",
                   }}
                 />
               </div>
