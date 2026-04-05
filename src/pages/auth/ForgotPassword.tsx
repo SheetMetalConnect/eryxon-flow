@@ -30,27 +30,49 @@ export default function ForgotPassword() {
   const [success, setSuccess] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileInstance | null>(null);
+  const captchaResolveRef = useRef<((token: string) => void) | null>(null);
+
+  // Get a fresh Turnstile token right before submission so it never expires.
+  const getFreshCaptchaToken = (): Promise<string | undefined> => {
+    if (!TURNSTILE_ENABLED) return Promise.resolve(undefined);
+    return new Promise((resolve, reject) => {
+      captchaResolveRef.current = resolve;
+      turnstileRef.current?.reset();
+      turnstileRef.current?.execute();
+      const timeout = setTimeout(() => {
+        captchaResolveRef.current = null;
+        reject(new Error("Captcha verification timed out"));
+      }, 30_000);
+      const origResolve = resolve;
+      captchaResolveRef.current = (token: string) => {
+        clearTimeout(timeout);
+        origResolve(token);
+      };
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    if (TURNSTILE_ENABLED && !captchaToken) {
-      setError(t("auth.captchaRequired"));
-      setLoading(false);
-      return;
-    }
-
     try {
+      let freshToken: string | undefined;
+      try {
+        freshToken = await getFreshCaptchaToken();
+      } catch {
+        setError(t("auth.captchaError"));
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}${ROUTES.RESET_PASSWORD}`,
-        captchaToken: captchaToken || undefined,
+        captchaToken: freshToken,
       });
 
       if (error) {
         logger.error('ForgotPassword', 'Password reset error', error.message);
-        turnstileRef.current?.reset();
         setCaptchaToken(null);
         setError(t("auth.unexpectedError"));
       } else {
@@ -58,7 +80,6 @@ export default function ForgotPassword() {
       }
     } catch (err) {
       logger.error('ForgotPassword', 'Password reset error', err);
-      turnstileRef.current?.reset();
       setCaptchaToken(null);
       setError(t("auth.unexpectedError"));
     } finally {
@@ -133,18 +154,24 @@ export default function ForgotPassword() {
                 <LazyTurnstile
                   ref={turnstileRef}
                   siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY!}
-                  onSuccess={(token: string) => setCaptchaToken(token)}
+                  onSuccess={(token: string) => {
+                    setCaptchaToken(token);
+                    if (captchaResolveRef.current) {
+                      captchaResolveRef.current(token);
+                      captchaResolveRef.current = null;
+                    }
+                  }}
                   onError={() => {
                     setError(t("auth.captchaError"));
                     setCaptchaToken(null);
                   }}
                   onExpire={() => {
                     setCaptchaToken(null);
-                    turnstileRef.current?.reset();
                   }}
                   options={{
                     theme: "dark",
                     size: "normal",
+                    execution: "execute",
                   }}
                 />
               </div>
@@ -155,7 +182,7 @@ export default function ForgotPassword() {
             <Button
               type="submit"
               className="w-full cta-button"
-              disabled={loading || (TURNSTILE_ENABLED && !captchaToken)}
+              disabled={loading}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t("auth.sendResetLink")}

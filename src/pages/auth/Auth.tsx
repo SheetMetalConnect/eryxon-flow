@@ -37,6 +37,7 @@ export default function Auth() {
   const [success, setSuccess] = useState<string | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileInstance | null>(null);
+  const captchaResolveRef = useRef<((token: string) => void) | null>(null);
   const { signIn, signUp, profile } = useAuth();
   const navigate = useNavigate();
 
@@ -49,6 +50,25 @@ export default function Auth() {
     return null;
   }
 
+  // Get a fresh Turnstile token right before submission so it never expires.
+  const getFreshCaptchaToken = (): Promise<string | undefined> => {
+    if (!TURNSTILE_ENABLED) return Promise.resolve(undefined);
+    return new Promise((resolve, reject) => {
+      captchaResolveRef.current = resolve;
+      turnstileRef.current?.reset();
+      turnstileRef.current?.execute();
+      const timeout = setTimeout(() => {
+        captchaResolveRef.current = null;
+        reject(new Error("Captcha verification timed out"));
+      }, 30_000);
+      const origResolve = resolve;
+      captchaResolveRef.current = (token: string) => {
+        clearTimeout(timeout);
+        origResolve(token);
+      };
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -56,42 +76,46 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      if (TURNSTILE_ENABLED && !captchaToken) {
-        setError(t("auth.captchaRequired"));
-        setLoading(false);
-        turnstileRef.current?.reset();
-        return;
-      }
-
       if (isLogin) {
-        const { error } = await signIn(email, password, captchaToken);
+        let freshToken: string | undefined;
+        try {
+          freshToken = await getFreshCaptchaToken();
+        } catch {
+          setError(t("auth.captchaError"));
+          setLoading(false);
+          return;
+        }
+
+        const { error } = await signIn(email, password, freshToken);
         if (error) {
           setError(error.message);
-          turnstileRef.current?.reset();
           setCaptchaToken(null);
         }
       } else {
         if (!fullName.trim()) {
           setError(t("auth.fullNameRequired"));
           setLoading(false);
-          turnstileRef.current?.reset();
-          setCaptchaToken(null);
           return;
         }
 
         if (!companyName.trim()) {
           setError(t("auth.companyNameRequired"));
           setLoading(false);
-          turnstileRef.current?.reset();
-          setCaptchaToken(null);
           return;
         }
 
         if (!termsAgreed) {
           setError(t("auth.mustAgreeToTerms"));
           setLoading(false);
-          turnstileRef.current?.reset();
-          setCaptchaToken(null);
+          return;
+        }
+
+        let freshToken: string | undefined;
+        try {
+          freshToken = await getFreshCaptchaToken();
+        } catch {
+          setError(t("auth.captchaError"));
+          setLoading(false);
           return;
         }
 
@@ -99,11 +123,10 @@ export default function Auth() {
           full_name: fullName,
           company_name: companyName,
           role: "admin"
-        }, captchaToken);
+        }, freshToken);
 
         if (error) {
           setError(error.message);
-          turnstileRef.current?.reset();
           setCaptchaToken(null);
         } else {
           setSuccess(t("auth.pendingApprovalMessage"));
@@ -118,7 +141,6 @@ export default function Auth() {
       }
     } catch (err) {
       setError(t("auth.unexpectedError"));
-      turnstileRef.current?.reset();
       setCaptchaToken(null);
     } finally {
       setLoading(false);
@@ -274,18 +296,24 @@ export default function Auth() {
               <LazyTurnstile
                 ref={turnstileRef}
                 siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY!}
-                onSuccess={(token: string) => setCaptchaToken(token)}
+                onSuccess={(token: string) => {
+                  setCaptchaToken(token);
+                  if (captchaResolveRef.current) {
+                    captchaResolveRef.current(token);
+                    captchaResolveRef.current = null;
+                  }
+                }}
                 onError={() => {
                   setError(t("auth.captchaError"));
                   setCaptchaToken(null);
                 }}
                 onExpire={() => {
                   setCaptchaToken(null);
-                  turnstileRef.current?.reset();
                 }}
                 options={{
                   theme: "dark",
                   size: "normal",
+                  execution: "execute",
                 }}
               />
             </div>
@@ -296,7 +324,7 @@ export default function Auth() {
           <Button
             type="submit"
             className="w-full cta-button"
-            disabled={loading || (!isLogin && !termsAgreed) || (TURNSTILE_ENABLED && !captchaToken)}
+            disabled={loading || (!isLogin && !termsAgreed)}
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isLogin ? t("auth.signIn") : t("auth.signUp")}
