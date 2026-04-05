@@ -42,9 +42,9 @@ export default function Auth() {
 
   if (profile) {
     if (profile.role === "admin") {
-      navigate("/dashboard");
+      navigate(ROUTES.ADMIN.DASHBOARD);
     } else {
-      navigate("/queue");
+      navigate(ROUTES.OPERATOR.WORK_QUEUE);
     }
     return null;
   }
