@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { ROUTES } from "@/routes";
 
 interface ActiveEntry {
   id: string;
@@ -170,7 +171,7 @@ export default function OperatorFooterBar() {
   };
 
   const handleReportIssue = () => {
-    navigate("/work-queue");
+    navigate(ROUTES.OPERATOR.WORK_QUEUE);
     toast.info(t("production.openOperationForIssue"));
   };
 

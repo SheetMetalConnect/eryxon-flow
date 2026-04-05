@@ -40,6 +40,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { AppTour } from "@/components/onboarding";
 import { cn } from "@/lib/utils";
 import { GlobalSearch, SearchTriggerButton } from "@/components/GlobalSearch";
+import { NavigationButtons } from "@/components/NavigationButtons";
 import { TrialStatusBanner } from "@/components/admin/TrialStatusBanner";
 import { ROUTES } from "@/routes";
 
@@ -152,6 +153,7 @@ export const OperatorLayout = ({
           <div className="flex h-12 items-center justify-between px-3 sm:px-4">
             {/* Left: Back to Admin or Tenant Name */}
             <div className="flex min-w-0 items-center gap-2">
+              <NavigationButtons />
               {showBackToAdmin ? (
                 <Button
                   variant="ghost"

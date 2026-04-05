@@ -47,6 +47,7 @@ import {
   Boxes,
 } from "lucide-react";
 import { TenantSwitcher } from "@/components/admin/TenantSwitcher";
+import { NavigationButtons } from "@/components/NavigationButtons";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -751,6 +752,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <main className="flex-1 overflow-y-auto">
           <TrialStatusBanner />
           <div className="container mx-auto p-3 pt-14 md:p-4 md:pt-4 lg:p-5">
+            <div className="mb-2 hidden md:block">
+              <NavigationButtons />
+            </div>
             {children}
           </div>
         </main>
