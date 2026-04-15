@@ -1,7 +1,6 @@
-import { useState, useRef, lazy, Suspense } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import type { TurnstileInstance } from "@marsidev/react-turnstile";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,17 +9,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, ArrowLeft, Factory, CheckCircle2, Mail } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { AuthCardHeader, AuthShell } from "@/components/auth/AuthShell";
+import { TurnstileWidget, useTurnstile } from "@/components/auth/TurnstileWidget";
 import { ROUTES } from "@/routes";
 import { logger } from "@/lib/logger";
 
-const TURNSTILE_ENABLED = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY);
-const LazyTurnstile = TURNSTILE_ENABLED
-  ? lazy(() =>
-      import("@marsidev/react-turnstile").then((m) => ({
-        default: m.Turnstile,
-      })),
-    )
-  : null;
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
 
 export default function ForgotPassword() {
   const { t } = useTranslation();
@@ -28,19 +21,12 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const turnstileRef = useRef<TurnstileInstance | null>(null);
+  const { captchaToken, setCaptchaToken, resetKey, reset: resetTurnstile } = useTurnstile();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
-    if (TURNSTILE_ENABLED && !captchaToken) {
-      setError(t("auth.captchaRequired"));
-      setLoading(false);
-      return;
-    }
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -58,9 +44,7 @@ export default function ForgotPassword() {
       logger.error('ForgotPassword', 'Password reset error', err);
       setError(t("auth.unexpectedError"));
     } finally {
-      // Tokens are single-use — always reset after submission.
-      turnstileRef.current?.reset();
-      setCaptchaToken(null);
+      resetTurnstile();
       setLoading(false);
     }
   };
@@ -120,41 +104,25 @@ export default function ForgotPassword() {
             </Alert>
           )}
 
-          {TURNSTILE_ENABLED && LazyTurnstile && (
-            <Suspense
-              fallback={
-                <div className="flex justify-center py-2">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                </div>
-              }
-            >
-              <div className="flex justify-center">
-                <LazyTurnstile
-                  ref={turnstileRef}
-                  siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY!}
-                  onSuccess={(token: string) => setCaptchaToken(token)}
-                  onError={() => {
-                    setError(t("auth.captchaError"));
-                    setCaptchaToken(null);
-                  }}
-                  onExpire={() => {
-                    setCaptchaToken(null);
-                    turnstileRef.current?.reset();
-                  }}
-                  options={{
-                    theme: "dark",
-                    size: "normal",
-                  }}
-                />
-              </div>
-            </Suspense>
+          {TURNSTILE_SITE_KEY && (
+            <div className="flex justify-center">
+              <TurnstileWidget
+                siteKey={TURNSTILE_SITE_KEY}
+                onToken={setCaptchaToken}
+                onError={() => setCaptchaToken(null)}
+                onExpire={() => setCaptchaToken(null)}
+                theme="dark"
+                size="normal"
+                resetKey={resetKey}
+              />
+            </div>
           )}
 
           <div className="pt-2">
             <Button
               type="submit"
               className="w-full cta-button"
-              disabled={loading || (TURNSTILE_ENABLED && !captchaToken)}
+              disabled={loading}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t("auth.sendResetLink")}
