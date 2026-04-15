@@ -10,12 +10,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, ArrowRight, CheckCircle2, Info, Monitor } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { AuthCardHeader, AuthShell } from "@/components/auth/AuthShell";
-import { TurnstileWidget } from "@/components/auth/TurnstileWidget";
+import { TurnstileWidget, useTurnstile } from "@/components/auth/TurnstileWidget";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/routes";
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
-const TURNSTILE_ENABLED = Boolean(TURNSTILE_SITE_KEY);
 
 export default function Auth() {
   const { t } = useTranslation();
@@ -29,8 +28,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
+  const { captchaToken, setCaptchaToken, resetKey, reset: resetTurnstile } = useTurnstile();
   const { signIn, signUp, profile } = useAuth();
   const navigate = useNavigate();
 
@@ -95,10 +93,7 @@ export default function Auth() {
     } catch (err) {
       setError(t("auth.unexpectedError"));
     } finally {
-      // Tokens are single-use — bump the reset key so the widget
-      // re-renders with a fresh challenge for the next attempt.
-      setCaptchaToken(null);
-      setTurnstileResetKey((k) => k + 1);
+      resetTurnstile();
       setLoading(false);
     }
   };
@@ -246,16 +241,16 @@ export default function Auth() {
           </Alert>
         )}
 
-        {TURNSTILE_ENABLED && TURNSTILE_SITE_KEY && (
+        {TURNSTILE_SITE_KEY && (
           <div className="flex justify-center">
             <TurnstileWidget
               siteKey={TURNSTILE_SITE_KEY}
-              onToken={(token) => setCaptchaToken(token)}
+              onToken={setCaptchaToken}
               onError={() => setCaptchaToken(null)}
               onExpire={() => setCaptchaToken(null)}
               theme="dark"
               size="normal"
-              resetKey={turnstileResetKey}
+              resetKey={resetKey}
             />
           </div>
         )}

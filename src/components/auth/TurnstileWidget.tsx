@@ -1,4 +1,5 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { logger } from "@/lib/logger";
 
 /**
  * Cloudflare Turnstile widget — uses the explicit rendering API directly.
@@ -17,7 +18,6 @@ interface TurnstileRenderOptions {
   "expired-callback"?: () => void;
   theme?: "light" | "dark" | "auto";
   size?: "normal" | "compact";
-  action?: string;
 }
 
 interface TurnstileAPI {
@@ -36,39 +36,55 @@ declare global {
 
 const SCRIPT_URL =
   "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+const SCRIPT_SELECTOR = `script[src^="https://challenges.cloudflare.com/turnstile"]`;
 
 let scriptPromise: Promise<void> | null = null;
 
 function loadTurnstileScript(): Promise<void> {
   if (window.turnstile) return Promise.resolve();
-
   if (scriptPromise) return scriptPromise;
 
   scriptPromise = new Promise<void>((resolve, reject) => {
-    // Check if script tag already exists (e.g. from a previous mount)
-    const existing = document.querySelector<HTMLScriptElement>(
-      `script[src^="https://challenges.cloudflare.com/turnstile"]`,
-    );
-    if (existing) {
-      existing.addEventListener("load", () => resolve());
-      existing.addEventListener("error", () => reject(new Error("Turnstile script failed to load")));
-      if (window.turnstile) resolve();
-      return;
-    }
+    const existing = document.querySelector<HTMLScriptElement>(SCRIPT_SELECTOR);
+    const script = existing ?? document.createElement("script");
 
-    const script = document.createElement("script");
-    script.src = SCRIPT_URL;
-    script.async = true;
-    script.defer = true;
-    script.addEventListener("load", () => resolve());
-    script.addEventListener("error", () => {
-      scriptPromise = null; // allow retry
+    const handleError = () => {
+      scriptPromise = null;
+      script.remove();
       reject(new Error("Turnstile script failed to load"));
-    });
-    document.head.appendChild(script);
+    };
+
+    script.addEventListener("load", () => resolve(), { once: true });
+    script.addEventListener("error", handleError, { once: true });
+
+    if (!existing) {
+      script.src = SCRIPT_URL;
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
   });
 
   return scriptPromise;
+}
+
+// ── Hook ────────────────────────────────────────────────────────────────────
+
+/**
+ * Owns captcha token state + a reset counter that forces the widget to
+ * re-render with a fresh challenge.  Tokens are single-use — callers must
+ * invoke `reset()` after every submission attempt.
+ */
+export function useTurnstile() {
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [resetKey, setResetKey] = useState(0);
+
+  const reset = useCallback(() => {
+    setCaptchaToken(null);
+    setResetKey((k) => k + 1);
+  }, []);
+
+  return { captchaToken, setCaptchaToken, resetKey, reset };
 }
 
 // ── Component ───────────────────────────────────────────────────────────────
@@ -96,69 +112,70 @@ export function TurnstileWidget({
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
 
-  // Keep callback refs fresh without re-rendering the widget
+  // Callback refs are read inside Turnstile's own callbacks, which are
+  // registered once with the widget.  Keeping refs fresh lets the parent pass
+  // inline closures without re-rendering the widget on every parent render.
   const onTokenRef = useRef(onToken);
   const onErrorRef = useRef(onError);
   const onExpireRef = useRef(onExpire);
-  onTokenRef.current = onToken;
-  onErrorRef.current = onError;
-  onExpireRef.current = onExpire;
+  useEffect(() => {
+    onTokenRef.current = onToken;
+    onErrorRef.current = onError;
+    onExpireRef.current = onExpire;
+  }, [onToken, onError, onExpire]);
 
-  const renderWidget = useCallback(() => {
-    if (!containerRef.current || !window.turnstile) return;
-
-    // Clean up any existing widget in this container
-    if (widgetIdRef.current) {
-      try {
-        window.turnstile.remove(widgetIdRef.current);
-      } catch {
-        // Widget may already be removed
-      }
-      widgetIdRef.current = null;
-    }
-
-    try {
-      widgetIdRef.current = window.turnstile.render(containerRef.current, {
-        sitekey: siteKey,
-        theme,
-        size,
-        callback: (token: string) => {
-          console.debug("[Turnstile] Token received");
-          onTokenRef.current(token);
-        },
-        "error-callback": () => {
-          console.warn("[Turnstile] Challenge error");
-          onErrorRef.current?.();
-        },
-        "expired-callback": () => {
-          console.debug("[Turnstile] Token expired, re-rendering");
-          onExpireRef.current?.();
-          // Auto-reset on expiry so a fresh challenge appears
-          if (widgetIdRef.current && window.turnstile) {
-            try {
-              window.turnstile.reset(widgetIdRef.current);
-            } catch {
-              // Ignore reset errors
-            }
-          }
-        },
-      });
-      console.debug("[Turnstile] Widget rendered", widgetIdRef.current);
-    } catch (err) {
-      console.warn("[Turnstile] Failed to render widget:", err);
-    }
-  }, [siteKey, theme, size]);
-
-  // Load script & render on mount; re-render when resetKey changes
   useEffect(() => {
     let cancelled = false;
+
+    const renderWidget = () => {
+      if (!containerRef.current || !window.turnstile) return;
+
+      if (widgetIdRef.current) {
+        try {
+          window.turnstile.remove(widgetIdRef.current);
+        } catch {
+          // Widget may already be removed
+        }
+        widgetIdRef.current = null;
+      }
+
+      try {
+        widgetIdRef.current = window.turnstile.render(containerRef.current, {
+          sitekey: siteKey,
+          theme,
+          size,
+          callback: (token: string) => {
+            logger.debug("TurnstileWidget", "Token received");
+            onTokenRef.current(token);
+          },
+          "error-callback": () => {
+            logger.warn("TurnstileWidget", "Challenge error");
+            onErrorRef.current?.();
+          },
+          "expired-callback": () => {
+            logger.debug("TurnstileWidget", "Token expired, re-rendering");
+            onExpireRef.current?.();
+            if (widgetIdRef.current && window.turnstile) {
+              try {
+                window.turnstile.reset(widgetIdRef.current);
+              } catch {
+                // Ignore reset errors
+              }
+            }
+          },
+        });
+        logger.debug("TurnstileWidget", "Widget rendered", { widgetId: widgetIdRef.current });
+      } catch (err) {
+        logger.warn("TurnstileWidget", "Failed to render widget", err);
+      }
+    };
 
     loadTurnstileScript()
       .then(() => {
         if (!cancelled) renderWidget();
       })
       .catch((err) => {
-        console.warn("[Turnstile] Script load failed:", err);
+        logger.warn("TurnstileWidget", "Script load failed", err);
       });
 
     return () => {
@@ -172,7 +189,7 @@ export function TurnstileWidget({
         widgetIdRef.current = null;
       }
     };
-  }, [renderWidget, resetKey]);
+  }, [siteKey, theme, size, resetKey]);
 
   return <div ref={containerRef} />;
 }
