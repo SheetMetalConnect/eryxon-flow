@@ -30,6 +30,7 @@ vi.mock('@/config/cadBackend', () => ({
   getCADConfig: vi.fn(() => ({
     mode: 'custom',
     custom: { enabled: true, url: 'http://localhost:8888', apiKey: 'test-key', timeout: 5000 },
+    cadexsoft: { enabled: false, url: '', apiKey: '', timeout: 5000 },
     byob: { enabled: false, url: '', apiKey: '', timeout: 5000, headers: {} },
     frontend: { enabled: true, wasmUrl: '', maxFileSize: 50000000 },
     features: { pmiExtraction: true, thumbnails: false, geometry: true },
@@ -177,6 +178,7 @@ describe('useCADProcessing', () => {
     vi.mocked(getCADConfig).mockReturnValueOnce({
       mode: 'frontend',
       custom: { enabled: false, url: '', apiKey: '', timeout: 5000 },
+      cadexsoft: { enabled: false, url: '', apiKey: '', timeout: 5000 },
       byob: { enabled: false, url: '', apiKey: '', timeout: 5000 },
       frontend: { enabled: true, wasmUrl: '', maxFileSize: 50000000 },
       features: { pmiExtraction: true, thumbnails: false, geometry: true },

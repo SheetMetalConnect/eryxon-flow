@@ -1,0 +1,14 @@
+"""Placeholder for the CADEXsoft-issued license module.
+
+The real file is delivered through your CADEXsoft Customer Corner as a Python
+source file (`.py`). Copy it to `services/cadexsoft/license/mtk_license.py` —
+that path is gitignored so secrets never reach the repo.
+
+The real file exports a `value()` function that returns the license key string.
+MTK activates the key the first time any MTK API is used.
+"""
+
+
+def value() -> str:
+    # Replace this with the exact contents delivered by CADEXsoft.
+    return "REPLACE_ME_WITH_REAL_LICENSE_KEY"

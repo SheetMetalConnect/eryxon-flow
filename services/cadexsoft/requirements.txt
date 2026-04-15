@@ -1,0 +1,11 @@
+# CADEXsoft MTK service runtime dependencies.
+#
+# The Manufacturing Toolkit Python wheel itself is NOT listed here — it must be
+# installed separately from the Customer Corner download (see Dockerfile and
+# README). That wheel bundles the native C++ libraries and is licensed software.
+
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
+python-multipart==0.0.12
+httpx==0.27.2

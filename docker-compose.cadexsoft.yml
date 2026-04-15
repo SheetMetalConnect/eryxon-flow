@@ -1,0 +1,53 @@
+# Local-only CADEXsoft MTK service overlay.
+#
+# Compose this on top of docker-compose.yml whenever the operator has a valid
+# MTK license and the wheel from their Customer Corner. Kept separate because:
+#
+#  1. The service is opt-in (many deployments will not use DFM analysis).
+#  2. The wheel and license are licensed artifacts not present in the repo.
+#  3. The service must stay on a private network — it is never exposed publicly.
+#
+# Bring it up alongside the main app:
+#
+#     docker compose \
+#         -f docker-compose.yml \
+#         -f docker-compose.cadexsoft.yml \
+#         --profile cadexsoft \
+#         up -d
+#
+# Or standalone for development:
+#
+#     docker compose -f docker-compose.cadexsoft.yml --profile cadexsoft up --build
+
+services:
+  cadexsoft:
+    profiles: ["cadexsoft"]
+    build:
+      context: ./services/cadexsoft
+      dockerfile: Dockerfile
+      args:
+        # Point this at a private, pre-authenticated URL if you do not want the
+        # wheel committed to vendor/. Leave empty to use ./services/cadexsoft/vendor/.
+        MTK_WHEEL_URL: "${MTK_WHEEL_URL:-}"
+    container_name: cadexsoft
+    restart: unless-stopped
+    environment:
+      CADEXSOFT_API_KEY: "${CADEXSOFT_API_KEY:-}"
+      CADEXSOFT_CORS_ORIGINS: "${CADEXSOFT_CORS_ORIGINS:-http://localhost:8080,http://localhost:5173}"
+      CADEXSOFT_MAX_UPLOAD_BYTES: "${CADEXSOFT_MAX_UPLOAD_BYTES:-209715200}"
+      CADEXSOFT_LOG_LEVEL: "${CADEXSOFT_LOG_LEVEL:-INFO}"
+      CADEXSOFT_FORCE_STUB: "${CADEXSOFT_FORCE_STUB:-}"
+    # Bind only to loopback by default. Override with CADEXSOFT_BIND=0.0.0.0
+    # on a private network if another host needs to reach the service.
+    ports:
+      - "${CADEXSOFT_BIND:-127.0.0.1}:${CADEXSOFT_PORT:-8891}:8891"
+    volumes:
+      # License module is mounted at runtime so rotating it does not require
+      # rebuilding the image.
+      - ./services/cadexsoft/license:/srv/license:ro
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8891/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
