@@ -87,13 +87,23 @@ async def _resolve_payload(
     body: Optional[AnalyzeRequest],
     upload: Optional[UploadFile],
     file_name_form: Optional[str],
+    part_id_form: Optional[str] = None,
+    tenant_id_form: Optional[str] = None,
+    options_form: Optional[str] = None,
 ) -> tuple[bytes, str, Optional[str], Optional[str], dict]:
     """Accept either JSON body or multipart upload, return raw bytes + metadata."""
     if upload is not None:
         data = await upload.read()
         if len(data) > MAX_UPLOAD_BYTES:
             raise HTTPException(status_code=413, detail="file exceeds max upload size")
-        return data, file_name_form or upload.filename or "upload.bin", None, None, {}
+        opts: dict = {}
+        if options_form:
+            import json
+            try:
+                opts = json.loads(options_form)
+            except json.JSONDecodeError:
+                raise HTTPException(status_code=400, detail="invalid JSON in options field")
+        return data, file_name_form or upload.filename or "upload.bin", part_id_form, tenant_id_form, opts
 
     if body is None:
         raise HTTPException(status_code=400, detail="missing request body")
@@ -130,10 +140,13 @@ async def _run(
     body: Optional[AnalyzeRequest],
     upload: Optional[UploadFile],
     file_name_form: Optional[str],
+    part_id_form: Optional[str] = None,
+    tenant_id_form: Optional[str] = None,
+    options_form: Optional[str] = None,
 ) -> JSONResponse:
     _require_api_key(request)
     data, file_name, part_id, _tenant_id, options = await _resolve_payload(
-        body, upload, file_name_form
+        body, upload, file_name_form, part_id_form, tenant_id_form, options_form
     )
     status_code, payload = analyzers.run_analysis(
         kind, data, file_name, part_id, options, _license_status(request)
@@ -166,8 +179,11 @@ def _analyze_route(kind: AnalysisKind):
         body: Optional[AnalyzeRequest] = None,
         upload: Optional[UploadFile] = File(default=None),
         file_name: Optional[str] = Form(default=None),
+        part_id: Optional[str] = Form(default=None),
+        tenant_id: Optional[str] = Form(default=None),
+        options: Optional[str] = Form(default=None),
     ) -> JSONResponse:
-        return await _run(kind, request, body, upload, file_name)
+        return await _run(kind, request, body, upload, file_name, part_id, tenant_id, options)
 
     handler.__name__ = f"analyze_{kind.replace('-', '_')}"
     return handler

@@ -211,11 +211,15 @@ export function getActiveTimeout(): number {
 /**
  * Determine the best available backend mode
  *
- * Priority: custom > cadexsoft > byob > frontend
+ * Priority: custom > byob > frontend
+ *
+ * cadexsoft is excluded from auto-detection because useCADProcessing talks to
+ * `/process` (the Eryxon3D/generic contract) while the CADEXsoft service
+ * exposes `/analyze/*`. Auto-selecting cadexsoft would cause 404s on the
+ * generic path. Operators must opt in with VITE_CAD_BACKEND_MODE=cadexsoft.
  */
 export function determineBestBackend(): CADBackendMode {
   if (isBackendAvailable('custom')) return 'custom';
-  if (isBackendAvailable('cadexsoft')) return 'cadexsoft';
   if (isBackendAvailable('byob')) return 'byob';
   return 'frontend';
 }
