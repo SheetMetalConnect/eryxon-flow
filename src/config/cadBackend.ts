@@ -5,12 +5,13 @@
  *
  * Supported Modes:
  * - 'custom': Eryxon3D Docker-based backend (recommended)
- * - 'byob': Bring Your Own Backend (placeholder for CAD Exchanger SDK, etc.)
+ * - 'cadexsoft': CADEXsoft MTK local Python service (licensed, local-only)
+ * - 'byob': Bring Your Own Backend (generic CAD service)
  * - 'frontend': Browser-only processing via occt-import-js (fallback)
  */
 import { logger } from "@/lib/logger";
 
-export type CADBackendMode = 'custom' | 'byob' | 'frontend';
+export type CADBackendMode = 'custom' | 'cadexsoft' | 'byob' | 'frontend';
 
 export interface CADBackendConfig {
   /** Active backend mode */
@@ -18,6 +19,14 @@ export interface CADBackendConfig {
 
   /** Custom backend (Eryxon3D) configuration */
   custom: {
+    enabled: boolean;
+    url: string;
+    apiKey: string;
+    timeout: number;
+  };
+
+  /** CADEXsoft MTK Python service (local-only, licensed) */
+  cadexsoft: {
     enabled: boolean;
     url: string;
     apiKey: string;
@@ -67,6 +76,13 @@ const defaultConfig: CADBackendConfig = {
     timeout: 120000, // 2 minutes
   },
 
+  cadexsoft: {
+    enabled: !!import.meta.env.VITE_CADEXSOFT_URL,
+    url: import.meta.env.VITE_CADEXSOFT_URL || 'http://localhost:8891',
+    apiKey: import.meta.env.VITE_CADEXSOFT_API_KEY || '',
+    timeout: 180000, // 3 minutes — MTK analyses can be CPU-bound
+  },
+
   byob: {
     enabled: false,
     url: import.meta.env.VITE_BYOB_CAD_URL || '',
@@ -108,6 +124,7 @@ export function setCADConfig(config: Partial<CADBackendConfig>): void {
     ...activeConfig,
     ...config,
     custom: { ...activeConfig.custom, ...config.custom },
+    cadexsoft: { ...activeConfig.cadexsoft, ...config.cadexsoft },
     byob: { ...activeConfig.byob, ...config.byob },
     frontend: { ...activeConfig.frontend, ...config.frontend },
     features: { ...activeConfig.features, ...config.features },
@@ -128,6 +145,8 @@ export function isBackendAvailable(mode: CADBackendMode): boolean {
   switch (mode) {
     case 'custom':
       return activeConfig.custom.enabled && !!activeConfig.custom.url;
+    case 'cadexsoft':
+      return activeConfig.cadexsoft.enabled && !!activeConfig.cadexsoft.url;
     case 'byob':
       return activeConfig.byob.enabled && !!activeConfig.byob.url;
     case 'frontend':
@@ -144,6 +163,8 @@ export function getActiveBackendUrl(): string | null {
   switch (activeConfig.mode) {
     case 'custom':
       return activeConfig.custom.url;
+    case 'cadexsoft':
+      return activeConfig.cadexsoft.url;
     case 'byob':
       return activeConfig.byob.url;
     case 'frontend':
@@ -160,6 +181,8 @@ export function getActiveApiKey(): string {
   switch (activeConfig.mode) {
     case 'custom':
       return activeConfig.custom.apiKey;
+    case 'cadexsoft':
+      return activeConfig.cadexsoft.apiKey;
     case 'byob':
       return activeConfig.byob.apiKey;
     default:
@@ -174,6 +197,8 @@ export function getActiveTimeout(): number {
   switch (activeConfig.mode) {
     case 'custom':
       return activeConfig.custom.timeout;
+    case 'cadexsoft':
+      return activeConfig.cadexsoft.timeout;
     case 'byob':
       return activeConfig.byob.timeout;
     case 'frontend':
@@ -187,6 +212,11 @@ export function getActiveTimeout(): number {
  * Determine the best available backend mode
  *
  * Priority: custom > byob > frontend
+ *
+ * cadexsoft is excluded from auto-detection because useCADProcessing talks to
+ * `/process` (the Eryxon3D/generic contract) while the CADEXsoft service
+ * exposes `/analyze/*`. Auto-selecting cadexsoft would cause 404s on the
+ * generic path. Operators must opt in with VITE_CAD_BACKEND_MODE=cadexsoft.
  */
 export function determineBestBackend(): CADBackendMode {
   if (isBackendAvailable('custom')) return 'custom';
@@ -200,7 +230,7 @@ export function determineBestBackend(): CADBackendMode {
 export function initCADConfig(): void {
   // Check for mode override from environment
   const envMode = import.meta.env.VITE_CAD_BACKEND_MODE as CADBackendMode | undefined;
-  if (envMode && ['custom', 'byob', 'frontend'].includes(envMode)) {
+  if (envMode && ['custom', 'cadexsoft', 'byob', 'frontend'].includes(envMode)) {
     activeConfig.mode = envMode;
   } else {
     // Auto-detect best available backend

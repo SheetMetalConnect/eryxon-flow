@@ -1,0 +1,10 @@
+# Licensed artifacts — never commit.
+license/mtk_license.py
+vendor/*.whl
+vendor/*.tar.gz
+
+# Python build/cache
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/

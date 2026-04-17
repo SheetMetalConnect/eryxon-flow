@@ -1,0 +1,3 @@
+# Drop the manufacturing_toolkit-*.whl from your CADEXsoft Customer Corner here.
+# The file itself is gitignored. This placeholder keeps the directory in the
+# repo so the Dockerfile COPY step does not fail on a clean checkout.
