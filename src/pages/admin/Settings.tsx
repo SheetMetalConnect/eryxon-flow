@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useAuth } from "@/contexts/AuthContext";
-import { generateMockData, clearMockData } from "@/lib/mockDataGenerator";
+const loadMockData = () => import("@/lib/mockDataGenerator");
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
@@ -66,6 +66,7 @@ export const Settings: React.FC = () => {
     if (!profile?.tenant_id) return;
 
     setIsLoading(true);
+    const { generateMockData } = await loadMockData();
     const result = await generateMockData(profile.tenant_id);
 
     if (result.success) {
@@ -82,6 +83,7 @@ export const Settings: React.FC = () => {
     if (!profile?.tenant_id) return;
 
     setIsLoading(true);
+    const { clearMockData } = await loadMockData();
     const result = await clearMockData(profile.tenant_id);
 
     if (result.success) {

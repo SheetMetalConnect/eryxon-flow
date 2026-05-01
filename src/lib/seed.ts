@@ -1,4 +1,3 @@
-import { generateMockData } from "./mockDataGenerator";
 import { logger } from "@/lib/logger";
 
 /**
@@ -8,6 +7,7 @@ import { logger } from "@/lib/logger";
 export async function seedDemoData(tenantId: string) {
   logger.warn('Seed', 'seedDemoData is deprecated. Use generateMockData from mockDataGenerator.ts instead.');
 
+  const { generateMockData } = await import("./mockDataGenerator");
   return generateMockData(tenantId, {
     includeCells: true,
     includeJobs: true,

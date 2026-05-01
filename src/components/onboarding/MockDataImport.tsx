@@ -21,8 +21,9 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { generateMockData, clearMockData } from '@/lib/mockDataGenerator';
 import type { MockDataProgressStep } from '@/lib/mockDataGenerator';
+
+const loadMockData = () => import('@/lib/mockDataGenerator');
 import { useProfile } from '@/hooks/useProfile';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -69,6 +70,7 @@ export function MockDataImport({ onComplete, onSkip }: MockDataImportProps) {
     setProgress(null);
 
     try {
+      const { generateMockData } = await loadMockData();
       const result = await generateMockData(profile.tenant_id, {
         includeCells: true,
         includeJobs: true,
@@ -107,6 +109,7 @@ export function MockDataImport({ onComplete, onSkip }: MockDataImportProps) {
     setProgress(null);
 
     try {
+      const { clearMockData } = await loadMockData();
       const clearResult = await clearMockData(profile.tenant_id);
       if (!clearResult.success) {
         toast.error(`${t('onboarding.progressSteps.clearFailed')}: ${clearResult.error}`);
