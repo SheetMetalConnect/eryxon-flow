@@ -10,6 +10,9 @@ All notable changes to Eryxon Flow are documented here.
 
 ### Changed
 
+- **Lazy-load mockDataGenerator** — 2,202-line mock data module now loads on demand via dynamic `import()`. Removes ~40KB from the production bundle for all non-demo users.
+- **Split database.ts into domain modules** — 1,085-line monolith decomposed into `src/lib/db/` with 4 focused modules: operations, time-tracking, batches, assemblies. Original file preserved as thin re-export.
+- **Decompose PartDetailModal** — 1,193-line component split into tab sub-components under `src/components/admin/part-detail/`: PartDetailsTab (140 lines), PartOperationsTab (459 lines), PartFilesTab (167 lines).
 - **CORS fails closed** — edge functions no longer default to `Access-Control-Allow-Origin: *` when `ALLOWED_ORIGIN` env var is not set. Now defaults to `localhost` only (safe for dev). Production deployments must explicitly set `ALLOWED_ORIGIN`. Five edge functions with inline CORS headers now use the shared `_shared/cors.ts` module.
 
 ### Added
