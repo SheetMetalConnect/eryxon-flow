@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { GripVertical } from "lucide-react";
@@ -17,13 +17,9 @@ import {
 
 export default function OperatorView() {
   const { t } = useTranslation();
-  const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
-
-  useEffect(() => {
-    const el = document.getElementById("terminal-header-slot");
-    if (el) setHeaderSlot(el);
-    return () => setHeaderSlot(null);
-  }, []);
+  const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(
+    () => document.getElementById("terminal-header-slot"),
+  );
 
   const {
     containerRef,

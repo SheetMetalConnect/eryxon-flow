@@ -4,6 +4,10 @@ All notable changes to Eryxon Flow are documented here.
 
 ## [Unreleased]
 
+### Fixed
+
+- Resolve 5 `react-hooks/set-state-in-effect` violations in operator UI (`OperatorLayout.tsx`, `OperatorStatusBar.tsx`, `OperatorView.tsx`). Derive state from props/query data instead of syncing via useEffect, eliminating cascading re-renders on the shop floor tablet interface.
+
 ### Changed
 
 - **CORS fails closed** — edge functions no longer default to `Access-Control-Allow-Origin: *` when `ALLOWED_ORIGIN` env var is not set. Now defaults to `localhost` only (safe for dev). Production deployments must explicitly set `ALLOWED_ORIGIN`. Five edge functions with inline CORS headers now use the shared `_shared/cors.ts` module.

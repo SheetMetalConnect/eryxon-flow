@@ -30,7 +30,8 @@ import {
   UserCheck,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useTenant } from "@/hooks/useTenant";
+import { useAuthActions } from "@/hooks/useAuthActions";
 import { useOperator } from "@/contexts/OperatorContext";
 import CurrentlyTimingWidget from "./CurrentlyTimingWidget";
 import { OperatorSwitcher } from "./OperatorSwitcher";
@@ -55,17 +56,16 @@ function TimingHeaderIndicator() {
   const [startTime, setStartTime] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!operatorId) {
-      setCount(0);
-      return;
-    }
+    if (!operatorId) return;
 
+    let ignore = false;
     const load = async () => {
       const { data } = await supabase
         .from("time_entries")
         .select("id, start_time")
         .eq("operator_id", operatorId)
         .is("end_time", null);
+      if (ignore) return;
       setCount(data?.length ?? 0);
       if (data && data.length > 0) {
         setStartTime(data[0].start_time);
@@ -81,12 +81,12 @@ function TimingHeaderIndicator() {
       .on("postgres_changes", { event: "*", schema: "public", table: "time_entries", filter: `operator_id=eq.${operatorId}` }, () => void load())
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { ignore = true; supabase.removeChannel(channel); };
   }, [operatorId]);
 
   // Tick elapsed time
   useEffect(() => {
-    if (!startTime) { setElapsed(""); return; }
+    if (!startTime) return;
     const update = () => {
       const seconds = Math.floor((Date.now() - new Date(startTime).getTime()) / 1000);
       const h = Math.floor(seconds / 3600);
@@ -99,7 +99,10 @@ function TimingHeaderIndicator() {
     return () => clearInterval(iv);
   }, [startTime]);
 
-  if (count === 0) return null;
+  // Derive display values — avoid stale state when operatorId or startTime changes
+  const displayElapsed = startTime ? elapsed : "";
+
+  if (!operatorId || count === 0) return null;
 
   return (
     <Popover>
@@ -109,7 +112,7 @@ function TimingHeaderIndicator() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500 opacity-75" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
           </span>
-          <span className="font-mono text-xs font-bold">{elapsed}</span>
+          <span className="font-mono text-xs font-bold">{displayElapsed}</span>
           {count > 1 && <span className="text-[10px] font-medium">×{count}</span>}
         </button>
       </PopoverTrigger>
@@ -130,7 +133,9 @@ export const OperatorLayout = ({
   showBackToAdmin = false,
 }: OperatorLayoutProps) => {
   const { t } = useTranslation();
-  const { profile, tenant, signOut } = useAuth();
+  const profile = useProfile();
+  const { tenant } = useTenant();
+  const { signOut } = useAuthActions();
   const { activeOperator } = useOperator();
   const location = useLocation();
   const navigate = useNavigate();

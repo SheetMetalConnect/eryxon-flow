@@ -119,11 +119,9 @@ export function OperatorStatusBar() {
 
   // Load active time entries and determine state
   useEffect(() => {
-    if (!operatorId) {
-      setStatusData({ state: "idle", count: 0, startTime: null, operationName: null, jobNumber: null });
-      return;
-    }
+    if (!operatorId) return;
 
+    let ignore = false;
     const load = async () => {
       const { data } = await supabase
         .from("time_entries")
@@ -139,6 +137,8 @@ export function OperatorStatusBar() {
         `)
         .eq("operator_id", operatorId)
         .is("end_time", null);
+
+      if (ignore) return;
 
       if (!data || data.length === 0) {
         setStatusData({ state: "idle", count: 0, startTime: null, operationName: null, jobNumber: null, entries: [] });
@@ -184,12 +184,12 @@ export function OperatorStatusBar() {
       }, () => void load())
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { ignore = true; supabase.removeChannel(channel); };
   }, [operatorId]);
 
   // Tick elapsed time
   useEffect(() => {
-    if (!statusData.startTime) { setElapsed(""); return; }
+    if (!statusData.startTime) return;
     const update = () => {
       const seconds = Math.floor((Date.now() - new Date(statusData.startTime!).getTime()) / 1000);
       const h = Math.floor(seconds / 3600);
@@ -204,6 +204,8 @@ export function OperatorStatusBar() {
     return () => clearInterval(iv);
   }, [statusData.startTime]);
 
+  // Derive display values — avoid stale state when operatorId or startTime changes
+  const displayElapsed = statusData.startTime ? elapsed : "";
   const styles = STATE_STYLES[statusData.state];
 
   const handleStop = async (operationId: string) => {
@@ -299,7 +301,7 @@ export function OperatorStatusBar() {
                   "flex h-6 items-center gap-1.5 rounded-full border px-2 transition-colors hover:bg-white/5",
                   styles.border, styles.text,
                 )}>
-                  <span className="font-mono text-[11px] font-bold tabular-nums">{elapsed}</span>
+                  <span className="font-mono text-[11px] font-bold tabular-nums">{displayElapsed}</span>
                   {statusData.count > 1 && (
                     <span className="text-[10px] opacity-70">×{statusData.count}</span>
                   )}
