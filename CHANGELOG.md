@@ -4,10 +4,6 @@ All notable changes to Eryxon Flow are documented here.
 
 ## [Unreleased]
 
-### Changed
-
-- Database migration cleanup: replaced stale TODO with documentation, added migrations README and archive README
-
 ### Added
 
 - Localized landing pages for DE, complete NL landing page parity
@@ -22,6 +18,7 @@ All notable changes to Eryxon Flow are documented here.
 - CI/CD hardening: `deploy-prod` now runs lint + type check before tests, uses `test:run` instead of `test --if-present`
 - CI/CD hardening: `deploy-cloudflare` adds test gate (lint, type check, tests) before deploy, updates actions to `@v6`, restricts fork PR deploys
 - CI/CD hardening: `release` workflow uses `test:run` instead of `test --if-present`
+- Database migration cleanup: replaced stale TODO with documentation, added migrations README and archive README
 
 ### Fixed
 

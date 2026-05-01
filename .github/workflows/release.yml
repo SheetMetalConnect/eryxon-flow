@@ -49,7 +49,7 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_PROD }}
 
       - name: Run tests
-        run: npm run test --if-present
+        run: npm run test:run
 
   # Step 2: Run migrations (if enabled, requires approval)
   migrate:
