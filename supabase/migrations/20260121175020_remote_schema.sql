@@ -7210,10 +7210,9 @@ CREATE OR REPLACE TRIGGER "mqtt_publishers_updated_at" BEFORE UPDATE ON "public"
 
 
 
--- REMOVED: Trigger with hardcoded credentials
--- TODO: Recreate this trigger using environment variables or Supabase secrets
--- CREATE OR REPLACE TRIGGER "notify-new-signup" AFTER INSERT OR DELETE OR UPDATE ON "public"."tenants"
--- FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request(...);
+-- Signup notifications are handled by the `notify-new-signup` edge function,
+-- configured as a Database Webhook in the Supabase dashboard (not via SQL trigger).
+-- The original trigger was removed because it contained hardcoded credentials.
 
 
 
