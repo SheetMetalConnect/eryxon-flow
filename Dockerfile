@@ -1,5 +1,5 @@
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -40,11 +40,23 @@ RUN npm run build
 # Production stage
 FROM nginx:alpine
 
+# OCI image labels
+LABEL org.opencontainers.image.title="Eryxon Flow"
+LABEL org.opencontainers.image.description="Manufacturing Execution System for sheet metal production"
+LABEL org.opencontainers.image.version="0.4.1"
+LABEL org.opencontainers.image.source="https://github.com/SheetMetalConnect/eryxon-flow"
+LABEL org.opencontainers.image.vendor="Eryxon"
+LABEL org.opencontainers.image.licenses="BSL-1.1"
+
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy built assets from builder
 COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy entrypoint script for runtime env injection
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 # Expose port 80
 EXPOSE 80
@@ -53,4 +65,4 @@ EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --quiet --tries=1 --spider http://localhost/health || exit 1
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/docker-entrypoint.sh"]
