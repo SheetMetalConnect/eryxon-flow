@@ -293,10 +293,13 @@ export function escapeHtml(str: string): string {
 
 /**
  * Get secure CORS headers
- * Returns restrictive CORS by default, can be overridden with env variable
+ *
+ * Fails closed: if ALLOWED_ORIGIN is not set, only localhost origins are
+ * permitted (safe for local dev). Production deployments MUST set the
+ * ALLOWED_ORIGIN environment variable to their frontend domain.
  */
 export function getCorsHeaders(): Record<string, string> {
-  const allowedOrigin = Deno.env.get('ALLOWED_ORIGIN') || '*';
+  const allowedOrigin = Deno.env.get('ALLOWED_ORIGIN') || 'http://localhost:5173';
 
   return {
     'Access-Control-Allow-Origin': allowedOrigin,

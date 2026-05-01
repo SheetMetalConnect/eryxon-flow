@@ -4,8 +4,17 @@ All notable changes to Eryxon Flow are documented here.
 
 ## [Unreleased]
 
+### Changed
+
+- **CORS fails closed** — edge functions no longer default to `Access-Control-Allow-Origin: *` when `ALLOWED_ORIGIN` env var is not set. Now defaults to `localhost` only (safe for dev). Production deployments must explicitly set `ALLOWED_ORIGIN`. Five edge functions with inline CORS headers now use the shared `_shared/cors.ts` module.
+
 ### Added
 
+- Runtime env.js injection via Docker entrypoint (no rebuild needed for config changes)
+- `.dockerignore` to reduce build context size
+- `/health` endpoint now returns JSON (`{"status":"ok","service":"eryxon-flow"}`)
+- OCI image labels for version tracking and metadata
+- `src/config/env.ts` helper for runtime environment variable resolution
 - Localized landing pages for DE, complete NL landing page parity
 - German localization: landing page, guides, glossary, and language switcher
 - Dutch localization: concepts, guides, glossary
@@ -15,6 +24,8 @@ All notable changes to Eryxon Flow are documented here.
 
 ### Changed
 
+- Dockerfile bumped to `node:22-alpine` (builder stage)
+- Consolidated `docker-compose.yml` as single production-ready file with `env_file` support (removed `docker-compose.prod.yml`)
 - CI/CD hardening: `deploy-prod` now runs lint + type check before tests, uses `test:run` instead of `test --if-present`
 - CI/CD hardening: `deploy-cloudflare` adds test gate (lint, type check, tests) before deploy, updates actions to `@v6`, restricts fork PR deploys
 - CI/CD hardening: `release` workflow uses `test:run` instead of `test --if-present`

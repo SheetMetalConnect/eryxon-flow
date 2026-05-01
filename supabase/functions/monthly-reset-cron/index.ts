@@ -20,8 +20,10 @@ import { createClient } from "@supabase/supabase-js";
  * 4. Or use pg_cron in the database directly
  */
 
+import { corsHeaders as _baseCorsHeaders } from "@shared/cors.ts";
+
 const corsHeaders = {
-  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || '*',
+  ..._baseCorsHeaders,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret',
 };
 

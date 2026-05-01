@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "@supabase/supabase-js";
 import { encode as hexEncode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
 import { sanitizeError } from "../_shared/security.ts";
+import { corsHeaders } from "../_shared/cors.ts";
 
 // Hash function using Web Crypto API (compatible with Edge Functions)
 async function hashApiKey(apiKey: string): Promise<string> {
@@ -10,10 +11,6 @@ async function hashApiKey(apiKey: string): Promise<string> {
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   return new TextDecoder().decode(hexEncode(new Uint8Array(hashBuffer)));
 }
-const corsHeaders = {
-  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
 
 async function authenticateAdmin(authHeader: string | null, supabase: any) {
   if (!authHeader) {
