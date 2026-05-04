@@ -2,21 +2,14 @@
 
 All notable changes to Eryxon Flow are documented here.
 
-## [Unreleased]
-
-### Fixed
-
-- Resolve 5 `react-hooks/set-state-in-effect` violations in operator UI (`OperatorLayout.tsx`, `OperatorStatusBar.tsx`, `OperatorView.tsx`). Derive state from props/query data instead of syncing via useEffect, eliminating cascading re-renders on the shop floor tablet interface.
-
-### Changed
-
-- **Lazy-load mockDataGenerator** — 2,202-line mock data module now loads on demand via dynamic `import()`. Removes ~40KB from the production bundle for all non-demo users.
-- **Split database.ts into domain modules** — 1,085-line monolith decomposed into `src/lib/db/` with 4 focused modules: operations, time-tracking, batches, assemblies. Original file preserved as thin re-export.
-- **Decompose PartDetailModal** — 1,193-line component split into tab sub-components under `src/components/admin/part-detail/`: PartDetailsTab (140 lines), PartOperationsTab (459 lines), PartFilesTab (167 lines).
-- **CORS fails closed** — edge functions no longer default to `Access-Control-Allow-Origin: *` when `ALLOWED_ORIGIN` env var is not set. Now defaults to `localhost` only (safe for dev). Production deployments must explicitly set `ALLOWED_ORIGIN`. Five edge functions with inline CORS headers now use the shared `_shared/cors.ts` module.
+## [0.5.0] - 2026-05-04
 
 ### Added
 
+- OEE metrics calculation (Availability x Performance x Quality) from real production data
+- Reliability metrics: on-time %, delay tracking, weekly trends, per-cell breakdown
+- MQTT client with retry logic, circuit breaker, and dead letter logging
+- Edge function test coverage for shared auth/security modules
 - Runtime env.js injection via Docker entrypoint (no rebuild needed for config changes)
 - `.dockerignore` to reduce build context size
 - `/health` endpoint now returns JSON (`{"status":"ok","service":"eryxon-flow"}`)
@@ -31,17 +24,33 @@ All notable changes to Eryxon Flow are documented here.
 
 ### Changed
 
+- ESLint `no-explicit-any` rule enabled as warning
+- `as any` casts reduced from 72 to 7 across codebase
+- Supabase types regenerated with latest schema
+- **Lazy-load mockDataGenerator** — 2,202-line mock data module now loads on demand via dynamic `import()`. Removes ~40KB from the production bundle for all non-demo users.
+- **Split database.ts into domain modules** — 1,085-line monolith decomposed into `src/lib/db/` with 4 focused modules: operations, time-tracking, batches, assemblies. Original file preserved as thin re-export.
+- **Decompose PartDetailModal** — 1,193-line component split into tab sub-components under `src/components/admin/part-detail/`: PartDetailsTab (140 lines), PartOperationsTab (459 lines), PartFilesTab (167 lines).
+- **CORS fails closed** — edge functions no longer default to `Access-Control-Allow-Origin: *` when `ALLOWED_ORIGIN` env var is not set. Now defaults to `localhost` only (safe for dev). Production deployments must explicitly set `ALLOWED_ORIGIN`.
 - Dockerfile bumped to `node:22-alpine` (builder stage)
 - Consolidated `docker-compose.yml` as single production-ready file with `env_file` support (removed `docker-compose.prod.yml`)
-- CI/CD hardening: `deploy-prod` now runs lint + type check before tests, uses `test:run` instead of `test --if-present`
-- CI/CD hardening: `deploy-cloudflare` adds test gate (lint, type check, tests) before deploy, updates actions to `@v6`, restricts fork PR deploys
-- CI/CD hardening: `release` workflow uses `test:run` instead of `test --if-present`
+- CI/CD hardening: lint + typecheck gates added to all workflows, fork PR deploy protection, Cloudflare action updated to v3
 - Database migration cleanup: replaced stale TODO with documentation, added migrations README and archive README
 
 ### Fixed
 
+- Vite security vulnerabilities patched (CVE path traversal, WebSocket read)
+- CORS wildcard default — now fails closed when `ALLOWED_ORIGIN` not set
+- Operator UI re-render bugs: 5 `setState`-in-`useEffect` violations fixed (`OperatorLayout.tsx`, `OperatorStatusBar.tsx`, `OperatorView.tsx`)
 - Root admin tenant switching no longer violates unique constraint
 - Removed unrecognized `browsing-topics` from Permissions-Policy header
+
+### Improved
+
+- Self-hosting: runtime env injection, .dockerignore, Node 22, health endpoint
+- Component refactors: PartDetailModal split, database.ts modularized, mockDataGenerator lazy-loaded
+- Database migration cleanup with READMEs
+- MCP server working (v2.4.0, builds clean)
+- Safe dependency updates (Supabase, TanStack Query, react-hook-form, MSW, Vitest)
 
 ## [0.4.1] - 2026-03-29
 
