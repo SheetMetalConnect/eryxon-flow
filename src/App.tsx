@@ -3,7 +3,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { AuthProvider } from "./contexts/AuthContext";
+import { useProfile } from "./hooks/useProfile";
+import { useAuthActions } from "./hooks/useAuthActions";
 import { OperatorProvider } from "./contexts/OperatorContext";
 import { ThemeProvider } from "./theme/ThemeProvider";
 import { NotificationToastProvider } from "./components/NotificationToastProvider";
@@ -21,7 +23,8 @@ const OnboardingWizard = lazy(() => import("./components/onboarding").then(m => 
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function AppRoutes() {
-  const { profile, loading } = useAuth();
+  const profile = useProfile();
+  const { loading } = useAuthActions();
 
   if (loading) {
     return (

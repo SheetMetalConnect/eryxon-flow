@@ -145,8 +145,10 @@ export function OperatorStatusBar() {
         return;
       }
 
-      const entry = data[0] as any;
-      const hasRush = data.some((e: any) => e.operation?.part?.is_bullet_card);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FK join result shape doesn't match Supabase inferred types for nested relations
+      const rows = data as any[];
+      const entry = rows[0];
+      const hasRush = rows.some((e) => e.operation?.part?.is_bullet_card);
       const startTime = entry.start_time;
       const hoursSinceStart = (Date.now() - new Date(startTime).getTime()) / (1000 * 60 * 60);
 
@@ -154,7 +156,7 @@ export function OperatorStatusBar() {
       if (hasRush) state = "rush";
       else if (hoursSinceStart > 2) state = "stale";
 
-      const entries: ActiveEntry[] = data.map((e: any) => ({
+      const entries: ActiveEntry[] = rows.map((e) => ({
         id: e.id,
         operationId: e.operation?.id || e.operation_id,
         startTime: e.start_time,

@@ -46,7 +46,7 @@ export default function ConfigMaterials() {
       .order("name");
 
     if (!error && data) {
-      setMaterials(data as any);
+      setMaterials(data as unknown as Material[]);
     }
     setLoading(false);
   }

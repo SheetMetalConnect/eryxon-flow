@@ -11,7 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { useTenant } from "@/hooks/useTenant";
+import { useAuthActions } from "@/hooks/useAuthActions";
 const loadMockData = () => import("@/lib/mockDataGenerator");
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -45,7 +47,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export const Settings: React.FC = () => {
   const { t } = useTranslation();
-  const { profile, tenant, signOut } = useAuth();
+  const profile = useProfile();
+  const { tenant } = useTenant();
+  const { signOut } = useAuthActions();
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);

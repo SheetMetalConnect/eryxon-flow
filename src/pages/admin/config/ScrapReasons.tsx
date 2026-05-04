@@ -75,7 +75,10 @@ export default function ConfigScrapReasons() {
 
   const seedDefaultMutation = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.rpc("seed_default_scrap_reasons" as any);
+      if (!profile?.tenant_id) throw new Error("No tenant");
+      const { data, error } = await supabase.rpc("seed_default_scrap_reasons", {
+        p_tenant_id: profile.tenant_id,
+      });
       if (error) throw error;
       return data;
     },
@@ -83,7 +86,7 @@ export default function ConfigScrapReasons() {
       toast.success(t("scrapReasons.defaultCreated"));
       queryClient.invalidateQueries({ queryKey: ["config", "scrapReasons"] });
     },
-    onError: (error: any) => toast.error(error.message || t("notifications.failed")),
+    onError: (error: Error) => toast.error(error.message || t("notifications.failed")),
   });
 
   const saveMutation = useMutation({

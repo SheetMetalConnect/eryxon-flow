@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
+import { useTenant } from '@/hooks/useTenant';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,7 +30,8 @@ const TIMEZONES = [
 
 export default function OrganizationSettings() {
   const { t } = useTranslation();
-  const { profile, tenant, refreshTenant } = useAuth();
+  const profile = useProfile();
+  const { tenant, refreshTenant } = useTenant();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
@@ -78,18 +80,17 @@ export default function OrganizationSettings() {
       setFormData({
         name: data.name || '',
         company_name: data.company_name || '',
-        abbreviation: (data as any).abbreviation || '',
+        abbreviation: data.abbreviation || '',
         timezone: data.timezone || 'UTC',
         billing_email: data.billing_email || '',
         factory_opening_time: formatTime(data.factory_opening_time) || '07:00',
         factory_closing_time: formatTime(data.factory_closing_time) || '17:00',
         auto_stop_tracking: data.auto_stop_tracking || false,
-        // Whitelabeling fields (cast to any to access fields not in generated types)
-        whitelabel_enabled: (data as any).whitelabel_enabled || false,
-        whitelabel_logo_url: (data as any).whitelabel_logo_url || '',
-        whitelabel_app_name: (data as any).whitelabel_app_name || '',
-        whitelabel_primary_color: (data as any).whitelabel_primary_color || '',
-        whitelabel_favicon_url: (data as any).whitelabel_favicon_url || '',
+        whitelabel_enabled: data.whitelabel_enabled || false,
+        whitelabel_logo_url: data.whitelabel_logo_url || '',
+        whitelabel_app_name: data.whitelabel_app_name || '',
+        whitelabel_primary_color: data.whitelabel_primary_color || '',
+        whitelabel_favicon_url: data.whitelabel_favicon_url || '',
       });
     } catch (error: unknown) {
       logger.error('OrganizationSettings', 'Error loading tenant details', error);

@@ -39,7 +39,7 @@ type Part = {
   quantity: number;
   parent_part_id?: string;
   notes?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, string>;
   operations: Operation[];
 };
 
@@ -471,7 +471,7 @@ export default function JobCreate() {
                       <div>
                         <Label>Material Lot/Heat Number</Label>
                         <Input
-                          value={(editingPart.metadata as any)?.material_lot || ""}
+                          value={editingPart.metadata?.material_lot || ""}
                           onChange={(e) =>
                             setEditingPart({
                               ...editingPart,
@@ -484,7 +484,7 @@ export default function JobCreate() {
                       <div>
                         <Label>Material Supplier</Label>
                         <Input
-                          value={(editingPart.metadata as any)?.material_supplier || ""}
+                          value={editingPart.metadata?.material_supplier || ""}
                           onChange={(e) =>
                             setEditingPart({
                               ...editingPart,
@@ -497,7 +497,7 @@ export default function JobCreate() {
                       <div>
                         <Label>Material Certification #</Label>
                         <Input
-                          value={(editingPart.metadata as any)?.material_cert_number || ""}
+                          value={editingPart.metadata?.material_cert_number || ""}
                           onChange={(e) =>
                             setEditingPart({
                               ...editingPart,

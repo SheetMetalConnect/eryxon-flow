@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import { dispatchOperationStarted, dispatchOperationCompleted } from "../event-dispatch";
 import { logger } from '@/lib/logger';
 
@@ -342,7 +343,7 @@ export async function startTimeTracking(
       .single();
 
     if (job) {
-      const updates: { status?: string; current_cell_id?: string } = {};
+      const updates: Partial<Pick<Tables<'jobs'>, 'status' | 'current_cell_id'>> = {};
 
       if (job.status === "not_started") {
         updates.status = "in_progress";
@@ -355,8 +356,7 @@ export async function startTimeTracking(
       if (Object.keys(updates).length > 0) {
         const { error: jobUpdateError } = await supabase
           .from("jobs")
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .update(updates as any)
+          .update(updates)
           .eq("id", part.job_id);
         if (jobUpdateError) throw jobUpdateError;
       }

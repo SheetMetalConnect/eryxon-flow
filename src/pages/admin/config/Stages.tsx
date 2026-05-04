@@ -204,7 +204,7 @@ export default function ConfigStages() {
       .order("sequence");
 
     if (!error && data) {
-      setStages(data as any);
+      setStages(data as unknown as Stage[]);
     }
     setLoading(false);
   };

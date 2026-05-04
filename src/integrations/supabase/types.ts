@@ -123,7 +123,15 @@ export type Database = {
           name?: string
           tenant_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       api_usage_logs: {
         Row: {
@@ -322,6 +330,51 @@ export type Database = {
           },
         ]
       }
+      batch_assignments: {
+        Row: {
+          assigned_at: string
+          batch_id: string
+          completed_at: string | null
+          id: string
+          operation_id: string
+          quantity_assigned: number
+          quantity_completed: number
+        }
+        Insert: {
+          assigned_at?: string
+          batch_id: string
+          completed_at?: string | null
+          id?: string
+          operation_id: string
+          quantity_assigned?: number
+          quantity_completed?: number
+        }
+        Update: {
+          assigned_at?: string
+          batch_id?: string
+          completed_at?: string | null
+          id?: string
+          operation_id?: string
+          quantity_assigned?: number
+          quantity_completed?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "batch_assignments_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "batch_assignments_operation_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: false
+            referencedRelation: "operations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       batch_operations: {
         Row: {
           batch_id: string
@@ -370,6 +423,124 @@ export type Database = {
           },
           {
             foreignKeyName: "batch_operations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      batch_requirements: {
+        Row: {
+          batch_id: string
+          created_at: string | null
+          id: string
+          material_name: string
+          quantity: number
+          status: string | null
+          tenant_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          batch_id: string
+          created_at?: string | null
+          id?: string
+          material_name: string
+          quantity: number
+          status?: string | null
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          batch_id?: string
+          created_at?: string | null
+          id?: string
+          material_name?: string
+          quantity?: number
+          status?: string | null
+          tenant_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "batch_requirements_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "operation_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "batch_requirements_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      batches: {
+        Row: {
+          batch_number: string
+          created_at: string
+          id: string
+          job_id: string | null
+          material_id: string | null
+          notes: string | null
+          priority: number
+          produced_quantity: number
+          quantity: number
+          scrap_quantity: number
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          batch_number: string
+          created_at?: string
+          id?: string
+          job_id?: string | null
+          material_id?: string | null
+          notes?: string | null
+          priority?: number
+          produced_quantity?: number
+          quantity?: number
+          scrap_quantity?: number
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          batch_number?: string
+          created_at?: string
+          id?: string
+          job_id?: string | null
+          material_id?: string | null
+          notes?: string | null
+          priority?: number
+          produced_quantity?: number
+          quantity?: number
+          scrap_quantity?: number
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "batches_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "batches_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "batches_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -1297,6 +1468,8 @@ export type Database = {
       }
       jobs: {
         Row: {
+          actual_duration: number | null
+          completed_at: string | null
           created_at: string | null
           current_cell_id: string | null
           customer: string | null
@@ -1317,7 +1490,10 @@ export type Database = {
           metadata: Json | null
           notes: string | null
           package_count: number | null
+          paused_at: string | null
+          resumed_at: string | null
           search_vector: unknown
+          started_at: string | null
           status: Database["public"]["Enums"]["job_status"] | null
           sync_hash: string | null
           synced_at: string | null
@@ -1327,6 +1503,8 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          actual_duration?: number | null
+          completed_at?: string | null
           created_at?: string | null
           current_cell_id?: string | null
           customer?: string | null
@@ -1347,7 +1525,10 @@ export type Database = {
           metadata?: Json | null
           notes?: string | null
           package_count?: number | null
+          paused_at?: string | null
+          resumed_at?: string | null
           search_vector?: unknown
+          started_at?: string | null
           status?: Database["public"]["Enums"]["job_status"] | null
           sync_hash?: string | null
           synced_at?: string | null
@@ -1357,6 +1538,8 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          actual_duration?: number | null
+          completed_at?: string | null
           created_at?: string | null
           current_cell_id?: string | null
           customer?: string | null
@@ -1377,7 +1560,10 @@ export type Database = {
           metadata?: Json | null
           notes?: string | null
           package_count?: number | null
+          paused_at?: string | null
+          resumed_at?: string | null
           search_vector?: unknown
+          started_at?: string | null
           status?: Database["public"]["Enums"]["job_status"] | null
           sync_hash?: string | null
           synced_at?: string | null
@@ -1990,10 +2176,15 @@ export type Database = {
           external_id: string | null
           external_source: string | null
           id: string
+          layout_image_url: string | null
           material: string | null
+          material_requirement_metadata: Json | null
+          material_requirement_raised: boolean | null
+          nesting_image_url: string | null
           nesting_metadata: Json | null
           notes: string | null
           operations_count: number
+          parent_batch_id: string | null
           started_at: string | null
           started_by: string | null
           status: Database["public"]["Enums"]["batch_status"]
@@ -2014,10 +2205,15 @@ export type Database = {
           external_id?: string | null
           external_source?: string | null
           id?: string
+          layout_image_url?: string | null
           material?: string | null
+          material_requirement_metadata?: Json | null
+          material_requirement_raised?: boolean | null
+          nesting_image_url?: string | null
           nesting_metadata?: Json | null
           notes?: string | null
           operations_count?: number
+          parent_batch_id?: string | null
           started_at?: string | null
           started_by?: string | null
           status?: Database["public"]["Enums"]["batch_status"]
@@ -2038,10 +2234,15 @@ export type Database = {
           external_id?: string | null
           external_source?: string | null
           id?: string
+          layout_image_url?: string | null
           material?: string | null
+          material_requirement_metadata?: Json | null
+          material_requirement_raised?: boolean | null
+          nesting_image_url?: string | null
           nesting_metadata?: Json | null
           notes?: string | null
           operations_count?: number
+          parent_batch_id?: string | null
           started_at?: string | null
           started_by?: string | null
           status?: Database["public"]["Enums"]["batch_status"]
@@ -2069,6 +2270,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_batches_parent_batch_id_fkey"
+            columns: ["parent_batch_id"]
+            isOneToOne: false
+            referencedRelation: "operation_batches"
             referencedColumns: ["id"]
           },
           {
@@ -2338,12 +2546,15 @@ export type Database = {
           notes: string | null
           operation_name: string
           part_id: string
+          paused_at: string | null
           planned_end: string | null
           planned_start: string | null
+          resumed_at: string | null
           run_time_per_unit: number | null
           search_vector: unknown
           sequence: number
           setup_time: number | null
+          started_at: string | null
           status: Database["public"]["Enums"]["task_status"] | null
           synced_at: string | null
           tenant_id: string
@@ -2369,12 +2580,15 @@ export type Database = {
           notes?: string | null
           operation_name: string
           part_id: string
+          paused_at?: string | null
           planned_end?: string | null
           planned_start?: string | null
+          resumed_at?: string | null
           run_time_per_unit?: number | null
           search_vector?: unknown
           sequence: number
           setup_time?: number | null
+          started_at?: string | null
           status?: Database["public"]["Enums"]["task_status"] | null
           synced_at?: string | null
           tenant_id: string
@@ -2400,12 +2614,15 @@ export type Database = {
           notes?: string | null
           operation_name?: string
           part_id?: string
+          paused_at?: string | null
           planned_end?: string | null
           planned_start?: string | null
+          resumed_at?: string | null
           run_time_per_unit?: number | null
           search_vector?: unknown
           sequence?: number
           setup_time?: number | null
+          started_at?: string | null
           status?: Database["public"]["Enums"]["task_status"] | null
           synced_at?: string | null
           tenant_id?: string
@@ -2640,6 +2857,7 @@ export type Database = {
       profiles: {
         Row: {
           active: boolean | null
+          active_tenant_id: string | null
           created_at: string | null
           email: string
           employee_id: string | null
@@ -2661,6 +2879,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean | null
+          active_tenant_id?: string | null
           created_at?: string | null
           email: string
           employee_id?: string | null
@@ -2682,6 +2901,7 @@ export type Database = {
         }
         Update: {
           active?: boolean | null
+          active_tenant_id?: string | null
           created_at?: string | null
           email?: string
           employee_id?: string | null
@@ -2701,7 +2921,15 @@ export type Database = {
           updated_at?: string | null
           username?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_active_tenant_id_fkey"
+            columns: ["active_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       resources: {
         Row: {
@@ -2994,7 +3222,15 @@ export type Database = {
           tenant_id?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "substeps_operation_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: false
+            referencedRelation: "operations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tenants: {
         Row: {
@@ -4020,6 +4256,7 @@ export type Database = {
         | "in_progress"
         | "completed"
         | "cancelled"
+        | "blocked"
       batch_type:
         | "laser_nesting"
         | "tube_batch"
@@ -4034,6 +4271,7 @@ export type Database = {
         | "accounting"
         | "crm"
         | "inventory"
+        | "shipping"
         | "analytics"
         | "other"
       integration_status: "draft" | "published" | "deprecated" | "archived"
@@ -4065,7 +4303,12 @@ export type Database = {
         | "cancelled"
       payment_transaction_type: "charge" | "refund" | "chargeback" | "dispute"
       subscription_plan: "free" | "pro" | "premium" | "enterprise"
-      subscription_status: "active" | "cancelled" | "suspended" | "trial"
+      subscription_status:
+        | "active"
+        | "cancelled"
+        | "suspended"
+        | "trial"
+        | "expired"
       task_status: "not_started" | "in_progress" | "completed" | "on_hold"
       waitlist_status: "pending" | "approved" | "rejected" | "converted"
     }
@@ -4197,7 +4440,14 @@ export const Constants = {
     Enums: {
       app_role: ["operator", "admin"],
       assignment_status: ["assigned", "accepted", "in_progress", "completed"],
-      batch_status: ["draft", "ready", "in_progress", "completed", "cancelled"],
+      batch_status: [
+        "draft",
+        "ready",
+        "in_progress",
+        "completed",
+        "cancelled",
+        "blocked",
+      ],
       batch_type: [
         "laser_nesting",
         "tube_batch",
@@ -4213,6 +4463,7 @@ export const Constants = {
         "accounting",
         "crm",
         "inventory",
+        "shipping",
         "analytics",
         "other",
       ],
@@ -4248,9 +4499,17 @@ export const Constants = {
       ],
       payment_transaction_type: ["charge", "refund", "chargeback", "dispute"],
       subscription_plan: ["free", "pro", "premium", "enterprise"],
-      subscription_status: ["active", "cancelled", "suspended", "trial"],
+      subscription_status: [
+        "active",
+        "cancelled",
+        "suspended",
+        "trial",
+        "expired",
+      ],
       task_status: ["not_started", "in_progress", "completed", "on_hold"],
       waitlist_status: ["pending", "approved", "rejected", "converted"],
     },
   },
 } as const
+A new version of Supabase CLI is available: v2.95.4 (currently installed v2.92.1)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli

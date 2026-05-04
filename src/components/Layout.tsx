@@ -1,4 +1,5 @@
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { useAuthActions } from "@/hooks/useAuthActions";
 import { useLocation } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
 import { OperatorLayout } from "@/components/operator/OperatorLayout";
@@ -10,7 +11,8 @@ interface LayoutProps {
 // SECURITY NOTE: Layout selection based on role is for UI convenience only.
 // Server-side RLS policies enforce actual data access permissions.
 export default function Layout({ children }: LayoutProps) {
-  const { profile, loading } = useAuth();
+  const profile = useProfile();
+  const { loading } = useAuthActions();
   const location = useLocation();
 
   // Prevent layout flicker while auth is resolving

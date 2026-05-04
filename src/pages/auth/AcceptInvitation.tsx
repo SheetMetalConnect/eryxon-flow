@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Mail, Building2, UserCheck, Factory, ArrowRight } from 'lucide-react';
 import { useInvitations } from '@/hooks/useInvitations';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthActions } from '@/hooks/useAuthActions';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -18,7 +18,7 @@ export default function AcceptInvitation() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { getInvitationByToken, acceptInvitation } = useInvitations();
-  const { signUp } = useAuth();
+  const { signUp } = useAuthActions();
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);

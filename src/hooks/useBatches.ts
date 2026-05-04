@@ -170,7 +170,7 @@ export function useSubBatches(batchId: string | undefined) {
     queryFn: async () => {
       if (!batchId || !profile?.tenant_id) return [];
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- operation_batches table not yet in generated types
       const { data, error } = await (supabase as any)
         .from("operation_batches")
         .select("*, cell:cells(id, name)")

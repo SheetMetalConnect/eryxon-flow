@@ -5,6 +5,7 @@ import { useProfile } from '@/hooks/useProfile'
 import { QueryKeys } from '@/lib/queryClient'
 import { toast } from 'sonner'
 import type { ExceptionStatus, ExceptionWithExpectation } from '@/integrations/supabase/types/tables/expectations'
+import type { Json } from '@/integrations/supabase/types'
 import { logger } from '@/lib/logger'
 
 interface ExceptionStats {
@@ -123,7 +124,7 @@ export function useExceptions(options: UseExceptionsOptions = {}) {
         p_root_cause: rootCause || null,
         p_corrective_action: correctiveAction || null,
         p_preventive_action: preventiveAction || null,
-        p_resolution: (resolution as any) || null,
+        p_resolution: (resolution as unknown as Json) || null,
       })
       if (error) throw error
     },

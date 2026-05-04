@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "./AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { useTenant } from "@/hooks/useTenant";
 import { logger } from "@/lib/logger";
 
 /**
@@ -35,7 +36,8 @@ const STORAGE_KEY = "active_operator";
 const OperatorContext = createContext<OperatorContextType | undefined>(undefined);
 
 export function OperatorProvider({ children }: { children: React.ReactNode }) {
-  const { profile, tenant } = useAuth();
+  const profile = useProfile();
+  const { tenant } = useTenant();
   const [activeOperator, setActiveOperator] = useState<ActiveOperator | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

@@ -32,15 +32,17 @@ export function OnboardingWizard() {
   ];
 
   useEffect(() => {
-    if ((profile as any)?.onboarding_step) {
-      setCurrentStep((profile as any).onboarding_step);
+    // onboarding_step exists in DB profiles table but isn't exposed in the Profile interface
+    const profileWithStep = profile as (typeof profile & { onboarding_step?: number }) | null;
+    if (profileWithStep?.onboarding_step) {
+      setCurrentStep(profileWithStep.onboarding_step);
     }
     if (subscription?.plan) {
       setSelectedPlan(subscription.plan);
     }
   }, [profile, subscription]);
 
-  const updateOnboardingProgress = async (step: number, additionalData?: Record<string, any>) => {
+  const updateOnboardingProgress = async (step: number, additionalData?: Record<string, unknown>) => {
     if (!profile?.id) return;
 
     setIsUpdating(true);
@@ -82,7 +84,7 @@ export function OnboardingWizard() {
       try {
         const { error: tenantError } = await supabase
           .from('tenants')
-          .update({ plan: plan as any })
+          .update({ plan: plan as "free" | "pro" | "premium" | "enterprise" })
           .eq('id', profile.tenant_id);
 
         if (tenantError) {

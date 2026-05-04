@@ -164,16 +164,13 @@ export default function McpServerSettings() {
 
     setIsSaving(true);
     try {
+      const { id: configId, ...configRest } = config;
       const configData = {
-        ...config,
+        ...configRest,
+        ...(configId ? { id: configId } : {}),
         tenant_id: tenant.id,
         updated_at: new Date().toISOString(),
       };
-
-      // Remove empty id for new configs to let database generate it
-      if (!configData.id) {
-        delete (configData as any).id;
-      }
 
       const { error } = await supabase
         .from("mcp_server_config")

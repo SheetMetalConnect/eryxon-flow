@@ -62,7 +62,7 @@ export default function McpSetup() {
     } catch (error: unknown) {
       logger.error('McpSetup', 'Error fetching endpoints', error);
       // Table might not exist yet - that's okay
-      if ((error as any).code !== '42P01') {
+      if ((error as { code?: string }).code !== '42P01') {
         toast.error(t('mcp.failedToLoad'));
       }
     } finally {
@@ -276,7 +276,7 @@ export default function McpSetup() {
                 </div>
               </div>
 
-              <Tabs value={configTab} onValueChange={(v) => setConfigTab(v as any)}>
+              <Tabs value={configTab} onValueChange={(v) => setConfigTab(v as "claude" | "cursor" | "windsurf")}>
                 <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="claude">Claude Desktop</TabsTrigger>
                   <TabsTrigger value="cursor">Cursor</TabsTrigger>

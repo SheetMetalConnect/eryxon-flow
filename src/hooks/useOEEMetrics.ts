@@ -149,7 +149,7 @@ export function useOEEMetrics(days: number, dateRange?: DateRange) {
           const op = opsMap.get(te.operation_id);
           const cellId = op?.cell_id;
           if (cellId && op) {
-            const cellName = (op.cell as any)?.name || cellId;
+            const cellName = (op.cell as { name?: string } | null)?.name || cellId;
             if (!cellData.has(cellId)) {
               cellData.set(cellId, { planned: 0, runTime: 0, idealOutput: 0, totalCount: 0, goodCount: 0, name: cellName });
             }
@@ -179,8 +179,8 @@ export function useOEEMetrics(days: number, dateRange?: DateRange) {
           const op = opsMap.get(qr.operation_id);
           if (!op) continue;
           const idealCycleTime = op.run_time_per_unit
-            ?? (((op.part as any)?.quantity || 1) > 0
-              ? op.estimated_time / ((op.part as any)?.quantity || 1)
+            ?? (((op.part as { quantity?: number } | null)?.quantity || 1) > 0
+              ? op.estimated_time / ((op.part as { quantity?: number } | null)?.quantity || 1)
               : op.estimated_time);
           idealOutputMinutes += idealCycleTime * (qr.quantity_produced || 0);
         }
@@ -204,8 +204,8 @@ export function useOEEMetrics(days: number, dateRange?: DateRange) {
           const op = opsMap.get(qr.operation_id);
           if (op) {
             const idealCycleTime = op.run_time_per_unit
-              ?? (((op.part as any)?.quantity || 1) > 0
-                ? op.estimated_time / ((op.part as any)?.quantity || 1)
+              ?? (((op.part as { quantity?: number } | null)?.quantity || 1) > 0
+                ? op.estimated_time / ((op.part as { quantity?: number } | null)?.quantity || 1)
                 : op.estimated_time);
             entry.idealOutput += idealCycleTime * (qr.quantity_produced || 0);
           }
@@ -255,8 +255,8 @@ export function useOEEMetrics(days: number, dateRange?: DateRange) {
           entry.goodCount += qr.quantity_good || 0;
 
           const idealCycleTime = op.run_time_per_unit
-            ?? (((op.part as any)?.quantity || 1) > 0
-              ? op.estimated_time / ((op.part as any)?.quantity || 1)
+            ?? (((op.part as { quantity?: number } | null)?.quantity || 1) > 0
+              ? op.estimated_time / ((op.part as { quantity?: number } | null)?.quantity || 1)
               : op.estimated_time);
           entry.idealOutput += idealCycleTime * (qr.quantity_produced || 0);
         }

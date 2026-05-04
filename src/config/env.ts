@@ -15,4 +15,4 @@
  * then falling back to Vite build-time values.
  */
 export const env = (key: string): string | undefined =>
-  (window as any).__ERYXON_ENV__?.[key] || import.meta.env[key];
+  (window as unknown as Record<string, Record<string, string> | undefined>).__ERYXON_ENV__?.[key] || import.meta.env[key];

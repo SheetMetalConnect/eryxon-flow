@@ -5,7 +5,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { SchedulerService, CalendarDay } from "@/lib/scheduler";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { useTenant } from "@/hooks/useTenant";
 import { useQueryClient } from "@tanstack/react-query";
 import { QueryKeys } from "@/lib/queryClient";
 import { addMonths, format } from "date-fns";
@@ -26,7 +27,8 @@ export function AutoScheduleButton() {
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [operationsWithDates, setOperationsWithDates] = useState(0);
     const { t } = useTranslation();
-    const { tenant, profile } = useAuth();
+    const profile = useProfile();
+    const { tenant } = useTenant();
     const queryClient = useQueryClient();
     const tenantId = tenant?.id ?? profile?.tenant_id;
 
@@ -144,7 +146,8 @@ export function AutoScheduleButton() {
                 .delete()
                 .in("operation_id", operationIds);
 
-            const allAllocations = scheduledOps.flatMap(op =>
+            const tenantId = tenantConfig?.id;
+            const allAllocations = tenantId ? scheduledOps.flatMap(op =>
                 op.day_allocations.map(alloc => ({
                     operation_id: alloc.operation_id,
                     cell_id: alloc.cell_id,
@@ -152,15 +155,14 @@ export function AutoScheduleButton() {
                     hours_allocated: alloc.hours_allocated,
                     start_time: '07:00:00',
                     end_time: '17:00:00',
-                    tenant_id: tenantConfig?.id,
+                    tenant_id: tenantId,
                 }))
-            ).filter(a => a.tenant_id);
+            ) : [];
 
             if (allAllocations.length > 0) {
                 const { error: allocError } = await supabase
                     .from("operation_day_allocations")
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    .insert(allAllocations as any);
+                    .insert(allAllocations);
 
                 if (allocError) {
                     logger.warn('AutoScheduleButton', 'Failed to save day allocations', allocError);

@@ -81,7 +81,7 @@ export default function OperatorFooterBar() {
       .maybeSingle();
 
     if (!error && data) {
-      setActiveEntry(data as any);
+      setActiveEntry(data as unknown as ActiveEntry);
 
       if (data.is_paused) {
         loadCurrentPause(data.id);

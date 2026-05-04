@@ -158,7 +158,7 @@ export default function Dashboard() {
         .is("end_time", null)
         .order("start_time", { ascending: false });
 
-      if (activeData) setActiveWork(activeData as any);
+      if (activeData) setActiveWork(activeData as unknown as ActiveWork[]);
 
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);

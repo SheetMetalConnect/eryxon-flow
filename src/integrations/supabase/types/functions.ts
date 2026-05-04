@@ -287,6 +287,18 @@ export type DatabaseFunctions = {
       current_storage_gb: number
     }[]
   }
+  list_operators: {
+    Args: never
+    Returns: {
+      active: boolean
+      created_at: string
+      employee_id: string
+      full_name: string
+      id: string
+      last_login_at: string
+      locked_until: string
+    }[]
+  }
   log_activity: {
     Args: {
       p_action: string
@@ -299,6 +311,20 @@ export type DatabaseFunctions = {
     }
     Returns: string
   }
+  log_activity_and_webhook: {
+    Args: {
+      p_action: string
+      p_changes?: Json
+      p_description: string
+      p_entity_id: string
+      p_entity_name: string
+      p_entity_type: string
+      p_metadata?: Json
+      p_tenant_id: string
+      p_user_id: string
+    }
+    Returns: undefined
+  }
   mark_all_notifications_read: {
     Args: never
     Returns: undefined
@@ -306,6 +332,10 @@ export type DatabaseFunctions = {
   mark_notification_read: {
     Args: { p_notification_id: string }
     Returns: undefined
+  }
+  reset_operator_pin: {
+    Args: { p_new_pin: string; p_operator_id: string }
+    Returns: boolean
   }
   reset_monthly_parts_counters: {
     Args: never
@@ -315,6 +345,16 @@ export type DatabaseFunctions = {
       success: boolean
       tenant_id: string
     }[]
+  }
+  resolve_exception: {
+    Args: {
+      p_corrective_action?: string
+      p_exception_id: string
+      p_preventive_action?: string
+      p_resolution?: Json
+      p_root_cause?: string
+    }
+    Returns: undefined
   }
   seed_default_scrap_reasons: {
     Args: { p_tenant_id: string }
@@ -346,6 +386,7 @@ export type DatabaseFunctions = {
     Args: { p_notification_id: string }
     Returns: boolean
   }
+  unlock_operator: { Args: { p_operator_id: string }; Returns: boolean }
   update_mcp_server_health: {
     Args: {
       p_error_message?: string
@@ -355,6 +396,10 @@ export type DatabaseFunctions = {
       p_tenant_id: string
     }
     Returns: string
+  }
+  update_tenant_feature_flags: {
+    Args: { p_flags: Json; p_tenant_id: string }
+    Returns: Json
   }
   update_tenant_storage_usage: {
     Args: {

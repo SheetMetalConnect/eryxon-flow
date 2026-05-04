@@ -28,6 +28,7 @@ interface TenantInfo {
   plan: "free" | "pro" | "premium" | "enterprise";
   status: "active" | "cancelled" | "suspended" | "trial";
   trial_ends_at: string | null;
+  working_days_mask: number | null;
   // Whitelabeling fields (premium feature)
   whitelabel_enabled: boolean;
   whitelabel_logo_url: string | null;
@@ -161,6 +162,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           plan: tenantData.plan as TenantInfo['plan'],
           status: tenantData.status as TenantInfo['status'],
           trial_ends_at: (tenantData.trial_ends_at as string | null) ?? null,
+          working_days_mask: (tenantData.working_days_mask as number | null) ?? null,
           whitelabel_enabled: (tenantData.whitelabel_enabled as boolean) ?? false,
           whitelabel_logo_url: (tenantData.whitelabel_logo_url as string | null) ?? null,
           whitelabel_app_name: (tenantData.whitelabel_app_name as string | null) ?? null,

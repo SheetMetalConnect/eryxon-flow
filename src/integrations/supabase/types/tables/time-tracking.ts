@@ -248,9 +248,53 @@ export type OperationDayAllocationsTable = {
   ]
 }
 
+export type OperationQuantityScrapReasonsTable = {
+  Row: {
+    created_at: string
+    id: string
+    notes: string | null
+    operation_quantity_id: string
+    quantity: number
+    scrap_reason_id: string
+  }
+  Insert: {
+    created_at?: string
+    id?: string
+    notes?: string | null
+    operation_quantity_id: string
+    quantity?: number
+    scrap_reason_id: string
+  }
+  Update: {
+    created_at?: string
+    id?: string
+    notes?: string | null
+    operation_quantity_id?: string
+    quantity?: number
+    scrap_reason_id?: string
+  }
+  Relationships: [
+    {
+      foreignKeyName: "operation_quantity_scrap_reasons_operation_quantity_id_fkey"
+      columns: ["operation_quantity_id"]
+      isOneToOne: false
+      referencedRelation: "operation_quantities"
+      referencedColumns: ["id"]
+    },
+    {
+      foreignKeyName: "operation_quantity_scrap_reasons_scrap_reason_id_fkey"
+      columns: ["scrap_reason_id"]
+      isOneToOne: false
+      referencedRelation: "scrap_reasons"
+      referencedColumns: ["id"]
+    },
+  ]
+}
+
 export type TimeTrackingTables = {
   time_entries: TimeEntriesTable
   time_entry_pauses: TimeEntryPausesTable
   operation_quantities: OperationQuantitiesTable
+  operation_quantity_scrap_reasons: OperationQuantityScrapReasonsTable
   operation_day_allocations: OperationDayAllocationsTable
 }

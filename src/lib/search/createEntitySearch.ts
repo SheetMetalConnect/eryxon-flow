@@ -41,9 +41,9 @@ export function createEntitySearch<T>(
         .map((col) => `${col}.ilike.%${escapedQuery}%`)
         .join(",");
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic table name from config, not statically verifiable
       const { data, error } = await (supabase
-        .from(config.tableName as any)
+        .from(config.tableName as never)
         .select(config.selectFields) as any)
         .eq("tenant_id", tenantId)
         .or(searchFilter)

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { useAuthActions } from "@/hooks/useAuthActions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,7 +30,8 @@ export default function Auth() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const { captchaToken, setCaptchaToken, resetKey, reset: resetTurnstile } = useTurnstile();
-  const { signIn, signUp, profile } = useAuth();
+  const profile = useProfile();
+  const { signIn, signUp } = useAuthActions();
   const navigate = useNavigate();
 
   if (profile) {

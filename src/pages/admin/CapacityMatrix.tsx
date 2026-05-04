@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import { QueryKeys } from "@/lib/queryClient";
 import { format, addDays, startOfWeek, isSameDay, parseISO, getDay, isWithinInterval } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -156,11 +157,11 @@ export default function CapacityMatrix() {
     const { t } = useTranslation();
     const { tenant } = useTenant();
     const [startDate, setStartDate] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
-    const [selectedCell, setSelectedCell] = useState<any>(null);
+    const [selectedCell, setSelectedCell] = useState<Tables<'cells'> | null>(null);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
 
-    const workingDaysMask = (tenant as any)?.working_days_mask ?? 31;
+    const workingDaysMask = tenant?.working_days_mask ?? 31;
 
     const { data: cells, isLoading: cellsLoading } = useQuery({
         queryKey: QueryKeys.cells.capacity(tenant?.id ?? ''),
@@ -170,7 +171,7 @@ export default function CapacityMatrix() {
                 .select("*")
                 .order("sequence");
             if (error) throw error;
-            return data as any[];
+            return data as Tables<'cells'>[];
         },
         staleTime: 5 * 60 * 1000, // 5 minutes
     });
@@ -233,6 +234,7 @@ export default function CapacityMatrix() {
                 .not("planned_start", "is", null);
 
             if (error) throw error;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- complex FK join result used loosely in capacity rendering
             return data as any[];
         },
         staleTime: 60 * 1000, // 1 minute
