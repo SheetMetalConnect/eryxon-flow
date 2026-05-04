@@ -6,6 +6,11 @@ All notable changes to Eryxon Flow are documented here.
 
 ### Added
 
+- Planning adapter interface (`src/lib/planning/`) with ISA-95 aligned vocabulary for integrating external planning/scheduling tools
+- FrePPLe adapter: pull work orders + resources, push order start/completion, Basic Auth, pagination handling
+- Odoo MRP adapter (scaffold): JSON-RPC authentication, pull work orders from `mrp.production`, push execution feedback
+- Factory function `createPlanningAdapter(config)` for runtime adapter selection
+- 20 tests covering FrePPLe adapter (connection, mapping, pagination, error handling, auth)
 - OEE metrics calculation (Availability x Performance x Quality) from real production data
 - Reliability metrics: on-time %, delay tracking, weekly trends, per-cell breakdown
 - MQTT client wrapper (`src/lib/mqtt-client.ts`) with exponential backoff retry (3 attempts), circuit breaker (5 failures / 30s cooldown), dead letter logging to `mqtt_logs`, and injectable transport for testability. 18 tests.
