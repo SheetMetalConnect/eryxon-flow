@@ -1,0 +1,21 @@
+services:
+  mcp-server:
+    build: .
+    ports:
+      - "${MCP_PORT:-3001}:3001"
+    environment:
+      - MCP_TRANSPORT=http
+      - MCP_PORT=3001
+      - MCP_HOST=0.0.0.0
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - ERYXON_API_KEY=${ERYXON_API_KEY:-}
+      - ERYXON_API_URL=${ERYXON_API_URL:-}
+      - REDIS_URL=${REDIS_URL:-}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
