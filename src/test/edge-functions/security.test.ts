@@ -248,9 +248,27 @@ describe('security — validateWebhookUrl', () => {
     expect(validateWebhookUrl('https://0.0.0.0/webhook').valid).toBe(false);
   });
 
-  // Note: IPv6 loopback [::1] is NOT blocked because URL.hostname includes
-  // brackets (e.g. "[::1]") but the code checks for bare "::1".
-  // This is a known gap — tracked separately.
+  it('rejects IPv6 loopback [::1] (bracketed)', () => {
+    expect(validateWebhookUrl('https://[::1]/webhook').valid).toBe(false);
+    expect(validateWebhookUrl('https://[::1]:8443/webhook').valid).toBe(false);
+  });
+
+  it('rejects expanded IPv6 loopback [0:0:0:0:0:0:0:1]', () => {
+    expect(validateWebhookUrl('https://[0:0:0:0:0:0:0:1]/webhook').valid).toBe(false);
+    expect(validateWebhookUrl('https://[0000:0000:0000:0000:0000:0000:0000:0001]/webhook').valid).toBe(false);
+  });
+
+  it('rejects IPv4-mapped IPv6 loopback [::ffff:127.0.0.1]', () => {
+    expect(validateWebhookUrl('https://[::ffff:127.0.0.1]/webhook').valid).toBe(false);
+    expect(validateWebhookUrl('https://[::ffff:127.0.0.2]/webhook').valid).toBe(false);
+    expect(validateWebhookUrl('https://[0:0:0:0:0:ffff:127.0.0.1]/webhook').valid).toBe(false);
+  });
+
+  it('rejects IPv4-mapped IPv6 private ranges', () => {
+    expect(validateWebhookUrl('https://[::ffff:10.0.0.1]/webhook').valid).toBe(false);
+    expect(validateWebhookUrl('https://[::ffff:192.168.1.1]/webhook').valid).toBe(false);
+    expect(validateWebhookUrl('https://[::ffff:172.16.0.1]/webhook').valid).toBe(false);
+  });
 
   it('rejects private IP ranges (10.x.x.x)', () => {
     expect(validateWebhookUrl('https://10.0.0.1/webhook').valid).toBe(false);

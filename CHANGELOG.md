@@ -38,6 +38,7 @@ All notable changes to Eryxon Flow are documented here.
 
 ### Fixed
 
+- **SSRF: block IPv6 loopback in webhook URL validation** — `validateWebhookUrl` now correctly blocks `[::1]`, expanded IPv6 loopback forms, IPv4-mapped IPv6 loopback (`[::ffff:127.x.x.x]`), and IPv4-mapped private ranges. URL parser normalizes these to hex notation which the previous check missed.
 - Vite security vulnerabilities patched (CVE path traversal, WebSocket read)
 - CORS wildcard default — now fails closed when `ALLOWED_ORIGIN` not set
 - Operator UI re-render bugs: 5 `setState`-in-`useEffect` violations fixed (`OperatorLayout.tsx`, `OperatorStatusBar.tsx`, `OperatorView.tsx`)
