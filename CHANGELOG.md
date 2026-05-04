@@ -8,7 +8,7 @@ All notable changes to Eryxon Flow are documented here.
 
 - OEE metrics calculation (Availability x Performance x Quality) from real production data
 - Reliability metrics: on-time %, delay tracking, weekly trends, per-cell breakdown
-- MQTT client with retry logic, circuit breaker, and dead letter logging
+- MQTT client wrapper (`src/lib/mqtt-client.ts`) with exponential backoff retry (3 attempts), circuit breaker (5 failures / 30s cooldown), dead letter logging to `mqtt_logs`, and injectable transport for testability. 18 tests.
 - Edge function test coverage: 113 tests for shared auth, security, and plan-limits modules
 - Runtime env.js injection via Docker entrypoint (no rebuild needed for config changes)
 - `.dockerignore` to reduce build context size
