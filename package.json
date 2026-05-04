@@ -81,7 +81,7 @@
     "react-markdown": "^10.1.0",
     "react-pdf": "^10.4.1",
     "react-resizable-panels": "^4.7.2",
-    "react-router-dom": "^7.13.1",
+    "react-router-dom": "^7.14.2",
     "recharts": "^3.8.1",
     "sonner": "^2.0.7",
     "supabase": "^2.92.1",
