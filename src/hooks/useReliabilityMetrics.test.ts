@@ -3,9 +3,26 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
+// Use vi.hoisted to create mocks that work with hoisted vi.mock calls
+const { mockFrom, mockProfile } = vi.hoisted(() => {
+  const mockFrom = vi.fn();
+  const mockProfile = { id: 'user-1', tenant_id: 'tenant-1' };
+  return { mockFrom, mockProfile };
+});
+
 // Mock logger
 vi.mock('@/lib/logger', () => ({
   logger: { error: vi.fn(), debug: vi.fn(), warn: vi.fn(), info: vi.fn() },
+}));
+
+// Mock useProfile
+vi.mock('@/hooks/useProfile', () => ({
+  useProfile: () => mockProfile,
+}));
+
+// Mock supabase
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: { from: mockFrom },
 }));
 
 import { useReliabilityMetrics, type ReliabilityMetrics } from './useReliabilityMetrics';
@@ -19,12 +36,27 @@ const createWrapper = () => {
   };
 };
 
+// Helper to set up Supabase chain mock that returns given data
+function mockSupabaseResponse(data: any[] | null, error: any = null) {
+  const chain = {
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    not: vi.fn().mockReturnThis(),
+    gte: vi.fn().mockReturnThis(),
+    is: vi.fn().mockResolvedValue({ data, error }),
+  };
+  mockFrom.mockReturnValue(chain);
+  return chain;
+}
+
 describe('useReliabilityMetrics', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('returns null initially (TODO queryFn)', async () => {
+  it('returns empty metrics when no operations exist', async () => {
+    mockSupabaseResponse([]);
+
     const { result } = renderHook(() => useReliabilityMetrics(30), {
       wrapper: createWrapper(),
     });
@@ -33,10 +65,108 @@ describe('useReliabilityMetrics', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(result.current.data).toBeNull();
+    expect(result.current.data).toEqual({
+      totalOperations: 0,
+      onTimeOperations: 0,
+      onTimePercentage: 0,
+      lateOperations: 0,
+      latePercentage: 0,
+      avgDelayMinutes: 0,
+      weeklyTrend: [],
+      delayTrend: [],
+      byCell: [],
+    });
+  });
+
+  it('calculates on-time vs late operations correctly', async () => {
+    const operations = [
+      {
+        id: 'op-1',
+        completed_at: '2026-04-10T10:00:00Z',
+        planned_end: '2026-04-11T10:00:00Z', // on time (completed before planned)
+        cell_id: 'cell-1',
+        cell: { name: 'Laser' },
+      },
+      {
+        id: 'op-2',
+        completed_at: '2026-04-12T14:00:00Z',
+        planned_end: '2026-04-12T10:00:00Z', // late by 4 hours = 240 min
+        cell_id: 'cell-1',
+        cell: { name: 'Laser' },
+      },
+      {
+        id: 'op-3',
+        completed_at: '2026-04-13T08:00:00Z',
+        planned_end: '2026-04-13T08:00:00Z', // exact = on time
+        cell_id: 'cell-2',
+        cell: { name: 'Bending' },
+      },
+    ];
+    mockSupabaseResponse(operations);
+
+    const { result } = renderHook(() => useReliabilityMetrics(30), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    const data = result.current.data!;
+    expect(data.totalOperations).toBe(3);
+    expect(data.onTimeOperations).toBe(2);
+    expect(data.lateOperations).toBe(1);
+    expect(data.onTimePercentage).toBeCloseTo(66.7, 0);
+    expect(data.latePercentage).toBeCloseTo(33.3, 0);
+    expect(data.avgDelayMinutes).toBe(240);
+  });
+
+  it('groups operations by cell', async () => {
+    const operations = [
+      {
+        id: 'op-1',
+        completed_at: '2026-04-10T10:00:00Z',
+        planned_end: '2026-04-11T10:00:00Z',
+        cell_id: 'cell-1',
+        cell: { name: 'Laser' },
+      },
+      {
+        id: 'op-2',
+        completed_at: '2026-04-12T14:00:00Z',
+        planned_end: '2026-04-12T10:00:00Z',
+        cell_id: 'cell-1',
+        cell: { name: 'Laser' },
+      },
+      {
+        id: 'op-3',
+        completed_at: '2026-04-13T08:00:00Z',
+        planned_end: '2026-04-14T08:00:00Z',
+        cell_id: 'cell-2',
+        cell: { name: 'Bending' },
+      },
+    ];
+    mockSupabaseResponse(operations);
+
+    const { result } = renderHook(() => useReliabilityMetrics(30), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    const data = result.current.data!;
+    expect(data.byCell).toHaveLength(2);
+
+    const laser = data.byCell.find((c) => c.name === 'Laser');
+    expect(laser).toEqual({ name: 'Laser', onTime: 1, late: 1 });
+
+    const bending = data.byCell.find((c) => c.name === 'Bending');
+    expect(bending).toEqual({ name: 'Bending', onTime: 1, late: 0 });
   });
 
   it('uses different query keys for different day ranges', () => {
+    mockSupabaseResponse([]);
     const wrapper = createWrapper();
 
     const { result: r7 } = renderHook(() => useReliabilityMetrics(7), { wrapper });
@@ -47,6 +177,8 @@ describe('useReliabilityMetrics', () => {
   });
 
   it('exposes standard TanStack Query states', async () => {
+    mockSupabaseResponse([]);
+
     const { result } = renderHook(() => useReliabilityMetrics(14), {
       wrapper: createWrapper(),
     });
@@ -63,6 +195,8 @@ describe('useReliabilityMetrics', () => {
   });
 
   it('has correct staleTime (5 minutes)', async () => {
+    mockSupabaseResponse([]);
+
     const { result } = renderHook(() => useReliabilityMetrics(30), {
       wrapper: createWrapper(),
     });
@@ -92,5 +226,19 @@ describe('useReliabilityMetrics', () => {
     expect(mockMetrics.weeklyTrend).toHaveLength(1);
     expect(mockMetrics.delayTrend).toHaveLength(1);
     expect(mockMetrics.byCell).toHaveLength(1);
+  });
+
+  it('throws and exposes error when Supabase fails', async () => {
+    mockSupabaseResponse(null, { message: 'DB error', code: '500' });
+
+    const { result } = renderHook(() => useReliabilityMetrics(30), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.isError).toBe(true);
   });
 });
