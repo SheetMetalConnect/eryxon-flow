@@ -48,7 +48,9 @@
     "demoDataWipedDesc": "All demo data has been cleared successfully.",
     "wipeFailed": "Wipe Failed",
     "noActiveClockings": "No active clockings",
-    "noActiveClockingsDescription": "There are no active time entries to stop."
+    "noActiveClockingsDescription": "There are no active time entries to stop.",
+    "oeeOverview": "OEE Overview",
+    "reliabilityOverview": "Delivery Reliability"
   },
   "organizationSettings": {
     "title": "Organization Settings",
@@ -71,6 +73,24 @@
       "autoStopTracking": "Auto-stop Time Tracking",
       "autoStopDescription": "Automatically stop all active time entries at factory closing time",
       "autoStopWarning": "Active time entries will be automatically stopped at {{time}} each day"
+    },
+    "planning": {
+      "title": "Planning Integration",
+      "description": "Connect an external planning/scheduling system to sync work orders",
+      "adapter": "Planning System",
+      "adapterNone": "None (disabled)",
+      "connectionUrl": "Connection URL",
+      "username": "Username",
+      "password": "Password",
+      "syncInterval": "Sync Interval",
+      "minutes": "minutes",
+      "testConnection": "Test Connection",
+      "save": "Save Planning Config",
+      "saved": "Planning configuration saved",
+      "urlRequired": "Please enter a connection URL",
+      "noAdapter": "No adapter selected",
+      "connectionSuccess": "Connection successful",
+      "connectionFailed": "Connection failed"
     }
   },
   "settings": {

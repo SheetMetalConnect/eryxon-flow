@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { ColumnDef } from "@tanstack/react-table";
 import { useProfile } from "@/hooks/useProfile";
@@ -43,6 +43,9 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { adminStopTimeTracking, stopAllActiveTimeEntries } from "@/lib/database";
+
+const OEECharts = lazy(() => import("@/components/analytics/OEECharts").then(m => ({ default: m.OEECharts })));
+const ReliabilityCharts = lazy(() => import("@/components/analytics/ReliabilityCharts").then(m => ({ default: m.ReliabilityCharts })));
 
 interface ActiveWork {
   id: string;
@@ -591,6 +594,30 @@ export default function Dashboard() {
       </Card>
 
       <QRMDashboard />
+
+      <Suspense fallback={
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }>
+        <Card className="glass-card">
+          <CardHeader>
+            <CardTitle className="text-xl">{t("dashboard.oeeOverview")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <OEECharts />
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card">
+          <CardHeader>
+            <CardTitle className="text-xl">{t("dashboard.reliabilityOverview")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReliabilityCharts />
+          </CardContent>
+        </Card>
+      </Suspense>
 
       {isPastClosingTime && activeWork.length > 0 && (
         <Card className="glass-card border-warning/50 bg-warning/5">

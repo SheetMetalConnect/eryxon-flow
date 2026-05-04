@@ -598,7 +598,12 @@
     "step3Title": "Start Chatting",
     "step3Description": "Your AI can now access your manufacturing data",
     "availableTools": "Available Tools",
-    "availableToolsDescription": "Tools your AI assistant can use"
+    "availableToolsDescription": "Tools your AI assistant can use",
+    "transportMode": "Transport Mode",
+    "stdioLocal": "Stdio (Local)",
+    "httpHosted": "HTTP (Hosted)",
+    "stdioDescription": "Run the MCP server locally via npx. Best for development and single-user setups.",
+    "httpDescription": "Connect to a hosted MCP server via HTTP. Best for cloud deployments and shared access."
   },
   "mcpKeys": {
     "failedToFetch": "Failed to fetch MCP keys",

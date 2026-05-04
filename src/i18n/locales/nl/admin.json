@@ -48,7 +48,9 @@
     "demoDataWipedDesc": "Alle demogegevens zijn succesvol gewist.",
     "wipeFailed": "Wissen mislukt",
     "noActiveClockings": "Geen actieve klokkingen",
-    "noActiveClockingsDescription": "Er zijn geen actieve tijdregistraties om te stoppen."
+    "noActiveClockingsDescription": "Er zijn geen actieve tijdregistraties om te stoppen.",
+    "oeeOverview": "OEE Overzicht",
+    "reliabilityOverview": "Leverbetrouwbaarheid"
   },
   "organizationSettings": {
     "title": "Organisatie-instellingen",
@@ -71,6 +73,24 @@
       "autoStopTracking": "Automatisch stoppen tijdregistratie",
       "autoStopDescription": "Automatisch alle actieve tijdregistraties stoppen bij sluitingstijd",
       "autoStopWarning": "Actieve tijdregistraties worden automatisch gestopt om {{time}} elke dag"
+    },
+    "planning": {
+      "title": "Planning Integratie",
+      "description": "Koppel een extern plannings-/schedulingsysteem om werkorders te synchroniseren",
+      "adapter": "Planningssysteem",
+      "adapterNone": "Geen (uitgeschakeld)",
+      "connectionUrl": "Verbindings-URL",
+      "username": "Gebruikersnaam",
+      "password": "Wachtwoord",
+      "syncInterval": "Synchronisatie-interval",
+      "minutes": "minuten",
+      "testConnection": "Test Verbinding",
+      "save": "Planning Opslaan",
+      "saved": "Planningsconfiguratie opgeslagen",
+      "urlRequired": "Voer een verbindings-URL in",
+      "noAdapter": "Geen adapter geselecteerd",
+      "connectionSuccess": "Verbinding succesvol",
+      "connectionFailed": "Verbinding mislukt"
     }
   },
   "settings": {
