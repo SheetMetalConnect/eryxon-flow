@@ -307,7 +307,7 @@ export default function CapacityMatrix() {
         });
     }, [operations]);
 
-    const getCellLoad = useCallback((cellId: string, date: Date, cell: any) => {
+    const getCellLoad = useCallback((cellId: string, date: Date, cell: Tables<'cells'>) => {
         if (!cell) return { hours: 0, percent: 0, capacity: 0 };
 
         const dayInfo = getDayInfo(date);
@@ -331,7 +331,7 @@ export default function CapacityMatrix() {
         return { hours: totalHours, percent, capacity };
     }, [getDayInfo, getAllocationsForCellDate, getOperationsForCellDate]);
 
-    const handleCellClick = useCallback((cell: any, date: Date) => {
+    const handleCellClick = useCallback((cell: Tables<'cells'>, date: Date) => {
         setSelectedCell(cell);
         setSelectedDate(date);
         setDialogOpen(true);

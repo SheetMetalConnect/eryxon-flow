@@ -123,7 +123,7 @@ export function useReliabilityMetrics(days: number) {
         }
 
         // By cell breakdown
-        const cellName = (op.cell as any)?.name || 'Unknown';
+        const cellName = (op.cell as { name?: string } | null)?.name || 'Unknown';
         const cellEntry = cellMap.get(cellName) || { onTime: 0, late: 0 };
         if (isLate) cellEntry.late++;
         else cellEntry.onTime++;

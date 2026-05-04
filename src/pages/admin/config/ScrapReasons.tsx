@@ -111,7 +111,7 @@ export default function ConfigScrapReasons() {
       setDialogOpen(false);
       setEditingReason(null);
     },
-    onError: (error: any) => toast.error(error.message || t("notifications.failed")),
+    onError: (error: Error) => toast.error(error.message || t("notifications.failed")),
   });
 
   const deleteMutation = useMutation({
@@ -123,7 +123,7 @@ export default function ConfigScrapReasons() {
       toast.success(t("scrapReasons.deleted"));
       queryClient.invalidateQueries({ queryKey: ["config", "scrapReasons"] });
     },
-    onError: (error: any) => toast.error(error.message || t("notifications.failed")),
+    onError: (error: Error) => toast.error(error.message || t("notifications.failed")),
   });
 
   const handleSave = () => {
