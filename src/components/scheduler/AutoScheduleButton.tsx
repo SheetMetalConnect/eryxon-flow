@@ -33,6 +33,10 @@ export function AutoScheduleButton() {
     const tenantId = tenant?.id ?? profile?.tenant_id;
 
     const checkExistingSchedules = async (): Promise<number> => {
+        if (!tenantId) {
+            throw new Error(t("capacity.tenantRequired", "Tenant context is required to schedule operations"));
+        }
+
         let query = supabase
             .from("operations")
             .select("*", { count: "exact", head: true })
@@ -71,6 +75,10 @@ export function AutoScheduleButton() {
         setLoading(true);
         setShowConfirmDialog(false);
         try {
+            if (!tenantId) {
+                throw new Error(t("capacity.tenantRequired", "Tenant context is required to schedule operations"));
+            }
+
             const [jobsResult, operationsResult, cellsResult, calendarResult] = await Promise.all([
                 supabase
                     .from("jobs")
@@ -141,13 +149,15 @@ export function AutoScheduleButton() {
             }
 
             const operationIds = scheduledOps.map(op => op.id);
-            await supabase
-                .from("operation_day_allocations")
-                .delete()
-                .in("operation_id", operationIds);
+            if (operationIds.length > 0) {
+                await supabase
+                    .from("operation_day_allocations")
+                    .delete()
+                    .in("operation_id", operationIds);
+            }
 
-            const tenantId = tenantConfig?.id;
-            const allAllocations = tenantId ? scheduledOps.flatMap(op =>
+            const resolvedTenantId = tenantId;
+            const allAllocations = scheduledOps.flatMap(op =>
                 op.day_allocations.map(alloc => ({
                     operation_id: alloc.operation_id,
                     cell_id: alloc.cell_id,
@@ -155,9 +165,9 @@ export function AutoScheduleButton() {
                     hours_allocated: alloc.hours_allocated,
                     start_time: '07:00:00',
                     end_time: '17:00:00',
-                    tenant_id: tenantId,
+                    tenant_id: resolvedTenantId,
                 }))
-            ) : [];
+            );
 
             if (allAllocations.length > 0) {
                 const { error: allocError } = await supabase

@@ -56,9 +56,9 @@ export interface PlanningWorkOrder {
   /** Planned quantity to produce */
   quantityPlanned: number;
   /** Scheduled start date/time */
-  plannedStart: Date;
+  plannedStart: Date | null;
   /** Scheduled end date/time */
-  plannedEnd: Date;
+  plannedEnd: Date | null;
   /** Current status in the planning system */
   status: PlanningWorkOrderStatus;
   /** Priority (lower = higher priority, 1 is highest) */

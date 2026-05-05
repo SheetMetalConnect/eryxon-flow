@@ -47,6 +47,23 @@ interface StatusData {
   entries: ActiveEntry[];
 }
 
+interface ActiveTimeEntryRow {
+  id: string;
+  start_time: string;
+  operation_id: string;
+  operation?: {
+    id?: string;
+    operation_name?: string | null;
+    part?: {
+      part_number?: string | null;
+      is_bullet_card?: boolean | null;
+      job?: {
+        job_number?: string | null;
+      } | null;
+    } | null;
+  } | null;
+}
+
 /** Diagonal stripe CSS pattern */
 const stripePattern = (color1: string, color2: string, size = 8) =>
   `repeating-linear-gradient(
@@ -145,8 +162,7 @@ export function OperatorStatusBar() {
         return;
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FK join result shape doesn't match Supabase inferred types for nested relations
-      const rows = data as any[];
+      const rows = data as unknown as ActiveTimeEntryRow[];
       const entry = rows[0];
       const hasRush = rows.some((e) => e.operation?.part?.is_bullet_card);
       const startTime = entry.start_time;

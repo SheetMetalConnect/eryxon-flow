@@ -6,7 +6,7 @@ description: "Inbound integration reference for Jobs, Parts, Operations, and ERP
 The full API reference is provided via Swagger/OpenAPI in the app at `/api-docs`.
 
 ## Authentication
-Use your API Key in the `Authorization` header as a Bearer token.
+Use your Eryxon API key in the `Authorization` header as a Bearer token for integration endpoints. Admin browser endpoints such as `api-export` use the signed-in Supabase user session token.
 
 ---
 
@@ -22,9 +22,22 @@ Use your API Key in the `Authorization` header as a Bearer token.
 - `GET /api-operations`: List operations (supports `part_id` and `cell_id` filters).
 - `POST /api-operation-lifecycle`: Start, pause, resume, or complete an operation.
 
+### Batches
+- `GET /api-batches`: List operation batches by status, type, cell, or material.
+- `POST /api-batches`: Create a batch and optionally assign tenant-validated operations.
+- `PATCH /api-batches?id={id}`: Update batch details.
+- `POST /api-batch-lifecycle/start?id={id}`: Start a ready or draft batch.
+- `POST /api-batch-lifecycle/stop?id={id}`: Complete an in-progress batch and distribute tracked time.
+- `POST /api-batch-lifecycle/add-operations?id={id}`: Append operations to a draft or ready batch.
+
 ### Production Reporting
 - `POST /api-operation-quantities`: Report good and scrap quantities with reasons.
 - `POST /api-issues`: Create quality issues or Non-Conformance Reports (NCR).
+
+### Supporting Data
+- `GET /api-materials`: Read-only unique material names from `parts.material`.
+- `/api-templates`: Operation substep templates.
+- `GET /api-export`: Admin-only JSON tenant export used by the in-app export flow.
 
 ---
 

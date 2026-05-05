@@ -168,7 +168,7 @@ export default function OrganizationSettings() {
           adapter: (cfg.adapter as PlanningAdapterType) || 'none',
           baseUrl: (cfg.baseUrl as string) || '',
           username: (cfg.username as string) || '',
-          password: (cfg.password as string) || '',
+          password: '',
           syncIntervalMinutes: (cfg.syncIntervalMinutes as number) || 15,
         });
       } catch {
@@ -224,7 +224,13 @@ export default function OrganizationSettings() {
     setSavingPlanning(true);
     try {
       // TODO: Persist to tenant_settings table once migration is applied
-      localStorage.setItem(`planning_config_${tenant.id}`, JSON.stringify(planningConfig));
+      const persistablePlanningConfig = {
+        adapter: planningConfig.adapter,
+        baseUrl: planningConfig.baseUrl,
+        username: planningConfig.username,
+        syncIntervalMinutes: planningConfig.syncIntervalMinutes,
+      };
+      localStorage.setItem(`planning_config_${tenant.id}`, JSON.stringify(persistablePlanningConfig));
       toast.success(t('organizationSettings.planning.saved'));
     } catch (error: unknown) {
       logger.error('OrganizationSettings', 'Error saving planning config', error);

@@ -14,6 +14,7 @@ import AnimatedBackground from '@/components/AnimatedBackground';
 import { logger } from '@/lib/logger';
 
 const STEP_ICONS = [Users, CreditCard, Database, Rocket];
+type TenantPlan = Exclude<PlanType, 'self_hosted'>;
 
 export function OnboardingWizard() {
   const navigate = useNavigate();
@@ -34,8 +35,14 @@ export function OnboardingWizard() {
   useEffect(() => {
     // onboarding_step exists in DB profiles table but isn't exposed in the Profile interface
     const profileWithStep = profile as (typeof profile & { onboarding_step?: number }) | null;
-    if (profileWithStep?.onboarding_step) {
-      setCurrentStep(profileWithStep.onboarding_step);
+    const persistedStep = profileWithStep?.onboarding_step;
+    if (
+      typeof persistedStep === 'number' &&
+      Number.isInteger(persistedStep) &&
+      persistedStep >= 1 &&
+      persistedStep <= steps.length
+    ) {
+      setCurrentStep(persistedStep);
     }
     if (subscription?.plan) {
       setSelectedPlan(subscription.plan);
@@ -82,9 +89,10 @@ export function OnboardingWizard() {
     // Update tenant plan (not profile)
     if (profile?.tenant_id) {
       try {
+        const tenantPlan: TenantPlan = plan === 'self_hosted' ? 'enterprise' : plan;
         const { error: tenantError } = await supabase
           .from('tenants')
-          .update({ plan: plan as "free" | "pro" | "premium" | "enterprise" })
+          .update({ plan: tenantPlan })
           .eq('id', profile.tenant_id);
 
         if (tenantError) {

@@ -505,7 +505,7 @@
     "transportMode": "Transportmodus",
     "stdioLocal": "Stdio (Lokaal)",
     "httpHosted": "HTTP (Gehost)",
-    "stdioDescription": "Draai de MCP-server lokaal via npx. Geschikt voor ontwikkeling en single-user setups.",
+    "stdioDescription": "Draai de MCP-server lokaal met node. Geschikt voor ontwikkeling en single-user setups.",
     "httpDescription": "Verbind met een gehoste MCP-server via HTTP. Geschikt voor cloud-deployments en gedeelde toegang."
   },
   "mcpKeys": {

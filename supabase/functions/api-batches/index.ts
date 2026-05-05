@@ -1,7 +1,115 @@
 import { serveApi } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
 import type { HandlerContext } from "@shared/handler.ts";
-import { createSuccessResponse, NotFoundError } from "@shared/validation/errorHandler.ts";
+import { BadRequestError, createSuccessResponse, NotFoundError } from "@shared/validation/errorHandler.ts";
+
+function normalizeOperationIds(value: unknown): string[] {
+  if (value === undefined || value === null) return [];
+  if (!Array.isArray(value)) {
+    throw new BadRequestError("operation_ids must be an array");
+  }
+
+  const ids = value.map((id) => {
+    if (typeof id !== "string" || id.trim().length === 0) {
+      throw new BadRequestError("operation_ids must contain non-empty strings");
+    }
+    return id.trim();
+  });
+
+  if (new Set(ids).size !== ids.length) {
+    throw new BadRequestError("operation_ids must not contain duplicates");
+  }
+
+  return ids;
+}
+
+async function assertTenantRecord(
+  supabase: any,
+  table: string,
+  id: string,
+  tenantId: string,
+  label: string,
+): Promise<void> {
+  const { data, error } = await supabase
+    .from(table)
+    .select("id")
+    .eq("id", id)
+    .eq("tenant_id", tenantId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to validate ${label}: ${error.message}`);
+  }
+
+  if (!data) {
+    throw new BadRequestError(`${label} must belong to the authenticated tenant`);
+  }
+}
+
+async function validateBatchReferences(
+  supabase: any,
+  tenantId: string,
+  batchData: Record<string, unknown>,
+  batchId?: string,
+): Promise<void> {
+  if (typeof batchData.cell_id === "string" && batchData.cell_id.trim().length > 0) {
+    await assertTenantRecord(supabase, "cells", batchData.cell_id.trim(), tenantId, "cell_id");
+  }
+
+  if (typeof batchData.parent_batch_id === "string" && batchData.parent_batch_id.trim().length > 0) {
+    const parentBatchId = batchData.parent_batch_id.trim();
+    if (batchId && parentBatchId === batchId) {
+      throw new BadRequestError("parent_batch_id cannot reference the same batch");
+    }
+    await assertTenantRecord(supabase, "operation_batches", parentBatchId, tenantId, "parent_batch_id");
+  }
+}
+
+async function assertOperationsBelongToTenant(
+  supabase: any,
+  tenantId: string,
+  operationIds: string[],
+): Promise<void> {
+  if (operationIds.length === 0) return;
+
+  const { data, error } = await supabase
+    .from("operations")
+    .select("id")
+    .eq("tenant_id", tenantId)
+    .in("id", operationIds);
+
+  if (error) {
+    throw new Error(`Failed to validate operation_ids: ${error.message}`);
+  }
+
+  const foundIds = new Set((data || []).map((operation: { id: string }) => operation.id));
+  const missingIds = operationIds.filter((id) => !foundIds.has(id));
+  if (missingIds.length > 0) {
+    throw new BadRequestError("operation_ids must reference operations in the authenticated tenant");
+  }
+}
+
+async function assertOperationsUnassigned(
+  supabase: any,
+  tenantId: string,
+  operationIds: string[],
+): Promise<void> {
+  if (operationIds.length === 0) return;
+
+  const { data, error } = await supabase
+    .from("batch_operations")
+    .select("operation_id")
+    .eq("tenant_id", tenantId)
+    .in("operation_id", operationIds);
+
+  if (error) {
+    throw new Error(`Failed to validate batch operation assignments: ${error.message}`);
+  }
+
+  if ((data || []).length > 0) {
+    throw new BadRequestError("operation_ids must not already be assigned to another batch");
+  }
+}
 
 /**
  * Custom POST handler for batch creation with operation assignment.
@@ -22,10 +130,15 @@ import { createSuccessResponse, NotFoundError } from "@shared/validation/errorHa
  * }
  */
 async function handleCreateBatch(req: Request, ctx: HandlerContext): Promise<Response> {
-  const { supabase, tenantId, userId } = ctx;
+  const { supabase, tenantId } = ctx;
   const body = await req.json();
 
   const { operation_ids, ...batchData } = body;
+  const operationIds = normalizeOperationIds(operation_ids);
+
+  await validateBatchReferences(supabase, tenantId, batchData);
+  await assertOperationsBelongToTenant(supabase, tenantId, operationIds);
+  await assertOperationsUnassigned(supabase, tenantId, operationIds);
 
   // Create the batch
   const { data: batch, error: batchError } = await supabase
@@ -33,7 +146,6 @@ async function handleCreateBatch(req: Request, ctx: HandlerContext): Promise<Res
     .insert({
       ...batchData,
       tenant_id: tenantId,
-      created_by: userId,
       status: batchData.status || "draft",
     })
     .select()
@@ -45,8 +157,8 @@ async function handleCreateBatch(req: Request, ctx: HandlerContext): Promise<Res
 
   // Assign operations if provided
   let assignedOperations = 0;
-  if (operation_ids && Array.isArray(operation_ids) && operation_ids.length > 0) {
-    const batchOperations = operation_ids.map((opId: string, index: number) => ({
+  if (operationIds.length > 0) {
+    const batchOperations = operationIds.map((opId: string, index: number) => ({
       tenant_id: tenantId,
       batch_id: batch.id,
       operation_id: opId,
@@ -68,7 +180,7 @@ async function handleCreateBatch(req: Request, ctx: HandlerContext): Promise<Res
         },
       }, 201);
     }
-    assignedOperations = operation_ids.length;
+    assignedOperations = operationIds.length;
   }
 
   return createSuccessResponse({
@@ -76,243 +188,47 @@ async function handleCreateBatch(req: Request, ctx: HandlerContext): Promise<Res
   }, 201);
 }
 
-/**
- * Custom handler for batch lifecycle actions.
- * Routes: POST /api-batches/:id/start, /api-batches/:id/stop
- */
-async function handleLifecycle(req: Request, ctx: HandlerContext): Promise<Response> {
-  const { supabase, tenantId, pathSegments } = ctx;
-
-  // pathSegments: ["api-batches", ":id", "start"|"stop"|"operations"]
-  const batchId = pathSegments[pathSegments.length - 2];
-  const action = pathSegments[pathSegments.length - 1];
-  const body = await req.json().catch(() => ({}));
-
-  if (action === "start") {
-    return await handleStart(supabase, tenantId, batchId, body.operator_id);
-  } else if (action === "stop") {
-    return await handleStop(supabase, tenantId, batchId, body.operator_id);
-  } else if (action === "operations") {
-    return await handleAddOperations(supabase, tenantId, batchId, body.operation_ids);
+async function handleUpdateBatch(req: Request, ctx: HandlerContext): Promise<Response> {
+  const { supabase, tenantId, url } = ctx;
+  const batchId = url.searchParams.get("id");
+  if (!batchId) {
+    throw new BadRequestError("ID parameter is required for updates");
   }
 
-  throw new NotFoundError("action", action);
-}
+  const body = await req.json();
+  if (body.operation_ids !== undefined) {
+    throw new BadRequestError("operation_ids cannot be changed with PATCH; use api-batch-lifecycle/add-operations");
+  }
 
-async function handleStart(
-  supabase: any, tenantId: string, batchId: string, operatorId?: string
-): Promise<Response> {
-  // Get batch
-  const { data: batch, error: batchErr } = await supabase
+  await validateBatchReferences(supabase, tenantId, body, batchId);
+
+  const updateData = { ...body };
+  delete updateData.id;
+  delete updateData.tenant_id;
+  delete updateData.created_at;
+  delete updateData.created_by;
+  delete updateData.started_at;
+  delete updateData.started_by;
+  delete updateData.completed_at;
+  delete updateData.completed_by;
+  delete updateData.operation_ids;
+
+  const { data, error } = await supabase
     .from("operation_batches")
-    .select("id, status")
+    .update(updateData)
     .eq("id", batchId)
     .eq("tenant_id", tenantId)
+    .select()
     .single();
 
-  if (batchErr || !batch) throw new NotFoundError("batch", batchId);
-
-  if (batch.status !== "draft" && batch.status !== "ready") {
-    throw new Error(`Cannot start batch in status '${batch.status}'. Must be 'draft' or 'ready'.`);
+  if (error) {
+    if (error.code === "PGRST116") {
+      throw new NotFoundError("batch", batchId);
+    }
+    throw new Error(`Failed to update batch: ${error.message}`);
   }
 
-  // Get batch operations
-  const { data: batchOps } = await supabase
-    .from("batch_operations")
-    .select("operation_id")
-    .eq("batch_id", batchId)
-    .eq("tenant_id", tenantId);
-
-  if (!batchOps || batchOps.length === 0) {
-    throw new Error("Cannot start batch with no operations");
-  }
-
-  const opIds = batchOps.map((bo: any) => bo.operation_id);
-
-  // Create time entries for all operations
-  const now = new Date().toISOString();
-  const timeEntries = opIds.map((opId: string) => ({
-    tenant_id: tenantId,
-    operation_id: opId,
-    operator_id: operatorId || null,
-    start_time: now,
-  }));
-
-  const { error: timeErr } = await supabase
-    .from("time_entries")
-    .insert(timeEntries);
-
-  if (timeErr) throw new Error(`Failed to create time entries: ${timeErr.message}`);
-
-  // Set operations to in_progress
-  await supabase
-    .from("operations")
-    .update({ status: "in_progress", started_at: now })
-    .in("id", opIds)
-    .eq("tenant_id", tenantId)
-    .eq("status", "not_started");
-
-  // Set batch to in_progress
-  const { error: statusErr } = await supabase
-    .from("operation_batches")
-    .update({
-      status: "in_progress",
-      started_at: now,
-      started_by: operatorId || null,
-    })
-    .eq("id", batchId)
-    .eq("tenant_id", tenantId);
-
-  if (statusErr) throw new Error(`Failed to update batch status: ${statusErr.message}`);
-
-  return createSuccessResponse({
-    batch_id: batchId,
-    status: "in_progress",
-    operations_started: opIds.length,
-    started_at: now,
-  });
-}
-
-async function handleStop(
-  supabase: any, tenantId: string, batchId: string, operatorId?: string
-): Promise<Response> {
-  // Get batch operations with their estimated_time
-  const { data: batchOps } = await supabase
-    .from("batch_operations")
-    .select("operation_id, operation:operations(id, estimated_time)")
-    .eq("batch_id", batchId)
-    .eq("tenant_id", tenantId);
-
-  if (!batchOps || batchOps.length === 0) {
-    throw new Error("No operations found for batch");
-  }
-
-  const opIds = batchOps.map((bo: any) => bo.operation_id);
-
-  // Find active time entries
-  const { data: activeEntries } = await supabase
-    .from("time_entries")
-    .select("id, operation_id, start_time")
-    .in("operation_id", opIds)
-    .eq("tenant_id", tenantId)
-    .is("end_time", null);
-
-  if (!activeEntries || activeEntries.length === 0) {
-    throw new Error("No active time entries found for batch operations");
-  }
-
-  // Calculate total elapsed time from earliest start
-  const now = new Date();
-  const earliestStart = new Date(
-    Math.min(...activeEntries.map((e: any) => new Date(e.start_time).getTime()))
-  );
-  const totalMinutes = Math.round((now.getTime() - earliestStart.getTime()) / 60000);
-
-  // Distribute time — weighted by estimated_time if available
-  const ops = batchOps.map((bo: any) => ({
-    id: bo.operation_id,
-    estimated_time: bo.operation?.estimated_time ?? 0,
-  }));
-
-  const totalEstimated = ops.reduce((sum: number, op: any) => sum + (op.estimated_time || 0), 0);
-  const useWeighted = totalEstimated > 0 && ops.every((op: any) => op.estimated_time > 0);
-
-  const distribution: { id: string; minutes: number }[] = [];
-
-  if (useWeighted) {
-    let allocated = 0;
-    ops.forEach((op: any, i: number) => {
-      const share = i === ops.length - 1
-        ? totalMinutes - allocated  // last op gets remainder
-        : Math.round((op.estimated_time / totalEstimated) * totalMinutes);
-      distribution.push({ id: op.id, minutes: share });
-      allocated += share;
-    });
-  } else {
-    const base = Math.floor(totalMinutes / ops.length);
-    const remainder = totalMinutes - base * ops.length;
-    ops.forEach((op: any, i: number) => {
-      distribution.push({ id: op.id, minutes: base + (i < remainder ? 1 : 0) });
-    });
-  }
-
-  // Close time entries and update operations
-  const nowStr = now.toISOString();
-  for (const entry of activeEntries) {
-    const alloc = distribution.find((d) => d.id === entry.operation_id);
-    await supabase
-      .from("time_entries")
-      .update({ end_time: nowStr, duration_minutes: alloc?.minutes ?? 0 })
-      .eq("id", entry.id);
-  }
-
-  for (const alloc of distribution) {
-    // Add to existing actual_time
-    const { data: op } = await supabase
-      .from("operations")
-      .select("actual_time")
-      .eq("id", alloc.id)
-      .single();
-
-    await supabase
-      .from("operations")
-      .update({ actual_time: (op?.actual_time ?? 0) + alloc.minutes })
-      .eq("id", alloc.id);
-  }
-
-  // Complete batch
-  await supabase
-    .from("operation_batches")
-    .update({
-      status: "completed",
-      completed_at: nowStr,
-      completed_by: operatorId || null,
-      actual_time: totalMinutes,
-    })
-    .eq("id", batchId)
-    .eq("tenant_id", tenantId);
-
-  return createSuccessResponse({
-    batch_id: batchId,
-    status: "completed",
-    total_minutes: totalMinutes,
-    distribution_method: useWeighted ? "weighted" : "equal",
-    operations: distribution,
-  });
-}
-
-async function handleAddOperations(
-  supabase: any, tenantId: string, batchId: string, operationIds?: string[]
-): Promise<Response> {
-  if (!operationIds || !Array.isArray(operationIds) || operationIds.length === 0) {
-    throw new Error("operation_ids array is required");
-  }
-
-  // Get current max sequence
-  const { data: existing } = await supabase
-    .from("batch_operations")
-    .select("sequence_in_batch")
-    .eq("batch_id", batchId)
-    .eq("tenant_id", tenantId)
-    .order("sequence_in_batch", { ascending: false })
-    .limit(1);
-
-  const startSeq = (existing?.[0]?.sequence_in_batch ?? 0) + 1;
-
-  const rows = operationIds.map((opId: string, i: number) => ({
-    tenant_id: tenantId,
-    batch_id: batchId,
-    operation_id: opId,
-    sequence_in_batch: startSeq + i,
-  }));
-
-  const { error } = await supabase.from("batch_operations").insert(rows);
-  if (error) throw new Error(`Failed to add operations: ${error.message}`);
-
-  return createSuccessResponse({
-    batch_id: batchId,
-    operations_added: operationIds.length,
-  });
+  return createSuccessResponse({ batch: data });
 }
 
 // Main CRUD handler
@@ -350,6 +266,7 @@ serveApi(
     softDelete: false,
     customHandlers: {
       post: handleCreateBatch,
+      patch: handleUpdateBatch,
     },
   })
 );

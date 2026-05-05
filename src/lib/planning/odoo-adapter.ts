@@ -108,7 +108,7 @@ export class OdooAdapter implements PlanningAdapter {
     return workcenters.map((wc) => ({
       externalId: String(wc.id),
       name: wc.name,
-      type: 'machine' as const,
+      type: wc.resource_type === 'human' ? 'labor' as const : 'machine' as const,
       capacity: wc.capacity || undefined,
     }));
   }
@@ -208,11 +208,25 @@ export class OdooAdapter implements PlanningAdapter {
     domain: unknown[],
     fields: string[]
   ): Promise<T[]> {
-    const result = await this.callMethod(model, 'search_read', [domain], {
-      fields,
-      limit: 500,
-    });
-    return (result ?? []) as T[];
+    const pageSize = 500;
+    const maxPages = 100;
+    const records: T[] = [];
+
+    for (let pageIndex = 0; pageIndex < maxPages; pageIndex++) {
+      const result = await this.callMethod(model, 'search_read', [domain], {
+        fields,
+        limit: pageSize,
+        offset: pageIndex * pageSize,
+      });
+      const page = (result ?? []) as T[];
+      records.push(...page);
+
+      if (page.length < pageSize) {
+        return records;
+      }
+    }
+
+    throw new Error(`Odoo search_read exceeded ${maxPages * pageSize} records for ${model}`);
   }
 
   private async callMethod(
@@ -234,9 +248,9 @@ export class OdooAdapter implements PlanningAdapter {
           this.config.password ?? '',
           model,
           method,
-          ...args,
+          args,
+          kwargs,
         ],
-        kwargs,
       },
     };
 
@@ -319,9 +333,9 @@ export class OdooAdapter implements PlanningAdapter {
     }
   }
 
-  private parseOdooDate(value: string | false): Date {
+  private parseOdooDate(value: string | false | null | undefined): Date | null {
     if (!value) {
-      return new Date();
+      return null;
     }
     // Odoo dates are in format "YYYY-MM-DD HH:MM:SS" (UTC)
     return new Date(value.replace(' ', 'T') + 'Z');

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTenant } from "@/hooks/useTenant";
+import { env } from "@/config/env";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,15 @@ interface McpEndpoint {
   usage_count: number;
 }
 
+const getErrorCode = (error: unknown): string | undefined => {
+  if (typeof error !== "object" || error === null || !("code" in error)) {
+    return undefined;
+  }
+
+  const code = (error as { code?: unknown }).code;
+  return typeof code === "string" ? code : undefined;
+};
+
 export default function McpSetup() {
   const { t } = useTranslation();
   const { tenant } = useTenant();
@@ -40,7 +50,9 @@ export default function McpSetup() {
   const [transportMode, setTransportMode] = useState<"stdio" | "http">("stdio");
 
   // HTTP endpoint for hosted/Docker deployments
-  const mcpHttpUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://your-instance.eryxon.com'}/mcp`;
+  const defaultMcpHttpUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://your-instance.eryxon.com'}/mcp`;
+  const mcpHttpUrl = env('VITE_MCP_HTTP_URL') || defaultMcpHttpUrl;
+  const mcpServerEntryPoint = env('VITE_MCP_SERVER_ENTRYPOINT') || "/absolute/path/to/eryxon-flow/mcp-server/dist/index.js";
 
   useEffect(() => {
     if (tenant?.id) {
@@ -61,7 +73,7 @@ export default function McpSetup() {
     } catch (error: unknown) {
       logger.error('McpSetup', 'Error fetching endpoints', error);
       // Table might not exist yet - that's okay
-      if ((error as { code?: string }).code !== '42P01') {
+      if (getErrorCode(error) !== '42P01') {
         toast.error(t('mcp.failedToLoad'));
       }
     } finally {
@@ -167,7 +179,7 @@ export default function McpSetup() {
   };
 
   const getConfigJson = (token: string) => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://your-project.supabase.co";
+    const supabaseUrl = env('VITE_SUPABASE_URL') || "https://your-project.supabase.co";
 
     if (transportMode === "http") {
       return {
@@ -209,11 +221,11 @@ export default function McpSetup() {
       claude: `{
   "mcpServers": {
     "Eryxon Flow - ${tenant?.name || 'Manufacturing'}": {
-      "command": "npx",
-      "args": ["-y", "eryxon-flow-mcp-server"],
+      "command": "node",
+      "args": ["${mcpServerEntryPoint}"],
       "env": {
         "SUPABASE_URL": "${supabaseUrl}",
-        "MCP_TOKEN": "${token}"
+        "SUPABASE_SERVICE_KEY": "your-service-role-key"
       }
     }
   }
@@ -221,11 +233,11 @@ export default function McpSetup() {
       cursor: `{
   "mcpServers": {
     "eryxon-flow": {
-      "command": "npx",
-      "args": ["-y", "eryxon-flow-mcp-server"],
+      "command": "node",
+      "args": ["${mcpServerEntryPoint}"],
       "env": {
         "SUPABASE_URL": "${supabaseUrl}",
-        "MCP_TOKEN": "${token}"
+        "SUPABASE_SERVICE_KEY": "your-service-role-key"
       }
     }
   }
@@ -233,11 +245,11 @@ export default function McpSetup() {
       windsurf: `{
   "mcpServers": {
     "eryxon-flow": {
-      "command": "npx",
-      "args": ["-y", "eryxon-flow-mcp-server"],
+      "command": "node",
+      "args": ["${mcpServerEntryPoint}"],
       "env": {
         "SUPABASE_URL": "${supabaseUrl}",
-        "MCP_TOKEN": "${token}"
+        "SUPABASE_SERVICE_KEY": "your-service-role-key"
       }
     }
   }

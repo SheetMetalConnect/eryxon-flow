@@ -330,6 +330,14 @@ describe('FrePPLeAdapter', () => {
         adapter.pushOrderCompletion('MO-001', 50, 0)
       ).rejects.toThrow('FrePPLe pushOrderCompletion failed: 503');
     });
+
+    it('rejects scrap greater than produced quantity before sending', async () => {
+      await expect(
+        adapter.pushOrderCompletion('MO-001', 5, 6)
+      ).rejects.toThrow('scrap must be between 0 and produced quantity');
+
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
   });
 
   describe('URL handling', () => {

@@ -50,6 +50,8 @@ export interface MqttClientConfig {
   circuitBreakerThreshold: number;
   /** Time in ms before half-open retry after circuit opens (default: 30000) */
   circuitBreakerResetMs: number;
+  /** Max time in ms to wait for a single transport publish attempt (default: 10000) */
+  transportTimeoutMs?: number;
 }
 
 export interface PublishResult {
@@ -134,7 +136,10 @@ export class MqttClient {
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
-        await this.transport(fullTopic, payload);
+        await this.withTransportTimeout(
+          this.transport(fullTopic, payload),
+          this.config.transportTimeoutMs ?? 10_000
+        );
 
         // Success: reset failures, log, return
         this.consecutiveFailures = 0;
@@ -237,5 +242,26 @@ export class MqttClient {
 
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private async withTransportTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+    if (timeoutMs <= 0) {
+      return promise;
+    }
+
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<T>((_resolve, reject) => {
+      timeoutId = setTimeout(() => {
+        reject(new Error(`MQTT transport timed out after ${timeoutMs}ms`));
+      }, timeoutMs);
+    });
+
+    try {
+      return await Promise.race([promise, timeout]);
+    } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    }
   }
 }

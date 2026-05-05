@@ -44,9 +44,12 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
   // Load active operator from sessionStorage on mount (sessionStorage clears on tab close)
   useEffect(() => {
     if (tenant?.id === undefined) {
+      setActiveOperator(null);
+      setIsLoading(false);
       return;
     }
 
+    setIsLoading(true);
     const stored = sessionStorage.getItem(STORAGE_KEY);
     let nextOperator: ActiveOperator | null = null;
     if (stored) {
@@ -85,6 +88,7 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
       const clearTimeoutId = window.setTimeout(() => {
         setActiveOperator(null);
         sessionStorage.removeItem(STORAGE_KEY);
+        setIsLoading(false);
       }, 0);
       return () => clearTimeout(clearTimeoutId);
     }

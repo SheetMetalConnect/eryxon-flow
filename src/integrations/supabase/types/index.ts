@@ -52,7 +52,6 @@ export const Constants = {
 
 // Initialize Constants at runtime
 import { EnumConstants as EC } from './enums'
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Bootstrap mutable assignment into a const structure
 ;(Constants.public as unknown as { Enums: typeof EC }).Enums = EC
 
 // Re-export all table types for direct access if needed

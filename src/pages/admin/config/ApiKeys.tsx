@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { env } from "@/config/env";
 import { useProfile } from "@/hooks/useProfile";
 import { Key, Copy, Trash2, Plus, BookOpen, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
@@ -34,6 +35,8 @@ export default function ConfigApiKeys() {
   const [newKeyDialog, setNewKeyDialog] = useState(false);
   const [generatedKey, setGeneratedKey] = useState<string | null>(null);
   const [keyName, setKeyName] = useState("");
+  const projectId = env('VITE_SUPABASE_PROJECT_ID');
+  const supabaseUrl = env('VITE_SUPABASE_URL') || (projectId ? `https://${projectId}.supabase.co` : "");
 
   useEffect(() => {
     if (profile?.tenant_id) {
@@ -70,7 +73,7 @@ export default function ConfigApiKeys() {
       if (!session) throw new Error('Not authenticated');
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/api-key-generate`,
+        `${supabaseUrl}/functions/v1/api-key-generate`,
         {
           method: 'POST',
           headers: {
@@ -361,7 +364,7 @@ export default function ConfigApiKeys() {
                 <div className="flex-1">
                   <p className="text-sm font-medium">Base URL</p>
                   <code className="text-xs bg-muted px-2 py-1 rounded block break-all">
-                    {`${import.meta.env.VITE_SUPABASE_URL}/functions/v1`}
+                    {`${supabaseUrl}/functions/v1`}
                   </code>
                 </div>
               </div>

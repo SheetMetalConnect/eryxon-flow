@@ -134,6 +134,25 @@ describe('MqttClient', () => {
       expect(mockPublishFn).toHaveBeenCalledTimes(3);
     });
 
+    it('times out a hung transport attempt', async () => {
+      vi.useFakeTimers();
+      const timeoutClient = new MqttClient(
+        createTestConfig({
+          retryAttempts: 1,
+          transportTimeoutMs: 25,
+        })
+      );
+      timeoutClient.setTransport(vi.fn(() => new Promise(() => undefined)));
+
+      const resultPromise = timeoutClient.publish('test/topic', { data: 1 });
+      await vi.advanceTimersByTimeAsync(25);
+      const result = await resultPromise;
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('MQTT transport timed out after 25ms');
+      expect(result.attempts).toBe(1);
+    });
+
     it('increments consecutive failures on exhausted retries', async () => {
       mockPublishFn.mockRejectedValue(new Error('persistent failure'));
 

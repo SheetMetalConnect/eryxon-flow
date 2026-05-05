@@ -7,6 +7,8 @@ description: "Complete API and integration reference for Eryxon Flow."
 
 Eryxon Flow is a **100% API-driven** manufacturing execution system. Your ERP system pushes jobs, parts, and tasks via REST API. Eryxon sends completion events back via webhooks. The MCP server enables AI/automation integration.
 
+Most integration endpoints use Eryxon API keys (`ery_live_...` or `ery_test_...`). Admin browser endpoints such as `api-export` use the signed-in Supabase user session token.
+
 ---
 
 ## HTTP Status Codes
@@ -273,7 +275,7 @@ When validation fails (422), you'll receive detailed field-level errors:
 
 ## Authentication
 
-All API endpoints require an API key passed as a Bearer token:
+Most integration endpoints require an API key passed as a Bearer token:
 
 **Required header**
 ```
@@ -285,6 +287,8 @@ API keys are managed through the admin interface and come in two types:
 - `ery_test_*` - Testing keys
 
 **Security:** API keys are verified using SHA-256 hashing against the `api_keys` table and compared with constant-time matching in the edge auth helper. Never expose your API keys in client-side code or public repositories.
+
+Admin-only endpoints used from the web app, such as `api-export`, use the signed-in Supabase user session token instead of an Eryxon API key.
 
 ---
 
@@ -620,6 +624,64 @@ POST /api-operation-lifecycle/complete?id=<operation-id>
 
 ---
 
+## Batch APIs
+
+### Batches API
+**Base URL:** `/functions/v1/api-batches`
+
+#### GET - List Batches
+```bash
+GET /api-batches?status=ready&batch_type=laser_nesting&limit=50
+```
+
+**Query Parameters:**
+- `status` - Filter by `draft`, `ready`, `in_progress`, `completed`, or `cancelled`
+- `batch_type` - Filter by `laser_nesting`, `tube_batch`, `saw_batch`, `finishing_batch`, or `general`
+- `cell_id` - Filter by production cell
+- `material` - Filter by material label
+- `search` - Search `batch_number` and `material`
+
+#### POST - Create Batch
+```bash
+POST /api-batches
+{
+  "batch_number": "NEST-2026-001",
+  "batch_type": "laser_nesting",
+  "cell_id": "uuid",
+  "material": "SS304",
+  "thickness_mm": 2,
+  "operation_ids": ["uuid", "uuid"]
+}
+```
+
+`cell_id`, `parent_batch_id`, and `operation_ids` are validated against the authenticated tenant. Operations must not already be assigned to another batch.
+
+#### PATCH - Update Batch
+```bash
+PATCH /api-batches?id=<batch-id>
+{
+  "status": "ready",
+  "notes": "Released to production"
+}
+```
+
+Use `api-batch-lifecycle/add-operations` to append operations.
+
+### Batch Lifecycle API
+**Base URL:** `/functions/v1/api-batch-lifecycle`
+
+```bash
+POST /api-batch-lifecycle/start?id=<batch-id>
+POST /api-batch-lifecycle/stop?id=<batch-id>
+POST /api-batch-lifecycle/add-operations?id=<batch-id>
+```
+
+Start moves a draft or ready batch to `in_progress`. Stop completes the batch and distributes active tracked time across operations. Add-operations appends tenant-validated operations while the batch is still `draft` or `ready`.
+
+**Webhook Triggered:** `batch.started`, `batch.completed`
+
+---
+
 ## NCR APIs
 
 ### Create NCR (Non-Conformance Report)
@@ -768,6 +830,10 @@ Eryxon automatically sends webhooks to registered endpoints for the following ev
 - `operation.paused` - Operation paused
 - `operation.resumed` - Operation resumed
 - `operation.completed` - Operation completed
+
+### Batch Events
+- `batch.started` - Batch started
+- `batch.completed` - Batch completed
 
 ### Issue/NCR Events
 - `issue.created` - General issue created

@@ -25,6 +25,71 @@ function errorResponse(code: string, message: string, status = 400) {
   return jsonResponse({ success: false, error: { code, message } }, status);
 }
 
+function normalizeOperationIds(value: unknown): { ids: string[]; error?: string } {
+  if (!Array.isArray(value) || value.length === 0) {
+    return { ids: [], error: "operation_ids array required" };
+  }
+
+  const ids: string[] = [];
+  for (const id of value) {
+    if (typeof id !== "string" || id.trim().length === 0) {
+      return { ids: [], error: "operation_ids must contain non-empty strings" };
+    }
+    ids.push(id.trim());
+  }
+
+  if (new Set(ids).size !== ids.length) {
+    return { ids: [], error: "operation_ids must not contain duplicates" };
+  }
+
+  return { ids };
+}
+
+async function validateOperationsInTenant(
+  supabase: any,
+  tenantId: string,
+  operationIds: string[],
+): Promise<string | null> {
+  if (operationIds.length === 0) return null;
+
+  const { data, error } = await supabase
+    .from("operations")
+    .select("id")
+    .eq("tenant_id", tenantId)
+    .in("id", operationIds);
+
+  if (error) return `Operation validation failed: ${error.message}`;
+
+  const foundIds = new Set((data || []).map((operation: { id: string }) => operation.id));
+  const missingIds = operationIds.filter((id) => !foundIds.has(id));
+  if (missingIds.length > 0) {
+    return "operation_ids must reference operations in the authenticated tenant";
+  }
+
+  return null;
+}
+
+async function validateOperationsUnassigned(
+  supabase: any,
+  tenantId: string,
+  operationIds: string[],
+): Promise<string | null> {
+  if (operationIds.length === 0) return null;
+
+  const { data, error } = await supabase
+    .from("batch_operations")
+    .select("operation_id")
+    .eq("tenant_id", tenantId)
+    .in("operation_id", operationIds);
+
+  if (error) return `Batch assignment validation failed: ${error.message}`;
+  if ((data || []).length > 0) {
+    return "operation_ids must not already be assigned to another batch";
+  }
+
+  return null;
+}
+
 async function triggerWebhook(tenantId: string, eventType: string, data: object) {
   try {
     await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/webhook-dispatch`, {
@@ -79,13 +144,17 @@ Deno.serve(async (req) => {
       const { data: batchOps } = await supabase
         .from("batch_operations")
         .select("operation_id")
-        .eq("batch_id", batchId);
+        .eq("batch_id", batchId)
+        .eq("tenant_id", tenantId);
 
       if (!batchOps || batchOps.length === 0) {
         return errorResponse("VALIDATION_ERROR", "Cannot start batch with no operations");
       }
 
       const opIds = batchOps.map((bo: any) => bo.operation_id);
+      const operationError = await validateOperationsInTenant(supabase, tenantId, opIds);
+      if (operationError) return errorResponse("VALIDATION_ERROR", operationError);
+
       const now = new Date().toISOString();
       // operator_id — required for manual starts, optional for machine-reported
       const operatorId = body.operator_id || null;
@@ -116,7 +185,8 @@ Deno.serve(async (req) => {
       await supabase
         .from("operation_batches")
         .update({ status: "in_progress", started_at: now, started_by: operatorId })
-        .eq("id", batchId);
+        .eq("id", batchId)
+        .eq("tenant_id", tenantId);
 
       await triggerWebhook(tenantId, "batch.started", {
         batch_id: batchId,
@@ -140,13 +210,16 @@ Deno.serve(async (req) => {
       const { data: batchOps } = await supabase
         .from("batch_operations")
         .select("operation_id, operation:operations(id, estimated_time)")
-        .eq("batch_id", batchId);
+        .eq("batch_id", batchId)
+        .eq("tenant_id", tenantId);
 
       if (!batchOps || batchOps.length === 0) {
         return errorResponse("VALIDATION_ERROR", "No operations in batch");
       }
 
       const opIds = batchOps.map((bo: any) => bo.operation_id);
+      const operationError = await validateOperationsInTenant(supabase, tenantId, opIds);
+      if (operationError) return errorResponse("VALIDATION_ERROR", operationError);
 
       // Find active time entries
       const { data: activeEntries } = await supabase
@@ -201,7 +274,8 @@ Deno.serve(async (req) => {
           await supabase
             .from("time_entries")
             .update({ end_time: nowStr, duration_minutes: alloc?.minutes ?? 0 })
-            .eq("id", entry.id);
+            .eq("id", entry.id)
+            .eq("tenant_id", tenantId);
         }
 
         // Update operation actual_time
@@ -210,11 +284,13 @@ Deno.serve(async (req) => {
             .from("operations")
             .select("actual_time")
             .eq("id", alloc.id)
+            .eq("tenant_id", tenantId)
             .single();
           await supabase
             .from("operations")
             .update({ actual_time: (op?.actual_time ?? 0) + alloc.minutes })
-            .eq("id", alloc.id);
+            .eq("id", alloc.id)
+            .eq("tenant_id", tenantId);
         }
       }
 
@@ -231,7 +307,8 @@ Deno.serve(async (req) => {
       await supabase
         .from("operation_batches")
         .update({ status: "completed", completed_at: nowStr, completed_by: operatorId, actual_time: totalMinutes })
-        .eq("id", batchId);
+        .eq("id", batchId)
+        .eq("tenant_id", tenantId);
 
       await triggerWebhook(tenantId, "batch.completed", {
         batch_id: batchId,
@@ -257,15 +334,20 @@ Deno.serve(async (req) => {
         return errorResponse("INVALID_STATE", `Cannot modify operations in '${batch.status}' status`);
       }
 
-      const opIds = body.operation_ids;
-      if (!opIds || !Array.isArray(opIds) || opIds.length === 0) {
-        return errorResponse("VALIDATION_ERROR", "operation_ids array required");
-      }
+      const { ids: opIds, error } = normalizeOperationIds(body.operation_ids);
+      if (error) return errorResponse("VALIDATION_ERROR", error);
+
+      const operationError = await validateOperationsInTenant(supabase, tenantId, opIds);
+      if (operationError) return errorResponse("VALIDATION_ERROR", operationError);
+
+      const assignmentError = await validateOperationsUnassigned(supabase, tenantId, opIds);
+      if (assignmentError) return errorResponse("VALIDATION_ERROR", assignmentError);
 
       const { data: existing } = await supabase
         .from("batch_operations")
         .select("sequence_in_batch")
         .eq("batch_id", batchId)
+        .eq("tenant_id", tenantId)
         .order("sequence_in_batch", { ascending: false })
         .limit(1);
 

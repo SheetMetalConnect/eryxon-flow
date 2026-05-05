@@ -35,6 +35,16 @@ class IntersectionObserverMock {
 }
 global.IntersectionObserver = IntersectionObserverMock as unknown as typeof IntersectionObserver;
 
+// Default runtime env for modules that read Docker-style window.__ERYXON_ENV__.
+Object.defineProperty(window, '__ERYXON_ENV__', {
+  writable: true,
+  value: {
+    VITE_SUPABASE_URL: 'https://test.supabase.co',
+    VITE_SUPABASE_PUBLISHABLE_KEY: 'test-publishable-key',
+    VITE_SUPABASE_PROJECT_ID: 'test',
+  },
+});
+
 // Mock scrollTo
 window.scrollTo = vi.fn();
 

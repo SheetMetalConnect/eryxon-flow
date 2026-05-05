@@ -7,10 +7,11 @@ services:
       - MCP_TRANSPORT=http
       - MCP_PORT=3001
       - MCP_HOST=0.0.0.0
+      - MCP_BIND_PUBLIC=true
+      - MCP_BEARER=${MCP_BEARER:?Set MCP_BEARER to protect the HTTP MCP endpoint}
+      - MCP_ALLOWED_HOSTS=${MCP_ALLOWED_HOSTS:-localhost,127.0.0.1,[::1]}
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
-      - ERYXON_API_KEY=${ERYXON_API_KEY:-}
-      - ERYXON_API_URL=${ERYXON_API_URL:-}
       - REDIS_URL=${REDIS_URL:-}
     restart: unless-stopped
     healthcheck:

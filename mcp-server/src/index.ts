@@ -3,17 +3,15 @@
 /**
  * Eryxon Flow MCP Server v2.4.0
  *
- * Universal MCP server supporting both:
- * - DIRECT mode: Self-hosted with service key
- * - API mode: Cloud SaaS with tenant-scoped API keys
+ * MCP server for self-hosted deployments using direct Supabase access.
  *
  * Transport options (MCP_TRANSPORT env var):
  * - stdio (default): StdioServerTransport for local CLI usage
  * - http: StreamableHTTP transport for cloud/Docker deployment
  *
  * Architecture:
- * - clients/ - Unified client abstraction (Supabase or REST API)
- * - tools/ - Domain-specific tool modules (55 tools)
+ * - clients/ - Direct Supabase client abstraction
+ * - tools/ - Domain-specific tool modules (50 tools)
  * - config.ts - Auto-detects deployment mode
  *
  * @see https://github.com/SheetMetalConnect/eryxon-flow/tree/main/mcp-server
@@ -27,6 +25,7 @@ import {
   CallToolResult,
   isInitializeRequest,
 } from "@modelcontextprotocol/sdk/types.js";
+import type { Request, Response } from "express";
 
 import { loadConfig, getModeDescription } from "./config.js";
 import { createClient } from "./clients/index.js";
@@ -37,7 +36,7 @@ const config = loadConfig();
 console.error(`Eryxon Flow MCP Server v2.4.0`);
 console.error(`Mode: ${getModeDescription(config.mode)}`);
 
-// Create unified client (Supabase or REST API)
+// Create direct Supabase client
 const client = createClient(config);
 
 // Create and configure the tool registry with all modules
@@ -135,12 +134,60 @@ async function startHttp(): Promise<void> {
   );
 
   const port = parseInt(process.env.MCP_PORT || "3001", 10);
-  const host = process.env.MCP_HOST || "0.0.0.0";
+  const bindPublic = process.env.MCP_BIND_PUBLIC === "true";
+  const requestedHost = process.env.MCP_HOST || "127.0.0.1";
+  const requestedPublicBind = requestedHost === "0.0.0.0" || requestedHost === "::";
+  const host = requestedPublicBind && !bindPublic ? "127.0.0.1" : requestedHost;
+
+  if (requestedPublicBind && !bindPublic) {
+    console.error(
+      "MCP_HOST requested a public bind, but MCP_BIND_PUBLIC is not true; falling back to 127.0.0.1"
+    );
+  }
 
   // Map to store transports by session ID
-  const transports: Record<string, InstanceType<typeof StreamableHTTPServerTransport>> = {};
+  const transports = new Map<string, InstanceType<typeof StreamableHTTPServerTransport>>();
 
-  const app = createMcpExpressApp({ host });
+  const allowedHosts = (process.env.MCP_ALLOWED_HOSTS || "localhost,127.0.0.1,[::1]")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const bearerToken = process.env.MCP_BEARER;
+
+  const app = createMcpExpressApp({ host, allowedHosts });
+
+  const authorizeMcpRequest = (req: Request, res: Response): boolean => {
+    if (bindPublic && !bearerToken) {
+      res.status(503).json({
+        jsonrpc: "2.0",
+        error: {
+          code: -32000,
+          message: "MCP_BEARER is required when MCP_BIND_PUBLIC=true",
+        },
+        id: null,
+      });
+      return false;
+    }
+
+    if (!bearerToken) {
+      return true;
+    }
+
+    if (req.headers.authorization !== `Bearer ${bearerToken}`) {
+      res.setHeader("WWW-Authenticate", "Bearer");
+      res.status(401).json({
+        jsonrpc: "2.0",
+        error: {
+          code: -32001,
+          message: "Unauthorized",
+        },
+        id: null,
+      });
+      return false;
+    }
+
+    return true;
+  };
 
   // Health check endpoint
   app.get("/health", (_req, res) => {
@@ -158,27 +205,31 @@ async function startHttp(): Promise<void> {
     const sessionId = req.headers["mcp-session-id"] as string | undefined;
 
     try {
+      if (!authorizeMcpRequest(req, res)) {
+        return;
+      }
+
       let transport: InstanceType<typeof StreamableHTTPServerTransport>;
 
-      if (sessionId && transports[sessionId]) {
+      if (sessionId && transports.has(sessionId)) {
         // Reuse existing transport for established session
-        transport = transports[sessionId];
+        transport = transports.get(sessionId)!;
       } else if (!sessionId && isInitializeRequest(req.body)) {
         // New initialization request — create transport + server
         transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: () => randomUUID(),
           onsessioninitialized: (sid: string) => {
             console.error(`Session initialized: ${sid}`);
-            transports[sid] = transport;
+            transports.set(sid, transport);
           },
         });
 
         // Clean up on close
         transport.onclose = () => {
           const sid = transport.sessionId;
-          if (sid && transports[sid]) {
+          if (sid && transports.has(sid)) {
             console.error(`Session closed: ${sid}`);
-            delete transports[sid];
+            transports.delete(sid);
           }
         };
 
@@ -218,26 +269,48 @@ async function startHttp(): Promise<void> {
 
   // MCP GET endpoint — SSE stream for server-initiated messages
   app.get("/mcp", async (req, res) => {
-    const sessionId = req.headers["mcp-session-id"] as string | undefined;
-    if (!sessionId || !transports[sessionId]) {
-      res.status(400).send("Invalid or missing session ID");
-      return;
-    }
+    try {
+      if (!authorizeMcpRequest(req, res)) {
+        return;
+      }
 
-    const transport = transports[sessionId];
-    await transport.handleRequest(req, res);
+      const sessionId = req.headers["mcp-session-id"] as string | undefined;
+      const transport = sessionId ? transports.get(sessionId) : undefined;
+      if (!transport) {
+        res.status(400).send("Invalid or missing session ID");
+        return;
+      }
+
+      await transport.handleRequest(req, res);
+    } catch (error) {
+      console.error("Error handling MCP stream:", error);
+      if (!res.headersSent) {
+        res.status(500).send("Internal server error");
+      }
+    }
   });
 
   // MCP DELETE endpoint — session termination
   app.delete("/mcp", async (req, res) => {
-    const sessionId = req.headers["mcp-session-id"] as string | undefined;
-    if (!sessionId || !transports[sessionId]) {
-      res.status(400).send("Invalid or missing session ID");
-      return;
-    }
+    try {
+      if (!authorizeMcpRequest(req, res)) {
+        return;
+      }
 
-    const transport = transports[sessionId];
-    await transport.handleRequest(req, res);
+      const sessionId = req.headers["mcp-session-id"] as string | undefined;
+      const transport = sessionId ? transports.get(sessionId) : undefined;
+      if (!transport) {
+        res.status(400).send("Invalid or missing session ID");
+        return;
+      }
+
+      await transport.handleRequest(req, res);
+    } catch (error) {
+      console.error("Error terminating MCP session:", error);
+      if (!res.headersSent) {
+        res.status(500).send("Internal server error");
+      }
+    }
   });
 
   // Start listening
@@ -249,10 +322,10 @@ async function startHttp(): Promise<void> {
   // Graceful shutdown
   process.on("SIGINT", async () => {
     console.error("Shutting down...");
-    for (const sessionId of Object.keys(transports)) {
+    for (const [sessionId, transport] of transports) {
       try {
-        await transports[sessionId].close();
-        delete transports[sessionId];
+        await transport.close();
+        transports.delete(sessionId);
       } catch (error) {
         console.error(`Error closing session ${sessionId}:`, error);
       }
@@ -262,10 +335,10 @@ async function startHttp(): Promise<void> {
 
   process.on("SIGTERM", async () => {
     console.error("SIGTERM received, shutting down...");
-    for (const sessionId of Object.keys(transports)) {
+    for (const [sessionId, transport] of transports) {
       try {
-        await transports[sessionId].close();
-        delete transports[sessionId];
+        await transport.close();
+        transports.delete(sessionId);
       } catch (error) {
         console.error(`Error closing session ${sessionId}:`, error);
       }

@@ -3,12 +3,12 @@ title: MCP Server Setup Guide
 description: Complete guide to setting up and deploying the Eryxon Flow MCP Server for Claude Desktop integration.
 ---
 
-The MCP (Model Context Protocol) server enables Claude Desktop to interact with your Eryxon Flow deployment using natural language. This guide covers both local development and production deployment.
+The MCP (Model Context Protocol) server enables Claude Desktop to interact with your Eryxon Flow deployment using natural language. This guide covers local development and trusted self-hosted deployment.
 
 ## Overview
 
 **What is the MCP Server?**
-- Provides 55 AI tools across 9 modules for manufacturing operations
+- Provides 50 AI tools across 9 modules for manufacturing operations
 - Enables natural language interaction with jobs, parts, operations, quality, and analytics
 - Optional component - your application works perfectly without it
 - Designed for developers and power users who want AI assistant integration
@@ -17,18 +17,18 @@ The MCP (Model Context Protocol) server enables Claude Desktop to interact with 
 ```
 Claude Desktop (User)
   ↓ MCP Protocol (stdio/SSE)
-MCP Server (Local or Hosted)
-  ↓ REST API or Direct Supabase
+MCP Server (Local or Docker host)
+  ↓ Direct Supabase service-role client
 Eryxon Flow Database
-  ↓ RLS (Row-Level Security)
+  ↓ Optional TENANT_ID enforcement
 Your Data
 ```
 
 ## Deployment Modes
 
-### Mode 1: Local Development (Self-Hosted)
+### Local Stdio
 
-Best for: Single-tenant self-hosted deployments, development
+Best for: Claude Desktop, Cursor, and local development.
 
 **Requirements:**
 - Node.js 20+
@@ -48,6 +48,7 @@ npm run build
 ```bash
 export SUPABASE_URL="https://your-project.supabase.co"
 export SUPABASE_SERVICE_KEY="eyJhbGc..."  # Service role key
+export TENANT_ID="optional-tenant-id"      # recommended when sharing one DB
 ```
 
 3. **Start the server:**
@@ -80,157 +81,32 @@ You should see "Eryxon Flow MCP Server" with the available tools listed.
 
 ---
 
-### Mode 2: Cloud Deployment (Multi-Tenant)
+### Docker HTTP
 
-Best for: SaaS deployments, multiple users, hosted environments
+Best for: trusted internal deployments and MCP clients that support Streamable HTTP.
 
-**Requirements:**
-- Railway, Fly.io, or similar platform
-- Upstash Redis (for caching)
-- Eryxon Flow API endpoint
-
-#### Option A: Railway (Recommended)
-
-**Why Railway?**
-- Zero-config deployments
-- Automatic HTTPS
-- Built-in monitoring
-- $5/month starter plan
-
-**Steps:**
-
-1. **Install Railway CLI:**
-```bash
-npm install -g @railway/cli
-railway login
-```
-
-2. **Deploy:**
 ```bash
 cd mcp-server
-railway init
-railway up
-```
-
-3. **Set environment variables in Railway dashboard:**
-```
-ERYXON_API_URL=https://your-project.supabase.co
-UPSTASH_REDIS_REST_URL=https://your-redis.upstash.io
-UPSTASH_REDIS_REST_TOKEN=your-token
-```
-
-4. **Get your deployment URL:**
-```
-https://your-mcp-server.railway.app
-```
-
-5. **User Configuration:**
-
-Each user runs the MCP server locally in API mode:
-
-```json
-{
-  "mcpServers": {
-    "eryxon-flow": {
-      "command": "node",
-      "args": ["/path/to/eryxon-flow/mcp-server/dist/index.js"],
-      "env": {
-        "ERYXON_API_URL": "https://your-project.supabase.co",
-        "ERYXON_API_KEY": "ery_live_xxxxx"
-      }
-    }
-  }
-}
-```
-
-**Note:** In cloud/multi-tenant mode, each user runs the MCP server locally but it connects to your hosted Eryxon API using their personal API key. Users get their API key from: Settings → API Keys in Eryxon Flow web interface.
-
-#### Option B: Fly.io
-
-**Why Fly.io?**
-- Global edge deployment
-- Free tier available
-- Excellent performance
-
-**Steps:**
-
-1. **Install Fly CLI:**
-```bash
-brew install flyctl  # macOS
-# or: curl -L https://fly.io/install.sh | sh
-flyctl auth login
-```
-
-2. **Create `fly.toml` in `mcp-server/`:**
-```toml
-app = "your-mcp-server"
-primary_region = "ams"  # Amsterdam or your preferred region
-
-[build]
-  builder = "paketobuildpacks/builder:base"
-
-[env]
-  NODE_ENV = "production"
-  PORT = "8080"
-
-[[services]]
-  internal_port = 8080
-  protocol = "tcp"
-
-  [[services.ports]]
-    handlers = ["http"]
-    port = 80
-
-  [[services.ports]]
-    handlers = ["tls", "http"]
-    port = 443
-```
-
-3. **Deploy:**
-```bash
-flyctl launch
-flyctl secrets set ERYXON_API_URL="https://your-project.supabase.co"
-flyctl secrets set UPSTASH_REDIS_REST_URL="your-redis-url"
-flyctl secrets set UPSTASH_REDIS_REST_TOKEN="your-token"
-flyctl deploy
-```
-
-4. **Your URL:**
-```
-https://your-mcp-server.fly.dev
-```
-
-#### Option C: Docker
-
-**Dockerfile** example:
-
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-RUN npm run build
-CMD ["npm", "start"]
-```
-
-**Deploy:**
-```bash
-cd mcp-server
-docker build -t eryxon-mcp-server .
-docker run -e ERYXON_API_URL="..." -e ERYXON_API_KEY="..." -p 3000:3000 eryxon-mcp-server
+docker build -t eryxon-mcp .
+docker run -p 3001:3001 \
+  -e SUPABASE_URL="https://your-project.supabase.co" \
+  -e SUPABASE_SERVICE_KEY="your-service-role-key" \
+  -e MCP_BEARER="change-this-long-random-token" \
+  -e MCP_ALLOWED_HOSTS="localhost,your-mcp-domain.com" \
+  eryxon-mcp
 ```
 
 ---
 
-## Mode Detection
+## Connection Mode
 
-The server automatically detects which mode to use:
+The v0.5.0 final release supports direct Supabase access only.
 
 | Environment Variables | Mode | Use Case |
 |----------------------|------|----------|
-| `ERYXON_API_KEY` set | **API Mode** | Cloud, multi-tenant, SaaS |
-| `SUPABASE_SERVICE_KEY` set | **Direct Mode** | Self-hosted, local, single-tenant |
+| `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` | **Direct Mode** | Self-hosted, local, trusted internal deployment |
+
+If you expose HTTP transport, set `MCP_HOST=0.0.0.0`, `MCP_BIND_PUBLIC=true`, a strong `MCP_BEARER`, and `MCP_ALLOWED_HOSTS` to the hostnames allowed to reach the server. The default bind address is `127.0.0.1`; `MCP_ALLOWED_HOSTS` defaults to `localhost,127.0.0.1,[::1]`.
 
 ---
 
@@ -322,10 +198,10 @@ npm start
 # Eryxon Flow MCP Server running on stdio
 ```
 
-Cloud mode:
+HTTP mode:
 ```bash
-curl https://your-mcp-server.railway.app/health
-# Should return: {"status": "ok"}
+curl http://localhost:3001/health
+# Should return: {"status":"ok","version":"2.4.0","mode":"direct","tools":50,"transport":"streamable-http"}
 ```
 
 ### 2. Test in Claude Desktop
@@ -375,7 +251,7 @@ chmod +x mcp-server/dist/index.js
 
 **Solutions:**
 1. Verify `SUPABASE_URL` is correct
-2. Check `SUPABASE_SERVICE_KEY` or `ERYXON_API_KEY` is valid
+2. Check `SUPABASE_SERVICE_KEY` is valid
 3. Test connection manually:
 ```bash
 curl https://your-project.supabase.co/rest/v1/jobs \
@@ -397,8 +273,8 @@ curl https://your-project.supabase.co/rest/v1/jobs \
 **Issue:** Too many requests
 
 **Solution:**
-- For cloud mode: Add Redis caching (Upstash)
-- For local mode: Reduce request frequency
+- Reduce request frequency
+- Use pagination limits on broad fetches
 
 ---
 
@@ -411,15 +287,6 @@ curl https://your-project.supabase.co/rest/v1/jobs \
 3. **Restrict service key** to specific IP ranges if possible
 4. **Enable RLS policies** on all tables
 5. **Monitor usage** via Supabase dashboard
-
-### For Cloud (API Mode)
-
-1. **Generate unique API keys** per user
-2. **Rotate keys** regularly (every 90 days)
-3. **Set key expiration** dates
-4. **Monitor API usage** and set rate limits
-5. **Use HTTPS only** for MCP server endpoints
-6. **Enable Redis caching** to reduce database load
 
 ---
 
@@ -435,28 +302,13 @@ npm run build
 # Restart Claude Desktop
 ```
 
-### Cloud Mode
-
-Railway:
-```bash
-git push  # Railway auto-deploys
-```
-
-Fly.io:
-```bash
-flyctl deploy
-```
-
----
-
 ## Performance Optimization
 
-### Caching (Cloud Mode)
+### Caching
 
 Add Redis caching for frequently accessed data:
 
 ```bash
-# Set in Railway/Fly.io
 UPSTASH_REDIS_REST_URL="https://your-redis.upstash.io"
 UPSTASH_REDIS_REST_TOKEN="your-token"
 ```
@@ -469,4 +321,3 @@ The server includes:
 - **Pagination** - All fetch operations support `limit` and `offset`
 - **Soft-delete filtering** - Automatically excludes deleted records
 - **Timeout protection** - 30-second query timeout (configurable)
-

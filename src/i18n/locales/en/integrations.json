@@ -602,7 +602,7 @@
     "transportMode": "Transport Mode",
     "stdioLocal": "Stdio (Local)",
     "httpHosted": "HTTP (Hosted)",
-    "stdioDescription": "Run the MCP server locally via npx. Best for development and single-user setups.",
+    "stdioDescription": "Run the MCP server locally with node. Best for development and single-user setups.",
     "httpDescription": "Connect to a hosted MCP server via HTTP. Best for cloud deployments and shared access."
   },
   "mcpKeys": {

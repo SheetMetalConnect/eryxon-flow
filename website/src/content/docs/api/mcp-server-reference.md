@@ -5,57 +5,20 @@ description: "Operational reference for the Eryxon Flow MCP server."
 
 # Eryxon Flow MCP Server
 
-**Universal MCP server for Eryxon Flow MES** - Works in both self-hosted and cloud SaaS deployments.
+**MCP server for self-hosted Eryxon Flow MES deployments.** The v0.5.0 final release uses direct Supabase access with a service role key, so run it only on trusted infrastructure.
 
 ## Features
 
-- Auto-detects direct Supabase or REST API connection
-- **50 tools across 9 modules** for jobs, parts, operations, quality, shipping, analytics
+- Direct Supabase connection for self-hosted deployments
+- **50 tools across 9 modules** for jobs, parts, operations, quality, scheduling, and analytics
 - **Production-grade validation** with Zod runtime type checking
 - **Tool factory pattern** reducing code duplication by 60%
-- Multi-tenant safe via API keys or RLS
-- Deploy to Railway, Fly.io, or run locally
-- Multi-tenant safe with Zod runtime type checking
+- Tenant scoping can be enforced with `TENANT_ID` in direct mode
+- Supports stdio for local MCP clients and Streamable HTTP for Docker deployments
 
 ## Quick Start
 
-### Cloud SaaS (Recommended for Hosted Deployment)
-
-Users connect to YOUR hosted MCP server using their API key:
-
-```bash
-cd mcp-server
-npm install
-npm run build
-
-# Set your API endpoint (your project)
-export ERYXON_API_URL="https://your-project.supabase.co"
-
-# Users provide their own API key
-export ERYXON_API_KEY="ery_live_xxxxx"  # From Settings → API Keys
-
-npm start
-```
-
-**User's Claude Desktop config:**
-```json
-{
-  "mcpServers": {
-    "eryxon-flow": {
-      "command": "node",
-      "args": ["/path/to/eryxon-flow/mcp-server/dist/index.js"],
-      "env": {
-        "ERYXON_API_URL": "https://your-project.supabase.co",
-        "ERYXON_API_KEY": "ery_live_xxxxx"
-      }
-    }
-  }
-}
-```
-
-### Self-Hosted (Direct Supabase)
-
-For single-tenant self-hosted deployments:
+### Self-Hosted Direct Supabase
 
 ```bash
 cd mcp-server
@@ -64,26 +27,28 @@ npm run build
 
 export SUPABASE_URL="https://your-project.supabase.co"
 export SUPABASE_SERVICE_KEY="eyJhbGc..."  # Service role key
+export TENANT_ID="optional-tenant-id"      # recommended when sharing one DB
 
 npm start
 ```
 
-## Mode Detection
+### HTTP Transport
 
-The server automatically detects which mode to use:
+```bash
+MCP_TRANSPORT=http MCP_PORT=3001 MCP_ALLOWED_HOSTS=localhost,your-domain.com npm start
+```
 
-- Has `ERYXON_API_KEY`? → **API Mode** (cloud, multi-tenant)
-- Has `SUPABASE_SERVICE_KEY`? → **Direct Mode** (self-hosted, single-tenant)
+The HTTP transport exposes `/mcp` and `/health`. It binds to `127.0.0.1` by default. Public Docker or reverse-proxy deployments must set `MCP_HOST=0.0.0.0`, `MCP_BIND_PUBLIC=true`, a strong `MCP_BEARER`, and `MCP_ALLOWED_HOSTS` for the allowed hostnames. `MCP_ALLOWED_HOSTS` defaults to `localhost,127.0.0.1,[::1]`.
 
 ## Architecture
 
 ```
 Claude Desktop (User)
   ↓ MCP Protocol
-MCP Server (Your deployment or local)
-  ↓ REST API (if cloud) OR Direct Supabase (if self-hosted)
-Supabase Edge Functions / Database
-  ↓ RLS (tenant isolation)
+MCP Server (trusted local or Docker host)
+  ↓ Direct Supabase service-role client
+Supabase Database
+  ↓ Optional TENANT_ID enforcement
 Your Data
 ```
 
@@ -97,7 +62,7 @@ Your Data
 6. **Substeps** (5 tools) - Operation substeps
 7. **Dashboard** (3 tools) - Production metrics
 8. **Scrap** (7 tools) - Scrap tracking and analytics
-9. **Agent Batch** (16 tools) - Batch operations optimized for AI agents
+9. **Agent Batch** (11 tools) - Batch operations optimized for AI agents
 
 ## Documentation
 

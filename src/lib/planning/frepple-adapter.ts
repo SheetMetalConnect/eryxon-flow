@@ -65,8 +65,13 @@ export class FrePPLeAdapter implements PlanningAdapter {
 
     const allOrders: FrePPLeManufacturingOrder[] = [];
     let nextUrl: string | null = url;
+    let pageCount = 0;
 
     while (nextUrl) {
+      if (pageCount++ >= 100) {
+        throw new Error('FrePPLe pagination exceeded 100 pages for manufacturing orders');
+      }
+
       const response = await fetch(nextUrl, {
         method: 'GET',
         headers: this.buildHeaders(),
@@ -97,8 +102,13 @@ export class FrePPLeAdapter implements PlanningAdapter {
 
     const allResources: FrePPLeResource[] = [];
     let nextUrl: string | null = url;
+    let pageCount = 0;
 
     while (nextUrl) {
+      if (pageCount++ >= 100) {
+        throw new Error('FrePPLe pagination exceeded 100 pages for resources');
+      }
+
       const response = await fetch(nextUrl, {
         method: 'GET',
         headers: this.buildHeaders(),
@@ -152,6 +162,10 @@ export class FrePPLeAdapter implements PlanningAdapter {
     qty: number,
     scrap: number
   ): Promise<void> {
+    if (qty < 0 || scrap < 0 || scrap > qty) {
+      throw new Error('FrePPLe completion quantities are invalid: scrap must be between 0 and produced quantity');
+    }
+
     const url = `${this.baseUrl}/api/input/manufacturingorder/${encodeURIComponent(orderId)}/?format=json`;
 
     const response = await fetch(url, {
