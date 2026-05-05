@@ -38,15 +38,6 @@
 | **Dispositie (Disposition)** | De beslissing over wat te doen met niet-conform materiaal (afkeuren, herwerken, gebruiken-als-is, retourneren). |
 | **PMI** | Product Manufacturing Information — dimensionele data uit 3D-modellen/tekeningen. |
 
-## Meetwaarden
-
-| Term | Definitie |
-|------|-----------|
-| **OEE** | Overall Equipment Effectiveness. Beschikbaarheid x Prestatie x Kwaliteit. Industriestandaard meetwaarde. |
-| **Beschikbaarheid (Availability)** | % van de geplande tijd dat apparatuur daadwerkelijk draait. |
-| **Prestatie (Performance)** | Werkelijke productiesnelheid versus theoretisch maximum. |
-| **Kwaliteit (Quality)** | % geproduceerde items die de eerste inspectie doorstaan (geen herwerk/uitval). |
-
 ## ERP-integratie
 
 | Term | Definitie |

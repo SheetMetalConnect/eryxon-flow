@@ -60,15 +60,6 @@
     "loadError": "Fout bij laden van QRM dashboard gegevens",
     "noData": "Geen QRM gegevens beschikbaar. Zorg ervoor dat u actieve orders en bewerkingen heeft."
   },
-  "oee": {
-    "breakdown": "OEE Uitsplitsing",
-    "availability": "Beschikbaarheid",
-    "performance": "Prestaties",
-    "quality": "Kwaliteit",
-    "operationStates": "Bewerkingsstatussen",
-    "trend": "OEE Trend",
-    "byCell": "OEE per Cel"
-  },
   "quality": {
     "dashboardTitle": "Kwaliteitsoverzicht",
     "partsQuality": "Onderdelen Kwaliteitsoverzicht",
@@ -136,27 +127,12 @@
     "overCapacity": "Over capaciteit",
     "holidayClosure": "Feestdag/Sluiting"
   },
-  "reliability": {
-    "summary": "Betrouwbaarheidsoverzicht",
-    "totalOperations": "Totaal Bewerkingen",
-    "onTime": "Op Tijd",
-    "late": "Te Laat",
-    "avgDelay": "Gem. Vertraging",
-    "minutes": "min",
-    "onTimePerformance": "Op-Tijd Prestaties",
-    "onTimePercent": "Op-Tijd %",
-    "avgDelayTrend": "Gemiddelde Vertragingstrend",
-    "delayMin": "Vertraging (min)",
-    "byCell": "Betrouwbaarheid per Cel"
-  },
   "analytics": {
     "jobsTitle": "Orderanalyses",
     "jobsSubtitle": "Volg orderstatus, deadlines en kwaliteitsmetrieken",
     "qualityTitle": "Kwaliteitsanalyses",
     "qualitySubtitle": "Monitor opbrengsten, afval en probleemmetrieken",
     "noQualityData": "Nog geen kwaliteitsgegevens beschikbaar. Begin met productieregistratie om metrieken te zien.",
-    "noOEEData": "Nog geen OEE-gegevens beschikbaar. Voltooi bewerkingen om efficiëntiemetrieken te zien.",
-    "noReliabilityData": "Nog geen betrouwbaarheidsgegevens beschikbaar. Voltooi bewerkingen met geplande datums om metrieken te zien.",
     "noData": "Geen gegevens beschikbaar",
     "noTrendData": "Geen trendgegevens beschikbaar voor deze periode"
   }

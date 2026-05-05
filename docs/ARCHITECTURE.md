@@ -265,9 +265,8 @@ eryxon-flow/
 │   │   ├── scheduler/       # Job scheduling (drag-drop)
 │   │   ├── issues/          # NCR/issue management
 │   │   └── ...              # auth, capacity, onboarding, parts, qrm, terminal
-│   ├── hooks/               # 42 files — Data fetching & state
+│   ├── hooks/               # Data fetching & state
 │   │   ├── useRealtimeSubscription  # WebSocket subscriptions
-│   │   ├── useOEEMetrics            # OEE calculations
 │   │   ├── useServerPagination      # API pagination
 │   │   └── ...
 │   ├── pages/               # 55 files — Route targets

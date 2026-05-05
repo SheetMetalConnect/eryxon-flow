@@ -60,15 +60,6 @@
     "loadError": "Fehler beim Laden der QRM-Dashboard-Daten",
     "noData": "Keine QRM-Daten verfügbar. Bitte stellen Sie sicher, dass Sie aktive Aufträge und Arbeitsgänge haben."
   },
-  "oee": {
-    "breakdown": "OEE-Aufschlüsselung",
-    "availability": "Verfügbarkeit",
-    "performance": "Leistung",
-    "quality": "Qualität",
-    "operationStates": "Arbeitsgangstatus",
-    "trend": "OEE-Trend",
-    "byCell": "OEE nach Zelle"
-  },
   "quality": {
     "dashboardTitle": "Qualitätsübersicht",
     "partsQuality": "Teile Qualitätsübersicht",
@@ -136,27 +127,12 @@
     "overCapacity": "Überkapazität",
     "holidayClosure": "Feiertag/Schließung"
   },
-  "reliability": {
-    "summary": "Zuverlässigkeitsübersicht",
-    "totalOperations": "Gesamte Arbeitsgänge",
-    "onTime": "Pünktlich",
-    "late": "Verspätet",
-    "avgDelay": "Durchschn. Verzögerung",
-    "minutes": "Min",
-    "onTimePerformance": "Pünktlichkeitsleistung",
-    "onTimePercent": "Pünktlich %",
-    "avgDelayTrend": "Durchschnittlicher Verzögerungstrend",
-    "delayMin": "Verzögerung (Min)",
-    "byCell": "Zuverlässigkeit nach Zelle"
-  },
   "analytics": {
     "jobsTitle": "Auftragsanalysen",
     "jobsSubtitle": "Verfolgen Sie Auftragsstatus, Fristen und Qualitätsmetriken",
     "qualityTitle": "Qualitätsanalysen",
     "qualitySubtitle": "Überwachen Sie Ausbeute, Ausschuss und Problemmetriken",
     "noQualityData": "Noch keine Qualitätsdaten verfügbar. Beginnen Sie mit der Produktionserfassung, um Metriken zu sehen.",
-    "noOEEData": "Noch keine OEE-Daten verfügbar. Schließen Sie Arbeitsgänge ab, um Effizienzmetriken zu sehen.",
-    "noReliabilityData": "Noch keine Zuverlässigkeitsdaten verfügbar. Schließen Sie Arbeitsgänge mit geplanten Terminen ab, um Metriken zu sehen.",
     "noData": "Keine Daten verfügbar",
     "noTrendData": "Keine Trenddaten für diesen Zeitraum verfügbar"
   }

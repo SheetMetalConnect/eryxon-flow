@@ -48,9 +48,7 @@
     "demoDataWipedDesc": "All demo data has been cleared successfully.",
     "wipeFailed": "Wipe Failed",
     "noActiveClockings": "No active clockings",
-    "noActiveClockingsDescription": "There are no active time entries to stop.",
-    "oeeOverview": "OEE Overview",
-    "reliabilityOverview": "Delivery Reliability"
+    "noActiveClockingsDescription": "There are no active time entries to stop."
   },
   "organizationSettings": {
     "title": "Organization Settings",

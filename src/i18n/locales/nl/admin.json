@@ -48,9 +48,7 @@
     "demoDataWipedDesc": "Alle demogegevens zijn succesvol gewist.",
     "wipeFailed": "Wissen mislukt",
     "noActiveClockings": "Geen actieve klokkingen",
-    "noActiveClockingsDescription": "Er zijn geen actieve tijdregistraties om te stoppen.",
-    "oeeOverview": "OEE Overzicht",
-    "reliabilityOverview": "Leverbetrouwbaarheid"
+    "noActiveClockingsDescription": "Er zijn geen actieve tijdregistraties om te stoppen."
   },
   "organizationSettings": {
     "title": "Organisatie-instellingen",

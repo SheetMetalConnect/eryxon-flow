@@ -1,6 +1,6 @@
 # Eryxon Flow MCP Server
 
-MCP (Model Context Protocol) server for Eryxon Flow MES. Provides 55 tools for AI assistants to interact with production data, OEE metrics, work orders, and more.
+MCP (Model Context Protocol) server for Eryxon Flow. Provides tools for AI assistants to interact with production data, work orders, scheduling, and more.
 
 ## Transport Modes
 

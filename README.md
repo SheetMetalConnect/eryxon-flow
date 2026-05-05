@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <strong>Manufacturing Execution System for Job Shops</strong>
+  <strong>Self-hosted Planning & Shop Floor Execution for Job Shops</strong>
 </p>
 
 <p align="center">
@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.4.1-blue" alt="Version" />
+  <img src="https://img.shields.io/badge/version-0.5.0-blue" alt="Version" />
   <img src="https://img.shields.io/badge/license-BSL--1.1-green" alt="License" />
   <img src="https://img.shields.io/badge/react-18-61DAFB?logo=react" alt="React" />
   <img src="https://img.shields.io/badge/supabase-backend-3FCF8E?logo=supabase" alt="Supabase" />
@@ -22,7 +22,9 @@
 
 ---
 
-Track jobs through production, give operators tablet-friendly work queues, view 3D CAD models in the browser, and integrate with your ERP — all from one platform.
+> **Project Status (May 2026):** Stable v0.5.0 release. This is a self-hosted planning integration and shop floor execution tool. The code builds, tests pass, and Docker deployment works out of the box. Start with the [Architecture docs](docs/ARCHITECTURE.md) and the [Changelog](CHANGELOG.md).
+
+Track jobs through production, give operators tablet-friendly work queues, view 3D CAD models in the browser, and integrate with your ERP/planning system — all from one self-hosted platform.
 
 Built for **high-mix, low-volume** production: sheet metal, machine shops, custom fabrication. If you're tracking thousands of unique parts through cutting, bending, welding, and assembly, this is for you.
 
@@ -37,12 +39,14 @@ Built for **high-mix, low-volume** production: sheet metal, machine shops, custo
 **Management**
 - Job and part tracking with full production visibility
 - 3D STEP viewer — browser-based CAD, no software install
-- Dashboard stats and production analytics
+- QRM dashboard with WIP limits and capacity overview
 - Issue tracking and quality management (NCR)
 
 **Integration**
 - REST API with 30+ endpoints (jobs, parts, operations, time entries, webhooks)
+- Planning adapters (FrePPLe, Odoo MRP) for scheduling integration
 - ERP sync with incremental change detection
+- MQTT connectivity with retry, circuit breaker, dead letter queue
 - Webhook notifications for lifecycle events
 - MCP server for AI assistant integration
 

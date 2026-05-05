@@ -26,8 +26,6 @@
 | `useExceptions` | exceptions, expectations, profiles | `exceptions.all()` | useQuery |
 | `useException` | exceptions, expectations, profiles | `exceptions.detail()` | useQuery |
 | `useFeatureFlags` | tenants | `config.featureFlags()` | useQuery |
-| `useOEEMetrics` | (TODO) | `['oee-metrics', days]` | useQuery |
-| `useReliabilityMetrics` | (TODO) | `['reliability-metrics', days]` | useQuery |
 | `useQualityMetrics` | operation_quantities, scrap_reasons, issues | `quality.metrics()` | useQuery |
 | `useScrapReasonUsage` | scrap_reasons, operation_quantities | `quality.scrapUsage()` | useQuery |
 | `useJobQualityMetrics` | parts, operations, operation_quantities, issues | `quality.byJob()` | useQuery |
