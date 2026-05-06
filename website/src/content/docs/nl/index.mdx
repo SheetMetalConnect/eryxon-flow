@@ -26,6 +26,20 @@ import LinkButton from "~/components/LinkButton.astro";
 import ListCard from "~/components/user-components/ListCard.astro";
 import ThemeDemo from "~/components/ThemeDemo.astro";
 
+<Section title="Huidige <span class='text-primary'>Status</span>" description="v0.5.0 is de laatste release met actieve ontwikkeling.">
+<Grid columns={3}>
+  <Card title="Stabiele Release" icon="seti:tag" iconColor="#38bdf8">
+    v0.5.0 is op 6 mei 2026 gepubliceerd als huidige stabiele release voor planningintegratie en shopfloor-uitvoering.
+  </Card>
+  <Card title="Hosted Versie" icon="seti:globe" iconColor="#34d399">
+    De hosted versie blijft online zoals hij nu is. Nieuwe productie-installaties kunnen het beste self-hosting of een onderhouden fork gebruiken.
+  </Card>
+  <Card title="Ontwikkeling Stil" icon="seti:lock" iconColor="#fb923c">
+    Actieve ontwikkeling staat momenteel stil. U bent vrij om Eryxon Flow te gebruiken, forken en aanpassen onder de BSL 1.1 licentievoorwaarden.
+  </Card>
+</Grid>
+</Section>
+
 <Section title="Gebouwd voor <span class='text-primary'>Productie</span>" description="Real-time operator terminals, capaciteitsplanning en ERP-integratie.">
 
 <Grid columns={3}>
@@ -140,7 +154,7 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 </Grid>
 
 <div class="flex flex-wrap justify-center gap-4 mt-12 pb-12">
-    <LinkButton href="https://app.eryxon.eu" variant="primary">Live Demo Proberen</LinkButton>
+    <LinkButton href="https://app.eryxon.eu" variant="primary">Hosted Versie Openen</LinkButton>
     <LinkButton href="/nl/guides/quick-start/" variant="minimal">Start Introductie</LinkButton>
     <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow" variant="minimal">Star op GitHub</LinkButton>
 </div>
@@ -149,11 +163,12 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 
 <Section title="Snelle <span class='text-primary'>Navigatie</span>" description="Ga direct naar de documentatie die u nodig heeft.">
   <Grid columns={3}>
-    <ListCard title="Aan de Slag" icon="rocket" number="4">
+    <ListCard title="Aan de Slag" icon="rocket" number="5">
       - [Snel Starten](/nl/guides/quick-start/)
       - [Deployment](/nl/guides/deployment/)
       - [Zelf Hosten](/nl/guides/self-hosting/)
       - [Roadmap](/nl/roadmap/)
+      - [Changelog](/nl/guides/changelog/)
     </ListCard>
 
     <ListCard title="Handleidingen" icon="open-book" number="3">

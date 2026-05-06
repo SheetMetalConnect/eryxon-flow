@@ -2,7 +2,7 @@
 
 All notable changes to Eryxon Flow are documented here.
 
-## [0.5.0] - 2026-05-04
+## [0.5.0] - 2026-05-06
 
 ### Added
 
@@ -31,6 +31,8 @@ All notable changes to Eryxon Flow are documented here.
 ### Changed
 
 - ESLint `no-explicit-any` rule enabled as warning
+- Finalized release handoff messaging: active development is on hold, the hosted version remains online as-is, and users are free to use, fork, and adapt Eryxon Flow under the BSL 1.1 terms
+- Added a website changelog page so the README, release notes, and docs site point to the same release history
 - `as any` casts reduced from 72 to 7 across codebase
 - Supabase types regenerated with latest schema
 - **Lazy-load mockDataGenerator** — 2,202-line mock data module now loads on demand via dynamic `import()`. Removes ~40KB from the production bundle for all non-demo users.

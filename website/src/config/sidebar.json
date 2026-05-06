@@ -22,6 +22,10 @@
         {
           "label": "[seti:plan] Roadmap",
           "slug": "roadmap"
+        },
+        {
+          "label": "[seti:changelog] Changelog",
+          "slug": "guides/changelog"
         }
       ]
     },

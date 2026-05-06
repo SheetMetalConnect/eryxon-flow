@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://app.eryxon.eu"><strong>Live Demo</strong></a> &middot;
+  <a href="https://app.eryxon.eu"><strong>Hosted Version</strong></a> &middot;
   <a href="https://eryxon.eu">Docs</a> &middot;
   <a href="https://github.com/SheetMetalConnect/eryxon-flow/issues">Issues</a>
 </p>
@@ -22,7 +22,7 @@
 
 ---
 
-> **Project Status (May 2026):** Stable v0.5.0 release. Active development is currently on hold. This is a self-hosted planning integration and shop floor execution tool; you are free to use, fork, and adapt it as you wish under the BSL 1.1 license terms. The code builds, tests pass, and Docker deployment works out of the box. Start with the [Architecture docs](docs/ARCHITECTURE.md) and the [Changelog](CHANGELOG.md).
+> **Project Status (May 2026):** Stable v0.5.0 release. Active development is currently on hold, and the hosted version at [app.eryxon.eu](https://app.eryxon.eu) remains online as-is. This is a self-hosted planning integration and shop floor execution tool; you are free to use, fork, and adapt it as you wish under the BSL 1.1 license terms. The code builds, tests pass, and Docker deployment works out of the box. Start with the [Architecture docs](docs/ARCHITECTURE.md) and the [Changelog](CHANGELOG.md).
 
 Track jobs through production, give operators tablet-friendly work queues, view 3D CAD models in the browser, and integrate with your ERP/planning system — all from one self-hosted platform.
 

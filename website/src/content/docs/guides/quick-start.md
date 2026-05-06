@@ -7,7 +7,7 @@ description: "Get up and running with Eryxon Flow in minutes."
 
 Get Eryxon Flow up and running.
 
-> **Just want to explore?** Try the [live demo at app.eryxon.eu](https://app.eryxon.eu) — no setup needed. Sign up and start exploring immediately.
+> **Just want to explore?** Open the [hosted version at app.eryxon.eu](https://app.eryxon.eu) - no setup needed. It remains online as-is.
 
 ---
 

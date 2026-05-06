@@ -26,6 +26,20 @@ import LinkButton from "~/components/LinkButton.astro";
 import ListCard from "~/components/user-components/ListCard.astro";
 import ThemeDemo from "~/components/ThemeDemo.astro";
 
+<Section title="Aktueller <span class='text-primary'>Status</span>" description="v0.5.0 ist die letzte Release mit aktiver Entwicklung.">
+<Grid columns={3}>
+  <Card title="Stabile Release" icon="seti:tag" iconColor="#38bdf8">
+    v0.5.0 wurde am 6. Mai 2026 als aktuelle stabile Release für Planungsintegration und Werkstattausführung veröffentlicht.
+  </Card>
+  <Card title="Gehostete Version" icon="seti:globe" iconColor="#34d399">
+    Die gehostete Version bleibt online wie sie ist. Neue Produktionseinführungen sollten Self-Hosting oder einen gepflegten Fork einplanen.
+  </Card>
+  <Card title="Entwicklung Pausiert" icon="seti:lock" iconColor="#fb923c">
+    Die aktive Entwicklung ist derzeit pausiert. Sie können Eryxon Flow unter den BSL 1.1 Lizenzbedingungen nutzen, forken und anpassen.
+  </Card>
+</Grid>
+</Section>
+
 <Section title="Gebaut für die <span class='text-primary'>Produktion</span>" description="Echtzeit-Werkerterminals, Kapazitätsplanung und ERP-Integration ab Werk.">
 
 <Grid columns={3}>
@@ -139,19 +153,20 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 </Grid>
 
 <div class="flex flex-wrap justify-center gap-4 mt-12 pb-12">
-    <LinkButton href="https://app.eryxon.eu" variant="primary">Live-Demo Testen</LinkButton>
+    <LinkButton href="https://app.eryxon.eu" variant="primary">Gehostete Version Öffnen</LinkButton>
     <LinkButton href="/de/guides/quick-start/" variant="minimal">Schnellstart-Anleitung</LinkButton>
-    <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow" variant="minimal">Auf GitHub Starren</LinkButton>
+    <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow" variant="minimal">Auf GitHub Öffnen</LinkButton>
 </div>
 </Section>
 
 <Section title="Schnelle <span class='text-primary'>Navigation</span>" description="Direkt zur benötigten Dokumentation springen.">
   <Grid columns={3}>
-    <ListCard title="Erste Schritte" icon="rocket" number="4">
+    <ListCard title="Erste Schritte" icon="rocket" number="5">
       - [Schnellstart](/de/guides/quick-start/)
       - [Deployment](/de/guides/deployment/)
       - [Self-Hosting](/de/guides/self-hosting/)
       - [Roadmap](/de/roadmap/)
+      - [Changelog](/de/guides/changelog/)
     </ListCard>
 
     <ListCard title="Benutzerhandbücher" icon="open-book" number="3">

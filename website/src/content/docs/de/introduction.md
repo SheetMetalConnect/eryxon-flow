@@ -5,7 +5,7 @@ description: Das einfache, elegante und leistungsstarke Manufacturing Execution 
 
 **Das einfache, elegante und leistungsstarke Manufacturing Execution System, mit dem Ihre Mitarbeiter gerne arbeiten. Entwickelt für die Metallverarbeitung.**
 
-> **Jetzt ausprobieren:** Erkunden Sie die [Live-Demo auf app.eryxon.eu](https://app.eryxon.eu) — keine Installation erforderlich.
+> **Jetzt ausprobieren:** Öffnen Sie die [gehostete Version auf app.eryxon.eu](https://app.eryxon.eu) - keine Installation erforderlich. Sie bleibt online wie sie ist.
 
 ## Was Es Macht
 

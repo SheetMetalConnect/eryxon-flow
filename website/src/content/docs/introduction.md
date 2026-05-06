@@ -5,7 +5,7 @@ description: Manufacturing execution system for metals fabrication shops.
 
 **Manufacturing execution system for metals fabrication shops.**
 
-> **Try it now:** Explore the [live demo at app.eryxon.eu](https://app.eryxon.eu) — no installation required.
+> **Try it now:** Open the [hosted version at app.eryxon.eu](https://app.eryxon.eu) - no installation required. It remains online as-is.
 
 ![Eryxon Flow admin dashboard](../../assets/step-1.png)
 

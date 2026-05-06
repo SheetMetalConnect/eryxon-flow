@@ -5,7 +5,7 @@ description: "Eryxon Flow in enkele minuten opstarten en gebruiken."
 
 Eryxon Flow snel opstarten.
 
-> **Gewoon verkennen?** Probeer de [live demo op app.eryxon.eu](https://app.eryxon.eu) — geen installatie nodig. Registreer en begin direct met verkennen.
+> **Gewoon verkennen?** Open de [hosted versie op app.eryxon.eu](https://app.eryxon.eu) - geen installatie nodig. Deze blijft online zoals hij nu is.
 
 ---
 

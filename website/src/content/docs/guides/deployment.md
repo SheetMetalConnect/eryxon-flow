@@ -5,7 +5,7 @@ description: "Application deployment guide for Eryxon Flow."
 
 # Deployment Guide
 
-> **Want to try it first?** Check out the [live demo at app.eryxon.eu](https://app.eryxon.eu) before deploying your own instance.
+> **Want to try it first?** Open the [hosted version at app.eryxon.eu](https://app.eryxon.eu) before deploying your own instance. It remains online as-is.
 
 ## Quick Start (Automated)
 

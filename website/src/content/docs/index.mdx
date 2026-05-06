@@ -26,6 +26,20 @@ import LinkButton from "~/components/LinkButton.astro";
 import ListCard from "~/components/user-components/ListCard.astro";
 import ThemeDemo from "~/components/ThemeDemo.astro";
 
+<Section title="Current <span class='text-primary'>Status</span>" description="v0.5.0 is the final active-development release.">
+<Grid columns={3}>
+  <Card title="Stable Release" icon="seti:tag" iconColor="#38bdf8">
+    v0.5.0 was published on May 6, 2026 as the current stable release for self-hosted planning integration and shop floor execution.
+  </Card>
+  <Card title="Hosted Version" icon="seti:globe" iconColor="#34d399">
+    The hosted version remains online as-is. New production deployments should plan around self-hosting or a maintained fork.
+  </Card>
+  <Card title="Development Hold" icon="seti:lock" iconColor="#fb923c">
+    Active development is currently on hold. You are free to use, fork, and adapt Eryxon Flow under the BSL 1.1 license terms.
+  </Card>
+</Grid>
+</Section>
+
 <Section title="Built for <span class='text-primary'>Production</span>" description="Real-time operator terminals, multi-tenant workflows, and ERP integration out of the box.">
 
 <Grid columns={3}>
@@ -139,7 +153,7 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 </Grid>
 
 <div class="flex flex-wrap justify-center gap-4 mt-12 pb-12">
-    <LinkButton href="https://app.eryxon.eu" variant="primary">Try Live Demo</LinkButton>
+    <LinkButton href="https://app.eryxon.eu" variant="primary">Open Hosted Version</LinkButton>
     <LinkButton href="/guides/quick-start/" variant="minimal">Start Quick Guide</LinkButton>
     <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow" variant="minimal">Star on GitHub</LinkButton>
 </div>
@@ -147,11 +161,12 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 
 <Section title="Quick <span class='text-primary'>Navigation</span>" description="Jump straight to the docs you need.">
   <Grid columns={3}>
-    <ListCard title="Getting Started" icon="rocket" number="4">
+    <ListCard title="Getting Started" icon="rocket" number="5">
       - [Quick Start](/guides/quick-start/)
       - [Deployment](/guides/deployment/)
       - [Self-Hosting](/guides/self-hosting/)
       - [Roadmap](/roadmap/)
+      - [Changelog](/guides/changelog/)
     </ListCard>
 
     <ListCard title="User Guides" icon="open-book" number="3">

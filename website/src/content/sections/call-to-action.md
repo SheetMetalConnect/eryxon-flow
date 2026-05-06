@@ -5,7 +5,7 @@ description: Digitize your shop floor and take control of production with Eryxon
 enable: true
 fill_button:
   enable: true
-  label: Try Live Demo
+  label: Open Hosted Version
   link: https://app.eryxon.eu
 outline_button:
   enable: true
