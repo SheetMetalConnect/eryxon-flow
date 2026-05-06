@@ -5,7 +5,7 @@ description: "Operational reference for the Eryxon Flow MCP server."
 
 # Eryxon Flow MCP Server
 
-**MCP server for self-hosted Eryxon Flow MES deployments.** The v0.5.0 final release uses direct Supabase access with a service role key, so run it only on trusted infrastructure.
+**MCP server for self-hosted Eryxon Flow MES deployments.** The v0.5.x maintenance line uses direct Supabase access with a service role key, so run it only on trusted infrastructure.
 
 ## Features
 

@@ -5,9 +5,19 @@ description: Release history and current maintenance status for Eryxon Flow.
 
 ## Current Status
 
-The latest release is **v0.5.0**, published on May 6, 2026. Active development is currently on hold. The hosted version at [app.eryxon.eu](https://app.eryxon.eu) remains online as-is.
+The latest release is **v0.5.1**, published on May 6, 2026. Active development is currently on hold. The hosted version at [app.eryxon.eu](https://app.eryxon.eu) remains online as-is.
 
-Eryxon Flow is free to use, fork, and adapt under the Business Source License 1.1 terms. For new production deployments, use the self-hosting guides and plan to maintain your own fork if you need changes beyond v0.5.0.
+Eryxon Flow is free to use, fork, and adapt under the Business Source License 1.1 terms. For new production deployments, use the self-hosting guides and plan to maintain your own fork if you need changes beyond v0.5.1.
+
+## v0.5.1 - May 6, 2026
+
+Maintenance hotfix for release metadata and final handoff docs.
+
+### Fixed
+
+- Refreshed stale OpenTrace knowledge graph counts after regenerating the local index
+- Aligned the README BSL conversion summary with the repository `LICENSE`
+- Marked v0.5.1 as the current maintenance hotfix while preserving v0.5.0 as the final active-development release
 
 ## v0.5.0 - May 6, 2026
 

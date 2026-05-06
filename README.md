@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.5.0-blue" alt="Version" />
+  <img src="https://img.shields.io/badge/version-0.5.1-blue" alt="Version" />
   <img src="https://img.shields.io/badge/license-BSL--1.1-green" alt="License" />
   <img src="https://img.shields.io/badge/react-18-61DAFB?logo=react" alt="React" />
   <img src="https://img.shields.io/badge/supabase-backend-3FCF8E?logo=supabase" alt="Supabase" />
@@ -22,7 +22,7 @@
 
 ---
 
-> **Project Status (May 2026):** Stable v0.5.0 release. Active development is currently on hold, and the hosted version at [app.eryxon.eu](https://app.eryxon.eu) remains online as-is. This is a self-hosted planning integration and shop floor execution tool; you are free to use, fork, and adapt it as you wish under the BSL 1.1 license terms. The code builds, tests pass, and Docker deployment works out of the box. Start with the [Architecture docs](docs/ARCHITECTURE.md) and the [Changelog](CHANGELOG.md).
+> **Project Status (May 2026):** Stable v0.5.1 maintenance hotfix. v0.5.0 remains the final active-development release; active development is currently on hold, and the hosted version at [app.eryxon.eu](https://app.eryxon.eu) remains online as-is. This is a self-hosted planning integration and shop floor execution tool; you are free to use, fork, and adapt it as you wish under the BSL 1.1 license terms. The code builds, tests pass, and Docker deployment works out of the box. Start with the [Architecture docs](docs/ARCHITECTURE.md) and the [Changelog](CHANGELOG.md).
 
 Track jobs through production, give operators tablet-friendly work queues, view 3D CAD models in the browser, and integrate with your ERP/planning system — all from one self-hosted platform.
 

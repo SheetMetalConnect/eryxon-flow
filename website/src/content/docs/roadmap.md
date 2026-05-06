@@ -3,7 +3,7 @@ title: Roadmap
 description: Feature considerations and future direction for Eryxon Flow
 ---
 
-> **May 2026 status:** Active development is currently on hold after the v0.5.0 release. This page lists possible future work for forks, maintainers, or a later restart.
+> **May 2026 status:** Active development is currently on hold after the v0.5.0 final active-development release. v0.5.1 is the current maintenance hotfix. This page lists possible future work for forks, maintainers, or a later restart.
 
 Features we're **considering** - nothing planned, promised, or guaranteed.
 

@@ -100,7 +100,7 @@ docker run -p 3001:3001 \
 
 ## Connection Mode
 
-The v0.5.0 final release supports direct Supabase access only.
+The v0.5.x maintenance line supports direct Supabase access only.
 
 | Environment Variables | Mode | Use Case |
 |----------------------|------|----------|

@@ -2,6 +2,14 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.5.1] - 2026-05-06
+
+### Fixed
+
+- Refreshed stale OpenTrace knowledge graph counts in the README and agent docs after regenerating the local index
+- Aligned the README BSL conversion summary with the `LICENSE` change-date wording instead of a hard-coded calendar date
+- Marked v0.5.1 as the current maintenance hotfix across README and website release docs
+
 ## [0.5.0] - 2026-05-06
 
 ### Added
