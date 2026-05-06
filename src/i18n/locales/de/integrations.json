@@ -487,7 +487,12 @@
     "step3Title": "Chatten beginnen",
     "step3Description": "Ihre KI hat jetzt Zugriff auf Ihre Fertigungsdaten",
     "availableTools": "Verfügbare Tools",
-    "availableToolsDescription": "Tools, die Ihr KI-Assistent verwenden kann"
+    "availableToolsDescription": "Tools, die Ihr KI-Assistent verwenden kann",
+    "transportMode": "Transportmodus",
+    "stdioLocal": "Stdio (Lokal)",
+    "httpHosted": "HTTP (Gehostet)",
+    "stdioDescription": "Starten Sie den MCP-Server lokal mit node. Geeignet fuer Entwicklung und Einzelbenutzer-Setups.",
+    "httpDescription": "Verbinden Sie sich per HTTP mit einem gehosteten MCP-Server. Geeignet fuer Cloud-Deployments und geteilten Zugriff."
   },
   "mcpKeys": {
     "failedToFetch": "MCP-Schlüssel konnten nicht abgerufen werden",

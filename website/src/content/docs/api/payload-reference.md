@@ -719,6 +719,128 @@ not_started ──start──> in_progress ──pause──> on_hold
 
 ---
 
+## Batches API
+
+**Endpoint:** `/functions/v1/api-batches`
+
+Use batches to group operations that run together, such as laser nests, tube cutting runs, saw batches, finishing batches, or general grouped work.
+
+### POST - Create Batch
+
+```json
+{
+  "batch_number": "NEST-2026-001",
+  "batch_type": "laser_nesting",
+  "cell_id": "550e8400-e29b-41d4-a716-446655440000",
+  "material": "SS304",
+  "thickness_mm": 2,
+  "notes": "Sheet 1 of urgent nesting run",
+  "nesting_metadata": {
+    "program": "NEST-2026-001.nc",
+    "sheet_size": "1500x3000",
+    "utilization": 0.87
+  },
+  "operation_ids": [
+    "660e8400-e29b-41d4-a716-446655440000",
+    "770e8400-e29b-41d4-a716-446655440000"
+  ]
+}
+```
+
+| Field | Type | Required | Constraints |
+|-------|------|----------|-------------|
+| `batch_number` | string | **Yes** | Unique per tenant |
+| `batch_type` | string | No | `laser_nesting`, `tube_batch`, `saw_batch`, `finishing_batch`, `general` |
+| `cell_id` | UUID | **Yes** | Must exist in the authenticated tenant |
+| `material` | string | No | Free text material label |
+| `thickness_mm` | number | No | Sheet or stock thickness |
+| `parent_batch_id` | UUID | No | Must reference a batch in the same tenant |
+| `nesting_metadata` | object | No | JSON metadata from nesting/CAM software |
+| `nesting_image_url` | string | No | URL to nesting layout image |
+| `layout_image_url` | string | No | URL to secondary layout image |
+| `operation_ids` | UUID[] | No | Operations must belong to the authenticated tenant and be unassigned |
+
+### GET - List Batches
+
+```
+GET /functions/v1/api-batches?status=ready&batch_type=laser_nesting&limit=50
+```
+
+Supported filters: `status`, `batch_type`, `cell_id`, `material`. Text search covers `batch_number` and `material`.
+
+### PATCH - Update Batch
+
+```
+PATCH /functions/v1/api-batches?id=<batch-id>
+```
+
+```json
+{
+  "status": "ready",
+  "notes": "Released to laser cell"
+}
+```
+
+Use the batch lifecycle endpoint to add operations; `operation_ids` is not accepted in `PATCH`.
+
+## Batch Lifecycle API
+
+**Endpoint:** `/functions/v1/api-batch-lifecycle`
+
+All lifecycle operations use POST with the action as the URL path segment.
+
+### Start Batch
+
+```
+POST /functions/v1/api-batch-lifecycle/start?id=<batch-id>
+```
+
+```json
+{
+  "operator_id": "880e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Precondition:** Status must be `draft` or `ready`
+**Result:** Batch and operations move to `in_progress`; time entries are created when `operator_id` is supplied
+**Webhook:** `batch.started`
+
+### Stop Batch
+
+```
+POST /functions/v1/api-batch-lifecycle/stop?id=<batch-id>
+```
+
+```json
+{
+  "operator_id": "880e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Precondition:** Status must be `in_progress`
+**Result:** Batch and operations move to `completed`; active time is distributed across operations when time entries exist
+**Webhook:** `batch.completed`
+
+### Add Operations
+
+```
+POST /functions/v1/api-batch-lifecycle/add-operations?id=<batch-id>
+```
+
+```json
+{
+  "operation_ids": [
+    "660e8400-e29b-41d4-a716-446655440000",
+    "770e8400-e29b-41d4-a716-446655440000"
+  ]
+}
+```
+
+**Precondition:** Batch status must be `draft` or `ready`
+**Result:** Operations are appended to the batch sequence
+
+---
+
 ## Other APIs
 
 ### Cells API
@@ -727,7 +849,7 @@ not_started ──start──> in_progress ──pause──> on_hold
 
 ### Materials API
 
-**Endpoint:** `/functions/v1/api-materials` - Standard CRUD for materials.
+**Endpoint:** `GET /functions/v1/api-materials` - Read-only list of unique material names aggregated from `parts.material`.
 
 ### Resources API
 
@@ -747,7 +869,7 @@ not_started ──start──> in_progress ──pause──> on_hold
 
 ### Templates API
 
-**Endpoint:** `/functions/v1/api-templates` - Standard CRUD for job templates.
+**Endpoint:** `/functions/v1/api-templates` - CRUD for operation substep templates and template items.
 
 ### Webhook Logs API
 
@@ -767,7 +889,7 @@ not_started ──start──> in_progress ──pause──> on_hold
 
 ### Export API
 
-**Endpoint:** `/functions/v1/api-export` - Export data in CSV/JSON format.
+**Endpoint:** `GET /functions/v1/api-export` - Admin-only tenant export. The edge function returns JSON; the web app can convert that JSON into CSV ZIP files client-side.
 
 ### ERP Sync API
 
@@ -783,11 +905,13 @@ not_started ──start──> in_progress ──pause──> on_hold
 
 ### Authentication
 
-Every request must include an API key:
+Most integration requests must include an API key:
 
 ```bash
 curl -H "Authorization: Bearer ery_live_xxxxxxxxxx" ...
 ```
+
+Admin-only browser endpoints such as `api-export` use the signed-in Supabase user session token instead.
 
 ### Pagination
 

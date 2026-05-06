@@ -168,7 +168,8 @@ export default function ConfigUsers() {
     setCreatedMachineApiKey(null);
 
     try {
-      const { data, error } = await supabase.rpc('create_machine_worker' as any, {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- create_machine_worker RPC not yet in generated types
+      const { data, error } = await (supabase as any).rpc('create_machine_worker', {
         p_name: machineForm.name,
         p_machine_id: machineForm.machine_id,
         p_description: machineForm.description || null,

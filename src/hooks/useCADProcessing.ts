@@ -15,7 +15,7 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
 import { QueryKeys } from '@/lib/queryClient';
 import { logger } from '@/lib/logger';
 import {
@@ -275,7 +275,7 @@ interface UseCADProcessingOptions {
 }
 
 export function useCADProcessing() {
-  const { session, profile } = useAuth();
+  const profile = useProfile();
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingError, setProcessingError] = useState<string | null>(null);

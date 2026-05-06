@@ -130,13 +130,77 @@ export function validateWebhookUrl(url: string): { valid: boolean; error?: strin
       return { valid: false, error: 'Localhost URLs not allowed' };
     }
 
-    // Block IPv6 private ranges
-    if (
-      hostname.startsWith('[fc') || hostname.startsWith('[fd') || // fc00::/7 unique local
-      hostname.startsWith('[fe80') || // fe80::/10 link-local
-      hostname.startsWith('[::ffff:') // IPv4-mapped IPv6
-    ) {
-      return { valid: false, error: 'Private IPv6 addresses not allowed' };
+    // Block IPv6 loopback in all representations
+    // URL parser preserves brackets for IPv6: hostname is "[::1]" not "::1"
+    // URL parser also normalizes expanded forms (e.g. [0:0:0:0:0:0:0:1] → [::1])
+    // and converts IPv4-mapped forms to hex (e.g. [::ffff:127.0.0.1] → [::ffff:7f00:1])
+    if (hostname.startsWith('[') && hostname.endsWith(']')) {
+      const ipv6 = hostname.slice(1, -1);
+
+      // Block ::1 (URL parser normalizes all loopback variants to this)
+      if (ipv6 === '::1') {
+        return { valid: false, error: 'Localhost URLs not allowed' };
+      }
+
+      // Handle IPv4-mapped IPv6 addresses (::ffff:XXXX:XXXX or ::ffff:a.b.c.d)
+      // URL parser normalizes dotted form to hex: ::ffff:127.0.0.1 → ::ffff:7f00:1
+      if (ipv6.startsWith('::ffff:')) {
+        const mapped = ipv6.slice(7); // everything after "::ffff:"
+
+        // Extract the IPv4 address from the mapped portion
+        // Hex form: "XXYY:ZZWW" → IPv4 is XX.YY.ZZ.WW (each pair is one octet)
+        // Dotted form: "a.b.c.d" (pre-normalization, unlikely after URL parse)
+        let firstOctet: number | null = null;
+        let secondOctet: number | null = null;
+
+        if (mapped.includes('.')) {
+          // Dotted notation: "10.0.0.1"
+          const parts = mapped.split('.');
+          firstOctet = parseInt(parts[0], 10);
+          secondOctet = parseInt(parts[1], 10);
+        } else if (mapped.includes(':')) {
+          // Hex notation: "7f00:1" → first octet = 0x7f = 127
+          const high = mapped.split(':')[0];
+          // High word contains first two octets: "7f00" → 0x7f, 0x00
+          firstOctet = parseInt(high.slice(0, -2) || '0', 16);
+          secondOctet = parseInt(high.slice(-2), 16);
+        } else {
+          // Single hex segment without colon (e.g. "7f00" for short addrs)
+          firstOctet = parseInt(mapped.slice(0, -2) || '0', 16);
+          secondOctet = parseInt(mapped.slice(-2), 16);
+        }
+
+        if (firstOctet !== null) {
+          // 127.x.x.x → loopback
+          if (firstOctet === 127) {
+            return { valid: false, error: 'Localhost URLs not allowed' };
+          }
+          // 10.x.x.x → private
+          if (firstOctet === 10) {
+            return { valid: false, error: 'Private IPv6 addresses not allowed' };
+          }
+          // 192.168.x.x → private
+          if (firstOctet === 192 && secondOctet === 168) {
+            return { valid: false, error: 'Private IPv6 addresses not allowed' };
+          }
+          // 172.16-31.x.x → private
+          if (firstOctet === 172 && secondOctet !== null && secondOctet >= 16 && secondOctet <= 31) {
+            return { valid: false, error: 'Private IPv6 addresses not allowed' };
+          }
+          // 169.254.x.x → link-local / metadata
+          if (firstOctet === 169 && secondOctet === 254) {
+            return { valid: false, error: 'Metadata service URLs not allowed' };
+          }
+        }
+      }
+
+      // Block IPv6 unique local (fc00::/7) and link-local (fe80::/10)
+      if (
+        ipv6.startsWith('fc') || ipv6.startsWith('fd') ||
+        ipv6.startsWith('fe80')
+      ) {
+        return { valid: false, error: 'Private IPv6 addresses not allowed' };
+      }
     }
 
     // Block private IP ranges

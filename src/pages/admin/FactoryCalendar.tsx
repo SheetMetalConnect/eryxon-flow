@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { useTenant } from "@/hooks/useTenant";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -83,7 +84,8 @@ const DAY_TYPE_ICONS: Record<DayType, React.ReactNode> = {
 
 export default function FactoryCalendar() {
   const { t } = useTranslation();
-  const { profile, tenant } = useAuth();
+  const profile = useProfile();
+  const { tenant } = useTenant();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,7 +105,7 @@ export default function FactoryCalendar() {
 
   // Working days mask from tenant (Mon=1, Tue=2, Wed=4, Thu=8, Fri=16, Sat=32, Sun=64)
   // Default 31 = Mon-Fri
-  const workingDaysMask = (tenant as any)?.working_days_mask ?? 31;
+  const workingDaysMask = tenant?.working_days_mask ?? 31;
 
   const getDayTypeLabel = (type: DayType): string => {
     const labels: Record<DayType, string> = {

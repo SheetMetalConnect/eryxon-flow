@@ -74,7 +74,7 @@ export default function ConfigResources() {
       .order("name");
 
     if (!error && data) {
-      setResources(data as any);
+      setResources(data as unknown as Resource[]);
     }
     setLoading(false);
   };

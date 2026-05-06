@@ -98,7 +98,7 @@ const MemoizedRow = React.memo(
   }
 ) as <TData>(props: MemoizedRowProps<TData>) => React.ReactElement;
 
-(MemoizedRow as any).displayName = "MemoizedRow";
+(MemoizedRow as unknown as { displayName: string }).displayName = "MemoizedRow";
 
 export interface DataTableFilterOption {
   label: string;

@@ -1,5 +1,5 @@
 /**
- * Unified client interface for both direct Supabase and REST API modes
+ * Unified client interface for direct Supabase mode.
  */
 
 export interface QueryResult<T = any> {
@@ -13,9 +13,7 @@ export interface CountResult {
 }
 
 /**
- * Unified client interface that works with both:
- * - Direct Supabase access (self-hosted)
- * - REST API (cloud SaaS)
+ * Unified client interface for direct Supabase access (self-hosted).
  */
 export interface UnifiedClient {
   // Core CRUD operations
@@ -30,7 +28,7 @@ export interface UnifiedClient {
   count(table: string, options?: SelectOptions): Promise<CountResult>;
 
   // Connection info
-  getMode(): 'direct' | 'api';
+  getMode(): 'direct';
 }
 
 export interface SelectOptions {

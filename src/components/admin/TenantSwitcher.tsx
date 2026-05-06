@@ -17,7 +17,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { useTenant } from "@/hooks/useTenant";
+import { useAuthActions } from "@/hooks/useAuthActions";
 
 interface Tenant {
   id: string;
@@ -38,7 +40,9 @@ export const TenantSwitcher: React.FC<TenantSwitcherProps> = ({
   open,
   onClose,
 }) => {
-  const { profile, tenant, switchTenant } = useAuth();
+  const profile = useProfile();
+  const { tenant } = useTenant();
+  const { switchTenant } = useAuthActions();
   const [tenants, setTenants] = React.useState<Tenant[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [switching, setSwitching] = React.useState(false);

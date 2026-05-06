@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { useTenant } from "@/hooks/useTenant";
 import { Key, Copy, Trash2, Plus, Activity, AlertCircle, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
 import { DataTable } from "@/components/ui/data-table/DataTable";
@@ -36,7 +37,8 @@ interface McpKey {
 
 export default function ConfigMcpKeys() {
   const { t } = useTranslation();
-  const { profile, tenant } = useAuth();
+  const profile = useProfile();
+  const { tenant } = useTenant();
   const [mcpKeys, setMcpKeys] = useState<McpKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);

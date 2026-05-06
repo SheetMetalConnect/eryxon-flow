@@ -15,16 +15,19 @@
     "@astrojs/starlight": "0.38.1",
     "@astrojs/starlight-tailwind": "5.0.0",
     "@tailwindcss/vite": "^4.1.17",
-    "astro": "6.0.4",
+    "astro": "^6.2.2",
     "astro-font": "^1.1.0",
     "marked": "^17.0.4",
     "sharp": "^0.34.5",
     "vite": "^7.2.6"
   },
   "devDependencies": {
-    "@astrojs/check": "0.9.7",
+    "@astrojs/check": "^0.9.9",
     "astro-vtbot": "^2.1.11",
     "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "yaml": "2.8.4"
   }
 }

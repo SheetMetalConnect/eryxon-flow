@@ -47,6 +47,23 @@ interface StatusData {
   entries: ActiveEntry[];
 }
 
+interface ActiveTimeEntryRow {
+  id: string;
+  start_time: string;
+  operation_id: string;
+  operation?: {
+    id?: string;
+    operation_name?: string | null;
+    part?: {
+      part_number?: string | null;
+      is_bullet_card?: boolean | null;
+      job?: {
+        job_number?: string | null;
+      } | null;
+    } | null;
+  } | null;
+}
+
 /** Diagonal stripe CSS pattern */
 const stripePattern = (color1: string, color2: string, size = 8) =>
   `repeating-linear-gradient(
@@ -145,8 +162,9 @@ export function OperatorStatusBar() {
         return;
       }
 
-      const entry = data[0] as any;
-      const hasRush = data.some((e: any) => e.operation?.part?.is_bullet_card);
+      const rows = data as unknown as ActiveTimeEntryRow[];
+      const entry = rows[0];
+      const hasRush = rows.some((e) => e.operation?.part?.is_bullet_card);
       const startTime = entry.start_time;
       const hoursSinceStart = (Date.now() - new Date(startTime).getTime()) / (1000 * 60 * 60);
 
@@ -154,7 +172,7 @@ export function OperatorStatusBar() {
       if (hasRush) state = "rush";
       else if (hoursSinceStart > 2) state = "stale";
 
-      const entries: ActiveEntry[] = data.map((e: any) => ({
+      const entries: ActiveEntry[] = rows.map((e) => ({
         id: e.id,
         operationId: e.operation?.id || e.operation_id,
         startTime: e.start_time,

@@ -57,7 +57,7 @@ export default function OperatorsManagement({ tenantId }: OperatorsManagementPro
     setOperatorsError(null);
 
     try {
-      const { data, error } = await supabase.rpc('list_operators' as any);
+      const { data, error } = await supabase.rpc('list_operators');
 
       if (error) {
         logger.error('Users', 'Error loading operators', error);
@@ -113,7 +113,7 @@ export default function OperatorsManagement({ tenantId }: OperatorsManagementPro
         pinLength: operatorForm.pin.length
       });
 
-      const { data, error } = await supabase.rpc('create_operator_with_pin' as any, {
+      const { data, error } = await supabase.rpc('create_operator_with_pin', {
         p_full_name: operatorForm.full_name.trim(),
         p_pin: operatorForm.pin,
         p_employee_id: employeeIdParam,
@@ -167,7 +167,7 @@ export default function OperatorsManagement({ tenantId }: OperatorsManagementPro
     setResettingPin(true);
 
     try {
-      const { error } = await supabase.rpc('reset_operator_pin' as any, {
+      const { error } = await supabase.rpc('reset_operator_pin', {
         p_operator_id: editingOperator.id,
         p_new_pin: newPinForm.pin,
       });
@@ -189,7 +189,7 @@ export default function OperatorsManagement({ tenantId }: OperatorsManagementPro
 
   const handleUnlockOperator = async (operatorId: string, operatorName: string) => {
     try {
-      const { error } = await supabase.rpc('unlock_operator' as any, {
+      const { error } = await supabase.rpc('unlock_operator', {
         p_operator_id: operatorId,
       });
 

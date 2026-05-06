@@ -34,15 +34,6 @@
 | **Disposition** | The decision on what to do with non-conforming material (scrap, rework, use-as-is, return). |
 | **PMI** | Product Manufacturing Information — dimensional data extracted from 3D models/drawings. |
 
-## Metrics
-
-| Term | Definition |
-|------|-----------|
-| **OEE** | Overall Equipment Effectiveness. Availability x Performance x Quality. Industry standard metric. |
-| **Availability** | % of scheduled time that equipment is actually running. |
-| **Performance** | Actual output rate vs. theoretical maximum rate. |
-| **Quality** | % of produced items that pass first-time inspection (no rework/scrap). |
-
 ## ERP Integration
 
 | Term | Definition |

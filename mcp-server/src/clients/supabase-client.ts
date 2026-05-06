@@ -16,7 +16,7 @@ export class DirectSupabaseClient implements UnifiedClient {
     this.enforcedTenantId = process.env.TENANT_ID;
   }
 
-  getMode(): 'direct' | 'api' {
+  getMode(): 'direct' {
     return 'direct';
   }
 

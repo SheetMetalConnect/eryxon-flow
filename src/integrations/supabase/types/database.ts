@@ -31,6 +31,7 @@ import type {
   TimeEntriesTable,
   TimeEntryPausesTable,
   OperationQuantitiesTable,
+  OperationQuantityScrapReasonsTable,
   OperationDayAllocationsTable,
 } from './tables/time-tracking'
 import type {
@@ -100,6 +101,7 @@ export type Database = {
       time_entries: TimeEntriesTable
       time_entry_pauses: TimeEntryPausesTable
       operation_quantities: OperationQuantitiesTable
+      operation_quantity_scrap_reasons: OperationQuantityScrapReasonsTable
       operation_day_allocations: OperationDayAllocationsTable
 
       // Integrations domain

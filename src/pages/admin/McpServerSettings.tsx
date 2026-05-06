@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTenant } from "@/hooks/useTenant";
+import { env } from "@/config/env";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -86,7 +87,7 @@ export default function McpServerSettings() {
           server_name: "eryxon-flow-mcp",
           server_version: "2.1.0",
           enabled: true,
-          supabase_url: import.meta.env.VITE_SUPABASE_URL || "",
+          supabase_url: env('VITE_SUPABASE_URL') || "",
           features: {
             logging: true,
             healthCheck: true,
@@ -164,16 +165,13 @@ export default function McpServerSettings() {
 
     setIsSaving(true);
     try {
+      const { id: configId, ...configRest } = config;
       const configData = {
-        ...config,
+        ...configRest,
+        ...(configId ? { id: configId } : {}),
         tenant_id: tenant.id,
         updated_at: new Date().toISOString(),
       };
-
-      // Remove empty id for new configs to let database generate it
-      if (!configData.id) {
-        delete (configData as any).id;
-      }
 
       const { error } = await supabase
         .from("mcp_server_config")

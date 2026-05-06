@@ -48,7 +48,7 @@ import deAnalytics from './locales/de/analytics.json';
  * - jobs: Jobs, parts, operations, issues
  * - config: Configuration (stages, materials, resources, assignments)
  * - integrations: API keys, webhooks, MQTT, data import/export
- * - analytics: QRM, OEE, quality, capacity, reliability metrics
+ * - analytics: QRM, quality, capacity metrics
  *
  * AI agents should edit individual namespace files rather than the monolithic translation.json
  */

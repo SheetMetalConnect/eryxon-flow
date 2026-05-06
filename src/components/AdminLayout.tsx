@@ -1,4 +1,6 @@
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { useTenant } from "@/hooks/useTenant";
+import { useAuthActions } from "@/hooks/useAuthActions";
 import { DOCS_GUIDES_URL } from "@/lib/config";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -67,7 +69,9 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const { t } = useTranslation();
-  const { profile, tenant, signOut } = useAuth();
+  const profile = useProfile();
+  const { tenant } = useTenant();
+  const { signOut } = useAuthActions();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);

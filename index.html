@@ -12,10 +12,10 @@
         <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' https://challenges.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co http://127.0.0.1:* http://localhost:* https://challenges.cloudflare.com; connect-src 'self' blob: https://*.supabase.co wss://*.supabase.co http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:* https://challenges.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' data:; frame-src 'self' https://challenges.cloudflare.com; object-src 'none'; base-uri 'self';" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="apple-touch-icon" href="/favicon.svg" />
+        <script src="/env.js"></script>
     </head>
     <body>
         <div id="root"></div>
-        <script src="/env.js"></script>
         <script type="module" src="/src/main.tsx"></script>
     </body>
 </html>

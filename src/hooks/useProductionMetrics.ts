@@ -106,7 +106,7 @@ export function useOperationProductionMetrics(operationId: string | undefined) {
       const totalScrap = records.reduce((sum, r) => sum + (r.quantity_scrap || 0), 0);
       const totalRework = records.reduce((sum, r) => sum + (r.quantity_rework || 0), 0);
 
-      const plannedQuantity = (operation.part as any)?.quantity || 0;
+      const plannedQuantity = (operation.part as { quantity: number } | null)?.quantity || 0;
       const remaining = Math.max(0, plannedQuantity - totalGood);
       const completionPct = plannedQuantity > 0 ? (totalGood / plannedQuantity) * 100 : 0;
 
@@ -118,7 +118,7 @@ export function useOperationProductionMetrics(operationId: string | undefined) {
       const scrapByReason = new Map<string, { reason_id: string; code: string; description: string; quantity: number }>();
       for (const rec of records) {
         if (rec.quantity_scrap > 0 && rec.scrap_reason) {
-          const reason = rec.scrap_reason as any;
+          const reason = rec.scrap_reason as { id: string; code: string; description: string; category: string };
           const existing = scrapByReason.get(reason.id);
           if (existing) {
             existing.quantity += rec.quantity_scrap;
@@ -235,7 +235,7 @@ export function useJobProductionMetrics(jobId: string | undefined) {
 
       for (const rec of records) {
         if (rec.quantity_scrap > 0 && rec.scrap_reason) {
-          const reason = rec.scrap_reason as any;
+          const reason = rec.scrap_reason as { id: string; code: string; description: string; category: string };
           const existing = scrapByReasonMap.get(reason.id);
           if (existing) {
             existing.total_quantity += rec.quantity_scrap;
@@ -329,8 +329,8 @@ export function useRecordProduction() {
       }));
 
       const { error: scrapError } = await supabase
-        .from("operation_quantity_scrap_reasons" as any)
-        .insert(scrapReasonRecords as any);
+        .from("operation_quantity_scrap_reasons")
+        .insert(scrapReasonRecords);
 
       if (scrapError) {
         logger.error('useProductionMetrics', 'Failed to record scrap reasons', scrapError);

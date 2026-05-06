@@ -419,9 +419,9 @@ export default function OperationDetailModal({
               </div>
             )}
 
-            {(operation as any).metadata && (
+            {(operation as unknown as { metadata?: Record<string, unknown> }).metadata && (
               <EnhancedMetadataDisplay
-                metadata={(operation as any).metadata}
+                metadata={(operation as unknown as { metadata: Record<string, unknown> }).metadata}
                 title="Process Settings"
                 showTypeIndicator={true}
                 compact={true}

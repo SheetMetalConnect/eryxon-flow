@@ -52,7 +52,7 @@ export const Constants = {
 
 // Initialize Constants at runtime
 import { EnumConstants as EC } from './enums'
-;(Constants.public as any).Enums = EC
+;(Constants.public as unknown as { Enums: typeof EC }).Enums = EC
 
 // Re-export all table types for direct access if needed
 export * from './tables'

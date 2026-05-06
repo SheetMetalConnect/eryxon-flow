@@ -180,7 +180,7 @@ export default function Assignments() {
       }
 
       try {
-        const { data: sfOperators, error: sfError } = await supabase.rpc('list_operators' as any);
+        const { data: sfOperators, error: sfError } = await supabase.rpc('list_operators');
         if (!sfError && sfOperators) {
           setShopFloorOperators((sfOperators as ShopFloorOperator[]).filter(op => op.active));
         }
@@ -218,6 +218,7 @@ export default function Assignments() {
         .eq("status", "assigned")
         .order("created_at", { ascending: false });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FK join shape doesn't match Assignment interface (nested relations)
       if (assignmentsData) setAssignments(assignmentsData as any);
     } catch (error) {
       logger.error('Assignments', 'Error loading assignments', error);
@@ -355,7 +356,7 @@ export default function Assignments() {
     try {
       const employeeId = operatorForm.employee_id.trim() || `OPR-${Date.now().toString().slice(-6)}`;
 
-      const { data, error } = await supabase.rpc('create_operator_with_pin' as any, {
+      const { data, error } = await supabase.rpc('create_operator_with_pin', {
         p_full_name: operatorForm.full_name.trim(),
         p_pin: operatorForm.pin,
         p_employee_id: employeeId || undefined,

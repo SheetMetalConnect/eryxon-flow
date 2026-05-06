@@ -1,11 +1,11 @@
 import { serveApi } from "@shared/handler.ts";
 import type { HandlerContext } from "@shared/handler.ts";
-import { createSuccessResponse, UnauthorizedError, ForbiddenError } from "@shared/validation/errorHandler.ts";
+import { UnauthorizedError, ForbiddenError } from "@shared/validation/errorHandler.ts";
 
 serveApi(async (req: Request, ctx: HandlerContext) => {
-  const { supabase, tenantId, url, plan } = ctx;
+  const { supabase, url } = ctx;
 
-  // Admin-only endpoint: verify user has admin role
+  // Admin-only endpoint: verify user has a Supabase session and admin role.
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) {
     throw new UnauthorizedError('Authorization header required');
@@ -23,13 +23,15 @@ serveApi(async (req: Request, ctx: HandlerContext) => {
   // Get user's role
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, tenant_id')
     .eq('id', user.id)
     .single();
 
   if (!profile || profile.role !== 'admin') {
     throw new ForbiddenError('Admin role required for data export');
   }
+
+  const tenantId = profile.tenant_id;
 
   // Parse query parameters for entity selection
   const entities = url.searchParams.get('entities')?.split(',') || 'all';
@@ -86,6 +88,7 @@ serveApi(async (req: Request, ctx: HandlerContext) => {
         const { data, error, count } = await supabase
           .from(table)
           .select(selectFields, { count: 'exact' })
+          .eq('tenant_id', tenantId)
           .range(offset, offset + BATCH_SIZE - 1);
 
         if (error) {
@@ -143,4 +146,4 @@ serveApi(async (req: Request, ctx: HandlerContext) => {
       }
     }
   );
-});
+}, { public: true });

@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { useSession } from "@/hooks/useSession";
+import { useAuthActions } from "@/hooks/useAuthActions";
 import { useOperator } from "@/contexts/OperatorContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,7 +31,9 @@ import { logger } from "@/lib/logger";
 export default function TerminalLogin() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { profile, user, loading: authLoading } = useAuth();
+  const profile = useProfile();
+  const { user } = useSession();
+  const { loading: authLoading } = useAuthActions();
   const { activeOperator, verifyAndSwitchOperator, clearActiveOperator } = useOperator();
 
   const [employeeId, setEmployeeId] = useState("");

@@ -29,7 +29,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { useAuthActions } from "@/hooks/useAuthActions";
 import { BrandLogo } from "@/components/ui/brand-logo";
 
 interface NavItem {
@@ -43,7 +44,8 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ className }: AppHeaderProps) {
-  const { profile, signOut } = useAuth();
+  const profile = useProfile();
+  const { signOut } = useAuthActions();
   const location = useLocation();
   const [scrolled, setScrolled] = React.useState(false);
 

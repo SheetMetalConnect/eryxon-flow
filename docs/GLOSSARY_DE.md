@@ -38,15 +38,6 @@
 | **Disposition** | Die Entscheidung über den Umgang mit nicht-konformem Material (Ausschuss, Nacharbeit, Verwenden-wie-es-ist, Rücksendung). |
 | **PMI** | Product Manufacturing Information — Maßdaten aus 3D-Modellen/Zeichnungen. |
 
-## Kennzahlen
-
-| Begriff | Definition |
-|---------|-----------|
-| **OEE** | Overall Equipment Effectiveness. Verfügbarkeit x Leistung x Qualität. Industriestandard-Kennzahl. |
-| **Verfügbarkeit (Availability)** | % der geplanten Zeit, in der die Ausrüstung tatsächlich läuft. |
-| **Leistung (Performance)** | Tatsächliche Ausstoßrate im Vergleich zum theoretischen Maximum. |
-| **Qualität (Quality)** | % der produzierten Teile, die die Erstprüfung bestehen (keine Nacharbeit/kein Ausschuss). |
-
 ## ERP-Integration
 
 | Begriff | Definition |

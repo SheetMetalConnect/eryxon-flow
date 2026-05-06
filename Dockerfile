@@ -42,8 +42,8 @@ FROM nginx:alpine
 
 # OCI image labels
 LABEL org.opencontainers.image.title="Eryxon Flow"
-LABEL org.opencontainers.image.description="Manufacturing Execution System for sheet metal production"
-LABEL org.opencontainers.image.version="0.4.1"
+LABEL org.opencontainers.image.description="Self-hosted planning and shop floor execution for job shops"
+LABEL org.opencontainers.image.version="0.5.0"
 LABEL org.opencontainers.image.source="https://github.com/SheetMetalConnect/eryxon-flow"
 LABEL org.opencontainers.image.vendor="Eryxon"
 LABEL org.opencontainers.image.licenses="BSL-1.1"

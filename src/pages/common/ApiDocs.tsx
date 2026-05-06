@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { DOCS_GUIDES_URL } from "@/lib/config";
+import { env } from "@/config/env";
 import SwaggerUI from "swagger-ui-react";
 import "swagger-ui-react/swagger-ui.css";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,7 +35,9 @@ import { useTranslation } from "react-i18next";
 export default function ApiDocs() {
   const { t } = useTranslation();
   const [apiKey, setApiKey] = useState("");
-  const baseUrl = import.meta.env.VITE_SUPABASE_URL?.replace('/supabase', '') || `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co`;
+  const supabaseUrl = env('VITE_SUPABASE_URL');
+  const projectId = env('VITE_SUPABASE_PROJECT_ID');
+  const baseUrl = supabaseUrl?.replace('/supabase', '') || (projectId ? `https://${projectId}.supabase.co` : "");
   const apiBaseUrl = `${baseUrl}/functions/v1`;
 
   const copyToClipboard = (text: string, label: string) => {

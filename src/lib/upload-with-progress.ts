@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { env } from '@/config/env';
 
 export interface UploadProgressCallback {
   (loaded: number, total: number, percentage: number): void;
@@ -35,8 +36,8 @@ export async function uploadFileWithProgress(
 
   try {
     // Get Supabase configuration from environment variables
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const supabaseUrl = env('VITE_SUPABASE_URL');
+    const supabaseKey = env('VITE_SUPABASE_PUBLISHABLE_KEY');
 
     if (!supabaseUrl || !supabaseKey) {
       throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY environment variables');

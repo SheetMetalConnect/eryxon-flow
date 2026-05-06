@@ -39,7 +39,7 @@ type Part = {
   quantity: number;
   parent_part_id?: string;
   notes?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, string>;
   operations: Operation[];
 };
 
@@ -466,45 +466,45 @@ export default function JobCreate() {
                   </div>
 
                   <div className="col-span-2 border-t pt-3 mt-2">
-                    <h5 className="text-sm font-medium mb-2">Material Traceability (Optional)</h5>
+                    <h5 className="text-sm font-medium mb-2">{t("parts.materialTraceabilityOptional")}</h5>
                     <div className="grid grid-cols-3 gap-3">
                       <div>
-                        <Label>Material Lot/Heat Number</Label>
+                        <Label>{t("parts.materialLotHeatNumber")}</Label>
                         <Input
-                          value={(editingPart.metadata as any)?.material_lot || ""}
+                          value={editingPart.metadata?.material_lot || ""}
                           onChange={(e) =>
                             setEditingPart({
                               ...editingPart,
                               metadata: { ...(editingPart.metadata || {}), material_lot: e.target.value }
                             })
                           }
-                          placeholder="e.g., LOT-2024-1234"
+                          placeholder={t("parts.materialLotPlaceholder")}
                         />
                       </div>
                       <div>
-                        <Label>Material Supplier</Label>
+                        <Label>{t("parts.materialSupplier")}</Label>
                         <Input
-                          value={(editingPart.metadata as any)?.material_supplier || ""}
+                          value={editingPart.metadata?.material_supplier || ""}
                           onChange={(e) =>
                             setEditingPart({
                               ...editingPart,
                               metadata: { ...(editingPart.metadata || {}), material_supplier: e.target.value }
                             })
                           }
-                          placeholder="e.g., Metal Supply Co"
+                          placeholder={t("parts.materialSupplierPlaceholder")}
                         />
                       </div>
                       <div>
-                        <Label>Material Certification #</Label>
+                        <Label>{t("parts.materialCertificationNumber")}</Label>
                         <Input
-                          value={(editingPart.metadata as any)?.material_cert_number || ""}
+                          value={editingPart.metadata?.material_cert_number || ""}
                           onChange={(e) =>
                             setEditingPart({
                               ...editingPart,
                               metadata: { ...(editingPart.metadata || {}), material_cert_number: e.target.value }
                             })
                           }
-                          placeholder="e.g., CERT-ABC-123"
+                          placeholder={t("parts.materialCertificationPlaceholder")}
                         />
                       </div>
                     </div>

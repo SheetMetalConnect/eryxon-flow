@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
+import { env } from "@/config/env";
 import { Download, Archive, FileJson, FileSpreadsheet, Loader2 } from "lucide-react";
 import Papa from "papaparse";
 import JSZip from "jszip";
@@ -67,7 +68,8 @@ export default function DataExport() {
       if (!session) throw new Error('Not authenticated');
 
       const entities = selectedEntities.join(',');
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co`;
+      const projectId = env('VITE_SUPABASE_PROJECT_ID');
+      const supabaseUrl = env('VITE_SUPABASE_URL') || (projectId ? `https://${projectId}.supabase.co` : "");
       const response = await fetch(
         `${supabaseUrl}/functions/v1/api-export?entities=${entities}&format=${exportFormat}`,
         {

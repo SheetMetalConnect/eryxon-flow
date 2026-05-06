@@ -172,7 +172,7 @@ export default function ConfigStages() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    color: "DEFAULT_NEW_STAGE_COLOR",
+    color: DEFAULT_NEW_STAGE_COLOR,
     icon_name: "" as string,
     active: true,
     wip_limit: null as number | null,
@@ -204,7 +204,7 @@ export default function ConfigStages() {
       .order("sequence");
 
     if (!error && data) {
-      setStages(data as any);
+      setStages(data as unknown as Stage[]);
     }
     setLoading(false);
   };
@@ -265,7 +265,7 @@ export default function ConfigStages() {
     setFormData({
       name: "",
       description: "",
-      color: "DEFAULT_NEW_STAGE_COLOR",
+      color: DEFAULT_NEW_STAGE_COLOR,
       icon_name: "",
       active: true,
       wip_limit: null,
@@ -282,7 +282,7 @@ export default function ConfigStages() {
     setFormData({
       name: stage.name,
       description: stage.description || "",
-      color: stage.color || "DEFAULT_NEW_STAGE_COLOR",
+      color: stage.color || DEFAULT_NEW_STAGE_COLOR,
       icon_name: stage.icon_name || "",
       active: stage.active,
       wip_limit: stage.wip_limit,
@@ -476,7 +476,7 @@ export default function ConfigStages() {
                           onChange={(e) =>
                             setFormData({ ...formData, color: e.target.value })
                           }
-                          placeholder="DEFAULT_NEW_STAGE_COLOR"
+                          placeholder={DEFAULT_NEW_STAGE_COLOR}
                           className="flex-1"
                         />
                       </div>

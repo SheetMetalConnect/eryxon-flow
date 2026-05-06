@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { env } from "@/config/env";
 
 /**
  * Centralized Event Dispatch System
@@ -161,7 +162,7 @@ async function dispatchToWebhooks(
       return { success: false, error: 'Not authenticated' };
     }
 
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseUrl = env('VITE_SUPABASE_URL');
     if (!supabaseUrl) {
       return { success: false, error: 'Missing VITE_SUPABASE_URL configuration' };
     }
@@ -209,7 +210,7 @@ async function dispatchToMqtt(
       return { success: false, error: 'Not authenticated' };
     }
 
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseUrl = env('VITE_SUPABASE_URL');
     if (!supabaseUrl) {
       return { success: false, error: 'Missing VITE_SUPABASE_URL configuration' };
     }

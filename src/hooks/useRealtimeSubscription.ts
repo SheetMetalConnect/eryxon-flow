@@ -152,9 +152,10 @@ export function useRealtimeSubscription(options: RealtimeSubscriptionOptions): v
         config.filter = filter;
       }
 
-      channel = channel.on(
-        'postgres_changes' as any,
-        config as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase realtime .on() overload typing doesn't support dynamic table/event config
+      channel = (channel as any).on(
+        'postgres_changes',
+        config,
         (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
           logger.debug('Realtime change received', {
             operation: 'useRealtimeSubscription',

@@ -3,12 +3,12 @@ import { renderHook, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
-// Mock AuthContext
-vi.mock('@/contexts/AuthContext', () => ({
-  useAuth: vi.fn(() => ({
-    session: { access_token: 'test-token' },
-    profile: { id: 'user-1', tenant_id: 'tenant-1' },
-  })),
+// Mock focused auth hooks
+vi.mock('@/hooks/useProfile', () => ({
+  useProfile: vi.fn(() => ({ id: 'user-1', tenant_id: 'tenant-1' })),
+}));
+vi.mock('@/hooks/useSession', () => ({
+  useSession: vi.fn(() => ({ session: { access_token: 'test-token' }, user: null })),
 }));
 
 // Mock supabase

@@ -1,12 +1,12 @@
 /**
  * MCP Server Configuration
  *
- * Supports two modes:
- * 1. DIRECT - Self-hosted (direct Supabase access with service key)
- * 2. API - Cloud SaaS (REST API with tenant-scoped API key)
+ * v0.5.0 final release supports direct Supabase access for self-hosted
+ * deployments. The previous REST API mode was experimental and did not cover
+ * the full MCP tool surface.
  */
 
-export type ConnectionMode = 'direct' | 'api';
+export type ConnectionMode = 'direct';
 
 export interface MCPConfig {
   mode: ConnectionMode;
@@ -14,10 +14,6 @@ export interface MCPConfig {
   // Direct mode (self-hosted)
   supabaseUrl?: string;
   supabaseServiceKey?: string;
-
-  // API mode (cloud)
-  apiBaseUrl?: string;
-  apiKey?: string;
 
   // Optional
   redisUrl?: string;
@@ -31,16 +27,16 @@ export function detectMode(): ConnectionMode {
   const hasServiceKey = !!process.env.SUPABASE_SERVICE_KEY;
   const hasApiKey = !!process.env.ERYXON_API_KEY;
 
-  if (hasApiKey) {
-    return 'api';
-  } else if (hasServiceKey) {
+  if (hasServiceKey) {
     return 'direct';
-  } else {
-    console.error('Error: No authentication credentials found.');
-    console.error('For self-hosted: Set SUPABASE_SERVICE_KEY');
-    console.error('For cloud: Set ERYXON_API_KEY');
-    process.exit(1);
   }
+
+  console.error('Error: No supported MCP credentials found.');
+  console.error('Set SUPABASE_URL and SUPABASE_SERVICE_KEY for self-hosted direct mode.');
+  if (hasApiKey) {
+    console.error('ERYXON_API_KEY REST API mode is not supported in the v0.5.0 final release.');
+  }
+  process.exit(1);
 }
 
 /**
@@ -55,22 +51,12 @@ export function loadConfig(): MCPConfig {
     queryTimeout: process.env.QUERY_TIMEOUT_MS ? parseInt(process.env.QUERY_TIMEOUT_MS) : 30000,
   };
 
-  if (mode === 'direct') {
-    config.supabaseUrl = process.env.SUPABASE_URL;
-    config.supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+  config.supabaseUrl = process.env.SUPABASE_URL;
+  config.supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
-    if (!config.supabaseUrl || !config.supabaseServiceKey) {
-      console.error('Error: SUPABASE_URL and SUPABASE_SERVICE_KEY required for direct mode');
-      process.exit(1);
-    }
-  } else {
-    config.apiBaseUrl = process.env.ERYXON_API_URL || process.env.SUPABASE_URL;
-    config.apiKey = process.env.ERYXON_API_KEY;
-
-    if (!config.apiBaseUrl || !config.apiKey) {
-      console.error('Error: ERYXON_API_URL and ERYXON_API_KEY required for API mode');
-      process.exit(1);
-    }
+  if (!config.supabaseUrl || !config.supabaseServiceKey) {
+    console.error('Error: SUPABASE_URL and SUPABASE_SERVICE_KEY required for direct mode');
+    process.exit(1);
   }
 
   return config;
@@ -83,7 +69,5 @@ export function getModeDescription(mode: ConnectionMode): string {
   switch (mode) {
     case 'direct':
       return 'Direct Supabase (Self-Hosted)';
-    case 'api':
-      return 'REST API (Cloud SaaS)';
   }
 }

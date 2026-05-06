@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTenant } from "@/hooks/useTenant";
+import { env } from "@/config/env";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,15 @@ interface McpEndpoint {
   usage_count: number;
 }
 
+const getErrorCode = (error: unknown): string | undefined => {
+  if (typeof error !== "object" || error === null || !("code" in error)) {
+    return undefined;
+  }
+
+  const code = (error as { code?: unknown }).code;
+  return typeof code === "string" ? code : undefined;
+};
+
 export default function McpSetup() {
   const { t } = useTranslation();
   const { tenant } = useTenant();
@@ -37,11 +47,12 @@ export default function McpSetup() {
   const [newToken, setNewToken] = useState<{ name: string; token: string } | null>(null);
   const [showToken, setShowToken] = useState(true);
   const [configTab, setConfigTab] = useState<"claude" | "cursor" | "windsurf">("claude");
+  const [transportMode, setTransportMode] = useState<"stdio" | "http">("stdio");
 
-  // Get the MCP server URL - this would be the deployed server URL
-  const mcpServerPath = typeof window !== 'undefined'
-    ? `${window.location.origin}/mcp-server/dist/index.js`
-    : '/path/to/eryxon-flow/mcp-server/dist/index.js';
+  // HTTP endpoint for hosted/Docker deployments
+  const defaultMcpHttpUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://your-instance.eryxon.com'}/mcp`;
+  const mcpHttpUrl = env('VITE_MCP_HTTP_URL') || defaultMcpHttpUrl;
+  const mcpServerEntryPoint = env('VITE_MCP_SERVER_ENTRYPOINT') || "/absolute/path/to/eryxon-flow/mcp-server/dist/index.js";
 
   useEffect(() => {
     if (tenant?.id) {
@@ -62,7 +73,7 @@ export default function McpSetup() {
     } catch (error: unknown) {
       logger.error('McpSetup', 'Error fetching endpoints', error);
       // Table might not exist yet - that's okay
-      if ((error as any).code !== '42P01') {
+      if (getErrorCode(error) !== '42P01') {
         toast.error(t('mcp.failedToLoad'));
       }
     } finally {
@@ -168,17 +179,53 @@ export default function McpSetup() {
   };
 
   const getConfigJson = (token: string) => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://your-project.supabase.co";
+    const supabaseUrl = env('VITE_SUPABASE_URL') || "https://your-project.supabase.co";
 
+    if (transportMode === "http") {
+      return {
+        claude: `{
+  "mcpServers": {
+    "Eryxon Flow - ${tenant?.name || 'Manufacturing'}": {
+      "url": "${mcpHttpUrl}",
+      "headers": {
+        "Authorization": "Bearer ${token}"
+      }
+    }
+  }
+}`,
+        cursor: `{
+  "mcpServers": {
+    "eryxon-flow": {
+      "url": "${mcpHttpUrl}",
+      "headers": {
+        "Authorization": "Bearer ${token}"
+      }
+    }
+  }
+}`,
+        windsurf: `{
+  "mcpServers": {
+    "eryxon-flow": {
+      "url": "${mcpHttpUrl}",
+      "headers": {
+        "Authorization": "Bearer ${token}"
+      }
+    }
+  }
+}`
+      };
+    }
+
+    // stdio mode
     return {
       claude: `{
   "mcpServers": {
     "Eryxon Flow - ${tenant?.name || 'Manufacturing'}": {
       "command": "node",
-      "args": ["${mcpServerPath}"],
+      "args": ["${mcpServerEntryPoint}"],
       "env": {
         "SUPABASE_URL": "${supabaseUrl}",
-        "MCP_TOKEN": "${token}"
+        "SUPABASE_SERVICE_KEY": "your-service-role-key"
       }
     }
   }
@@ -187,10 +234,10 @@ export default function McpSetup() {
   "mcpServers": {
     "eryxon-flow": {
       "command": "node",
-      "args": ["${mcpServerPath}"],
+      "args": ["${mcpServerEntryPoint}"],
       "env": {
         "SUPABASE_URL": "${supabaseUrl}",
-        "MCP_TOKEN": "${token}"
+        "SUPABASE_SERVICE_KEY": "your-service-role-key"
       }
     }
   }
@@ -199,10 +246,10 @@ export default function McpSetup() {
   "mcpServers": {
     "eryxon-flow": {
       "command": "node",
-      "args": ["${mcpServerPath}"],
+      "args": ["${mcpServerEntryPoint}"],
       "env": {
         "SUPABASE_URL": "${supabaseUrl}",
-        "MCP_TOKEN": "${token}"
+        "SUPABASE_SERVICE_KEY": "your-service-role-key"
       }
     }
   }
@@ -276,38 +323,60 @@ export default function McpSetup() {
                 </div>
               </div>
 
-              <Tabs value={configTab} onValueChange={(v) => setConfigTab(v as any)}>
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="claude">Claude Desktop</TabsTrigger>
-                  <TabsTrigger value="cursor">Cursor</TabsTrigger>
-                  <TabsTrigger value="windsurf">Windsurf</TabsTrigger>
-                </TabsList>
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm text-muted-foreground mb-2 block">{t('mcp.transportMode')}</Label>
+                  <Tabs value={transportMode} onValueChange={(v) => setTransportMode(v as "stdio" | "http")}>
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="stdio">{t('mcp.stdioLocal')}</TabsTrigger>
+                      <TabsTrigger value="http">{t('mcp.httpHosted')}</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="stdio">
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {t('mcp.stdioDescription')}
+                      </p>
+                    </TabsContent>
+                    <TabsContent value="http">
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {t('mcp.httpDescription')}
+                      </p>
+                    </TabsContent>
+                  </Tabs>
+                </div>
 
-                <TabsContent value="claude" className="space-y-3">
-                  <div className="text-sm text-muted-foreground space-y-2">
-                    <p>1. Open Claude Desktop Preferences (⌘+,)</p>
-                    <p>2. Under <strong>Develop</strong>, click <strong>Edit Config</strong></p>
-                    <p>3. Add this configuration to <code>claude_desktop_config.json</code></p>
-                    <p>4. Save and restart Claude Desktop</p>
-                  </div>
-                </TabsContent>
+                <Tabs value={configTab} onValueChange={(v) => setConfigTab(v as "claude" | "cursor" | "windsurf")}>
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="claude">Claude Desktop</TabsTrigger>
+                    <TabsTrigger value="cursor">Cursor</TabsTrigger>
+                    <TabsTrigger value="windsurf">Windsurf</TabsTrigger>
+                  </TabsList>
 
-                <TabsContent value="cursor" className="space-y-3">
-                  <div className="text-sm text-muted-foreground space-y-2">
-                    <p>1. Open Cursor Settings</p>
-                    <p>2. Navigate to MCP Servers configuration</p>
-                    <p>3. Add this configuration</p>
-                  </div>
-                </TabsContent>
+                  <TabsContent value="claude" className="space-y-3">
+                    <div className="text-sm text-muted-foreground space-y-2">
+                      <p>1. Open Claude Desktop Preferences (⌘+,)</p>
+                      <p>2. Under <strong>Develop</strong>, click <strong>Edit Config</strong></p>
+                      <p>3. Add this configuration to <code>claude_desktop_config.json</code></p>
+                      <p>4. Save and restart Claude Desktop</p>
+                    </div>
+                  </TabsContent>
 
-                <TabsContent value="windsurf" className="space-y-3">
-                  <div className="text-sm text-muted-foreground space-y-2">
-                    <p>1. Open Windsurf Settings</p>
-                    <p>2. Navigate to MCP configuration</p>
-                    <p>3. Add this configuration</p>
-                  </div>
-                </TabsContent>
-              </Tabs>
+                  <TabsContent value="cursor" className="space-y-3">
+                    <div className="text-sm text-muted-foreground space-y-2">
+                      <p>1. Open Cursor Settings</p>
+                      <p>2. Navigate to MCP Servers configuration</p>
+                      <p>3. Add this configuration</p>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="windsurf" className="space-y-3">
+                    <div className="text-sm text-muted-foreground space-y-2">
+                      <p>1. Open Windsurf Settings</p>
+                      <p>2. Navigate to MCP configuration</p>
+                      <p>3. Add this configuration</p>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
 
               <div className="relative">
                 <pre className="bg-muted p-4 rounded-lg text-sm font-mono overflow-x-auto max-h-64">

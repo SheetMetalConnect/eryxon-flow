@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import { DOCS_ERP_INTEGRATION_URL } from "@/lib/config";
+import { env } from "@/config/env";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -286,7 +287,8 @@ export default function DataImport() {
       if (!session) throw new Error('Not authenticated');
 
       const transformedData = transformData();
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co`;
+      const projectId = env('VITE_SUPABASE_PROJECT_ID');
+      const supabaseUrl = env('VITE_SUPABASE_URL') || (projectId ? `https://${projectId}.supabase.co` : "");
 
       const BATCH_SIZE = 100;
       const batches: Record<string, string | number | boolean | undefined>[][] = [];
