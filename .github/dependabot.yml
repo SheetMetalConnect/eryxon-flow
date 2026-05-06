@@ -1,5 +1,9 @@
 # Dependabot configuration for automated dependency updates
 # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates
+#
+# May 2026: active development is on hold after v0.5.0. Keep this file in
+# place for future maintainers, but pause version-update PRs to avoid noisy
+# preview deployments while the project is in maintenance/sunset mode.
 
 version: 2
 updates:
@@ -11,7 +15,7 @@ updates:
       day: "monday"
       time: "09:00"
       timezone: "Europe/Amsterdam"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 0
     commit-message:
       prefix: "deps"
     labels:
@@ -57,6 +61,7 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+    open-pull-requests-limit: 0
     commit-message:
       prefix: "ci"
     labels:
@@ -71,7 +76,7 @@ updates:
       day: "monday"
       time: "09:00"
       timezone: "Europe/Amsterdam"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 0
     commit-message:
       prefix: "deps(mcp)"
     labels:
