@@ -54,7 +54,7 @@ Built for **high-mix, low-volume** production: sheet metal, machine shops, custo
 - Multi-language (English, Dutch, German)
 - Multi-tenant SaaS with row-level security
 - Self-hostable via Docker Compose
-- BSL 1.1 license (free for your business, converts to Apache 2.0 in 2029)
+- BSL 1.1 license (free for your business, converts to Apache 2.0 after the BSL change date)
 
 ## Quick Start
 
@@ -148,7 +148,7 @@ Specialized sub-agents in [.agents/](.agents/) for database, tech stack, and rep
 
 ### Knowledge Graph (OpenTrace)
 
-The codebase is indexed into a queryable knowledge graph via [OpenTrace](https://github.com/opentrace/opentrace) — 886 functions, 40 classes, 816 files, and 3,859 relationships mapped for AI-assisted development.
+The codebase is indexed into a queryable knowledge graph via [OpenTrace](https://github.com/opentrace/opentrace). The current local index reports 1,019 functions, 45 classes, 822 files, 144 directories, 143 packages, and 3,341 graph edges for AI-assisted development.
 
 ```bash
 pip install opentraceai          # One-time install
@@ -167,7 +167,7 @@ Claude Code commands: `/explore <name>`, `/graph-status`, `/interrogate <questio
 - Free to use for your own manufacturing business
 - Source available for modification and self-hosting
 - Cannot offer as a competing hosted service
-- Converts to **Apache 2.0** on 2029-01-01
+- Converts to **Apache 2.0** after the BSL change date
 
 See [LICENSE](LICENSE) for full terms.
 

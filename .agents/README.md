@@ -75,7 +75,7 @@ All API endpoints live in `supabase/functions/api-*/`. Shared code in `_shared/`
 
 ## Knowledge Graph (OpenTrace)
 
-This codebase is indexed into a queryable knowledge graph via [OpenTrace](https://github.com/opentrace/opentrace). The graph maps 886 functions, 40 classes, 816 files, 130 directories, 113 packages, and 3,859 relationships (CALLS, IMPORTS, DEFINED_IN, DEPENDS_ON).
+This codebase is indexed into a queryable knowledge graph via [OpenTrace](https://github.com/opentrace/opentrace). The current local index reports 1,019 functions, 45 classes, 822 files, 144 directories, 143 packages, and 3,341 graph edges (CALLS, IMPORTS, DEFINED_IN, DEPENDS_ON).
 
 **Re-index after structural changes:**
 ```bash
