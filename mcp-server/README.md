@@ -108,7 +108,7 @@ When running in HTTP mode, `GET /health` returns:
 ```json
 {
   "status": "ok",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "mode": "direct",
   "tools": 50,
   "transport": "streamable-http"

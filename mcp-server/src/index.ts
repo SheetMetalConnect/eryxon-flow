@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Eryxon Flow MCP Server v2.4.0
+ * Eryxon Flow MCP Server v2.4.1
  *
  * MCP server for self-hosted deployments using direct Supabase access.
  *
@@ -33,7 +33,7 @@ import { createConfiguredRegistry } from "./tools/index.js";
 
 // Load configuration and detect mode
 const config = loadConfig();
-console.error(`Eryxon Flow MCP Server v2.4.0`);
+console.error(`Eryxon Flow MCP Server v2.4.1`);
 console.error(`Mode: ${getModeDescription(config.mode)}`);
 
 // Create direct Supabase client and extract the raw SupabaseClient
@@ -56,7 +56,7 @@ function createMCPServer(): Server {
   const server = new Server(
     {
       name: "eryxon-flow-mcp",
-      version: "2.4.0",
+      version: "2.4.1",
     },
     {
       capabilities: {
@@ -196,7 +196,7 @@ async function startHttp(): Promise<void> {
   app.get("/health", (_req, res) => {
     res.json({
       status: "ok",
-      version: "2.4.0",
+      version: "2.4.1",
       mode: config.mode,
       tools: stats.totalTools,
       transport: "streamable-http",

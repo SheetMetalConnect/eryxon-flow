@@ -2,6 +2,28 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.5.1] - 2026-05-07
+
+### Fixed
+
+- **MCP: `supabase.from is not a function`** — `UnifiedClient` wrapper was passed to tool handlers instead of the raw `SupabaseClient`. Tools call `.from()` directly, which doesn't exist on the wrapper. Now extracts the underlying client via `getSupabaseClient()`.
+- **MCP: `console.log` breaks stdio transport** — `console.log` in `clients/index.ts` writes to stdout, which corrupts the MCP JSON-RPC stream in Claude Desktop. Changed to `console.error` (stderr) so diagnostic output doesn't interfere with the protocol.
+- **MCP: 19 column/enum mismatches across tool handlers** — systematic audit against live Supabase schema:
+  - **jobs**: `customer_name` -> `customer`; removed non-existent `started_at`, `paused_at`, `completed_at`, `resumed_at`, `priority` columns
+  - **parts**: status enum `pending` -> `not_started`; `customer_name` -> `customer` in join; `current_stage_id` -> `current_cell_id`
+  - **operations**: removed non-existent `started_at`/`paused_at` timestamps; status enum `paused` -> `on_hold`, removed `cancelled`
+  - **issues**: status enum `open`/`in_progress`/`resolved` -> `pending`/`approved`/`rejected`; `ncr_category` and `ncr_disposition` enums aligned; removed non-existent `ncr_number` column; fixed ambiguous `profiles` join
+  - **substeps**: `description` -> `name`; `completed` -> `status` (text); removed `get_next_substep_sequence` RPC call
+  - **cells**: `enforce_limit` -> `enforce_wip_limit`; `show_warning` -> `show_capacity_warning`
+  - **dashboard**: replaced `tasks` table query with `operations` (no `tasks` table); `get_production_metrics` now reads from `operation_quantities` instead of non-existent operation columns
+  - **scrap**: fixed material join `parts.materials.name` -> `parts.material`; added `includeDeleted` flag for `scrap_reasons` (no `deleted_at` column)
+- **MCP: raw Supabase errors not wrapped** — `wrapError` now handles `PostgrestError` objects (plain objects with `.message`), and all raw `throw error` replaced with `throw databaseError(...)` for structured error responses.
+- **MCP: trial banner on self-hosted instances** — plan detection logic no longer shows trial/upgrade prompts when running in self-hosted mode.
+
+### Removed
+
+- **MCP: `tasks` module** — removed entirely; no backing `tasks` table exists in the current schema. Operator assignments are tracked via the `assignments` table instead.
+
 ## [0.5.0] - 2026-05-04
 
 ### Added
@@ -56,7 +78,7 @@ All notable changes to Eryxon Flow are documented here.
 - Self-hosting: runtime env injection, .dockerignore, Node 22, health endpoint
 - Component refactors: PartDetailModal split, database.ts modularized, mockDataGenerator lazy-loaded
 - Database migration cleanup with READMEs
-- MCP server working (v2.4.0, builds clean)
+- MCP server working (v2.4.1, builds clean)
 - Safe dependency updates (Supabase, TanStack Query, react-hook-form, MSW, Vitest)
 
 ## [0.4.1] - 2026-03-29
