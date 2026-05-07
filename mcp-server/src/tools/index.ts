@@ -7,7 +7,8 @@
 export { jobsModule } from "./jobs.js";
 export { partsModule } from "./parts.js";
 export { operationsModule } from "./operations.js";
-export { tasksModule } from "./tasks.js";
+// Note: tasks module removed — no 'tasks' table in current schema.
+// Operator assignments are tracked via the 'assignments' table instead.
 export { issuesModule } from "./issues.js";
 export { substepsModule } from "./substeps.js";
 export { dashboardModule } from "./dashboard.js";
@@ -21,7 +22,6 @@ export { ToolRegistry, createToolRegistry } from "./registry.js";
 import { jobsModule } from "./jobs.js";
 import { partsModule } from "./parts.js";
 import { operationsModule } from "./operations.js";
-import { tasksModule } from "./tasks.js";
 import { issuesModule } from "./issues.js";
 import { substepsModule } from "./substeps.js";
 import { dashboardModule } from "./dashboard.js";
@@ -36,7 +36,6 @@ export const allModules = [
   jobsModule,
   partsModule,
   operationsModule,
-  tasksModule,
   issuesModule,
   substepsModule,
   dashboardModule,

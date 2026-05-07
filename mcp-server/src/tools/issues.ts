@@ -13,15 +13,17 @@ import { databaseError } from "../utils/errors.js";
 import { createFetchTool, createUpdateTool } from "../utils/tool-factories.js";
 
 // Fetch issues with filters
+// Note: issues table has no deleted_at column
 const { tool: fetchIssuesTool, handler: fetchIssuesHandler } = createFetchTool({
   tableName: 'issues',
   description: 'Fetch issues/defects from the database with optional filters and pagination',
-  selectFields: '*, parts(part_number), profiles(full_name)',
+  selectFields: '*, operations(operation_name, parts(part_number))',
   filterFields: {
     status: schemas.issueStatus.optional(),
     severity: schemas.issueSeverity.optional(),
   },
   orderBy: { column: 'created_at', ascending: false },
+  includeDeleted: true,
 });
 
 // Fetch NCRs with filters
@@ -33,9 +35,10 @@ const { tool: fetchNcrsTool, handler: fetchNcrsHandler } = createFetchTool({
     issue_type: z.literal('ncr').default('ncr'),
     status: schemas.issueStatus.optional(),
     severity: schemas.issueSeverity.optional(),
-    ncr_category: z.enum(['material', 'process', 'equipment', 'design', 'supplier', 'documentation', 'other']).optional(),
+    ncr_category: z.enum(['material_defect', 'dimensional', 'surface_finish', 'process_error', 'other']).optional(),
   },
   orderBy: { column: 'created_at', ascending: false },
+  includeDeleted: true,
 });
 
 // Update issue
@@ -62,9 +65,9 @@ const createNcrTool: Tool = {
       title: { type: "string", description: "Short title/summary of the NCR" },
       description: { type: "string", description: "Detailed description of the non-conformance" },
       severity: { type: "string", enum: ["low", "medium", "high", "critical"], description: "Severity level" },
-      ncr_category: { type: "string", enum: ["material", "process", "equipment", "design", "supplier", "documentation", "other"] },
+      ncr_category: { type: "string", enum: ["material_defect", "dimensional", "surface_finish", "process_error", "other"] },
       affected_quantity: { type: "number", description: "Number of parts affected" },
-      disposition: { type: "string", enum: ["use_as_is", "rework", "repair", "scrap", "return_to_supplier"] },
+      disposition: { type: "string", enum: ["use_as_is", "rework", "scrap", "return_to_supplier"] },
       root_cause: { type: "string", description: "Root cause analysis" },
       corrective_action: { type: "string", description: "Immediate corrective action taken" },
       preventive_action: { type: "string", description: "Preventive action to avoid recurrence" },
@@ -83,7 +86,7 @@ const getIssueAnalyticsTool: Tool = {
       days: { type: "number", description: "Number of days to analyze (default: 30)" },
       group_by: {
         type: "string",
-        enum: ["severity", "status", "category", "cell", "operation"],
+        enum: ["severity", "status", "ncr_category", "cell", "operation"],
         description: "Group results by this field (default: severity)",
       },
     },
@@ -143,20 +146,14 @@ const createNcr: ToolHandler = async (args: Record<string, unknown>, supabase: S
       title: z.string().min(1),
       description: z.string().optional(),
       severity: schemas.issueSeverity,
-      ncr_category: z.enum(['material', 'process', 'equipment', 'design', 'supplier', 'documentation', 'other']),
+      ncr_category: z.enum(['material_defect', 'dimensional', 'surface_finish', 'process_error', 'other']),
       affected_quantity: z.number().int().min(0).optional(),
-      disposition: z.enum(['use_as_is', 'rework', 'repair', 'scrap', 'return_to_supplier']).optional(),
+      disposition: z.enum(['use_as_is', 'rework', 'scrap', 'return_to_supplier']).optional(),
       root_cause: z.string().optional(),
       corrective_action: z.string().optional(),
       preventive_action: z.string().optional(),
       reported_by_id: schemas.id.optional(),
-      tenant_id: schemas.id.optional(),
     }));
-
-    // Generate NCR number
-    const { data: ncrNumber } = await supabase.rpc("generate_ncr_number", {
-      p_tenant_id: validated.tenant_id || "00000000-0000-0000-0000-000000000000",
-    });
 
     const { data, error } = await supabase
       .from("issues")
@@ -166,7 +163,6 @@ const createNcr: ToolHandler = async (args: Record<string, unknown>, supabase: S
         description: validated.description,
         severity: validated.severity,
         issue_type: "ncr",
-        ncr_number: ncrNumber,
         ncr_category: validated.ncr_category,
         root_cause: validated.root_cause,
         corrective_action: validated.corrective_action,
@@ -174,7 +170,7 @@ const createNcr: ToolHandler = async (args: Record<string, unknown>, supabase: S
         affected_quantity: validated.affected_quantity,
         disposition: validated.disposition,
         reported_by_id: validated.reported_by_id,
-        status: "open",
+        status: "pending",
       })
       .select()
       .single();
@@ -190,7 +186,7 @@ const getIssueAnalytics: ToolHandler = async (args: Record<string, unknown>, sup
   try {
     const { days, group_by } = validateArgs(args, z.object({
       days: z.number().int().min(1).max(365).optional().default(30),
-      group_by: z.enum(["severity", "status", "category", "cell", "operation"]).optional().default("severity"),
+      group_by: z.enum(["severity", "status", "ncr_category", "cell", "operation"]).optional().default("severity"),
     }));
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -206,7 +202,7 @@ const getIssueAnalytics: ToolHandler = async (args: Record<string, unknown>, sup
     const groupings = {
       severity: {} as Record<string, number>,
       status: {} as Record<string, number>,
-      category: {} as Record<string, number>,
+      ncr_category: {} as Record<string, number>,
       cell: {} as Record<string, number>,
       operation: {} as Record<string, number>,
     };
@@ -218,7 +214,7 @@ const getIssueAnalytics: ToolHandler = async (args: Record<string, unknown>, sup
       groupings.severity[issue.severity || "unknown"] = (groupings.severity[issue.severity || "unknown"] || 0) + 1;
       groupings.status[issue.status || "unknown"] = (groupings.status[issue.status || "unknown"] || 0) + 1;
       if (issue.ncr_category) {
-        groupings.category[issue.ncr_category] = (groupings.category[issue.ncr_category] || 0) + 1;
+        groupings.ncr_category[issue.ncr_category] = (groupings.ncr_category[issue.ncr_category] || 0) + 1;
       }
       const cellName = issue.operations?.cells?.name || "Unknown";
       groupings.cell[cellName] = (groupings.cell[cellName] || 0) + 1;
@@ -226,7 +222,7 @@ const getIssueAnalytics: ToolHandler = async (args: Record<string, unknown>, sup
       const operationName = issue.operations?.operation_name || "Unknown";
       groupings.operation[operationName] = (groupings.operation[operationName] || 0) + 1;
 
-      if (issue.status === "resolved" || issue.status === "closed") {
+      if (issue.status === "approved" || issue.status === "closed") {
         const daysDiff = (new Date(issue.updated_at).getTime() - new Date(issue.created_at).getTime()) / (1000 * 60 * 60 * 24);
         totalResolutionDays += daysDiff;
         resolvedCount++;
@@ -390,7 +386,7 @@ const suggestQualityImprovements: ToolHandler = async (args: Record<string, unkn
 
     if (focus_area === "high_severity" || focus_area === "recurring_issues") {
       const criticalIssues = issues?.filter((i: any) => i.severity === "critical" || i.severity === "high") || [];
-      const unresolvedCritical = criticalIssues.filter((i: any) => i.status !== "resolved" && i.status !== "closed");
+      const unresolvedCritical = criticalIssues.filter((i: any) => i.status !== "approved" && i.status !== "closed");
       if (unresolvedCritical.length > 0) {
         suggestions.push({
           type: "urgent_resolution",

@@ -83,7 +83,6 @@ const prioritizeJobSchema = z.object({
   job_id: schemas.id.optional(),
   job_number: z.string().optional(),
   set_bullet_card: z.boolean().optional(),
-  priority: z.enum(['low', 'normal', 'high', 'urgent']).optional(),
   notes: z.string().optional(),
 });
 
@@ -348,11 +347,6 @@ const tools: Tool[] = [
         set_bullet_card: {
           type: "boolean",
           description: "Set bullet card flag on all parts (default: true)",
-        },
-        priority: {
-          type: "string",
-          enum: ["low", "normal", "high", "urgent"],
-          description: "New priority level for the job",
         },
         notes: {
           type: "string",
@@ -872,7 +866,7 @@ const batchRescheduleOperations: ToolHandler = async (args, supabase) => {
  */
 const prioritizeJob: ToolHandler = async (args, supabase) => {
   try {
-    const { job_id, job_number, set_bullet_card, priority, notes } = validateArgs(args, prioritizeJobSchema);
+    const { job_id, job_number, set_bullet_card, notes } = validateArgs(args, prioritizeJobSchema);
 
     if (!job_id && !job_number) {
       return errorResponse(new Error("Must specify job_id or job_number"));
@@ -885,33 +879,29 @@ const prioritizeJob: ToolHandler = async (args, supabase) => {
       .eq(job_id ? "id" : "job_number", job_id || job_number)
       .is("deleted_at", null)
       .single();
-    if (jobError) throw jobError;
+    if (jobError) throw databaseError("Failed to find job", jobError as Error);
     if (!job) return errorResponse(new Error("Job not found"));
 
     const now = new Date().toISOString();
     const results: any = { job_id: job.id, job_number: job.job_number };
 
-    // Update job if priority or notes specified
-    if (priority || notes) {
+    // Update job notes if specified
+    if (notes) {
       const jobUpdate: any = { updated_at: now };
-      if (priority) jobUpdate.priority = priority;
-      if (notes) {
-        // Append notes
-        const { data: currentJob, error: notesFetchError } = await supabase
-          .from("jobs")
-          .select("notes")
-          .eq("id", job.id)
-          .single();
-        if (notesFetchError) throw notesFetchError;
-        jobUpdate.notes = currentJob?.notes
-          ? `${currentJob.notes}\n[PRIORITY] ${notes}`
-          : `[PRIORITY] ${notes}`;
-      }
+      // Append notes
+      const { data: currentJob, error: notesFetchError } = await supabase
+        .from("jobs")
+        .select("notes")
+        .eq("id", job.id)
+        .single();
+      if (notesFetchError) throw databaseError("Failed to fetch job notes", notesFetchError as Error);
+      jobUpdate.notes = currentJob?.notes
+        ? `${currentJob.notes}\n[PRIORITY] ${notes}`
+        : `[PRIORITY] ${notes}`;
 
       const { error: jobUpdateError } = await supabase.from("jobs").update(jobUpdate).eq("id", job.id);
-      if (jobUpdateError) throw jobUpdateError;
+      if (jobUpdateError) throw databaseError("Failed to update job", jobUpdateError as Error);
       results.job_updated = true;
-      if (priority) results.new_priority = priority;
     }
 
     // Set bullet card on all parts

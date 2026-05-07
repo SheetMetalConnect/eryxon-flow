@@ -11,12 +11,12 @@ export const schemas = {
   limit: z.number().int().min(1).max(1000).default(50),
   offset: z.number().int().min(0).default(0),
 
-  // Status enums
-  jobStatus: z.enum(['not_started', 'in_progress', 'completed', 'on_hold', 'cancelled']),
-  operationStatus: z.enum(['not_started', 'in_progress', 'paused', 'completed', 'cancelled']),
-  issueStatus: z.enum(['open', 'in_progress', 'resolved', 'closed']),
+  // Status enums — must match DB enum types exactly
+  jobStatus: z.enum(['not_started', 'in_progress', 'completed', 'on_hold']),
+  operationStatus: z.enum(['not_started', 'in_progress', 'completed', 'on_hold']),
+  issueStatus: z.enum(['pending', 'approved', 'rejected', 'closed']),
   issueSeverity: z.enum(['low', 'medium', 'high', 'critical']),
-  batchStatus: z.enum(['pending', 'in_progress', 'completed', 'cancelled', 'blocked']),
+  batchStatus: z.enum(['draft', 'ready', 'in_progress', 'completed', 'cancelled', 'blocked']),
 
   // Common filters
   dateRange: z.object({
@@ -75,19 +75,17 @@ export const toolSchemas = {
   }),
 
   createJob: z.object({
-    customer_name: z.string().min(1, 'Customer name required'),
+    customer: z.string().min(1, 'Customer name required'),
     job_number: z.string().min(1, 'Job number required'),
-    description: z.string().optional(),
+    notes: z.string().optional(),
     due_date: z.string().datetime().optional(),
-    priority: z.enum(['low', 'normal', 'high', 'urgent']).optional(),
   }),
 
   updateJob: z.object({
     id: schemas.id,
     status: schemas.jobStatus.optional(),
-    description: z.string().optional(),
+    notes: z.string().optional(),
     due_date: z.string().datetime().optional(),
-    priority: z.enum(['low', 'normal', 'high', 'urgent']).optional(),
   }),
 
   fetchOperations: z.object({
@@ -118,9 +116,9 @@ export const toolSchemas = {
     title: z.string().min(1, 'Title required'),
     description: z.string().optional(),
     severity: schemas.issueSeverity,
-    ncr_category: z.enum(['material', 'process', 'equipment', 'design', 'supplier', 'documentation', 'other']),
+    ncr_category: z.enum(['material_defect', 'dimensional', 'surface_finish', 'process_error', 'other']),
     affected_quantity: z.number().int().min(0).optional(),
-    disposition: z.enum(['use_as_is', 'rework', 'repair', 'scrap', 'return_to_supplier']).optional(),
+    disposition: z.enum(['use_as_is', 'rework', 'scrap', 'return_to_supplier']).optional(),
     root_cause: z.string().optional(),
     corrective_action: z.string().optional(),
     preventive_action: z.string().optional(),

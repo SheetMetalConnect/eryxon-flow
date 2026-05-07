@@ -1,5 +1,7 @@
 /**
  * Shared types for the MCP server
+ *
+ * All enum types must match the PostgreSQL enum definitions exactly.
  */
 
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
@@ -35,58 +37,45 @@ export interface ToolModule {
 }
 
 /**
- * Job status enum
+ * Job status enum (DB: job_status)
  */
 export type JobStatus = "not_started" | "in_progress" | "completed" | "on_hold";
 
 /**
- * Part status enum
+ * Part status enum (DB: job_status — parts reuse the same enum)
  */
-export type PartStatus = "pending" | "in_progress" | "completed" | "on_hold";
+export type PartStatus = "not_started" | "in_progress" | "completed" | "on_hold";
 
 /**
- * Task status enum
+ * Operation status enum (DB: task_status)
  */
-export type TaskStatus = "pending" | "in_progress" | "completed" | "paused";
+export type OperationStatus = "not_started" | "in_progress" | "completed" | "on_hold";
 
 /**
- * Operation status enum
+ * Issue/NCR status enum (DB: issue_status)
  */
-export type OperationStatus = "pending" | "in_progress" | "completed" | "on_hold";
+export type IssueStatus = "pending" | "approved" | "rejected" | "closed";
 
 /**
- * Issue/NCR status enum
- */
-export type IssueStatus = "open" | "in_progress" | "resolved" | "closed";
-
-/**
- * Severity level enum
+ * Severity level enum (DB: issue_severity)
  */
 export type Severity = "low" | "medium" | "high" | "critical";
 
 /**
- * Priority level enum
- */
-export type Priority = "low" | "normal" | "high" | "urgent";
-
-/**
- * NCR category enum
+ * NCR category enum (DB: ncr_category)
  */
 export type NCRCategory =
-  | "material"
-  | "process"
-  | "equipment"
-  | "design"
-  | "supplier"
-  | "documentation"
+  | "material_defect"
+  | "dimensional"
+  | "surface_finish"
+  | "process_error"
   | "other";
 
 /**
- * NCR disposition enum
+ * NCR disposition enum (DB: ncr_disposition)
  */
 export type NCRDisposition =
   | "use_as_is"
   | "rework"
-  | "repair"
   | "scrap"
   | "return_to_supplier";

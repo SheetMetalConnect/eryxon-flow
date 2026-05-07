@@ -1,6 +1,9 @@
 /**
  * Substeps domain tools
  * Handles operation substep management
+ *
+ * Schema: id, tenant_id, operation_id, name, sequence, status (text),
+ *         notes, completed_at, completed_by, created_at, updated_at, icon_name
  */
 
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
@@ -13,14 +16,16 @@ import { databaseError } from "../utils/errors.js";
 import { createFetchTool, createUpdateTool } from "../utils/tool-factories.js";
 
 // Fetch substeps for an operation
+// Note: substeps table has no deleted_at column
 const { tool: fetchSubstepsTool, handler: fetchSubstepsHandler } = createFetchTool({
   tableName: 'substeps',
-  description: 'Fetch substeps for an operation with optional completion filter',
+  description: 'Fetch substeps for an operation with optional status filter',
   filterFields: {
     operation_id: schemas.id,
-    completed: z.boolean().optional(),
+    status: z.string().optional(),
   },
   orderBy: { column: 'sequence', ascending: true },
+  includeDeleted: true,
 });
 
 // Update substep
@@ -30,9 +35,10 @@ const { tool: updateSubstepTool, handler: updateSubstepHandler } = createUpdateT
   resourceName: 'substep',
   updateSchema: z.object({
     id: schemas.id,
-    description: z.string().optional(),
+    name: z.string().optional(),
     sequence: z.number().int().min(1).optional(),
-    completed: z.boolean().optional(),
+    status: z.string().optional(),
+    notes: z.string().optional(),
   }),
 });
 
@@ -44,10 +50,10 @@ const addSubstepTool: Tool = {
     type: "object",
     properties: {
       operation_id: { type: "string", description: "Operation ID to add substep to" },
-      description: { type: "string", description: "Description of the substep" },
+      name: { type: "string", description: "Name/description of the substep" },
       sequence: { type: "number", description: "Sequence/order of the substep (auto-assigned if not provided)" },
     },
-    required: ["operation_id", "description"],
+    required: ["operation_id", "name"],
   },
 };
 
@@ -78,68 +84,38 @@ const deleteSubstepTool: Tool = {
 // Custom handlers
 const addSubstepSchema = z.object({
   operation_id: schemas.id,
-  description: z.string().min(1),
+  name: z.string().min(1),
   sequence: z.number().int().min(1).optional(),
 });
 
 const addSubstep: ToolHandler = async (args: Record<string, unknown>, supabase: SupabaseClient) => {
   try {
-    const { operation_id, description, sequence } = validateArgs(args, addSubstepSchema);
+    const { operation_id, name, sequence } = validateArgs(args, addSubstepSchema);
 
-    // Get next sequence if not provided (with retry on conflict to handle race conditions)
+    // Get next sequence if not provided
     let finalSequence = sequence;
-    let retries = 3;
-    let data: any = null;
-    let error: any = null;
-
-    while (retries > 0) {
-      if (typeof finalSequence !== "number") {
-        // Use RPC to atomically get next sequence (avoids race condition)
-        const { data: nextSeq, error: seqError } = await supabase.rpc("get_next_substep_sequence", {
-          p_operation_id: operation_id,
-        });
-
-        if (!seqError && typeof nextSeq === "number") {
-          finalSequence = nextSeq;
-        } else {
-          // Fallback to client-side calculation if RPC not available
-          const { data: maxSeq } = await supabase
-            .from("substeps")
-            .select("sequence")
-            .eq("operation_id", operation_id)
-            .order("sequence", { ascending: false })
-            .limit(1)
-            .single();
-
-          finalSequence = (maxSeq?.sequence ?? 0) + 1;
-        }
-      }
-
-      const result = await supabase
+    if (typeof finalSequence !== "number") {
+      const { data: maxSeq } = await supabase
         .from("substeps")
-        .insert({
-          operation_id,
-          description,
-          sequence: finalSequence,
-          completed: false,
-        })
-        .select()
+        .select("sequence")
+        .eq("operation_id", operation_id)
+        .order("sequence", { ascending: false })
+        .limit(1)
         .single();
 
-      data = result.data;
-      error = result.error;
-
-      // Check for unique constraint violation (sequence conflict)
-      if (error?.code === "23505" && retries > 1) {
-        // Retry with fresh sequence calculation
-        finalSequence = undefined as any;
-        retries--;
-        continue;
-      }
-
-      // Success or non-retryable error
-      break;
+      finalSequence = (maxSeq?.sequence ?? 0) + 1;
     }
+
+    const { data, error } = await supabase
+      .from("substeps")
+      .insert({
+        operation_id,
+        name,
+        sequence: finalSequence,
+        status: "pending",
+      })
+      .select()
+      .single();
 
     if (error) {
       throw databaseError("Failed to add substep", error as Error);
@@ -162,7 +138,8 @@ const completeSubstep: ToolHandler = async (args: Record<string, unknown>, supab
     const { data, error } = await supabase
       .from("substeps")
       .update({
-        completed: true,
+        status: "completed",
+        completed_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)

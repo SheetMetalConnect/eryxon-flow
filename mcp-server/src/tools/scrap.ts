@@ -13,6 +13,7 @@ import { databaseError } from "../utils/errors.js";
 import { createFetchTool } from "../utils/tool-factories.js";
 
 // Fetch scrap reasons (uses factory)
+// Note: scrap_reasons has no deleted_at column, so includeDeleted must be true
 const { tool: fetchScrapReasonsTool, handler: fetchScrapReasonsHandler } = createFetchTool({
   tableName: 'scrap_reasons',
   description: 'Get all configured scrap reason codes with optional active filter',
@@ -20,6 +21,7 @@ const { tool: fetchScrapReasonsTool, handler: fetchScrapReasonsHandler } = creat
     active: z.boolean().optional().default(true),
   },
   orderBy: { column: 'code', ascending: true },
+  includeDeleted: true,
 });
 
 // Custom tool definitions (complex analytics logic)
@@ -155,12 +157,12 @@ const getScrapAnalytics: ToolHandler = async (args: Record<string, unknown>, sup
       .select(`
         id, quantity_scrap, quantity_good, quantity_produced, quantity_rework, recorded_at,
         scrap_reasons(id, code, description),
-        operations(operation_name, cell_id, cells(name), parts(material_id, materials(name)))
+        operations(operation_name, cell_id, cells(name), parts(material))
       `)
       .gte("recorded_at", startDate.toISOString())
       .gt("quantity_scrap", 0);
 
-    if (error) throw error;
+    if (error) throw databaseError("Failed to fetch scrap analytics", error as Error);
 
     const analytics: Record<string, { total_scrap: number; count: number; details: string[] }> = {};
 
@@ -178,7 +180,7 @@ const getScrapAnalytics: ToolHandler = async (args: Record<string, unknown>, sup
           detail = q.scrap_reasons?.description || "";
           break;
         case "material":
-          key = q.operations?.parts?.materials?.name || "Unknown Material";
+          key = q.operations?.parts?.material || "Unknown Material";
           detail = q.operations?.operation_name || "";
           break;
         case "reason":
@@ -235,7 +237,7 @@ const getScrapTrends: ToolHandler = async (args: Record<string, unknown>, supaba
       .gte("recorded_at", startDate.toISOString())
       .order("recorded_at", { ascending: true });
 
-    if (error) throw error;
+    if (error) throw databaseError("Scrap query failed", error as Error);
 
     const trends: Record<string, { scrap: number; good: number; produced: number }> = {};
 
@@ -305,7 +307,7 @@ const getYieldMetrics: ToolHandler = async (args: Record<string, unknown>, supab
 
     const { data: quantities, error } = await query;
 
-    if (error) throw error;
+    if (error) throw databaseError("Scrap query failed", error as Error);
 
     // Calculate overall metrics
     let totalProduced = 0;
@@ -384,7 +386,7 @@ const getScrapPareto: ToolHandler = async (args: Record<string, unknown>, supaba
       .gte("recorded_at", startDate.toISOString())
       .gt("quantity_scrap", 0);
 
-    if (error) throw error;
+    if (error) throw databaseError("Scrap query failed", error as Error);
 
     // Aggregate by reason
     const byReason: Record<string, { code: string; description: string; total: number }> = {};
@@ -447,7 +449,7 @@ const getQualityScore: ToolHandler = async (args: Record<string, unknown>, supab
       .select("quantity_scrap, quantity_good, quantity_produced")
       .gte("recorded_at", startDate.toISOString());
 
-    if (qError) throw qError;
+    if (qError) throw databaseError("Failed to fetch quantities", qError as Error);
 
     // Get issues data
     const { data: issues, error: iError } = await supabase
@@ -455,7 +457,7 @@ const getQualityScore: ToolHandler = async (args: Record<string, unknown>, supab
       .select("id, severity, status, created_at, updated_at")
       .gte("created_at", startDate.toISOString());
 
-    if (iError) throw iError;
+    if (iError) throw databaseError("Failed to fetch issues", iError as Error);
 
     // Calculate yield score (0-100)
     let totalProduced = 0;
@@ -480,7 +482,7 @@ const getQualityScore: ToolHandler = async (args: Record<string, unknown>, supab
     let totalResolutionDays = 0;
     let resolvedCount = 0;
     issues?.forEach((i: any) => {
-      if (i.status === "resolved" || i.status === "closed") {
+      if (i.status === "approved" || i.status === "closed") {
         const created = new Date(i.created_at);
         const updated = new Date(i.updated_at);
         totalResolutionDays += (updated.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);

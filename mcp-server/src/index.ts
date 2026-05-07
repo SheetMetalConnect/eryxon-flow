@@ -28,7 +28,7 @@ import {
 import type { Request, Response } from "express";
 
 import { loadConfig, getModeDescription } from "./config.js";
-import { createClient } from "./clients/index.js";
+import { createClient, DirectSupabaseClient } from "./clients/index.js";
 import { createConfiguredRegistry } from "./tools/index.js";
 
 // Load configuration and detect mode
@@ -36,8 +36,11 @@ const config = loadConfig();
 console.error(`Eryxon Flow MCP Server v2.4.0`);
 console.error(`Mode: ${getModeDescription(config.mode)}`);
 
-// Create direct Supabase client
-const client = createClient(config);
+// Create direct Supabase client and extract the raw SupabaseClient
+// Tool handlers call supabase.from() directly, so they need the raw client,
+// not the UnifiedClient wrapper which only exposes .select()/.insert()/etc.
+const unifiedClient = createClient(config);
+const supabaseClient = (unifiedClient as DirectSupabaseClient).getSupabaseClient();
 
 // Create and configure the tool registry with all modules
 const toolRegistry = createConfiguredRegistry();
@@ -82,11 +85,11 @@ function createMCPServer(): Server {
 
     try {
       // Execute the tool through the registry
-      // The client will handle the request appropriately based on mode
+      // Pass the raw SupabaseClient — tools call .from() directly
       const result = await toolRegistry.executeTool(
         name,
         (args as Record<string, unknown>) || {},
-        client as any // Tools still expect SupabaseClient type, but UnifiedClient is compatible
+        supabaseClient
       );
 
       return result as CallToolResult;

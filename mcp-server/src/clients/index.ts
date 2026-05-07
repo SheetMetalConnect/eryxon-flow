@@ -14,7 +14,7 @@ export function createClient(config: MCPConfig): UnifiedClient {
     throw new Error('Direct mode requires supabaseUrl and supabaseServiceKey');
   }
 
-  console.log(`Connected in DIRECT mode: ${config.supabaseUrl}`);
+  console.error(`Connected in DIRECT mode: ${config.supabaseUrl}`);
   return new DirectSupabaseClient(config.supabaseUrl, config.supabaseServiceKey);
 }
 
